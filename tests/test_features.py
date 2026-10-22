@@ -9571,6 +9571,8 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
 def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
     import re
     import subprocess
+    from journal.support.worktree import Worktree
+    from journal.sync.environment_names import EnvironmentNames
     from journal.sync.attachments import Attachments
     from journal.features.shell.support.output_log import OutputLog
     from journal.features.shell.jobs.watch_refresh import WatchRefresh
@@ -9635,10 +9637,14 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         with a.container.get(Scope).environment(MAIN):
             early = a.container.get(Messages).save(Message(environment_id=MAIN, author=Author.USER, text="a file from before the team"), Actor.user(1))
         a.container.get(Attachments).store("messages", early.id, "before.txt", b"attached before the team")
+        Worktree(tmp_path / "a", "main").created()
         assert a.console().run(["team", "join", address, "--code", admin_code], USER).error.startswith("run journal team join yourself in a terminal")
         joined = a.console().run(["team", "join", address, "--code", admin_code, "--password", "correct horse battery"], USER)
         assert joined.code == 0 and "this journal is now the team's" in joined.text and "1 files uploaded" in joined.text, joined.text + joined.error
         assert a.container.get(Workers).find(worker.id).device == str(a.container.get(TeamAccount).device()), "the first journal's workers are its device's"
+        assert (tmp_path / "a" / ".claude" / "worktrees" / "ada-main").is_dir() and not (tmp_path / "a" / ".claude" / "worktrees" / "main").exists(), "an environment's worktree moves with it when it takes its person's name"
+        assert a.container.get(Environments).existing("ada-main").branch == "worktree-ada-main"
+        assert a.container.get(EnvironmentNames).resolved("main").name == "ada-main", "a session started before the team, which still says main, works in ada-main"
         invitation = a.console().run(["team", "invite", "bob@example.com"], USER).text
         bob_code = re.search(r"--code (\S+)", invitation).group(1)
         assert c.console().run(["team", "join", address, "--code", bob_code, "--password", "correct horse battery"], USER).error.startswith("the team's journal belongs to the repository"), "a checkout of another repository is refused"
@@ -9766,7 +9772,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert not b.container.get(CommandOutputs).selected_globally(b.container.get(CommandOutputs).query()), "while the output itself never leaves its machine"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
-        request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"})
         made = json.load(urlopen(request, timeout=5))
         assert b.container.get(Tasks).find(made["id"]).creator == Actor.user(2), "the viewer's write is the person's own"
         assert eventually(lambda: (team.log.row("tasks", made["id"]) or None) is not None and team.log.row("tasks", made["id"]).fields.get("creator") == "user:2"), "and the server holds it as theirs"

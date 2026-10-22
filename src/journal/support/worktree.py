@@ -48,6 +48,15 @@ class Worktree:
             self.git("update-ref", f"{TIPS_REF}/{self.name}", self.local_branch())
         return self.path
 
+    def renamed(self, name: str) -> "Worktree":
+        target = Worktree(self.root, name)
+        if self.path.is_dir() and not target.path.exists():
+            self.git("worktree", "move", str(self.path), str(target.path))
+            self.git("branch", "-m", self.branch, target.branch)
+            self.git("update-ref", "-d", f"{TIPS_REF}/{self.name}")
+            self.git("update-ref", f"{TIPS_REF}/{name}", target.branch)
+        return target
+
     def local_branch(self) -> str:
         return self.run_git("rev-parse", "HEAD").stdout.strip()
 

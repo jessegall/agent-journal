@@ -1,3 +1,4 @@
+import shutil
 import json
 import os
 import re
@@ -85,6 +86,17 @@ class Claude(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         path = self.config_folder() / "projects" / self.folder_name(project) / f"{session}.jsonl"
         return path if path.is_file() else None
+
+    def copy_session(self, source: Path, target: Path, session: str) -> bool:
+        if self.transcript(target, session) is not None:
+            return True
+        original = self.transcript(source, session)
+        if original is None:
+            return False
+        copy = self.config_folder() / "projects" / self.folder_name(target) / original.name
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(original, copy)
+        return True
 
     def latest_session(self, project: Path, start: float) -> str:
         folder = self.config_folder() / "projects" / self.folder_name(project)

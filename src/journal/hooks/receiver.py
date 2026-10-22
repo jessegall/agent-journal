@@ -25,6 +25,7 @@ from journal.support.card_kind import CardKind
 from journal.support.hook_kind import HookKind
 from journal.engine.support.launch_files import LaunchFiles
 from journal.models.environment import Environment
+from journal.sync.environment_names import EnvironmentNames
 
 
 GUARD_FAILED = "guard_failed"
@@ -34,7 +35,8 @@ UNBOUND_SESSION = "unbound_session"
 class Receiver:
     """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply. A hook that does not carry its environment's launch id is recorded and reported, and reaches no listener; a proven worker's hook is recorded and answered by the listeners that hear workers, the state machine alone, under the worker's own conduct, so none of the main agent's conduct holds a worker and no recording listener posts it as the main agent's."""
 
-    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles, worker_hooks: WorkerHooks) -> None:
+    def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles, worker_hooks: WorkerHooks, names: EnvironmentNames) -> None:
+        self.names = names
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
         self.agents, self.launches = agents, launches
         self.transcript, self.cards, self.slow = transcript, cards, slow
@@ -42,7 +44,7 @@ class Receiver:
 
     def receive(self, hook: Hook) -> Decision:
         timer = self.slow.begin()
-        environment = self.environments.lookup(hook.environment)
+        environment = self.names.resolved(hook.environment)
         with self.scope.environment(environment.row_id):
             if not self.launches.is_launch(environment.name, hook.launch) and not self.worker_hooks.is_proven(hook):
                 return self.unbound(hook, environment)

@@ -95,6 +95,14 @@ class Launch:
             os.execv(sys.executable, [sys.executable, *sys.argv])
         return menu.choose(self.agent, matched, self.new, self.stashed, self.is_skipping(), self.confirmed)
 
+    def is_resumable(self, choice: Choice, folder: Path) -> bool:
+        if not choice.resume or folder == self.root or self.provider.copy_session(self.root, folder, choice.resume):
+            return bool(choice.resume)
+        line = f"session {choice.resume} ran in the project's main checkout and cannot be carried into {folder}: this launch starts a fresh session"
+        self.log(f"resume dropped: {line}")
+        print(line, file=sys.stderr)
+        return False
+
     def is_worktree_launch(self, worktree: Worktree) -> bool:
         return self.worktree_launch or worktree.path.is_dir() or self.is_shared()
 
@@ -187,7 +195,7 @@ class Launch:
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
             "launch": launch,
-            "front": {"command": self.agent_command(choice, status), "resume": list(self.provider.resume(choice.resume)) if choice.resume else [], "folder": str(folder), "env": environ},
+            "front": {"command": self.agent_command(choice, status), "resume": list(self.provider.resume(choice.resume)) if self.is_resumable(choice, folder) else [], "folder": str(folder), "env": environ},
             "services": [] if self.journal_off else [journal],
             "socket": str(self.socket(choice.environment)),
             "announce": str(self.runtime / "inboxes" / choice.environment),

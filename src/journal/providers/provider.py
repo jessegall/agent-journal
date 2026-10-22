@@ -164,6 +164,9 @@ class Provider(ABC):
     @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
+    def copy_session(self, source: Path, target: Path, session: str) -> bool:
+        return self.transcript(target, session) is not None or self.transcript(source, session) is not None
+
     def status(self, session: str, home: Path) -> AgentStatus:
         return self._status_files.setdefault(home, ContextFile(home)).reading(session)
 

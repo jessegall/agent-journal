@@ -18,6 +18,7 @@ from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 from journal.container import Container
 from journal.support.project_shell import ProjectShell
+from journal.sync.environment_names import EnvironmentNames
 
 
 HELP_FLAGS = ("-h", "--help")
@@ -26,7 +27,8 @@ HELP_FLAGS = ("-h", "--help")
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
-    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs, shell: ProjectShell) -> None:
+    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs, shell: ProjectShell, names: EnvironmentNames) -> None:
+        self.names = names
         self.container, self.environments, self.agents, self.scope, self.row_verbs, self.shell = container, environments, agents, scope, row_verbs, shell
         self.commands: dict[str, Command] = {}
         self._parsers: dict[CallerKind, argparse.ArgumentParser] = {}
@@ -60,7 +62,7 @@ class Console:
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
         output, err = io.StringIO(), io.StringIO()
-        with self.scope.environment(self.environments.lookup(caller.environment).row_id):
+        with self.scope.environment(self.names.resolved(caller.environment).row_id):
             return self.captured(argv, caller, output, err)
 
     def with_verb(self, argv: list[str]) -> list[str]:

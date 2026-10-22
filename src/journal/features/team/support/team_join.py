@@ -29,6 +29,7 @@ from journal.sync.team_server_link import TeamServerLink
 from sync_server.copied_row import CopiedRow
 from sync_server.file_place import FilePlace
 from journal.sync.attachments import FOLDERS
+from journal.support.worktree import Worktree
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
@@ -36,7 +37,7 @@ TABLES = {folder: table for table, folder in FOLDERS.items()}
 
 
 class TeamJoin:
-    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the team's environment of the same name, and adds this person's user row. The sync client starts once it is done."""
+    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
 
     def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
@@ -104,7 +105,7 @@ class TeamJoin:
 
     def move_agents(self, environment_names: dict[int, str]) -> None:
         for agent in self.agents.all_agents():
-            self.agents.save(agent.with_(environment_id=self.environments.lookup(environment_names.get(agent.environment_id, MAIN)).row_id), Actor.system())
+            self.agents.save(agent.with_(environment_id=self.environments.lookup(self.account.personal_name(environment_names.get(agent.environment_id, MAIN))).row_id), Actor.system())
 
     def add_user(self, account_id: int, name: str) -> None:
         users = self.tables.rows(User.table())
@@ -119,7 +120,8 @@ class TeamJoin:
             if not self.owners.owner_number(environment.row_id):
                 self.links.save(Link(source=Ref(User.table(), account_id), target=Ref.build(environment), kind=OWNER), Actor.system())
             if not environment.name.startswith(f"{prefix}-"):
-                self.environments.save(environment.with_(name=f"{prefix}-{environment.name}"), Actor.system())
+                moved = Worktree(self.config.root, environment.name).renamed(f"{prefix}-{environment.name}")
+                self.environments.save(environment.with_(name=moved.name, branch=moved.branch if moved.path.is_dir() else environment.branch), Actor.system())
 
     def name_user(self, account_id: int, name: str) -> None:
         users = self.tables.rows(User.table())
