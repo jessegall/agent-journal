@@ -10,4 +10,4 @@ class UnlinkDeleted(Listener[Deleted]):
         self.links = links
 
     def handle(self, event: Deleted) -> None:
-        self.links.remove_links(event.model)
+        self.links.remove_links(event.model, event.actor)

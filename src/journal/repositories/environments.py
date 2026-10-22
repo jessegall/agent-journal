@@ -22,5 +22,5 @@ class Environments(Repository[Environment]):
     def wipe(self, environment: Environment, actor: Actor) -> None:
         with self.connection.transaction():
             for model in AllModels.SCOPED:
-                self.purged(Query.build(model).filter(environment_id=environment.id))
+                self.purged_rows(model, Query.build(model).filter(environment_id=environment.id), actor)
             self.delete(environment, actor)

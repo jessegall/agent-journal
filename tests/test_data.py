@@ -482,24 +482,54 @@ def test_a_new_shared_row_takes_its_number_from_the_machines_blocks_once_joined_
             tasks.save(Task(environment_id=1, title="one too many"), actor=USER)
 
 
-def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener_of_a_local_write(tmp_path):
+def team_journal(tmp_path, name: str):
     from journal.config import Config
-    from journal.events.listener import Listener
-    from journal.events.models.created import Created
-    from journal.events.models.model_event import ModelEvent
-    from journal.events.rows.task_opened import TaskOpened
-    from journal.repositories.outgoing_changes import OutgoingChanges
-    from journal.sync.incoming_changes import IncomingChanges
-    from journal.repositories.shared_tables import SharedTables
-    from journal.sync.record_outgoing_change import RecordOutgoingChange
-    from journal.sync.team_account import TEAM_FILE, TeamAccount
-    from journal.sync.team_change import TeamChange
     from journal.db.connection import Connection
     from journal.db.schema import Schema
     from journal.events.bus import Bus
+    from journal.events.models.model_event import ModelEvent
+    from journal.events.models.purged import Purged
     from journal.models.all_models import AllModels
     from journal.repositories.environments import Environments
+    from journal.repositories.outgoing_changes import OutgoingChanges
     from journal.repositories.scope import Scope
+    from journal.repositories.shared_tables import SharedTables
+    from journal.sync.incoming_changes import IncomingChanges
+    from journal.sync.record_outgoing_change import RecordOutgoingChange
+    from journal.sync.record_purge import RecordPurge
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.features.listeners.unlink_deleted import UnlinkDeleted
+    from journal.events.models.deleted import Deleted
+
+    folder = tmp_path / name
+    config = Config(folder)
+    config.home.mkdir(parents=True)
+    (config.home / TEAM_FILE).write_text("{}")
+    connection = Connection(folder / "journal.db", Masks(SecretValues(config)))
+    Schema(connection, AllModels.MODELS).create()
+    bus = Bus()
+    scope = Scope(Environments(connection, bus))
+    outgoing = OutgoingChanges(connection, bus)
+    bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config)))
+    bus.listen(Purged, RecordPurge(outgoing, TeamAccount(config)))
+    bus.listen(Deleted, UnlinkDeleted(Links(connection, bus)))
+    return bus, scope, tasks_of(connection, bus, scope), outgoing, IncomingChanges(SharedTables(connection, bus), outgoing, Links(connection, bus))
+
+
+def team_changes(outgoing):
+    from journal.sync.team_change import TeamChange
+
+    changes = outgoing.waiting()
+    for change in changes:
+        outgoing.delete(change, USER)
+    return [TeamChange(row_table=change.row_table, row=change.row, action=change.action, writer=change.writer, fields=change.fields or {}) for change in changes]
+
+
+def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener_of_a_local_write(tmp_path):
+    from journal.events.listener import Listener
+    from journal.events.models.created import Created
+    from journal.events.rows.task_opened import TaskOpened
+    from journal.sync.team_change import TeamChange
 
     class Heard(Listener):
         def __init__(self) -> None:
@@ -508,34 +538,15 @@ def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener
         def handle(self, event) -> None:
             self.events.append(event)
 
-    def journal(name: str):
-        folder = tmp_path / name
-        config = Config(folder)
-        config.home.mkdir(parents=True)
-        (config.home / TEAM_FILE).write_text("{}")
-        connection = Connection(folder / "journal.db", Masks(SecretValues(config)))
-        Schema(connection, AllModels.MODELS).create()
-        bus = Bus()
-        scope = Scope(Environments(connection, bus))
-        outgoing = OutgoingChanges(connection, bus)
-        bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config)))
-        return bus, scope, tasks_of(connection, bus, scope), outgoing, IncomingChanges(SharedTables(connection, bus), outgoing, Links(connection, bus))
-
-    def sent(outgoing: OutgoingChanges) -> list[TeamChange]:
-        changes = outgoing.waiting()
-        for change in changes:
-            outgoing.delete(change, USER)
-        return [TeamChange(row_table=change.row_table, row=change.row, action=change.action, writer=change.writer, fields=change.fields or {}) for change in changes]
-
-    bus_a, scope_a, tasks_a, outgoing_a, _ = journal("a")
-    bus_b, scope_b, tasks_b, outgoing_b, incoming_b = journal("b")
+    bus_a, scope_a, tasks_a, outgoing_a, _ = team_journal(tmp_path, "a")
+    bus_b, scope_b, tasks_b, outgoing_b, incoming_b = team_journal(tmp_path, "b")
     created, opened = Heard(), Heard()
     bus_b.listen(Created, created)
     bus_b.listen(TaskOpened, opened)
     with scope_a.environment(1):
         kept = tasks_a.save(Task(environment_id=1, title="kept"), actor=USER)
         gone = tasks_a.save(Task(environment_id=1, title="gone"), actor=USER)
-    incoming_b.apply(sent(outgoing_a))
+    incoming_b.apply(team_changes(outgoing_a))
     with scope_b.environment(1):
         assert [(task.id, task.title) for task in tasks_b.rows()] == [(kept.id, "kept"), (gone.id, "gone")]
         assert len(opened.events) == 2 and created.events == [], "a pulled creation opens the task and runs no listener of a local creation"
@@ -545,9 +556,34 @@ def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener
         tasks_a.delete(gone, USER)
     with scope_b.environment(1):
         tasks_b.save(tasks_b.find(gone.id).with_(brief="b's brief"), actor=AGENT)
-    incoming_b.apply(sent(outgoing_a))
+    incoming_b.apply(team_changes(outgoing_a))
     with scope_b.environment(1):
         [task] = tasks_b.rows()
         assert (task.title, task.brief) == ("b's title", "a's brief"), "a field this machine still has to send is kept as this machine has it"
         assert [change.row for change in outgoing_b.waiting()] == [kept.id], "a pulled deletion drops this machine's waiting change to the row"
     incoming_b.apply([TeamChange(row_table="tasks", row=kept.id, action="updated", writer=USER.stamp, fields={"column_from_a_newer_journal": 1})])
+
+
+def test_a_wiped_environment_and_a_deleted_rows_links_reach_the_other_journal(tmp_path):
+    from journal.models.environment import Environment
+    from journal.repositories.environments import Environments
+
+    _, scope_a, tasks_a, outgoing_a, _ = team_journal(tmp_path, "a")
+    _, scope_b, tasks_b, _, incoming_b = team_journal(tmp_path, "b")
+    environments_a, links_a, links_b = scope_a.environments, Links(tasks_a.connection, tasks_a.bus), Links(tasks_b.connection, tasks_b.bus)
+    environments_a.save(Environment(name="main"), USER)
+    second = environments_a.save(Environment(name="second"), USER)
+    with scope_a.environment(1):
+        first = tasks_a.save(Task(environment_id=1, title="first"), actor=USER)
+        other = tasks_a.save(Task(environment_id=1, title="other"), actor=USER)
+        links_a.save(Link(source=Ref.build(first), target=Ref.build(other), kind="follows"), actor=USER)
+    with scope_a.environment(second.id):
+        tasks_a.save(Task(environment_id=second.id, title="in the second"), actor=USER)
+    incoming_b.apply(team_changes(outgoing_a))
+    assert len(tasks_b.global_matching(environment_id=1)) == 2 and len(tasks_b.global_matching(environment_id=second.id)) == 1 and len(links_b.rows()) == 1
+    with scope_a.environment(1):
+        tasks_a.delete(first, USER)
+    environments_a.wipe(second, USER)
+    incoming_b.apply(team_changes(outgoing_a))
+    assert [task.title for task in tasks_b.global_matching(environment_id=1)] == ["other"] and tasks_b.global_matching(environment_id=second.id) == [] and links_b.rows() == [], "the deleted task's links and the wiped environment's rows are gone on the other journal too"
+    assert [environment.name for environment in Environments(tasks_b.connection, tasks_b.bus).rows()] == [environment.name for environment in environments_a.rows()]

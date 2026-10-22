@@ -12,6 +12,7 @@ from journal.events.models.creating import Creating
 from journal.events.models.deleted import Deleted
 from journal.events.models.deleting import Deleting
 from journal.events.models.number_request import NumberRequest
+from journal.events.models.purged import Purged
 from journal.events.models.synced_creation import SyncedCreation
 from journal.events.models.synced_deletion import SyncedDeletion
 from journal.events.models.synced_update import SyncedUpdate
@@ -65,8 +66,13 @@ class Repository(Generic[M]):
     def selected(self, query: Query) -> list[M]:
         return self._loaded(query)
 
-    def purged(self, query: Query) -> None:
+    def _purged(self, query: Query) -> None:
         self.connection.execute(*query.delete())
+
+    def purged_rows(self, model: type[Model], query: Query, actor: Actor) -> None:
+        ids = tuple(row["id"] for row in self.connection.all(*query.select()))
+        self._purged(query)
+        self.bus.dispatch(Purged(model=model, ids=ids, actor=actor))
 
     def linked(self, kind: str) -> dict[int, list[Ref]]:
         return self._linked(self.link_query.filter(kind=kind))
@@ -159,7 +165,7 @@ class Repository(Generic[M]):
     def delete(self, row: M, actor: Actor) -> None:
         with self.connection.transaction():
             self.bus.dispatch(Deleting(model=row, actor=actor))
-            self.purged(self.query().filter(id=row.id))
+            self._purged(self.query().filter(id=row.id))
             self.stored()
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
@@ -186,7 +192,7 @@ class Repository(Generic[M]):
     def pulled_deletion(self, id: int, actor: Actor) -> list[M]:
         with self.connection.transaction():
             rows = self._loaded(self.query().filter(id=id))
-            self.purged(self.query().filter(id=id))
+            self._purged(self.query().filter(id=id))
             self.stored()
             for row in rows:
                 self.bus.dispatch(SyncedDeletion(model=row, actor=actor))

@@ -29,4 +29,4 @@ class IncomingChanges:
     def deleted(self, change: TeamChange) -> None:
         self.outgoing.dropped(change.row_table, change.row, change.actor())
         for row in self.tables.rows(change.row_table).pulled_deletion(change.row, change.actor()):
-            self.links.remove_links(row)
+            self.links.remove_links(row, change.actor())

@@ -2,6 +2,7 @@ from collections.abc import Sequence
 
 from journal.db.query import Query
 from journal.models.link import Link
+from journal.support.actor import Actor
 from journal.models.model import Model
 from journal.models.support.ref import Ref
 from journal.repositories.repository import Repository
@@ -42,8 +43,8 @@ class Links(Repository[Link]):
     def connecting(self, source: Model, target: Model) -> list[Link]:
         return self.matching(source=Ref.build(source), target=Ref.build(target))
 
-    def remove_links(self, model: Model) -> None:
-        self.purged(self.touching(model))
+    def remove_links(self, model: Model, actor: Actor) -> None:
+        self.purged_rows(Link, self.touching(model), actor)
 
     def touching(self, model: Model) -> Query:
         ref = Ref.build(model)

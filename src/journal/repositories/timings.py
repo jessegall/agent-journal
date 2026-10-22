@@ -15,7 +15,7 @@ class Timings(Repository[Timing]):
     def logged(self, timing: Timing, actor: Actor) -> Timing:
         with self.connection.transaction():
             row = self.save(timing, actor)
-            self.purged(self.query().filter_less_equal("id", row.row_id - LOG_ROWS))
+            self._purged(self.query().filter_less_equal("id", row.row_id - LOG_ROWS))
         return row
 
     def recent(self, limit: int) -> list[Timing]:
@@ -32,7 +32,7 @@ class Timings(Repository[Timing]):
 
     def cleared(self, actor: Actor) -> None:
         with self.connection.transaction():
-            self.purged(self.query())
+            self._purged(self.query())
 
     def slowest_first(self) -> Query:
         return self.query().order_descending("ms").order_descending("id")

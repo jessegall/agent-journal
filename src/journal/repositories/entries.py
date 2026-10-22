@@ -21,11 +21,11 @@ class Entries(ScopedRepository[Entry]):
     model = Entry
 
     def trim(self, newest: int, stored: int) -> None:
-        self.purged(self.query().filter_less_equal("id", newest - stored).filter_unequal("kind", NUDGE))
+        self._purged(self.query().filter_less_equal("id", newest - stored).filter_unequal("kind", NUDGE))
 
     def trim_lines(self, stored: int) -> None:
         for boundary in self.selected_globally(self.query().filter(kind=NUDGE).order_descending("id").limit(1).offset(stored)):
-            self.purged(self.query().filter(kind=NUDGE).filter_less_equal("id", boundary.row_id))
+            self._purged(self.query().filter(kind=NUDGE).filter_less_equal("id", boundary.row_id))
 
     def last_prompt(self, session: str) -> datetime | None:
         rows = self.selected(self.query().filter(kind="PromptSubmitted", actor=Actor.agent(session)).order_descending("id").limit(1))
