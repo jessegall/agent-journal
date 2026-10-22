@@ -14,6 +14,9 @@ class OutputView:
     figure: str
     fraction: float
     ending: str
+    reader: str = ""
+    poor_line: str = ""
+    empty_card: bool = False
 
     @classmethod
     def empty(cls) -> "OutputView":
@@ -26,7 +29,7 @@ class OutputView:
     @classmethod
     def parsed(cls, card: Message) -> "OutputView":
         lines = card.data.get("lines") or [card.data["detail"]]
-        return cls(card.data["output"], tuple(line for line in lines if line), card.data["figure"], card.data["fraction"], card.data["ending"])
+        return cls(card.data["output"], tuple(line for line in lines if line), card.data["figure"], card.data["fraction"], card.data["ending"], card.data.get("reader", ""), card.data.get("poor_line", ""), card.data.get("empty_card", False))
 
     @staticmethod
     def key(output: int) -> str:

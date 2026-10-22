@@ -2,6 +2,7 @@ from pathlib import Path
 
 from journal.chat.cards import Cards
 from journal.features.shell.support.activity_label import ActivityLabel
+from journal.features.shell.support.card_line import CardLine
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.readers import Readers
@@ -39,6 +40,16 @@ class OutputViews:
             return view.lines
         return tuple(line for _, line in self.readers.lookup(output.watch_reader).picked_lines(files.lines())[-VIEW_LINES:])
 
+    @staticmethod
+    def ending_lines(output: CommandOutput) -> tuple[str, ...]:
+        return (output.ending(),) if output.ended else ()
+
+    def is_empty_card(self, output: CommandOutput, view: OutputView) -> bool:
+        return bool(output.watch_reader) and output.ended and not self.card_lines(output, view) and not view.figure
+
+    def poor_line(self, output: CommandOutput, view: OutputView) -> str:
+        return next((line for line in self.card_lines(output, view) if output.watch_reader and CardLine.is_poor(line)), "")
+
     def count(self, output: CommandOutput) -> str:
         files = OutputFiles(Path(output.folder))
         if output.ended or not output.watch_reader or not files.is_stored():
@@ -49,8 +60,8 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output)}
-        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(self.card_lines(output, view)), output.session)
+        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output), "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view)}
+        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(self.card_lines(output, view) or self.ending_lines(output)), output.session)
         return view
 
     @staticmethod

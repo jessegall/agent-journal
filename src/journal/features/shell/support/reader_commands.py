@@ -1,12 +1,15 @@
 import re
 from dataclasses import dataclass
 
+from journal.support.chain import Chain
+from journal.support.command_shape import CommandShape
+
 COMMANDS_PREFIX = "commands: "
 
 
 @dataclass(frozen=True)
 class ReaderCommands:
-    """The commands a reader reads the output of, such as pytest or dotnet test: a shell line runs one when it names it as a word of its own."""
+    """The commands a reader reads the output of, such as pytest or dotnet test: a shell line runs one when the shape of one of its parts, its program and subcommands, names it, never a value passed or text a part carries."""
 
     programs: tuple[str, ...] = ()
 
@@ -18,4 +21,5 @@ class ReaderCommands:
         return ", ".join(self.programs)
 
     def is_read(self, line: str) -> bool:
-        return any(re.search(rf"(^|[\s/]){re.escape(program)}(\s|$)", line) for program in self.programs)
+        shapes = [CommandShape.build(part.text) for part in Chain.parts(line)]
+        return any(re.search(rf"(^|[\s/]){re.escape(program)}(\s|$)", shape) for program in self.programs for shape in shapes)

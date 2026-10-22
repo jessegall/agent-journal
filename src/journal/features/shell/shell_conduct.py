@@ -1,12 +1,14 @@
 from journal.engine.base_state import BaseState
 from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
+from journal.engine.nudge import Nudge
 from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.ended_output import EndedOutput
+from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.watch_suggestions import LONG_RUNS
 from journal.support.chain import Chain
 
@@ -25,12 +27,24 @@ class ShellConduct(Conduct):
         watch = event.data.part(Shell).watch
         if not watch.is_watching():
             return self.none()
+        fix = reader_fix(watch, event.data.part(Shell).tipped)
         if watch.ending:
-            return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()))
-        return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()))
+            return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()), *fix)
+        return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()), *fix)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings)])
+
+
+def reader_fix(watch: OutputView, tipped: tuple[str, ...]) -> tuple[Nudge, ...]:
+    from journal.features.shell.feature import Shell
+    if any(f"output {watch.output}'s card" in tip_text for tip_text in tipped):
+        return ()
+    if watch.poor_line:
+        return (Shell.READER_FIX.create(reader=watch.reader, n=watch.output, line=watch.poor_line[:120]),)
+    if watch.empty_card:
+        return (Shell.READER_DETAIL.create(reader=watch.reader, n=watch.output),)
+    return ()
 
 
 def outcome_text(ended: tuple[EndedOutput, ...]) -> str:

@@ -6287,6 +6287,43 @@ def test_a_command_is_known_by_its_shape_and_five_runs_of_one_long_run_bring_a_r
     assert ["no reader reads make build yet" in line for line in told] == [False, False, False, False, True], "the fifth run of make build, whatever its values, is told to make a reader"
 
 
+def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_command_is_named_by_what_it_wraps(app: App):
+    """A reader that puts a line of code on the user's card is named to the agent to tighten, once for its output; a time-limiting wrapper is looked through when a card or the line names what the command does."""
+    from journal.features.shell.support.activity_label import ActivityLabel
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    assert ActivityLabel.build("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q") == "testing" and ActivityLabel.build("timeout 60 npm test") == "testing"
+    hook(app, "SessionStart")
+    folder = app.config.root / "w"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("pytest -q")
+    (folder / "0.out").write_text('1033:  "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"),)) FAILED\n')
+    app.container.get(OutputLog).start("w", "pytest -q", folder, Caller.agent("main", "s1", "claude"))
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    assert app.console().run(["output", "watch", "1", "--reader", "pytest"], AGENT).code == 0
+    told = [json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]) for _ in range(2)]
+    assert "the reader pytest put a line on output 1's card that reads as code or data" in told[0] and "reads as code or data" not in told[1], "the agent is told once to tighten the reader"
+    (folder / "0.out").write_text("nothing a reader picks\n")
+    folder2 = app.config.root / "w2"
+    folder2.mkdir()
+    (folder2 / "parts").write_text("R-\n")
+    (folder2 / "0.part").write_text("pytest -q")
+    (folder2 / "0.out").write_text("nothing a reader picks\n")
+    app.container.get(OutputLog).start("w2", "pytest -q", folder2, Caller.agent("main", "s1", "claude"))
+    outputs.save(outputs.find(2).backgrounded(), Actor.system())
+    assert app.console().run(["output", "watch", "2", "--reader", "pytest"], AGENT).code == 0
+    outputs.save(outputs.find(2).ended_with(0, 1.0), Actor.system())
+    from journal.features.shell.support.output_views import OutputViews
+    from journal.repositories.messages import Messages
+    app.container.get(OutputViews).card(outputs.find(2))
+    with app.container.get(Scope).environment(1):
+        assert app.container.get(Messages).with_key("watch:2")[0].data["detail"] == "finished", "a finished card with nothing picked still says how it ended"
+    told = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
+    assert "output 2's card showed the user only its title" in told, "the agent is told to give the reader a summary and a progress pattern"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

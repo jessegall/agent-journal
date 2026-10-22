@@ -1,6 +1,6 @@
 import re
 
-from journal.support.command_shape import RUNNERS, TOKEN_PATTERN
+from journal.support.command_shape import RUNNERS, TOKEN_PATTERN, CommandShape
 
 VERBS: dict[str, str | dict[str, str]] = {"git": {"commit": "committing", "push": "pushing", "pull": "pulling", "add": "staging", "checkout": "switching branch", "merge": "merging", "rebase": "rebasing", "status": "checking git", "diff": "reading a diff", "log": "reading history"},
          "pytest": "testing", "npm": {"test": "testing", "run": "running a script", "install": "installing", "ci": "installing"}, "pip": "installing", "pip3": "installing", "make": "building",
@@ -12,7 +12,7 @@ class ActivityLabel:
 
     @classmethod
     def build(cls, part: str) -> str:
-        text = [w for w in TOKEN_PATTERN.findall(part.split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
+        text = [w for w in TOKEN_PATTERN.findall(CommandShape.inner(part).split("<<", 1)[0]) if not w.startswith("-") and "=" not in w]
         text = text[1:] if text and text[0] in RUNNERS and len(text) > 1 else text
         if not text:
             return "running"
