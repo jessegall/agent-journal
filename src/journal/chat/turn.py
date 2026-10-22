@@ -13,5 +13,5 @@ class Turn:
 
     def is_finished(self, agent: Agent) -> bool:
         with self.scope.environment(agent.environment_id):
-            moves = [e for e in self.entries.kind_entries_scoped(200) if e.kind in MOVES and e.actor and e.actor.id == agent.session]
+            moves = self.entries.session_moves(MOVES, agent.session)
         return not moves or moves[0].kind in ("Stop", "SessionStarted")

@@ -2,7 +2,6 @@ from journal.features.tasks.support.tasks_data import TasksData
 from journal.models.agent import Agent
 from journal.models.open_task import OpenTask
 from journal.models.task import Task
-from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
 from journal.repositories.entries import Entries
 from journal.repositories.plans import Plans
@@ -22,7 +21,7 @@ class TasksDataReader:
 
     def read(self, agent: Agent) -> TasksData:
         current_task = self.tasks.current(agent)
-        suspended_tasks = [task for task in self.tasks.with_state(TaskState.SUSPENDED) if PlanState.SUSPENDED not in self.plans.plan_states(task)]
+        suspended_tasks = self.tasks.suspended_tasks()
         blocked_without_wait = self.tasks.blocked_without_wait()
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
         commands = [command for e in self.entries.tool_starts(agent.session, HISTORY_TOOL_STARTS) if (command := e.recorded_call().command)]

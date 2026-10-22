@@ -21,6 +21,12 @@ class Workers(ScopedRepository[Worker]):
         super().__init__(connection, bus, scope)
         self.links, self.rows, self.tasks = links, rows, tasks
 
+    def running_workers(self) -> list[Worker]:
+        return [worker for worker in self.scoped() if worker.is_running()]
+
+    def peers(self, sender: Worker) -> list[Worker]:
+        return [worker for worker in self.scoped() if worker.dispatcher == sender.dispatcher and worker.id != sender.id and (worker.is_running() or worker.is_idle())]
+
     def active(self) -> list[Worker]:
         return self.matching(state=WorkerState.DISPATCHED)
 

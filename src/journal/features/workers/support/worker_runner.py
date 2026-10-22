@@ -158,7 +158,7 @@ class WorkerRunner:
         self.reports.file(current, f"{outcome}\n\n{branch}" if branch else outcome, actor)
 
     def session_ended(self, worker: Worker) -> None:
-        unended = [agent for agent in self.agents.global_matching(session=worker.session) if worker.session and agent.state != "ended"]
+        unended = self.agents.active_session_agents(worker.session)
         for agent in unended:
             self.agents.save(agent.retired(time.time()), Actor.system())
 

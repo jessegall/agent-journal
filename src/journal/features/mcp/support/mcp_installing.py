@@ -72,7 +72,7 @@ class McpInstalling:
         return False
 
     def running(self) -> list[Agent]:
-        newest = {agent.environment_id: agent for agent in sorted(self.agents.main_agents(), key=lambda item: item.update_time) if agent.state != "ended"}
+        newest = {agent.environment_id: agent for agent in sorted(self.agents.active_main_agents(), key=lambda item: item.update_time)}
         return [agent for environment_id, agent in newest.items() if self.supervisor.runs(environment_id)]
 
     def applied(self) -> None:

@@ -46,7 +46,7 @@ class PhoneConnector:
 
     def pair(self, value: str, device: str, time: datetime) -> PairedPhone:
         hashes = {self.hashed(value), self.hashed(self.typed(value))}
-        rows = next((code for code in self.codes.open(time) if hashes & {code.code, code.short}), None)
+        rows = next(iter(self.codes.hash_matches(hashes, time)), None)
         if rows is None:
             self.missed(time)
             raise Rejection("that code pairs no phone: ask for a new one on the computer")

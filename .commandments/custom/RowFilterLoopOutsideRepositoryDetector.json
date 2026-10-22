@@ -1,0 +1,137 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:For",
+        "where": [
+            {
+                "of": "child:iter",
+                "all": [
+                    {
+                        "of": "child:func",
+                        "all": [
+                            {
+                                "of": "child:value",
+                                "all": [
+                                    {
+                                        "nameIn": [
+                                            "agents",
+                                            "aliases",
+                                            "checks",
+                                            "codes",
+                                            "collections",
+                                            "command_outputs",
+                                            "dashboard_rows",
+                                            "doc_revisions",
+                                            "docs",
+                                            "dumps",
+                                            "edits",
+                                            "entries",
+                                            "environments",
+                                            "facts",
+                                            "journal_versions",
+                                            "links",
+                                            "logs",
+                                            "mcp_servers",
+                                            "messages",
+                                            "notices",
+                                            "outputs",
+                                            "phone_codes",
+                                            "phones",
+                                            "plan_reviews",
+                                            "plans",
+                                            "plugins",
+                                            "proofs",
+                                            "questions",
+                                            "reactions",
+                                            "reminders",
+                                            "reports",
+                                            "reviews",
+                                            "revisions",
+                                            "rows",
+                                            "rules",
+                                            "secrets",
+                                            "sequences",
+                                            "servers",
+                                            "settings",
+                                            "shares",
+                                            "statistics",
+                                            "subagents",
+                                            "suggestions",
+                                            "task_logs",
+                                            "tasks",
+                                            "templates",
+                                            "timings",
+                                            "todos",
+                                            "triggers",
+                                            "users",
+                                            "versions",
+                                            "worker_todos",
+                                            "workers"
+                                        ]
+                                    },
+                                    {
+                                        "of": "child:value",
+                                        "is": "self-reference"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "count": {
+                    "child": {
+                        "lines": {
+                            "atLeast": 1
+                        }
+                    },
+                    "field": "body",
+                    "atMost": 1
+                }
+            },
+            {
+                "count": {
+                    "child": {
+                        "all": [
+                            {
+                                "kind": "If"
+                            },
+                            {
+                                "count": {
+                                    "child": {
+                                        "lines": {
+                                            "atLeast": 1
+                                        }
+                                    },
+                                    "field": "orelse",
+                                    "atMost": 0
+                                }
+                            }
+                        ]
+                    },
+                    "field": "body",
+                    "atLeast": 1
+                }
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/repositories/**"
+            },
+            {
+                "file": "src/journal/db/**"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "row-filter-loop-outside-repository",
+        "description": "A loop over the rows a repository returned keeps only some of them with an if: the choice of which rows is made by the caller instead of the repository.",
+        "rule": "Ask the repository for exactly the rows wanted with a method named for them, such as Tasks.open_tasks() or Workers.running_workers(), composed with Query, and call that everywhere the choice is needed.",
+        "skill": "rows-through-their-repository"
+    }
+}

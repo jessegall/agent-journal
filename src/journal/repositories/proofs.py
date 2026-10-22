@@ -20,3 +20,9 @@ class Proofs(ScopedRepository[Proof], LinkedRows):
 
     def task_proofs(self, task: Task) -> list[Proof]:
         return sorted(self.children(task), key=lambda proof: proof.point)
+
+    def changed_point_proofs(self, task: Task, points: tuple[int, ...]) -> list[Proof]:
+        return [proof for proof in self.children(task) if proof.point in points]
+
+    def point_proofs(self, task: Task, point: int) -> list[Proof]:
+        return sorted((proof for proof in self.children(task) if proof.point == point), key=lambda proof: proof.row_id)

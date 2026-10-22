@@ -92,7 +92,7 @@ class WorkerCommand(Command):
         if self.profiles.kind(args.profile) != ProfileKind.WORKER:
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
         from journal.features.workers.feature import Workers as Feature
-        output = [w for w in self.workers.scoped() if w.is_running()]
+        output = self.workers.running_workers()
         maximum = self.settings.integer(Feature.WORKER_LIMIT)
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
@@ -220,7 +220,7 @@ class WorkerCommand(Command):
         if caller.worker_number is None:
             raise Rejection("only a worker has peers: `journal worker list` lists the workers you dispatched")
         sender = self.workers.find(caller.worker_number)
-        peers = [w for w in self.workers.scoped() if w.dispatcher == sender.dispatcher and w.id != sender.id and (w.is_running() or w.is_idle())]
+        peers = self.workers.peers(sender)
         for worker in peers:
             print(f"{worker.id:>4}  {'out' if worker.is_running() else 'idle':<5} {worker.name}: {worker.brief}")
         print(f"`journal worker notify <n> \"<text>\"` tells one that is out, `journal worker send <n> \"<job>\"` gives one that is idle a job" if peers else "no other worker of the agent that dispatched you is out or idle")

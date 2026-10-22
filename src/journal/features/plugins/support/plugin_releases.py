@@ -17,7 +17,7 @@ class PluginReleases:
         self.plugins, self.installing, self.source, self.cards, self.environments = plugins, installing, source, cards, environments
 
     def upgraded_all(self, version: str, actor: Actor) -> None:
-        for plugin in [plugin for plugin in self.plugins.all() if not plugin.linked and plugin.release]:
+        for plugin in self.plugins.release_plugins():
             self.upgraded(plugin, version, actor)
 
     def upgraded(self, plugin: Plugin, version: str, actor: Actor) -> None:

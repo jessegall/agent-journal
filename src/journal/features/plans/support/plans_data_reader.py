@@ -2,7 +2,6 @@ from journal.features.plans.support.plans_data import PlansData
 from journal.features.plans.support.started_plan import StartedPlan
 from journal.models.agent import Agent
 from journal.models.plan import Plan
-from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
 from journal.repositories.plans import Plans
 from journal.features.tasks.support.task_briefing import TaskBriefing
@@ -17,7 +16,7 @@ class PlansDataReader:
         self.plans, self.briefing = plans, briefing
 
     def read(self, agent: Agent) -> PlansData:
-        started = next((p for p in self.plans.scoped() if p.state == PlanState.STARTED), None)
+        started = next(iter(self.plans.running_plans()), None)
         return PlansData(approved=tuple(p.row_id for p in self.plans.approved()), started=self.started_plan(started) if started else None)
 
     def started_plan(self, plan: Plan) -> StartedPlan:

@@ -73,7 +73,7 @@ class SecretCommand(Command):
         return 0
 
     def request(self, args: Namespace, caller: Caller) -> int:
-        reaching = [s.name for s in self.servers.all() if args.title.lower() in (s.name.lower(), s.title.lower())]
+        reaching = [server.name for server in self.servers.reaching(args.title)]
         if reaching:
             raise Rejection(f"{args.title} is reached through the MCP server {', '.join(reaching)} already: use its tools, and if they cannot do what you need, say what is missing in the chat")
         secret = self.secrets.save(self.file(args.title, "", SecretKind.lookup(args.kind), caller).with_(url=args.url, questioned_at=datetime.now(timezone.utc)), caller.actor)
@@ -163,7 +163,7 @@ class SecretCommand(Command):
         return 0 if finished.session_at else 1
 
     def lookup(self, value: str) -> Secret:
-        rows = [s for s in self.secrets.active() if str(s.id) == value or s.title.lower() == value.lower()]
+        rows = self.secrets.title_matches(value)
         if not rows:
             raise Rejection(f"no secret is numbered or titled {value!r}: `journal secret list` names them")
         return rows[0]

@@ -21,6 +21,7 @@ class TriggerFire:
                 self.started(trigger, session, environment_id)
 
     def started(self, trigger: Trigger, session: str, environment_id: int) -> None:
-        for sequence in self.sequences.all():
-            if sequence.title == trigger.text and self.runs.start(sequence, session, environment_id):
+        for sequence in self.sequences.titled(trigger.text):
+            line = self.runs.start(sequence, session, environment_id)
+            if line:
                 self.runs.changed(session, environment_id, lambda run: replace(run, announced_at=""))

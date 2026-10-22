@@ -2,8 +2,6 @@ import time
 
 from journal.chat.cards import Cards
 from journal.engine.job import Job
-from journal.engine.states.ended import Ended
-from journal.engine.states_catalogue import StatesCatalogue
 from journal.models.agent import Agent
 from journal.providers.support.menu import ESCAPE, Menu
 from journal.repositories.agents import Agents
@@ -23,18 +21,17 @@ class MenuWatcher(Job):
 
     interval_seconds = 0.5
 
-    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, states: StatesCatalogue, answers: MenuAnswers, launches: LaunchFiles) -> None:
-        self.agents, self.supervisor, self.cards, self.scope, self.states = agents, supervisor, cards, scope, states
+    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, answers: MenuAnswers, launches: LaunchFiles) -> None:
+        self.agents, self.supervisor, self.cards, self.scope = agents, supervisor, cards, scope
         self.answers, self.launches = answers, launches
         self._menu_signatures: dict[int, tuple] = {}
         self._menu_changed_at: dict[int, float] = {}
         self._answered: dict[int, tuple] = {}
 
     def tick(self, time: float) -> None:
-        for agent in self.agents.main_agents():
-            if not isinstance(self.states.restored(agent.state, agent.data), Ended):
-                with self.scope.environment(agent.environment_id):
-                    self.check(agent)
+        for agent in self.agents.active_main_agents():
+            with self.scope.environment(agent.environment_id):
+                self.check(agent)
 
     def check(self, agent: Agent) -> str:
         environment, moment = agent.environment_id, time.time()

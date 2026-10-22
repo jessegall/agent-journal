@@ -52,7 +52,7 @@ class LoginWindow:
 
     def supplied(self) -> None:
         merged = self.logins.merge()
-        browser = next((s for s in self.servers.all() if s.name == BROWSER), None)
+        browser = next(iter(self.servers.matching(name=BROWSER)), None)
         if browser is None:
             return
         args = list(browser.args)

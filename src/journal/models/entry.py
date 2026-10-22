@@ -16,6 +16,9 @@ class Entry(Scoped):
     actor: Actor | None = None
     data: dict = field(default_factory=dict)
 
+    def is_session(self, session: str) -> bool:
+        return bool(self.actor) and self.actor.id == session
+
     def recorded_call(self) -> RecordedCall:
         return RecordedCall.parsed(self.data.get("call", {}))
 

@@ -65,9 +65,8 @@ class ManifestReader:
 
     def skills_free(self, folder: Path, manifest: PluginManifest) -> None:
         claimed = {skill.folder: "the journal" for skill in self.registry.skills()}
-        for plugin in self.plugins.all():
-            if plugin.name != manifest.name:
-                claimed |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.folder(plugin), plugin.manifest)}
+        for plugin in self.plugins.other_plugins(manifest.name):
+            claimed |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.folder(plugin), plugin.manifest)}
         for name in self.skill_names(folder, manifest):
             if name in claimed:
                 raise Rejection(f"{manifest.name}'s skill {name} has the name of a skill of {claimed[name]}")

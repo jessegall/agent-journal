@@ -37,7 +37,7 @@ class DumpItemCard(Listener[Created]):
 
     def refresh(self, message: Message) -> None:
         reply_refs = {ref for reply in self.messages.replies(message) for ref in Mentions.found(reply.text)}
-        receipt_refs = [ref for ref in self.links.targets(message, Messages.SUBJECT_LINK) if ref not in reply_refs]
+        receipt_refs = self.links.targets_except(message, Messages.SUBJECT_LINK, reply_refs)
         key = f"filed:{message.id}"
         if not receipt_refs:
             for card in self.messages.keyed(key, Actor.system()):

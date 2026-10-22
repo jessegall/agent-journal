@@ -77,7 +77,7 @@ class EnvironmentCommand(Command):
         peers = self.agents.recent_peers(caller.session, start)
         holder = self.taking.holder(caller)
         current = None if holder is None else self.tasks.holder_task(holder)
-        peer_tasks = [t for t in self.tasks.with_state(TaskState.STARTED) if current is None or t.id != current.id]
+        peer_tasks = self.tasks.other_started_tasks(current)
         lines = [
             f"taken over from another agent, last seen {peers[-1].update_time.astimezone().strftime('%H:%M')}" if peers else "",
             f"task in hand: {current.id} {current.title}" if current else "no task in hand",
@@ -97,8 +97,7 @@ class EnvironmentCommand(Command):
         return [line for line in lines if line]
 
     def background(self) -> list[str]:
-        ended = {e.data["chain"] for e in self.entries.kind_entries(ENDED, 50)}
-        moved = [e for e in reversed(self.entries.kind_entries(MOVED, 50)) if e.data["chain"] not in ended]
+        moved = self.entries.open_moves(MOVED, ENDED)
         return [f"{e.data['part']} (output in {e.data['file']})" for e in moved if Path(e.data["file"]).is_dir() and not (Path(e.data["file"]) / "done").is_file()]
 
     @staticmethod

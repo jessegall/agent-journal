@@ -23,9 +23,9 @@ class AdvancePlan(Listener[Updated]):
         if not isinstance(task, Task) or not task.is_newly_closed(event.previous_row(Task)):
             return
         time = datetime.now(timezone.utc)
-        for plan in [p for p in self.plans.containing(task) if self.plans.finished(p)]:
+        for plan in self.plans.finished_plans(task):
             self.plans.save(plan.finished(time.timestamp()), event.actor)
-        for plan in [p for p in self.plans.containing(task) if p.state == PlanState.STARTED]:
+        for plan in self.plans.started_plans(task):
             following, holder = self.plans.next_task(plan), self.next_holder(task)
             if following is not None and self.is_advancing(plan, holder):
                 self.tasks.holder_started(following.plan_started(time, plan.row_id), holder, event.actor)

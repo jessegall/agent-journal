@@ -37,7 +37,7 @@ class PluginRelay:
         self.text, self.scope = text, scope
 
     def listeners(self, event: Event, environment_id: int) -> list[Plugin]:
-        hearers = [p for p in self.plugins.enabled() if Protocol.published_name(event) in p.manifest.events and getattr(event, "actor", None) != Actor.plugin(p.name)]
+        hearers = self.plugins.hearers(Protocol.published_name(event), getattr(event, "actor", None))
         if hearers and self.steps.is_nested_deep():
             self.logged(environment_id, CUT, Actor.system(), {"event": Protocol.published_name(event), "by": getattr(event, "actor", Actor.system()).stamp, "plugins": [p.name for p in hearers]})
             return []
@@ -85,7 +85,7 @@ class PluginRelay:
         return agent.session if agent else ""
 
     def waiting_lines(self, session: str) -> list[str]:
-        waiting = [e for e in self.entries.kind_entries(WAITING, 200) if e.data.get("session") == session and not e.data.get("delivered")]
+        waiting = self.entries.undelivered_lines(WAITING, session)
         for entry in waiting:
             self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())
         return [e.data["line"] for e in reversed(waiting)]

@@ -26,6 +26,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def backgrounded(self, session: str | None) -> list[CommandOutput]:
         return self.selected(self.query().filter(session=session, moved=True).order("id"))
 
+    def unended_outputs(self, numbers: list[int]) -> list[CommandOutput]:
+        return [output for output in (self.find(number) for number in numbers) if not output.ended]
+
     def moved_unended(self) -> list[CommandOutput]:
         return self.selected_globally(self.query().filter(moved=True, ended=False).order("id"))
 

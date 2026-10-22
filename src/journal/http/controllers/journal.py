@@ -81,7 +81,7 @@ class JournalController:
         agent = self.agents.current()
         if not agent:
             return Response.json([])
-        recent = [e for e in reversed(self.entries.kind_entries_scoped(60)) if e.actor and e.actor.id == agent.session and BarRow.is_shown(e)]
+        recent = BarRow.shown(self.entries.session_scoped_entries(agent.session, 60))
         queue, open_ = [], {}
         for row in (BarRow.build(entry).relative(str(self.config.root)) for entry in recent):
             if not row.ended:

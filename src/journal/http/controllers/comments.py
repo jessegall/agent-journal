@@ -24,7 +24,7 @@ class CommentController(Controller[Message]):
 
     def rows(self) -> list[Message]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)
-        return [m for m in self.repository.numbered(tuple(enabled)) if m.author == Author.USER or m.reply_target] if enabled else []
+        return self.repository.comments(tuple(enabled)) if enabled else []
 
     def shown_page(self, rows: list[Message]) -> list[dict]:
         enabled = self.repository.linked(Messages.COMMENT_LINK)

@@ -18,5 +18,5 @@ class SubagentMessageRecord(AgentListener[ToolStarting]):
         operation = event.call.operation
         if event.subagent or not isinstance(operation, AgentMessage):
             return
-        for subagent in [s for s in self.subagents.session_subagents(event.session) if s.session == operation.receiver]:
+        for subagent in self.subagents.session_subagent(event.session, operation.receiver):
             self.chat.instruction(subagent, operation.text, Actor.agent(event.session))

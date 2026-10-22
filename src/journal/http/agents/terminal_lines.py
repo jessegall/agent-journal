@@ -23,7 +23,7 @@ class TerminalLines:
         earliest = datetime.fromtimestamp(max(cursor - CURSOR_MARGIN_SECONDS, 0.0), timezone.utc)
         ended_ids = {e.data.get("tool_use_id") for e in self.entries.newer_tool_ends(agent.session, earliest, ENTRIES_READ)}
         shell_calls = [e for e in reversed(self.entries.newer_shell_starts(agent.session, earliest, ENTRIES_READ)) if e.recorded_call().command and e.data.get("tool_use_id") in ended_ids]
-        part_ends = sorted((e for e in self.entries.newer_kind_entries(PART_END, earliest, ENTRIES_READ) if e.actor and e.actor.id == agent.session), key=lambda e: e.data["time"])
+        part_ends = sorted(self.entries.newer_session_entries(PART_END, agent.session, earliest, ENTRIES_READ), key=lambda e: e.data["time"])
         all_lines = [line for call in shell_calls for line in self.call_lines(agent.row_id, call, part_ends)]
         return [line for line in all_lines if line["time"] > cursor][-LINES_SHOWN:]
 

@@ -2,6 +2,7 @@ import json
 import os
 import socket
 import time
+from journal.models.environment import Environment
 from pathlib import Path
 
 from journal.config import Config
@@ -176,6 +177,12 @@ class SupervisorLink:
     def hosting(self) -> int | None:
         hosts = self.environments.matching(name=os.environ.get("JOURNAL_ENV", ""))
         return hosts[0].id if hosts and self.runs(hosts[0].row_id) else None
+
+    def outdated(self, environments: list[Environment]) -> list[Environment]:
+        return [environment for environment in environments if self.is_outdated(environment.row_id)]
+
+    def running(self, environments: list[Environment]) -> list[Environment]:
+        return [environment for environment in environments if self.runs(environment.row_id)]
 
     def runs(self, environment_id: int) -> bool:
         announced = self.announced(environment_id)

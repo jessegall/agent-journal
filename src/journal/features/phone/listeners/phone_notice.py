@@ -19,7 +19,7 @@ class PhoneNotice(Listener[ClockTicked]):
 
     def handle(self, event: ClockTicked) -> None:
         time = datetime.now(timezone.utc)
-        for phone in [p for p in self.phones.active(time) if p.subscription]:
+        for phone in self.phones.subscribed_phones(time):
             obligations = self.waits.refs(phone)
             if phone.is_push_due(obligations, time):
                 self.web_push(phone, obligations, time)

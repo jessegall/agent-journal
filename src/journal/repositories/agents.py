@@ -16,8 +16,32 @@ class Agents(ScopedRepository[Agent]):
     def all_agents(self) -> list[Agent]:
         return self.global_matching()
 
+    def numbered(self, number: str) -> list[Agent]:
+        return self.global_matching(id=int(number)) if number.isdigit() else []
+
     def main_agents(self) -> list[Agent]:
         return self.global_matching(role=AgentRole.MAIN)
+
+    def sequence_agents(self, environment_id: int) -> list[Agent]:
+        return [agent for agent in self.global_matching(environment_id=environment_id) if agent.sequence_runs]
+
+    def ended_sequence_agents(self, session: str) -> list[Agent]:
+        return [agent for agent in self.scoped() if agent.session != session and agent.state == "ended" and agent.sequence_runs]
+
+    def active_session_agents(self, session: str) -> list[Agent]:
+        return [agent for agent in self.global_matching(session=session) if agent.state != "ended"] if session else []
+
+    def active_main_agents(self) -> list[Agent]:
+        return [agent for agent in self.main_agents() if agent.state != "ended"]
+
+    def program_main_agents(self) -> list[Agent]:
+        return [agent for agent in self.active_main_agents() if agent.has_program()]
+
+    def active_agents(self) -> list[Agent]:
+        return [agent for agent in self.scoped() if agent.state != "ended"]
+
+    def conversation_agents(self, count: int) -> list[Agent]:
+        return [agent for agent in self.scoped() if agent.has_program() and agent.role == AgentRole.MAIN][-count:]
 
     def main_scoped(self, environment_id: int) -> list[Agent]:
         return [item for item in self.global_matching(environment_id=environment_id, role=AgentRole.MAIN) if item.state != "ended"]

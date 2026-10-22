@@ -26,6 +26,10 @@ class BarRow:
     removed: int = 0
     files: tuple[tuple[str, int, int], ...] = ()
 
+    @classmethod
+    def shown(cls, entries: list[Entry]) -> list[Entry]:
+        return [entry for entry in entries if cls.is_shown(entry)]
+
     @staticmethod
     def is_shown(entry: Entry) -> bool:
         return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and not entry.recorded_call().command)

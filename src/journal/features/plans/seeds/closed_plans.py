@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
-from journal.models.plan import Plan
 from journal.features.environment_seed import EnvironmentSeed
 from journal.support.actor import Actor
-from journal.models.plan_state import PlanState
 from journal.repositories.environments import Environments
 from journal.repositories.plans import Plans
 from journal.repositories.scope import Scope
@@ -16,9 +14,5 @@ class ClosedPlans(EnvironmentSeed):
         self.plans = plans
 
     def run_scoped(self) -> None:
-        for plan in self.plans.all():
-            if self.is_complete(plan):
-                self.plans.save(plan.finished(datetime.now(timezone.utc).timestamp()), Actor.system())
-
-    def is_complete(self, plan: Plan) -> bool:
-        return plan.state == PlanState.STARTED and self.plans.finished(plan)
+        for plan in self.plans.complete_plans():
+            self.plans.save(plan.finished(datetime.now(timezone.utc).timestamp()), Actor.system())

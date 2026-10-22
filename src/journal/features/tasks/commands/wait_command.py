@@ -54,7 +54,7 @@ class WaitCommand(Command):
 
     def running(self, numbers: list[int]) -> list[CommandOutput]:
         outputs = [self.awaitables.outputs.find(n) for n in numbers]
-        active_outputs = [output for output in outputs if not output.ended]
+        active_outputs = self.awaitables.outputs.unended_outputs(numbers)
         if outputs and not active_outputs:
             endings = ", ".join(f"output {output.id} already {output.ending()}" for output in outputs)
             raise Rejection(f"{endings}: read it with journal output read <n> --summary")

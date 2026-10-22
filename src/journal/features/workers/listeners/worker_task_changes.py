@@ -3,7 +3,6 @@ from journal.events.rows.row_event import RowEvent
 from journal.events.rows.task_briefed import TaskBriefed
 from journal.events.rows.task_closed import TaskClosed
 from journal.models.proof_state import ProofState
-from journal.models.support.ref import Ref
 from journal.repositories.proofs import Proofs
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
@@ -32,6 +31,5 @@ class WorkerTaskChanges(Listener[RowEvent]):
         self.workers.save(self.workers.find(holder.id).released(event.time), Actor.system())
 
     def staled(self, event: TaskBriefed) -> None:
-        for proof in self.proofs.task_proofs(self.tasks.find(event.task_id)):
-            if proof.point in event.points:
-                self.proofs.save(proof.with_(state=ProofState.STALE), Actor.system())
+        for proof in self.proofs.changed_point_proofs(self.tasks.find(event.task_id), event.points):
+            self.proofs.save(proof.with_(state=ProofState.STALE), Actor.system())

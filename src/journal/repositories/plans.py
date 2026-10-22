@@ -104,6 +104,25 @@ class Plans(ScopedRepository[Plan]):
         task = self.next_task(started[0])
         return [task] if task else []
 
+    def stalled_plans(self, task: Task) -> list[Plan]:
+        return [plan for plan in self.started_plans(task) if self.is_stalled(plan)]
+
+    def complete_plans(self) -> list[Plan]:
+        return [plan for plan in self.all() if plan.state == PlanState.STARTED and self.finished(plan)]
+
+    def running_plans(self) -> list[Plan]:
+        return self.matching(state=PlanState.STARTED)
+
+    def finished_plans(self, task: Task) -> list[Plan]:
+        return [plan for plan in self.containing(task) if self.finished(plan)]
+
+    def loose_tasks(self, plan: Plan) -> list[Task]:
+        phased = {task.id for phase in self.plan_phases(plan) for task in self.phase_tasks(phase)}
+        return [task for task in self.plan_tasks(plan) if task.id not in phased]
+
+    def started_plans(self, task: Task) -> list[Plan]:
+        return [plan for plan in self.containing(task) if plan.state == PlanState.STARTED]
+
     def unapproved(self, task: Task) -> list[Plan]:
         return [plan for ref in self.links.targets(task, PLAN_LINK) if (plan := self.find(ref.id)).state.is_unapproved()]
 

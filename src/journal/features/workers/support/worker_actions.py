@@ -83,7 +83,7 @@ class WorkerActions:
         return task
 
     def open_proof(self, task: Task, point: int) -> Proof:
-        proofs = sorted((proof for proof in self.proofs.task_proofs(task) if proof.point == point), key=lambda proof: proof.row_id)
+        proofs = self.proofs.point_proofs(task, point)
         if not proofs or proofs[-1].state in CHECKED_STATES:
             raise Rejection(f"point {point} of task {task.id} has no proof to check: only a point proved, or proved again, is checked")
         return proofs[-1]

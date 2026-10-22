@@ -89,7 +89,7 @@ class RunTracker:
     def finish_matching(self, environment_id: int, missing, reason: str) -> list[tuple[Agent, str]]:
         from journal.features.sequences.feature import Sequences
         notified = []
-        for agent in [item for item in self.agents.global_matching(environment_id=environment_id) if item.sequence_runs]:
+        for agent in self.agents.sequence_agents(environment_id):
             runs = self.runs(agent)
             retained = [run for run in runs if not missing(run)]
             if len(retained) < len(runs):
@@ -98,7 +98,7 @@ class RunTracker:
         return notified
 
     def environments_running(self, sequence_id: int) -> set[int]:
-        return {item.environment_id for item in self.agents.main_agents() if any(run.sequence_id == sequence_id for run in self.runs(item))}
+        return {agent.environment_id for agent in self.agents.main_agents() for run in self.runs(agent) if run.sequence_id == sequence_id}
 
     def follow(self, session: str, environment_id: int) -> SequenceRun:
         return self.changed(session, environment_id, lambda run: run.adopted(self.timestamp()).announced(self.timestamp()).suspended(""))
@@ -118,7 +118,7 @@ class RunTracker:
 
     def transfer(self, session: str, environment_id: int) -> None:
         agent = self.sessions.agent(session, environment_id)
-        ended = [item for item in self.agents.scoped() if item.session != session and item.state == "ended" and item.sequence_runs]
+        ended = self.agents.ended_sequence_agents(session)
         if agent.sequence_runs or not ended:
             return
         self.stored(agent, self.runs(ended[-1]))

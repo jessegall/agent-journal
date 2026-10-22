@@ -380,3 +380,28 @@ def test_a_line_said_before_lines_carried_the_tool_use_gains_it_and_its_moment(t
     db = sqlite3.connect(second.config.database)
     data = json.loads(db.execute("SELECT data FROM entries WHERE kind = 'nudge' AND json_extract(data, '$.line') = 'output 1 finished'").fetchone()[0])
     assert data["tool_use"] == 0 and data["time"] > 0, data
+
+
+def test_the_tasks_repository_answers_which_tasks_are_open_blocked_parked_and_unclosed(connection, bus, scope):
+    from journal.models.plan import Plan
+    from journal.models.plan_state import PlanState
+    from journal.repositories.scoped_repository import ScopedRepository
+    from journal.repositories.tasks import PLAN_LINK
+
+    class PlanRows(ScopedRepository[Plan]):
+        model = Plan
+
+    tasks, links = tasks_of(connection, bus, scope), Links(connection, bus)
+    with scope.environment(1):
+        free = tasks.save(Task(environment_id=1, title="free"), actor=USER)
+        drafted = tasks.save(Task(environment_id=1, title="in a draft plan"), actor=USER)
+        blocked = tasks.save(Task(environment_id=1, title="blocked", state=TaskState.BLOCKED), actor=USER)
+        parked = tasks.save(Task(environment_id=1, title="parked", state=TaskState.SUSPENDED), actor=USER)
+        done = tasks.save(Task(environment_id=1, title="done", state=TaskState.FINISHED), actor=USER)
+        draft = PlanRows(connection, bus, scope).save(Plan(environment_id=1, title="p", state=PlanState.DRAFT), USER)
+        links.save(Link(source=Ref.build(drafted), target=Ref.build(draft), kind=PLAN_LINK), actor=USER)
+        assert [task.id for task in tasks.open_tasks()] == [free.id], "a task of an unapproved plan is no open work"
+        assert [task.id for task in tasks.blocked_tasks()] == [blocked.id]
+        assert [task.id for task in tasks.suspended_tasks()] == [parked.id]
+        assert done.id not in [task.id for task in tasks.unclosed_tasks()] and free.id in [task.id for task in tasks.unclosed_tasks()]
+        assert tasks.unfinished_ids([free.id, done.id]) == [free.id]

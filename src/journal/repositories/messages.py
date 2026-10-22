@@ -109,6 +109,12 @@ class Messages(ScopedRepository[Message]):
     def recent(self, last: int) -> list[Message]:
         return self.window(self.main_chat(), last)
 
+    def voice_matches(self, text: str, last: int) -> list[Message]:
+        return [message for message in self.recent_voice(last) if message.text == text]
+
+    def comments(self, ids: tuple[int, ...]) -> list[Message]:
+        return [message for message in self.numbered(ids) if message.author == Author.USER or message.reply_target]
+
     def recent_voice(self, last: int) -> list[Message]:
         return list(reversed(self.selected(self.main_voice().order_descending("id").limit(last))))
 

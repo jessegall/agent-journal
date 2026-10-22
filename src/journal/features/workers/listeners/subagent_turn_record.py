@@ -13,5 +13,5 @@ class SubagentTurnRecord(AgentListener[AgentEvent]):
         self.chat, self.subagents = chat, subagents
 
     def handle(self, event: AgentEvent) -> None:
-        for subagent in [s for s in self.subagents.session_subagents(event.session) if event.subagent and s.session == event.subagent]:
+        for subagent in self.subagents.session_subagent(event.session, event.subagent):
             self.chat.read(subagent)

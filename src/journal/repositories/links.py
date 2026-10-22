@@ -27,6 +27,15 @@ class Links(Repository[Link]):
             return []
         return self.selected(self.query().filter_listed(column, [Ref.build(model) for model in models]).filter(kind=kind).order("id"))
 
+    def targets_except(self, model: Model, kind: str, refs: set[Ref]) -> list[Ref]:
+        return [ref for ref in self.targets(model, kind) if ref not in refs]
+
+    def typed_sources(self, model: Model, kind: str, table: str) -> list[Ref]:
+        return [ref for ref in self.sources(model, kind) if ref.type == table]
+
+    def source_links(self, model: Model, kind: str) -> list[Link]:
+        return self.selected(self.query().filter(source=Ref.build(model), kind=kind).order("id"))
+
     def sources(self, model: Model, kind: str) -> list[Ref]:
         return [link.source for link in self.selected(self.query().filter(target=Ref.build(model), kind=kind).order("id"))]
 

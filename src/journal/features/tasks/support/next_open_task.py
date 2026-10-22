@@ -1,6 +1,5 @@
 from journal.models.open_task import OpenTask
 from journal.models.plan import Plan
-from journal.models.plan_state import PlanState
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.plans import Plans
@@ -14,7 +13,7 @@ class NextOpenTask:
         self.tasks, self.plans = tasks, plans
 
     def following(self, closed: Task) -> OpenTask | None:
-        started_plans = [plan for plan in self.plans.containing(closed) if plan.state == PlanState.STARTED]
+        started_plans = self.plans.started_plans(closed)
         if started_plans:
             return self.plan_next(started_plans[0], closed)
         holder = self.tasks.holder(closed)
@@ -24,7 +23,7 @@ class NextOpenTask:
         return OpenTask(free[0].row_id, free[0].title, free[0].brief, 0) if free else None
 
     def is_planned(self, closed: Task) -> bool:
-        return any(plan.state == PlanState.STARTED for plan in self.plans.containing(closed))
+        return bool(self.plans.started_plans(closed))
 
     def plan_next(self, plan: Plan, closed: Task) -> OpenTask | None:
         current = self.plans.started_task(plan)

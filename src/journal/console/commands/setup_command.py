@@ -58,11 +58,10 @@ class SetupCommand(Command):
         return 0
 
     def restarted(self) -> list[str]:
-        names = [e.name for e in self.environments.all() if self.supervisor.runs(e.row_id)]
-        for environment in self.environments.all():
-            if environment.name in names:
-                self.supervisor.restart_journal(environment.row_id)
-        return names
+        journals = self.supervisor.running(self.environments.all())
+        for environment in journals:
+            self.supervisor.restart_journal(environment.row_id)
+        return [environment.name for environment in journals]
 
     def hooks(self, args: Namespace, caller: Caller) -> int:
         for provider in self.providers.all():

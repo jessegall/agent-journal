@@ -63,6 +63,25 @@ class Entries(ScopedRepository[Entry]):
     def newer_kind_entries(self, kind: str, earliest: datetime, last: int = 50) -> list[Entry]:
         return self.selected(self.query().filter(kind=kind).filter_greater("created_at", earliest).order_descending("id").limit(last))
 
+    def newer_session_entries(self, kind: str, session: str, earliest: datetime, last: int = 50) -> list[Entry]:
+        return [entry for entry in self.newer_kind_entries(kind, earliest, last) if entry.is_session(session)]
+
+    def open_moves(self, moved: str, ended: str) -> list[Entry]:
+        chains = {entry.data["chain"] for entry in self.kind_entries(ended, 50)}
+        return [entry for entry in reversed(self.kind_entries(moved, 50)) if entry.data["chain"] not in chains]
+
+    def session_scoped_entries(self, session: str, last: int) -> list[Entry]:
+        return [entry for entry in reversed(self.kind_entries_scoped(last)) if entry.is_session(session)]
+
+    def session_kind_entries(self, kind: str, session: str) -> list[Entry]:
+        return [entry for entry in self.kind_entries(kind) if entry.is_session(session)]
+
+    def line_entries(self, session: str, line: str) -> list[Entry]:
+        return self.selected(self.lines(session).filter_json("data->line", line).order("id"))
+
+    def session_moves(self, kinds: tuple[str, ...], session: str, last: int = 200) -> list[Entry]:
+        return [entry for entry in self.kind_entries_scoped(last) if entry.kind in kinds and entry.actor and entry.actor.id == session]
+
     def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
         return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).order_descending("id").limit(last))
 
@@ -91,6 +110,9 @@ class Entries(ScopedRepository[Entry]):
 
     def kind_entries(self, kind: str, last: int = 50) -> list[Entry]:
         return self.selected(self.query().filter(kind=kind).order_descending("id").limit(last))
+
+    def undelivered_lines(self, kind: str, session: str) -> list[Entry]:
+        return [entry for entry in self.selected(self.query().filter(kind=kind).filter_json("data->session", session).order_descending("id").limit(200)) if not entry.data.get("delivered")]
 
     def kind_entries_scoped(self, last: int = 400) -> list[Entry]:
         return self.selected(self.query().order_descending("id").limit(last))

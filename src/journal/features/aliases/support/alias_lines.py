@@ -22,4 +22,4 @@ class AliasLines:
         return self.aliases.index().get(argv[0]) if argv else None
 
     def running(self, part: str) -> Alias | None:
-        return max((alias for alias in self.aliases.rows() if alias.matches(part)), key=lambda alias: len(alias.line), default=None)
+        return self.aliases.longest_alias(part)

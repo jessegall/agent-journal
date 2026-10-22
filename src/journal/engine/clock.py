@@ -1,8 +1,6 @@
 import time as timing
 
 from journal.engine.job import Job
-from journal.engine.states.ended import Ended
-from journal.engine.states_catalogue import StatesCatalogue
 from journal.events.agent.ticked import Ticked
 from journal.events.clock_ticked import ClockTicked
 from journal.events.bus import Bus
@@ -18,17 +16,15 @@ class Clock(Job):
 
     interval_seconds = 5.0
 
-    def __init__(self, agents: Agents, bus: Bus, supervisor: SupervisorLink, scope: Scope, states: StatesCatalogue) -> None:
-        self.agents, self.bus, self.supervisor, self.scope, self.states = agents, bus, supervisor, scope, states
+    def __init__(self, agents: Agents, bus: Bus, supervisor: SupervisorLink, scope: Scope) -> None:
+        self.agents, self.bus, self.supervisor, self.scope = agents, bus, supervisor, scope
 
     def time(self) -> float:
         return timing.time()
 
     def tick(self, time: float) -> None:
         self.bus.dispatch(ClockTicked(time=time))
-        for agent in self.agents.main_agents():
-            if isinstance(self.states.restored(agent.state, agent.data), Ended):
-                continue
+        for agent in self.agents.active_main_agents():
             with self.scope.environment(agent.environment_id):
                 self._tick(agent, time)
 

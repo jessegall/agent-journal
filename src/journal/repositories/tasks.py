@@ -80,17 +80,35 @@ class Tasks(ScopedRepository[Task]):
         matched = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
         return ", ".join(part for part in (*matched, row.waiting_reason()) if part)
 
+    def unclosed_tasks(self) -> list[Task]:
+        return [task for task in self.scoped() if not task.is_closed()]
+
+    def unfinished_ids(self, numbers: list[int]) -> list[int]:
+        return [number for number in numbers if self.matching(id=number, state=TaskState.OPEN) or self.matching(id=number, state=TaskState.STARTED)]
+
+    def ready_waiting_tasks(self, model) -> list[Task]:
+        return [task for task in self.waiting_refs(model) if not self.open_waits(task)]
+
+    def other_started_tasks(self, current: Task | None) -> list[Task]:
+        return [task for task in self.with_state(TaskState.STARTED) if current is None or task.id != current.id]
+
     def open_tasks(self) -> list[Task]:
         return self.actionable(TaskState.OPEN)
 
     def blocked_tasks(self) -> list[Task]:
         return self.actionable(TaskState.BLOCKED)
 
+    def suspended_tasks(self) -> list[Task]:
+        return self.free_tasks(TaskState.SUSPENDED, (PlanState.SUSPENDED.value,))
+
     def actionable(self, state: TaskState) -> list[Task]:
+        return self.free_tasks(state, UNAPPROVED_PLAN_STATES)
+
+    def free_tasks(self, state: TaskState, plan_states: tuple[str, ...]) -> list[Task]:
         tasks = self.with_state(state)
-        plan_refs = {str(Ref(Plan.table(), row["id"])) for row in self.connection.all(*Query.build(Plan).filter_listed("state", list(UNAPPROVED_PLAN_STATES)).select())}
-        unapproved = {link.source.id for link in self.links.model_links("source", tasks, PLAN_LINK) if str(link.target) in plan_refs}
-        return [task for task in tasks if task.row_id not in unapproved]
+        plan_refs = {str(Ref(Plan.table(), row["id"])) for row in self.connection.all(*Query.build(Plan).filter_listed("state", list(plan_states)).select())}
+        plan_task_ids = {link.source.id for link in self.links.model_links("source", tasks, PLAN_LINK) if str(link.target) in plan_refs}
+        return [task for task in tasks if task.row_id not in plan_task_ids]
 
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)

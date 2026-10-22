@@ -13,4 +13,7 @@ class Notices(ScopedRepository[Notice]):
         return self.counted(self.query().filter_null("closed_at"))
 
     def open_scoped(self) -> list[Notice]:
-        return [n for n in self.scoped() if n.closed_at is None]
+        return self.selected(self.query().filter_null("closed_at"))
+
+    def open_titled(self, titles: tuple[str, ...]) -> list[Notice]:
+        return self.selected(self.query().filter_null("closed_at").filter_listed("title", list(titles)))

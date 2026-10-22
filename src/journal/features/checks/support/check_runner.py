@@ -15,7 +15,6 @@ from journal.features.checks.support.finished_run import FinishedRun
 from journal.support.actor import Actor
 from journal.models.check import Check
 from journal.support.check_report import CheckReport
-from journal.engine.states.ended import Ended
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
 from journal.support.card_kind import CardKind
@@ -56,9 +55,8 @@ class CheckRunner:
         if check_row.wait_target:
             return check_row
         tail = "\n".join(ended.output.strip().splitlines()[-TAIL_LINES:])
-        for agent in self.agents.main_agents():
-            if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, Ref.build(check_row), shows=CardKind.CHECKS)
+        for agent in self.agents.active_main_agents():
+            self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, Ref.build(check_row), shows=CardKind.CHECKS)
         return check_row
 
     def executed(self, check: Check, report: Path, started: float, actor: Actor) -> FinishedRun:

@@ -83,13 +83,13 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
             return False
-        repeated = [r for r in self.messages.recent_replies(prompt.creation_time) if WordOverlap.share(text, r.text) >= REPEAT_OVERLAP_RATIO]
+        repeated = WordOverlap.repeats(text, self.messages.recent_replies(prompt.creation_time), REPEAT_OVERLAP_RATIO)
         if repeated:
             self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_target).rendered())
         return bool(repeated)
 
     def turn_prompt(self, event: TurnDisplayed) -> Entry | None:
-        prompts = [e for e in self.entries.kind_entries("PromptSubmitted") if e.actor and e.actor.id == event.session]
+        prompts = self.entries.session_kind_entries("PromptSubmitted", event.session)
         return prompts[0] if prompts else None
 
     def orphan_obligation(self, full: str) -> list[int]:
@@ -101,7 +101,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
 
     def is_recorded(self, part: str) -> bool:
         text = Tags.visible(part)
-        return any(m.text == text for m in self.messages.recent_voice(30))
+        return bool(self.messages.voice_matches(text, 30))
 
     @staticmethod
     def sections(full: str) -> list[tuple[list[int], str]]:
@@ -129,7 +129,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
         return not any(e.kind == "ToolStarting" and e.is_write() for e in start)
 
     def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:
-        line_text = [e for e in self.entries.kind_entries("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
+        line_text = self.entries.line_entries(event.session, line)
         nudge = self.registry.nudge_keyed(line_text[-1].data["key"]) if line_text else None
         return bool(nudge and nudge.chat_answerable)
 

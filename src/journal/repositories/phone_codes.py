@@ -11,3 +11,6 @@ class PhoneCodes(ScopedRepository[PhoneCode]):
 
     def open(self, time: datetime) -> list[PhoneCode]:
         return [code for code in self.global_matching() if code.is_open(time)]
+
+    def hash_matches(self, hashes: set[str], time: datetime) -> list[PhoneCode]:
+        return [code for code in self.open(time) if hashes & {code.code, code.short}]

@@ -49,7 +49,7 @@ class Waits:
 
     def released(self, row: Model, time: float, actor: Actor) -> None:
         source = Ref.build(row)
-        for link in [link for link in self.links.link_rows(row) if link.kind == WAIT_LINK and link.source == source]:
+        for link in self.links.source_links(row, WAIT_LINK):
             self.retired_check(link.target, time, actor)
             self.links.delete(link, actor)
 

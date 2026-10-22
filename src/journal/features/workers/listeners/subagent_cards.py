@@ -28,7 +28,7 @@ class SubagentCards(AgentListener[AgentEvent]):
         if not self.moves(event):
             return
         actor, agent, moment = Actor.agent(event.session), self.agents.session_agent(event.session).row_id, time.time()
-        for row in [row for row in self.subagents.rows(event.session) if row.is_current(moment)]:
+        for row in self.subagents.current_rows(event.session, moment):
             self.carded(event, row, agent, actor)
 
     @staticmethod

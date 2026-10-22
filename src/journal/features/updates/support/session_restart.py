@@ -37,7 +37,7 @@ class SessionRestart:
     def close(self, time: datetime) -> None:
         for environment in self.environments.all():
             with self.scope.environment(environment.row_id):
-                for notice in [n for n in self.notices.open_scoped() if n.title in (NOTICE_TITLE, *RETIRED_TITLES)]:
+                for notice in self.notices.open_titled((NOTICE_TITLE, *RETIRED_TITLES)):
                     self.notices.save(notice.closed(time), Actor.system())
 
     def is_version_started(self) -> bool:

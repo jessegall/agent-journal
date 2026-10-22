@@ -16,7 +16,6 @@ from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
 from journal.repositories.messages import Messages
 from journal.repositories.tasks import Tasks as TaskRows
-from journal.models.task_state import TaskState
 from journal.repositories.entries import Entries
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
@@ -99,7 +98,7 @@ class CommitDetection(AgentListener[ToolFinished]):
 
     def trailer_tasks(self, body: str) -> list[int]:
         numbers = [int(n) for rows in TRAILER.finditer(body) for n in re.findall(r"\d+", rows.group(1))]
-        return [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
+        return self.tasks.unfinished_ids(numbers)
 
     def completions(self, event: ToolFinished, sha: str, numbers: list[int]) -> list[int]:
         caller = Caller.agent(self.environments.find(event.environment_id).name, event.session, event.provider)

@@ -13,6 +13,9 @@ class Phones(ScopedRepository[Phone]):
     def active(self, time: datetime) -> list[Phone]:
         return [phone for phone in self.global_matching() if phone.is_active(time)]
 
+    def subscribed_phones(self, time: datetime) -> list[Phone]:
+        return [phone for phone in self.active(time) if phone.subscription]
+
     def all_phones(self, id: int) -> Phone:
         rows = self.global_matching(id=id)
         if not rows:

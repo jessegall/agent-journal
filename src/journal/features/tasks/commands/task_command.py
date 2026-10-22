@@ -14,7 +14,6 @@ from journal.models.link import Link
 from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
-from journal.models.task_state import TaskState
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
 from journal.support.missing_row import MissingRow
@@ -158,7 +157,7 @@ state: {task.state}
 
     def list(self, args: Namespace, caller: Caller) -> int:
         tasks = self.tasks.scoped()
-        shown = tasks if args.all else [task for task in tasks if not task.is_closed()]
+        shown = tasks if args.all else self.tasks.unclosed_tasks()
         for task in shown:
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         if len(shown) < len(tasks):
@@ -166,7 +165,7 @@ state: {task.state}
         return 0
 
     def _name_next(self, closed: Task) -> None:
-        suspended_tasks = self.tasks.with_state(TaskState.SUSPENDED)
+        suspended_tasks = self.tasks.suspended_tasks()
         if suspended_tasks and not self.next_task.is_planned(closed):
             print(f"task {suspended_tasks[0].id} is parked, and parked work comes first: can you go on with it now? journal task resume {suspended_tasks[0].id}")
             return

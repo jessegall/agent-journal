@@ -26,6 +26,15 @@ class Plugins(Repository[Plugin]):
     def lookup(self, name: str) -> Plugin:
         return self.single(name=name)
 
+    def hearers(self, event: str, actor: object) -> list[Plugin]:
+        return [plugin for plugin in self.enabled() if event in plugin.manifest.events and actor != Actor.plugin(plugin.name)]
+
+    def other_plugins(self, name: str) -> list[Plugin]:
+        return [plugin for plugin in self.all() if plugin.name != name]
+
+    def release_plugins(self) -> list[Plugin]:
+        return [plugin for plugin in self.all() if not plugin.linked and plugin.release]
+
     def enabled(self) -> list[Plugin]:
         if self.live is None:
             self.live = [p for p in self.all() if p.enabled]

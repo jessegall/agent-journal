@@ -32,6 +32,9 @@ class SubagentEntries:
     def rows(self, session: str) -> list[Subagent]:
         return self.paired(self.entries.dispatches(session))
 
+    def current_rows(self, session: str, moment: float) -> list[Subagent]:
+        return [row for row in self.rows(session) if row.is_current(moment)]
+
     @staticmethod
     def is_dispatch_entry(entry: Entry) -> bool:
         return entry.kind in SUBAGENT_KINDS or (entry.kind in TOOL_MOMENTS and isinstance(entry.recorded_call().operation, (SubagentDispatch, AgentMessage)))
