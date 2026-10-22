@@ -5,7 +5,7 @@ from argparse import Namespace
 from journal.repositories.setting_rows import SettingRows
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.support.worktree_failure import WorktreeFailure
-from journal.console.command import Command
+from journal.console.command import WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.profiles.support.profile_files import ProfileFiles
 from journal.features.workers.support.worker_reports import WorkerReports
@@ -23,6 +23,7 @@ from journal.features.workers.support.worker_actions import WorkerActions
 
 class WorkerCommand(Command):
     noun = "worker"
+    callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
     def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks) -> None:
         self.tasks = tasks
@@ -89,6 +90,8 @@ class WorkerCommand(Command):
         return self.providers.lookup(provider).profile_model(self.profiles.read(profile))
 
     def report(self, args: Namespace, caller: Caller) -> int:
+        if caller.worker_number is not None and caller.worker_number != args.n:
+            raise Rejection(f"worker {args.n} is not you: a worker reports for itself, worker {caller.worker_number}")
         worker = self.workers.find(args.n)
         message = self.reports.file(worker.with_(session=worker.session if caller.session is None else caller.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")

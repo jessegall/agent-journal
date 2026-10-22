@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from journal.console.command import HELPER_KINDS, Command
+from journal.console.command import HELPER_KINDS, SUBAGENT_KINDS, WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.engine.clock import Clock
 from journal.support.rejection import Rejection
@@ -27,7 +27,7 @@ from journal.features.tasks.support.next_open_task import NextOpenTask
 
 class TaskCommand(Command):
     noun = "task"
-    callers = {"show": HELPER_KINDS, "list": HELPER_KINDS}
+    callers = {"show": HELPER_KINDS, "list": SUBAGENT_KINDS, "log": WORKER_KINDS}
 
     def __init__(self, tasks: Tasks, logs: TaskLogs, messages: Messages, links: Links, plans: Plans, taking: ActiveTask, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
         self.clock, self.next_task = clock, next_task
@@ -87,7 +87,7 @@ class TaskCommand(Command):
         return 0
 
     def log(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.find(args.n)
+        task = self.readable(args.n, caller)
         self.logs.save(TaskLog.build(task, args.line, self.clock.time()), caller.actor)
         print(f"task {task.id} logged")
         return 0
@@ -123,8 +123,11 @@ class TaskCommand(Command):
         self._name_next(task)
         return 0
 
+    def readable(self, n: int, caller: Caller) -> Task:
+        return self.tasks.find(n) if caller.worker_number is None else self.tasks.worker_task(n, caller.worker_number)
+
     def show(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.find(args.n)
+        task = self.readable(args.n, caller)
         print(f"""task {task.id}: {task.title}
 state: {task.state}
 {self.place(task)}

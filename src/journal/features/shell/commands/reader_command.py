@@ -2,7 +2,7 @@ import re
 from argparse import Namespace
 from pathlib import Path
 
-from journal.console.command import Command
+from journal.console.command import WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
@@ -16,6 +16,7 @@ class ReaderCommand(Command):
     """The project's output readers: add one for a shape of output read again and again, and list them."""
 
     noun = "reader"
+    callers = {"list": WORKER_KINDS}
 
     def __init__(self, readers: Readers) -> None:
         self.readers = readers

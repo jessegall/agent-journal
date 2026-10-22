@@ -2,7 +2,7 @@ import re
 from argparse import Namespace
 from journal.features.shell.support.readers import Readers
 
-from journal.console.command import Command
+from journal.console.command import WORKER_KINDS, Command
 from journal.models.command_output import CommandOutput
 from journal.features.tasks.support.wait_targets import WaitTargets
 from journal.support.rejection import Rejection
@@ -20,6 +20,7 @@ class WaitCommand(Command):
     """journal await "<what>": the agent waits for something outside its hands, with or without a task in hand, and names what ends it: a command's output, or a script polled until it passes. It ends by itself once that has, or when the agent works again."""
 
     noun = "await"
+    callers = {"begin": WORKER_KINDS}
     default_verb = "begin"
 
     def __init__(self, events: CommandEvents, awaitables: WaitTargets, readers: Readers) -> None:

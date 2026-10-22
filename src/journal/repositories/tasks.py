@@ -19,6 +19,7 @@ from journal.repositories.scoped_repository import ScopedRepository
 WAIT_LINK = "waits_on"
 CURRENT_TASK_LINK = "in_hand"
 WORKERS = "workers"
+WORKER_TASK = "task {task} is not worker {worker}'s: a worker works on the task it holds, {holdings}"
 HOLDER_REFUSAL = "task {task} is held by worker {worker} until its work is merged or released: send that worker its next job, or release it first"
 PLAN_LINK = "in_plan"
 USER_PREFIX = "user:"
@@ -116,6 +117,12 @@ class Tasks(ScopedRepository[Task]):
                 self.links.delete(link, actor)
         if owner != holder:
             self.links.save(Link(source=holder, target=target, kind=CURRENT_TASK_LINK), actor)
+
+    def worker_task(self, task_id: int, worker: int) -> Task:
+        holdings = self.holder_task_ids(Ref(WORKERS, worker))
+        if task_id not in holdings:
+            raise Rejection(WORKER_TASK.format(task=task_id, worker=worker, holdings=", ".join(f"task {n}" for n in holdings) or "no task"))
+        return self.find(task_id)
 
     def release(self, holder: Ref, actor: Actor) -> None:
         for link in self.links.all_matching(source=holder, kind=CURRENT_TASK_LINK):

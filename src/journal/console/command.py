@@ -7,6 +7,8 @@ from journal.support.caller_kind import CallerKind
 
 PRINCIPAL_KINDS = frozenset({CallerKind.MAIN_AGENT, CallerKind.USER, CallerKind.PLUGIN})
 HELPER_KINDS = frozenset({CallerKind.WORKER, CallerKind.SUBAGENT})
+WORKER_KINDS = frozenset({CallerKind.WORKER})
+SUBAGENT_KINDS = frozenset({CallerKind.SUBAGENT})
 
 
 class Command:

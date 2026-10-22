@@ -4456,6 +4456,7 @@ def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_a
     from journal.repositories.agents import Agents
     from journal.repositories.tasks import Tasks
     from journal.repositories.workers import Workers
+    from datetime import datetime, timezone
     console = app.console()
     worker = Caller.worker("main", 1, "w9", "claude")
     with app.container.get(Scope).environment(MAIN):
@@ -4463,8 +4464,11 @@ def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_a
     hook(app, "SessionStart")
     console.run(["environment", "overview"], AGENT)
     assert console.run(["task", "create", "the footer", "--start"], AGENT).code == 0
-    assert console.run(["task", "create", "the parser", "--start"], worker).code == 0, "a worker starts its task while the main agent holds another"
+    assert console.run(["task", "create", "the parser"], AGENT).code == 0
     sessions, tasks, agents = app.container.get(SessionAgents), app.container.get(Tasks), app.container.get(Agents)
+    with app.container.get(Scope).environment(MAIN):
+        tasks.holder_started(tasks.find(2).started(datetime.now(timezone.utc)), Ref(Worker.table(), 1), Actor.worker(1))
+    assert console.run(["task", "show", "2"], worker).code == 0 and "task 1 is not worker 1's" in console.run(["task", "show", "1"], worker).error, "a worker's task is started while the main agent holds another, and the worker reads its own alone"
     with app.container.get(Scope).environment(MAIN):
         assert [t.state for t in (tasks.find(1), tasks.find(2))] == ["started", "started"], "both stay started"
         assert tasks.current(agents.session_agent("s1")).id == 1 and tasks.holder_task(Ref(Worker.table(), 1)).id == 2, "each holds its own"
@@ -4477,9 +4481,10 @@ def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_a
     assert console.run(["task", "complete", "1", "--how", "shipped"], AGENT).code == 0
     assert sessions.top("s1").name != "working", "the main agent is back at rest though the worker's task is still started"
     assert "decision" not in hook(app, "Stop")[1], "the main agent's stop is not held by the worker's task"
-    assert console.run(["task", "start", "2"], AGENT).code == 0 and sessions.top("s1").task_id == 2, "a task another started moves to the agent that takes it up"
+    assert "task 2 is held by worker 1" in console.run(["task", "start", "2"], AGENT).error, "the main agent never takes the task a worker holds"
+    assert console.run(["task", "start", "2"], USER).code == 0 and sessions.top("s1").task_id == 2, "the user's own start hands it to the agent at work"
     with app.container.get(Scope).environment(MAIN):
-        assert tasks.holder_task(Ref(Worker.table(), 1)) is None, "and leaves the one that held it"
+        assert tasks.holder_task(Ref(Worker.table(), 1)) is None, "and it leaves the worker that held it"
 
 
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app: App, monkeypatch):
@@ -6585,6 +6590,31 @@ def test_one_link_holds_a_task_for_its_worker_until_it_is_released(app: App, mon
     assert console.run(["task", "start", "1"], AGENT).code == 0, "and the task is free again"
 
 
+def test_a_worker_runs_the_workers_verbs_on_its_own_rows_alone(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.command_output import CommandOutput
+    from journal.repositories.command_outputs import CommandOutputs
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser"], AGENT)
+    console.run(["task", "create", "the lexer"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--task", "2"], AGENT)
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    with app.container.get(Scope).environment(MAIN):
+        outputs = app.container.get(CommandOutputs)
+        own, other = outputs.save(CommandOutput(environment_id=1, command="pytest -q", moved=True, ended=True), Actor.worker(1)), outputs.save(CommandOutput(environment_id=1, command="ls", moved=True, ended=True), Actor.worker(2))
+    assert console.run(["task", "show", "1"], lovelace).code == 0 and console.run(["task", "log", "1", "the grammar is in"], lovelace).code == 0, "a worker reads and logs the task it holds"
+    assert "task 2 is not worker 1's: a worker works on the task it holds, task 1" in console.run(["task", "log", "2", "x"], lovelace).error, "and no other, naming the one it holds"
+    assert console.run(["output", "status", str(own.id)], lovelace).code == 0 and f"output {other.id} is not worker 1's" in console.run(["output", "status", str(other.id)], lovelace).error, "it reads its own outputs alone"
+    assert "pytest" in console.run(["output", "list"], lovelace).text and "ls" not in console.run(["output", "list"], lovelace).text
+    assert console.run(["worker", "report", "1", "the parser is done"], lovelace).code == 0 and "worker 2 is not you" in console.run(["worker", "report", "2", "x"], lovelace).error, "it reports for itself alone"
+    assert console.run(["worker", "peers"], lovelace).code == 0 and console.run(["reader", "list"], lovelace).code == 0 and console.run(["fact", "list"], lovelace).code == 0
+    refused = console.run(["message", "send", "hello"], lovelace)
+    assert refused.code == 1 and refused.error.startswith("a worker may not run journal message send"), "a worker never speaks in the chat"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
@@ -7468,6 +7498,13 @@ def test_a_worker_messages_only_its_own_dispatchers_other_workers_and_starts_no_
     assert "worker 1 is you" in refused("send", "1", "x") and "worker 1 is you" in refused("notify", "1", "x")
     assert "belongs to another agent" in refused("send", "3", "x") and "belongs to another agent" in refused("notify", "3", "x")
     assert "is retired" in refused("send", "4", "x") and "is retired" in refused("notify", "4", "x"), "a peer never revives a retired worker"
+    assert "holds no task" in refused("send", "2", "the separate condenser"), "a peer that works on no task takes no message"
+    from journal.models.support.ref import Ref
+    from journal.repositories.tasks import Tasks
+    tasks = app.container.get(Tasks)
+    for number, title in ((1, "the engine"), (2, "the condenser")):
+        console.run(["task", "create", title], AGENT)
+        tasks.handover(tasks.find(number), Ref(Worker.table(), number), Actor.system())
     assert console.run(["worker", "send", "2", "the separate condenser"], watt).code == 0
     boulton = workers.find(2)
     assert boulton.dispatcher == "s1" and boulton.updater == Actor.worker(1) and boulton.is_running(), "the send names the sending worker and keeps the target's dispatcher"

@@ -172,7 +172,7 @@ def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_toke
     with app.container.get(Scope).environment(1):
         current = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", token_hash=WorkerToken.hashed("tok")), Actor.system())
         older = workers.save(Worker(environment_id=1, name="Mr. Pepys", brief="b"), Actor.system())
-    as_worker = lambda body: post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, body=body)
+    as_worker = lambda body: post_command(app, ["fact", "list"], {"X-Journal-Env": "main"}, body=body)
     assert as_worker({"worker": current.id, "worker_token": "tok"})["code"] == 0, "a worker with its token runs"
     assert "token" in as_worker({"worker": current.id, "worker_token": "nope"})["error"] and "token" in as_worker({"worker": current.id})["error"], "a wrong or missing token is refused"
     assert as_worker({"worker": older.id})["code"] == 0, "a worker from before tokens runs as it did"

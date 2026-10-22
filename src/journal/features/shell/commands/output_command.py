@@ -1,7 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
-from journal.console.command import HELPER_KINDS, Command
+from journal.console.command import HELPER_KINDS, WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_views import OutputViews
@@ -18,7 +18,7 @@ class OutputCommand(Command):
     """The outputs the runner kept, by number: read one whole or in part, say how one stands, list the newest, or watch a running one."""
 
     noun = "output"
-    callers = {"read": HELPER_KINDS}
+    callers = {"read": HELPER_KINDS, "list": WORKER_KINDS, "status": WORKER_KINDS, "watch": WORKER_KINDS}
 
     def __init__(self, outputs: CommandOutputs, readers: Readers, views: OutputViews) -> None:
         self.outputs, self.readers, self.views = outputs, readers, views
@@ -42,8 +42,14 @@ class OutputCommand(Command):
         watch.add_argument("--reader", default="", help="the reader whose lines are shown, by its name")
         self.verb(verbs, "unwatch", "end the watch on your output")
 
+    def owned(self, n: int, caller: Caller) -> CommandOutput:
+        output = self.outputs.find(n)
+        if caller.worker_number is not None and output.creator != caller.actor:
+            raise Rejection(f"output {n} is not worker {caller.worker_number}'s: a worker reads only the outputs of its own commands")
+        return output
+
     def read(self, args: Namespace, caller: Caller) -> int:
-        output = self.outputs.find(args.n)
+        output = self.owned(args.n, caller)
         files = OutputFiles(Path(output.folder))
         if not files.is_stored():
             raise Rejection(f"output {output.id} has no files left")
@@ -74,7 +80,7 @@ class OutputCommand(Command):
 
     def status(self, args: Namespace, caller: Caller) -> int:
         if args.n is not None:
-            print(self.state(self.outputs.find(args.n)))
+            print(self.state(self.owned(args.n, caller)))
             return 0
         for output in self.outputs.backgrounded(caller.session):
             print(f"{output.id:>5}  {self.state(output):<22}  {output.headline()[:100]}")
@@ -95,14 +101,19 @@ class OutputCommand(Command):
         return "\n".join([*head, *lines[:END_LINES], cut, *lines[-END_LINES:]])
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for output in self.outputs.page(args.last):
+        for output in self.page(args.last, caller):
             files = OutputFiles(Path(output.folder))
             outcome = files.outcome() if files.is_stored() else "files gone"
             print(f"{output.id:>5}  {outcome:<22}  {output.headline()[:100]}")
         return 0
 
+    def page(self, last: int, caller: Caller) -> list[CommandOutput]:
+        if caller.worker_number is None:
+            return self.outputs.page(last)
+        return self.outputs.page(last, creator=caller.actor)
+
     def watch(self, args: Namespace, caller: Caller) -> int:
-        output = self.outputs.find(args.n)
+        output = self.owned(args.n, caller)
         if output.ended:
             raise Rejection(f"output {output.id} {output.ending()}; read it with journal output read {output.id} --summary")
         if args.reader:

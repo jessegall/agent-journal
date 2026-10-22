@@ -54,6 +54,8 @@ class WorkerActions:
             raise Rejection(f"worker {worker.id}, {worker.name}, is retired: only the agent that dispatched you brings it back")
         if worker.dispatcher != writer.dispatcher:
             raise Rejection(f"worker {worker.id}, {worker.name}, belongs to another agent: you message only the workers of the agent that dispatched you, `journal worker peers` lists them")
+        if not self.tasks.holder_task_ids(Ref.build(worker)):
+            raise Rejection(f"worker {worker.id}, {worker.name}, holds no task: you message only a peer that works on one")
         return worker
 
     def sent(self, worker: Worker, brief: str, dispatcher: str | None, actor: Actor) -> Worker:

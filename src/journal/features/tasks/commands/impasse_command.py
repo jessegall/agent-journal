@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from journal.console.command import Command
+from journal.console.command import WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.chat.cards import Cards
 from journal.hooks.command_events import CommandEvents
@@ -12,6 +12,7 @@ class ImpasseCommand(Command):
     """journal stuck "<why>": the agent is truly stuck, so the journal says nothing until its next tool use or prompt."""
 
     noun = "stuck"
+    callers = {"declare": WORKER_KINDS}
     default_verb = "declare"
 
     def __init__(self, events: CommandEvents, cards: Cards, scope: Scope) -> None:
