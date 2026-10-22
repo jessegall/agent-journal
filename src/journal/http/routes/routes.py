@@ -27,6 +27,7 @@ from journal.http.controllers.questions import QuestionController
 from journal.http.controllers.reactions import ReactionController
 from journal.http.controllers.reminders import ReminderController
 from journal.http.controllers.reports import ReportController
+from journal.http.controllers.collections import CollectionController
 from journal.http.controllers.rules import RuleController
 from journal.http.controllers.search import SearchController
 from journal.http.controllers.secrets import SecretController
@@ -168,6 +169,7 @@ class Routes:
         router.get(f"{API}/docs/{{id}}/export", docs.export)
         self.resource(router, "reports", reports)
         self.acts(router, "reports", reports, "section")
+        self.resource(router, "collections", get(CollectionController))
         router.get(f"{API}/reports/{{id}}/export", reports.export)
         self.listed(router, "dumps", dumps)
         router.post(f"{API}/dumps", dumps.store)

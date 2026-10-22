@@ -5134,6 +5134,34 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     assert [task.title for task in plans.free()] == ["loose and free"], "a task a worker is out on is never the next free task for anyone else"
 
 
+def test_a_collection_holds_rows_of_any_type_and_a_dump_files_its_items_into_its_own(app: App, tmp_path):
+    from journal.repositories.collections import Collections
+    console = app.console()
+    hook(app, "SessionStart")
+    notes = tmp_path / "notes.md"
+    notes.write_text("The ideas, sorted.\n")
+    console.run(["doc", "create", "Ideas", "--file", str(notes)], AGENT)
+    console.run(["task", "create", "the parser"], AGENT)
+    assert console.run(["collection", "create", "The parser work", "--abstract", "what the parser needs"], AGENT).text.startswith("collection 1: The parser work")
+    assert console.run(["collection", "add", "1", "docs:1", "tasks:1"], AGENT).code == 0
+    assert "not a row here: tasks:99" in console.run(["collection", "add", "1", "tasks:99"], AGENT).error, "a row that is not there is refused"
+    assert console.run(["collection", "members", "1"], AGENT).text.splitlines()[1:] == ["  docs:1", "  tasks:1"], "a collection holds rows of any type"
+    console.run(["collection", "remove", "1", "tasks:1"], AGENT)
+    assert console.run(["collection", "members", "1"], AGENT).text.splitlines()[1:] == ["  docs:1"], "and lets one go"
+    console.run(["collection", "rename", "1", "Parser"], AGENT)
+    assert "   1  Parser  (1 rows)" in console.run(["collection", "list"], AGENT).text
+    console.run(["dump", "create", "a list of ideas"], USER)
+    console.run(["dump", "note", "1", "text", "a list of ideas"], AGENT)
+    assert console.run(["dump", "filed", "1", "text", "made a doc", "--refs", "doc:1"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        collections = app.container.get(Collections)
+        filed = [c for c in collections.scoped() if c.title == "Dump 1"]
+        assert filed and [str(ref) for ref in collections.members(filed[0])] == ["docs:1"], "a dump files its items into a collection of its own"
+    console.run(["dump", "name", "1", "Ideas for the parser"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        assert collections.find(filed[0].id).title == "Ideas for the parser", "and naming the dump names its collection"
+
+
 def test_a_dump_is_filed_item_by_item_told_to_the_agent_and_closes_itself(app: App, tmp_path, monkeypatch):
     from journal.features.dumps.support.dump_filer import DumpFiler
     from journal.repositories.dumps import Dumps

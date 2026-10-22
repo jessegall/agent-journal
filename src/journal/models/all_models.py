@@ -39,6 +39,7 @@ from journal.models.task import Task
 from journal.models.template import Template
 from journal.models.task_log import TaskLog
 from journal.models.proof import Proof
+from journal.models.collection import Collection
 from journal.models.worker_todo import WorkerTodo
 from journal.models.trigger import Trigger
 from journal.models.command_output import CommandOutput
@@ -50,5 +51,5 @@ from journal.models.subagent import Subagent
 class AllModels:
     """Every model with a table, so the schema can create them."""
 
-    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Doc, DocRevision, Dump, Entry, Setting, Link, Sequence, Worker, Subagent, Trigger, Check, Template, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Timing, Phone, PhoneCode, Suggestion, JournalVersion, Alias, Proof, WorkerTodo)
+    MODELS = (Environment, User, Agent, Task, TaskLog, Plan, PlanReview, Phase, McpServer, Message, Reaction, Edit, Question, Fact, Rule, Reminder, Report, Doc, DocRevision, Dump, Entry, Setting, Link, Sequence, Worker, Subagent, Trigger, Check, Template, Notice, Secret, Plugin, DashboardRow, CommandOutput, Version3Migration, MigratedRow, Share, Statistic, Timing, Phone, PhoneCode, Suggestion, JournalVersion, Alias, Proof, WorkerTodo, Collection)
     SCOPED = tuple(model for model in MODELS if issubclass(model, Scoped))

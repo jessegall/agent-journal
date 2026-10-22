@@ -64,6 +64,15 @@ export const TABLES = {
         closed_first: true,
         exports: true,
     }),
+    collections: kind("Collection", "folder", "Rows that belong together, gathered under a name", {
+        in_sidebar: true,
+        listed_under: "environment",
+        listed_as_cards: true,
+        takes_comments: true,
+        created_in_viewer: true,
+        typed_as_title: true,
+        labels: {abstract: "What belongs in it"},
+    }),
     docs: kind("Document", "file", "What stays true about the project, catalogued for every session", {
         view: "document",
         scope: "project",

@@ -9,6 +9,7 @@ from journal.models.link import Link
 from journal.models.message import Message
 from journal.models.support.ref import Ref
 from journal.support.rejection import Rejection
+from journal.repositories.collections import Collections
 from journal.repositories.docs import Docs
 from journal.repositories.dumps import Dumps
 from journal.repositories.links import Links
@@ -28,10 +29,10 @@ TABLES = {"doc": "docs", "report": "reports", "todo": "tasks", "task": "tasks", 
 
 
 class DumpFiler:
-    """What is done to a dump: the agent's notes on its items and the user's choices on it. The command and the viewer both come here."""
+    """What is done to a dump: the agent's notes on its items and the user's choices on it; what it files joins the dump's own collection, which takes the dump's name. The command and the viewer both come here."""
 
-    def __init__(self, dumps: Dumps, links: Links, messages: Messages, docs: Docs, reports: Reports, tasks: Tasks, plans: Plans, rows: Rows) -> None:
-        self.dumps, self.links, self.messages, self.rows = dumps, links, messages, rows
+    def __init__(self, dumps: Dumps, links: Links, messages: Messages, docs: Docs, reports: Reports, tasks: Tasks, plans: Plans, rows: Rows, collections: Collections) -> None:
+        self.dumps, self.links, self.messages, self.rows, self.collections = dumps, links, messages, rows, collections
         self.removable: dict[str, Docs | Reports | Tasks | Plans] = {"docs": docs, "reports": reports, "tasks": tasks, "plans": plans}
 
     def create(self, brief: str, actor: Actor) -> Dump:
@@ -59,8 +60,10 @@ class DumpFiler:
         missing = [ref for ref in rows if not self.rows.is_row(Ref.parse(ref))]
         if missing:
             raise Rejection(f"not a row here: {', '.join(missing)}")
+        collection = self.collections.owned(dump, dump.title, actor)
         for ref in rows:
             self.links.save(Link(source=Ref.build(dump), target=Ref.parse(ref), kind=FILED), actor)
+            self.collections.joined(collection, Ref.parse(ref), actor)
         return self.filed_item(n, item, actor, outcome=manner.strip(), refs=rows, added=owned, failed="")
 
     def failed(self, n: int, item: str, reason: str, actor: Actor) -> Dump:
@@ -126,7 +129,10 @@ class DumpFiler:
     def name(self, n: int, title: str, actor: Actor) -> Dump:
         if not title.strip():
             raise Rejection("say the name")
-        return self.dumps.save(self.dumps.find(n).with_(title=title.strip()), actor)
+        dump = self.dumps.save(self.dumps.find(n).with_(title=title.strip()), actor)
+        for collection in self.collections.owner_collection(dump):
+            self.collections.save(collection.with_(title=dump.title), actor)
+        return dump
 
     def dismiss(self, n: int, actor: Actor) -> Dump:
         return self.dumps.save(self.dumps.find(n).with_(dismissed=True), actor)

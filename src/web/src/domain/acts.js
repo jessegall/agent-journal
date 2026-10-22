@@ -38,6 +38,7 @@ const EDITS = {
     plans: {title: "line", brief: "text"},
     docs: {title: "line", abstract: "text", body: "text"},
     reports: {title: "line", abstract: "text", body: "text"},
+    collections: {title: "line", abstract: "text"},
     facts: {text: "text"},
     reminders: {text: "text"},
     rules: {text: "text", reason: "text"},
