@@ -6,11 +6,12 @@ from journal.models.model import Model
 
 @dataclass(frozen=True)
 class JournalVersion(Model):
-    """The version the journal last started on; starting on another one is the journal having been updated."""
+    """The version the journal last started on and the one it ran before; starting on another one is the journal having been updated."""
 
     version: str = ""
+    previous: str = ""
 
     def started(self, version: str) -> "JournalVersion":
         if version == self.version:
             return self
-        return self.with_(version=version).with_event(JournalUpdated(previous=self.version, current=version))
+        return self.with_(version=version, previous=self.version).with_event(JournalUpdated(previous=self.version, current=version))

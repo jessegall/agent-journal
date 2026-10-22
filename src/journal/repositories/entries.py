@@ -123,6 +123,9 @@ class Entries(ScopedRepository[Entry]):
     def recent(self, id: int) -> list[Entry]:
         return self.selected(self.query().filter_greater("id", id).order("id"))
 
+    def key_lines(self, key: str) -> list[str]:
+        return [str(entry.data["line"]) for entry in self.selected(self.query().filter(kind=NUDGE).filter_json("data->key", key))]
+
     def lines(self, session: str) -> Query:
         return self.query().filter(kind=NUDGE).filter_json("data->session", session)
 

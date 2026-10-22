@@ -1,3 +1,4 @@
+from typing import Callable
 import json
 import os
 from pathlib import Path
@@ -24,6 +25,7 @@ from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
 from journal.features.workers.support.worker_libraries import WorkerLibraries
+from journal.features.workers.support.worktree_commands import WorktreeCommands
 from journal.support.worktree_failure import WorktreeFailure
 from journal.support.process_check import ProcessCheck
 
@@ -41,9 +43,9 @@ EXCLUDED_VARIABLES = ("JOURNAL_SESSION", "JOURNAL_LAUNCH")
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries, commands: WorktreeCommands) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
-        self.environments, self.profiles, self.agents, self.chat, self.libraries = environments, profiles, agents, chat, libraries
+        self.environments, self.profiles, self.agents, self.chat, self.libraries, self.commands = environments, profiles, agents, chat, libraries, commands
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
 
@@ -198,27 +200,49 @@ class WorkerRunner:
         folder = self.branch.place(worker)
         if not worker.worktree or folder.is_dir():
             return worker.repositories
-        self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
         names = self.branch.brief_folders(worker.brief) or self.branch.inner_folders()
         try:
-            repositories = self.inner_added(worker, names)
-            self.libraries.placed(worker.with_(repositories=repositories))
-            return repositories
+            return self.prepared(worker, names, self.worktree_creation)
         except WorktreeFailure:
             self.branch.discarded(worker, names)
             raise
 
     def renewed(self, worker: Worker, brief: str) -> tuple[str, ...]:
+        from journal.features.workers.feature import Workers as Feature
         if not worker.worktree:
             return worker.repositories
-        folder, name = self.branch.folder(worker), self.branch.name(worker)
+        names = tuple(dict.fromkeys((*worker.repositories, *self.branch.brief_folders(brief))))
+        if not self.branch.folder(worker).is_dir():
+            return self.prepared(worker, names, self.worktree_restoration)
+        if not self.settings.option(Feature.WORKTREE_STEP):
+            return worker.repositories
+        return self.inner_worktrees(worker, names)
+
+    def prepared(self, worker: Worker, names: tuple[str, ...], maker: Callable[[Worker, tuple[str, ...]], tuple[str, ...]]) -> tuple[str, ...]:
+        from journal.features.workers.feature import Workers as Feature
+        folder = self.branch.folder(worker)
+        self.commands.run(worker, Feature.PREPARATION_COMMANDS.texts(self.settings.option(Feature.PREPARATION_COMMANDS)), self.config.root, names)
+        repositories = maker(worker, names) if self.settings.option(Feature.WORKTREE_STEP) else ()
+        self.commands.run(worker, Feature.COMPLETION_COMMANDS.texts(self.settings.option(Feature.COMPLETION_COMMANDS)), folder if folder.is_dir() else self.config.root, names)
         if not folder.is_dir():
-            self.branch.git("worktree", "prune")
-            if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
-                self.added(worker, str(folder), name)
-            else:
-                self.added(worker, "-b", name, str(folder), "HEAD")
-        repositories = self.inner_added(worker, tuple(dict.fromkeys((*worker.repositories, *self.branch.brief_folders(brief)))))
+            raise WorktreeFailure(worker.name, f"the worktree commands made no worktree at {folder}; with the journal's own step off, they make it there on the branch {self.branch.name(worker)}")
+        return repositories or tuple(name for name in names if (folder / name / ".git").exists())
+
+    def worktree_creation(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
+        self.added(worker, "-b", self.branch.name(worker), str(self.branch.folder(worker)), "HEAD")
+        return self.inner_worktrees(worker, names)
+
+    def worktree_restoration(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
+        folder, name = self.branch.folder(worker), self.branch.name(worker)
+        self.branch.git("worktree", "prune")
+        if self.branch.git("rev-parse", "--verify", "-q", f"refs/heads/{name}").returncode == 0:
+            self.added(worker, str(folder), name)
+        else:
+            self.added(worker, "-b", name, str(folder), "HEAD")
+        return self.inner_worktrees(worker, names)
+
+    def inner_worktrees(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
+        repositories = self.inner_added(worker, names)
         self.libraries.placed(worker.with_(repositories=repositories))
         return repositories
 

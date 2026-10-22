@@ -9150,3 +9150,41 @@ def test_the_settings_command_lists_shows_and_sets_and_an_agent_sets_only_the_on
     left = dataclasses.replace(TasksFeature.AUTO, setter=options.AGENT)
     monkeypatch.setattr(TasksFeature, "options", tuple(left if option.key == left.key else option for option in TasksFeature.options))
     assert console.run(["settings", "set", "tasks.auto", "on"], AGENT).code == 0 and app.container.get(SettingRows).option(TasksFeature.AUTO) is True, "a setting left to the agent it sets itself"
+
+
+def test_the_users_worktree_commands_run_before_and_after_the_journals_step_which_can_be_left_to_them(app: App, monkeypatch):
+    from journal.features.workers.feature import Workers as WorkersFeature
+    root = repository_made(app.config.root, {".gitignore": ".journal/\nlog.txt\n", "README.md": "one\n"})
+    settings = app.container.get(SettingRows)
+    settings.set(WorkersFeature.PREPARATION_COMMANDS.key, ['echo "before $JOURNAL_BRANCH" >> "$JOURNAL_PROJECT/log.txt"'], Actor.system())
+    settings.set(WorkersFeature.COMPLETION_COMMANDS.key, ['echo "after $(pwd -P)" >> "$JOURNAL_PROJECT/log.txt"'], Actor.system())
+    worker, folder, _ = worktree_worker(app, monkeypatch, "the readme")
+    assert (root / "log.txt").read_text().splitlines() == ["before worker/1-Worker-1", f"after {folder.resolve()}"], "the commands before run in the project, the ones after inside the worktree, each told the branch and the paths"
+    settings.set(WorkersFeature.WORKTREE_STEP.key, False, Actor.system())
+    settings.set(WorkersFeature.PREPARATION_COMMANDS.key, ['git -C "$JOURNAL_PROJECT" worktree add -q -b "$JOURNAL_BRANCH" "$JOURNAL_WORKTREE" HEAD'], Actor.system())
+    settings.set(WorkersFeature.COMPLETION_COMMANDS.key, [], Actor.system())
+    second, second_folder, _ = worktree_worker(app, monkeypatch, "the readme again", n=2)
+    assert (second_folder / "README.md").is_file() and git_run(second_folder, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip() == "worker/2-Worker-2", "with the journal's step off, the user's command makes the worktree"
+    settings.set(WorkersFeature.WORKTREE_STEP.key, True, Actor.system())
+    settings.set(WorkersFeature.PREPARATION_COMMANDS.key, [], Actor.system())
+    settings.set(WorkersFeature.COMPLETION_COMMANDS.key, ['echo "the install broke" && exit 3'], Actor.system())
+    console = app.console()
+    console.run(["task", "create", "the third", "--brief", "the readme a third time"], AGENT)
+    refused = console.run(["worker", "dispatch", "Worker 3", "--task", "3", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    assert refused.code != 0 and "failed with code 3: the install broke" in refused.error, refused.error
+    assert not (app.config.home / "worktrees" / "3-Worker-3").exists() and not git_run(root, "branch", "--list", "worker/3-Worker-3").stdout.strip(), "a failing command leaves nothing behind"
+
+
+def test_the_messages_of_the_releases_an_update_crossed_are_told_to_the_agent_once(app: App, monkeypatch):
+    from journal.features.updates.support import release_messages
+    from journal.models.journal_version import JournalVersion
+    from journal.repositories.journal_versions import JournalVersions
+    monkeypatch.setitem(release_messages.MESSAGES, "4.5.1", "the old news")
+    monkeypatch.setitem(release_messages.MESSAGES, "9.0.0", "not crossed yet")
+    versions = app.container.get(JournalVersions)
+    current = versions.current()
+    versions.save(current.with_(version="4.6.0", previous="4.5.42") if current else JournalVersion(version="4.6.0", previous="4.5.42"), Actor.system())
+    told = json.dumps(hook(app, "SessionStart")[1])
+    assert "the journal was updated to 4.6.0: a worker's worktree can now be set up your project's way" in told and "workers.preparation_commands" in told, told
+    assert "the old news" not in told and "not crossed yet" not in told, "only the releases between the last version and this one"
+    assert "updated to 4.6.0" not in json.dumps(hook(app, "SessionStart")[1]), "and each is told once"
