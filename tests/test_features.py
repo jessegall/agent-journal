@@ -9571,6 +9571,7 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
 def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
     import re
     import subprocess
+    from journal.engine.agent_launcher import AgentLauncher
     from journal.support.worktree import Worktree
     from journal.sync.environment_names import EnvironmentNames
     from journal.sync.attachments import Attachments
@@ -9763,7 +9764,17 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert eventually(lambda: sorted(row.text for row in b.container.get(Messages).global_matching(environment_id=team_env.row_id)) == ["morning, Ada", "morning, team"]), "both people's words are in the Team chat on each machine"
         assert not [row for row in b.container.get(Messages).global_matching(environment_id=bob_main.row_id) if row.text.startswith("morning")], "and stay out of their own chats"
         rows = {row["name"]: row for row in json.loads(b.console().run(["environment", "json"], USER).text)}
-        assert rows["team"]["refusal"] == "", "the launcher may start an agent in the Team chat"
+        assert "claim it first" in rows["team"]["refusal"], "the launcher starts an agent in the Team chat only on the machine that claims it"
+        started_agents = []
+        monkeypatch.setattr(AgentLauncher, "start", lambda self, environment, agent: started_agents.append((environment, agent)) or 1)
+        assert "you hold the Team chat now, as Ada" in a.console().run(["team", "claim"], USER).text
+        assert started_agents == [("team", "claude")], "the claiming machine starts the Team chat's agent"
+        refused_claim = b.console().run(["team", "claim"], replace(USER, person=2))
+        assert refused_claim.code == 1 and "team-chat is held by Ada" in refused_claim.error, "a second machine's claim is refused while the first holds it"
+        assert b.console().run(["team", "chat"], replace(USER, person=2)).text.startswith("Held by Ada"), "and it sees who holds it"
+        rows_b = {row["name"]: row for row in json.loads(b.console().run(["environment", "json"], replace(USER, person=2)).text)}
+        rows_a = {row["name"]: row for row in json.loads(a.console().run(["environment", "json"], USER).text)}
+        assert "claim it first" in rows_b["team"]["refusal"] and rows_a["team"]["refusal"] == "", "only the holder's machine may start an agent in the Team chat"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

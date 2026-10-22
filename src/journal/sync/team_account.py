@@ -71,3 +71,6 @@ class TeamAccount:
         prefix_file = self.config.home / PREFIX_FILE
         prefix = prefix_file.read_text().strip() if prefix_file.is_file() else ""
         return f"{prefix}-{name}" if prefix and not name.startswith(f"{prefix}-") else name
+
+    def is_chat_holder(self) -> bool:
+        return bool(self.contents().get("holds_chat", False))

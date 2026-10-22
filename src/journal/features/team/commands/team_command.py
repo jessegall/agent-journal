@@ -8,9 +8,10 @@ from journal.support.caller import Caller
 from journal.support.rejection import Rejection
 from journal.sync.sync_status import SyncStatus
 from journal.sync.team_account import TeamAccount
-from journal.sync.team_refusal import TeamRefusal
+from journal.sync.team_requests import TeamRequests
 from journal.sync.team_server_link import TeamServerLink
 from sync_server.login_request import LoginRequest
+from journal.sync.team_chat import TeamChat
 
 PASSWORD_PROMPT = "run journal team {verb} yourself in a terminal: it asks your password without showing it, and an agent cannot type it"
 
@@ -20,8 +21,8 @@ class TeamCommand(Command):
 
     noun = "team"
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, joining: TeamJoin, sync_status: SyncStatus) -> None:
-        self.account, self.link, self.joining, self.sync_status = account, link, joining, sync_status
+    def __init__(self, account: TeamAccount, link: TeamServerLink, joining: TeamJoin, sync_status: SyncStatus, team_chat: TeamChat) -> None:
+        self.account, self.link, self.joining, self.sync_status, self.team_chat = account, link, joining, sync_status, team_chat
 
     def arguments(self, verbs) -> None:
         join = self.verb(verbs, "join", "join a team's server with the line its setup or an invitation printed: a team with no journal yet takes this one whole, else this machine downloads the team's")
@@ -37,25 +38,28 @@ class TeamCommand(Command):
         self.verb(verbs, "status", "the team's address, this person and device, and how the sync stands")
         self.verb(verbs, "devices", "every device of the team; admins only")
         self.verb(verbs, "revoke", "revoke a device, so it reaches the team no more; admins only").add_argument("device", type=int)
+        claim = self.verb(verbs, "claim", "hold the Team chat, so this machine runs its agent; one machine holds it at a time")
+        claim.add_argument("--agent", default="claude", help="the agent program to run it with")
+        self.verb(verbs, "chat", "who holds the Team chat, and whether they are online")
 
     def join(self, args: Namespace, caller: Caller) -> int:
         if not args.password:
             raise Rejection(PASSWORD_PROMPT.format(verb="join"))
-        print(self.reached(lambda: self.joining.join(args.address.rstrip("/"), args.code, args.password, args.fingerprint, args.name)))
+        print(TeamRequests.reached(lambda: self.joining.join(args.address.rstrip("/"), args.code, args.password, args.fingerprint, args.name)))
         return 0
 
     def login(self, args: Namespace, caller: Caller) -> int:
         if not args.password:
             raise Rejection(PASSWORD_PROMPT.format(verb="login"))
         self.joined()
-        answer = self.reached(lambda: self.link.login(self.account.address(), LoginRequest(args.email, args.password, self.account.device_name())))
+        answer = TeamRequests.reached(lambda: self.link.login(self.account.address(), LoginRequest(args.email, args.password, self.account.device_name())))
         self.account.write({**self.account.contents(), "token": answer.token, "device": answer.device_id, "account_id": answer.account_id})
         print(f"logged in again as {answer.name}, device {answer.device_id}")
         return 0
 
     def invite(self, args: Namespace, caller: Caller) -> int:
         self.joined()
-        answer = self.reached(lambda: self.link.invite(args.email))
+        answer = TeamRequests.reached(lambda: self.link.invite(args.email))
         fingerprint = self.fingerprint()
         print(f"{answer.email} joins with this line until {answer.expires_at:.0f}:\n\n    journal team join {self.account.address()} --code {answer.code}{f' --fingerprint {fingerprint}' if fingerprint else ''}")
         return 0
@@ -67,14 +71,25 @@ class TeamCommand(Command):
 
     def devices(self, args: Namespace, caller: Caller) -> int:
         self.joined()
-        for device in self.reached(self.link.devices).devices:
+        for device in TeamRequests.reached(self.link.devices).devices:
             print(f"{device.id:<5} {device.name:<30} user {device.account_id}{'  revoked' if device.is_revoked() else ''}")
         return 0
 
     def revoke(self, args: Namespace, caller: Caller) -> int:
         self.joined()
-        device = self.reached(lambda: self.link.revoke(args.device))
+        device = TeamRequests.reached(lambda: self.link.revoke(args.device))
         print(f"device {device.id}, {device.name}, is revoked")
+        return 0
+
+    def claim(self, args: Namespace, caller: Caller) -> int:
+        self.joined()
+        lease = TeamRequests.reached(lambda: self.team_chat.claim(args.agent))
+        print(f"you hold the Team chat now, as {lease.holder}; its agent starts on this machine in the team environment's worktree")
+        return 0
+
+    def chat(self, args: Namespace, caller: Caller) -> int:
+        self.joined()
+        print(TeamChat.holder_line(TeamRequests.reached(self.team_chat.holder)))
         return 0
 
     def joined(self) -> None:
@@ -84,12 +99,3 @@ class TeamCommand(Command):
     def fingerprint(self) -> str:
         root = self.account.root_path()
         return hashlib.sha256(ssl.PEM_cert_to_DER_cert(root.read_text())).hexdigest() if root.is_file() else ""
-
-    @staticmethod
-    def reached(request):
-        try:
-            return request()
-        except TeamRefusal as refused:
-            raise Rejection(f"the team server refused: {refused}") from refused
-        except OSError as fault:
-            raise Rejection(f"the team server could not be reached: {fault}") from fault

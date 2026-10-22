@@ -18,6 +18,7 @@ from sync_server.pull_answer import PullAnswer
 from sync_server.push_answer import PushAnswer
 from sync_server.team_summary import TeamSummary
 from sync_server.upload_answer import UploadAnswer
+from sync_server.lease import Lease
 
 REQUEST_SECONDS = 10
 COPY_SECONDS = 120
@@ -73,6 +74,15 @@ class TeamServerLink:
 
     def posted(self, path: str, body: dict) -> bytes:
         return self.sent(self.account.address(), path, json.dumps(body).encode(), REQUEST_SECONDS)
+
+    def acquire_lease(self, name: str) -> Lease:
+        return Lease(**json.loads(self.posted("/leases/take", {"name": name})))
+
+    def release_lease(self, name: str) -> Lease:
+        return Lease(**json.loads(self.posted("/leases/release", {"name": name})))
+
+    def lease_state(self, name: str) -> Lease:
+        return Lease(**json.loads(self.sent(self.account.address(), f"/leases?name={name}", None, REQUEST_SECONDS)))
 
     def upload_file(self, place: FilePlace, data: bytes) -> None:
         self.sent(self.account.address(), f"/files/{place.address()}", data, COPY_SECONDS)

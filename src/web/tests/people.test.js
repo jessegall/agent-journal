@@ -32,7 +32,7 @@ test("a colleague's environment opens with a box to comment as yourself and no c
     const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
     expect(thread).toMatch(/:placeholder="colleague \? `Comment as \$\{me\}` : 'Message the agent'"/);
     const bar = readFileSync(resolve(__dirname, "../src/chat/AgentBar.vue"), "utf8");
-    expect(bar).toMatch(/<template v-if="colleague">\s*<div class="agent-bar agent-bar-colleague">\{\{ colleague \}\}'s environment: the agent's status there is not known on this machine<\/div>/);
+    expect(bar).toMatch(/<template v-else-if="colleague">\s*<div class="agent-bar agent-bar-colleague">\{\{ colleague \}\}'s environment: the agent's status there is not known on this machine<\/div>/);
 });
 
 test("a colleague's comment is drawn as theirs, named, and never as yours", async () => {
@@ -72,4 +72,12 @@ test("the Team chat is named so in the sidebar, and each person's message there 
     expect(header).toMatch(/mine && !isMe\(turn\.creator, store\.people\)/);
     expect(actorName("user:7", team(3))).toBe("Anna de Vries");
     expect(isMe("user:3", team(3))).toBe(true);
+});
+
+test("the Team chat's bar names who holds it and offers a Claim", () => {
+    const bar = readFileSync(resolve(__dirname, "../src/chat/AgentBar.vue"), "utf8");
+    expect(bar).toMatch(/<template v-if="teamChat">\s*<TeamChatBar \/>/);
+    const team = readFileSync(resolve(__dirname, "../src/chat/TeamChatBar.vue"), "utf8");
+    expect(team).toMatch(/api\.teamChat\(\)/);
+    expect(team).toMatch(/<Btn class="team-chat-claim" @click="claim">Claim<\/Btn>/);
 });

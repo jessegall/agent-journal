@@ -18,6 +18,7 @@ import CrewList from "./CrewList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
 import {useColleague} from "../composables/colleague.js";
+import TeamChatBar from "./TeamChatBar.vue";
 
 const open = ref("");
 const schemesOpen = ref(false);
@@ -57,11 +58,14 @@ function openSkills() {
     open.value = "";
     go("skills");
 }
-const {colleague} = useColleague();
+const {colleague, teamChat} = useColleague();
 </script>
 
 <template>
-    <template v-if="colleague">
+    <template v-if="teamChat">
+        <TeamChatBar />
+    </template>
+    <template v-else-if="colleague">
         <div class="agent-bar agent-bar-colleague">{{ colleague }}'s environment: the agent's status there is not known on this machine</div>
     </template>
     <template v-else>

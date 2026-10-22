@@ -316,6 +316,15 @@ export class ApiClient {
         return this.get(this.here(`/agents/${agent}/terminal${query({after})}`));
     }
 
+    // who holds the Team chat, and the Claim that makes this machine hold it
+    teamChat() {
+        return this.get("/team-chat");
+    }
+
+    claimTeamChat() {
+        return this.post("/team-chat/claim", {});
+    }
+
     // the people's side thread beside an environment's chat, which no agent reads
     sideThread() {
         return this.get(this.here("/side-thread"));

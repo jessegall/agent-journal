@@ -17,6 +17,7 @@ from journal.sync.team_change import TeamChange
 from journal.sync.team_refusal import TeamRefusal
 from journal.sync.team_server_link import TeamServerLink
 from sync_server.file_place import FilePlace
+from journal.sync.team_chat import TeamChat
 
 BATCH_ROWS = 200
 IDLE_SECONDS = 5
@@ -26,11 +27,11 @@ LAST_RETRY_SECONDS = 30
 
 
 class SyncClient:
-    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; once it has taken a batch it sends every file attached here that the server lacks, before the batch, so no change in it names a file the server has not got, and asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push."""
+    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; once it has taken a batch it sends every file attached here that the server lacks, before the batch, so no change in it names a file the server has not got, renews the Team chat's lease while this machine holds it, and asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables, uploads: PendingUploads, attachments: Attachments) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables, uploads: PendingUploads, attachments: Attachments, chat: TeamChat) -> None:
         self.account, self.link, self.outgoing, self.incoming, self.rejected, self.signal, self.status = account, link, outgoing, incoming, rejected, signal, status
-        self.blocks, self.tables, self.uploads, self.attachments = blocks, tables, uploads, attachments
+        self.blocks, self.tables, self.uploads, self.attachments, self.chat = blocks, tables, uploads, attachments, chat
         self.stopping = threading.Event()
         self.clock_offset = 0.0
         self.sender = threading.Thread()
@@ -61,6 +62,7 @@ class SyncClient:
                 delay = min(delay * 2, LAST_RETRY_SECONDS)
 
     def send(self) -> None:
+        self.chat.renew()
         self.refill()
         batch = self.outgoing.sending_batch(BATCH_ROWS)
         self.upload_files()

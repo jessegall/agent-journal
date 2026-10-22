@@ -671,6 +671,8 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.repositories.id_blocks import IdBlocks
     from journal.repositories.pending_uploads import PendingUploads
     from journal.sync.attachments import Attachments
+    from journal.sync.team_chat import TeamChat
+    from journal.engine.agent_launcher import AgentLauncher
 
     team = TeamServer(tmp_path)
     team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
@@ -687,7 +689,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus)))
         rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
         uploads = PendingUploads(tasks.connection, tasks.bus)
-        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account)))
+        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account)), TeamChat(account, TeamServerLink(account), AgentLauncher(Config(tmp_path / name))))
         client.start()
         return scope, tasks, client, messages
 
