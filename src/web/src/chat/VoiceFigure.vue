@@ -6,7 +6,6 @@ import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.j
 import {fallOf} from "../domain/falls.js";
 import {
     KEPT_WITHIN,
-    ON_FLOOR,
     aimedAt,
     airborneFrame,
     chaseRoom,
@@ -375,7 +374,7 @@ function watchFooting() {
     const ground = groundUnder(body.footing, body.place, figureSize());
     if (!ground) return uprooted();
     body.footing = ground.footing;
-    if (body.footing.home && ground.spot.y > body.place.y + ON_FLOOR) return fallFrom(body.place, null);
+    if (ground.motion === "dropping") return fallFrom(body.place, null);
     const spot = ground.spot;
     if (Math.hypot(spot.x - body.place.x, spot.y - body.place.y) <= 0.3) return;
     if (ground.motion === "launched" && !body.arriving) groundMoved("launched");

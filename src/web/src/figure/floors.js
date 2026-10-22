@@ -77,22 +77,21 @@ export function stopFloors() {
     cancelAnimationFrame(frame);
 }
 
-// how far the ground at home moves within GROUND_JUMP_MS, in pixels, before the figure is thrown up with it or falls with it rather than
-// carried along: a docked card growing or shrinking by a line or two carries it, only a whole bar docking or going moves it
-const GROUND_JUMP = 30;
-const GROUND_JUMP_MS = 200;
+// how far the ground at home may move from the figure's feet in one frame and still carry it, in pixels: further down and it falls from
+// where it stood, further up and it is thrown up onto it
+const CARRIED_WITHIN = 5;
 
 const floorNamed = (floors, id) => floors.find((floor) => floor.id === id) ?? null;
 
 // What a figure resting on a spot keeps of it: the floor it rests on by id, the spot's place from that floor's left end and top, the
 // posture it rests in there, whether it rests at home, which is then whatever is the ground at home as bars dock over the compose box
 // and go, and the height of home and the moment `at` it was there; null when it rests on no floor on the page
-export function footingOn(spot, floors = readFloors().floors, at = performance.now()) {
+export function footingOn(spot, floors = readFloors().floors) {
     const home = floorNamed(floors, "home");
     const id = !spot.on ? null : spot.on === home?.element ? "home" : floorOf(spot.on);
     const floor = id && floorNamed(floors, id);
     if (!floor) return null;
-    return {id, dx: spot.x - floor.left, dy: spot.y - floor.top, posture: spot.posture, home: id === "home", ground: {y: floor.top, at}};
+    return {id, dx: spot.x - floor.left, dy: spot.y - floor.top, posture: spot.posture, home: id === "home"};
 }
 
 // Where a footing's spot is now, carried along as its floor moves, or null when the ground went from under the figure: the floor left the
@@ -113,23 +112,18 @@ export function holds(spot, figure, floors = latestFloors().floors) {
     return inWorld(spot, figure);
 }
 
-// Where a figure resting at `spot` by `footing` is now, at the moment `at`, with the footing it keeps and how it got there, or null once its
-// ground has gone from under it. Anywhere but home it is carried along with its floor. At home it stays where it stood along the ground, at
-// its height above whatever is home now, and moves with it: "launched" when home rose more than GROUND_JUMP pixels within GROUND_JUMP_MS,
-// as when a bar docks over the compose box, "dropping" when it fell so, as when a bar goes, else "carried".
-export function groundUnder(footing, spot, figure, floors = latestFloors().floors, at = performance.now()) {
+// Where a figure resting at `spot` by `footing` is now, with the footing it keeps and how it got there, or null once its ground has gone from
+// under it. Anywhere but home it is carried along with its floor. At home it stays where it stood along the ground, at its height above
+// whatever is home now, measured every frame: carried while home is within CARRIED_WITHIN pixels of its feet, "dropping" when home fell
+// further, as when a bar goes, and "launched" when it rose further, as when a bar docks over the compose box.
+export function groundUnder(footing, spot, figure, floors = latestFloors().floors) {
     const now = footingNow(footing, figure, floors);
     if (!now) return null;
     if (!footing.home) return {spot: {...spot, ...now}, footing, motion: "carried"};
     const home = floorNamed(floors, "home");
-    const there = {...spot, y: now.y};
-    const shift = home.top - footing.ground.y;
-    const within = at - footing.ground.at <= GROUND_JUMP_MS;
-    const jumped = within && Math.abs(shift) > GROUND_JUMP;
-    const still = Math.abs(there.y - spot.y) <= 0.3;
-    const ground = jumped || still || !within ? {y: home.top, at} : footing.ground;
-    const motion = !jumped ? "carried" : shift > 0 ? "dropping" : "launched";
-    return {spot: there, footing: {...footing, dx: spot.x - home.left, ground}, motion};
+    const shift = now.y - spot.y;
+    const motion = Math.abs(shift) <= CARRIED_WITHIN ? "carried" : shift > 0 ? "dropping" : "launched";
+    return {spot: {...spot, y: now.y}, footing: {...footing, dx: spot.x - home.left}, motion};
 }
 
 // Where a trip to a spot ends: the spot carried along by `footing`, so it lands on the line where its floor is now; the spot as it was
