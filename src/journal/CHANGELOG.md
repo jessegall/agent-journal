@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.7.1
+
+- Rows are chosen in their repositories: about fifty places that filtered rows after fetching them now ask a repository method named for the rows they want. Two detectors in the project's code-commandments rules catch it from now on.
+
 ## 4.7.0
 
 - A task of a plan the user has not approved is never started or handed to a worker. It is not counted as open work either, so no agent is nudged or held for it. The tasks repository's `open_tasks()` and `blocked_tasks()` are the one place open and blocked tasks are read.
