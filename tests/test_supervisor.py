@@ -213,7 +213,7 @@ def test_the_supervisor_restarts_itself_by_exiting_to_its_launcher_with_the_conv
     assert supervisor._code == RESTART, "the restart is an exit with the code that has the launcher start it again"
     assert json.loads(path.read_text()) == {**started, "front": {**started["front"], "resume": ["--resume", "s2"]}}, "the launch file keeps everything but the conversation to resume"
     again = Supervisor(Terminal(["true"], str(tmp_path), {}, ("--resume", "s2")), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(), stdin=None, launch=path)
-    again.restart("supervisor", ())
+    again.restart("supervisor", (), 0.0)
     assert json.loads(path.read_text())["front"]["resume"] == ["--resume", "s2"], "a restart that names no conversation keeps the one running"
     again.stop()
     assert again._code == ENDED, "a stop ends the launcher's loop"
@@ -469,3 +469,21 @@ def test_a_new_environment_named_at_the_launch_gets_its_row_before_the_agent_sta
     produced.clear()
     menu.choose("codex", environment="main", confirmed=True)
     assert produced == [], "an environment that exists is not made again"
+
+
+def test_a_restart_asked_with_a_delay_waits_so_the_command_that_asked_ends_its_answer_first(tmp_path: Path):
+    import time
+    from supervisor.request import Request
+    from supervisor.service import Service
+    from supervisor.services import Services
+    from supervisor.supervisor import Supervisor
+    from supervisor.terminal import Terminal
+    restarts = []
+    service = Service("journal", ["sleep", "5"], tmp_path, {}, tmp_path / "journal.log")
+    service.restart = lambda: restarts.append(time.monotonic())
+    supervisor = Supervisor(Terminal(["true"], str(tmp_path), {}), Inbox(tmp_path / "s.sock", tmp_path / "announce"), Services(service), stdin=None, faults=tmp_path / "supervisor.log")
+    asked = time.monotonic()
+    assert supervisor.verbs.handle(Request.parsed({"verb": "restart", "name": "journal", "after": 0.3})).is_success
+    assert restarts == [], "the answer goes back before the restart"
+    time.sleep(0.6)
+    assert len(restarts) == 1 and restarts[0] - asked >= 0.3, "and the restart comes once the delay is over"

@@ -2,6 +2,7 @@ import os
 import select
 import signal
 import termios
+import threading
 import time
 import traceback
 import tty
@@ -129,12 +130,12 @@ class Supervisor:
             return
         self.services.service(name).send(data)
 
-    def restart(self, name: str, resume: tuple[str, ...]) -> None:
+    def restart(self, name: str, resume: tuple[str, ...], delay_seconds: float) -> None:
         if name == SUPERVISOR:
             self.restart_supervisor(resume or self.terminal.resume)
             return
         if name != FRONT:
-            self.services.service(name).restart()
+            threading.Timer(delay_seconds, self.services.service(name).restart).start()
             return
         LaunchResume.record(self.launch, resume)
         self._stopping = True

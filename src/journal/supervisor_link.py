@@ -19,6 +19,8 @@ from journal.repositories.environments import Environments
 JOURNAL_PREFIX = "[journal]"
 LINE_ERASE = "\x15"
 ERASE_MARGIN_LINES = 2
+# how long the journal waits before it restarts, so the command that asked for the restart finishes its answer first
+RESTART_DELAY_SECONDS = 2.0
 AGENT, JOURNAL, SUPERVISOR = "agent", "journal", "supervisor"
 
 
@@ -154,7 +156,7 @@ class SupervisorLink:
         self._send(environment_id, "restart", {"name": AGENT, "resume": list(resume)})
 
     def restart_journal(self, environment_id: int) -> None:
-        self._send(environment_id, "restart", {"name": JOURNAL})
+        self._send(environment_id, "restart", {"name": JOURNAL, "after": RESTART_DELAY_SECONDS})
 
     def restart_supervisor(self, environment_id: int, resume: tuple[str, ...]) -> None:
         self._send(environment_id, "restart", {"name": SUPERVISOR, "resume": list(resume)})

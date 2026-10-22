@@ -63,7 +63,7 @@ class Verbs:
         return Reply.success()
 
     def restart(self, request: Request) -> Reply:
-        self.supervisor.restart(request.needs("name").name, request.resume)
+        self.supervisor.restart(request.needs("name").name, request.resume, request.delay_seconds)
         return Reply.success()
 
     def stop(self, request: Request) -> Reply:
