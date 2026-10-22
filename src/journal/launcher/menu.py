@@ -34,14 +34,18 @@ class Menu:
         except (OSError, subprocess.TimeoutExpired):
             return ""
 
+    def environment_rows(self, name: str, rows: list) -> list:
+        if name in {row.name for row in rows}:
+            return rows
+        self.journal("environment", "create", name)
+        return self.environments()
+
     def choose(self, agent: str, environment: str = "", new: bool = False, stashed: bool = False, omit: bool = False, confirmed: bool = False) -> Choice:
         self.screen.banner(agent, str(self.root))
         rows, previous = self.environments(), self.remembered.read()
         asking = not confirmed
         selection = environment or (self._environment(agent, rows) if asking else "main")
-        if selection not in {row.name for row in rows}:
-            self.journal("environment", "create", selection)
-            rows = self.environments()
+        rows = self.environment_rows(selection, rows)
         last = next((row.last_session(agent) for row in rows if row.name == selection), "")
         resume = "" if new or not last else self._continuation(agent, selection, last, asking)
         prompt_flags = omit or confirmed or self._prompts(agent)

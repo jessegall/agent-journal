@@ -262,6 +262,44 @@ def test_a_workers_environment_carries_no_providers_markers_no_session_and_no_la
     assert handed["JOURNAL_ACTOR"] == "worker-agent" and handed["JOURNAL_ENV"] == "main"
 
 
+def test_two_worktree_launches_run_side_by_side_each_with_its_own_environment_and_agent(app: App, monkeypatch):
+    import json
+    import subprocess
+    from urllib.request import Request as HttpRequest, urlopen
+    from journal.launcher.launch import Launch
+    from journal.launcher.menu import Menu
+    from journal.providers.support.status_line import StatusLine
+    from journal.repositories.agents import Agents
+    from journal.repositories.environments import Environments
+    root = app.config.root
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
+    monkeypatch.setattr(Menu, "journal", lambda self, *argv: app.console().run(list(argv), Caller.user("main")).text)
+    launches = app.config.home / "runtime" / "launches"
+    launches.mkdir(parents=True, exist_ok=True)
+    folders = {}
+    for name in ("alpha", "beta"):
+        launch = Launch.parse(["claude", "--worktree", name], root)
+        choice = launch.choice()
+        written = launch.launch_file(choice, StatusLine(root))
+        assert choice.environment == name, "a worktree launch works the environment named after it"
+        folders[name] = written["front"]["folder"]
+        (launches / f"{name}.json").write_text(json.dumps({"launch": written["launch"]}))
+    assert folders == {name: str(root / ".claude" / "worktrees" / name) for name in ("alpha", "beta")} and all(Path(folder).is_dir() for folder in folders.values()), "each runs in a worktree of its own"
+    app.runtime().start()
+    try:
+        for name in ("alpha", "beta"):
+            launch_id = json.loads((launches / f"{name}.json").read_text())["launch"]
+            body = json.dumps({"hook_event_name": "SessionStart", "session_id": f"s-{name}", "source": "startup"}).encode()
+            urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=body, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": name, "X-Journal-Launch": launch_id}), timeout=5).read()
+        agents, environments = app.container.get(Agents), app.container.get(Environments)
+        alpha, beta = agents.session_agent("s-alpha"), agents.session_agent("s-beta")
+        assert alpha.environment_id == environments.lookup("alpha").row_id and beta.environment_id == environments.lookup("beta").row_id, "each launch's agent is its own environment's"
+        assert alpha.state != "ended" and beta.state != "ended", "and the second never ends the first"
+    finally:
+        app.runtime().stop()
+
+
 def test_a_hook_whose_launch_id_names_another_environments_launch_is_reported_and_registers_no_agent(app: App):
     import json
     from urllib.request import Request as HttpRequest, urlopen

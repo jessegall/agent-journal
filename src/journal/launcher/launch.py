@@ -86,6 +86,7 @@ class Launch:
         menu = Menu(self.root, self.package / "journal.py")
         matched = self.environment or self.worktree or self.resume_folder(menu)
         if not sys.stdin.isatty():
+            menu.environment_rows(matched or "main", menu.environments())
             return Choice(matched or "main", "", self.stashed, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         if not self.confirmed and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
