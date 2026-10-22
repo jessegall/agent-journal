@@ -51,7 +51,7 @@ class Messages(Feature[MessagesData]):
     DUPLICATE_REPLY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_interval=0)
     REPEATED_CLOSING_TEXT = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_interval=0, is_remark=True)
     PEER_QUESTION = Nudge(name, "answer_the_other_agent", "agent {{sender}} asked you a question in message {{n}}", "answer it with SendMessage to {{sender}}; a message from another agent that asks nothing needs no answer", repeat_interval=300)
-    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, EMOJI_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, INBOX_COUNTDOWN, INBOX_LAST_USE, UNANSWERED_COUNTDOWN, UNANSWERED_LAST_USE)
+    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, COLLEAGUE_COMMENT, UNREAD_COMMENTS, USER_REACTION, EMOJI_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, INBOX_COUNTDOWN, INBOX_LAST_USE, UNANSWERED_COUNTDOWN, UNANSWERED_LAST_USE)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages

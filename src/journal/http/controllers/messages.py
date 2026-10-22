@@ -95,7 +95,7 @@ class MessageController(Controller[Message]):
     def press(self, request: Request) -> Response:
         message = self.repository.find(request.number("id"))
         pressed = [str(label) for label in request.body.get("pressed", [])]
-        return Response.json(self.shown(self.repository.save(message.with_(data={**message.data, "pressed": pressed}), request.actor)))
+        return Response.json(self.shown(self.repository.save(message.with_merged("data", {"pressed": pressed}), request.actor)))
 
     def dock(self, request: Request) -> Response:
         return Response.json(self.shown(self.docking.pin_message(self.repository.find(request.number("id")), request.actor)))

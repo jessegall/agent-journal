@@ -60,7 +60,7 @@ class Docking:
         return self.saved_with(message, {DOCKED: False, AUTO_DOCKED: False}, actor)
 
     def saved_with(self, message: Message, data: dict, actor: Actor) -> Message:
-        return self.messages.save(message.with_(data={**message.data, **data}), actor)
+        return self.messages.save(message.with_merged("data", data), actor)
 
     def card(self, row: Model) -> Message | None:
         cards = self.messages.with_key(self.cards.creation_key(row))

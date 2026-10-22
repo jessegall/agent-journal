@@ -88,7 +88,7 @@ class Messages(ScopedRepository[Message]):
         return self.selected(chat.filter_greater("updated_at", time).order("id").limit(500))
 
     def unviewed(self) -> int:
-        return self.counted(self.main_chat().filter(author=Author.AGENT).filter_null("read_at"))
+        return self.counted(self.main_chat().filter(author=Author.AGENT).filter_null("read_at")) + self.counted(self.main_chat().filter(author=Author.COLLEAGUE).filter_json("data->viewed", 0))
 
     def visitor_messages(self, share_id: int) -> list[Message]:
         return self.selected(self.query().filter_json("data->share", share_id).order("id"))
@@ -134,6 +134,8 @@ class Messages(ScopedRepository[Message]):
         return list(reversed(rows))
 
     def read(self, message: Message, actor: Actor, tool_use: int) -> Message:
-        if message.read_at or self.owners.is_colleague(actor, message.environment_id):
+        if self.owners.is_colleague(actor, message.environment_id):
             return message
-        return self.save(message.with_(read_at=datetime.now(timezone.utc), read_position=tool_use), actor)
+        if message.is_comment() and actor.is_user():
+            return self.save(message.viewed(), actor) if not message.data.get(Message.VIEWED) else message
+        return message if message.read_at else self.save(message.with_(read_at=datetime.now(timezone.utc), read_position=tool_use), actor)

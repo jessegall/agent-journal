@@ -9683,8 +9683,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
             assert comment.id not in [message.id for message in a.container.get(Messages).unread()], "it is not among Ada's unread"
             assert comment.id not in [message.id for message in a.container.get(Messages).unanswered()], "nor among what her agent owes an answer"
             assert comment.id in [message.id for message in a.container.get(Messages).unread_comments()], "a comment that came while no agent ran waits to be named at the next start"
+            badge = a.container.get(Messages).unviewed()
+            a.container.get(Messages).read(a.container.get(Messages).find(comment.id), Actor.user(1), 0)
+            assert a.container.get(Messages).unviewed() == badge - 1 and comment.id in [message.id for message in a.container.get(Messages).unread_comments()], "Ada's badge counted the comment until she viewed it, which leaves it unread for her agent"
             a.container.get(Messages).read(a.container.get(Messages).find(comment.id), Actor.agent("s1"), 0)
+            answer = a.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.AGENT, text="thanks, Bob", reply_target=comment.id), Actor.agent("s1"))
             assert comment.id not in [message.id for message in a.container.get(Messages).unread_comments()], "and once the agent read it, it is named no more"
+        assert eventually(lambda: [row.reply_target for row in b.container.get(Messages).global_matching(id=answer.id)] == [comment.id]), "the agent's reply to Bob's comment is in Bob's view of Ada's chat"
         assert urlopen_refusal(f"http://127.0.0.1:{b.server().port}/journal/environments/{ada_main.row_id}/stop").find("only comment") >= 0, "and Bob cannot stop Ada's agent from his viewer"
         made = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/environments", data=json.dumps({"name": "feature-x"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"}), timeout=5))
         assert made["name"] == "bob-feature-x", "an environment made from the viewer carries its person"

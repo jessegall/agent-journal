@@ -87,7 +87,7 @@ class PluginRelay:
     def waiting_lines(self, session: str) -> list[str]:
         waiting = self.entries.undelivered_lines(WAITING, session)
         for entry in waiting:
-            self.entries.save(entry.with_(data={**entry.data, "delivered": True}), Actor.system())
+            self.entries.save(entry.with_merged("data", {"delivered": True}), Actor.system())
         return [e.data["line"] for e in reversed(waiting)]
 
     def line(self, plugin: Plugin, event: Event, environment_id: int, manner: str, text: str) -> None:

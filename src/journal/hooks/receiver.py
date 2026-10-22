@@ -56,7 +56,7 @@ class Receiver:
             if self.is_unknown_session_end(event):
                 return Decision()
             decision = self._blocking(event, self._split(self.bus.listeners(type(event)))[0])
-            self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision, timer)}), Actor.agent(hook.session))
+            self.entries.save(entry.with_merged("data", self.recorded_outcome(hook, decision, timer)), Actor.agent(hook.session))
             self._defer(event)
         return decision
 

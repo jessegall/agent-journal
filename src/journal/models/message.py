@@ -21,6 +21,7 @@ class Message(Scoped):
     PEER = "peer"
     COLLEAGUE_NAME = "colleague"
     COLLEAGUE_USER = "colleague_user"
+    VIEWED = "viewed"
     RECIPIENT_KEY = "sent_to"
     ASKS_KEY = "asks"
 
@@ -61,11 +62,17 @@ class Message(Scoped):
     def arrived(self) -> "Message":
         return self.with_event(MessageArrived(text=self.text))
 
+    def is_comment(self) -> bool:
+        return self.author == Author.COLLEAGUE
+
+    def viewed(self) -> "Message":
+        return self.with_merged("data", {self.VIEWED: 1})
+
     def is_unsaved_user_message(self) -> bool:
         return self.is_new and self.author == Author.USER and self.agent_role == AgentRole.MAIN
 
     def commented(self, name: str, user: int) -> "Message":
-        comment = self.without_events().with_(author=Author.COLLEAGUE, data={**self.data, self.COLLEAGUE_NAME: name, self.COLLEAGUE_USER: user})
+        comment = self.without_events().with_(author=Author.COLLEAGUE).with_merged("data", {self.COLLEAGUE_NAME: name, self.COLLEAGUE_USER: user, self.VIEWED: 0})
         return comment.with_event(ColleagueCommented(text=self.text, colleague=name))
 
     @property
