@@ -463,41 +463,47 @@ watch(
                                 @grew="settled"
                             />
                         </TransitionGroup>
-                        <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
-                            <TransitionGroup name="dock">
-                                <template v-for="docked in rowDocks" :key="docked.id">
-                                    <template v-if="docked.data.output">
-                                        <WatchDock :message="docked" :folded="short || !planOpen" />
+                        <div :class="['chat-foot', {docked: dockCount}]">
+                            <div class="chat-docks" :data-figure-docked-bars="dockCount ? '' : null">
+                                <TransitionGroup name="dock">
+                                    <template v-for="docked in rowDocks" :key="docked.id">
+                                        <template v-if="docked.data.output">
+                                            <WatchDock :message="docked" :folded="short || !planOpen" />
+                                        </template>
+                                        <template v-else>
+                                            <RowDock :message="docked" :folded="short || !planOpen" />
+                                        </template>
                                     </template>
-                                    <template v-else>
-                                        <RowDock :message="docked" :folded="short || !planOpen" />
-                                    </template>
-                                </template>
-                            </TransitionGroup>
-                            <Transition name="dock">
-                                <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />
-                            </Transition>
-                            <Transition name="dock">
-                                <PlanCard v-if="planCard" :key="planCard.id" :plan="planCard" :folded="short || !planOpen" />
-                            </Transition>
-                        </div>
-                        <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${line.doing || 'thinking'}`">
-                            <div class="thread-meta">
-                                <Dot kind="started" solid :size="6" />
-                                <template v-if="line.thinking">
-                                    <span>thinking</span>
-                                    <span class="thread-meta-on thought">{{ line.thinking }}</span>
-                                </template>
-                                <template v-else>
-                                    <RunningCommand :idle="line.doing" />
-                                </template>
+                                </TransitionGroup>
+                                <Transition name="dock">
+                                    <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />
+                                </Transition>
+                                <Transition name="dock">
+                                    <PlanCard v-if="planCard" :key="planCard.id" :plan="planCard" :folded="short || !planOpen" />
+                                </Transition>
                             </div>
-                        </div>
-                        <div v-else class="thread-turn busy" :aria-label="`The agent is ${waitingNow ? 'waiting' : 'idle'}`">
-                            <div class="thread-meta">
-                                <Dot kind="queued" solid :size="6" />
-                                <span>{{ waitingNow ? "waiting" : "idle" }}</span>
-                            </div>
+                            <template v-if="busy && !waitingNow">
+                                <div class="thread-turn busy" :aria-label="`The agent is ${line.doing || 'thinking'}`">
+                                    <div class="thread-meta">
+                                        <Dot kind="started" solid :size="6" />
+                                        <template v-if="line.thinking">
+                                            <span>thinking</span>
+                                            <span class="thread-meta-on thought">{{ line.thinking }}</span>
+                                        </template>
+                                        <template v-else>
+                                            <RunningCommand :idle="line.doing" />
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <div class="thread-turn busy" :aria-label="`The agent is ${waitingNow ? 'waiting' : 'idle'}`">
+                                    <div class="thread-meta">
+                                        <Dot kind="queued" solid :size="6" />
+                                        <span>{{ waitingNow ? "waiting" : "idle" }}</span>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
                     </template>
                 </div>
@@ -750,19 +756,28 @@ watch(
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
 }
 
-.chat-docks {
+/* The docked bars and the line under them stick to the bottom together, so a row arriving above never pushes the bars down while the
+   chat scrolls after it */
+.chat-foot {
     position: sticky;
     bottom: 0;
     z-index: 2;
     display: flex;
     flex: none;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
     width: 100%;
 }
 
-.chat-docks.docked {
+.chat-foot.docked {
     margin-top: auto;
+}
+
+.chat-docks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
 }
 
 .thread-down.over-docks {
