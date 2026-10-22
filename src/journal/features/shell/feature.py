@@ -2,6 +2,7 @@ from journal.support.foreground_option import FOREGROUND_OPTION
 from journal.features.feature import Feature
 from journal.features.shell.listeners.output_notice import OutputNotice
 from journal.features.shell.listeners.watch_update import WatchUpdate
+from journal.features.shell.states.fixing_reader import FixingReader
 from journal.features.shell.shell_conduct import ShellConduct
 from journal.features.shell.support.shell_data_reader import ShellDataReader
 from journal.features.shell.support.shell_data import ShellData
@@ -35,6 +36,7 @@ class Shell(Feature[ShellData]):
     jobs = (WatchRefresh,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
+    states = (FixingReader,)
 
     BACKGROUND_MOVE = Nudge(name, "moved_to_the_background", "moved to the background as output {{n}}", "carry on with what does not wait on it", repeat_interval=0)
     OUTPUTS_ENDED = Nudge(name, "outputs_ended", "{{outputs}}", "`journal output read {{n}} --summary` says how", repeat_interval=0)
@@ -49,13 +51,15 @@ class Shell(Feature[ShellData]):
     WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}} --title \"<what it is doing, such as Running tests>\"`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
     NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label 'Running tests'`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
     READER_FIX = Nudge(name, "fix_the_reader", "the reader {{reader}} put a line on output {{n}}'s card that reads as code or data, or is too long for the card, for the user: {{line}}", "tighten its pattern to short lines a person reads as how the run goes, such as its summary: `journal reader add {{reader}} --pattern '<those lines>' ...` writes it anew", repeat_interval=0)
+    READER_REWRITE_REQUEST = Nudge(name, "fix_the_reader_first", "the reader {{reader}} was asked three times to read better on its card", "write it anew first, `journal reader add {{reader}} --pattern '<short lines a person reads>' ...`; your other tools wait until you have", repeat_interval=0)
+    READER_REWRITE_NOTICE = Nudge(name, "reader_written_anew", "the reader {{reader}} is written anew, and your tools are free", repeat_interval=0)
     READER_DETAIL = Nudge(name, "give_the_reader_its_summary", "output {{n}}'s card showed the user only its title: the reader {{reader}} picked no line and no progress", "give it a pattern for the run's summary line and a --progress pattern with a --label, so the card reads like Running tests 40% and ends on 567 passed: `journal reader add {{reader}} --pattern '<failures and summary>' --progress '<percent or count>' --label '<what the run is doing, such as Running tests>'`", repeat_interval=0)
     READER_TOPIC = Nudge(name, "give_the_reader_a_topic", "{{command}} has run here with {{count}} different arguments, so its card's title should say what each run is about", "give the reader {{reader}} a topic pattern read over the command line, such as the files or the -k it names: `journal reader add {{reader}} ... --topic '<pattern>'`", repeat_interval=0)
     READER_WATCH = Nudge(name, "watched_reader_output", "output {{n}}, a run of {{command}}, went to the background at once and is watched through the reader {{reader}}", repeat_interval=0)
     ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", repeat_interval=0)
     ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
     ALIAS_SUGGESTION = Nudge(name, "add_an_alias", "you ran {{shape}} three times or more", "make it an alias, `journal alias add <name> \"<the line without the values that change>\"{{reader}}`, and run `journal <name> <those values>` from then on", repeat_interval=0)
-    nudges = (READER_FIX, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    nudges = (READER_FIX, READER_REWRITE_REQUEST, READER_REWRITE_NOTICE, READER_DETAIL, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands

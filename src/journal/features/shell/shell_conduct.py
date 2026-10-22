@@ -7,6 +7,7 @@ from journal.events.agent.agent_event import AgentEvent
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
+from journal.features.shell.states.fixing_reader import FixingReader
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_view import OutputView
@@ -20,6 +21,7 @@ SILENCE_SECONDS = 5.0
 BACKGROUND_CHECK_DELAY_SECONDS = 300.0
 ALIAS_RUNS = 3
 READER_RUNS = 5
+READER_REQUEST_COUNT = 3
 
 
 class ShellConduct(Conduct):
@@ -33,13 +35,21 @@ class ShellConduct(Conduct):
         watch = event.data.part(Shell).watch
         if not watch.is_watching():
             return unread_check(self, event, settings)
-        fix = reader_fix(watch, event.data.part(Shell).tipped)
+        fix_lines = reader_fix(watch, event.data.part(Shell).tipped)
+        if fix_lines and event.data.part(Shell).reader_requests.count(watch.reader) + 1 >= READER_REQUEST_COUNT:
+            return reader_rewrite(self, event, watch)
         if watch.ending:
-            return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()), *fix)
-        return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()), *fix)
+            return self.none(Shell.WATCH_ENDED.create(n=watch.output, ending=watch.ending, lines=watch.text()), *fix_lines)
+        return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()), *fix_lines)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings), unread_check(self, event, settings)])
+
+
+def reader_rewrite(state: BaseState, event: ToolFinished, watch: OutputView) -> Transition:
+    from journal.features.shell.feature import Shell
+    reader = next((r for r in event.data.part(Shell).readers if r.name == watch.reader), None)
+    return state.push(FixingReader(reader=watch.reader, reader_form=repr(reader)), *reader_fix(watch, ()), Shell.READER_REWRITE_REQUEST.create(reader=watch.reader))
 
 
 def reader_fix(watch: OutputView, tipped: tuple[str, ...]) -> tuple[Nudge, ...]:

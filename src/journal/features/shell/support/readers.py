@@ -27,6 +27,9 @@ class Readers:
             raise Rejection(f"no reader named {name}: `journal reader list` names them")
         return KINDS[rows[0].suffix](rows[0])
 
+    def file_stamp(self, name: str) -> float:
+        return max((path.stat().st_mtime for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()), default=0.0)
+
     def reading(self, line: str) -> Reader | ScriptReader | None:
         return next((reader for reader in self.all() if reader.commands.is_read(line)), None)
 

@@ -30,6 +30,7 @@ class ShellDataReader:
             backgrounded_at=min((o.creation_time.timestamp() for o in background), default=0.0),
             unannounced=tuple(EndedOutput(o.row_id, o.ending()) for o in self.outputs.unannounced(agent.session)),
             unread=tuple(EndedOutput(o.row_id, o.ending()) for o in self.outputs.unread(agent.session)),
+            reader_requests=self.reader_requests(agent),
             tool_uses=agent.tool_uses,
             last_ending_line=self.last_ending_line(agent),
             output_reads=tuple(reads),
@@ -38,6 +39,11 @@ class ShellDataReader:
             watch=self.watch(agent),
             aliases=tuple(self.aliases.rows()),
         )
+
+    def reader_requests(self, agent: Agent) -> tuple[str, ...]:
+        from journal.features.shell.feature import Shell
+        requests = self.entries.line_entries(agent.session, (Shell.READER_FIX.key, Shell.READER_DETAIL.key))
+        return tuple(reader.name for reader in self.readers.all() for entry in requests if f"the reader {reader.name} " in entry.data["line"] and entry.creation_time.timestamp() > self.readers.file_stamp(reader.name))
 
     def last_ending_line(self, agent: Agent) -> Moment:
         from journal.features.shell.feature import Shell

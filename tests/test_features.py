@@ -7716,6 +7716,33 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
     assert not card(plain).data.get("docked"), "with the setting off, nothing docks"
 
 
+def test_a_reader_asked_three_times_to_read_better_holds_the_tools_until_it_is_written_anew(app: App):
+    """The third ask to fix a reader pushes Fixing a reader: every tool but a journal command waits, and writing the reader anew pops it."""
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    hook(app, "SessionStart")
+    console, outputs = app.console(), app.container.get(CommandOutputs)
+    app.container.get(SettingRows).set("shell.dock_live_outputs", False, Actor.user(1))
+    assert console.run(["reader", "add", "naps", "--pattern", "slept", "--about", "the naps", "--label", "Taking a nap"], AGENT).code == 0
+    for name in ("one", "two", "three"):
+        folder = app.config.root / name
+        folder.mkdir()
+        (folder / "parts").write_text("R-\n")
+        (folder / "0.part").write_text("sleep 1")
+        (folder / "0.out").write_text("slept " + "x" * 120 + "\n")
+        output = app.container.get(OutputLog).start(name, "sleep 1", folder, Caller.agent("main", "s1", "claude"))
+        outputs.save(outputs.find(output.id).backgrounded(), Actor.system())
+        assert console.run(["output", "watch", str(output.id), "--reader", "naps"], AGENT).code == 0
+        told = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]
+    assert app.container.get(SessionAgents).top("s1").name == "fixing_reader" and "asked three times" in json.dumps(told), "the third ask pushes the state"
+    held = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1]
+    assert "asked three times" in held.get("error", ""), "a tool waits while the reader is unfixed"
+    assert hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal reader list"})[1].get("hookSpecificOutput", {}).get("permissionDecision") != "deny", "a journal command goes through"
+    console.run(["reader", "add", "naps", "--pattern", "^[0-9]+ naps", "--about", "the naps", "--label", "Taking a nap"], AGENT)
+    hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "journal reader add naps"}, tool_response="")
+    assert app.container.get(SessionAgents).top("s1").name != "fixing_reader", "the reader written anew frees the tools"
+
+
 def test_a_pytest_runs_bar_moves_with_each_test_between_the_percentages_it_prints_once_a_row():
     from journal.features.shell.seeds.default_readers import SHIPPED
     pytest = next(reader for reader in SHIPPED if reader.name == "pytest")

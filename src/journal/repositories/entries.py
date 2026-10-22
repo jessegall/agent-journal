@@ -70,6 +70,9 @@ class Entries(ScopedRepository[Entry]):
         rows = self.selected(self.lines(session).filter_listed("data->key", keys).order_descending("id").limit(1))
         return rows[0] if rows else None
 
+    def line_entries(self, session: str, keys: tuple[str, ...], last: int = 100) -> list[Entry]:
+        return self.selected(self.lines(session).filter_listed("data->key", keys).order_descending("id").limit(last))
+
     def recent_lines(self, session: str, key: str, entry_id: int) -> list[str]:
         return [e.data["line"] for e in self.selected(self.lines(session).filter_json("data->key", key).filter_greater("id", entry_id).order("id"))]
 
