@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.15.0
+
+- A new document or report docks itself at the bottom of the chat, so you can open it whenever.
+- A docked document's description line is as small as a running command's line and starts in the same place.
+
 ## 4.14.0
 
 - A chat etiquette skill holds the rules of the chat and of the voice in one place: say you, never the user; a journal line is an instruction; no talk of the journal's mechanics; plain words in code, documents and plans.
