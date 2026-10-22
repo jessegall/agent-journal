@@ -101,4 +101,8 @@ class Hook:
 
     @property
     def subagent_report(self) -> str:
+        return self.assistant_message
+
+    @property
+    def assistant_message(self) -> str:
         return self.body.get("last_assistant_message", "")

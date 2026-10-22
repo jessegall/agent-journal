@@ -9,6 +9,7 @@ class HookKind(StrEnum):
     POST_TOOL_USE_FAILURE = "PostToolUseFailure"
     PRE_COMPACT = "PreCompact"
     STOP = "Stop"
+    STOP_FAILURE = "StopFailure"
     SUBAGENT_START = "SubagentStart"
     SUBAGENT_STOP = "SubagentStop"
     MESSAGE_DISPLAY = "MessageDisplay"

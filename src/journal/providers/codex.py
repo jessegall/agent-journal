@@ -50,7 +50,7 @@ class Codex(Provider):
         "collaborationspawn_agent": lambda input: SubagentDispatch(None, None, str(input.get("task_name", "")), None, True),
         "request_user_input": lambda input: UserQuestion(),
     }
-    hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE))
+    hook_kinds = tuple(kind for kind in HookKind if kind not in (HookKind.MESSAGE_DISPLAY, HookKind.POST_TOOL_USE_FAILURE, HookKind.STOP_FAILURE))
     capabilities = frozenset()
     profile_suffix = ".toml"
     default = False

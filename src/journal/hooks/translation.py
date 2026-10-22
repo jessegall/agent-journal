@@ -11,6 +11,7 @@ from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.agent.turn_displayed import TurnDisplayed
+from journal.events.agent.turn_failed import TurnFailed
 from journal.config import Config
 from journal.support.hook import Hook
 from journal.hooks.support.tool_calls import ToolCalls
@@ -33,6 +34,7 @@ class Translation:
         HookKind.POST_TOOL_USE_FAILURE: lambda hook, calls: ToolFailed(call=calls.build(hook), error=hook.error),
         HookKind.PRE_COMPACT: lambda hook, calls: Compacting(),
         HookKind.STOP: lambda hook, calls: Stop(prior_refusal=hook.stop_refused_earlier),
+        HookKind.STOP_FAILURE: lambda hook, calls: TurnFailed(error=hook.error, message=hook.assistant_message),
         HookKind.SUBAGENT_START: lambda hook, calls: SubagentStarted(subagent=hook.subagent),
         HookKind.SUBAGENT_STOP: lambda hook, calls: SubagentEnded(subagent=hook.subagent, report=hook.subagent_report),
         HookKind.MESSAGE_DISPLAY: lambda hook, calls: TurnDisplayed(text=hook.text, delta=hook.text, turn_id=hook.turn_id, index=hook.index, final=hook.final),

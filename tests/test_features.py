@@ -9345,3 +9345,38 @@ def test_a_dispatch_names_how_its_worker_tests_from_a_test_template(app: App, mo
     assert app.container.get(Workers).find(4).brief.endswith("How you test: Run the linter, never the tests."), "a project's own test template is used by its title"
     console.run(["template", "create", "A review", "--purpose", "critique", "--brief", "Find what is wrong."], AGENT)
     assert "no test template is titled A review" in dispatch("Worker 5", 5, "--tests", "A review").error, "a template of another purpose is no test template"
+
+
+def test_a_turn_refused_on_the_usage_limit_holds_the_agent_typing_nothing_until_the_limit_is_over(app: App, monkeypatch):
+    from journal.events.bus import Bus
+    from journal.events.agent.ticked import Ticked
+    from journal.repositories.agents import Agents
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["environment", "overview"], AGENT)
+    state = lambda: app.container.get(Agents).current().state
+    limit = {"error": "rate_limit", "last_assistant_message": "You've hit your weekly limit · resets 11am (Europe/Amsterdam)"}
+    hook(app, "StopFailure", **limit)
+    assert state() == "limited", "a turn refused on the usage limit holds the agent"
+    hook(app, "StopFailure", **limit)
+    assert [layer["state"] for layer in app.container.get(Agents).current().stack].count("limited") == 1, "a second refusal keeps the one hold"
+    tick = lambda seconds: app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=timing.time() + seconds, silence_seconds=seconds))
+    keystrokes.clear()
+    console.run(["task", "create", "a line the journal would type", "--start"], USER)
+    tick(60)
+    app.runtime().deferred.drain()
+    assert keystrokes == [], "nothing of the journal's is typed while the limit holds"
+    console.run(["message", "send", "are you there?"], USER)
+    app.runtime().deferred.drain()
+    assert state() != "limited" and any("new message" in line for line in keystrokes), "the user's message pops the hold and is typed at once"
+    hook(app, "StopFailure", **limit)
+    keystrokes.clear()
+    tick(16 * 60)
+    app.runtime().deferred.drain()
+    assert state() != "limited" and any("checking whether the usage limit is over" in line for line in keystrokes), "every so many minutes a turn is tried"
+    hook(app, "StopFailure", **limit)
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    assert state() != "limited", "a turn that works again ends the hold"
