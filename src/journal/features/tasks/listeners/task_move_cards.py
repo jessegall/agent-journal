@@ -17,7 +17,7 @@ MOVES = {
     "resumed": ("Resumed", "", ""),
     "unblocked": ("Unblocked", "", ""),
     "done": ("Finished", "good", "outcome"),
-    "parked": ("Parked", "warn", "suspension_reason"),
+    "parked": ("Parked", "helper", "suspension_reason"),
     "blocked": ("Blocked", "warn", "block_reason"),
 }
 
