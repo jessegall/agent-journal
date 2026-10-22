@@ -487,3 +487,17 @@ def test_a_restart_asked_with_a_delay_waits_so_the_command_that_asked_ends_its_a
     assert restarts == [], "the answer goes back before the restart"
     time.sleep(0.6)
     assert len(restarts) == 1 and restarts[0] - asked >= 0.3, "and the restart comes once the delay is over"
+
+
+def test_on_a_shared_journal_every_launch_works_in_its_environments_own_worktree(tmp_path: Path):
+    import subprocess
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True, timeout=30)
+    subprocess.run(["git", "-C", str(tmp_path), "-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "--allow-empty", "-m", "first"], check=True, timeout=30)
+    plain = Launch.parse(["claude", "--env", "ada-main", "--no-journal"], tmp_path).launch_file(Choice("ada-main", ""), StatusLine(tmp_path))
+    assert plain["front"]["folder"] == str(tmp_path), "a journal in no team launches in the project as before"
+    (tmp_path / ".journal").mkdir(exist_ok=True)
+    (tmp_path / ".journal" / "team.json").write_text("{}")
+    shared = Launch.parse(["claude", "--env", "ada-main", "--no-journal"], tmp_path).launch_file(Choice("ada-main", ""), StatusLine(tmp_path))
+    assert shared["front"]["folder"] == str(tmp_path / ".claude" / "worktrees" / "ada-main"), "a shared journal launches in the environment's own worktree, never the main checkout"
+    branches = subprocess.run(["git", "-C", str(tmp_path), "branch", "--list", "worktree-ada-main"], capture_output=True, text=True, timeout=30).stdout
+    assert "worktree-ada-main" in branches

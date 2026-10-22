@@ -20,7 +20,7 @@ from journal.support.worktree import Worktree
 from journal.launcher.support.update_prompt import UpdatePrompt
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.config import Config
-from journal.sync.team_account import PREFIX_FILE
+from journal.sync.team_account import PREFIX_FILE, TEAM_FILE
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.support.private_folder import PrivateFolder
@@ -94,6 +94,12 @@ class Launch:
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
         return menu.choose(self.agent, matched, self.new, self.stashed, self.is_skipping(), self.confirmed)
+
+    def is_worktree_launch(self, worktree: Worktree) -> bool:
+        return self.worktree_launch or worktree.path.is_dir() or self.is_shared()
+
+    def is_shared(self) -> bool:
+        return (self.root / ".journal" / TEAM_FILE).is_file()
 
     def default_environment(self) -> str:
         prefix_file = self.root / ".journal" / PREFIX_FILE
@@ -175,7 +181,9 @@ class Launch:
         launch = uuid.uuid4().hex
         environ = self.environ(choice, launch)
         worktree = Worktree(self.root, self.worktree or choice.environment)
-        folder = worktree.created() if self.worktree_launch or worktree.path.is_dir() else self.root
+        folder = worktree.created() if self.is_worktree_launch(worktree) else self.root
+        if folder != self.root:
+            Menu(self.root, self.package / "journal.py").journal("environment", "branch", choice.environment, worktree.branch)
         journal = {"name": "journal", "command": self.journal_command(), "folder": str(self.root), "env": environ, "log": str(self.runtime / "server.log")}
         return {
             "launch": launch,

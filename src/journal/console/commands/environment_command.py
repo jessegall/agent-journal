@@ -50,6 +50,9 @@ class EnvironmentCommand(Command):
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")
+        branch = self.verb(verbs, "branch", "record the branch an environment's worktree works on, as the launcher does when it makes one")
+        branch.add_argument("name")
+        branch.add_argument("branch")
         self.verb(verbs, "delete", "an environment and everything recorded in it").add_argument("name")
         rename = self.verb(verbs, "rename", "give an environment a new name; everything recorded in it stays")
         rename.add_argument("name")
@@ -122,6 +125,11 @@ class EnvironmentCommand(Command):
 
     def json(self, args: Namespace, caller: Caller) -> int:
         print(json.dumps([asdict(row) for row in self.rows()]))
+        return 0
+
+    def branch(self, args: Namespace, caller: Caller) -> int:
+        environment = self.environments.save(self.environments.existing(args.name).with_(branch=args.branch), caller.actor)
+        print(f"environment {environment.name} works on branch {environment.branch}")
         return 0
 
     def create(self, args: Namespace, caller: Caller) -> int:

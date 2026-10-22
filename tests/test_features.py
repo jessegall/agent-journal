@@ -4,7 +4,7 @@ import json
 import os
 import re
 import time as timing
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request as HttpRequest, urlopen
@@ -9648,6 +9648,8 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert eventually(lambda: {user.id: user.name for user in a.container.get(Users).rows()}.get(2) == "Bob"), "every machine knows the new person"
         assert "person: user 2" in b.console().run(["team", "status"], USER).text
         bob_main = b.container.get(Environments).lookup("bob-main")
+        assert "works on branch worktree-bob-main" in b.console().run(["environment", "branch", "bob-main", "worktree-bob-main"], replace(USER, person=2)).text
+        assert eventually(lambda: [row.branch for row in a.container.get(Environments).rows() if row.name == "bob-main"] == ["worktree-bob-main"]), "the branch an environment works on is known to the team"
         ada_main = a.container.get(Environments).existing("ada-main")
         owners_a = a.container.get(EnvironmentOwners)
         assert owners_a.owner_name(ada_main.row_id) == "Ada", "the first journal's environments are its person's, named for them"
