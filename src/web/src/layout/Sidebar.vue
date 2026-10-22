@@ -77,7 +77,7 @@ function point(e) {
                     <div class="env-row">
                         <a :class="['item', {on: route.env === e.name}]" :href="href.page()" @click="choose(e.name)">
                             <span :class="['env-dot', {live: agentRunningIn(e.name)}]" />
-                            <span class="label">{{ e.name }}</span>
+                            <span class="label">{{ e.is_team_chat ? "Team chat" : e.name }}</span>
                             <template v-if="e.worktree">
                                 <span class="worktree" :title="e.worktree">{{ e.worktree }}</span>
                             </template>

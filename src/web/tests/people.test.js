@@ -64,3 +64,12 @@ test("a colleague's command card is drawn from its message, and opening it says 
     const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
     expect(thread).toMatch(/<OutputDialog :key="outputOpen" :n="outputOpen" :owner="colleague"/);
 });
+
+test("the Team chat is named so in the sidebar, and each person's message there is named by its writer", () => {
+    const sidebar = readFileSync(resolve(__dirname, "../src/layout/Sidebar.vue"), "utf8");
+    expect(sidebar).toMatch(/e\.is_team_chat \? "Team chat" : e\.name/);
+    const header = readFileSync(resolve(__dirname, "../src/chat/TurnHeader.vue"), "utf8");
+    expect(header).toMatch(/mine && !isMe\(turn\.creator, store\.people\)/);
+    expect(actorName("user:7", team(3))).toBe("Anna de Vries");
+    expect(isMe("user:3", team(3))).toBe(true);
+});

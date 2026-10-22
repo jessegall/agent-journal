@@ -2,6 +2,8 @@
 import {computed} from "vue";
 import ReadTicks from "../kit/ReadTicks.vue";
 import {clock} from "../format/time.js";
+import {actorName, isMe} from "../domain/people.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({turn: {type: Object, required: true}});
 const mine = computed(() => props.turn.who === "user");
@@ -14,6 +16,12 @@ const mine = computed(() => props.turn.who === "user");
         </template>
         <template v-else-if="turn.who === 'colleague'">
             <span class="thread-colleague">{{ (turn.data || {}).colleague }}, colleague</span>
+            <span class="thread-meta-dot" />
+        </template>
+        <template v-else-if="mine && !isMe(turn.creator, store.people) && (turn.creator || '').startsWith('user:')">
+            <span class="thread-colleague">{{ actorName(turn.creator, store.people) }}</span>
+            <span class="thread-meta-dot" />
+            <span class="thread-ref">message {{ turn.id }}</span>
             <span class="thread-meta-dot" />
         </template>
         <template v-else-if="mine">
