@@ -358,3 +358,25 @@ def test_a_query_fails_on_a_column_its_table_does_not_have():
         Query.build(Task).order("nope")
     with pytest.raises(UnknownColumn):
         Query.build(Entry).filter_json("data->it's", 1)
+
+
+def test_a_line_said_before_lines_carried_the_tool_use_gains_it_and_its_moment(tmp_path):
+    """A nudge entry written by an older journal, with no tool use, is given one at the migration, so a read of the last line of a kind never fails."""
+    import json
+    import sqlite3
+    from journal.app import App
+    from journal.config import Config
+    first = App(Config(tmp_path, port=0))
+    first.runtime().start()
+    first.runtime().stop()
+    db = sqlite3.connect(first.config.database)
+    db.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, creator, updated_at, updater) VALUES (1, 'nudge', 'system', ?, '2026-10-01T10:00:00+00:00', 'system', '2026-10-01T10:00:00+00:00', 'system')", (json.dumps({"key": "shell.outputs_ended", "session": "s1", "line": "output 1 finished"}),))
+    db.execute("DELETE FROM migrations WHERE number = 37")
+    db.commit()
+    db.close()
+    second = App(Config(tmp_path, port=0))
+    second.runtime().start()
+    second.runtime().stop()
+    db = sqlite3.connect(second.config.database)
+    data = json.loads(db.execute("SELECT data FROM entries WHERE kind = 'nudge' AND json_extract(data, '$.line') = 'output 1 finished'").fetchone()[0])
+    assert data["tool_use"] == 0 and data["time"] > 0, data
