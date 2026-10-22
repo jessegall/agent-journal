@@ -22,9 +22,11 @@ from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
 from journal.models.worker_state import WorkerState
+from journal.models.template import Template
 from journal.repositories.tasks import Tasks
 from journal.repositories.plans import Plans
 from journal.repositories.workers import Workers
+from journal.repositories.templates import Templates
 from journal.features.workers.support.worker_actions import WorkerActions
 from journal.hooks.command_events import CommandEvents
 from journal.features.workers.support.worker_libraries import WorkerLibraries
@@ -44,8 +46,8 @@ class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries, plans: Plans) -> None:
-        self.tasks, self.agents, self.events, self.libraries, self.plans = tasks, agents, events, libraries, plans
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries, plans: Plans, templates: Templates) -> None:
+        self.tasks, self.agents, self.events, self.libraries, self.plans, self.templates = tasks, agents, events, libraries, plans, templates
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -56,6 +58,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("brief", nargs="?", default="", help="what the worker is told beside its task's brief")
         dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
         dispatch.add_argument("--changes", required=True, help="the files, folders or document the worker changes; a job that only reads, searches or reviews goes to a subagent, never a worker")
+        dispatch.add_argument("--tests", required=True, help="the test template that says how the worker tests: No tests, Scoped tests, Full suite, or one of the project's own; the full suite is seldom a worker's")
         dispatch.add_argument("--profile", required=True, help="the worker profile it works by: senior, on Opus, for a job that needs judgement; medior, on Sonnet, for one whose shape is settled")
         dispatch.add_argument("--model", help="a model other than the profile's")
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code; then name its library folders with --libraries or --copies, or say --no-libraries")
@@ -91,6 +94,12 @@ class WorkerCommand(Command):
     def provider_default(self, caller: Caller) -> str:
         return self.providers.default().name if caller.provider is None else caller.provider
 
+    def testing_template(self, title: str) -> Template:
+        matches = self.templates.testing_titled(title)
+        if not matches:
+            raise Rejection(f"no test template is titled {title}: name one with --tests, {', '.join(template.title for template in self.templates.testing())}")
+        return matches[0]
+
     def dispatch(self, args: Namespace, caller: Caller) -> int:
         if self.profiles.kind(args.profile) != ProfileKind.WORKER:
             raise Rejection(f"{args.profile} is no worker profile: name one with --profile, senior for a job that needs judgement or medior for one whose shape is settled; a subagent profile only reads, so send it with the Agent tool")
@@ -105,7 +114,8 @@ class WorkerCommand(Command):
         if args.changes.strip().lower() in EMPTY_CHANGES:
             raise Rejection("a worker writes: name what it changes with --changes; a job that only reads, searches, researches or reviews goes to a subagent with the Agent tool")
         links, copies = self.library_names(args)
-        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief, f"You change: {args.changes}") if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, library_links=links, library_copies=copies, dispatcher=caller.session)
+        testing = self.testing_template(args.tests)
+        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief, f"You change: {args.changes}", f"How you test: {testing.brief}") if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, library_links=links, library_copies=copies, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
             repositories = self.runner.workplace(worker)

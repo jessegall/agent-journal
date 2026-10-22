@@ -17,7 +17,7 @@ class TemplateCommand(Command):
         creation.add_argument("title")
         creation.add_argument("--brief", default="", help="the instructions read before working on anything made from it")
         creation.add_argument("--applies-to", default="", help="the kinds of row it is for, comma-separated, such as plan; empty means any")
-        creation.add_argument("--purpose", default="", help="what it is used for, such as critique")
+        creation.add_argument("--purpose", default="", help="what it is used for, such as critique, or testing for a test template a worker dispatch names with --tests")
         creation.add_argument("--parts", default="", help="the outline a new item starts with: title: body | title: body")
         self.verb(verbs, "show", "a template's instructions and outline").add_argument("n", type=int)
         self.verb(verbs, "list", "every template")

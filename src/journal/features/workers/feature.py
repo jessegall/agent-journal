@@ -78,7 +78,7 @@ class Workers(Feature[WorkersData]):
     BLOCKED_CHECK = Nudge(name, "check_blocked_tasks", "{{count}} tasks are parked or blocked: tasks {{tasks}}", "read each with journal task show <n>: resume a parked one you can go on with first, and check a blocked one is still truly blocked: unblock one whose wait has passed or that you can decide yourself, and go on with it. you are the orchestrator: decide, and report what you decided; leave blocked only what the user alone can do", repeat_interval=300)
     CREW_REMINDER = Nudge(name, "dispatch_while_busy", "{{count}} tasks are open and no worker has them: {{tasks}}", "keeping the work going is your first job, before your own piece: dispatch workers on them with journal worker dispatch, or send each to the worker that knows its files", repeat_interval=120)
     PLACE_FREE = Nudge(name, "worker_place_free", "worker {{n}}, {{name}}, is done, so a worker place is free; open: {{tasks}}", "fill it now: send {{name}} its next job with journal worker send {{n}} if it knows the ground, or dispatch another worker", repeat_interval=0)
-    ORCHESTRATOR_MODE = Nudge(name, "now_orchestrating", "you now work as the orchestrator", "plan, hand every task you can to a worker with journal worker dispatch, and review and merge what comes back; a task in hand is one to hand over, never to do yourself. you make the decisions and keep the work moving without waiting for the user, who is asked only before a step that cannot be undone or reaches outside the project. a task that waits blocks only itself: block it and keep every other open task moving", repeat_interval=0)
+    ORCHESTRATOR_MODE = Nudge(name, "now_orchestrating", "you now work as the orchestrator", "plan, hand every task you can to a worker with journal worker dispatch, and review and merge what comes back, running the full suite yourself once it is back, since a worker seldom should; a task in hand is one to hand over, never to do yourself. you make the decisions and keep the work moving without waiting for the user, who is asked only before a step that cannot be undone or reaches outside the project. a task that waits blocks only itself: block it and keep every other open task moving", repeat_interval=0)
     SOLO_MODE = Nudge(name, "now_solo", "you now work solo", "do every job yourself: no worker is dispatched", repeat_interval=0)
     SOLO_DISPATCH = Nudge(name, "no_workers_when_solo", "you work solo: no worker is dispatched", "do the job yourself, or ask the user to switch the work mode", repeat_interval=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_interval=0)
@@ -98,9 +98,12 @@ class Workers(Feature[WorkersData]):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" --task <n> --changes "<the files or document it changes>" --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree --libraries <a,b> | --copies <a,b> | --no-libraries]`:
+- `journal worker dispatch "<Name>" --task <n> --changes "<the files or document it changes>" --tests "No tests|Scoped tests|Full suite" --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree --libraries <a,b> | --copies <a,b> | --no-libraries]`:
   name it after a distinguished figure with a twist on their trade. A worker writes: `--changes` names what it changes,
-  and a job that only reads, searches, researches or reviews is always a subagent's, never a worker's. A worker is started only on a task: an open one with a
+  and a job that only reads, searches, researches or reviews is always a subagent's, never a worker's. `--tests` names the
+  test template that says how it tests, and its text goes into the brief: Scoped tests for most jobs, No tests when you
+  run them yourself, and Full suite seldom, since the full suite is yours to run once its work is back; the project's own
+  test templates are listed with `journal template list`. A worker is started only on a task: an open one with a
   brief, which is its job, or the one you hold, which it then takes over. The task is the worker's from then on, never
   offered to you as next, until its work is merged or released. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.

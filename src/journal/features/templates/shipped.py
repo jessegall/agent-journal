@@ -1,6 +1,7 @@
 from journal.models.template import Template
 
 CRITIQUE = "critique"
+TESTING = "testing"
 
 FUNCTIONAL = Template(
     title="Functional design",
@@ -32,4 +33,22 @@ CHALLENGE = Template(
     purpose=CRITIQUE,
     brief="Question the plan's approach as a whole: is there a simpler way to reach the same goal, something that already exists and could be reused, a risk the plan takes without saying so. Give the alternative and what it would cost.",
 )
-SHIPPED = (FUNCTIONAL, FIND_MISTAKES, FIND_GAPS, CHALLENGE)
+ZERO_TESTS = Template(
+    title="No tests",
+    targets=("worker",),
+    purpose=TESTING,
+    brief="Run no tests. Write the tests that prove your change and name them in your report: the agent that sent you runs them once your work is back.",
+)
+SCOPED_TESTS = Template(
+    title="Scoped tests",
+    targets=("worker",),
+    purpose=TESTING,
+    brief="Run only the tests that cover your change, by name, and the new tests you write. Never run the full suite: the agent that sent you runs it once your work is back.",
+)
+FULL_SUITE = Template(
+    title="Full suite",
+    targets=("worker",),
+    purpose=TESTING,
+    brief="Run the tests that cover your change while you work, and the full suite once before you clock out.",
+)
+SHIPPED = (FUNCTIONAL, FIND_MISTAKES, FIND_GAPS, CHALLENGE, ZERO_TESTS, SCOPED_TESTS, FULL_SUITE)
