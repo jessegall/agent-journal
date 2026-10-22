@@ -36,6 +36,7 @@ beforeEach(() => {
     store.offline = false;
     listen();
     sources[0].onopen();
+    reload.mockClear();
 });
 
 afterEach(() => vi.useRealTimers());
@@ -68,6 +69,13 @@ test("coming back reloads the rows once, and clears the offline mark", () => {
     expect([store.offline, store.streamOpen, reload.mock.calls.length]).toEqual([false, true, 1]);
     sources[0].onopen();
     expect(reload.mock.calls.length).toBe(1);
+});
+
+test("a short break, back before the offline mark, still reloads the rows it may have missed", () => {
+    broken(sources[0]);
+    vi.advanceTimersByTime(2000);
+    sources[0].onopen();
+    expect([store.offline, reload.mock.calls.length]).toEqual([false, 1]);
 });
 
 test("a stream the browser gave up on is opened again, one the browser retries is not", () => {
