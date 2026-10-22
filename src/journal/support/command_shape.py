@@ -7,15 +7,22 @@ MODULE_FLAG = "-m"
 SHAPE_TOKEN_COUNT = 3
 WRAPPER_PATTERN = re.compile(r"^\s*(?:perl -e '[^']*exec @ARGV[^']*'|timeout \d+[smh]?)\s+")
 CONTAINER_PATTERN = re.compile(r"^\s*docker(?:\s+compose|-compose)?\s+exec\s+(?:(?:-[euw]|--(?:env|env-file|user|workdir))[ =]\S+\s+|-{1,2}[\w-]+\s+)*\S+\s+")
-VARIABLE_PATTERN = re.compile(r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*=(?:'[^']*'|\"[^\"]*\"|\S*)\s+)+")
+VARIABLE_PATTERN = re.compile(r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*=(?:'[^']*'|\"[^\"]*\"|\S*)(?:\s+|$))+")
+# commands that only set the scene for the one that does the work: a line's shape is the first part past them
+SETUP_COMMANDS = {"cd", "export", "unset", "set", "source", ".", "pushd", "popd", "true"}
 
 
 class CommandShape:
-    """A command as its program and subcommands name it, the values passed to it left out: pytest -k chat and pytest tests/a.py are both pytest, python3 -m pytest -q is python3 -m pytest, npm run test stays npm run test; a wrapper that only limits its time, perl -e 'alarm N; exec @ARGV' or timeout N, variables set before the command, such as REPLAY_FREEZE=1, and a run inside a container, docker compose exec or docker exec with its flags and its service, are looked through."""
+    """A command as its program and subcommands name it, the values passed to it left out: pytest -k chat and pytest tests/a.py are both pytest, python3 -m pytest -q is python3 -m pytest, npm run test stays npm run test; a wrapper that only limits its time, perl -e 'alarm N; exec @ARGV' or timeout N, variables set before the command, such as REPLAY_FREEZE=1, and a run inside a container, docker compose exec or docker exec with its flags and its service, are looked through. A line's shape is that of its first part that does the work, past a cd, a variable set or an export."""
 
     @staticmethod
     def inner(part: str) -> str:
         return CONTAINER_PATTERN.sub("", WRAPPER_PATTERN.sub("", VARIABLE_PATTERN.sub("", part, count=1), count=1), count=1)
+
+    @classmethod
+    def chain_shape(cls, parts: tuple[str, ...]) -> str:
+        shapes = [shape for shape in (cls.build(part) for part in parts) if shape]
+        return next((shape for shape in shapes if shape.split()[0] not in SETUP_COMMANDS), shapes[0] if shapes else "")
 
     @classmethod
     def build(cls, part: str) -> str:

@@ -87,7 +87,7 @@ def reader_suggestion_check(state: BaseState, event: ToolStarting, settings: Set
     from journal.features.shell.feature import Shell
     shell = event.data.part(Shell)
     shape = event.call.recorded().shape
-    if event.shape_runs < READER_RUNS or ActivityLabel.build(event.call.command) not in LONG_RUNS or any(r.commands.is_read(event.call.command) for r in shell.readers):
+    if event.shape_runs < READER_RUNS or ActivityLabel.build(shape) not in LONG_RUNS or any(r.commands.is_read(event.call.command) for r in shell.readers):
         return state.none()
     tip = Shell.NEW_READER_SUGGESTION.create(command=shape)
     return state.none() if tip.rendered() in shell.tipped else state.none(tip)

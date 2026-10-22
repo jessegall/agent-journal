@@ -25,21 +25,24 @@ POLL_SECONDS = 0.02
 
 
 class ChainWorker:
-    """Runs a chain's parts one by one in one shell process, as the shell would: a part after && is skipped while the part before it failed, a part after ; runs whatever came before, a part before && may fail without ending a shell under set -e, and an exec part ends the chain. Each of the agent's own parts is recorded as it starts and ends with its status, its time, its output tail and the files it changed; a moved chain's end is recorded too. Output goes to the part's files, or straight through for a read or write of the project's code."""
+    """Runs a chain's parts one by one in one shell process, as the shell would: a part after && is skipped while the part before it failed, a part after ; runs whatever came before, a part before && may fail without ending a shell under set -e, and an exec part ends the chain. A part of the agent's own set-up, outside its command, that ends the shell, as a shell snapshot that execs or exits does, leaves the rest of the chain to a fresh shell. Each of the agent's own parts is recorded as it starts and ends with its status, its time, its output tail and the files it changed; a moved chain's end is recorded too. Output goes to the part's files, or straight through for a read or write of the project's code."""
 
     def __init__(self, record: ShellRecord) -> None:
         self.record = record
 
     def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: Callable[[bytes], None]) -> int:
-        shell = ShellProcess.started(request)
-        pump = threading.Thread(target=lambda: self.pump(shell, output_text), name="shell-output", daemon=True)
-        pump.start()
-        self.write_part(shell, SHELL_SETUP)
+        shell, pump = self.started(request, output_text)
         code = 0
         for i, kind in enumerate(folder.kinds()):
             code = self.part(shell, folder, i, kind, code, direct, caller)
-            if shell.process.poll() is not None or folder.part_text(i).startswith("exec "):
+            if folder.part_text(i).startswith("exec "):
                 break
+            if shell.process.poll() is None:
+                continue
+            if kind[0] == "R":
+                break
+            pump.join(timeout=2)
+            shell, pump = self.started(request, output_text)
         self.write_part(shell, "exit $__journal_code\n")
         code = self.ended(shell, code)
         pump.join(timeout=2)
@@ -47,6 +50,13 @@ class ChainWorker:
         if folder.is_moved():
             self.record.ended(folder.folder.name, code, folder.folder, "\n".join(folder.last(5)), caller)
         return code
+
+    def started(self, request: ShellRequest, output_text: Callable[[bytes], None]) -> tuple[ShellProcess, threading.Thread]:
+        shell = ShellProcess.started(request)
+        pump = threading.Thread(target=lambda: self.pump(shell, output_text), name="shell-output", daemon=True)
+        pump.start()
+        self.write_part(shell, SHELL_SETUP)
+        return shell, pump
 
     def part(self, shell: ShellProcess, folder: OutputFiles, i: int, kind: str, code: int, direct: bool, caller: Caller) -> int:
         recorded, tail_edges, edges, writes = kind[0] == "R", kind[1] == "&", kind[2] == "&", kind.endswith("w")

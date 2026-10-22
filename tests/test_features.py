@@ -6472,6 +6472,11 @@ def test_a_command_is_known_by_its_shape_and_five_runs_of_one_long_run_bring_a_r
     app.console().run(["environment", "overview"], AGENT)
     told = [json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"make build TARGET=part{i}"})[1]) for i in range(5)]
     assert ["no reader reads make build yet" in line for line in told] == [False, False, False, False, True], "the fifth run of make build, whatever its values, is told to make a reader"
+    from journal.support.chain import Chain
+    in_container = "S=/private/tmp/scratch\ncd /work && docker exec app-1221afce4624-backend-1 php artisan test --filter Bookings"
+    assert CommandShape.chain_shape(tuple(part.text for part in Chain.parts(in_container))) == "php artisan test", "a line's shape is its first working part, past a variable set and a cd, and inside the container"
+    told = [json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": in_container.replace("Bookings", f"Case{i}")})[1]) for i in range(5)]
+    assert "you ran php artisan test" in told[2] and "--reader phpunit" in told[2], "so the third such run is asked to become an alias read by the reader the tests already have, never one for cd"
 
 
 def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_command_is_named_by_what_it_wraps(app: App):

@@ -1333,6 +1333,9 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
         assert run("printf one && false && printf never; printf two") == "onetwo\n__journal_exit 0\n", "a part after && is skipped while the one before it failed, a part after ; runs whatever came before"
         assert run("cat a.py; echo ====") == "print(1)\n====\n__journal_exit 0\n", "a read of the project's code streams straight through, nothing kept"
         assert "FileNotFoundError" in run("printf hi", tmp_path / "gone"), "a fault while the answer streams is shown, never an empty answer"
+        (tmp_path / "snapshot.sh").write_text("exit 0\n")
+        wrapped = f"source {tmp_path / 'snapshot.sh'} 2>/dev/null || true && eval 'echo still ran > ran.txt; echo shown' < /dev/null && pwd -P >| {tmp_path / 'cwd'}"
+        assert "shown" in run(wrapped) and (tmp_path / "ran.txt").is_file(), "a shell snapshot that ends the shell before the command is passed over: the command still runs in a fresh shell"
         assert run("journal task list") == "__journal_exit 0\n" or "__journal_exit" in run("journal task list")
         with app.container.get(Scope).environment(1):
             completed = [e for e in app.container.get(Entries).kind_entries("ran", 50)]

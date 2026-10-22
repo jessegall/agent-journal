@@ -39,7 +39,7 @@ class ToolCall:
         return " ".join(str(value) for value in self.input.values())
 
     def recorded(self) -> RecordedCall:
-        return RecordedCall(command=self.command, parts=self.parts, writes=self.writes, edited_paths=self.edited_paths, read_paths=self.read_paths, work=self.work, shape=CommandShape.build(self.command), operation=self.operation)
+        return RecordedCall(command=self.command, parts=self.parts, writes=self.writes, edited_paths=self.edited_paths, read_paths=self.read_paths, work=self.work, shape=CommandShape.chain_shape(tuple(part.text for part in self.parts) or (self.command,)), operation=self.operation)
 
     def as_data(self) -> dict:
         return self.recorded().as_data()

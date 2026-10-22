@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.21
+
+- A command still runs when the shell set-up Claude puts before it ends the shell. Claude sources a snapshot of the user's shell before every command; when that snapshot exits or execs, as a bash profile can, the journal's shell was gone before the command and every command came back empty without running. The rest of the line now runs in a fresh shell.
+- A command line's shape is its first part that does the work, past a variable set, a cd or an export, so a line such as S=...; cd ...; docker exec ... php artisan test counts as php artisan test, and brings its alias suggestion. php artisan test is labelled testing.
+
 ## 4.5.20
 
 - The update dialog shows an update under way only while the process running it lives, so it no longer hangs on Installing the new version when that process went.
