@@ -1,4 +1,5 @@
 <script setup>
+import {turnFold} from "../domain/turnFolds.js";
 import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
 import {computed, ref} from "vue";
@@ -29,7 +30,7 @@ const props = defineProps({turn: Object});
 const emit = defineEmits(["reply", "grew"]);
 const picking = ref(false);
 const bubble = ref(null);
-const FOLD_AT = 420;
+const fold = computed(() => turnFold(props.turn));
 
 const {scope, env, open, openChip} = useTurnLinks();
 const rowsOf = (table) => scope.rows(table);
@@ -126,7 +127,7 @@ async function drop() {
             <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
-            <TurnText :html="html" :name="turn.key" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
+            <TurnText :html="html" :name="turn.key" :fold-at="fold.at" :keep="fold.keep" @activate="openChip" />
             <template v-if="turn.kind === 'question'">
                 <TurnQuestion :turn="turn" />
             </template>

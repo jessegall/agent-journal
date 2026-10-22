@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.19
+
+- A worker's report in the chat shows its first two lines, then Show more; each kind of message has its folded height in one table, and the user's and the agent's messages keep theirs.
+- The agents grid leaves out this environment's own agent, whose standing is the top bar's.
+
 ## 4.5.18
 
 - The top bar's state word (Idle, Working) and its status line roll when they change, the new words coming up as the old go, in the same place; they were swapped at once.
