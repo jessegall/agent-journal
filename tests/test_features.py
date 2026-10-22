@@ -3696,6 +3696,30 @@ def test_an_updated_journal_upgrades_each_plugin_to_its_newest_release_that_runs
     assert plugins.lookup("echo").release == "v1.0.5", "a start on the same version upgrades nothing"
 
 
+def test_an_update_across_the_shell_runner_pins_a_notice_to_start_the_session_again_until_one_starts(app: App):
+    """Updating from before 4.5.0 to it or later pins a notice in every environment asking for the agent's session to start again, once; a start on the same version pins nothing, and the next session start closes it."""
+    from journal.features.updates.seeds.version_change import VersionChange
+    from journal.features.updates.support.session_restart import NOTICE_TITLE, SessionRestart
+    from journal.repositories.journal_versions import JournalVersions
+    from journal.repositories.notices import Notices
+    assert SessionRestart.is_crossed("4.4.9", "4.5.0") and not SessionRestart.is_crossed("4.5.0", "4.5.1") and not SessionRestart.is_crossed("4.3.0", "4.4.9")
+    hook(app, "SessionStart")
+    notices = app.container.get(Notices)
+    open_notices = lambda: [n.title for n in notices.open_scoped() if n.title == NOTICE_TITLE]
+    versions = app.container.get(JournalVersions)
+    versions.save(versions.current().with_(version="4.4.9"), Actor.system())
+    app.container.get(VersionChange).run()
+    with app.container.get(Scope).environment(1):
+        assert open_notices() == [NOTICE_TITLE], "the notice is pinned"
+    app.container.get(VersionChange).run()
+    with app.container.get(Scope).environment(1):
+        assert open_notices() == [NOTICE_TITLE], "a start on the same version pins no second notice"
+    hook(app, "SessionStart", source="startup")
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(1):
+        assert open_notices() == [], "the next session start closes it"
+
+
 def test_a_plugin_is_upgraded_with_its_changes_shown_switched_off_and_removed(app: App, tmp_path):
     import shutil
     from journal.support.listener_queue import ListenerQueue

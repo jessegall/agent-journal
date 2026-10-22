@@ -86,7 +86,7 @@ class ShellRunner:
                 return
             if limit > 0 and (reader is not None or time.monotonic() - began >= limit):
                 folder.moved()
-                part = folder.part_text(shown)
+                part = reader.commands.read_part(request.line) if reader is not None else folder.part_text(shown)
                 number = self.record.moved(folder.folder.name, part, folder.folder, caller)
                 alias = self.aliases.running(part)
                 from journal.features.shell.feature import Shell

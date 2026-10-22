@@ -21,5 +21,7 @@ class ReaderCommands:
         return ", ".join(self.programs)
 
     def is_read(self, line: str) -> bool:
-        shapes = [CommandShape.build(part.text) for part in Chain.parts(line)]
-        return any(re.search(rf"(^|[\s/]){re.escape(program)}(\s|$)", shape) for program in self.programs for shape in shapes)
+        return bool(self.read_part(line))
+
+    def read_part(self, line: str) -> str:
+        return next((part.text for part in Chain.parts(line) for program in self.programs if re.search(rf"(^|[\s/]){re.escape(program)}(\s|$)", CommandShape.build(part.text))), "")
