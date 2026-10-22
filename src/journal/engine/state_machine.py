@@ -61,9 +61,10 @@ class StateMachine(AgentListener[AgentEvent]):
 
     def main_decision(self, event: AgentEvent, answered: Decision) -> Decision:
         decision = answered.without(event.journal_text()) if event.journal_text() else answered
-        if event.is_turn_end:
+        stop_refusal = event.is_turn_end and not decision.allowed
+        if event.is_turn_end and not stop_refusal:
             self.supervisor.resting(event.environment_id)
-        if not event.is_work:
+        if not event.is_work and not stop_refusal:
             return decision
         self.supervisor.working(event.environment_id)
         pending = self.supervisor.pending_lines(event.environment_id)

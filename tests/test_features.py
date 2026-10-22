@@ -1246,6 +1246,21 @@ def test_a_message_reaches_a_working_agent_on_its_next_tool_use_and_an_idle_one_
     assert any("new message " in line for line in keystrokes), "at its prompt, the line is typed at once"
 
 
+def test_a_stop_the_journal_holds_keeps_the_turn_so_a_line_waits_for_the_next_tool_use(app: App, monkeypatch):
+    """A held stop sends the agent back to work, so a line that comes then is queued for its next tool use, never typed."""
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    app.console().run(["task", "create", "the footer", "--start"], AGENT)
+    hook(app, "UserPromptSubmit", prompt="go on")
+    assert hook(app, "Stop")[1].get("decision") == "block", "a task in hand holds the stop"
+    app.console().run(["message", "send", "look at the footer too"], USER)
+    assert keystrokes == [], "the turn goes on: nothing is typed"
+    reply = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]
+    assert "new message " in reply["hookSpecificOutput"]["additionalContext"], "the next tool use carries the line"
+
+
 def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
     """A prompt that is a journal line already says its words, so its hook adds no line it carries."""
     hook(app, "SessionStart")
