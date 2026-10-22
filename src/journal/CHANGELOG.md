@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.34
+
+- When a worker's work is merged, or it is retired or stopped, an orchestrator with tasks open is told at once that a worker place is free, with the open tasks: send that worker its next job, or dispatch another.
+
 ## 4.5.33
 
 - An orchestrator at work with tasks open and no worker on them is reminded on its tool use, every two minutes, to dispatch workers on them before its own piece, unless the workers-out limit is reached.

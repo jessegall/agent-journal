@@ -14,6 +14,9 @@ from journal.events.rows.worker_ready import WorkerReady
 from journal.events.rows.worker_unfinished import WorkerUnfinished
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_stopped import WorkerStopped
+from journal.events.rows.worker_merged import WorkerMerged
+from journal.events.rows.worker_retired import WorkerRetired
+from journal.events.rows.worker_mention import WorkerMention
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.features.workers.support.worker_line import WorkerLine
 from journal.features.workers.support.path_mentions import PathMentions
@@ -69,7 +72,13 @@ class WorkersConduct(Conduct):
     def on_worker_stopped(self, event: WorkerStopped, settings: Settings) -> Transition:
         if event.worker.is_other_dispatcher(event.session):
             return self.none()
-        return self.none(workers_feature().WORKER_STOPPED_UNREPORTED.create(n=event.worker.id, name=event.worker.name))
+        return self.none(workers_feature().WORKER_STOPPED_UNREPORTED.create(n=event.worker.id, name=event.worker.name), *free_place(event.worker, event.data, settings))
+
+    def on_worker_merged(self, event: WorkerMerged, settings: Settings) -> Transition:
+        return place_answer(self, event, settings)
+
+    def on_worker_retired(self, event: WorkerRetired, settings: Settings) -> Transition:
+        return place_answer(self, event, settings)
 
 
 def report_mentions(data: FeatureData) -> list[Nudge]:
@@ -183,3 +192,15 @@ def open_work_check(state: BaseState, event: ToolStarting, settings: Settings) -
     if not tasks.open_ids or settings.value(workers_feature().MODE) != "orchestrator" or workers.is_full(settings.integer(workers_feature().WORKER_LIMIT)):
         return state.none()
     return state.none(workers_feature().CREW_REMINDER.create(count=len(tasks.open_ids), tasks=tasks.open_summary))
+
+
+def free_place(worker: WorkerMention, data: FeatureData, settings: Settings) -> tuple[Nudge, ...]:
+    from journal.features.tasks.feature import Tasks
+    tasks = data.part(Tasks)
+    if not tasks.open_ids or settings.value(workers_feature().MODE) != "orchestrator":
+        return ()
+    return (workers_feature().PLACE_FREE.create(n=worker.id, name=worker.name, tasks=tasks.open_summary),)
+
+
+def place_answer(state: BaseState, event: WorkerMerged | WorkerRetired, settings: Settings) -> Transition:
+    return state.none() if event.worker.is_other_dispatcher(event.session) else state.none(*free_place(event.worker, event.data, settings))

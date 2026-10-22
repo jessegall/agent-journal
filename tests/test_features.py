@@ -7355,7 +7355,14 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     with app.container.get(Scope).environment(MAIN):
         assert tasks.find(1).state != TaskState.FINISHED and folder.is_dir() and (root / "parser.py").read_text() == "my own draft\n", "and nothing moved"
     (root / "parser.py").unlink()
+    app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
+    console.run(["task", "create", "the lexer tests"], USER)
     merged = console.run(["worker", "merge", "1"], AGENT)
+    app.runtime().deferred.drain()
+    from journal.repositories.entries import Entries
+    with app.container.get(Scope).environment(MAIN):
+        said = [entry.data["line"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.worker_place_free"]
+    assert said and "the lexer tests" in said[-1], "a merged worker frees a place, and the orchestrator is told at once with the open tasks"
     tip = git("rev-parse", "HEAD").stdout.strip()
     assert merged.code == 0 and (root / "parser.py").exists(), merged.error
     with app.container.get(Scope).environment(MAIN):
