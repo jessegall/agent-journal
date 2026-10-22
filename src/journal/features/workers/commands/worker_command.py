@@ -23,6 +23,7 @@ from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
 from journal.models.worker_state import WorkerState
 from journal.repositories.tasks import Tasks
+from journal.repositories.plans import Plans
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 from journal.hooks.command_events import CommandEvents
@@ -41,8 +42,8 @@ class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries) -> None:
-        self.tasks, self.agents, self.events, self.libraries = tasks, agents, events, libraries
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries, plans: Plans) -> None:
+        self.tasks, self.agents, self.events, self.libraries, self.plans = tasks, agents, events, libraries, plans
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -128,7 +129,9 @@ class WorkerCommand(Command):
 
     def assignment(self, n: int, caller: Caller) -> Task:
         task = self.tasks.find(n)
-        if self.is_holder(task, caller) or (task.state == TaskState.OPEN and task.brief.strip()):
+        for plan in self.plans.unapproved(task):
+            plan.task_startable(task.id)
+        if self.is_holder(task, caller) or task.is_assignable():
             return task
         raise Rejection(ASSIGNMENT_REFUSALS.get(task.state, EMPTY_BRIEF_REFUSAL).format(n=n, state=task.state))
 

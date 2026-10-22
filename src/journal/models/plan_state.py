@@ -15,6 +15,9 @@ class PlanState(StrEnum):
     def is_closed(self) -> bool:
         return self in (PlanState.FINISHED, PlanState.CANCELLED)
 
+    def is_unapproved(self) -> bool:
+        return self in (PlanState.DRAFT, PlanState.READY, PlanState.REVIEWING)
+
     def is_startable(self) -> bool:
         return self in (PlanState.APPROVED, PlanState.SUSPENDED, PlanState.STARTED)
 

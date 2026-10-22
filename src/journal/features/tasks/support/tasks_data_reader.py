@@ -27,13 +27,13 @@ class TasksDataReader:
         broken = [(task, check) for task, check in self.tasks.broken_waits()]
         commands = [command for e in self.entries.tool_starts(agent.session, HISTORY_TOOL_STARTS) if (command := e.recorded_call().command)]
         free = self.plans.free()
-        open_tasks = self.tasks.with_state(TaskState.OPEN)
+        open_tasks = self.tasks.open_tasks()
         return TasksData(
             current_task=current_task.row_id if current_task else 0,
             last_log_line=self.last_log(current_task) if current_task else "",
             suspended=tuple(t.row_id for t in suspended_tasks),
             suspension_summary=", ".join(f"task {task.id} ({task.title}), parked because: {task.suspension_reason}" for task in suspended_tasks),
-            blocked=tuple(t.row_id for t in self.tasks.with_state(TaskState.BLOCKED)),
+            blocked=tuple(t.row_id for t in self.tasks.blocked_tasks()),
             blocked_without_wait=tuple(t.row_id for t in blocked_without_wait),
             blocked_without_wait_summary=self.summary(blocked_without_wait),
             broken_waits=tuple(t.row_id for t, check in broken),

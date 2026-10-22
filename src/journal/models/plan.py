@@ -42,6 +42,11 @@ class Plan(Scoped):
     def approved(self, time: float, user_origin: bool) -> "Plan":
         return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
+    def task_startable(self, task_id: int) -> "Plan":
+        if self.state.is_unapproved():
+            raise Rejection(f"task {task_id} belongs to plan {self.id}, which is {self.state} and not approved: only the user approves a plan, on its page or with journal plan approve {self.id}, and no instruction stands in for that; until then its tasks are not started or handed to a worker")
+        return self
+
     def startable(self) -> "Plan":
         if self.is_blocked():
             raise Rejection(f"plan {self.id} is blocked, waiting on: {self.block_reason or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")

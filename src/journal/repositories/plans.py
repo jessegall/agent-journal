@@ -104,8 +104,11 @@ class Plans(ScopedRepository[Plan]):
         task = self.next_task(started[0])
         return [task] if task else []
 
+    def unapproved(self, task: Task) -> list[Plan]:
+        return [plan for ref in self.links.targets(task, PLAN_LINK) if (plan := self.find(ref.id)).state.is_unapproved()]
+
     def free(self) -> list[Task]:
-        open_tasks = self.tasks.with_state(TaskState.OPEN)
+        open_tasks = self.tasks.open_tasks()
         planned = {link.source.id for link in self.links.model_links("source", open_tasks, PLAN_LINK)}
         delegated = set(self.workers.containing({t.row_id for t in open_tasks}))
         return [t for t in open_tasks if t.id not in planned and t.id not in delegated]

@@ -5500,6 +5500,7 @@ def test_a_task_a_worker_holds_is_left_to_it_by_the_plan_and_shown_as_held(app: 
     console.run(["plan", "create", "p", "--brief", "b"], USER)
     console.run(["plan", "add", "1", "delegated", "--brief", "the delegated one is done"], USER)
     console.run(["plan", "add", "1", "mine"], USER)
+    console.run(["plan", "approve", "1"], USER)
     console.run(["worker", "dispatch", "Lady Lovelace", "do the delegated one", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT)
     plans = app.container.get(Plans)
     assert plans.next_task(plans.find(1)).title == "mine", "the plan leaves a task a worker is out on to it"
@@ -5898,6 +5899,7 @@ def test_a_plans_timeline_has_each_start_log_and_end_of_its_tasks_oldest_first(a
     hook(app, "SessionStart")
     console.run(["plan", "create", "the phone", "--brief", "pair it"], USER)
     console.run(["plan", "add", "1", "pair it", "--brief", "a code pairs"], AGENT)
+    console.run(["plan", "approve", "1"], USER)
     console.run(["task", "start", "1"], AGENT)
     console.run(["task", "log", "1", "the code is hashed"], AGENT)
     console.run(["task", "complete", "1", "--how", "pairs by code"], AGENT)
@@ -9188,3 +9190,21 @@ def test_the_messages_of_the_releases_an_update_crossed_are_told_to_the_agent_on
     assert "the journal was updated to 4.6.0: a worker's worktree can now be set up your project's way" in told and "workers.preparation_commands" in told, told
     assert "the old news" not in told and "not crossed yet" not in told, "only the releases between the last version and this one"
     assert "updated to 4.6.0" not in json.dumps(hook(app, "SessionStart")[1]), "and each is told once"
+
+
+def test_a_task_of_an_unapproved_plan_is_neither_started_nor_handed_to_a_worker_nor_counted_as_open(app: App, monkeypatch):
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["plan", "create", "hardening", "--brief", "lock the front door"], AGENT)
+    console.run(["plan", "add", "1", "the CloudFront lock", "--brief", "lock it"], AGENT)
+    refused = console.run(["task", "start", "1"], AGENT)
+    assert refused.code != 0 and "belongs to plan 1, which is draft and not approved" in refused.error and "journal plan approve 1" in refused.error, refused.error
+    sent = console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    assert sent.code != 0 and "not approved" in sent.error, "nor is it handed to a worker, whatever the agent was told"
+    stop = hook(app, "Stop")[1]
+    assert "task 1" not in stop.get("reason", ""), "an unapproved plan's task is not open work, so no stop is held for it"
+    console.run(["plan", "ready", "1"], AGENT)
+    console.run(["plan", "approve", "1"], USER)
+    assert console.run(["task", "start", "1"], AGENT).code == 0, "once the user approved the plan its task is taken"

@@ -42,6 +42,9 @@ class Task(Scoped):
     def is_resolved(self) -> bool:
         return self.is_closed()
 
+    def is_assignable(self) -> bool:
+        return self.state == TaskState.OPEN and bool(self.brief.strip())
+
     def waiting_reason(self) -> str:
         return self.block_reason or self.suspension_reason
 

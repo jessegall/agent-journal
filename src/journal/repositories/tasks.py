@@ -1,4 +1,5 @@
 from journal.db.connection import Connection
+from journal.db.query import Query
 from journal.events.bus import Bus
 from journal.models.agent import Agent
 from journal.models.check import Check
@@ -8,6 +9,7 @@ from journal.models.question import Question
 from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
+from journal.models.plan_state import PlanState
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.checks import Checks
@@ -24,6 +26,9 @@ HOLDER_REFUSAL = "task {task} is held by worker {worker} until its work is merge
 PLAN_LINK = "in_plan"
 USER_PREFIX = "user:"
 CLOSED = (TaskState.FINISHED, TaskState.CANCELLED)
+
+
+UNAPPROVED_PLAN_STATES = tuple(state.value for state in PlanState if state.is_unapproved())
 
 
 class Tasks(ScopedRepository[Task]):
@@ -74,6 +79,18 @@ class Tasks(ScopedRepository[Task]):
     def reason(self, row: Task | Plan) -> str:
         matched = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
         return ", ".join(part for part in (*matched, row.waiting_reason()) if part)
+
+    def open_tasks(self) -> list[Task]:
+        return self.actionable(TaskState.OPEN)
+
+    def blocked_tasks(self) -> list[Task]:
+        return self.actionable(TaskState.BLOCKED)
+
+    def actionable(self, state: TaskState) -> list[Task]:
+        tasks = self.with_state(state)
+        plan_refs = {str(Ref(Plan.table(), row["id"])) for row in self.connection.all(*Query.build(Plan).filter_listed("state", list(UNAPPROVED_PLAN_STATES)).select())}
+        unapproved = {link.source.id for link in self.links.model_links("source", tasks, PLAN_LINK) if str(link.target) in plan_refs}
+        return [task for task in tasks if task.row_id not in unapproved]
 
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)

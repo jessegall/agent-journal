@@ -37,7 +37,7 @@ class StartLines:
         return self.numbered(r.text for r in self.reminders.scoped())
 
     def waiting(self) -> str:
-        counts = {"tasks": len(self.tasks.with_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
+        counts = {"tasks": len(self.tasks.open_tasks()), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
         return ", ".join(f"{n} {name}" for name, n in counts.items() if n)
 
     @staticmethod
