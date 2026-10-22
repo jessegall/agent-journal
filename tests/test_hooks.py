@@ -176,6 +176,9 @@ def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_toke
     assert as_worker({"worker": current.id, "worker_token": "tok"})["code"] == 0, "a worker with its token runs"
     assert "token" in as_worker({"worker": current.id, "worker_token": "nope"})["error"] and "token" in as_worker({"worker": current.id})["error"], "a wrong or missing token is refused"
     assert as_worker({"worker": older.id})["code"] == 0, "a worker from before tokens runs as it did"
+    assert post_command(app, ["worker", "report", str(older.id), "the parser is done"], {"X-Journal-Env": "main"}, body={"worker": older.id})["code"] == 0, "and reports as it did"
+    completed = post_command(app, ["worker", "complete", str(older.id), "--why", "merged by hand"], {"X-Journal-Env": "main"})
+    assert completed["code"] == 0 and "report is acted on" in completed["text"], "and is taken in as it was"
     assert "token" in as_worker({"worker_shell": True})["error"], "a shell marked as a worker's that names no worker is refused"
     raw = "JOURNAL_ENV=main\0JOURNAL_ACTOR=worker-agent\0\0ls\n"
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/shell/run", data=raw.encode(), method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main"})
