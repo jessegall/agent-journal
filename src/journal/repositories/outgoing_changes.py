@@ -28,3 +28,15 @@ class OutgoingChanges(Repository[OutgoingChange]):
 
     def waiting(self) -> list[OutgoingChange]:
         return self.all_matching(is_sending=False)
+
+    def sending_batch(self, limit: int) -> list[OutgoingChange]:
+        for change in self.waiting()[:limit]:
+            self.save(change.with_(is_sending=True), Actor.system())
+        return self.all_matching(is_sending=True)[:limit]
+
+    def sent(self, changes: list[OutgoingChange]) -> None:
+        for change in changes:
+            self.delete(change, Actor.system())
+
+    def commit_callback(self, work) -> None:
+        self.connection.commit_callback(work)

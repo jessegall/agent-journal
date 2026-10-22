@@ -422,10 +422,11 @@ def test_each_write_to_a_shared_row_is_queued_for_the_team_once_joined_and_waiti
     from journal.repositories.release_messages import ReleaseMessages
     from journal.sync.record_outgoing_change import RecordOutgoingChange
     from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.sync.commit_signal import CommitSignal
 
     config = Config(tmp_path)
     changes, tasks = OutgoingChanges(connection, bus), tasks_of(connection, bus, scope)
-    bus.listen(ModelEvent, RecordOutgoingChange(changes, TeamAccount(config), team_scopes(connection, bus, scope)))
+    bus.listen(ModelEvent, RecordOutgoingChange(changes, TeamAccount(config), team_scopes(connection, bus, scope), CommitSignal()))
     with scope.environment(1):
         before = tasks.save(Task(environment_id=1, title="before joining"), actor=USER)
         assert changes.waiting() == [], "a journal in no team queues nothing"
@@ -491,7 +492,7 @@ def team_scopes(connection, bus, scope):
     return SettingScopes(Registry(Standard.FEATURES, SettingRows(connection, bus, scope)))
 
 
-def team_journal(tmp_path, name: str):
+def team_journal(tmp_path, name: str, signal=None):
     from journal.config import Config
     from journal.db.connection import Connection
     from journal.db.schema import Schema
@@ -509,6 +510,10 @@ def team_journal(tmp_path, name: str):
     from journal.sync.team_account import TEAM_FILE, TeamAccount
     from journal.features.listeners.unlink_deleted import UnlinkDeleted
     from journal.events.models.deleted import Deleted
+    from journal.events.models.number_request import NumberRequest
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.sync.block_numbers import BlockNumbers
+    from journal.sync.commit_signal import CommitSignal
 
     folder = tmp_path / name
     config = Config(folder)
@@ -519,8 +524,15 @@ def team_journal(tmp_path, name: str):
     bus = Bus()
     scope = Scope(Environments(connection, bus))
     outgoing = OutgoingChanges(connection, bus)
-    bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config), team_scopes(connection, bus, scope)))
-    bus.listen(Purged, RecordPurge(outgoing, TeamAccount(config)))
+    signal = signal or CommitSignal()
+    bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config), team_scopes(connection, bus, scope), signal))
+    bus.listen(Purged, RecordPurge(outgoing, TeamAccount(config), signal))
+    blocks = IdBlocks(connection, bus)
+    base = (ord(name[0]) - ord("a")) * 100_000
+    for model in AllModels.MODELS:
+        if model.shared:
+            blocks.add(model.table(), base + 1, base + 99_999)
+    bus.listen(NumberRequest, BlockNumbers(blocks, TeamAccount(config)))
     bus.listen(Deleted, UnlinkDeleted(Links(connection, bus)))
     return bus, scope, tasks_of(connection, bus, scope), outgoing, IncomingChanges(SharedTables(connection, bus), outgoing, Links(connection, bus))
 
@@ -631,3 +643,66 @@ def test_only_the_teams_settings_reach_the_other_journal_never_a_machines_or_a_p
     settings_a.set(Voices.NAME.key, "Ada", USER)
     incoming_b.apply(team_changes(outgoing_a))
     assert settings_b.project_values() == {WorkersFeature.WORKER_LIMIT.key: 3}, "the team's setting arrives; the machine's commands and the person's name stay where they were set"
+
+
+def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_while_it_is_down_arrives_later(tmp_path):
+    import json
+    import time
+    from journal.config import Config
+    from journal.repositories.outgoing_changes import OutgoingChanges
+    from journal.sync.commit_signal import CommitSignal
+    from journal.sync.sync_client import SyncClient
+    from journal.sync.sync_status import SyncStatus
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.sync.team_server_link import TeamServerLink
+    from sync_server.account import ADMIN
+    from sync_server.team_server import TeamServer
+
+    team = TeamServer(tmp_path)
+    team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
+    server = team.started("127.0.0.1", 0)
+    port = server.server_address[1]
+
+    def joined(name: str):
+        signal = CommitSignal()
+        _, scope, tasks, outgoing, incoming = team_journal(tmp_path, name, signal)
+        answer = team.logins.answer("ada@example.com", "correct horse battery", name, "127.0.0.1")
+        account = TeamAccount(Config(tmp_path / name))
+        account.write({"address": f"http://127.0.0.1:{port}", "token": answer.token, "device": answer.device_id})
+        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, signal, SyncStatus(account, outgoing))
+        client.start()
+        return scope, tasks, client
+
+    def eventually(check, seconds: float) -> bool:
+        deadline = time.monotonic() + seconds
+        while time.monotonic() < deadline:
+            if check():
+                return True
+            time.sleep(0.05)
+        return False
+
+    scope_a, tasks_a, client_a = joined("a")
+    scope_b, tasks_b, client_b = joined("b")
+    try:
+        assert oct((tmp_path / "a" / ".journal" / TEAM_FILE).stat().st_mode & 0o777) == "0o600", "the token is readable by its owner alone"
+        with scope_a.environment(1):
+            task = tasks_a.save(Task(environment_id=1, title="in step"), actor=USER)
+        assert eventually(lambda: [row.title for row in tasks_b.global_matching(environment_id=1)] == ["in step"], 1.0), "a task made on one journal is on the other within a second"
+        with scope_b.environment(1):
+            tasks_b.save(tasks_b.find(task.id).with_(title="renamed by b"), actor=USER)
+        assert eventually(lambda: tasks_a.find(task.id).title == "renamed by b", 1.0)
+        team.close(server)
+        with scope_a.environment(1):
+            tasks_a.save(tasks_a.find(task.id).with_(brief="written while the server was down"), actor=USER)
+        time.sleep(0.5)
+        assert client_a.status.line().startswith("Not connected") and tasks_b.find(task.id).brief == ""
+        restarted = TeamServer(tmp_path)
+        server = restarted.http("127.0.0.1", port)
+        import threading
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        team = restarted
+        assert eventually(lambda: tasks_b.find(task.id).brief == "written while the server was down", 8.0), "a change made while the server was down arrives once it is back"
+    finally:
+        client_a.stop()
+        client_b.stop()
+        team.close(server)

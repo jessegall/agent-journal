@@ -32,6 +32,7 @@ from journal.events.models.number_request import NumberRequest
 from journal.events.models.synced import Synced
 from journal.sync.pulled_settings import PulledSettings
 from journal.sync.record_purge import RecordPurge
+from journal.sync.sync_client import SyncClient
 from journal.events.models.purged import Purged
 
 
@@ -93,6 +94,7 @@ class Runtime:
         self.register_jobs()
         self.jobs.start()
         self.server.start()
+        self.container.get(SyncClient).start()
         self.container.get(ServiceStart).run()
         gc.freeze()
 
@@ -119,6 +121,7 @@ class Runtime:
         self.stop()
 
     def stop(self) -> None:
+        self.container.get(SyncClient).stop()
         self.server.stop()
         self.share_server.stop()
         self.jobs.stop()

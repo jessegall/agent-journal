@@ -7,6 +7,7 @@ from journal.events.models.updated import Updated
 from journal.models.outgoing_change import CREATED, DELETED, UPDATED, OutgoingChange
 from journal.repositories.outgoing_changes import OutgoingChanges
 from journal.sync.team_account import TeamAccount
+from journal.sync.commit_signal import CommitSignal
 from journal.sync.setting_scopes import SettingScopes
 from journal.models.model import Model
 from journal.models.setting import Setting
@@ -18,8 +19,8 @@ STAMP_COLUMNS = ("updated_at", "updater")
 class RecordOutgoingChange(Listener[ModelEvent]):
     """Every write to a shared row is queued for the team server in the write's own transaction, once this journal has joined a team, a setting only when it is the team's: a creation with all its columns, an update with the ones it changed, a deletion with none."""
 
-    def __init__(self, changes: OutgoingChanges, account: TeamAccount, scopes: SettingScopes) -> None:
-        self.changes, self.account, self.scopes = changes, account, scopes
+    def __init__(self, changes: OutgoingChanges, account: TeamAccount, scopes: SettingScopes, signal: CommitSignal) -> None:
+        self.changes, self.account, self.scopes, self.signal = changes, account, scopes, signal
 
     def handle(self, event: ModelEvent) -> None:
         action = ACTIONS.get(type(event))
@@ -29,6 +30,7 @@ class RecordOutgoingChange(Listener[ModelEvent]):
         fields = Schema.stored_values(event.model, names)
         updated_at = event.model.updated_at.timestamp()
         self.changes.queued(OutgoingChange(row_table=event.model.table(), row=event.model.row_id, action=action, fields=fields, changed_at={name: updated_at for name in fields}, writer=event.actor.stamp), event.actor)
+        self.changes.commit_callback(self.signal.ring)
 
     def is_team_row(self, model: Model) -> bool:
         return model.shared and (not isinstance(model, Setting) or self.scopes.is_team(model.key))

@@ -50,3 +50,9 @@ class TeamServer:
         server = self.http(host, port)
         threading.Thread(target=server.serve_forever, daemon=True).start()
         return server
+
+    def close(self, server: ThreadingHTTPServer) -> None:
+        self.log.close()
+        server.shutdown()
+        server.server_close()
+        self.store.close()

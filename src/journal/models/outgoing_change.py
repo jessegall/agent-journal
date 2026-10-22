@@ -27,3 +27,6 @@ class OutgoingChange(Model):
         if later.action == DELETED:
             return None if self.action == CREATED else self.with_(action=DELETED, fields={}, changed_at={}, writer=later.writer)
         return self.with_(fields={**(self.fields or {}), **(later.fields or {})}, changed_at={**(self.changed_at or {}), **(later.changed_at or {})}, writer=later.writer)
+
+    def payload(self) -> dict:
+        return {"row_table": self.row_table, "row": self.row, "action": self.action, "actor": self.writer, "fields": self.fields or {}, "changed_at": self.changed_at or {}}

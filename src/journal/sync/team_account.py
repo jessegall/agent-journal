@@ -1,4 +1,5 @@
 import json
+import os
 
 from journal.config import Config
 
@@ -15,7 +16,29 @@ class TeamAccount:
         return (self.config.home / TEAM_FILE).is_file()
 
     def device(self) -> str:
-        return json.loads((self.config.home / TEAM_FILE).read_text()).get("device", "") if self.is_joined() else ""
+        return str(self.contents().get("device", ""))
 
     def is_seed_writer(self) -> bool:
-        return not self.is_joined() or json.loads((self.config.home / TEAM_FILE).read_text()).get("upgrade", False)
+        return not self.is_joined() or bool(self.contents().get("upgrade", False))
+
+    def address(self) -> str:
+        return self.contents().get("address", "")
+
+    def token(self) -> str:
+        return self.contents().get("token", "")
+
+    def sequence(self) -> int:
+        return int(self.contents().get("sequence", 0))
+
+    def record_sequence(self, sequence: int) -> None:
+        self.write({**self.contents(), "sequence": sequence})
+
+    def write(self, contents: dict) -> None:
+        path = self.config.home / TEAM_FILE
+        draft = path.with_suffix(".draft")
+        draft.write_text(json.dumps(contents))
+        os.chmod(draft, 0o600)
+        draft.replace(path)
+
+    def contents(self) -> dict:
+        return json.loads((self.config.home / TEAM_FILE).read_text()) if self.is_joined() else {}

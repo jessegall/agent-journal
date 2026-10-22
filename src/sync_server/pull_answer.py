@@ -10,3 +10,7 @@ class PullAnswer:
     changes: tuple[LoggedChange, ...]
     head: int
     server_time: float
+
+    @classmethod
+    def parsed(cls, changes: list, head: int, server_time: float) -> "PullAnswer":
+        return cls(tuple(LoggedChange(**change) for change in changes), head, server_time)

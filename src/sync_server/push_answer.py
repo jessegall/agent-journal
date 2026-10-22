@@ -10,3 +10,7 @@ class PushAnswer:
     sequences: tuple[int, ...]
     rejected: tuple[RejectedField, ...]
     server_time: float
+
+    @classmethod
+    def parsed(cls, sequences: list, rejected: list, server_time: float) -> "PushAnswer":
+        return cls(tuple(sequences), tuple(RejectedField(**field) for field in rejected), server_time)

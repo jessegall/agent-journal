@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from journal.models.outgoing_change import CREATED, DELETED
 from journal.support.actor import Actor
+from sync_server.logged_change import LoggedChange
 
 
 @dataclass(frozen=True)
@@ -25,3 +26,7 @@ class TeamChange:
 
     def fields_without(self, names: set[str]) -> dict:
         return {name: value for name, value in self.fields.items() if name not in names}
+
+    @classmethod
+    def logged(cls, change: LoggedChange) -> "TeamChange":
+        return cls(change.row_table, change.row, change.action, change.actor, dict(change.fields))

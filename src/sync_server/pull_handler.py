@@ -18,7 +18,7 @@ class PullHandler:
         deadline = self.clock.monotonic() + min(wait_seconds, WAIT_SECONDS)
         head = self.log.head()
         changes = self.log.pull_page(sequence, device.id)
-        while not changes and self.clock.monotonic() < deadline:
+        while not changes and not self.log.is_closed and self.clock.monotonic() < deadline:
             self.log.wait_past(head, deadline - self.clock.monotonic())
             head = self.log.head()
             changes = self.log.pull_page(sequence, device.id)

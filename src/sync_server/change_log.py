@@ -15,6 +15,7 @@ class ChangeLog:
     def __init__(self, store: Store, changes: ChangeRows, values: RowValues) -> None:
         self.store, self.changes, self.values = store, changes, values
         self.signal = threading.Condition()
+        self.is_closed = False
 
     def appended(self, change: LoggedChange) -> LoggedChange:
         with self.store.transaction():
@@ -43,7 +44,12 @@ class ChangeLog:
 
     def wait_past(self, head: int, seconds: float) -> None:
         with self.signal:
-            self.signal.wait_for(lambda: self.head() > head, timeout=seconds)
+            self.signal.wait_for(lambda: self.is_closed or self.head() > head, timeout=seconds)
+
+    def close(self) -> None:
+        with self.signal:
+            self.is_closed = True
+            self.signal.notify_all()
 
     def copied_rows(self) -> list[CopiedRow]:
         return [CopiedRow(row["row_table"], row["row"], json.loads(row["fields"]), json.loads(row["changed_at"])) for row in self.values.existing()]
