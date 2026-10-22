@@ -44,8 +44,9 @@ export function queueClock(message) {
 export function line(message, elapsed) {
     if (!message) return null;
     const parts = frames(message, elapsed).filter((part) => part.value !== "");
+    const still = parts.length > 1 ? parts.slice(0, -1) : parts;
     return {
-        key: message.key,
+        key: still.map((p) => p.value).join(" "),
         parts,
         text: parts.map((p) => `${p.prefix}${p.value}`).join(" "),
         clock: queueClock(message),

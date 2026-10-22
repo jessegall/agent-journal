@@ -7,7 +7,7 @@ import {useBarLine} from "../composables/barLine.js";
 defineProps({idle: {type: String, default: "working"}});
 
 const COUNT_UP = 360;
-const {state, message, elapsed} = useBarLine(() => store.bar && store.bar.queue);
+const {state, message, elapsed} = useBarLine(() => store.bar);
 const counted = ref({});
 const frames = {};
 onUnmounted(() => Object.values(frames).forEach(cancelAnimationFrame));

@@ -37,5 +37,6 @@ class BarRow:
         return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.creation_time.timestamp(), entry.kind == "ToolFinished")
 
     def item(self) -> dict:
-        detail = [{"value": self.detail[:80], "color": "muted"}] if self.detail else []
+        command, _, argument = self.detail[:80].partition(" ")
+        detail = [{"value": word, "color": "muted"} for word in (command, argument) if word]
         return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": ACTIVITY_ROW_SECONDS}

@@ -51,6 +51,9 @@ class CommandOutput(Scoped):
     def is_resolved(self) -> bool:
         return self.ended
 
+    def is_success(self) -> bool:
+        return self.ended and self.status == 0 and not self.is_interrupted
+
     def ending(self) -> str:
         if self.is_interrupted:
             return "cut off when the journal restarted"

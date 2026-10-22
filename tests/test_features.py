@@ -6222,7 +6222,7 @@ def test_a_command_moved_to_the_background_is_told_to_watch_it_with_the_reader_t
     known = "\n".join(suggestions.lines(5, "perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q"))
     assert "journal output watch 5 --reader pytest" in known and "no reader" not in known, "a runner a reader reads is told its reader"
     unknown = "\n".join(suggestions.lines(6, "make test"))
-    assert "journal output watch 6`" in unknown and "no reader reads make test yet" in unknown, "a test run no reader reads is told to make one"
+    assert "journal output watch 6 --title" in unknown and "no reader reads make test yet" in unknown, "a test run no reader reads is told to make one"
     assert suggestions.lines(7, "sleep 100") == [suggestions.lines(7, "sleep 100")[0]] and "watch it live" in suggestions.lines(7, "sleep 100")[0], "a plain long command is told it can be watched, nothing more"
     hook(app, "SessionStart")
     folder = app.config.root / "w"
@@ -7443,6 +7443,8 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     deferred.drain()
     ended = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
     assert "which you watched, finished" in ended and "Tests 100%" in ended, "the end is said once, with the last view"
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Messages).with_key("watch:1")[0].data["tone"] == "good", "its card turns green once the run finished"
     deferred.drain()
     after = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
     assert "output 1" not in after and not outputs.find(1).is_watched, "the watch ends with its command"

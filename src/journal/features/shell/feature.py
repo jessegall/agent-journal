@@ -42,7 +42,7 @@ class Shell(Feature[ShellData]):
     BACKGROUND_CHECK = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_interval=300, blocks_regardless=True)
     WATCH_VIEW = Nudge(name, "watched_output", "output {{n}}, which you watch:\n{{lines}}", "`journal output unwatch` ends the watch", repeat_interval=0)
     WATCH_ENDED = Nudge(name, "watched_output_ended", "output {{n}}, which you watched, {{ending}}:\n{{lines}}", "the watch on it has ended; `journal output read {{n}} --summary` says more", repeat_interval=0)
-    WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}}`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
+    WATCH_SUGGESTION = Nudge(name, "watch_it_live", "watch it live, so the user sees it move: `journal output watch {{n}}{{reader}} --title \"<what it is doing, in words>\"`", "or `journal await \"<what>\" --output {{n}}{{reader}}` when you wait on it", repeat_interval=0)
     NEW_READER_SUGGESTION = Nudge(name, "make_its_reader", "no reader reads {{command}} yet: make one, and its card shows how far it is", "`journal reader add <name> --commands \"{{command}}\" --pattern '<its failure and summary lines>' --progress '<a percent or a count of a total, in groups>' --label Tests`, then watch it with --reader <name>; the next run is told of it by itself", repeat_interval=0)
     ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", "you see its view after every tool use until it ends, and the user sees it move in its card; `journal output unwatch` ends the watch", repeat_interval=0)
     ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
@@ -68,8 +68,10 @@ Every shell command you run goes through the journal's runner.
   --about "<what it picks>"`, or `--script <file>` for a shell script handed the output on its input. Use it with
   `journal output read N --reader <name>`; `journal reader list` names the project's readers. The second time you
   read the same shape of output by hand, add a reader for it and say so in the chat.
-- `journal output watch N [--reader <name>]` binds a running output to you: after every tool use you are shown the lines
-  its reader picks, or its last ten lines with no reader, and a card in the chat shows the same, updated in place. The
+- `journal output watch N [--reader <name>] [--title "<words>"]` binds a running output to you: after every tool use you are
+  shown the lines its reader picks, or its last ten lines with no reader, and a card in the chat shows the same, updated in
+  place. The card is for the user: its title says what the run is doing in plain words, `--title "Running the tests"`, else
+  the reader's label, else what the command does; the command line shows only when the user opens the card. The
   watch ends by itself when the command ends, and you are told once how it ended; `journal output unwatch` ends it
   sooner. One output is watched at a time. A reader written for a watch picks few lines that read well in the card, and
   may show how far the command has come: `--progress <regex>` takes the last match, its groups a percentage such as

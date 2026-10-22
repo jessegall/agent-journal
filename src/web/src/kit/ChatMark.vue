@@ -54,6 +54,7 @@ const tint = computed(() => ({
         <template v-if="mark.card">
             <TextDisplay class="card" :text="mark.card" />
         </template>
+        <slot />
     </component>
 </template>
 

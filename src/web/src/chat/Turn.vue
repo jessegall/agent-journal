@@ -58,21 +58,22 @@ function markClick(data) {
         <template #card>
             <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
                 <span class="mark-row">
-                    <ChatMark :mark="cardMark" v-on="markClick(data)" />
+                    <ChatMark :mark="cardMark" v-on="markClick(data)">
+                        <template v-if="opened && lines.length">
+                            <ul class="mark-lines">
+                                <template v-if="data.line">
+                                    <li class="mark-line mark-command">{{ data.line }}</li>
+                                </template>
+                                <template v-for="line in lines" :key="line">
+                                    <li class="mark-line">{{ line }}</li>
+                                </template>
+                            </ul>
+                        </template>
+                    </ChatMark>
                     <template v-if="data.output && !data.docked">
                         <button type="button" class="mark-dock" title="Dock the live view above the chat" @click="dock">Dock</button>
                     </template>
                 </span>
-                <template v-if="opened && lines.length">
-                    <ul class="mark-lines">
-                        <template v-if="data.line">
-                            <li class="mark-line mark-command">{{ data.line }}</li>
-                        </template>
-                        <template v-for="line in lines" :key="line">
-                            <li class="mark-line">{{ line }}</li>
-                        </template>
-                    </ul>
-                </template>
             </div>
         </template>
         <template #group>
@@ -127,7 +128,8 @@ function markClick(data) {
 
 .mark-lines {
     margin: 0;
-    padding: 0 0 0 22px;
+    padding: 2px 0 0 22px;
+    text-align: left;
     color: var(--text-3);
     font-size: 11px;
     line-height: 1.4;

@@ -33,12 +33,37 @@ describe("the chat's status line", () => {
     });
 
     test("draws the running part when the bar has no line of its own yet", async () => {
-        store.bar = {queue: []};
+        store.bar = [];
         const host = document.createElement("div");
         document.body.append(host);
         app = createApp({render: () => h(RunningCommand, {idle: busyLine(agent({tool_running: true, doing: "git status"})).doing})});
         app.mount(host);
         await flush();
         expect(host.querySelector(".running-idle").textContent).toBe("git status");
+    });
+
+    test("rolls through the running parts of a chain, holding a shared command still while only its argument rolls", async () => {
+        const row = (time, verb, command, argument, done = false) => ({id: time, key: `c1 ${command} ${argument}`, time, done, for: 0, clock: false, hold: 0, lingers: 10, parts: [{value: verb, color: "gray"}, {value: command, color: "muted"}, {value: argument, color: "muted"}]});
+        const now = Date.now() / 1000;
+        store.bar = [row(now - 2, "reading", "cat", "a.py")];
+        const host = document.createElement("div");
+        document.body.append(host);
+        app = createApp({render: () => h(RunningCommand, {idle: "thinking"})});
+        app.mount(host);
+        await flush();
+        const shown = () => [...host.querySelectorAll(".running-token")].map((t) => t.textContent.trim());
+        const lineOf = () => host.querySelector(".running-line");
+        expect(shown()).toEqual(["reading", "cat", "a.py"]);
+        const first = lineOf();
+        store.bar = [row(now - 2, "reading", "cat", "a.py", true), row(now - 1, "reading", "cat", "b.py")];
+        await new Promise((r) => setTimeout(r, 300));
+        await flush();
+        expect(shown()).toContain("b.py");
+        expect(lineOf()).toBe(first);
+        store.bar = [row(now - 2, "reading", "cat", "a.py", true), row(now - 1, "reading", "cat", "b.py", true), row(now, "testing", "pytest", "-q")];
+        await new Promise((r) => setTimeout(r, 300));
+        await flush();
+        expect(shown()).toContain("pytest");
+        expect(lineOf()).not.toBe(first);
     });
 });

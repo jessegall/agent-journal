@@ -36,9 +36,15 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part}
+        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part}
         self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines), output.session)
         return view
+
+    @staticmethod
+    def tone(output: CommandOutput) -> str:
+        if not output.ended:
+            return ""
+        return "good" if output.is_success() else "bad"
 
     def title(self, output: CommandOutput, part: str) -> str:
         reader_label = self.readers.lookup(output.watch_reader).label if output.watch_reader else ""
