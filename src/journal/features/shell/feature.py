@@ -23,12 +23,13 @@ class Shell(Feature[ShellData]):
     COMMAND_SHOWN = Option("shell.command_characters", "Show any other command's output up to", "Any other command's output, such as a test run or a build, is shown whole up to this; past it only a line naming the output, which the agent reads by its number", 400, unit="characters")
     SHORT = Option("shell.short_output", "Keep no output under", "A command whose whole output is under this many characters, with no pipe in its line, is shown as it is and kept as no numbered output; a longer one, or a line with a pipe into head, tail, grep or any filter, is kept", 400, unit="characters")
     UNREAD_OUTPUT_INTERVAL = Option("shell.unread_output_every", "Name an unread output again after", "Tool uses after the agent was told a background command ended, while it has not read its output, before it is told again; an idle agent is told again after the seconds a command runs in the foreground", 5, unit="tool uses")
+    OUTPUT_DOCK = Option("shell.dock_live_outputs", "Dock live outputs", "A watched command's card is docked above the chat as soon as it runs, and taken down once it ends; a card you dock by hand stays until you close it", True, kind="switch")
     OUTPUT_COUNT = Option("shell.outputs_kept", "Keep the outputs of the last", "Command outputs kept as numbered rows with their files; past this the oldest go", 250, unit="commands")
     name = "shell"
     title = "Shell commands"
     help = "A chained command is run part by part, each recorded with its output and its duration; one that runs past thirty seconds, or ten while a message of yours waits, goes to the background and the agent is told when it ends."
     commands = (OutputCommand, ReaderCommand)
-    options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, UNREAD_OUTPUT_INTERVAL, OUTPUT_COUNT)
+    options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, UNREAD_OUTPUT_INTERVAL, OUTPUT_DOCK, OUTPUT_COUNT)
     listeners = (OutputNotice, WatchUpdate)
     seeds = (CutOffOutputs, DefaultReaders)
     jobs = (WatchRefresh,)

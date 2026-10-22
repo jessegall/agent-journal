@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from journal.chat.cards import Cards
+from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.support.chain import Chain
 from journal.features.shell.support.card_line import CardLine
@@ -9,6 +9,7 @@ from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.readers import Readers
 from journal.models.command_output import CommandOutput
 from journal.repositories.messages import Messages
+from journal.repositories.setting_rows import SettingRows
 from journal.support.actor import Actor
 from journal.support.card_kind import CardKind
 
@@ -20,8 +21,8 @@ HEADLINE_CHARACTERS = 60
 class OutputViews:
     """The view of a watched output, read from its files through its reader, and the card in the chat that shows it, kept in place by its key."""
 
-    def __init__(self, readers: Readers, cards: Cards, messages: Messages) -> None:
-        self.readers, self.cards, self.messages = readers, cards, messages
+    def __init__(self, readers: Readers, cards: Cards, messages: Messages, settings: SettingRows) -> None:
+        self.readers, self.cards, self.messages, self.settings = readers, cards, messages, settings
 
     def view(self, output: CommandOutput) -> OutputView:
         files = OutputFiles(Path(output.folder))
@@ -61,9 +62,16 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output), "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view)}
+        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output), "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view), **self.dock_state(output)}
         self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(self.card_lines(output, view) or self.ending_lines(output)), output.session)
         return view
+
+    def dock_state(self, output: CommandOutput) -> dict:
+        from journal.features.shell.feature import Shell
+        cards = self.messages.keyed(OutputView.key(output.row_id), Actor.system())
+        if not cards:
+            return {DOCKED: True, AUTO_DOCKED: True} if not output.ended and self.settings.option(Shell.OUTPUT_DOCK) else {}
+        return {DOCKED: False, AUTO_DOCKED: False} if output.ended and cards[0].data.get(AUTO_DOCKED) else {}
 
     @staticmethod
     def tone(output: CommandOutput) -> str:

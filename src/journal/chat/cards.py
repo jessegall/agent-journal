@@ -10,6 +10,7 @@ from journal.models.support.ref import Ref
 DETAIL_CHARACTERS = 80
 
 DOCKED = "docked"
+AUTO_DOCKED = "auto_docked"
 
 
 class Cards:
@@ -49,7 +50,7 @@ class Cards:
 
     @staticmethod
     def docked_data(older: Message, data: dict) -> dict:
-        return {**data, DOCKED: older.data[DOCKED]} if DOCKED in older.data else data
+        return {DOCKED: older.data[DOCKED], **data} if DOCKED in older.data else data
 
     def detail_parts(self, detail: str) -> dict:
         lines = detail.strip().splitlines()

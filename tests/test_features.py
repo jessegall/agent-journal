@@ -7668,6 +7668,51 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     deferred.drain()
     after = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
     assert "output 1" not in after and not outputs.find(1).is_watched, "the watch ends with its command"
+
+
+def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_user_docked_it(app: App):
+    """With Dock live outputs on, a watched run's card is docked as it goes live and taken down once it ends; a card docked by hand stays; off, nothing docks."""
+    from journal.chat.docking import Docking
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console, outputs = app.console(), app.container.get(CommandOutputs)
+
+    def run(name):
+        folder = app.config.root / name
+        folder.mkdir()
+        (folder / "parts").write_text("R-\n")
+        (folder / "0.part").write_text("pytest -q")
+        output = app.container.get(OutputLog).start(name, "pytest -q", folder, Caller.agent("main", "s1", "claude"))
+        outputs.save(outputs.find(output.id).backgrounded(), Actor.system())
+        assert console.run(["output", "watch", str(output.id), "--reader", "pytest"], AGENT).code == 0
+        return output.id
+
+    def card(n):
+        with app.container.get(Scope).environment(MAIN):
+            return app.container.get(Messages).with_key(f"watch:{n}")[0]
+
+    def end(n):
+        outputs.save(outputs.find(n).ended_with(0, 0.0), Actor.system())
+        app.runtime().deferred.drain()
+        hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")
+        app.runtime().deferred.drain()
+
+    auto = run("auto")
+    assert card(auto).data["docked"] is True, "a live card docks itself"
+    end(auto)
+    assert card(auto).data["docked"] is False, "and comes down once its run ends"
+    kept = run("kept")
+    with app.container.get(Scope).environment(MAIN):
+        app.container.get(Docking).pin_message(card(kept), Actor.user(1))
+    end(kept)
+    assert card(kept).data["docked"] is True, "a card the user docked stays after the end"
+    app.container.get(SettingRows).set("shell.dock_live_outputs", False, Actor.user(1))
+    plain = run("plain")
+    assert not card(plain).data.get("docked"), "with the setting off, nothing docks"
+
+
 def test_a_pytest_runs_bar_moves_with_each_test_between_the_percentages_it_prints_once_a_row():
     from journal.features.shell.seeds.default_readers import SHIPPED
     pytest = next(reader for reader in SHIPPED if reader.name == "pytest")
