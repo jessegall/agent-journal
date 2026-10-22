@@ -9571,6 +9571,9 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
 def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
     import re
     import subprocess
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.features.shell.jobs.watch_refresh import WatchRefresh
+    from journal.repositories.command_outputs import CommandOutputs
     from journal.models.message import Message
     from journal.models.author import Author
     from journal.repositories.messages import Messages
@@ -9688,6 +9691,25 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
             assert len(names) == len(set(names)), f"no two environments share a name: {names}"
         assert eventually(lambda: all(a.container.get(EnvironmentOwners).owner_number(environment.row_id) for environment in a.container.get(Environments).rows())), "every environment has an owner"
         assert not any(c.container.get(EnvironmentOwners).is_colleague(Actor.user(1), environment.row_id) for environment in c.container.get(Environments).rows()), "a journal in no team has no colleagues"
+        run = tmp_path / "a" / "run"
+        run.mkdir()
+        (run / "parts").write_text("R-\n")
+        (run / "0.part").write_text("make build")
+        (run / "0.out").write_text("step 1\n")
+        with a.container.get(Scope).environment(ada_main.row_id):
+            a.container.get(OutputLog).start("run", "make build", run, Caller.agent("ada-main", "s1", "claude"))
+            [output] = [row for row in a.container.get(CommandOutputs).selected_globally(a.container.get(CommandOutputs).query()) if row.command == "make build"]
+            a.container.get(CommandOutputs).save(output.backgrounded(), Actor.system())
+        a.container.get(WatchRefresh).tick(timing.time())
+        (run / "0.out").write_text("step 1\nstep 2\n")
+        a.container.get(WatchRefresh).tick(timing.time())
+
+        def card_of(journal):
+            return [message for message in journal.container.get(Messages).global_matching() if (message.data or {}).get("output") == output.id]
+
+        assert eventually(lambda: bool(card_of(b)) and "step 2" in str(card_of(b)[0].data) + card_of(b)[0].text), "the running command's card moves in the colleague's chat too"
+        assert card_of(b)[0].data.get("docked") == card_of(a)[0].data.get("docked"), "and is docked as it is on its own machine"
+        assert not b.container.get(CommandOutputs).selected_globally(b.container.get(CommandOutputs).query()), "while the output itself never leaves its machine"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
         request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})

@@ -40,8 +40,8 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def reader_outputs(self, reader: str, last: int = 50) -> list[CommandOutput]:
         return self.selected(self.query().filter(watch_reader=reader).order_descending("id").limit(last))
 
-    def all_watched(self) -> list[CommandOutput]:
-        return self.selected_globally(self.query().filter(is_watched=True).order("id"))
+    def all_carded(self) -> list[CommandOutput]:
+        return self.selected_globally(self.query().filter_alternatives(self.query().filter(is_watched=True), self.query().filter(moved=True, ended=False)).order("id"))
 
     def watched(self, session: str | None) -> list[CommandOutput]:
         return self.selected(self.query().filter(session=session, is_watched=True).order("id"))
