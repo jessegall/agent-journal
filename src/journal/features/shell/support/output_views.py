@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from journal.chat.cards import Cards
+from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.readers import Readers
@@ -34,10 +35,15 @@ class OutputViews:
 
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
-        data = {"kind": "card", "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending}
-        label = f"Watching output {output.id}: {self.watched_part(output)[:HEADLINE_CHARACTERS]}"
-        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), label, data, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines), output.session)
+        part = self.watched_part(output)
+        data = {"kind": "card", "icon": "terminal", "tone": "", "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part}
+        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines), output.session)
         return view
+
+    def title(self, output: CommandOutput, part: str) -> str:
+        reader_label = self.readers.lookup(output.watch_reader).label if output.watch_reader else ""
+        heading = output.watch_title or reader_label or ActivityLabel.build(part)
+        return heading[:1].upper() + heading[1:HEADLINE_CHARACTERS]
 
     @staticmethod
     def watched_part(output: CommandOutput) -> str:

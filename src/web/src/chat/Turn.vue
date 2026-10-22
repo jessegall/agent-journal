@@ -65,6 +65,9 @@ function markClick(data) {
                 </span>
                 <template v-if="opened && lines.length">
                     <ul class="mark-lines">
+                        <template v-if="data.line">
+                            <li class="mark-line mark-command">{{ data.line }}</li>
+                        </template>
                         <template v-for="line in lines" :key="line">
                             <li class="mark-line">{{ line }}</li>
                         </template>
@@ -130,6 +133,10 @@ function markClick(data) {
     line-height: 1.4;
     list-style: none;
     overflow-wrap: anywhere;
+}
+
+.mark-command {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
 }
 
 .mark-row {

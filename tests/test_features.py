@@ -7428,7 +7428,14 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     with app.container.get(Scope).environment(MAIN):
         card = app.container.get(Messages).with_key("watch:1")[0]
     assert card.data["figure"] == "Tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"
-    assert card.text == "Watching output 1: pytest -q", "the card names the part being watched"
+    assert (card.text, card.data["line"]) == ("Tests", "pytest -q"), "the card is titled by its reader's label, the command kept beside it for the opened card"
+    assert console.run(["output", "watch", "1", "--title", "Running the tests"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Messages).with_key("watch:1")[0].text == "Running the tests", "a title given to the watch comes first"
+    assert console.run(["output", "watch", "1"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Messages).with_key("watch:1")[0].text == "Testing", "with neither, the card says what the command does"
+    assert console.run(["output", "watch", "1", "--reader", "failures"], AGENT).code == 0
     (folder / "0.out").write_text("collecting\nFAILED test_b\n[100%] test_d\n")
     outputs.save(outputs.find(1).ended_with(0, 0.0), Actor.system())
     deferred.drain()

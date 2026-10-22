@@ -19,6 +19,7 @@ class CommandOutput(Scoped):
     is_interrupted: bool = False
     is_watched: bool = False
     watch_reader: str = ""
+    watch_title: str = ""
 
     def headline(self) -> str:
         first, *remainder = self.command.splitlines() or [""]
@@ -41,8 +42,8 @@ class CommandOutput(Scoped):
     def announced(self) -> "CommandOutput":
         return self.with_(is_announced=True)
 
-    def watched(self, reader: str) -> "CommandOutput":
-        return self.with_(is_watched=True, watch_reader=reader)
+    def watched(self, reader: str, title: str) -> "CommandOutput":
+        return self.with_(is_watched=True, watch_reader=reader, watch_title=title)
 
     def unwatched(self) -> "CommandOutput":
         return self.with_(is_watched=False)

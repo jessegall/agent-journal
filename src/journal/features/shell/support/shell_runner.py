@@ -95,7 +95,7 @@ class ShellRunner:
 
     def watched(self, number: int, alias: Alias, caller: Caller) -> list[str]:
         from journal.features.shell.feature import Shell
-        self.views.card(self.outputs.watch(self.outputs.find(number), alias.reader, caller.actor))
+        self.views.card(self.outputs.watch(self.outputs.find(number), alias.reader, "", caller.actor))
         return [Shell.ALIAS_WATCH.create(n=number, name=alias.name, reader=f" through the reader {alias.reader}" if alias.reader else "").rendered()]
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:

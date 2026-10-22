@@ -29,10 +29,10 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def moved_unended(self) -> list[CommandOutput]:
         return self.selected_globally(self.query().filter(moved=True, ended=False).order("id"))
 
-    def watch(self, output: CommandOutput, reader: str, actor: Actor) -> CommandOutput:
+    def watch(self, output: CommandOutput, reader: str, title: str, actor: Actor) -> CommandOutput:
         for watched in self.watched(output.session):
             self.save(watched.unwatched(), actor)
-        return self.save(output.watched(reader), actor)
+        return self.save(output.watched(reader, title), actor)
 
     def all_watched(self) -> list[CommandOutput]:
         return self.selected_globally(self.query().filter(is_watched=True).order("id"))
