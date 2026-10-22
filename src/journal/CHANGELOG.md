@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.2
+
+- The status line above the chat leaves out a cd or an export at the start of a line, so it shows the command doing the work rather than the project's path.
+
 ## 4.8.1
 
 - The task inspector shows the task's state in a line under its title. A blocked task says beneath it what it waits on and why, a parked one why it is parked, and the moves sit docked at the bottom.
