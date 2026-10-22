@@ -3579,7 +3579,7 @@ def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app: App):
     protocol = app.container.get(Protocol)
     from journal.providers.claude import Claude
     tool = json.loads(protocol.event_line(ToolStarting(call=Claude().call("Bash", {"command": "ls"}, frozenset())).placed("s1", 1, "claude", 0.2, 0.0), "main", "working"))
-    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "operation": {"kind": "shell line", "command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching"}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
+    assert (tool["v"], tool["event"], tool["session"], tool["state"], tool["data"]) == (1, "tool_starting", "s1", "working", {"tool_use": 0, "tool": "Bash", "input": {"command": "ls"}, "operation": {"kind": "shell line", "command": "ls"}, "command": "ls", "parts": [{"text": "ls", "is_journal": False, "writes": False, "files": [], "reads_output": False, "read_shape": "ls"}], "is_journal": False, "writes": False, "written_paths": [], "read_paths": [], "file_lines": 0, "skill_loaded": "", "work": "searching", "shape_runs": 0}), "an agent event: its name, where it happened and the call's one reading, flat, as a plugin reads it"
     row = json.loads(protocol.event_line(Created(model=Task(id=7, environment_id=1, title="t"), actor=Actor.plugin("echo")), "main"))
     assert row["event"] == "tasks.created" and row["data"] == {"table": "tasks", "id": 7, "by": "plugin:echo"}, "a row event: its table, its number and who wrote it"
     assert protocol.parsed_answer("").answer == "allow", "an empty answer lets the event through"
@@ -8292,6 +8292,22 @@ def test_an_alias_runs_its_line_with_the_flags_passed_on_and_its_moved_run_is_wa
     assert card.data["line"] == "journal nap 2", "the card names the line the agent ran, never the alias's expansion"
 
 
+def test_a_readers_command_run_with_three_different_arguments_tells_the_agent_to_give_the_reader_a_topic(app: App):
+    """A command a reader reads, run here with three or more argument sets, does different things, so the reader is asked for a topic that says which."""
+    from journal.features.shell.support.shell_request import ShellRequest
+    from journal.features.shell.support.shell_runner import ShellRunner
+    console, runner, link = app.console(), app.container.get(ShellRunner), app.container.get(SupervisorLink)
+    hook(app, "SessionStart")
+    assert console.run(["reader", "add", "naps", "--pattern", "slept", "--about", "the naps", "--commands", "sleep", "--label", "Taking a nap"], AGENT).code == 0
+    for seconds in ("0.1", "0.2", "0.3"):
+        hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": f"sleep {seconds}"})
+    link.working(MAIN)
+    request = lambda line: ShellRequest(line=wrapped_line(line), cwd=str(app.config.root), shell="/bin/sh", environment=dict(os.environ))
+    b"".join(runner.run(request("sleep 0.4"), AGENT, MAIN))
+    said = link.pending_lines(MAIN)
+    assert "sleep has run here with 3 different arguments" in said and "give the reader naps a topic pattern" in said, said
+
+
 def test_an_alias_name_that_is_a_journal_command_or_another_alias_is_refused(app: App):
     console = app.console()
     noun = console.run(["alias", "add", "task", "echo hi"], USER)
@@ -8339,9 +8355,10 @@ def test_a_line_an_alias_runs_is_pointed_at_it_and_a_line_run_three_times_is_ask
     assert "journal unit runs this line: pytest -q tests" in said("pytest -q tests").get("additionalContext", "")
     chained = said("cd src && journal unit")
     assert chained.get("permissionDecision") != "deny" and "runs on its own" not in chained.get("additionalContext", ""), "an alias chains like any command"
-    assert "three times" not in said("make build").get("additionalContext", "") + said("make build").get("additionalContext", "")
-    assert "you ran this line three times or more: make build" in said("make build").get("additionalContext", "")
-    assert "three times" not in said("make build").get("additionalContext", ""), "once per line"
+    assert "three times" not in said("make build -j1").get("additionalContext", "") + said("make build -j2").get("additionalContext", "")
+    assert "you ran make build three times or more" in said("make build -j3").get("additionalContext", ""), "the same shape with other values counts as the same command"
+    assert "three times" not in said("make build -j4").get("additionalContext", ""), "once per shape"
+    assert all("three times" not in said("python3 - <<'EOF'\nprint(1)\nEOF").get("additionalContext", "") for _ in range(4)), "an inline script is never asked to become an alias"
     assert all("three times" not in said("journal unit").get("additionalContext", "") for _ in range(4)), "an alias call is never asked to become an alias"
 
 

@@ -11,8 +11,6 @@ from journal.repositories.entries import Entries
 from journal.support.moment import Moment
 
 HISTORY_READS = 26
-REPEATS = 3
-SHAPE_REPEATS = 5
 
 
 class ShellDataReader:
@@ -39,8 +37,6 @@ class ShellDataReader:
             tipped=tuple(tipped),
             watch=self.watch(agent),
             aliases=tuple(self.aliases.rows()),
-            repeated=tuple(self.entries.repeated_commands(agent.session, REPEATS)),
-            repeated_shapes=tuple(self.entries.repeated_shapes(agent.session, SHAPE_REPEATS)),
         )
 
     def last_ending_line(self, agent: Agent) -> Moment:

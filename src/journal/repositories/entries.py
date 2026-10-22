@@ -50,11 +50,8 @@ class Entries(ScopedRepository[Entry]):
         rows = self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_json("data->call->shape", shape).order_descending("id").limit(last))
         return {row.recorded_call().command for row in rows}
 
-    def repeated_shapes(self, session: str, minimum: int, last: int = 200) -> list[str]:
-        return self.repeated(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last), "data->call->shape", minimum)
-
-    def repeated_commands(self, session: str, minimum: int, last: int = 200) -> list[str]:
-        return self.repeated(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last), "data->call->command", minimum)
+    def shape_count(self, session: str, shape: str, last: int = 200) -> int:
+        return len(self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_json("data->call->shape", shape).order_descending("id").limit(last)))
 
     def newer_shell_starts(self, session: str, earliest: datetime, last: int = 500) -> list[Entry]:
         shell = self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_present("data->call->command").filter_unequal("data->call->command", "")

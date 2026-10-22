@@ -18,6 +18,9 @@ from journal.support.timeout import Timeout
 
 SILENCE_SECONDS = 5.0
 BACKGROUND_CHECK_DELAY_SECONDS = 300.0
+ALIAS_RUNS = 3
+READER_RUNS = 5
+INTERPRETERS = frozenset({"python", "python3", "node", "perl", "ruby", "php", "sh", "bash", "zsh"})
 
 
 class ShellConduct(Conduct):
@@ -74,7 +77,7 @@ def reader_suggestion_check(state: BaseState, event: ToolStarting, settings: Set
     from journal.features.shell.feature import Shell
     shell = event.data.part(Shell)
     shape = event.call.recorded().shape
-    if shape not in shell.repeated_shapes or ActivityLabel.build(event.call.command) not in LONG_RUNS or any(r.commands.is_read(event.call.command) for r in shell.readers):
+    if event.shape_runs < READER_RUNS or ActivityLabel.build(event.call.command) not in LONG_RUNS or any(r.commands.is_read(event.call.command) for r in shell.readers):
         return state.none()
     tip = Shell.NEW_READER_SUGGESTION.create(command=shape)
     return state.none() if tip.rendered() in shell.tipped else state.none(tip)
@@ -86,11 +89,11 @@ def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Tr
     hints = [Shell.ALIAS_HINT.create(name=alias.name, line=part.text) for part in event.call.parts for alias in shell.aliases if alias.matches(part.text)]
     if hints:
         return state.none(hints[0])
-    command = event.call.command
-    if command not in shell.repeated or Chain.is_journal(command) or Chain.is_read_line(command):
+    command, shape = event.call.command, event.call.recorded().shape
+    if event.shape_runs < ALIAS_RUNS or Chain.is_journal(command) or Chain.is_read_line(command) or shape in INTERPRETERS:
         return state.none()
     reader = next((r.name for r in shell.readers if r.commands.is_read(command)), "<the reader that reads its output>")
-    tip = Shell.ALIAS_SUGGESTION.create(command=command, reader=f" --reader {reader}")
+    tip = Shell.ALIAS_SUGGESTION.create(shape=shape, reader=f" --reader {reader}")
     return state.none() if tip.rendered() in shell.tipped else state.none(tip)
 
 
