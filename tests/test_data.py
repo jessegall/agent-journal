@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from journal.config import Config
 from journal.support.masks import Masks
 from journal.support.secret_values import SecretValues
@@ -579,10 +580,12 @@ def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener
         tasks_a.delete(gone, USER)
     with scope_b.environment(1):
         tasks_b.save(tasks_b.find(gone.id).with_(brief="b's brief"), actor=AGENT)
+    applied_from = datetime.now(timezone.utc)
     incoming_b.apply(team_changes(outgoing_a))
     with scope_b.environment(1):
         [task] = tasks_b.rows()
         assert (task.title, task.brief) == ("b's title", "a's brief"), "a field this machine still has to send is kept as this machine has it"
+        assert task.updated_at >= applied_from, "a pulled row is dated when it was applied here, so the viewer's next poll finds it however old the edit"
         assert [change.row for change in outgoing_b.waiting()] == [kept.id], "a pulled deletion drops this machine's waiting change to the row"
     incoming_b.apply([TeamChange(row_table="tasks", row=kept.id, action="updated", writer=USER.stamp, fields={"column_from_a_newer_journal": 1})])
 

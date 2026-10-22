@@ -171,7 +171,7 @@ class Repository(Generic[M]):
             self.dispatched(row, actor)
 
     def pulled_creation(self, id: int, fields: dict, actor: Actor) -> M:
-        row = self.model(**{**self._parsed(fields), "id": id})
+        row = self.model(**{**self._parsed(fields), "id": id, "updated_at": self._time()})
         with self.connection.transaction():
             self.connection.execute(*self.query().upsert(id=id, **self._column_values(row)))
             self.stored()
@@ -182,7 +182,7 @@ class Repository(Generic[M]):
         with self.connection.transaction():
             parsed = self._parsed(fields)
             if parsed:
-                self.connection.execute(*self.query().filter(id=id).update(**parsed))
+                self.connection.execute(*self.query().filter(id=id).update(**{**parsed, "updated_at": self._time()}))
             self.stored()
             rows = self._loaded(self.query().filter(id=id))
             for row in rows:
