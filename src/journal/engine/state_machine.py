@@ -59,11 +59,16 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.type(environment_id, line, following=following)
 
     def row_event(self, event: RowEvent) -> None:
-        for agent in self.agents.main_scoped(event.environment_id) if event.environment_id else self.agents.main_unended():
+        for agent in self.audience(event):
             with self.scope.environment(agent.environment_id):
                 answered = self.answer(agent, event.reaching(agent.session))
             if answered.context:
                 self.type_lines(agent.environment_id, answered.context, 0.0)
+
+    def audience(self, event: RowEvent) -> list[Agent]:
+        listeners = self.agents.main_scoped(event.environment_id) if event.environment_id else self.agents.main_unended()
+        recipients = [agent for agent in self.agents.global_matching(session=event.recipient) if event.recipient and agent.state != "ended" and agent not in listeners]
+        return [*listeners, *recipients]
 
     def answer(self, agent: Agent, event: AgentEvent | RowEvent) -> Decision:
         settings = self.top_state()
