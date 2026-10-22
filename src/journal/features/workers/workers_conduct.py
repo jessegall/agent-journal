@@ -37,12 +37,12 @@ class WorkersConduct(Conduct):
         return Transition.merged(self, [check(self, event, settings) for check in checks])
 
     def on_stop(self, event: Stop, settings: Settings) -> Transition:
-        return self.none(*report_mentions(event.data))
+        return self.none(*report_mentions(event.data), *check_reminders(event.data, event.time))
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         workers = event.data.part(workers_feature())
         silent = [workers_feature().SILENT_WORKER.create(n=w.id, name=w.name, minutes=w.silence.minutes()) for w in workers.dispatched_workers if w.dispatcher == event.session and w.is_silent(event.time)]
-        return self.none(*report_mentions(event.data), *silent)
+        return self.none(*report_mentions(event.data), *check_reminders(event.data, event.time), *silent)
 
     def on_worker_dispatched(self, event: WorkerDispatched, settings: Settings) -> Transition:
         from journal.features.tasks.states.external_wait import ExternalWait
@@ -84,10 +84,13 @@ class WorkersConduct(Conduct):
 def report_mentions(data: FeatureData) -> list[Nudge]:
     workers = data.part(workers_feature())
     summary = ", ".join(f"worker {w.id} ({w.name})" for w in workers.idle_workers)
-    mentions = [workers_feature().WORK_READY.create(n=work.worker, name=work.name, task=work.task) for work in workers.ready_work]
-    if summary:
-        mentions.append(workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary))
-    return mentions
+    return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary)] if summary else []
+
+
+def check_reminders(data: FeatureData, time: float) -> list[Nudge]:
+    reminder = workers_feature().CHECK_REMINDER
+    ready = data.part(workers_feature()).ready_work
+    return [reminder.create(n=work.worker, name=work.name, task=work.task) for work in ready if work.is_waiting(time, reminder.repeat_interval)]
 
 
 def worker_lines(event: ToolStarting, *verbs: str) -> list[WorkerLine]:

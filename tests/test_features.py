@@ -7310,6 +7310,42 @@ def test_the_main_agent_is_told_a_workers_work_is_ready_and_checks_each_proof(ap
         assert tasks.holder(tasks.find(1)) == Ref(Worker.table(), 1), "with the task still held"
 
 
+def test_a_wait_on_a_clocked_out_worker_is_answered_at_once_and_each_clock_out_is_told(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.entries import Entries
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
+    console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
+        workers.save(workers.find(2).with_(token_hash="h", session="w-2").ready(1.0), Actor.system())
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    console.run(["proof", "1", "parser.py:12, test_reads passes"], lovelace)
+    console.run(["proof", "2", "parser.py:30, test_names passes"], lovelace)
+    assert console.run(["clock-out", "the parser is done"], lovelace).code == 0
+    app.runtime().deferred.drain()
+    waited = console.run(["worker", "wait", "1", "2"], AGENT).text
+    assert "worker 1, Lady Lovelace, already clocked out: task 1 is ready to check" in waited, "a worker already clocked out is named at once with the task to check"
+    assert "awaiting workers 2:" in waited and "awaiting workers 1" not in waited, "and only the worker still out is waited on"
+    assert console.run(["worker", "check", "1", "1"], AGENT).code == 0
+    assert console.run(["worker", "check", "1", "2", "--short", "the alias names are missing"], AGENT).code == 0
+    app.runtime().deferred.drain()
+    console.run(["proof", "2", "parser.py:31, the alias names are in"], lovelace)
+    assert console.run(["clock-out", "the alias names are in"], lovelace).code == 0
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        lines = [entry.data["key"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["session"] == "s1"]
+    assert lines.count("workers.work_ready") == 2, "the second clock-out, after a point came back short, is told as the first was"
+    assert "worker 1, Lady Lovelace, already clocked out: task 1 is ready to check" in console.run(["worker", "wait", "1"], AGENT).text, "and its work counts as ready again while a point waits for its check"
+
+
 def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app: App, monkeypatch):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

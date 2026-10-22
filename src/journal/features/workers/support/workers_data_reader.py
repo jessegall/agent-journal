@@ -25,8 +25,9 @@ class WorkersDataReader:
     def __init__(self, workers: Workers, subagents: Subagents, config: Config, branch: WorkerBranch, tasks: Tasks, todos: WorkerTodos, outputs: CommandOutputs, proofs: Proofs) -> None:
         self.workers, self.subagents, self.config, self.branch, self.tasks, self.todos, self.outputs, self.proofs = workers, subagents, config, branch, tasks, todos, outputs, proofs
 
-    def is_acted(self, task_id: int) -> bool:
-        return any(proof.state in ACTED for proof in self.proofs.task_proofs(self.tasks.find(task_id)))
+    def is_unchecked(self, task_id: int) -> bool:
+        latest = {proof.point: proof for proof in sorted(self.proofs.task_proofs(self.tasks.find(task_id)), key=lambda proof: proof.row_id)}
+        return not latest or any(proof.state not in ACTED for proof in latest.values())
 
     def read(self, agent: Agent) -> WorkersData:
         rows, subagents = self.workers.scoped(), self.subagents.session_subagents(agent.session)
@@ -39,7 +40,7 @@ class WorkersDataReader:
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.row_id, w.name) for w in rows),
             session_workers=tuple(agent_rows),
-            ready_work=tuple(ReadyWork(w.id, w.name, task) for w in rows if w.state == WorkerState.DELIVERED for task in self.tasks.holder_task_ids(Ref.build(w))[:1] if not self.is_acted(task)),
+            ready_work=tuple(ReadyWork(w.id, w.name, task, w.silence.timeout.start) for w in rows if w.state == WorkerState.DELIVERED for task in self.tasks.holder_task_ids(Ref.build(w))[:1] if self.is_unchecked(task)),
             unfinished_outputs=tuple(output.row_id for worker in agent_rows for output in self.outputs.unfinished(Actor.worker(worker.id))),
             todos=tuple(item for worker in agent_rows for task_id in self.tasks.holder_task_ids(Ref.build(worker)) for item in self.todos.task_items(self.tasks.find(task_id))),
         )

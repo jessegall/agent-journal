@@ -25,6 +25,7 @@ from journal.models.worker_state import WorkerState
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
+from journal.hooks.command_events import CommandEvents
 
 EMPTY_BRIEF_REFUSAL = "task {n} has no brief: a worker's job is its task's brief, so write it first with journal task brief {n} \"<what is done when>\""
 ASSIGNMENT_REFUSALS = {
@@ -39,8 +40,8 @@ class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents) -> None:
-        self.tasks, self.agents = tasks, agents
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents) -> None:
+        self.tasks, self.agents, self.events = tasks, agents, events
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -164,8 +165,24 @@ class WorkerCommand(Command):
         return 0
 
     def wait(self, args: Namespace, caller: Caller) -> int:
-        print(f"awaiting workers {', '.join(str(n) for n in args.on)}: you are told as each reports, and when the last is back")
+        workers = [self.workers.find(n) for n in args.on]
+        for worker in workers:
+            if not worker.is_running():
+                print(self.state_line(worker))
+        crew = [worker for worker in workers if worker.is_running()]
+        if crew:
+            numbers = ", ".join(str(worker.id) for worker in crew)
+            self.events.wait_declared(f"the work of workers {numbers}", ",".join(worker.mention().ref() for worker in crew), caller)
+            print(f"awaiting workers {numbers}: you are told as each reports, and when the last is back")
         return 0
+
+    def state_line(self, worker: Worker) -> str:
+        if worker.state != WorkerState.DELIVERED:
+            return f"worker {worker.id}, {worker.name}, is not out: it is {worker.state}"
+        task_ids = self.tasks.holder_task_ids(Ref.build(worker))
+        if not task_ids:
+            return f"worker {worker.id}, {worker.name}, clocked out and holds no task"
+        return f"worker {worker.id}, {worker.name}, already clocked out: task {task_ids[0]} is ready to check; read its proofs with journal task show {task_ids[0]}, then journal worker check {worker.id} <point>"
 
     def stop(self, args: Namespace, caller: Caller) -> int:
         self.actions.stop(args.n, args.why, caller.actor)

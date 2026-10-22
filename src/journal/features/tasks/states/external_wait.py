@@ -2,6 +2,7 @@ from dataclasses import dataclass, replace
 
 from journal.engine.nudge import Nudge
 from journal.engine.states.wait import Wait
+from journal.events.agent.wait_request import WaitRequest
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.ticked import Ticked
@@ -64,6 +65,13 @@ class ExternalWait(Wait):
         if event.ref in self.targets():
             return self.none()
         return self.swap(replace(self, focus=f"{self.focus}, {event.label}", end_refs=",".join([*self.targets(), event.ref])))
+
+    def on_wait_request(self, event: WaitRequest, settings: Settings) -> Transition:
+        event.stop_propagation()
+        added = [ref for ref in event.end_refs.split(",") if ref and ref not in self.targets()]
+        if not added:
+            return self.none()
+        return self.swap(replace(self, focus=f"{self.focus}, {event.focus}", end_refs=",".join([*self.targets(), *added])))
 
     def resolution(self, ref: str, outcome: str, *lines: Nudge) -> Transition:
         from journal.features.tasks.feature import Tasks
