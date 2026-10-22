@@ -6544,7 +6544,7 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     card = lambda n: next(m for m in messages.scoped() if m.data.get("key") == f"worker:{n}")
     assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
     runner, workers = app.container.get(WorkerRunner), app.container.get(Workers)
-    runner.run(workers.find(1), ["sh", "-c", 'echo "the footer is fixed"; test -n "$JOURNAL_WORKER_TOKEN" || exit 9'], Actor.agent("s1"))
+    runner.run(workers.find(1), ["sh", "-c", 'echo "the footer is fixed"; test -n "$JOURNAL_WORKER_TOKEN" || exit 9; test "$JOURNAL_ROOT" = "$0" || exit 8', str(app.config.root)], Actor.agent("s1"))
     first_hash = workers.find(1).token_hash
     runner.run(workers.find(2), ["sh", "-c", "echo broken >&2; exit 3"], Actor.agent("s1"))
     runner.run(workers.find(3), ["sh", "-c", "true"], Actor.agent("s1"))
