@@ -10,3 +10,7 @@ class FullCopy:
     rows: tuple[CopiedRow, ...]
     head: int
     server_time: float
+
+    @classmethod
+    def parsed(cls, rows: list, head: int, server_time: float) -> "FullCopy":
+        return cls(tuple(CopiedRow(**row) for row in rows), head, server_time)

@@ -22,6 +22,9 @@ MIGRATIONS = (
     ALTER TABLE accounts ADD COLUMN removed_at REAL NOT NULL DEFAULT 0;
     CREATE TABLE invitations (id INTEGER PRIMARY KEY AUTOINCREMENT, code_hash TEXT NOT NULL UNIQUE, email TEXT NOT NULL, created_at REAL NOT NULL, expires_at REAL NOT NULL, used_at REAL NOT NULL DEFAULT 0);
     """,
+    """
+    CREATE TABLE team_details (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+    """,
 )
 
 

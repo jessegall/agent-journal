@@ -8,6 +8,8 @@ from sync_server.blocks_handler import BlocksHandler
 from sync_server.db.invitation_rows import InvitationRows
 from sync_server.invitations import Invitations
 from sync_server.upload_handler import UploadHandler
+from sync_server.team_details import TeamDetails
+from sync_server.db.team_detail_rows import TeamDetailRows
 from sync_server.change_log import ChangeLog
 from sync_server.copy_handler import CopyHandler
 from sync_server.db.account_rows import AccountRows
@@ -46,7 +48,8 @@ class TeamServer:
         self.logins = LoginHandler(self.devices, self.invitations, self.clock)
         self.blocks = BlocksHandler(self.ranges, self.devices)
         self.admins = AdminHandler(self.devices, self.accounts, self.invitations, self.clock)
-        self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices)
+        self.details = TeamDetails(TeamDetailRows(self.store), self.log)
+        self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices, self.details)
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock)
         self.copies = CopyHandler(self.store, self.log, self.devices, self.clock)

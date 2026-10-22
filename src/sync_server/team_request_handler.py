@@ -17,13 +17,13 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy and /devices; a refusal is a 403 with its line, an unknown path a 404."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; a refusal is a 403 with its line, an unknown path a 404."""
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
         query = dict(parse_qsl(url.query))
         team = self.server.team
-        routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token())}
+        routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer()}
         self.answered(routes.get(url.path))
 
     def do_POST(self) -> None:
@@ -41,7 +41,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         self.answered(routes.get(urlsplit(self.path).path))
 
     def login(self, request: LoginRequest):
-        return self.server.team.logins.answer(request.email, request.password, request.device_name, self.address())
+        return self.server.team.logins.answer(request, self.address())
 
     def answered(self, route) -> None:
         if route is None:
@@ -61,7 +61,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(text)
 
     def uploaded(self, request: UploadRequest):
-        return self.server.team.uploads.answer(self.token(), request.rows, request.highest)
+        return self.server.team.uploads.answer(self.token(), request.rows, request.highest, request.repository)
 
     def login_request(self) -> LoginRequest:
         return self.typed(LoginRequest)

@@ -1,10 +1,13 @@
 import json
 import os
+import socket
+from pathlib import Path
 
 from journal.config import Config
 from journal.support.caller import LOCAL_USER
 
 TEAM_FILE = "team.json"
+ROOT_FILE = "team-root.crt"
 
 
 class TeamAccount:
@@ -46,3 +49,9 @@ class TeamAccount:
 
     def user_number(self) -> int:
         return int(self.contents().get("account_id", LOCAL_USER))
+
+    def root_path(self) -> Path:
+        return self.config.home / ROOT_FILE
+
+    def device_name(self) -> str:
+        return socket.gethostname()

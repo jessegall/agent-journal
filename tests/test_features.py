@@ -9566,3 +9566,63 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
         [task] = [task for task in app.container.get(Tasks).scoped() if task.title == "made by the second person"]
     assert task.creator == Actor.user(7) and task.id == 7001
     (app.config.home / TEAM_FILE).unlink()
+
+
+def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
+    import re
+    import subprocess
+    from journal.models.worker import Worker
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.users import Users
+    from journal.models.task import Task
+    from journal.sync.team_account import TeamAccount
+    from journal.repositories.workers import Workers
+    from sync_server.account import ADMIN
+    from sync_server.team_server import TeamServer
+    from conftest import copied
+
+    def git(*arguments: str) -> None:
+        subprocess.run(["git", *arguments], capture_output=True, check=True, timeout=30)
+
+    git("init", "-q", str(tmp_path / "a"))
+    git("-C", str(tmp_path / "a"), "-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "--allow-empty", "-m", "first")
+    git("clone", "-q", str(tmp_path / "a"), str(tmp_path / "b"))
+    git("init", "-q", str(tmp_path / "c"))
+    git("-C", str(tmp_path / "c"), "-c", "user.name=Eve", "-c", "user.email=eve@example.com", "commit", "-q", "--allow-empty", "-m", "another")
+    (tmp_path / "server").mkdir()
+    team = TeamServer(tmp_path / "server")
+    team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
+    admin_code = team.invitations.issue("ada@example.com", timing.time())[0]
+    server = team.started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+    journals = [booted(copied(template_journal, tmp_path / name), monkeypatch) for name in "abc"]
+    a, b, c = journals
+
+    def eventually(check) -> bool:
+        deadline = timing.monotonic() + 3
+        while timing.monotonic() < deadline:
+            if check():
+                return True
+            timing.sleep(0.05)
+        return False
+
+    try:
+        with a.container.get(Scope).environment(MAIN):
+            task = a.container.get(Tasks).save(Task(environment_id=MAIN, title="made before the team"), Actor.user(1))
+            worker = a.container.get(Workers).save(Worker(environment_id=MAIN, name="Mr. Faraday"), Actor.user(1))
+        assert a.console().run(["team", "join", address, "--code", admin_code], USER).error.startswith("run journal team join yourself in a terminal")
+        joined = a.console().run(["team", "join", address, "--code", admin_code, "--password", "correct horse battery"], USER)
+        assert joined.code == 0 and "this journal is now the team's" in joined.text, joined.error
+        assert a.container.get(Workers).find(worker.id).device == str(a.container.get(TeamAccount).device()), "the first journal's workers are its device's"
+        invitation = a.console().run(["team", "invite", "bob@example.com"], USER).text
+        bob_code = re.search(r"--code (\S+)", invitation).group(1)
+        assert c.console().run(["team", "join", address, "--code", bob_code, "--password", "correct horse battery"], USER).error.startswith("the team's journal belongs to the repository"), "a checkout of another repository is refused"
+        joined_b = b.console().run(["team", "join", address, "--code", bob_code, "--name", "Bob", "--password", "correct horse battery"], USER)
+        assert joined_b.code == 0 and "joined the team" in joined_b.text, joined_b.error
+        assert b.container.get(Tasks).find(task.id).title == "made before the team", "the joining journal holds the team's tasks"
+        assert eventually(lambda: {user.id: user.name for user in a.container.get(Users).rows()}.get(2) == "Bob"), "every machine knows the new person"
+        assert "person: user 2" in b.console().run(["team", "status"], USER).text
+    finally:
+        for journal in journals:
+            journal.runtime().stop()
+        team.close(server)

@@ -657,6 +657,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.sync.team_server_link import TeamServerLink
     from sync_server.account import ADMIN
     from sync_server.team_server import TeamServer
+    from sync_server.login_request import LoginRequest
     from journal.chat.cards import Cards
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
@@ -672,7 +673,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     def joined(name: str):
         signal = CommitSignal()
         _, scope, tasks, outgoing, incoming = team_journal(tmp_path, name, signal)
-        answer = team.logins.answer("ada@example.com", "correct horse battery", name, "127.0.0.1")
+        answer = team.logins.answer(LoginRequest("ada@example.com", "correct horse battery", name), "127.0.0.1")
         account = TeamAccount(Config(tmp_path / name))
         account.write({"address": f"http://127.0.0.1:{port}", "token": answer.token, "device": answer.device_id})
         links = Links(tasks.connection, tasks.bus)

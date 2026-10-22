@@ -17,6 +17,16 @@ esac
 JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV
 port=$(cat "$root/.journal/port" 2>/dev/null)
+# Joining a team or logging in again asks the person's password here, unseen, and hands it to the server with the words,
+# so it never stands on a command line; an agent's shell has no terminal, and the command then says to run it yourself.
+if [ "$1" = "team" ] && { [ "$2" = "join" ] || [ "$2" = "login" ]; } && [ -t 0 ]; then
+    printf 'Your team password: ' >&2
+    stty -echo
+    IFS= read -r password
+    stty echo
+    printf '\n' >&2
+    set -- "$@" "--password=$password"
+fi
 # An alias is answered with __journal_exec and its line: awk hands the line out on fd 3, and the shim runs it in the project.
 # A last line that is not __journal_exit is the server's fault, printed as the error with exit code 1.
 if [ -n "$port" ]; then

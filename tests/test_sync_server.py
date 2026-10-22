@@ -232,7 +232,9 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
             assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
         ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
         upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}}
-        assert call("/upload", upload, ada) == (200, {"rows": 1, "head": 1})
+        assert call("/team") == (200, {"repository": "", "has_rows": False}), "anyone may ask what the team holds before joining"
+        assert call("/upload", {**upload, "repository": "abc123"}, ada) == (200, {"rows": 1, "head": 1})
+        assert call("/team") == (200, {"repository": "abc123", "has_rows": True})
         assert call("/upload", upload, ada)[1]["error"].startswith("the team's journal already holds rows"), "a full copy is taken once"
         assert call("/blocks", {"tables": ["tasks", "messages"]}, ada)[1]["blocks"] == [{"row_table": "tasks", "first": 1451, "last": 1950}, {"row_table": "messages", "first": 1, "last": 5000}], "blocks start above the copy's numbers and messages get a bigger one"
         invitation = call("/invite", {"email": "Bob@Example.com"}, ada)[1]
