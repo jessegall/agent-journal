@@ -50,14 +50,14 @@ class ShellRecord:
         output = self.outputs.save(self.outputs.chain_output(chain).backgrounded(), caller.actor)
         if caller.session is not None:
             self.events.moved(output, caller.session)
-        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.build(part)}", "terminal", key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"Moved to the background: {ActivityLabel.build(part)}", "terminal", key=f"background:{chain}", shows=CardKind.COMMANDS)
         return output.row_id
 
     def ended(self, chain: str, status: int, folder: Path, last: str, caller: Caller) -> None:
         self.record(caller, ENDED, {"chain": chain, "status": status, "file": str(folder), "last": last})
         part = next((e.data["part"] for e in self.entries.kind_entries(MOVED, 200) if e.data.get("chain") == chain), "")
         outcome = OutputFiles.ended(status)
-        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.build(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", command=part, shows=CardKind.COMMANDS)
+        self.cards.show(self.scope.id, caller.session, f"{outcome.capitalize()} in the background: {ActivityLabel.build(part)}", "terminal", "good" if status == 0 else "bad", self.last_sentence(last), key=f"background:{chain}", shows=CardKind.COMMANDS)
         agent = self.agents.current()
         if agent:
             output, moment = self.outputs.chain_output(chain), datetime.now(timezone.utc).timestamp()

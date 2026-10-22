@@ -69,7 +69,7 @@ function undock() {
 
 .watch-dock-lines {
     margin: 0;
-    padding: 0;
+    padding: 0 15px 8px;
     color: var(--text-3);
     font-family: var(--mono, monospace);
     font-size: 11px;
