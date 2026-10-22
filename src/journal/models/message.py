@@ -46,6 +46,12 @@ class Message(Scoped):
     def send_failed(cls, receiver: str, text: str, session: str, address: str, reason: str) -> "Message":
         return cls(author=Author.SYSTEM, text=text, session=session, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "address": address or receiver, "failure": reason})
 
+    @classmethod
+    def answer(cls, target: "Message", text: str) -> "Message":
+        if target.agent_role == AgentRole.MAIN:
+            return cls(author=Author.AGENT, text=text, reply_target=target.id)
+        return cls(author=Author.AGENT, text=text, reply_target=target.id, session=target.session, agent_role=target.agent_role)
+
     def authored(self, session: str | None) -> "Message":
         return self.with_(session=session) if self.is_new and self.session is None else self
 

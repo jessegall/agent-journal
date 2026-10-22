@@ -39,8 +39,11 @@ class Reader:
         return self.pattern in command
 
     def read(self, lines: list[str]) -> list[str]:
+        return [f"{i}: {line}" for i, line in self.picked_lines(lines)]
+
+    def picked_lines(self, lines: list[str]) -> list[tuple[int, str]]:
         rows = re.compile(self.pattern)
-        return [f"{i}: {line}" for i, line in enumerate(lines, 1) if rows.search(line)]
+        return [(i, line) for i, line in enumerate(lines, 1) if rows.search(line)]
 
     def progress(self, lines: list[str]) -> Progress:
         return Progress.found(self.progress_pattern, self.label, lines, self.step_pattern)

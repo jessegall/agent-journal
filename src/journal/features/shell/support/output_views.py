@@ -33,11 +33,24 @@ class OutputViews:
         figure = progress.text() if progress.is_known() else ""
         return OutputView(output.row_id, tuple(reader.read(lines)[-VIEW_LINES:]), figure, progress.fraction(), ending)
 
+    def card_lines(self, output: CommandOutput, view: OutputView) -> tuple[str, ...]:
+        files = OutputFiles(Path(output.folder))
+        if not output.watch_reader or not files.is_stored():
+            return view.lines
+        return tuple(line for _, line in self.readers.lookup(output.watch_reader).picked_lines(files.lines())[-VIEW_LINES:])
+
+    def count(self, output: CommandOutput) -> str:
+        files = OutputFiles(Path(output.folder))
+        if output.ended or not output.watch_reader or not files.is_stored():
+            return ""
+        progress = self.readers.lookup(output.watch_reader).progress(files.lines())
+        return progress.count_text() if progress.is_known() else ""
+
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part}
-        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(view.lines), output.session)
+        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output)}
+        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(self.card_lines(output, view)), output.session)
         return view
 
     @staticmethod

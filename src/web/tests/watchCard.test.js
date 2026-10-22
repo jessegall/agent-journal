@@ -19,6 +19,7 @@ const watch = {
         icon: "terminal",
         output: 12,
         figure: "Tests 40%",
+        count: "40%",
         fraction: 0.4,
         ending: "",
         detail: "FAILED test_b",
@@ -38,16 +39,20 @@ function mounted(component, props, act) {
     return {host, done: () => (app.unmount(), host.remove())};
 }
 
-test("a watched output's card carries its figure and its bar inside it, and docks on its button", async () => {
+test("a watched output's card carries its count and its bar inside it while it runs, none once it ended, and docks on its button", async () => {
     const {default: Turn} = await import("../src/chat/Turn.vue");
     const act = vi.fn();
     const {host, done} = mounted(Turn, {turn: threadTurns([watch], []).turns[0]}, act);
     await nextTick();
-    expect(host.querySelector(".mark .figure").textContent).toBe("Tests 40%");
+    expect(host.querySelector(".mark .figure").textContent).toBe("40%");
     expect(host.querySelector(".mark .progress").style.width).toBe("40%");
     host.querySelector(".mark-dock").click();
     expect(act).toHaveBeenCalledWith("messages", 7, "dock");
     done();
+    const finished = mounted(Turn, {turn: threadTurns([{...watch, data: {...watch.data, count: "", ending: "finished"}}], []).turns[0]}, act);
+    await nextTick();
+    expect(finished.host.querySelector(".mark .progress")).toBeNull();
+    finished.done();
 });
 
 test("a docked watch shows its last lines and its bar, and only the user takes it down", async () => {

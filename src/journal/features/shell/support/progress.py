@@ -50,5 +50,7 @@ class Progress:
         return min(self.count / self.total, 1.0) if self.is_known() else 0.0
 
     def text(self) -> str:
-        figure = f"{self.count}%" if self.total == PERCENT else f"{self.count}/{self.total}"
-        return f"{self.label} {figure}".strip()
+        return f"{self.label} {self.count_text()}".strip()
+
+    def count_text(self) -> str:
+        return f"{self.count}%" if self.total == PERCENT else f"{self.count}/{self.total}"

@@ -1578,6 +1578,11 @@ def test_a_workers_words_never_answer_the_users_message_nor_count_as_the_main_ag
         assert [m.text for m in messages.unread()] == [], "a message in a worker's chat is not the main agent's to read"
         assert [m.text for m in messages.recent_voice(30)] == [], "nothing here was the main agent's own words"
         assert [m.text for m in messages.recent(30) if m.text in ("Done.", "and the header?")] == [] and messages.unviewed() == 1, "the main chat lists neither, and counts only the report as unseen"
+    worker_turn = [m for m in messages.all() if m.text == "Done."][0]
+    assert app.console().run(["message", "send", "Good; now the header.", "--reply-to", str(worker_turn.id)], AGENT).code == 0
+    with app.container.get(Scope).environment(1):
+        reply = [m for m in messages.all() if m.text == "Good; now the header."][0]
+        assert (reply.agent_role, reply.session, reply.reply_target) == (AgentRole.WORKER, "w1", worker_turn.id) and reply not in messages.recent(30), "the main agent's reply to a worker's message shows in that worker's chat, not the main one"
 
 
 def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, tmp_path):

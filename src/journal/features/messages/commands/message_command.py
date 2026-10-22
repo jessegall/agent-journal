@@ -62,7 +62,7 @@ class MessageCommand(Command):
         if older is not None and not args.confirm:
             print(f"message {answered.id} already has your reply {older.id}: not sent. Send it again only if it says something new, with --confirm")
             return 1
-        message = self.messages.save(Message(author=Author.AGENT, text=args.text, reply_target=answered.id), caller.actor)
+        message = self.messages.save(Message.answer(answered, args.text), caller.actor)
         self.messages.read(answered, caller.actor, self._tool_use(caller))
         print(f"message {message.id} sent")
         return 0

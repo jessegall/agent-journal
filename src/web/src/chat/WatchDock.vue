@@ -43,8 +43,8 @@ watch(
             <template v-if="card.ending">
                 <span class="watch-dock-ending">{{ card.ending }}</span>
             </template>
-            <template v-else-if="card.figure">
-                <span class="watch-dock-figure">{{ card.figure }}</span>
+            <template v-else-if="card.count">
+                <span class="watch-dock-figure">{{ card.count }}</span>
             </template>
             <CloseButton title="Take the watched output down from above the chat" @click="undock" />
         </template>
@@ -61,7 +61,7 @@ watch(
                 </template>
             </ul>
         </template>
-        <template v-if="card.figure">
+        <template v-if="card.count">
             <div class="watch-dock-bar">
                 <div class="watch-dock-fill" :style="{width}"></div>
             </div>
