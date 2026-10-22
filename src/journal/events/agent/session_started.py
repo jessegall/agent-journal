@@ -3,6 +3,8 @@ from typing import ClassVar
 
 from journal.events.agent.agent_event import AgentEvent
 
+COMPACTION_SOURCE = "compact"
+
 
 @dataclass(frozen=True)
 class SessionStarted(AgentEvent):
@@ -13,4 +15,7 @@ class SessionStarted(AgentEvent):
     typing_delay: ClassVar[float] = 4.0
 
     source: str = ""
+
+    def is_compaction_start(self) -> bool:
+        return self.source == COMPACTION_SOURCE
 

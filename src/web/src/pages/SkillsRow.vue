@@ -6,7 +6,7 @@ import StateDot from "../kit/StateDot.vue";
 import Switch from "../kit/Switch.vue";
 
 const props = defineProps({skill: {type: Object, required: true}, depth: {type: Number, default: 0}});
-defineEmits(["open", "always"]);
+defineEmits(["open", "moment"]);
 
 const state = computed(() => (props.skill.stale ? "Changed since loaded" : props.skill.loaded ? "Loaded" : "Not loaded"));
 </script>
@@ -25,10 +25,17 @@ const state = computed(() => (props.skill.stale ? "Changed since loaded" : props
         </Btn>
         <Switch
             class="skill-switch"
-            :on="skill.always"
+            :on="skill.session_start"
             word="Session start"
-            :title="skill.always ? 'Stop loading it at session start' : 'Load it at session start'"
-            @change="$emit('always', skill, $event)"
+            :title="skill.session_start ? 'Stop requiring it when a session starts' : 'Require it when a session starts'"
+            @change="$emit('moment', skill, 'session_start', $event)"
+        />
+        <Switch
+            class="skill-switch"
+            :on="skill.after_compaction"
+            word="After compaction"
+            :title="skill.after_compaction ? 'Stop requiring it after a compaction' : 'Require it after a compaction'"
+            @change="$emit('moment', skill, 'after_compaction', $event)"
         />
     </div>
 </template>

@@ -3,7 +3,9 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent_listener import AgentListener
 from journal.features.skills.support.skills_data_reader import SkillsDataReader
+from journal.features.skills.skills_conduct import start_option
 from journal.repositories.agents import Agents
+from journal.repositories.setting_rows import SettingRows
 from journal.support.actor import Actor
 
 
@@ -12,15 +14,15 @@ class SkillObligation(AgentListener[AgentEvent]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, reader: SkillsDataReader) -> None:
-        self.agents, self.reader = agents, reader
+    def __init__(self, agents: Agents, reader: SkillsDataReader, settings: SettingRows) -> None:
+        self.agents, self.reader, self.settings = agents, reader, settings
 
     def handle(self, event: AgentEvent) -> None:
         if not isinstance(event, (SessionStarted, PromptSubmitted)):
             return
         agent = self.agents.session_agent(event.session)
         data = self.reader.read(agent)
-        due = data.mentioned(event.prompt) if isinstance(event, PromptSubmitted) else data.start_debts(agent.state)
+        due = data.mentioned(event.prompt) if isinstance(event, PromptSubmitted) else data.start_debts(self.settings.texts(start_option(event)), agent.state)
         names = tuple(card.name for card in due)
         if set(names) - set(agent.skills_due):
             self.agents.touched(agent, Actor.system(), lambda time: {"skills_due": tuple(dict.fromkeys((*time.skills_due, *names)))})

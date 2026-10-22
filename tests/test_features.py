@@ -744,6 +744,8 @@ def skilled(tmp_path: Path, monkeypatch):
     monkeypatch.setattr(Config, "status_home", property(lambda self: tmp_path / "status"))
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    for key in ("skills.session_start", "skills.after_compaction"):
+        app.container.get(SettingRows).set(key, ["journal"], Actor.user(1))
     with app.container.get(Scope).environment(MAIN):
         yield app
     app.runtime().stop()
@@ -760,7 +762,7 @@ def test_the_session_start_requires_the_journal_skill_and_reading_it_lifts_the_h
     machine = app.container.get(StateMachine)
     assert app.container.get(SessionAgents).top("s1").name == "idle", "the start owes the skill and the look as facts, not as a state"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
-    assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. writes wait until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
+    assert status == 409 and "read the journal skill before anything else: .claude/skills/journal/SKILL.md. every other tool waits until you have" in body["error"] and "in flight" not in body["error"], "the guards hold the write while a skill is owed: the first hold wins"
     read_skill(app, "journal")
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={})
     assert status == 409 and "before your first write, run `journal environment overview`: it lists the task in hand, the open tasks, the facts and the reminders" in body["error"], "the skill read, the start's look at what is in flight is still owed"
@@ -9387,3 +9389,25 @@ def test_a_turn_refused_on_the_usage_limit_holds_the_agent_typing_nothing_until_
     hook(app, "StopFailure", **limit)
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
     assert state() != "limited", "a turn that works again ends the hold"
+
+
+def test_the_skills_toggled_for_a_session_start_and_for_after_a_compaction_hold_every_tool_until_read(skilled):
+    app = skilled
+    settings = app.container.get(SettingRows)
+    for key in ("skills.session_start", "skills.after_compaction"):
+        settings.unset(key, Actor.user(1))
+    context = lambda reply: reply[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    started = context(hook(app, "SessionStart"))
+    assert "read the journal skill before anything else" in started and "read the etiquette skill before anything else: .claude/skills/journal-etiquette/SKILL.md" in started, "both are on by default"
+    status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "src/a.py")})
+    assert status == 409 and "every other tool waits until you have" in body["error"], "a read of anything else waits too"
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / ".claude/skills/journal/SKILL.md")})[0] == 200, "the read of the owed skill goes through"
+    read_skill(app, "journal")
+    read_skill(app, "journal-etiquette")
+    app.console().run(["environment", "overview"], AGENT)
+    assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "src/a.py")})[0] == 200
+    assert viewer(app, "skills/etiquette/moment", {"moment": "after_compaction", "on": False}) == {"name": "etiquette", "after_compaction": False}
+    assert settings.project("skills.after_compaction") == ["journal"], "the Skills page's toggle switches the setting"
+    hook(app, "PreCompact")
+    compacted = context(hook(app, "SessionStart", source="compact"))
+    assert "read the journal skill" in compacted and "etiquette skill" not in compacted, "after a compaction only the skills toggled for it are owed again"

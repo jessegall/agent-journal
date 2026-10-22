@@ -3,8 +3,6 @@ from dataclasses import dataclass
 
 from journal.features.skills.support.skill_card import SkillCard
 
-JOURNAL = "journal"
-
 
 @dataclass(frozen=True)
 class SkillsData:
@@ -14,8 +12,8 @@ class SkillsData:
     loaded: dict
     skills: tuple[SkillCard, ...]
 
-    def start_debts(self, state: str) -> list[SkillCard]:
-        return self.unread([card for card in self.skills if card.name == JOURNAL] + [card for card in self.skills if state in card.required_states])
+    def start_debts(self, names: tuple[str, ...], state: str) -> list[SkillCard]:
+        return self.unread([card for card in self.skills if card.name in names or state in card.required_states])
 
     def mentioned(self, prompt: str) -> list[SkillCard]:
         text = {w.lower() for w in re.findall(r"[a-z]+", prompt, re.I)}

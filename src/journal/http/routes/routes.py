@@ -201,6 +201,7 @@ class Routes:
         router.get(f"{API}/skills", skills.index)
         router.get(f"{API}/skills/{{name}}", skills.show)
         router.post(f"{API}/skills/{{name}}/load", skills.load)
+        router.post(f"{API}/skills/{{name}}/moment", skills.moment)
         profiles = get(ProfileController)
         router.get(f"{API}/profiles", profiles.index)
         router.get(f"{API}/profiles/{{name}}", profiles.one)

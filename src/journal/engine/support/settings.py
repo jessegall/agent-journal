@@ -17,6 +17,9 @@ class Settings:
     def value(self, option: Option) -> object:
         return self.values[option.key]
 
+    def texts(self, option: Option) -> tuple[str, ...]:
+        return option.texts(self.value(option))
+
     def integer(self, option: Option) -> int:
         return option.integer(self.value(option))
 

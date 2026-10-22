@@ -7,6 +7,7 @@ from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.features.skills.support.skill_card import SkillCard
+from journal.support.option import Option
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -14,17 +15,17 @@ if TYPE_CHECKING:
 
 
 class SkillsConduct(Conduct):
-    """The skills feature's conduct in every state: a session starts owing the journal skill and the state's own, a prompt that names a skill's keyword owes that skill, a write while a skill is owed is held until its file is read, and so is a stop."""
+    """The skills feature's conduct in every state: a session starts owing the skills its setting names, those of skills.session_start at a fresh start and of skills.after_compaction after a compaction, and the state's own; a prompt that names a skill's keyword owes that skill; while a skill is owed, every tool but a read of it and a journal command is held, and so is a stop."""
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
-        return self.none(*read_first(event.data.part(skills_feature()).start_debts(self.name)))
+        return self.none(*read_first(event.data.part(skills_feature()).start_debts(settings.texts(start_option(event)), self.name)))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.none(*read_first(event.data.part(skills_feature()).mentioned(event.prompt)))
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         obligations = event.data.part(skills_feature()).debt_cards()
-        if event.subagent or not event.call.writes or not obligations:
+        if event.subagent or event.call.is_journal or not obligations or is_skill_read(event, obligations):
             return self.none()
         return self.refuse(read_first(obligations)[0])
 
@@ -36,6 +37,14 @@ class SkillsConduct(Conduct):
 def skills_feature() -> "type[Skills]":
     from journal.features.skills.feature import Skills
     return Skills
+
+
+def start_option(event: SessionStarted) -> Option:
+    return skills_feature().COMPACTION_SKILLS if event.is_compaction_start() else skills_feature().START_SKILLS
+
+
+def is_skill_read(event: ToolStarting, cards: list[SkillCard]) -> bool:
+    return any(card.name == event.call.skill_loaded or card.path in event.call.command or any(path.endswith(card.path) for path in event.call.read_paths) for card in cards)
 
 
 def read_first(cards: list[SkillCard]) -> list[Nudge]:

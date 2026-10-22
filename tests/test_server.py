@@ -35,6 +35,19 @@ def server(app: App):
     return app.server()
 
 
+def unowed(app: App) -> None:
+    """The server's tests are about the server, so no skill is owed at a start to hold their tool calls."""
+    from journal.repositories.setting_rows import SettingRows
+    for key in ("skills.session_start", "skills.after_compaction"):
+        app.container.get(SettingRows).set(key, [], Actor.user(1))
+
+
+@pytest.fixture(autouse=True)
+def unowed_skills(request):
+    if "app" in request.fixturenames:
+        unowed(request.getfixturevalue("app"))
+
+
 def call(server, method: str, path: str, body: dict | None = None, environment: str = "main"):
     data = json.dumps(body).encode() if body is not None else None
     request = HttpRequest(f"http://127.0.0.1:{server.port}{path}", data=data, method=method, headers={"Content-Type": "application/json", "X-Journal-Env": environment})
@@ -97,6 +110,7 @@ def test_load_counting_names_the_rows_each_request_loaded_only_while_it_is_on(tm
     """A request's time and loads are written by the deferred worker after its reply, so the runtime is started, not only booted."""
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         developer = lambda: call(server, "GET", "/journal/developer")[1]
@@ -255,6 +269,7 @@ def test_the_subagents_are_listed_as_their_rows_stand_a_resumed_one_running_agai
     """A background subagent that ended and was sent a message is running again in the list the viewer's dropdown reads, and counted open."""
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
@@ -285,6 +300,7 @@ def test_a_subagent_whose_dispatch_entries_were_trimmed_runs_again_when_it_is_se
     """The entries are trimmed to the newest, so a subagent dispatched long ago has no dispatch entry left; a message to it still sets it running, and its stop settles it."""
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
@@ -344,6 +360,7 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
     """The Terminal pane reads a Bash call as it was recorded: each part a line, with the output the journal's shell kept of the parts it ran, once the call has finished."""
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
     def hook(kind, **extra):
@@ -371,6 +388,7 @@ def test_an_agents_doing_is_the_part_of_a_chained_command_running_now(tmp_path: 
     """While a chained shell call runs, the agent's doing is the text of the part running now, then the next; another tool is its verb; once nothing runs it is neither."""
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
     def hook(kind, **extra):
@@ -486,6 +504,7 @@ def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postp
     from journal.engine.state_machine import StateMachine
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     user, agent = Caller.user("main"), Caller.agent("main", "s1", "claude")
     try:
@@ -509,6 +528,7 @@ def test_the_viewers_start_takes_the_plans_first_task_in_hand_and_its_park_postp
 def test_a_started_plans_phase_shown_advances_when_its_tasks_are_all_done(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         console, user, agent = app.console(), Caller.user("main"), Caller.agent("main", "s1", "claude")
@@ -646,6 +666,7 @@ def test_a_file_attached_to_a_message_is_stored_and_served(server):
 def test_a_viewer_polling_from_an_id_ahead_of_a_reset_record_is_brought_back_in_step(tmp_path: Path):
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         call(server, "POST", "/journal/messages", {"text": "after the reset", "idempotency": "r1"})
@@ -746,6 +767,7 @@ def test_the_settings_page_offers_only_what_the_code_reads_and_a_change_reaches_
     from journal.repositories.setting_rows import SettingRows
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         manifest = call(server, "GET", "/journal/manifest")[1]
@@ -771,6 +793,7 @@ def test_a_read_of_an_unknown_environment_is_not_found_and_makes_none(tmp_path: 
     from journal.repositories.environments import Environments
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         assert call(server, "GET", "/journal/tasks", environment="settings")[0] == 404
@@ -1137,6 +1160,7 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
     from journal.repositories.command_outputs import CommandOutputs
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         folder = tmp_path / "run"
@@ -1298,6 +1322,7 @@ def test_a_reply_in_the_column_hangs_under_its_comment_and_a_reply_in_the_chat_i
     from journal.support.caller import Caller
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         call(server, "POST", "/journal/tasks", {"title": "the footer"})
@@ -1320,6 +1345,7 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
     import os
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     (tmp_path / "a.py").write_text("print(1)\n")
     environment = {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "HOME": str(tmp_path), "JOURNAL_SESSION": "s1", "CLAUDECODE": "1"}
@@ -1459,6 +1485,7 @@ def test_the_change_stream_starts_after_the_entry_the_page_names(tmp_path: Path)
     from journal.repositories.entries import Entries
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         with app.container.get(Scope).environment(1):
@@ -1496,6 +1523,7 @@ def test_a_critique_asked_from_the_plan_page_puts_a_ready_plan_in_review(tmp_pat
     from journal.repositories.plans import Plans
     app = App(Config(tmp_path, port=0))
     app.runtime().start()
+    unowed(app)
     server = app.server()
     try:
         with app.container.get(Scope).environment(1):

@@ -11,7 +11,7 @@ import TextInput from "../kit/TextInput.vue";
 import Skeleton from "../kit/Skeleton.vue";
 
 const props = defineProps({skill: {type: Object, required: true}, busy: Boolean});
-defineEmits(["close", "load", "always", "keywords"]);
+defineEmits(["close", "load", "moment", "keywords"]);
 
 const text = ref("");
 const failed = ref("");
@@ -51,10 +51,17 @@ watch(
             </div>
             <div class="skill-panel-switch">
                 <div class="skill-panel-switch-text">
-                    <span>Load at session start</span>
-                    <small>The agent loads it when each session starts.</small>
+                    <span>Required at session start</span>
+                    <small>When a session starts, the agent must read it before it may use any other tool.</small>
                 </div>
-                <Switch :on="skill.always" title="Load at session start" @change="$emit('always', skill, $event)" />
+                <Switch :on="skill.session_start" title="Required at session start" @change="$emit('moment', skill, 'session_start', $event)" />
+            </div>
+            <div class="skill-panel-switch">
+                <div class="skill-panel-switch-text">
+                    <span>Required after compaction</span>
+                    <small>After a compaction, the agent must read it again before it may use any other tool.</small>
+                </div>
+                <Switch :on="skill.after_compaction" title="Required after compaction" @change="$emit('moment', skill, 'after_compaction', $event)" />
             </div>
             <FormField
                 label="Trigger words"

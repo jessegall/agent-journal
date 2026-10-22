@@ -88,7 +88,6 @@ The user leaves messages; you answer them before anything else.
   answer it, with SendMessage to that agent, only when it asks a question, so two agents never answer each other without end.
 - Everything you write for the user reaches the chat as a message; keep it about the work, never about the
   journal's own commands.
-- In the chat you speak to the user: say you, never the user or their name in the third person.
 """, keywords=('message', 'messages', 'inbox', 'reply'))
 
     @classmethod

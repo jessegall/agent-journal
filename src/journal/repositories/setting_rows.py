@@ -50,6 +50,15 @@ class SettingRows(ScopedRepository[Setting]):
         rows = [s for s in self.project_rows() if s.key == key]
         return self.save((rows[0] if rows else Setting(environment_id=PROJECT, key=key)).with_value(value, self._time().timestamp()), actor)
 
+    def with_line(self, option: Option, line: str, actor) -> Setting:
+        return self.set(option.key, [*self.lines_without(option, line), line], actor)
+
+    def without_line(self, option: Option, line: str, actor) -> Setting:
+        return self.set(option.key, self.lines_without(option, line), actor)
+
+    def lines_without(self, option: Option, line: str) -> list[str]:
+        return [text for text in self.texts(option) if text != line]
+
     def unset(self, key: str, actor) -> None:
         for row in [s for s in self.project_rows() if s.key == key]:
             self.delete(row, actor)

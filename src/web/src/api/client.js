@@ -363,6 +363,10 @@ export class ApiClient {
         return this.post(this.here(`/skills/${encoded(name)}/load`));
     }
 
+    skillMoment(name, moment, on) {
+        return this.post(this.here(`/skills/${encoded(name)}/moment`), {moment, on});
+    }
+
     voices() {
         return this.get(this.here("/voices"));
     }

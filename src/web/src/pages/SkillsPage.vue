@@ -31,12 +31,12 @@ async function reload() {
 onMounted(reload);
 watch(() => agent.value && agent.value.data.uses, reload);
 
-const FILTERS = {all: () => true, loaded: (s) => s.loaded, always: (s) => s.always};
+const FILTERS = {all: () => true, loaded: (s) => s.loaded, required: (s) => s.session_start || s.after_compaction};
 const loadedCount = computed(() => rows.value.filter((s) => s.loaded).length);
 const filters = computed(() => [
     {key: "all", label: "All"},
     {key: "loaded", label: "Loaded now", count: loadedCount.value},
-    {key: "always", label: "At session start", count: rows.value.filter((s) => s.always).length},
+    {key: "required", label: "Required", count: rows.value.filter(FILTERS.required).length},
 ]);
 const searching = computed(() => Boolean(query.value.trim()) || filter.value !== "all");
 const matching = computed(() => {
@@ -77,9 +77,9 @@ async function whileBusy(work) {
 
 const loadNow = (s) => whileBusy(async () => (notice.value = (await api.loadSkill(s.name)).notice));
 
-const always = (s, on) =>
+const moment = (s, which, on) =>
     whileBusy(async () => {
-        await api.alwaysSkill(s.name, on);
+        await api.skillMoment(s.name, which, on);
         await reload();
     });
 
@@ -119,7 +119,7 @@ const keywords = (s, words) =>
                 <template v-for="group in skillGroups" :key="group.key">
                     <div :class="['cluster', group.skill ? 'individual' : 'named']">
                         <template v-if="group.skill">
-                            <SkillsRow :skill="group.skill" @open="opened = $event.name" @always="always" />
+                            <SkillsRow :skill="group.skill" @open="opened = $event.name" @moment="moment" />
                         </template>
                         <template v-else>
                             <Btn fill :class="['group', {folded: folded.has(group.key) && !searching}]" @click="fold(group.key)">
@@ -129,7 +129,7 @@ const keywords = (s, words) =>
                             </Btn>
                             <template v-if="!folded.has(group.key) || searching">
                                 <template v-for="item in group.items" :key="item.key">
-                                    <SkillsRow :skill="item.skill" :depth="1" @open="opened = $event.name" @always="always" />
+                                    <SkillsRow :skill="item.skill" :depth="1" @open="opened = $event.name" @moment="moment" />
                                 </template>
                             </template>
                         </template>
@@ -138,7 +138,7 @@ const keywords = (s, words) =>
             </div>
         </template>
         <template v-if="panel">
-            <SkillPanel :skill="panel" :busy="busy" @close="opened = ''" @load="loadNow" @always="always" @keywords="keywords" />
+            <SkillPanel :skill="panel" :busy="busy" @close="opened = ''" @load="loadNow" @moment="moment" @keywords="keywords" />
         </template>
     </section>
 </template>

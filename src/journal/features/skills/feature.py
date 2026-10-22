@@ -4,6 +4,7 @@ from journal.features.skills.skills_conduct import SkillsConduct
 from journal.features.skills.support.skills_data_reader import SkillsDataReader
 from journal.features.skills.support.skills_data import SkillsData
 from journal.engine.nudge import Nudge
+from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.skills.commands.skill_command import SkillCommand
 from journal.features.skills.listeners.compaction_reset import CompactionReset
@@ -13,6 +14,9 @@ from journal.features.skills.listeners.skill_card import SkillCard
 class Skills(Feature[SkillsData]):
     """Writes every feature's skill for the agent and makes it read the right one at the right moment."""
 
+    START_SKILLS = Option("skills.session_start", "Skills read at session start", "The skills an agent must read when its session starts, before it may use any other tool", ["journal", "etiquette"], kind="lines")
+    COMPACTION_SKILLS = Option("skills.after_compaction", "Skills read after a compaction", "The skills an agent must read again when its session resumes after a compaction, before it may use any other tool", ["journal", "etiquette"], kind="lines")
+    options = (START_SKILLS, COMPACTION_SKILLS)
     name = "skills"
     title = "Skills"
     help = "The journal's skills are written for the agent and required by the states at the moments they matter: the journal's at a start, a state's at a start in it, the ones a prompt names; a write waits until the file is read."
@@ -21,7 +25,7 @@ class Skills(Feature[SkillsData]):
     data = (SkillsDataReader,)
     conduct = (SkillsConduct,)
 
-    SKILL_READ_REQUEST = Nudge(name, "read_the_skill_first", "read the {{skill}} skill before anything else: {{path}}", "writes wait until you have", repeat_interval=0)
+    SKILL_READ_REQUEST = Nudge(name, "read_the_skill_first", "read the {{skill}} skill before anything else: {{path}}", "every other tool waits until you have", repeat_interval=0)
     UNREAD_SKILL_STOP = Nudge(name, "stopped_owing", "you stopped while the journal awaits the {{skills}} skill to be read", "do that first, or `journal stuck \"<why>\"` if you are truly stuck", repeat_interval=0)
     nudges = (SKILL_READ_REQUEST, UNREAD_SKILL_STOP)
 

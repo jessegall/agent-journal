@@ -11,8 +11,8 @@ test("the chat's file edits pane keeps the view options the user picks, so lines
 
 test("the status line above the compose box never goes: when the agent is not working it reads idle or waiting in its place", () => {
     const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
-    expect(thread).toMatch(/<div v-if="busy && !waitingNow" class="thread-turn busy"/);
-    expect(thread).toMatch(/<div v-else class="thread-turn busy"[^>]*>[\s\S]*?\{\{ waitingNow \? "waiting" : "idle" \}\}/);
+    expect(thread).toMatch(/<template v-if="busy && !waitingNow">\s*<div class="thread-turn busy"/);
+    expect(thread).toMatch(/<template v-else>\s*<div class="thread-turn busy"[^>]*>[\s\S]*?\{\{ waitingNow \? "waiting" : "idle" \}\}/);
     expect(thread).not.toMatch(/<Transition name="status">/);
 });
 

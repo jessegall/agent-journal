@@ -1116,7 +1116,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     from journal.events.agent.stop import Stop
     from journal.events.rows.rule_created import RuleCreated
     from journal.support.card_kind import CardKind
-    settings = SettingsValue({WorkersFeature.MODE.key: "builder", "tasks.auto": False})
+    settings = SettingsValue({WorkersFeature.MODE.key: "builder", "tasks.auto": False, "skills.session_start": ["journal"], "skills.after_compaction": ["journal"]})
     cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
     parts = {
         "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
@@ -1138,7 +1138,9 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     assert [n.rendered() for n in Ready().respond(PromptSubmitted(prompt="draw me a roadmap").with_data(unread), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).nudges][0].startswith("read the plans skill before anything else")
     withheld = Ready().respond(ToolStarting(call=ToolCall(tool="Edit", input={"file_path": "a.py"}, operation=Claude().operation("Edit", {"file_path": "a.py"}), writes=True)).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
     assert withheld.refusal is not None and withheld.refusal.key == "skills.read_the_skill_first", "the first hold wins: the skill, then the look, then the mark"
-    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, operation=Claude().operation("Read", {"file_path": "a.py"}))).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal is None
+    assert Ready().respond(ToolStarting(call=ToolCall(tool="Read", input={"file_path": "a.py"}, operation=Claude().operation("Read", {"file_path": "a.py"}), read_paths=("a.py",))).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal is not None, "every tool waits while a skill is owed"
+    skill_read = ToolCall(tool="Read", input={"file_path": "/p/.claude/skills/journal/SKILL.md"}, operation=Claude().operation("Read", {"file_path": "/p/.claude/skills/journal/SKILL.md"}), read_paths=("/p/.claude/skills/journal/SKILL.md",))
+    assert Ready().respond(ToolStarting(call=skill_read).with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct)).refusal is None, "but the read of the owed skill goes through"
     stop = Ready().respond(Stop().with_data(data), settings, (SkillsConduct, BriefingConduct, MemoryConduct))
     assert stop.refusal is not None and stop.refusal.key == "skills.stopped_owing"
     paid = FeatureData({**parts, "skills": SkillsData(skills_due=(), loaded={}, skills=cards)})
