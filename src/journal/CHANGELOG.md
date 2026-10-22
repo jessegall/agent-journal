@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.12.0
+
+- An agent that hits its usage limit is held: the journal types nothing into its terminal while the limit holds, your messages are typed at once, and every 15 minutes (setting usage.check_minutes) one turn is tried to see whether the limit is over. The top bar shows it waiting, with the reset time Claude Code gave.
+
 ## 4.11.0
 
 - A worker dispatch names how its worker tests: `--tests "No tests"`, `"Scoped tests"`, `"Full suite"` or a project's own test template (`journal template create "<title>" --purpose testing --brief "..."`). The template's text goes into the worker's brief.
