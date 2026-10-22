@@ -26,6 +26,7 @@ from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 from journal.hooks.command_events import CommandEvents
+from journal.features.workers.support.worker_libraries import WorkerLibraries
 
 EMPTY_BRIEF_REFUSAL = "task {n} has no brief: a worker's job is its task's brief, so write it first with journal task brief {n} \"<what is done when>\""
 ASSIGNMENT_REFUSALS = {
@@ -40,8 +41,8 @@ class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents) -> None:
-        self.tasks, self.agents, self.events = tasks, agents, events
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, events: CommandEvents, libraries: WorkerLibraries) -> None:
+        self.tasks, self.agents, self.events, self.libraries = tasks, agents, events, libraries
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -53,7 +54,10 @@ class WorkerCommand(Command):
         dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
         dispatch.add_argument("--profile", required=True, help="the worker profile it works by: senior, on Opus, for a job that needs judgement; medior, on Sonnet, for one whose shape is settled")
         dispatch.add_argument("--model", help="a model other than the profile's")
-        dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
+        dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code; then name its library folders with --libraries or --copies, or say --no-libraries")
+        dispatch.add_argument("--libraries", default="", help="library folders the worktree links to the main checkout's, comma separated, such as node_modules,.venv")
+        dispatch.add_argument("--copies", default="", help="library folders the worktree gets copies of its own of, comma separated, such as vendor for composer, whose autoloader would load the main checkout's classes through a link")
+        dispatch.add_argument("--no-libraries", action="store_true", help="a worktree with no library folders, for a job that changes the libraries themselves")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         dispatch.add_argument("--task", type=int, required=True, help="the task it works on: an open one with a brief, or the one you hold; it is the worker's alone until merged or released")
         self.verb(verbs, "release", "let a worker go whose run ended without clocking out, which frees its task").add_argument("n", type=int)
@@ -94,7 +98,8 @@ class WorkerCommand(Command):
         task = self.assignment(args.task, caller)
         provider = args.provider or self.provider_default(caller)
         moment = datetime.now(timezone.utc).timestamp()
-        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief) if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
+        links, copies = self.library_names(args)
+        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief) if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, library_links=links, library_copies=copies, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
             repositories = self.runner.workplace(worker)
@@ -106,6 +111,20 @@ class WorkerCommand(Command):
         self.workers.save(self.workers.find(worker.row_id).with_(repositories=repositories).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
+
+    def library_names(self, args: Namespace) -> tuple[tuple[str, ...], tuple[str, ...]]:
+        links = tuple(name.strip().rstrip("/") for name in args.libraries.split(",") if name.strip())
+        copies = tuple(name.strip().rstrip("/") for name in args.copies.split(",") if name.strip())
+        if not args.worktree and (links or copies or args.no_libraries):
+            raise Rejection("library folders are for a worker with a worktree: add --worktree, or leave them out")
+        if args.worktree and not (links or copies or args.no_libraries):
+            raise Rejection("a worker with a worktree names its library folders: --libraries node_modules,.venv links the main checkout's, --copies vendor gives it copies of its own (composer's vendor must be copied, since its autoloader loads classes from where vendor really lives), or --no-libraries for none")
+        if args.no_libraries and (links or copies):
+            raise Rejection("--no-libraries says none, so name no folders beside it")
+        refusal = self.libraries.refusal((*links, *copies))
+        if refusal:
+            raise Rejection(refusal)
+        return links, copies
 
     def assignment(self, n: int, caller: Caller) -> Task:
         task = self.tasks.find(n)

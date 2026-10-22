@@ -23,6 +23,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
 from journal.support.worktree import Worktree
+from journal.features.workers.support.worker_libraries import WorkerLibraries
 from journal.support.worktree_failure import WorktreeFailure
 from journal.support.process_check import ProcessCheck
 
@@ -40,9 +41,9 @@ EXCLUDED_VARIABLES = ("JOURNAL_SESSION", "JOURNAL_LAUNCH")
 class WorkerRunner:
     """Runs a dispatched worker: its provider headless on the brief, in the project or in a worktree of its own, with the journal's hooks off; what it prints is its report, filed when it ends."""
 
-    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat) -> None:
+    def __init__(self, config: Config, providers: Providers, reports: WorkerReports, scope: Scope, branch: WorkerBranch, settings: SettingRows, workers: Workers, environments: Environments, profiles: ProfileFiles, agents: Agents, chat: WorkerChat, libraries: WorkerLibraries) -> None:
         self.config, self.providers, self.reports, self.scope, self.branch, self.settings, self.workers = config, providers, reports, scope, branch, settings, workers
-        self.environments, self.profiles, self.agents, self.chat = environments, profiles, agents, chat
+        self.environments, self.profiles, self.agents, self.chat, self.libraries = environments, profiles, agents, chat, libraries
         self._locks: dict[int, threading.Lock] = {}
         self._locks_lock = threading.Lock()
 
@@ -69,7 +70,7 @@ class WorkerRunner:
     def instructed(self, worker: Worker) -> str:
         if worker.resume or worker.profile is None:
             return worker.brief
-        return f"{self.profiles.worker_instructions(worker.profile)}\n\n{worker.brief}"
+        return "\n\n".join(part for part in (self.profiles.worker_instructions(worker.profile), self.libraries.note(worker), worker.brief) if part)
 
     def run_scoped(self, worker: Worker, command: list[str], actor: Actor) -> None:
         with self.scope.environment(worker.environment_id):
@@ -200,7 +201,9 @@ class WorkerRunner:
         self.added(worker, "-b", self.branch.name(worker), str(folder), "HEAD")
         names = self.branch.brief_folders(worker.brief) or self.branch.inner_folders()
         try:
-            return self.inner_added(worker, names)
+            repositories = self.inner_added(worker, names)
+            self.libraries.placed(worker.with_(repositories=repositories))
+            return repositories
         except WorktreeFailure:
             self.branch.discarded(worker, names)
             raise
@@ -215,7 +218,9 @@ class WorkerRunner:
                 self.added(worker, str(folder), name)
             else:
                 self.added(worker, "-b", name, str(folder), "HEAD")
-        return self.inner_added(worker, tuple(dict.fromkeys((*worker.repositories, *self.branch.brief_folders(brief)))))
+        repositories = self.inner_added(worker, tuple(dict.fromkeys((*worker.repositories, *self.branch.brief_folders(brief)))))
+        self.libraries.placed(worker.with_(repositories=repositories))
+        return repositories
 
     def inner_added(self, worker: Worker, names: tuple[str, ...]) -> tuple[str, ...]:
         return tuple(name for name in names if self.inner_worktree(worker, name))

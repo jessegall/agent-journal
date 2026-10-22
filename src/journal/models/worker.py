@@ -35,6 +35,8 @@ class Worker(Scoped):
     profile: str | None = None
     worktree: bool = False
     repositories: tuple[str, ...] = ()
+    library_links: tuple[str, ...] = ()
+    library_copies: tuple[str, ...] = ()
     state: WorkerState = WorkerState.DISPATCHED
     session: str = ""
     dispatcher: str | None = None

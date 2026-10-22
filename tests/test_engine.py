@@ -799,7 +799,7 @@ def test_the_models_carry_the_events_their_changes_mean():
     task = Task(id=7, environment_id=1, title="t", state=TaskState.STARTED)
     assert [type(e) for e in task.finished(time, "x").events] == [TaskClosed, RowResolved] and task.finished(time, "x").events[1].ref == "tasks:7"
     assert task.suspended("later", time).events[0] == TaskClosed(environment_id=1, time=time.timestamp(), task_id=7, outcome="parked")
-    assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0),)
+    assert Task(id=8, environment_id=1, title="u").started(time).events == (TaskStarted(environment_id=1, time=time.timestamp(), task_id=8, title="u", plan_id=0, prior_state=TaskState.OPEN),)
     assert TaskLog.build(task, "where it stands", 3.0).events == (TaskLogged(environment_id=1, time=3.0, task_id=7),)
     question = Question(id=4, environment_id=1, text="?")
     assert [type(e) for e in question.answered("yes", 2.0).events] == [QuestionAnswered, RowResolved] and question.posed(1.0).events[0].question_id == 4

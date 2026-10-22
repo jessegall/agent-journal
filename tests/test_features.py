@@ -620,7 +620,7 @@ def test_a_worker_that_reported_takes_its_next_job_by_say_with_its_memory(app: A
     import subprocess
     for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
         subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast", "--worktree", "--no-libraries"], AGENT)
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "still out: its report comes first"
     console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
     assert console.run(["worker", "send", "1", "now the lexer"], AGENT).code != 0, "no session was captured, so there is nothing to resume"
@@ -4332,7 +4332,7 @@ def test_a_worker_from_before_tokens_that_ends_has_its_commits_taken_in_and_its_
     git("add", ".gitignore")
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(1):
         worker = app.container.get(Workers).find(1)
         tokenless_run(app.container.get(WorkerRunner), worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
@@ -5618,10 +5618,10 @@ def test_a_workers_worktree_is_cut_from_the_working_tip_and_a_failed_cut_refuses
     git("add", "feature.txt")
     git("commit", "-qm", "the feature")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert (app.config.home / "worktrees" / "1-Lady-Lovelace" / "feature.txt").is_file(), "cut from the tip of the branch being worked, not from main"
     git("branch", "worker/2-Ada-Byron")
-    refused = dispatched(app.console(), ["Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    refused = dispatched(app.console(), ["Ada Byron", "write the lexer", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code == 1 and "worker Ada Byron was not dispatched" in refused.error and "already exists" in refused.error, "git's refusal is said in plain words"
     with app.container.get(Scope).environment(1):
         assert [w.name for w in app.container.get(Workers).scoped()] == ["Lady Lovelace"], "nothing half made is left behind"
@@ -5642,7 +5642,7 @@ def test_a_workers_merge_never_touches_the_users_work_and_says_what_stood_in_its
     commit(".gitignore", ".journal/\n")
     commit("shared.py", "A = 1\n")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     branch = app.container.get(WorkerBranch)
     with app.container.get(Scope).environment(1):
         worker = app.container.get(Workers).find(1)
@@ -5669,7 +5669,7 @@ def test_a_worktree_for_a_worker_in_a_project_with_no_commit_is_refused_in_plain
     import subprocess
     subprocess.run(["git", "init", "-q", "-b", "main"], cwd=app.config.root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
-    refused = dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    refused = dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code == 1 and "the project has no commit yet" in refused.error
 
 
@@ -5702,7 +5702,7 @@ def test_the_agent_stays_out_of_a_workers_worktree_and_is_told_how_to_work_there
         subprocess.run(["git", *argv], cwd=root, capture_output=True, timeout=30)
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     contained = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": str(contained), "content": "x"})
     assert status == 409 and "worker 1's worktree" in body["error"] and "journal worker send 1" in body["error"], "the worker's worktree is the worker's"
@@ -5721,7 +5721,7 @@ def test_a_done_workers_worktree_goes_with_its_branch_its_last_commit_kept_and_n
     git("config", "user.name", "T")
     git("commit", "-q", "--allow-empty", "-m", "start")
     hook(app, "SessionStart")
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     tree = app.config.home / "worktrees" / "1-Lady-Lovelace"
     (tree / "parser.py").write_text("PARSE = 1\n")
     git("add", "parser.py", cwd=tree)
@@ -7192,7 +7192,7 @@ def test_a_worker_clocks_out_with_its_report_once_each_point_has_a_proof_that_st
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "The parser:\n- reads the grammar\n- names each rule"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         worker = workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
@@ -7366,7 +7366,7 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     hook(app, "SessionStart")
     console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
     console.run(["task", "create", "the notes", "--brief", "the notes are written"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner, tasks = app.container.get(WorkerRunner), app.container.get(Tasks)
     with app.container.get(Scope).environment(MAIN):
@@ -7412,7 +7412,7 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     with app.container.get(Scope).environment(MAIN):
         assert tasks.find(2).state == TaskState.FINISHED, "a worker with no worktree has its task closed by its merge alone"
     console.run(["task", "create", "the guide", "--brief", "the guide is written"], AGENT)
-    console.run(["worker", "dispatch", "Mrs. Beeton", "--task", "4", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Mrs. Beeton", "--task", "4", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers.save(workers.find(3).with_(token_hash="h", session="w-3").ready(1.0), Actor.system())
     beeton = Caller.worker("main", 3, "w-3", "claude")
@@ -7451,7 +7451,7 @@ def test_a_worker_in_a_workspace_of_repositories_gets_a_worktree_of_each_and_its
     console = app.console()
     hook(app, "SessionStart")
     console.run(["task", "create", "the invoices", "--brief", "the invoices page in platform shows totals"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
         workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
@@ -7533,7 +7533,7 @@ def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch
     console = app.console()
     for n in (1, 2):
         console.run(["task", "create", f"piece {n}", "--brief", f"piece {n} is written"], AGENT)
-        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     runner, branch = app.container.get(WorkerRunner), app.container.get(WorkerBranch)
     commit = ["sh", "-c", "echo x > piece.txt && git add piece.txt && git -c user.email=t@t -c user.name=t commit -qm piece && echo written"]
     with app.container.get(Scope).environment(MAIN):
@@ -8253,7 +8253,7 @@ def test_a_revived_worker_goes_on_in_its_own_worktree_and_branch_and_keeps_its_w
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
     (folder / "parser.py").write_text("committed\n")
     git("add", "parser.py", cwd=folder)
@@ -8297,7 +8297,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
         git(*argv)
     hook(app, "SessionStart")
     console, workers, runner = app.console(), app.container.get(Workers), app.container.get(WorkerRunner)
-    dispatched(console, ["Mr. Watt", "the governor", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(console, ["Mr. Watt", "the governor", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     console.run(["worker", "stop", "1"], AGENT)
     assert "left no session to resume: dispatch the job again" in console.run(["worker", "send", "1", "the boiler"], AGENT).error
     workers.save(workers.find(1).with_(resume="sess-1"), USER.actor)
@@ -8424,7 +8424,7 @@ def test_the_files_a_worker_touched_are_read_from_its_branch_when_it_reports_a_r
     git("commit", "-qm", "start")
     hook(app, "SessionStart")
     console, workers = app.console(), app.container.get(Workers)
-    dispatched(console, ["Lady Lovelace", "rename the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(console, ["Lady Lovelace", "rename the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     folder = app.config.home / "worktrees" / "1-Lady-Lovelace"
     git("mv", "src/old_parser.py", "src/parser.py", cwd=folder)
     (folder / "src" / "lexer.py").write_text("lex\n")
@@ -8828,8 +8828,8 @@ def workspace_made(app: App, inner: tuple[str, ...] = ("platform", "mobile"), un
     return root
 
 
-def worktree_worker(app: App, monkeypatch, brief: str, n: int = 1):
-    """A worker dispatched with a worktree on a task of the brief given, clocked in; its row, its folder and its caller."""
+def worktree_worker(app: App, monkeypatch, brief: str, n: int = 1, libraries: tuple[str, ...] = ("--no-libraries",)):
+    """A worker dispatched with a worktree on a task of the brief given, its library folders as named, clocked in; its row, its folder and its caller."""
     from journal.repositories.workers import Workers
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     kept_conversation(app, monkeypatch)
@@ -8837,7 +8837,7 @@ def worktree_worker(app: App, monkeypatch, brief: str, n: int = 1):
     if n == 1:
         hook(app, "SessionStart")
     console.run(["task", "create", f"the job {n}", "--brief", brief], AGENT)
-    dispatched_line = console.run(["worker", "dispatch", f"Worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched_line = console.run(["worker", "dispatch", f"Worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree", *libraries], AGENT)
     assert dispatched_line.code == 0, dispatched_line.error
     with app.container.get(Scope).environment(MAIN):
         workers = app.container.get(Workers)
@@ -8998,7 +8998,7 @@ def test_a_dispatch_whose_inner_worktree_cannot_be_made_is_refused_and_leaves_no
     hook(app, "SessionStart")
     console = app.console()
     console.run(["task", "create", "the job", "--brief", "platform totals"], AGENT)
-    refused = console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    refused = console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     assert refused.code != 0 and "platform" in refused.error, refused.error
     with app.container.get(Scope).environment(MAIN):
         assert not app.container.get(Workers).scoped(), "no worker row stays"
@@ -9026,3 +9026,84 @@ def test_a_single_repository_worker_knows_no_files_once_its_branch_is_gone(app: 
     git_run(root, "worktree", "remove", "--force", str(folder))
     git_run(root, "branch", "-D", "worker/1-Worker-1")
     assert app.container.get(WorkerBranch).touched(worker_row(app)) is None
+
+
+def libraries_made(root: Path, *folders: str) -> None:
+    """Installed library folders in a checkout, ignored by its git as installed ones are, each with a file in it."""
+    ignore = root / ".gitignore"
+    ignore.write_text((ignore.read_text() if ignore.is_file() else "") + "".join(f"/{folder}/\n" for folder in folders))
+    git_run(root, "add", ".gitignore")
+    git_run(root, "commit", "-qm", "ignore the libraries")
+    for folder in folders:
+        (root / folder / "package").mkdir(parents=True)
+        (root / folder / "package" / "index.js").write_text("module.exports = 1;\n")
+
+
+def library_dispatch(app: App, monkeypatch, *flags: str):
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the job", "--brief", "platform totals"], AGENT)
+    return console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", *flags], AGENT)
+
+
+def test_a_worktree_dispatch_must_name_its_library_folders_or_say_it_takes_none(app: App, monkeypatch):
+    repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n"})
+    libraries_made(app.config.root, "node_modules")
+    refused = library_dispatch(app, monkeypatch, "--worktree")
+    assert refused.code != 0 and "--libraries" in refused.error and "--copies" in refused.error and "--no-libraries" in refused.error, refused.error
+    assert "for a worker with a worktree" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--libraries", "node_modules"], AGENT).error
+    assert "name no folders beside it" in app.console().run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--no-libraries", "--libraries", "node_modules"], AGENT).error
+
+
+def test_a_library_folder_that_is_missing_tracked_or_outside_the_project_is_refused(app: App, monkeypatch):
+    root = repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n", "lib/tracked.js": "1\n"})
+    libraries_made(root, "node_modules")
+    assert "no checkout holds a folder vendr" in library_dispatch(app, monkeypatch, "--worktree", "--libraries", "vendr").error
+    console = app.console()
+    assert "not ignored by git" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--libraries", "lib"], AGENT).error
+    for name in ("../elsewhere", ".git", "/usr/lib"):
+        assert "is no library folder" in console.run(["worker", "dispatch", "Worker 1", "--task", "1", "--profile", "journal-medior", "--worktree", "--libraries", name], AGENT).error, name
+
+
+def test_linked_and_copied_library_folders_reach_the_worktree_and_every_inner_one_and_leave_it_clean(app: App, monkeypatch):
+    root = workspace_made(app, ("platform", "mobile"))
+    libraries_made(root, "node_modules")
+    libraries_made(root / "platform", "vendor", "node_modules")
+    worker, folder, caller = worktree_worker(app, monkeypatch, "platform and mobile totals", libraries=("--libraries", "node_modules", "--copies", "vendor"))
+    assert worker.library_links == ("node_modules",) and worker.library_copies == ("vendor",)
+    assert (folder / "node_modules").is_symlink() and (folder / "node_modules").resolve() == (root / "node_modules").resolve()
+    assert (folder / "platform" / "node_modules").is_symlink() and (folder / "platform" / "node_modules").resolve() == (root / "platform" / "node_modules").resolve()
+    copy = folder / "platform" / "vendor"
+    assert copy.is_dir() and not copy.is_symlink() and (copy / "package" / "index.js").read_text() == "module.exports = 1;\n", "vendor is a copy of its own"
+    assert not (folder / "mobile" / "node_modules").exists(), "a folder the checkout does not hold is not made"
+    (copy / "package" / "index.js").write_text("changed\n")
+    assert (root / "platform" / "vendor" / "package" / "index.js").read_text() == "module.exports = 1;\n", "and changing the copy leaves the main checkout's alone"
+    assert app.container.get(WorkerBranch).remaining(worker_row(app)) == [], "the links and copies are kept out of git, so clock-out counts none of them"
+    committed(folder / "platform", "totals.php", "<?php\n")
+    assert proved_and_out(app, caller, "platform/totals.php:1").code == 0
+    assert checked_and_merged(app).code == 0
+    assert (root / "node_modules" / "package" / "index.js").is_file() and (root / "platform" / "vendor" / "package" / "index.js").is_file(), "removing the worktree leaves the main checkout's libraries whole"
+
+
+def test_a_worker_is_told_which_library_folders_are_links_and_how_to_change_one(app: App, monkeypatch):
+    root = repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n"})
+    libraries_made(root, "node_modules", "vendor")
+    worker, _, _ = worktree_worker(app, monkeypatch, "the readme", libraries=("--libraries", "node_modules", "--copies", "vendor"))
+    told = app.container.get(WorkerRunner).instructed(worker.with_(resume=""))
+    assert "node_modules: links to the main checkout's folders" in told and "`rm <folder>`" in told and "vendor: copies of your own" in told
+
+
+def test_a_renewed_worktree_gets_its_library_links_back_and_keeps_a_folder_the_worker_installed_itself(app: App, monkeypatch):
+    import shutil
+    root = repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n"})
+    libraries_made(root, "node_modules", "vendor")
+    _, folder, caller = worktree_worker(app, monkeypatch, "the readme", libraries=("--libraries", "node_modules,vendor"))
+    (folder / "vendor").unlink()
+    (folder / "vendor").mkdir()
+    (folder / "vendor" / "own.php").write_text("<?php\n")
+    assert proved_and_out(app, caller, "README.md:1").code == 0
+    shutil.rmtree(folder / "node_modules") if not (folder / "node_modules").is_symlink() else (folder / "node_modules").unlink()
+    assert app.console().run(["worker", "send", "1", "the next part"], AGENT).code == 0
+    assert (folder / "node_modules").is_symlink(), "the link is made again"
+    assert not (folder / "vendor").is_symlink() and (folder / "vendor" / "own.php").is_file(), "a folder the worker installed itself stays"

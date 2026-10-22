@@ -96,13 +96,17 @@ class Workers(Feature[WorkersData]):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" --task <n> --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree]`:
+- `journal worker dispatch "<Name>" --task <n> --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree --libraries <a,b> | --copies <a,b> | --no-libraries]`:
   name it after a distinguished figure with a twist on their trade. A worker is started only on a task: an open one with a
   brief, which is its job, or the one you hold, which it then takes over. The task is the worker's from then on, never
   offered to you as next, until its work is merged or released. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
   In a project that holds repositories of its own inside it, a worktree holds a worktree of each one the task's brief names
   (all of them when it names none), so name the repositories the job touches in the brief; each merges into its own.
+  A worktree has no installed libraries of its own, so a worktree dispatch names them: `--libraries node_modules,.venv`
+  links the main checkout's folders, `--copies vendor` gives the worker copies of its own (always copy composer's vendor:
+  its autoloader loads classes from where vendor really lives, so through a link the tests would run the main checkout's
+  code), and `--no-libraries` gives none, for a job that changes the libraries. Each applies in every inner repository too.
 - The work mode is the bottom state of your stack. Builder, the default: you build it yourself and send a worker when a job
   is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand

@@ -919,7 +919,7 @@ def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
     hook_as(app, provider, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "the parser", "--start"], AGENT)
-    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
     replay.step("the worker is out")
     contained = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
     replay.step("a write in the worker's worktree", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(contained), "content": "x"})[1])
