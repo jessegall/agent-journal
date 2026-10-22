@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.6
+
+- The restart dialog goes once the journal closes its notice: while it stands, the page reads the notices again every three seconds, where before it relied on the record of changes, which after an upgrade can be thousands of rows deep as the agents' chats are read in, and the closing was lost among them.
+
 ## 4.5.5
 
 - The top bar names what a waiting agent waits on in full: it no longer carries the time waited, which changed every second and left the bar showing only the first word of a long wait; the bottom line keeps the time. A long fixed part of the top line now shortens with an ellipsis before the part that rolls.
