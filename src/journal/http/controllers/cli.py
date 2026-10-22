@@ -1,5 +1,8 @@
 from dataclasses import replace
 
+from journal.console.command import HELPER_KINDS
+from journal.support.caller_kind import CallerKind
+from journal.models.alias import Alias
 from journal.console.console import Console
 from journal.features.aliases.support.alias_lines import AliasLines
 from journal.support.caller import Caller
@@ -39,10 +42,16 @@ class CliController:
         variables = replace(self.providers.caller_variables(posted.environment), environment=request.environment)
         alias = self.aliases.called(posted.argv)
         if alias is not None and self.is_known(variables):
-            return StreamResponse("text/plain", iter([f"{EXEC} {alias.terminal_line(posted.argv[1:])}\n{EXIT} 0\n".encode()]))
+            return self.alias_answer(alias, posted.argv, self.caller(variables, posted.argv, request).kind)
         outcome = self.outcome(variables, posted.argv, request) if self.is_known(variables) else self.token_refusal(variables)
         text = outcome.text + outcome.error
         return StreamResponse("text/plain", iter([f"{text}{'' if not text or text.endswith(chr(10)) else chr(10)}{EXIT} {outcome.code}\n".encode()]))
+
+    @staticmethod
+    def alias_answer(alias: Alias, argv: list[str], kind: CallerKind) -> StreamResponse:
+        if kind in HELPER_KINDS:
+            return StreamResponse("text/plain", iter([f"a {kind} may not run the alias journal {argv[0]}: an alias is the main agent's own shell line\n{EXIT} 1\n".encode()]))
+        return StreamResponse("text/plain", iter([f"{EXEC} {alias.terminal_line(argv[1:])}\n{EXIT} 0\n".encode()]))
 
     def is_known(self, variables: CallerVariables) -> bool:
         plugin_proof = variables.plugin is None or self.tokens.matches(variables.plugin, variables.token)

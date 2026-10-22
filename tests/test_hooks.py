@@ -187,6 +187,30 @@ def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_toke
     assert "token" in shown and shown.rstrip().endswith("__journal_exit 1"), "the shell route runs no line for a worker that cannot prove which it is"
 
 
+def test_every_way_into_the_console_checks_a_workers_kind(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.workers import Workers
+    from journal.support.actor import Actor
+    from journal.support.caller import Caller
+    from journal.support.worker_token import WorkerToken
+    with app.container.get(Scope).environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", token_hash=WorkerToken.hashed("tok")), Actor.system())
+    console = app.console()
+    assert console.run(["alias", "add", "greet", "echo hello"], Caller.user("main")).code == 0
+    assert console.run(["task", "create", "the parser"], Caller.user("main")).code == 0
+
+    def shim(*argv: str) -> str:
+        environ = f"JOURNAL_ENV=main\0JOURNAL_ACTOR=worker-agent\0JOURNAL_WORKER={worker.id}\0JOURNAL_WORKER_TOKEN=tok\0\0" + "".join(f"{word}\0" for word in argv)
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/cli/run", data=environ.encode(), method="POST", headers={"Content-Type": "application/octet-stream", "X-Journal-Env": "main"})
+        with urlopen(request, timeout=5) as reply:
+            return reply.read().decode()
+    assert "a worker may not run the alias journal greet" in shim("greet") and "__journal_exec" not in shim("greet"), "an alias is never a worker's"
+    assert "a worker may not run journal message send" in shim("message", "send", "hi"), "the shim's route checks the worker's kind"
+    assert "a worker may not run journal task dock" in shim("task", "dock", "1"), "and the row verbs, which no worker is declared for"
+    assert "a worker may not run journal message send" in post_command(app, ["message", "send", "hi"], {"X-Journal-Env": "main"}, body={"worker": worker.id, "worker_token": "tok"})["error"], "and so does the JSON route"
+    assert console.run(["message", "send", "hi"], Caller.plugin("main", "linter")).code == 0 and console.run(["task", "dock", "1"], Caller.user("main")).code == 0, "a plugin and the user pass a verb a worker is refused"
+
+
 def test_a_command_under_the_sub_agent_actor_runs_only_the_journals_reads(app: App):
     assert post_command(app, ["task", "create", "the parser"], {"X-Journal-Actor": "agent"})["code"] == 0
     subagent = {"X-Journal-Actor": "sub-agent"}
