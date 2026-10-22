@@ -9691,6 +9691,17 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
             assert len(names) == len(set(names)), f"no two environments share a name: {names}"
         assert eventually(lambda: all(a.container.get(EnvironmentOwners).owner_number(environment.row_id) for environment in a.container.get(Environments).rows())), "every environment has an owner"
         assert not any(c.container.get(EnvironmentOwners).is_colleague(Actor.user(1), environment.row_id) for environment in c.container.get(Environments).rows()), "a journal in no team has no colleagues"
+        def side(journal, method, body=None):
+            request = HttpRequest(f"http://127.0.0.1:{journal.server().port}/journal/side-thread", data=None if body is None else json.dumps(body).encode(), method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "ada-main"})
+            return json.load(urlopen(request, timeout=5))
+
+        ada_side = side(a, "POST", {"text": "lunch at one?"})
+        bob_side = side(b, "POST", {"text": "yes, and the tests pass"})
+        assert eventually(lambda: [row["text"] for row in side(a, "GET")] == ["lunch at one?", "yes, and the tests pass"] and [row["text"] for row in side(b, "GET")] == ["lunch at one?", "yes, and the tests pass"]), "everyone viewing Ada's environment sees its side thread"
+        with a.container.get(Scope).environment(ada_main.row_id):
+            unread = [message.id for message in a.container.get(Messages).unread()]
+        assert ada_side["id"] not in unread and bob_side["id"] not in unread and bob_side["author"] == "user", "no agent is told of the side thread, and a colleague's word there is no comment"
+        assert "lunch at one" not in a.console().run(["message", "unread"], Caller.agent("ada-main", "s1", "claude")).text, "nor does the agent's inbox list it"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

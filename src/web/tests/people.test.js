@@ -44,3 +44,11 @@ test("a colleague's comment is drawn as theirs, named, and never as yours", asyn
     const header = readFileSync(resolve(__dirname, "../src/chat/TurnHeader.vue"), "utf8");
     expect(header).toMatch(/<template v-else-if="turn.who === 'colleague'">\s*<span class="thread-colleague">\{\{ \(turn.data \|\| \{\}\).colleague \}\}, colleague<\/span>/);
 });
+
+test("a side thread view sits beside the chat for people, and says no agent reads it", async () => {
+    const {VIEWS} = await import("../src/domain/panes.js");
+    expect(VIEWS).toContain("side");
+    const side = readFileSync(resolve(__dirname, "../src/chat/SideThread.vue"), "utf8");
+    expect(side).toMatch(/People talk here beside the chat\. No agent reads it\./);
+    expect(side).toMatch(/actorName\(row\.creator, store\.people\)/);
+});

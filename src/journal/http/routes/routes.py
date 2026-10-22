@@ -147,6 +147,8 @@ class Routes:
         get = self.container.get
         messages, comments, notices = get(MessageController), get(CommentController), get(NoticeController)
         router.post(f"{API}/messages/read", messages.read_all)
+        router.get(f"{API}/side-thread", messages.side_thread)
+        router.post(f"{API}/side-thread", messages.side_post)
         self.listed(router, "messages", messages)
         router.post(f"{API}/messages", messages.store)
         router.post(f"{API}/messages/{{id}}", messages.update)

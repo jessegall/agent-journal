@@ -12,6 +12,7 @@ export function useHomeViews() {
         feed: {title: "File edits", icon: "edits", canFlush: true},
         terminal: {title: "Terminal", icon: "terminal"},
         agents: {title: "Agents", icon: "agents"},
+        side: {title: "Side thread", icon: "chat"},
         waiting: {
             title: "Notifications",
             icon: "bell",

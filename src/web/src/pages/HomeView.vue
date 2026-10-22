@@ -16,6 +16,7 @@ import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "../rail/RailWaiting.vue";
 import TasksTab from "../tasks/TasksTab.vue";
+import SideThread from "../chat/SideThread.vue";
 
 defineProps({
     view: {type: String, required: true},
@@ -52,6 +53,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.id}:${agent.value.s
             <template #questions><RailWaiting table="questions" /></template>
             <template #tasks><TasksTab /></template>
             <template #agents><AgentGrid /></template>
+            <template #side><SideThread /></template>
             <template #default><RailWaiting /></template>
         </SwitchCase>
     </div>

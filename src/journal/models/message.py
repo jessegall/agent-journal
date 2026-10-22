@@ -62,7 +62,7 @@ class Message(Scoped):
         return self.with_event(MessageArrived(text=self.text))
 
     def is_unsaved_user_message(self) -> bool:
-        return self.is_new and self.author == Author.USER
+        return self.is_new and self.author == Author.USER and self.agent_role == AgentRole.MAIN
 
     def commented(self, name: str, user: int) -> "Message":
         comment = self.without_events().with_(author=Author.COLLEAGUE, data={**self.data, self.COLLEAGUE_NAME: name, self.COLLEAGUE_USER: user})

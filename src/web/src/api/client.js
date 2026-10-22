@@ -316,6 +316,15 @@ export class ApiClient {
         return this.get(this.here(`/agents/${agent}/terminal${query({after})}`));
     }
 
+    // the people's side thread beside an environment's chat, which no agent reads
+    sideThread() {
+        return this.get(this.here("/side-thread"));
+    }
+
+    postSideThread(text) {
+        return this.post(this.here("/side-thread"), {text});
+    }
+
     // who the viewer is and who else is on the journal, so it says you only for its own person
     people() {
         return this.get("/people");
