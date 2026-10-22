@@ -1,7 +1,6 @@
 from journal.features.tasks.support.tasks_data import TasksData
 from journal.models.agent import Agent
 from journal.models.open_task import OpenTask
-from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.plan_state import PlanState
 from journal.models.task_state import TaskState
@@ -9,6 +8,7 @@ from journal.repositories.entries import Entries
 from journal.repositories.plans import Plans
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
+from journal.repositories.workers import Workers
 
 HISTORY_TOOL_STARTS = 6
 POLL_COMMANDS = 3
@@ -17,8 +17,8 @@ POLL_COMMANDS = 3
 class TasksDataReader:
     """Reads the tasks feature's part of the feature data for an agent."""
 
-    def __init__(self, tasks: Tasks, plans: Plans, entries: Entries, logs: TaskLogs) -> None:
-        self.tasks, self.plans, self.entries, self.logs = tasks, plans, entries, logs
+    def __init__(self, tasks: Tasks, plans: Plans, entries: Entries, logs: TaskLogs, workers: Workers) -> None:
+        self.tasks, self.plans, self.entries, self.logs, self.workers = tasks, plans, entries, logs, workers
 
     def read(self, agent: Agent) -> TasksData:
         current_task = self.tasks.current(agent)
@@ -43,7 +43,7 @@ class TasksDataReader:
             last_commands=tuple(commands[:POLL_COMMANDS]),
             open_ids=tuple(t.row_id for t in open_tasks),
             open_summary=self.summary(open_tasks),
-            agent_tasks=self.tasks.holder_task_ids(Ref.build(agent)),
+            agent_tasks=self.tasks.holder_task_ids(self.workers.agent_holder(agent)),
         )
 
     def last_log(self, task: Task) -> str:

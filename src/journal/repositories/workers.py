@@ -1,43 +1,37 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.support.actor import Actor
-from journal.models.link import Link
+from journal.models.agent import Agent
+from journal.models.agent_role import AgentRole
 from journal.models.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
 from journal.repositories.rows import Rows
-from journal.support.missing_row import MissingRow
 from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.tasks import Tasks
 
 
-WORKER_LINK = "works_on"
 
 
 class Workers(ScopedRepository[Worker]):
     model = Worker
 
-    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, rows: Rows) -> None:
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, rows: Rows, tasks: Tasks) -> None:
         super().__init__(connection, bus, scope)
-        self.links, self.rows = links, rows
+        self.links, self.rows, self.tasks = links, rows, tasks
 
     def active(self) -> list[Worker]:
         return self.matching(state=WorkerState.DISPATCHED)
 
-    def assign(self, worker: Worker, task: int, actor: Actor) -> None:
-        target = Ref("tasks", task)
-        if not self.rows.is_row(target):
-            raise MissingRow("tasks", task)
-        self.links.save(Link(source=Ref.build(worker), target=target, kind=WORKER_LINK), actor)
-
     def containing(self, task_ids: set[int]) -> dict[int, Worker]:
-        blocked = {}
-        for worker in self.global_matching(state=WorkerState.DISPATCHED):
-            for ref in self.links.targets(worker, WORKER_LINK):
-                if ref.id in task_ids:
-                    blocked[ref.id] = worker
-        return blocked
+        holdings = {task: worker for task, worker in self.tasks.worker_holdings().items() if task in task_ids}
+        rows = {worker.id: worker for worker in self.global_matching()} if holdings else {}
+        return {task: rows[worker] for task, worker in holdings.items() if worker in rows}
+
+    def agent_holder(self, agent: Agent) -> Ref:
+        rows = self.session_worker(agent.session) if agent.role == AgentRole.WORKER else []
+        return Ref.build(rows[0]) if rows else Ref.build(agent)
 
     def session_worker(self, session: str) -> list[Worker]:
         return [w for w in self.scoped() if session and session in (w.session, w.resume)]

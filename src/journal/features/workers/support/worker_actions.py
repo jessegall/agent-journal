@@ -8,6 +8,8 @@ from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.providers.providers import Providers
 from journal.providers.support.session_inbox import SessionInbox
+from journal.models.support.ref import Ref
+from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
@@ -25,8 +27,8 @@ INBOX_MISSING = "worker {n}, {name}, runs {provider}, which takes no message whi
 class WorkerActions:
     """What is done to a worker after its dispatch, by its command and from the viewer alike, each under the worker's lock: its next job sent, a word told while it runs, a stop, a retire."""
 
-    def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch) -> None:
-        self.workers, self.runner, self.providers, self.inbox, self.branch = workers, runner, providers, inbox, branch
+    def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch, tasks: Tasks) -> None:
+        self.workers, self.runner, self.providers, self.inbox, self.branch, self.tasks = workers, runner, providers, inbox, branch, tasks
 
     def send(self, n: int, brief: str, dispatcher: str | None, actor: Actor) -> Worker:
         with self.runner.lock(n):
@@ -106,4 +108,5 @@ class WorkerActions:
         with self.runner.lock(n):
             worker = self.workers.save(self.workers.find(n).finished(datetime.now(timezone.utc).timestamp(), reason), actor)
             self.runner.stop(worker)
+            self.tasks.release(Ref.build(worker), actor)
         return worker, self.branch.dropped(worker)

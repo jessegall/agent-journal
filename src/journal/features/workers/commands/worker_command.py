@@ -16,13 +16,16 @@ from journal.support.rejection import Rejection
 from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
 from journal.repositories.subagents import Subagents
+from journal.models.support.ref import Ref
+from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 
 class WorkerCommand(Command):
     noun = "worker"
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents) -> None:
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks) -> None:
+        self.tasks = tasks
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -76,7 +79,7 @@ class WorkerCommand(Command):
             self.workers.delete(worker, caller.actor)
             raise Rejection(f"worker {worker.name} was not dispatched: {failed}") from failed
         if args.task:
-            self.workers.assign(worker, args.task, caller.actor)
+            self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
         self.runner.start(worker, caller.actor)
         self.workers.save(self.workers.find(worker.row_id).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
@@ -94,7 +97,7 @@ class WorkerCommand(Command):
     def send(self, args: Namespace, caller: Caller) -> int:
         worker = self.actions.peer_send(args.n, args.brief, caller.worker_number, caller.actor) if caller.worker_number is not None else self.actions.send(args.n, args.brief, caller.session, caller.actor)
         if args.task:
-            self.workers.assign(worker, args.task, caller.actor)
+            self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
 

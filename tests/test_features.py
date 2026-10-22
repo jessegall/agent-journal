@@ -6557,6 +6557,34 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
+def test_one_link_holds_a_task_for_its_worker_until_it_is_released(app: App, monkeypatch):
+    from journal.features.tasks.support.tasks_data_reader import TasksDataReader
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.agent import Agent
+    from journal.models.agent_role import AgentRole
+    from journal.repositories.agents import Agents
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    monkeypatch.setattr(WorkerRunner, "stop", lambda self, worker: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser"], AGENT)
+    assert console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--task", "1"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(session="w-1", state=WorkerState.REPORTED), Actor.system())
+        assert set(workers.containing({1})) == {1}, "a worker that reported still holds its task"
+    refused = console.run(["task", "start", "1"], AGENT)
+    assert refused.code == 1 and "task 1 is held by worker 1" in refused.error, "no agent takes a held task by starting it"
+    with app.container.get(Scope).environment(MAIN):
+        worker_agent = app.container.get(Agents).save(Agent(environment_id=1, session="w-1", provider="claude", role=AgentRole.WORKER), Actor.system())
+        assert app.container.get(TasksDataReader).read(worker_agent).agent_tasks == (1,), "a worker's agent reads the task its worker holds as its own"
+    console.run(["worker", "complete", "1", "--why", "merged"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Workers).containing({1}) == {}, "a released worker holds nothing"
+    assert console.run(["task", "start", "1"], AGENT).code == 0, "and the task is free again"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

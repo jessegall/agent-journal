@@ -18,6 +18,8 @@ from journal.repositories.scoped_repository import ScopedRepository
 
 WAIT_LINK = "waits_on"
 CURRENT_TASK_LINK = "in_hand"
+WORKERS = "workers"
+HOLDER_REFUSAL = "task {task} is held by worker {worker} until its work is merged or released: send that worker its next job, or release it first"
 PLAN_LINK = "in_plan"
 USER_PREFIX = "user:"
 CLOSED = (TaskState.FINISHED, TaskState.CANCELLED)
@@ -102,12 +104,25 @@ class Tasks(ScopedRepository[Task]):
         counterpart = self.holder_task(holder)
         if counterpart is not None and counterpart.id != started.id:
             raise Rejection(f"task {counterpart.id} is in hand: finish it, or park it with `journal task suspend {counterpart.id} \"<why>\"`, before task {started.id} is started")
-        task = Ref.build(started)
-        for link in self.links.all_matching(target=task, kind=CURRENT_TASK_LINK):
+        self.handover(started, holder, actor)
+
+    def handover(self, task: Task, holder: Ref, actor: Actor) -> None:
+        owner = self.holder(task)
+        if owner is not None and owner != holder and owner.type == WORKERS and not actor.is_user():
+            raise Rejection(HOLDER_REFUSAL.format(task=task.id, worker=owner.id))
+        target = Ref.build(task)
+        for link in self.links.all_matching(target=target, kind=CURRENT_TASK_LINK):
             if link.source != holder:
                 self.links.delete(link, actor)
-        if self.holder(started) != holder:
-            self.links.save(Link(source=holder, target=task, kind=CURRENT_TASK_LINK), actor)
+        if owner != holder:
+            self.links.save(Link(source=holder, target=target, kind=CURRENT_TASK_LINK), actor)
+
+    def release(self, holder: Ref, actor: Actor) -> None:
+        for link in self.links.all_matching(source=holder, kind=CURRENT_TASK_LINK):
+            self.links.delete(link, actor)
+
+    def worker_holdings(self) -> dict[int, int]:
+        return {link.target.id: link.source.id for link in self.links.all_matching(kind=CURRENT_TASK_LINK) if link.source.type == WORKERS}
 
     def unfinished_count(self) -> int:
         planned = self.links.query().filter(kind=PLAN_LINK).filter_ref("source", self.query())
