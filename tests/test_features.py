@@ -9131,3 +9131,22 @@ def test_a_renewed_worktree_gets_its_library_links_back_and_keeps_a_folder_the_w
     assert app.console().run(["worker", "send", "1", "the next part"], AGENT).code == 0
     assert (folder / "node_modules").is_symlink(), "the link is made again"
     assert not (folder / "vendor").is_symlink() and (folder / "vendor" / "own.php").is_file(), "a folder the worker installed itself stays"
+
+
+def test_the_settings_command_lists_shows_and_sets_and_an_agent_sets_only_the_ones_left_to_it(app: App, monkeypatch):
+    from journal.features.tasks.feature import Tasks as TasksFeature
+    from journal.support import option as options
+    console = app.console()
+    hook(app, "SessionStart")
+    listed = console.run(["settings", "list"], AGENT).text
+    assert "tasks.auto = True" in listed and "workers.most_out = 3" in listed, listed
+    assert "Work the list on its own" in console.run(["settings", "show", "tasks.auto"], AGENT).text
+    refused = console.run(["settings", "set", "tasks.auto", "off"], AGENT)
+    assert refused.code != 0 and "the user's to set" in refused.error, "an agent never changes a setting the user keeps"
+    assert console.run(["settings", "set", "tasks.auto", "off"], USER).code == 0 and app.container.get(SettingRows).option(TasksFeature.AUTO) is False
+    assert "is on or off" in console.run(["settings", "set", "tasks.auto", "maybe"], USER).error
+    assert "no setting is named tasks.nothing" in console.run(["settings", "set", "tasks.nothing", "1"], USER).error
+    import dataclasses
+    left = dataclasses.replace(TasksFeature.AUTO, setter=options.AGENT)
+    monkeypatch.setattr(TasksFeature, "options", tuple(left if option.key == left.key else option for option in TasksFeature.options))
+    assert console.run(["settings", "set", "tasks.auto", "on"], AGENT).code == 0 and app.container.get(SettingRows).option(TasksFeature.AUTO) is True, "a setting left to the agent it sets itself"
