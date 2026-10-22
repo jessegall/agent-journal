@@ -39,6 +39,10 @@ class Messages(Feature[MessagesData]):
     UNREAD_MESSAGES = Nudge(name, "unread_messages_to_read", "{{count}} messages unread: `journal message unread`", repeat_interval=60, chat_answerable=True)
     USER_REACTION = Nudge(name, "the_user_reacted", "the user put {{face}} on message {{n}}", "act on it if it asks for something, such as a go-ahead; it needs no reply and the chat never mentions it", repeat_interval=0)
     FACE_REPLY = Nudge(name, "reply_was_only_a_face", "your reply was only {{face}}, so it was not posted", "an emoji on its own is a reaction: `journal message react <n> \"{{face}}\"` puts it on the message it answers; write words when there is something to say", repeat_interval=0)
+    INBOX_COUNTDOWN = Nudge(name, "writes_held_soon_until_read", "tool uses left before your writes wait for message {{messages}}: {{count}}", "read it now with `journal message unread`", repeat_interval=0, chat_answerable=True)
+    INBOX_LAST_USE = Nudge(name, "next_write_held_until_read", "your next write waits for message {{messages}}", "read it now with `journal message unread`", repeat_interval=0, chat_answerable=True)
+    UNANSWERED_COUNTDOWN = Nudge(name, "tools_held_soon_until_answered", "tool uses left before your tools wait for your answer to message {{messages}}: {{count}}", "answer or react to it now", repeat_interval=0, chat_answerable=True)
+    UNANSWERED_LAST_USE = Nudge(name, "next_tool_held_until_answered", "your next tool call waits for your answer to message {{messages}}", "answer or react to it now", repeat_interval=0, chat_answerable=True)
     INBOX_EDIT_BLOCK = Nudge(name, "write_held_until_read", "you have {{count}} unread messages", "`journal message unread` before any other write", repeat_interval=0)
     UNANSWERED_MESSAGES = Nudge(name, "answer_before_anything_else", "you have not answered message {{messages}} yet", "answer or react to it before you go on; your tools wait once you have gone on long enough", repeat_interval=300, chat_answerable=True)
     UNANSWERED_TOOL_BLOCK = Nudge(name, "tools_held_until_answered", "answer or react to message {{messages}} first", "your tool calls wait until you do", repeat_interval=0, chat_answerable=True)
@@ -46,7 +50,7 @@ class Messages(Feature[MessagesData]):
     DUPLICATE_REPLY = Nudge(name, "reply_kept_out_as_replied_already", "message {{n}} already has your reply {{reply}}, so this one was kept out of the chat", "send it again only if it says something new: `journal message send \"<text>\" --reply-to {{n}} --confirm`", repeat_interval=0)
     REPEATED_CLOSING_TEXT = Nudge(name, "closing_words_kept_out_as_repeated", "your closing words said again what your reply {{reply}} to message {{n}} said, so they were kept out of the chat", "a reply goes out once; close with only what is new", repeat_interval=0)
     PEER_QUESTION = Nudge(name, "answer_the_other_agent", "agent {{sender}} asked you a question in message {{n}}", "answer it with SendMessage to {{sender}}; a message from another agent that asks nothing needs no answer", repeat_interval=300)
-    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT)
+    nudges = (PEER_QUESTION, NEW_MESSAGE, NEW_MESSAGES, UNREAD_MESSAGES, USER_REACTION, FACE_REPLY, INBOX_EDIT_BLOCK, UNANSWERED_MESSAGES, UNANSWERED_TOOL_BLOCK, FULL_MESSAGE_READ, DUPLICATE_REPLY, REPEATED_CLOSING_TEXT, INBOX_COUNTDOWN, INBOX_LAST_USE, UNANSWERED_COUNTDOWN, UNANSWERED_LAST_USE)
 
     skill = Skill("messages", "Read and answer the user's messages; load it when there are unread messages or before replying", """
 # Messages
@@ -97,4 +101,14 @@ The user leaves messages; you answer them before anything else.
 
     @classmethod
     def inbox_lines(cls) -> tuple[Nudge, ...]:
-        return (cls.NEW_MESSAGE, cls.NEW_MESSAGES, cls.UNREAD_MESSAGES)
+        return (cls.NEW_MESSAGE, cls.NEW_MESSAGES, cls.UNREAD_MESSAGES, cls.INBOX_COUNTDOWN, cls.INBOX_LAST_USE)
+
+    @classmethod
+    def inbox_countdown(cls, unread: tuple[int, ...], remaining_uses: int) -> "Nudge":
+        numbers = ", ".join(str(n) for n in unread)
+        return cls.INBOX_COUNTDOWN.create(count=remaining_uses, messages=numbers) if remaining_uses else cls.INBOX_LAST_USE.create(messages=numbers)
+
+    @classmethod
+    def unanswered_countdown(cls, unanswered: tuple[int, ...], remaining_uses: int) -> "Nudge":
+        numbers = ", ".join(str(n) for n in unanswered)
+        return cls.UNANSWERED_COUNTDOWN.create(count=remaining_uses, messages=numbers) if remaining_uses else cls.UNANSWERED_LAST_USE.create(messages=numbers)

@@ -127,6 +127,7 @@ function markClick(data) {
 }
 
 .mark-lines {
+    grid-column: 1 / -1;
     margin: 0;
     padding: 2px 0 0 22px;
     text-align: left;

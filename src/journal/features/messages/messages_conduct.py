@@ -65,7 +65,7 @@ def unanswered_check(state: BaseState, event: ToolStarting, settings: Settings) 
     if messages.uses_unanswered >= settings.integer(feature.TOOL_BLOCK_LIMIT):
         return state.refuse(feature.UNANSWERED_TOOL_BLOCK.create(messages=obligations))
     if messages.uses_unanswered >= settings.integer(feature.ANSWER_REQUEST_LIMIT):
-        return state.none(feature.UNANSWERED_MESSAGES.create(messages=obligations))
+        return state.none(feature.unanswered_countdown(messages.unanswered, settings.integer(feature.TOOL_BLOCK_LIMIT) - messages.uses_unanswered - 1))
     return state.none()
 
 
@@ -74,8 +74,11 @@ def unread_check(state: BaseState, event: ToolStarting, settings: Settings) -> T
     messages = event.data.part(feature)
     if event.subagent or event.call.is_journal or not messages.unread:
         return state.none()
-    if event.call.writes and messages.mention_count >= settings.integer(feature.EDIT_BLOCK_LIMIT):
+    limit = settings.integer(feature.EDIT_BLOCK_LIMIT)
+    if event.call.writes and messages.mention_count >= limit:
         return state.refuse(feature.INBOX_EDIT_BLOCK.create(count=len(messages.unread)))
+    if messages.mention_count > 0:
+        return state.none(feature.inbox_countdown(messages.unread, max(limit - messages.mention_count - 1, 0)))
     interval = settings.integer(feature.REMINDER_INTERVAL)
     if interval > 0 and messages.inbox_tool_uses > 0 and messages.inbox_tool_uses % interval == 0:
         return state.none(feature.inbox(messages.unread))

@@ -1430,15 +1430,19 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
     assert "handle the journal quietly" in notified and "laws L1 to L10" in notified and "another agent worked this environment until" in notified
     assert "waiting for you here: 1 tasks, 1 messages" in notified
 
-def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app: App):
+def test_an_unread_message_is_counted_down_at_every_tool_use_to_the_write_hold(app: App):
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     app.console().run(["message", "send", "look at the footer"], USER)
     from journal.repositories.agents import Agents
     journal_said = lambda: json.dumps(hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": "journal task list"})[1])
-    matched = [i for i in range(1, 16) if "new message 1" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]) and "new message 1" not in journal_said()]
-    assert matched == [3, 6, 9, 12, 15] or len(matched) >= 4, "every third tool use names the inbox, and a journal command between is no tool use"
-    assert app.container.get(Agents).session_agent("s1").tool_uses == 15, "one counter on the agent's row: fifteen plain tool uses moved it by fifteen, the fifteen journal commands by nothing"
+    lines = []
+    for _ in range(7):
+        lines.append(json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={})[1]))
+        assert "new message 1" not in journal_said() and "tool uses left" not in journal_said()
+    shown = [next((part for part in ("wait for message 1: 3", "wait for message 1: 2", "wait for message 1: 1", "your next write waits for message 1") if part in line), "") for line in lines[:4]]
+    assert shown == ["wait for message 1: 3", "wait for message 1: 2", "wait for message 1: 1", "your next write waits for message 1"], "told of it as it arrived, every tool use after counts down to the hold"
+    assert app.container.get(Agents).session_agent("s1").tool_uses == 7, "one counter on the agent's row: seven plain tool uses moved it by seven, the journal commands by nothing"
     status, body = hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
     assert status == 409 and "unread messages" in body["error"]
     app.console().run(["message", "read", "1"], AGENT)
@@ -6679,7 +6683,7 @@ def test_a_read_message_holds_a_tool_only_after_a_grace_of_tool_uses_with_a_remi
     answers = [hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f"{n}.py")}) for n in range(1, 5)]
     assert all(status == 200 and "not answered" not in json.dumps(body) for status, body in answers), "four tool uses after the read pass in silence"
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "5.py")})
-    assert status == 200 and "you have not answered message 1 yet" in body["hookSpecificOutput"]["additionalContext"], "the fifth is told the message waits"
+    assert status == 200 and "wait for your answer to message 1: 4" in body["hookSpecificOutput"]["additionalContext"], "the fifth is told the message waits, with the tool uses left"
     for n in range(6, 10):
         assert hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / f"{n}.py")})[0] == 200
     status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": str(app.config.root / "10.py")})
