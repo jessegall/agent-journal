@@ -1414,3 +1414,15 @@ def test_the_shim_posts_its_environment_and_the_words_and_reads_the_exit_code_of
     assert lines[0].startswith("task 1 open") and lines[-1] == "__journal_exit 0", "what the command printed, then its exit code"
     tasks = call(server, "GET", "/journal/tasks")[1]["rows"]
     assert tasks[0]["creator"] == "agent:abc", "the shell's own session, read from its environment, names the agent"
+
+
+def test_a_part_that_changed_files_rolls_through_each_file_with_its_counts_adding_up():
+    """Each changed file gets an editing item with the lines so far, half a second each or less so ten fit 2.5 seconds, the last a second more."""
+    from journal.http.agents.bar_row import BarRow
+    row = BarRow("c1 python3 edit.py", "running", "python3 edit.py", 100.0, True, 8, 4, (("a.py", 3, 1), ("b.py", 5, 3)))
+    items = row.file_items()
+    shown = [[part["value"] for part in item["parts"]] for item in items]
+    assert shown == [["editing", "a.py", 3, 1], ["editing", "b.py", 8, 4]], "editing, the file, and the counts so far, never the command"
+    assert [item["hold"] for item in items] == [0.5, 1.5], "half a second each, the last a second more"
+    many = BarRow("c2 sed", "running", "sed", 100.0, True, 10, 0, tuple((f"f{i}.py", 1, 0) for i in range(10))).file_items()
+    assert [item["hold"] for item in many[:2]] == [0.25, 0.25] and many[-1]["hold"] == 1.25, "ten files share two and a half seconds"

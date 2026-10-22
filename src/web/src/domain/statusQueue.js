@@ -8,10 +8,17 @@ export function visibleQueue(queue, state, now) {
     return got.message || !running ? got : {time: running.time, since: now, message: running};
 }
 
+// Where the line jumps to when it is too far behind: the newest item, or the first file of the roll the newest belongs
+// to, so a command's changed files are always shown one by one.
+function rollStart(later) {
+    const newest = later.at(-1);
+    return (newest.group && later.find((one) => one.group === newest.group)) || newest;
+}
+
 function playable(queue, state, now) {
     const held = queue.find((one) => one.time === state.time) || null;
     const later = queue.filter((one) => one.time > state.time);
-    const next = later.length > BEHIND ? later.at(-1) : later[0];
+    const next = later.length > BEHIND ? rollStart(later) : later[0];
     if (!held) {
         const first = next || (state.time ? null : queue.at(-1));
         return first ? {time: first.time, since: now, message: first} : {time: state.time, since: state.since, message: null};

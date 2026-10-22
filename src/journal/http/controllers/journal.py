@@ -89,6 +89,7 @@ class JournalController:
                 queue.append(open_[row.key])
             elif row.key in open_:
                 open_[row.key].update(done=True, parts=[*open_[row.key]["parts"], *row.counts()], hold=max(open_[row.key]["hold"], row.display_seconds()), **{"for": max(0.0, row.time - open_[row.key]["time"])})
+                queue.extend(row.file_items())
         return Response.json(queue[-ACTIVITY_ENTRIES:])
 
     def first(self) -> Environment:
