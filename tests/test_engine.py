@@ -634,6 +634,36 @@ def test_a_worker_clocks_in_on_its_task_and_the_main_agent_hears_it(app: App, mo
     assert app.console().run(["clock-in"], babbage).code == 0 and app.container.get(SessionAgents).top("w1").task_id == task.id, "a worker sent back clocks in again"
 
 
+def test_a_worker_keeps_its_own_to_do_list_inside_its_task(app: App):
+    from journal.http.controllers.tasks import TaskController
+    from journal.models.support.ref import Ref
+    from journal.models.task import Task
+    from journal.models.worker import Worker
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    from journal.support.worker_token import WorkerToken
+    hook(app, "SessionStart")
+    scope, tasks = app.container.get(Scope), app.container.get(Tasks)
+    with scope.environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w1", token_hash=WorkerToken.hashed("tok")), Actor.system())
+        task = tasks.save(Task(environment_id=1, title="the parser", brief="the parser reads"), Actor.system())
+        tasks.handover(task, Ref.build(worker), Actor.system())
+    babbage, console = Caller.worker("main", worker.id, "w1", "claude"), app.console()
+    for item in ("write the grammar", "write the test", "run it"):
+        assert console.run(["todo", "add", item], babbage).code == 0
+    assert console.run(["todo", "check", "2"], babbage).code == 0 and "has 3 items" in console.run(["todo", "check", "7"], babbage).error
+    assert console.run(["todo", "list"], babbage).text.splitlines() == ["  1  [ ]  write the grammar", "  2  [x]  write the test", "  3  [ ]  run it"], "the items read back in order, one complete"
+    assert "only a worker on a task keeps one" in console.run(["todo", "list"], AGENT).error
+    with scope.environment(1):
+        shown = app.container.get(TaskController).shown_page([tasks.find(task.id)])[0]
+    assert shown["todos"] == [{"text": "write the grammar", "complete": False}, {"text": "write the test", "complete": True}, {"text": "run it", "complete": False}], "the task's payload carries the items with their flags"
+    data = json.dumps({"hook_event_name": "Stop", "session_id": "w1"}).encode()
+    request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Worker": str(worker.id), "X-Journal-Worker-Token": "tok"})
+    with urlopen(request, timeout=5) as reply:
+        answered = reply.read().decode()
+    assert "2 open items: 1. write the grammar; 3. run it" in answered, "the worker's stop is told the items still open"
+
+
 def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
