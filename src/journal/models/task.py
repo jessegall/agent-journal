@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import ClassVar
 
 from journal.events.rows.row_resolved import RowResolved
+from journal.events.rows.task_briefed import TaskBriefed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_started import TaskStarted
@@ -39,6 +40,11 @@ class Task(Scoped):
     def points(self) -> tuple[str, ...]:
         bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
         return bullets or (self.brief.strip(),)
+
+    def briefed(self, brief: str, time: float) -> "Task":
+        rewritten = self.with_(brief=brief)
+        changes = tuple(n for n, point in enumerate(rewritten.points(), start=1) if n > len(self.points()) or self.points()[n - 1] != point)
+        return rewritten.with_event(TaskBriefed(environment_id=self.environment_id, time=time, task_id=self.row_id, points=changes))
 
     def started(self, time: datetime) -> "Task":
         return self.plan_started(time, 0)

@@ -28,8 +28,8 @@ class SessionAgents:
         try:
             return self.agents.session_agent(session)
         except MissingRow:
-            first = self.states.first()
-            return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=first.name, data=first.serialized(), role=AgentRole.WORKER), Actor.system())
+            bottom = self.states.worker_first()
+            return self.agents.save(Agent(environment_id=environment_id, session=session, provider=provider, state=bottom.name, data=bottom.serialized(), role=AgentRole.WORKER), Actor.system())
 
     def top(self, session: str) -> BaseState:
         agent = self.agents.session_agent(session)

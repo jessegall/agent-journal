@@ -621,7 +621,7 @@ def test_a_worker_clocks_in_on_its_task_and_the_main_agent_hears_it(app: App, mo
         worker = workers.save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w1", dispatcher="s1"), Actor.system())
         task = tasks.save(Task(environment_id=1, title="the parser", brief="the parser reads"), Actor.system())
         tasks.handover(task, Ref.build(worker), Actor.system())
-        agents.save(Agent(environment_id=1, session="w1", provider="claude", role=AgentRole.WORKER), Actor.system())
+        agents.save(Agent(environment_id=1, session="w1", provider="claude", state="duty", role=AgentRole.WORKER), Actor.system())
     babbage = Caller.worker("main", worker.id, "w1", "claude")
     assert app.console().run(["clock-in"], babbage).code == 0
     assert app.container.get(SessionAgents).top("w1").task_id == task.id, "clocking in moves the worker to Working on its task"
@@ -692,6 +692,56 @@ def test_a_workers_stop_is_held_while_its_own_output_runs_and_told_its_end(app: 
     told = worker_stop()
     assert told["decision"] == "block" and f"output {output.id} ended with code 0" in told["reason"], "the output's end comes back in the answer to its next stop"
     assert "decision" not in worker_stop(), "told once"
+
+
+def test_the_users_edits_and_closes_of_a_workers_task_reach_the_worker(app: App):
+    from datetime import datetime, timezone
+    from journal.http.controllers.tasks import TaskController
+    from journal.models.agent import Agent
+    from journal.models.agent_role import AgentRole
+    from journal.models.proof import Proof
+    from journal.models.support.ref import Ref
+    from journal.models.task import Task
+    from journal.models.worker import Worker
+    from journal.models.worker_state import WorkerState
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    scope, workers, tasks, agents, proofs = app.container.get(Scope), app.container.get(Workers), app.container.get(Tasks), app.container.get(Agents), app.container.get(Proofs)
+    def worker_on(title: str, session: str) -> tuple:
+        with scope.environment(1):
+            worker = workers.save(Worker(environment_id=1, name=f"worker on {title}", brief="b", session=session), Actor.system())
+            task = tasks.save(Task(environment_id=1, title=title, brief="- reads the grammar\n- names each rule"), Actor.system())
+            tasks.handover(task, Ref.build(worker), Actor.system())
+            agents.save(Agent(environment_id=1, session=session, provider="claude", state="duty", role=AgentRole.WORKER), Actor.system())
+        app.console().run(["clock-in"], Caller.worker("main", worker.id, session, "claude"))
+        return worker, task
+    worker, task = worker_on("the parser", "w1")
+    with scope.environment(1):
+        for point in (1, 2):
+            proofs.added(Proof(environment_id=1, point=point, text="shown"), task, Actor.worker(worker.id))
+    assert app.console().run(["task", "brief", str(task.id), "- reads the grammar\n- names each rule and its alias"], USER).code == 0
+    app.runtime().deferred.drain()
+    with scope.environment(1):
+        assert [(p.point, p.state) for p in proofs.task_proofs(tasks.find(task.id))] == [(1, "shown"), (2, "stale")], "a rewritten point's proof goes stale"
+        assert "the user rewrote point 2 of your task" in " ".join(agents.session_agent("w1").queued_lines), "and the worker is told which points changed"
+    controller = app.container.get(TaskController)
+    with scope.environment(1):
+        tasks.save(tasks.find(task.id).cancelled(datetime.now(timezone.utc)), Actor.user(1))
+    app.runtime().deferred.drain()
+    assert app.container.get(SessionAgents).top("w1").name != "working" and "the user closed your task" in " ".join(agents.session_agent("w1").queued_lines), "the user's cancel ends the worker's work, and it is told"
+    with scope.environment(1):
+        assert workers.find(worker.id).state == WorkerState.RELEASED and tasks.holder(tasks.find(task.id)) is None, "and releases it"
+    second, held = worker_on("the lexer", "w2")
+    request = type("Posted", (), {"number": lambda self, key: held.id, "environment": "main", "actor": Actor.user(1), "body": {}})()
+    with scope.environment(1):
+        controller.start(request)
+        assert tasks.holder(tasks.find(held.id)) == Ref.build(second), "the viewer's start of a held task leaves its holder"
+        controller.finish(type("Posted", (), {"number": lambda self, key: held.id, "environment": "main", "actor": Actor.user(1), "body": {"how": "written by hand"}})())
+    app.runtime().deferred.drain()
+    with scope.environment(1):
+        assert workers.find(second.id).state == WorkerState.RELEASED, "the user's finish releases the worker"
 
 
 def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):

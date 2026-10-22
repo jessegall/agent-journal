@@ -6583,7 +6583,7 @@ def test_one_link_holds_a_task_for_its_worker_until_it_is_released(app: App, mon
     refused = console.run(["task", "start", "1"], AGENT)
     assert refused.code == 1 and "task 1 is held by worker 1" in refused.error, "no agent takes a held task by starting it"
     with app.container.get(Scope).environment(MAIN):
-        worker_agent = app.container.get(Agents).save(Agent(environment_id=1, session="w-1", provider="claude", role=AgentRole.WORKER), Actor.system())
+        worker_agent = app.container.get(Agents).save(Agent(environment_id=1, session="w-1", provider="claude", state="duty", role=AgentRole.WORKER), Actor.system())
         assert app.container.get(TasksDataReader).read(worker_agent).agent_tasks == (1,), "a worker's agent reads the task its worker holds as its own"
     console.run(["worker", "complete", "1", "--why", "merged"], AGENT)
     with app.container.get(Scope).environment(MAIN):
@@ -6744,7 +6744,7 @@ def test_a_workers_agent_row_is_never_the_main_agent_and_ends_with_its_process(a
     hook(app, "SessionStart")
     agents = app.container.get(Agents)
     for session in ("w-1", "w-2"):
-        agents.save(Agent(environment_id=1, session=session, provider="claude", role=AgentRole.WORKER), Actor.system())
+        agents.save(Agent(environment_id=1, session=session, provider="claude", state="duty", role=AgentRole.WORKER), Actor.system())
     with app.container.get(Scope).environment(MAIN):
         assert agents.current().session == "s1", "the newest worker row never becomes the current agent"
         main = agents.session_agent("s1")

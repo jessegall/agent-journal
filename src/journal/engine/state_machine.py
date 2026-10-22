@@ -80,9 +80,7 @@ class StateMachine(AgentListener[AgentEvent]):
                 self.row_lines(agent, answered.context)
 
     def audience(self, event: RowEvent) -> list[Agent]:
-        listeners = self.agents.main_scoped(event.environment_id) if event.environment_id else self.agents.main_unended()
-        recipients = [agent for agent in self.agents.global_matching(session=event.recipient) if event.recipient and agent.state != "ended" and agent not in listeners]
-        return [*listeners, *recipients]
+        return self.agents.unended_scoped(event.environment_id) if event.environment_id else self.agents.unended()
 
     def row_lines(self, agent: Agent, lines: str) -> None:
         if agent.role == AgentRole.WORKER:

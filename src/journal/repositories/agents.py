@@ -22,8 +22,11 @@ class Agents(ScopedRepository[Agent]):
     def main_scoped(self, environment_id: int) -> list[Agent]:
         return [item for item in self.global_matching(environment_id=environment_id, role=AgentRole.MAIN) if item.state != "ended"]
 
-    def main_unended(self) -> list[Agent]:
-        return [item for item in self.main_agents() if item.state != "ended"]
+    def unended(self) -> list[Agent]:
+        return [item for item in self.global_matching() if item.state != "ended"]
+
+    def unended_scoped(self, environment_id: int) -> list[Agent]:
+        return [item for item in self.global_matching(environment_id=environment_id) if item.state != "ended"]
 
     def running_peers(self, agent: Agent) -> list[Agent]:
         if agent.role != AgentRole.MAIN:

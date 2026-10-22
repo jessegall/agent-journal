@@ -1,5 +1,6 @@
 import {ref} from "vue";
 import {api} from "../api/client.js";
+import {peek} from "../route.js";
 import {questionOf, waitOf} from "../domain/taskBoard.js";
 import {taskBoard} from "../state/taskBoard.js";
 
@@ -49,6 +50,7 @@ export function useTaskActs(client = api) {
         if (ASKED.includes(name)) return (asking.value = {kind: name, task});
         if (name === "answer") return (asking.value = {kind: "answer", question: questionOf(task)});
         if (name === "goto") return goTo(task);
+        if (name === "start" && task.worker_id) return peek("workers", task.worker_id);
         if (name === "delete" && taskBoard.selected === task.id) taskBoard.inspecting = false;
         if (await post(task, name)) say(DONE_LINES[name](task.id));
     }

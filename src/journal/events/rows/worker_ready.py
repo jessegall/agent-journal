@@ -9,8 +9,3 @@ class WorkerReady(RowEvent):
     """A worker said it is ready and took up its task."""
 
     worker: WorkerMention
-    worker_session: str
-
-    @property
-    def recipient(self) -> str:
-        return self.worker_session

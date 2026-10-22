@@ -6,7 +6,7 @@ from journal.events.feature_data import FeatureData
 
 @dataclass(frozen=True, kw_only=True)
 class RowEvent(Event):
-    """What happened to a row, named for the moment: carried by the model that made the change, dispatched by its repository on save, and answered by every live main agent of the environment, and by the agent it names as its recipient whatever its role."""
+    """What happened to a row, named for the moment: carried by the model that made the change, dispatched by its repository on save, and answered by every agent of the environment that has not ended, each under its own role's conduct."""
 
     environment_id: int = 0
     time: float = 0.0
@@ -18,10 +18,6 @@ class RowEvent(Event):
     @property
     def typing_delay(self) -> float:
         return 0.0
-
-    @property
-    def recipient(self) -> str:
-        return ""
 
     def with_data(self, data: FeatureData) -> "RowEvent":
         return replace(self, data=data)

@@ -49,7 +49,7 @@ class DepartureCommand(Command):
 
     def unproved(self, task: Task) -> list[int]:
         latest = {proof.point: proof for proof in sorted(self.proofs.task_proofs(task), key=lambda proof: proof.row_id)}
-        return [point for point in range(1, len(task.points()) + 1) if point not in latest or latest[point].state == ProofState.SHORT]
+        return [point for point in range(1, len(task.points()) + 1) if point not in latest or latest[point].state in (ProofState.SHORT, ProofState.STALE)]
 
     def uncommitted(self, worker: Worker) -> list[str]:
         if not worker.worktree:

@@ -82,7 +82,7 @@ class TaskCommand(Command):
         return 0
 
     def brief(self, args: Namespace, caller: Caller) -> int:
-        task = self.tasks.save(self.tasks.find(args.n).with_(brief=args.brief), caller.actor)
+        task = self.tasks.save(self.tasks.find(args.n).briefed(args.brief, self.clock.time()), caller.actor)
         print(f"task {task.id} brief written anew")
         return 0
 

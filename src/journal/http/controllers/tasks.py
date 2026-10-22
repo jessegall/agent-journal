@@ -43,7 +43,15 @@ class TaskController(Controller[Task]):
                  "waits": [str(ref) for ref in waits.get(t.row_id, [])], "held_by": self.task_holders.name(task_holders[t.row_id]) if t.row_id in task_holders else "",
                  "todos": [{"text": item.text, "complete": item.complete} for item in todos.get(t.row_id, [])]} for t in rows]
 
+    def update(self, request: Request) -> Response:
+        row = self.repository.find(request.number("id"))
+        changed = row.with_(**{name: value for name, value in self.fields(request.body).items() if name != "brief"})
+        rewritten = changed.briefed(request.body["brief"], self.time().timestamp()) if "brief" in request.body else changed
+        return Response.json(self.shown(self.repository.save(rewritten, request.actor)))
+
     def start(self, request: Request) -> Response:
+        if self.repository.find(request.number("id")).row_id in self.repository.worker_holdings():
+            return Response.json(self.shown(self.repository.find(request.number("id"))))
         task = self.repository.holder_started(self.repository.find(request.number("id")).started(self.time()), self.taking.holder(Caller.user(request.environment)), request.actor)
         return Response.json(self.shown(task))
 

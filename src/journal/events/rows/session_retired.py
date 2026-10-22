@@ -8,7 +8,3 @@ class SessionRetired(RowEvent):
     """An agent's session was ended from outside it: silent for too long, or replaced by a newer session of its provider."""
 
     agent_session: str
-
-    @property
-    def recipient(self) -> str:
-        return self.agent_session
