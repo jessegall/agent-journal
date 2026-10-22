@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.3
+
+- The chat's output dialog shows the output it was opened for; it had been asking for none and showing an error.
+
 ## 4.16.2
 
 - Only the task in hand takes the agent's log line: a log on a task not started is refused, since nobody would read it, and `journal task edit <n> --title "<title>" --brief "<brief>"` writes either anew instead.
