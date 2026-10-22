@@ -133,7 +133,7 @@ One line of JSON, ending in a newline:
   line of a created or deleted file among them, and the shell `command` when one made the change; a file outside the
   project is never sent; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
   was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
-  `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
+  `subagent_ended` the `subagent`; `plugin.updated` its `settings`; `worker_merging`, just before a worker's checked branch is merged, the `worker` number, its `name`, its `task`, its `branch`, its `worktree` folder, the inner `repositories` it has worktrees of and the `files` it changed; `worker_merge_result`, once it landed, the same with the `commits` it landed. A row event's `data` is the row's `table`, `id`,
   who wrote it (`by`) and, when updated, the fields that `changed`; tables go by their plural names (`tasks`,
   `messages`, `plans`, `questions`, `docs`, `reports`, `facts`, `rules`, `reminders`, `checks`), and a plugin reads the
   row itself with a journal command, such as `journal task list`. `journal <noun> --help` lists a noun's commands.
@@ -148,8 +148,8 @@ One line of JSON on its output, the last line counting; an empty output is `allo
  "cards": [{"kind": "sin", "key": "a.py", "label": "A sin in a.py"}], "commands": ["journal task list"]}
 ```
 
-- `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting` and
-  `idle` can be refused; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
+- `answer`: `allow`, `refuse` with a `reason`, or `tell` a line. An empty answer is `allow`. Only `tool_starting`, `idle` and
+  `worker_merging` can be refused, the last holding the merge with the plugin's reason while the worker's proofs and task stay as they were; at `prompt_submitted` and `session_started` a refusal's reason is told. A plugin holds a
   stop once a turn: once the agent went on because a stop was held, a refusal of the next is recorded unanswered. What it says reaches
   the agent as `[plugin <name>] ...`.
 - At an event it does not hold, everything applies after the reply: the `cards` and `commands` at once, a `tell` at

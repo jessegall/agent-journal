@@ -14,7 +14,8 @@ MANIFEST = "journal-plugin.json"
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
 AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edited", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
-HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
+MERGE_EVENTS = ("worker_merging", "worker_merge_result")
+HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started", "worker_merging")
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
 PRIVATE_TABLES = ("secrets", "mcp_servers", "users")
 KEYS = {f for f in PluginManifest.__dataclass_fields__} - set(PUBLISHED.values()) | set(PUBLISHED)
@@ -86,7 +87,7 @@ class ManifestReader:
     def event_check(manifest: PluginManifest) -> None:
         for event in manifest.events:
             row = ROW_EVENT.match(event)
-            if event not in AGENT_EVENTS and not row:
+            if event not in (*AGENT_EVENTS, *MERGE_EVENTS) and not row:
                 raise Rejection(f"{manifest.name} hears {event}, which is no event")
             if row and row["table"] in PRIVATE_TABLES:
                 raise Rejection(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")

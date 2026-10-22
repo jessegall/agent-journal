@@ -9208,3 +9208,31 @@ def test_a_task_of_an_unapproved_plan_is_neither_started_nor_handed_to_a_worker_
     console.run(["plan", "ready", "1"], AGENT)
     console.run(["plan", "approve", "1"], USER)
     assert console.run(["task", "start", "1"], AGENT).code == 0, "once the user approved the plan its task is taken"
+
+
+def test_a_plugin_hears_a_workers_merge_before_and_after_and_its_hold_refuses_it(app: App, monkeypatch, tmp_path):
+    import shutil
+    folder = tmp_path / "echo"
+    shutil.copytree(Path(__file__).parent / "plugins" / "echo", folder)
+    manifest = json.loads((folder / "journal-plugin.json").read_text())
+    (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "hears": [*manifest["hears"], "worker_merging", "worker_merge_result"], "holds": [*manifest["holds"], "worker_merging"]}))
+    repository_made(app.config.root, {".gitignore": ".journal/\n", "README.md": "one\n"})
+    console = app.console()
+    assert console.run(["plugin", "install", str(folder), "--yes"], USER).code == 0
+    _, worktree, caller = worktree_worker(app, monkeypatch, "the readme")
+    committed(worktree, "forbidden.py", "x = 1\n")
+    assert proved_and_out(app, caller, "forbidden.py:1").code == 0
+    held = checked_and_merged(app)
+    assert held.code != 0 and "a plugin held it: echo: echo holds the merge of worker/1-Worker-1: forbidden.py" in held.error, held.error
+    app.runtime().deferred.drain()
+    heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()]
+    merging = [line for line in heard if line["event"] == "worker_merging"]
+    assert merging and merging[0]["data"]["worker"] == 1 and merging[0]["data"]["task"] == 1 and merging[0]["data"]["branch"] == "worker/1-Worker-1" and merging[0]["data"]["files"] == ["forbidden.py"], merging
+    git_run(worktree, "rm", "-q", "forbidden.py")
+    git_run(worktree, "-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "not that")
+    committed(worktree, "allowed.py", "y = 2\n")
+    merged = app.console().run(["worker", "merge", "1"], AGENT)
+    assert merged.code == 0, merged.error
+    app.runtime().deferred.drain()
+    heard = [json.loads(line) for line in (app.config.home / "plugin-data" / "echo" / "heard.jsonl").read_text().splitlines()]
+    assert any(line["event"] == "worker_merge_result" and line["data"]["commits"] for line in heard), "and hears the merge once it landed"
