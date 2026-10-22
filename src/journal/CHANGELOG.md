@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.7.3
+
+- A background subagent that ends on an API error, such as a usage limit, turns its mark red with the error. One whose report says it could not do the job turns it orange with its own words.
+
 ## 4.7.2
 
 - The avatar is carried with its card while it waits for its clip to end before setting off, so it no longer sinks into a live card and jumps back up.
