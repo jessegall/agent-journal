@@ -56,7 +56,7 @@ function markClick(data) {
             </div>
         </template>
         <template #card>
-            <div :class="['thread-turn', 'card', {mine: data.side === 'user'}]" :data-ref="turn.key">
+            <div :class="['thread-turn', 'card', {mine: data.side === 'user', docked: data.docked}]" :data-ref="turn.key">
                 <span class="mark-row">
                     <ChatMark :mark="cardMark" v-on="markClick(data)">
                         <template v-if="opened && lines.length">
@@ -180,5 +180,9 @@ function markClick(data) {
 .thread-turn.mine {
     align-self: flex-end;
     align-items: flex-end;
+}
+
+.thread-turn.card.docked {
+    opacity: 0.25;
 }
 </style>

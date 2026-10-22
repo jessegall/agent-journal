@@ -15,9 +15,10 @@ export function dockedRows(messages, now = Date.now() / 1000) {
     return messages.filter((m) => isDocked(m, now)).sort((a, b) => updatedAt(b) - updatedAt(a) || b.id - a.id);
 }
 
-// The messages the chat draws in its stream: a docked one sits above the chat instead, until it is undocked.
-export function undockedRows(messages, now = Date.now() / 1000) {
-    return messages.filter((m) => !isDocked(m, now));
+// The messages the chat draws in its stream: every one stays at its place, a docked one marked docked so it is drawn faded
+// while it also sits above the chat, and unmarked once it leaves the dock.
+export function streamRows(messages, now = Date.now() / 1000) {
+    return messages.map((m) => (m.data?.docked === true && !isDocked(m, now) ? {...m, data: {...m.data, docked: false}} : m));
 }
 
 // The table and number of the row a docked message stands for, from its ref.

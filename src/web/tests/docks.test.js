@@ -45,17 +45,17 @@ describe("rows docked above the chat", () => {
     });
 });
 
-test("a docked message leaves the chat's stream until it is undocked", async () => {
-    const {undockedRows} = await import("../src/domain/docks.js");
+test("a docked message keeps its place in the chat's stream, marked docked so it is drawn faded", async () => {
+    const {streamRows} = await import("../src/domain/docks.js");
     const rows = [{id: 1, data: {docked: true}}, {id: 2, data: {}}, {id: 3, data: {docked: false}}];
-    expect(undockedRows(rows).map((m) => m.id)).toEqual([2, 3]);
+    expect(streamRows(rows).map((m) => [m.id, Boolean(m.data.docked)])).toEqual([[1, true], [2, false], [3, false]]);
 });
 
 test("a card that docked itself stays docked until its undock time, then goes back to the chat", async () => {
-    const {dockedRows, undockedRows} = await import("../src/domain/docks.js");
+    const {dockedRows, streamRows} = await import("../src/domain/docks.js");
     const card = {id: 9, updated_at: new Date(0).toISOString(), data: {docked: true, auto_docked: true, undock_at: 100}};
     expect(dockedRows([card], 99).map((m) => m.id)).toEqual([9]);
-    expect(undockedRows([card], 99)).toEqual([]);
+    expect(streamRows([card], 99)[0].data.docked).toBe(true);
     expect(dockedRows([card], 100)).toEqual([]);
-    expect(undockedRows([card], 100).map((m) => m.id)).toEqual([9]);
+    expect(streamRows([card], 100)[0].data.docked).toBe(false);
 });
