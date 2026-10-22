@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from journal.console.command import HELPER_KINDS, SUBAGENT_KINDS, WORKER_KINDS, Command
 from journal.support.caller import Caller
+from journal.support.caller_kind import CallerKind
 from journal.engine.clock import Clock
 from journal.support.rejection import Rejection
 from journal.features.tasks.states.ready import Ready
@@ -39,6 +40,10 @@ class TaskCommand(Command):
         rename = self.verb(verbs, "rename", "a task's title said again, when the first one was wrong")
         rename.add_argument("n", type=int)
         rename.add_argument("title")
+        edit = self.verb(verbs, "edit", "a task's title or brief written anew, as when the user corrects what it is about")
+        edit.add_argument("n", type=int)
+        edit.add_argument("--title", default="")
+        edit.add_argument("--brief", default="", help="the whole brief, which replaces the old one")
         brief = self.verb(verbs, "brief", "a task's brief written anew, when what done looks like has changed")
         brief.add_argument("n", type=int)
         brief.add_argument("brief")
@@ -87,8 +92,19 @@ class TaskCommand(Command):
         print(f"task {task.id} brief written anew")
         return 0
 
+    def edit(self, args: Namespace, caller: Caller) -> int:
+        if not args.title and not args.brief:
+            raise Rejection("name what changes: --title \"<title>\", --brief \"<the whole brief>\" or both")
+        task = self.tasks.find(args.n)
+        retitled = task.with_(title=args.title) if args.title else task
+        self.tasks.save(retitled.briefed(args.brief, self.clock.time()) if args.brief else retitled, caller.actor)
+        print(f"task {task.id} edited: {' and '.join(name for name, value in (('title', args.title), ('brief', args.brief)) if value)} written anew")
+        return 0
+
     def log(self, args: Namespace, caller: Caller) -> int:
         task = self.readable(args.n, caller)
+        if caller.kind == CallerKind.MAIN_AGENT and not task.is_started():
+            raise Rejection(f"task {task.id} is not in hand, and a log line is read only while a task runs. Put what it has to know in its brief: read it with journal task show {task.id}, then journal task edit {task.id} --brief \"<the whole brief>\"")
         self.logs.save(TaskLog.build(task, args.line, self.clock.time()), caller.actor)
         print(f"task {task.id} logged")
         return 0

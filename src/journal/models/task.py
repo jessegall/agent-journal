@@ -36,6 +36,9 @@ class Task(Scoped):
     def is_closed(self) -> bool:
         return self.state.is_closed()
 
+    def is_started(self) -> bool:
+        return self.state == TaskState.STARTED
+
     def is_newly_closed(self, prior_row: "Task | None") -> bool:
         return self.is_closed() and (prior_row is None or not prior_row.is_closed())
 

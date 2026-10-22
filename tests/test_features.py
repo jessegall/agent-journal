@@ -1608,6 +1608,9 @@ def test_tags_run_the_commands_they_stand_for_with_the_turn_as_their_text(app: A
     catch_typed(app, monkeypatch, keystrokes)
     hook(app, "SessionStart")
     hook(app, "MessageDisplay", message='[!todo="Fix the footer"]\nThe footer overlaps the form on narrow screens.')
+    app.runtime().deferred.drain()
+    started = app.console().run(["task", "start", "1"], AGENT)
+    assert started.code == 0, started
     hook(app, "MessageDisplay", message="[!log:1] Halfway: the overlap is a margin.")
     hook(app, "MessageDisplay", message='**[!fact="The footer is 64px tall"]**\nMeasured in the browser.')
     hook(app, "MessageDisplay", message="[!end:1]\nThe footer sits below the form now.")
@@ -1902,8 +1905,10 @@ def test_a_task_is_read_whole_with_its_plan_phase_brief_and_every_log_line_in_or
     console.run(["plan", "add", "1", "write the notes", "--brief", "in NOTES.md"], USER)
     console.run(["plan", "todos", "1", "2", "1"], USER)
     steps = ["opened NOTES.md", "wrote the first part", "wrote the second part", "checked the links"]
+    refused = console.run(["task", "log", "1", "the user wants it shorter"], AGENT)
+    assert refused.code == 1 and "journal task edit 1 --brief" in refused.error, "a task not in hand takes no log line, which nobody would read"
     for step in steps:
-        console.run(["task", "log", "1", step], AGENT)
+        console.run(["task", "log", "1", step], USER)
     lines = console.run(["task", "show", "1"], AGENT).text.splitlines()
     assert lines[:5] == ["task 1: write the notes", "state: open", "plan 1: release, phase 2 of 2: tag", "brief: in NOTES.md", "log (4 lines):"]
     assert [line.rsplit("  ", 1)[1] for line in lines[5:]] == steps, "every log line, the oldest first, not only the latest three"
@@ -1911,6 +1916,9 @@ def test_a_task_is_read_whole_with_its_plan_phase_brief_and_every_log_line_in_or
     assert console.run(["task", "show", "2"], AGENT).text.splitlines()[2:] == ["plan: none", "brief: none", "log: none"]
     assert console.run(["task", "brief", "2", "done when the loose end is tied"], AGENT).code == 0
     assert "brief: done when the loose end is tied" in console.run(["task", "show", "2"], AGENT).text, "a brief is written anew, never as a log line"
+    assert console.run(["task", "edit", "2", "--title", "the loose end", "--brief", "done when tied twice"], AGENT).text == "task 2 edited: title and brief written anew\n"
+    assert console.run(["task", "show", "2"], AGENT).text.splitlines()[0] == "task 2: the loose end" and "brief: done when tied twice" in console.run(["task", "show", "2"], AGENT).text
+    assert console.run(["task", "edit", "2"], AGENT).code == 1, "an edit names what changes"
 
 
 def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_order(app: App):
@@ -4953,7 +4961,7 @@ def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_a
         assert tasks.holder_task(Ref(Worker.table(), 1)) is None, "and it leaves the worker that held it"
 
 
-def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app: App, monkeypatch):
+def test_one_task_is_started_whatever_starts_it_and_a_parked_plan_parks_its_task(app: App, monkeypatch):
     from journal.models.task_state import TaskState
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
