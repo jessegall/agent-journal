@@ -26,10 +26,12 @@ class Store:
                     self.connection.execute(statement)
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
-        return self.execute(sql, params).fetchone()
+        with self.lock:
+            return self.connection.execute(sql, params).fetchone()
 
     def all(self, sql: str, params: tuple = ()) -> list[sqlite3.Row]:
-        return self.execute(sql, params).fetchall()
+        with self.lock:
+            return self.connection.execute(sql, params).fetchall()
 
     @contextmanager
     def transaction(self) -> Iterator["Store"]:
@@ -54,4 +56,5 @@ class Store:
                 self.depth = 0
 
     def close(self) -> None:
-        self.connection.close()
+        with self.lock:
+            self.connection.close()

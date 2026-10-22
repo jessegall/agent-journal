@@ -657,6 +657,11 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.sync.team_server_link import TeamServerLink
     from sync_server.account import ADMIN
     from sync_server.team_server import TeamServer
+    from journal.chat.cards import Cards
+    from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    from journal.repositories.shared_tables import SharedTables
+    from journal.sync.rejected_edits import RejectedEdits
 
     team = TeamServer(tmp_path)
     team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
@@ -669,9 +674,12 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         answer = team.logins.answer("ada@example.com", "correct horse battery", name, "127.0.0.1")
         account = TeamAccount(Config(tmp_path / name))
         account.write({"address": f"http://127.0.0.1:{port}", "token": answer.token, "device": answer.device_id})
-        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, signal, SyncStatus(account, outgoing))
+        links = Links(tasks.connection, tasks.bus)
+        messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links)
+        rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
+        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing))
         client.start()
-        return scope, tasks, client
+        return scope, tasks, client, messages
 
     def eventually(check, seconds: float) -> bool:
         deadline = time.monotonic() + seconds
@@ -681,8 +689,8 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
             time.sleep(0.05)
         return False
 
-    scope_a, tasks_a, client_a = joined("a")
-    scope_b, tasks_b, client_b = joined("b")
+    scope_a, tasks_a, client_a, _ = joined("a")
+    scope_b, tasks_b, client_b, messages_b = joined("b")
     try:
         assert oct((tmp_path / "a" / ".journal" / TEAM_FILE).stat().st_mode & 0o777) == "0o600", "the token is readable by its owner alone"
         with scope_a.environment(1):
@@ -691,6 +699,17 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         with scope_b.environment(1):
             tasks_b.save(tasks_b.find(task.id).with_(title="renamed by b"), actor=USER)
         assert eventually(lambda: tasks_a.find(task.id).title == "renamed by b", 1.0)
+        client_b.stop()
+        with scope_b.environment(1):
+            tasks_b.save(tasks_b.find(task.id).with_(title="b's older title"), actor=USER)
+        time.sleep(0.01)
+        with scope_a.environment(1):
+            tasks_a.save(tasks_a.find(task.id).with_(title="a's later title"), actor=USER)
+        assert eventually(lambda: team.log.row("tasks", task.id).fields["title"] == "a's later title", 1.0)
+        client_b.start()
+        assert eventually(lambda: tasks_b.find(task.id).title == "a's later title", 3.0) and tasks_a.find(task.id).title == "a's later title", "two edits of one title at once keep the later on both"
+        with scope_b.environment(1):
+            assert eventually(lambda: any("was kept over yours" in str(message) for message in messages_b.scoped()), 1.0), "the journal whose edit lost shows a card naming whose edit was kept"
         team.close(server)
         with scope_a.environment(1):
             tasks_a.save(tasks_a.find(task.id).with_(brief="written while the server was down"), actor=USER)

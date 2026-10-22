@@ -6,6 +6,7 @@ from sync_server.db.row_values import RowValues
 from sync_server.db.store import Store
 from sync_server.copied_row import CopiedRow
 from sync_server.logged_change import LoggedChange
+from sync_server.stored_row import StoredRow
 PAGE_ROWS = 500
 
 
@@ -20,8 +21,8 @@ class ChangeLog:
     def appended(self, change: LoggedChange) -> LoggedChange:
         with self.store.transaction():
             sequence = self.changes.insert(change)
-            current = self.row(change.row_table, change.row) or ({}, {})
-            self.values.write(change.row_table, change.row, {**current[0], **change.fields}, {**current[1], **change.changed_at}, change.is_deletion(), sequence)
+            current = self.row(change.row_table, change.row) or StoredRow()
+            self.values.write(change.row_table, change.row, StoredRow({**current.fields, **change.fields}, {**current.changed_at, **change.changed_at}, {**current.writers, **{name: change.account_id for name in change.fields}}), change.is_deletion(), sequence)
         with self.signal:
             self.signal.notify_all()
         return LoggedChange(**{**change.__dict__, "sequence": sequence})
@@ -32,11 +33,11 @@ class ChangeLog:
     def head(self) -> int:
         return self.changes.head()
 
-    def row(self, table: str, row: int) -> tuple[dict, dict] | None:
+    def row(self, table: str, row: int) -> StoredRow | None:
         stored = self.values.stored(table, row)
         if stored is None or stored["is_deleted"]:
             return None
-        return json.loads(stored["fields"]), json.loads(stored["changed_at"])
+        return StoredRow(json.loads(stored["fields"]), json.loads(stored["changed_at"]), {name: int(id) for name, id in json.loads(stored["writers"]).items()})
 
     def is_deleted(self, table: str, row: int) -> bool:
         stored = self.values.stored(table, row)

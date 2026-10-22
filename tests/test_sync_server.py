@@ -7,6 +7,7 @@ from sync_server.devices import FAILURES_ALLOWED, LOCKOUT_SECONDS, Devices
 from sync_server.id_ranges import IdRanges
 from sync_server.logged_change import LoggedChange
 from sync_server.refusal import Refusal
+from sync_server.stored_row import StoredRow
 from sync_server.db.account_rows import AccountRows
 from sync_server.db.change_rows import ChangeRows
 from sync_server.db.device_rows import DeviceRows
@@ -76,7 +77,7 @@ def test_the_log_keeps_changes_in_order_with_each_rows_current_value_and_a_devic
     first = log.appended(LoggedChange("tasks", 7, "created", "user:1", 1, 1, {"title": "a", "brief": "b"}, {"title": 1.0, "brief": 1.0}))
     second = log.appended(LoggedChange("tasks", 7, "updated", "agent:s", 2, 2, {"title": "c"}, {"title": 2.0}))
     assert (first.sequence, second.sequence, log.head()) == (1, 2, 2)
-    assert log.row("tasks", 7) == ({"title": "c", "brief": "b"}, {"title": 2.0, "brief": 1.0})
+    assert log.row("tasks", 7) == StoredRow({"title": "c", "brief": "b"}, {"title": 2.0, "brief": 1.0}, {"title": 2, "brief": 1})
     assert [change.sequence for change in log.pull_page(0, 1)] == [2] and [change.sequence for change in log.pull_page(1, 3)] == [2]
     log.appended(LoggedChange("tasks", 7, "deleted", "user:1", 1, 1))
     assert log.row("tasks", 7) is None
@@ -111,8 +112,8 @@ def test_a_push_keeps_the_later_edit_of_a_field_puts_times_on_the_servers_clock_
     answer = push.answer(bob, request("updated", "agent:s", {"title": "bob's"}, 120.0, -100.0), 21.0)
     assert (answer.sequences, answer.rejected, answer.server_time) == ((2,), (), 21.0), "bob's clock runs 100 seconds ahead; his edit was made at 20 by the server's"
     older = push.answer(ada, request("updated", "user:1", {"title": "ada's", "brief": "c"}, 15.0), 22.0)
-    assert older.rejected == (RejectedField("tasks", 7, "title", "bob's", 20.0),), "the older edit of the title is rejected and sent back with the value that stands"
-    assert log.row("tasks", 7) == ({"title": "bob's", "brief": "c"}, {"title": 20.0, "brief": 15.0}), "the brief, which nobody edited later, is kept"
+    assert older.rejected == (RejectedField("tasks", 7, "title", "bob's", 20.0, "Bob"),), "the older edit of the title is rejected and sent back with the value that stands and who wrote it"
+    assert log.row("tasks", 7) == StoredRow({"title": "bob's", "brief": "c"}, {"title": 20.0, "brief": 15.0}, {"title": 2, "brief": 1}), "the brief, which nobody edited later, is kept"
     push.answer(bob, request("deleted", "user:2", {}, 30.0), 31.0)
     stale = push.answer(ada, request("updated", "user:1", {"title": "too late"}, 40.0), 41.0)
     assert stale.sequences == (0,) and stale.rejected == (RejectedField.deleted_row("tasks", 7),), "an update to a deleted row is dropped and named"

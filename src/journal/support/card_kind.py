@@ -29,3 +29,4 @@ class CardKind(StrEnum):
     FILED = "filed"
     TASK_MOVES = "task_moves"
     FAULTS = "faults"
+    CONFLICTS = "conflicts"

@@ -12,6 +12,9 @@ MIGRATIONS = (
     """
     ALTER TABLE devices ADD COLUMN pulled_sequence INTEGER NOT NULL DEFAULT 0;
     """,
+    """
+    ALTER TABLE rows ADD COLUMN writers TEXT NOT NULL DEFAULT '{}';
+    """,
 )
 
 

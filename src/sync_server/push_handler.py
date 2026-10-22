@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from sync_server.account import Account
 from sync_server.change_log import ChangeLog
 from sync_server.devices import Devices
@@ -6,6 +8,7 @@ from sync_server.push_answer import PushAnswer
 from sync_server.push_request import PushRequest
 from sync_server.pushed_change import PushedChange
 from sync_server.refusal import Refusal
+from sync_server.rejected_field import RejectedField
 from sync_server.row_settlement import RowSettlement
 from sync_server.settlement import Settlement
 
@@ -22,7 +25,10 @@ class PushHandler:
         device, person = self.devices.device(token), self.devices.person(token)
         changes = [self.stamped(change, person, device.id, request.clock_offset) for change in request.changes]
         settlements = [self.outcome(change) for change in changes]
-        return PushAnswer(tuple(settlement.change.sequence for settlement in settlements), tuple(field for settlement in settlements for field in settlement.rejected), received_at)
+        return PushAnswer(tuple(settlement.change.sequence for settlement in settlements), tuple(self.add_writer_name(field) for settlement in settlements for field in settlement.rejected), received_at)
+
+    def add_writer_name(self, field: RejectedField) -> RejectedField:
+        return replace(field, writer=self.devices.accounts.find(int(field.writer)).name) if field.writer else field
 
     def stamped(self, change: PushedChange, person: Account, device_id: int, clock_offset: float) -> LoggedChange:
         if change.actor.startswith(USER_PREFIX) and change.actor != f"{USER_PREFIX}{person.id}":
