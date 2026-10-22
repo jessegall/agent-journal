@@ -664,6 +664,36 @@ def test_a_worker_keeps_its_own_to_do_list_inside_its_task(app: App):
     assert "2 open items: 1. write the grammar; 3. run it" in answered, "the worker's stop is told the items still open"
 
 
+def test_a_workers_stop_is_held_while_its_own_output_runs_and_told_its_end(app: App):
+    from journal.hooks.command_events import CommandEvents
+    from journal.models.command_output import CommandOutput
+    from journal.models.worker import Worker
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.workers import Workers
+    from journal.support.worker_token import WorkerToken
+    hook(app, "SessionStart")
+    scope = app.container.get(Scope)
+    with scope.environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w1", token_hash=WorkerToken.hashed("tok")), Actor.system())
+    def worker_stop() -> dict:
+        data = json.dumps({"hook_event_name": "Stop", "session_id": "w1"}).encode()
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Worker": str(worker.id), "X-Journal-Worker-Token": "tok"})
+        with urlopen(request, timeout=5) as reply:
+            return json.loads(reply.read())
+    assert "decision" not in worker_stop(), "a worker with nothing running may stop"
+    with scope.environment(1):
+        outputs = app.container.get(CommandOutputs)
+        output = outputs.save(CommandOutput(environment_id=1, command="pytest -q", session="w1", moved=True), Actor.worker(worker.id))
+    held = worker_stop()
+    assert held["decision"] == "block" and f"output {output.id}, a command of yours, is still running" in held["reason"], "its stop is held while its own background output runs"
+    with scope.environment(1):
+        ended = outputs.save(output.with_(ended=True, status=0), Actor.system())
+        app.container.get(CommandEvents).ended(ended, app.container.get(Agents).session_agent("w1"))
+    told = worker_stop()
+    assert told["decision"] == "block" and f"output {output.id} ended with code 0" in told["reason"], "the output's end comes back in the answer to its next stop"
+    assert "decision" not in worker_stop(), "told once"
+
+
 def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)

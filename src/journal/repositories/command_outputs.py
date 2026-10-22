@@ -20,6 +20,9 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def background(self, session: str) -> list[CommandOutput]:
         return [o for o in self.selected(self.query().filter(session=session, moved=True, ended=False).order("id")) if self.is_running(Path(o.folder))]
 
+    def unfinished(self, creator: Actor) -> list[CommandOutput]:
+        return self.selected(self.query().filter(creator=creator, moved=True, ended=False).order("id"))
+
     def backgrounded(self, session: str | None) -> list[CommandOutput]:
         return self.selected(self.query().filter(session=session, moved=True).order("id"))
 
