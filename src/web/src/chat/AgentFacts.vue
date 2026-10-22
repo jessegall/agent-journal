@@ -1,5 +1,6 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
+import {stateOf, wordOf} from "../domain/agentState.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import AgentFact from "./AgentFact.vue";
@@ -54,7 +55,7 @@ const toggle = (key, e) => emit("toggle", key, e);
                     :aria-expanded="open === 'states'"
                     @click="toggle('states', $event)"
                 >
-                    {{ data.stack[0].title }}
+                    {{ wordOf(stateOf(data)) }}
                 </AgentFact>
             </template>
             <template v-if="['claude', 'codex'].includes(data.provider)">

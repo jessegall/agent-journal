@@ -107,3 +107,13 @@ test("the top bar names what a waiting agent waits on without the time it has wa
     const waiting = {status: "idle", awaiting: "The Rustig redesign is live; every open task waits on the client", awaiting_since: new Date(Date.now() - 180000).toISOString()};
     expect(lineOf(waiting, null)).toBe("The Rustig redesign is live; every open task waits on the client");
 });
+
+test("the stats bar names the agent's state with the top bar's word: Busy while busy, Idle only when idle", async () => {
+    const {readFileSync} = await import("node:fs");
+    const {resolve} = await import("node:path");
+    const {stateOf, wordOf} = await import("../src/domain/agentState.js");
+    const facts = readFileSync(resolve(__dirname, "../src/chat/AgentFacts.vue"), "utf8");
+    expect(facts).toMatch(/\{\{ wordOf\(stateOf\(data\)\) \}\}/);
+    expect(wordOf(stateOf({status: "busy"}))).toBe("Busy");
+    expect(wordOf(stateOf({status: "idle"}))).toBe("Idle");
+});

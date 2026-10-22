@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.31
+
+- The stats bar names the agent's state with the top bar's word, Busy while it is busy and Idle only when it is idle; it showed the name of the state at the bottom of the agent's stack, Idle even while it worked.
+
 ## 4.5.30
 
 - A task started, finished, parked or blocked leaves a small mark in the chat, as a filed one does, naming the task and, for parked and blocked, why. Show in chat has a switch for them.
