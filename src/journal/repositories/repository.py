@@ -12,6 +12,9 @@ from journal.events.models.creating import Creating
 from journal.events.models.deleted import Deleted
 from journal.events.models.deleting import Deleting
 from journal.events.models.number_request import NumberRequest
+from journal.events.models.synced_creation import SyncedCreation
+from journal.events.models.synced_deletion import SyncedDeletion
+from journal.events.models.synced_update import SyncedUpdate
 from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
@@ -160,6 +163,37 @@ class Repository(Generic[M]):
             self.stored()
             self.bus.dispatch(Deleted(model=row, actor=actor))
             self.dispatched(row, actor)
+
+    def pulled_creation(self, id: int, fields: dict, actor: Actor) -> M:
+        row = self.model(**{**self._parsed(fields), "id": id})
+        with self.connection.transaction():
+            self.connection.execute(*self.query().upsert(id=id, **self._column_values(row)))
+            self.stored()
+            self.bus.dispatch(SyncedCreation(model=row, actor=actor))
+            return self.dispatched(row.with_events(row.creation_events()), actor)
+
+    def pulled_update(self, id: int, fields: dict, actor: Actor) -> list[M]:
+        with self.connection.transaction():
+            parsed = self._parsed(fields)
+            if parsed:
+                self.connection.execute(*self.query().filter(id=id).update(**parsed))
+            self.stored()
+            rows = self._loaded(self.query().filter(id=id))
+            for row in rows:
+                self.bus.dispatch(SyncedUpdate(model=row, actor=actor))
+            return rows
+
+    def pulled_deletion(self, id: int, actor: Actor) -> list[M]:
+        with self.connection.transaction():
+            rows = self._loaded(self.query().filter(id=id))
+            self.purged(self.query().filter(id=id))
+            self.stored()
+            for row in rows:
+                self.bus.dispatch(SyncedDeletion(model=row, actor=actor))
+            return rows
+
+    def _parsed(self, fields: dict) -> dict:
+        return {name: self.column_map[name].parsed(value) for name, value in fields.items() if name in self.column_map and name != "id"}
 
     def remove(self, id: int, actor: Actor) -> None:
         self.delete(self.find(id), actor)

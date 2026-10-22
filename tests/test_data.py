@@ -334,7 +334,7 @@ def test_a_query_renders_every_read_shape_with_its_values_bound():
     assert tasks.filter(state=TaskState.OPEN, creator=None).order_descending("id").limit(5).select() == ("SELECT * FROM tasks WHERE state = ? AND creator IS NULL ORDER BY id DESC LIMIT ? OFFSET ?", ("open", 5, 0)), "a value is turned by its column, and None reads as null"
     assert tasks.filter_listed("id", (1, 2)).filter_unlisted("state", (TaskState.FINISHED,)).filter_present("block_reason").select() == ("SELECT * FROM tasks WHERE id IN (?, ?) AND state NOT IN (?) AND block_reason IS NOT NULL", (1, 2, TaskState.FINISHED.value))
     assert tasks.filter_greater("id", 1).filter_less("id", 9).filter_greater_equal("id", 2).filter_less_equal("id", 8).filter_unequal("title", "x").select()[0] == "SELECT * FROM tasks WHERE id > ? AND id < ? AND id >= ? AND id <= ? AND title IS NOT ?"
-    assert tasks.filter_prefix("title", "a").filter_lacking_prefix("creator", "user:").select() == ("SELECT * FROM tasks WHERE title >= ? AND title < ? AND (creator IS NULL OR creator < ? OR creator >= ?)", ("a", "a\uffff", "user:", "user:\uffff"))
+    assert tasks.filter_prefix("title", "a").filter_missing_prefix("creator", "user:").select() == ("SELECT * FROM tasks WHERE title >= ? AND title < ? AND (creator IS NULL OR creator < ? OR creator >= ?)", ("a", "a\uffff", "user:", "user:\uffff"))
     assert tasks.filter_containing("title", "50%_off").order("state").order_descending("id").offset(3).select() == ("SELECT * FROM tasks WHERE title LIKE ? ESCAPE '\\' ORDER BY state, id DESC LIMIT ? OFFSET ?", ("%50\\%\\_off%", -1, 3))
     assert entries.filter_json("data->session", "s").filter_listed("data->call->kind", ("a",)).maximum("data->time", 0) == ("SELECT COALESCE(MAX(json_extract(data, '$.time')), 0) AS value FROM entries WHERE json_extract(data, '$.session') = ? AND json_extract(data, '$.call.kind') IN (?)", ("s", "a"))
     assert tasks.filter_alternatives(tasks.filter(title="a"), tasks.filter(title="b").filter_null("block_reason")).count() == ("SELECT count(*) AS value FROM tasks WHERE (title = ? OR (title = ? AND block_reason IS NULL))", ("a", "b"))
@@ -480,3 +480,74 @@ def test_a_new_shared_row_takes_its_number_from_the_machines_blocks_once_joined_
             tasks.save(Task(environment_id=1, title="more"), actor=USER)
         with pytest.raises(Rejection):
             tasks.save(Task(environment_id=1, title="one too many"), actor=USER)
+
+
+def test_two_journals_exchange_their_changes_and_a_pulled_write_runs_no_listener_of_a_local_write(tmp_path):
+    from journal.config import Config
+    from journal.events.listener import Listener
+    from journal.events.models.created import Created
+    from journal.events.models.model_event import ModelEvent
+    from journal.events.rows.task_opened import TaskOpened
+    from journal.repositories.outgoing_changes import OutgoingChanges
+    from journal.sync.incoming_changes import IncomingChanges
+    from journal.repositories.shared_tables import SharedTables
+    from journal.sync.record_outgoing_change import RecordOutgoingChange
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.sync.team_change import TeamChange
+    from journal.db.connection import Connection
+    from journal.db.schema import Schema
+    from journal.events.bus import Bus
+    from journal.models.all_models import AllModels
+    from journal.repositories.environments import Environments
+    from journal.repositories.scope import Scope
+
+    class Heard(Listener):
+        def __init__(self) -> None:
+            self.events = []
+
+        def handle(self, event) -> None:
+            self.events.append(event)
+
+    def journal(name: str):
+        folder = tmp_path / name
+        config = Config(folder)
+        config.home.mkdir(parents=True)
+        (config.home / TEAM_FILE).write_text("{}")
+        connection = Connection(folder / "journal.db", Masks(SecretValues(config)))
+        Schema(connection, AllModels.MODELS).create()
+        bus = Bus()
+        scope = Scope(Environments(connection, bus))
+        outgoing = OutgoingChanges(connection, bus)
+        bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config)))
+        return bus, scope, tasks_of(connection, bus, scope), outgoing, IncomingChanges(SharedTables(connection, bus), outgoing, Links(connection, bus))
+
+    def sent(outgoing: OutgoingChanges) -> list[TeamChange]:
+        changes = outgoing.waiting()
+        for change in changes:
+            outgoing.delete(change, USER)
+        return [TeamChange(row_table=change.row_table, row=change.row, action=change.action, writer=change.writer, fields=change.fields or {}) for change in changes]
+
+    bus_a, scope_a, tasks_a, outgoing_a, _ = journal("a")
+    bus_b, scope_b, tasks_b, outgoing_b, incoming_b = journal("b")
+    created, opened = Heard(), Heard()
+    bus_b.listen(Created, created)
+    bus_b.listen(TaskOpened, opened)
+    with scope_a.environment(1):
+        kept = tasks_a.save(Task(environment_id=1, title="kept"), actor=USER)
+        gone = tasks_a.save(Task(environment_id=1, title="gone"), actor=USER)
+    incoming_b.apply(sent(outgoing_a))
+    with scope_b.environment(1):
+        assert [(task.id, task.title) for task in tasks_b.rows()] == [(kept.id, "kept"), (gone.id, "gone")]
+        assert len(opened.events) == 2 and created.events == [], "a pulled creation opens the task and runs no listener of a local creation"
+        tasks_b.save(tasks_b.find(kept.id).with_(title="b's title"), actor=AGENT)
+    with scope_a.environment(1):
+        tasks_a.save(kept.with_(title="a's title", brief="a's brief"), actor=USER)
+        tasks_a.delete(gone, USER)
+    with scope_b.environment(1):
+        tasks_b.save(tasks_b.find(gone.id).with_(brief="b's brief"), actor=AGENT)
+    incoming_b.apply(sent(outgoing_a))
+    with scope_b.environment(1):
+        [task] = tasks_b.rows()
+        assert (task.title, task.brief) == ("b's title", "a's brief"), "a field this machine still has to send is kept as this machine has it"
+        assert [change.row for change in outgoing_b.waiting()] == [kept.id], "a pulled deletion drops this machine's waiting change to the row"
+    incoming_b.apply([TeamChange(row_table="tasks", row=kept.id, action="updated", writer=USER.stamp, fields={"column_from_a_newer_journal": 1})])

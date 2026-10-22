@@ -2,6 +2,9 @@ from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.models.updated import Updated
+from journal.events.models.synced_creation import SyncedCreation
+from journal.events.models.synced_deletion import SyncedDeletion
+from journal.events.models.synced_update import SyncedUpdate
 from journal.events.listener import Listener
 from journal.models.entry import Entry
 from journal.models.link import Link
@@ -9,7 +12,7 @@ from journal.models.scoped import Scoped
 from journal.repositories.entries import Entries
 from journal.repositories.scope import PROJECT
 
-ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted"}
+ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted", SyncedCreation: "created", SyncedUpdate: "updated", SyncedDeletion: "deleted"}
 
 
 class RecordChanges(Listener[ModelEvent]):

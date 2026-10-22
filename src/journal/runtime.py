@@ -29,6 +29,8 @@ from journal.http.share_server import ShareServer
 from journal.sync.record_outgoing_change import RecordOutgoingChange
 from journal.sync.block_numbers import BlockNumbers
 from journal.events.models.number_request import NumberRequest
+from journal.events.models.synced import Synced
+from journal.sync.pulled_settings import PulledSettings
 
 
 INSTANCE_CHECK_SECONDS = 2.0
@@ -55,6 +57,7 @@ class Runtime:
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
         self.bus.listen(ModelEvent, self.container.get(RecordOutgoingChange))
         self.bus.listen(NumberRequest, self.container.get(BlockNumbers))
+        self.bus.listen(Synced, self.container.get(PulledSettings))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:

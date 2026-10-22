@@ -19,5 +19,12 @@ class OutgoingChanges(Repository[OutgoingChange]):
         else:
             self.save(merged, actor)
 
+    def queued_fields(self, table: str, row: int) -> set[str]:
+        return {name for change in self.all_matching(row_table=table, row=row) for name in change.fields or {}}
+
+    def dropped(self, table: str, row: int, actor: Actor) -> None:
+        for change in self.all_matching(row_table=table, row=row, is_sending=False):
+            self.delete(change, actor)
+
     def waiting(self) -> list[OutgoingChange]:
         return self.all_matching(is_sending=False)

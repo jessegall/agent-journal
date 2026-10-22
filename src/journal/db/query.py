@@ -67,7 +67,7 @@ class Query:
     def filter_prefix(self, column: str, prefix: str) -> "Query":
         return self.filter_greater_equal(column, prefix).filter_less(column, prefix + PREFIX_END)
 
-    def filter_lacking_prefix(self, column: str, prefix: str) -> "Query":
+    def filter_missing_prefix(self, column: str, prefix: str) -> "Query":
         expression = self._expression(column)
         return self._with(Condition(f"({expression} IS NULL OR {expression} < ? OR {expression} >= ?)", (prefix, prefix + PREFIX_END)))
 
@@ -121,6 +121,11 @@ class Query:
     def insert(self, **values) -> tuple[str, tuple]:
         names = ", ".join(self._column(name).name for name in values)
         return f"INSERT INTO {self.table} ({names}) VALUES ({', '.join('?' for _ in values)})", self._values(values)
+
+    def upsert(self, **values) -> tuple[str, tuple]:
+        text, params = self.insert(**values)
+        assignments = ", ".join(f"{self._column(name).name} = excluded.{self._column(name).name}" for name in values if name != "id")
+        return f"{text} ON CONFLICT(id) DO UPDATE SET {assignments}", params
 
     def update(self, **values) -> tuple[str, tuple]:
         filters = self._filters()

@@ -7,7 +7,7 @@ class Notices(ScopedRepository[Notice]):
     model = Notice
 
     def unviewed(self) -> int:
-        return self.counted(self.query().filter_null("closed_at").filter_lacking_prefix("creator", USER_PREFIX))
+        return self.counted(self.query().filter_null("closed_at").filter_missing_prefix("creator", USER_PREFIX))
 
     def open_count(self) -> int:
         return self.counted(self.query().filter_null("closed_at"))

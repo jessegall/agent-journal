@@ -171,7 +171,7 @@ class Tasks(ScopedRepository[Task]):
         return self.counted(self.query().filter_unlisted("state", CLOSED).filter_absent(planned))
 
     def unviewed(self) -> int:
-        return self.counted(self.query().filter_unlisted("state", CLOSED).filter_lacking_prefix("creator", USER_PREFIX))
+        return self.counted(self.query().filter_unlisted("state", CLOSED).filter_missing_prefix("creator", USER_PREFIX))
 
     def shown(self) -> list[Task]:
         unfinished = self.selected(self.query().filter_unlisted("state", CLOSED).order("id"))
