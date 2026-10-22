@@ -47,6 +47,7 @@ export const polled = {
     },
     manifest: {key: "manifest", ask: () => api.manifest(), every: 30000, take: (got) => (store.spec = got)},
     journals: {key: "journals", ask: () => api.journals(), every: 10000, take: (got) => (store.journals = got)},
+    people: {key: "people", ask: () => api.people(), every: 30000, take: (got) => got && got.people && (store.people = got)},
     entries: {key: "entries", ask: pollEntries, every: 1000, take: takePolled},
 };
 

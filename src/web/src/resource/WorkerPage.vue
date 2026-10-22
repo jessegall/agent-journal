@@ -8,6 +8,7 @@ import {isWorking, stateAt, WORKER_WORDS, workerActions, workerEnding, workerLin
 import {seconds} from "../domain/row.js";
 import {ago} from "../format/time.js";
 import {route} from "../route.js";
+import {store} from "../state/store.js";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
@@ -43,7 +44,7 @@ const info = computed(() => {
         facts: [workerLine(row), `worker ${row.id}`, row.worktree ? "in a worktree of its own" : "in the project", environment.value, workerReuses(row), row.retire_reason && `Why it was retired: ${row.retire_reason}`].filter(Boolean),
         brief: {text: row.brief, at: seconds(row.created_at)},
         report: workerReport(row) ? {text: workerReport(row)} : null,
-        actions: workerActions(row),
+        actions: workerActions(row, store.people.device),
     };
 });
 </script>

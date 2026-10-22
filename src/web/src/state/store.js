@@ -1,5 +1,6 @@
 import {reactive} from "vue";
 import {kept, remembered} from "../platform/storage.js";
+import {NOBODY} from "../domain/people.js";
 
 export const store = reactive({
     spec: null,
@@ -22,6 +23,7 @@ export const store = reactive({
     live: [],
     journals: [],
     summary: null,
+    people: NOBODY,
     offline: false,
     tunnel: null,
     agentWrites: {},

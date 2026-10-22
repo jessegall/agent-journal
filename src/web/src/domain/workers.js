@@ -33,7 +33,9 @@ const RELEASE = {key: "release", label: "Release its task", title: "The task is 
 // without clocking out, a job, a stop or completing for one idle with its report, and a job for one closed.
 const ACTIONS_OF = {running: [STOP, COMPLETE], ready: [MERGE], unfinished: [SEND, RELEASE], reported: [SEND, STOP, COMPLETE]};
 
-export function workerActions(row) {
+// A worker another machine runs is acted on only there, so this machine offers none of its actions.
+export function workerActions(row, device = "") {
+    if ((row.device || "") !== device) return [];
     const state = workerState(row);
     return ACTIONS_OF[state] || [SEND];
 }

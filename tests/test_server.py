@@ -1536,3 +1536,8 @@ def test_a_critique_asked_from_the_plan_page_puts_a_ready_plan_in_review(tmp_pat
 
 def test_the_status_bar_reads_no_sync_line_in_a_journal_in_no_team(server):
     assert call(server, "GET", "/journal/sync") == (200, {"line": ""})
+
+
+def test_the_viewer_learns_who_it_is_and_who_owns_each_environment(server):
+    status, people = call(server, "GET", "/journal/people")
+    assert status == 200 and people["me"] == 1 and people["device"] == "" and isinstance(people["people"], list) and isinstance(people["owners"], dict)

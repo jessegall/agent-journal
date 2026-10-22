@@ -1,12 +1,13 @@
 import {computed, reactive, ref, watch} from "vue";
 import {api} from "../api/client.js";
 import {sectionChanges} from "../domain/diff.js";
-import {madeBy, sectionsOf, seconds} from "../domain/row.js";
+import {sectionsOf, seconds} from "../domain/row.js";
 import {ago} from "../format/time.js";
+import {actorName} from "../domain/people.js";
+import {store} from "../state/store.js";
 import {useNow} from "./now.js";
 
 const WINDOW = 8;
-const AUTHORS = {user: "you", agent: "the agent"};
 const intro = (body) => (body || "").split(/^## +/m)[0].trim();
 
 // A document's revisions as the strip above it reads them: which one is shown, whether the newest is open for edits, and what changed since the one before.
@@ -57,7 +58,7 @@ export function useDocRevisions(resource, client = api) {
         [
             status.value,
             page.value?.change,
-            page.value ? AUTHORS[madeBy(page.value)] || madeBy(page.value) : "",
+            page.value ? actorName(page.value.creator, store.people, page.value.environment_id) : "",
             page.value ? ago(seconds(page.value.updated_at)) || "just now" : "",
         ]
             .filter(Boolean)

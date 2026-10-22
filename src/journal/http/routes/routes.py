@@ -16,6 +16,7 @@ from journal.http.controllers.messages import MessageController
 from journal.http.controllers.migration import MigrationController
 from journal.http.controllers.mode import ModeController
 from journal.http.controllers.sync import SyncController
+from journal.http.controllers.people import PeopleController
 from journal.http.controllers.notices import NoticeController
 from journal.http.controllers.suggestions import SuggestionController
 from journal.http.controllers.nudges import NudgeController
@@ -89,6 +90,7 @@ class Routes:
         router.get_outward(f"{API}/updates/fresh", get(UpdateController).is_recent)
         router.post(f"{API}/updates", get(UpdateController).update)
         router.get(f"{API}/sync", get(SyncController).show)
+        router.get(f"{API}/people", get(PeopleController).show)
         mode = get(ModeController)
         router.get(f"{API}/mode", mode.show)
         router.post(f"{API}/mode", mode.choose)

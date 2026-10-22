@@ -316,6 +316,11 @@ export class ApiClient {
         return this.get(this.here(`/agents/${agent}/terminal${query({after})}`));
     }
 
+    // who the viewer is and who else is on the journal, so it says you only for its own person
+    people() {
+        return this.get("/people");
+    }
+
     // how a shared journal's sync with its team stands, one line for the status bar
     syncLine() {
         return this.get("/sync");
