@@ -102,7 +102,7 @@ class SlowRequests:
         agent = self.agents.current()
         reported = agent if agent is not None and self.is_reportable(previous.get("reported_at", 0.0), moment) else None
         reported_at = previous.get("reported_at", 0.0) if reported is None else moment
-        data = {"kind": "card", "session": "", "icon": "gauge", "tone": "bad", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
+        data = {"kind": "card", "icon": "gauge", "tone": "bad", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
         detail = f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms"
         self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS, detail)
         if reported is not None:

@@ -15,5 +15,5 @@ class QuestionCard(Listener[Saved]):
         question = event.model
         if not isinstance(question, Question):
             return
-        data = {"kind": "question", "session": question.creation_actor.id, "row": f"questions:{question.id}", "n": question.id, "options": list(question.options), "answer": question.answer}
-        self.cards.keyed(question.environment_id, f"question:{question.id}", question.text, data, question.creation_actor, CardKind.QUESTIONS)
+        data = {"kind": "question", "row": f"questions:{question.id}", "n": question.id, "options": list(question.options), "answer": question.answer}
+        self.cards.keyed(question.environment_id, f"question:{question.id}", question.text, data, question.creation_actor, CardKind.QUESTIONS, session=question.creation_actor.id)

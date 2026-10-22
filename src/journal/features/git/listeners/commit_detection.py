@@ -52,7 +52,7 @@ class CommitDetection(AgentListener[ToolFinished]):
         if not head or self.messages.keyed(f"{COMMIT}:{head.sha}", actor) or not (commit_call or self.is_agents(event, head)):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
-        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit"}, actor, CardKind.COMMITS, head.subject)
+        self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "icon": "branch", "tone": "commit"}, actor, CardKind.COMMITS, head.subject, event.session)
         return self.commit(event, head.sha, head.body if folder == self.config.root and self.is_agents(event, head) else "")
 
     def is_agents(self, event: ToolFinished, head: HeadCommit) -> bool:

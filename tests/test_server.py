@@ -702,7 +702,8 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
         assert card["creator"] == "system"
-        assert card["data"] == {"kind": "card", "session": "s1", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
+        assert card["session"] == "s1"
+        assert card["data"] == {"kind": "card", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
     finally:
         app.runtime().stop()
 

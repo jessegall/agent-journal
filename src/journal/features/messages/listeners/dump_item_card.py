@@ -44,4 +44,4 @@ class DumpItemCard(Listener[Created]):
                 self.messages.delete(card, Actor.system())
             return
         receipt_text = ", ".join(f"{ref.type.rstrip('s')} {ref.id}" for ref in receipt_refs)
-        self.cards.keyed(message.environment_id, key, f"Filed {receipt_text} from your message", {"kind": "card", "session": "", "icon": "inbox", "row": f"messages:{message.id}"}, Actor.system(), CardKind.FILED)
+        self.cards.keyed(message.environment_id, key, f"Filed {receipt_text} from your message", {"kind": "card", "icon": "inbox", "row": f"messages:{message.id}"}, Actor.system(), CardKind.FILED)

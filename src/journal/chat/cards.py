@@ -20,28 +20,28 @@ class Cards:
 
     def show(self, environment_id: int, session: str | None, label: str, icon: str, tone: str = "", detail: str = "", row: Ref | None = None, kind: str = "card", actor: Actor = Actor.system(), key: str = "", command: str = "", *, shows: CardKind) -> Message:
         fields = {"kind": kind, "icon": icon, "tone": tone, "row": str(row) if row else "", "command": command}
-        return self.keyed(environment_id, key, label, fields if session is None else {**fields, "session": session}, actor, shows, detail)
+        return self.keyed(environment_id, key, label, fields, actor, shows, detail, session)
 
     @staticmethod
     def creation_key(row: Model) -> str:
         return f"made:{row.noun()}:{row.id}"
 
     def creation_card(self, environment_id: int, row: Model, actor: Actor) -> Message:
-        data = {"kind": "made", "session": actor.id, "made_type": row.table(), "n": row.id, **RowCard.build(row).as_data()}
-        return self.keyed(environment_id, self.creation_key(row), row.title_words(), data, actor, CardKind.CREATED)
+        data = {"kind": "made", "made_type": row.table(), "n": row.id, **RowCard.build(row).as_data()}
+        return self.keyed(environment_id, self.creation_key(row), row.title_words(), data, actor, CardKind.CREATED, session=actor.id)
 
-    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "") -> Message:
-        data = {"session": "", "row": "", **data, **self.detail_parts(detail), "key": key, "shows": str(shows)}
+    def keyed(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "", session: str | None = None) -> Message:
+        data = {"row": "", **data, **self.detail_parts(detail), "key": key, "shows": str(shows)}
         older = self.messages.keyed(key, actor) if key else []
         if older:
-            return self.messages.save(older[0].with_(text=label, data=self.docked_data(older[0], data)), actor)
-        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, text=label, data=data), actor)
+            return self.messages.save(older[0].with_(text=label, session=session or older[0].session, data=self.docked_data(older[0], data)), actor)
+        return self.messages.save(Message(environment_id=environment_id, author=Author.SYSTEM, session=session or None, text=label, data=data), actor)
 
-    def keyed_recent(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "") -> Message:
+    def keyed_recent(self, environment_id: int, key: str, label: str, data: dict, actor: Actor, shows: CardKind, detail: str = "", session: str | None = None) -> Message:
         older = self.messages.keyed(key, actor) if key else []
         if older and self.predates_user_message(older[0]):
             self.messages.delete(older[0], actor)
-        return self.keyed(environment_id, key, label, data, actor, shows, detail)
+        return self.keyed(environment_id, key, label, data, actor, shows, detail, session)
 
     def predates_user_message(self, card: Message) -> bool:
         latest = self.messages.last_user_message()
