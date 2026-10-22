@@ -36,8 +36,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "tool uses left before your tools wait for your answer to message 1: 1"
-        },
-        "systemMessage": "tool uses left before your tools wait for your answer to message 1: 1"
+        }
       },
       "typed": [],
       "nudges": [
@@ -54,8 +53,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "your next tool call waits for your answer to message 1. answer or react to it now"
-        },
-        "systemMessage": "your next tool call waits for your answer to message 1. answer or react to it now"
+        }
       },
       "typed": [],
       "nudges": [
@@ -130,8 +128,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        },
-        "systemMessage": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+        }
       },
       "typed": [],
       "nudges": [
@@ -148,8 +145,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
-        },
-        "systemMessage": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
+        }
       },
       "typed": [],
       "nudges": [
@@ -166,8 +162,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        },
-        "systemMessage": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
+        }
       },
       "typed": [],
       "nudges": [

@@ -13,6 +13,7 @@ from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.watch_suggestions import LONG_RUNS
 from journal.support.chain import Chain
+from journal.support.command_shape import CommandShape
 from journal.support.foreground_option import FOREGROUND_OPTION
 from journal.support.moment import Moment
 from journal.support.timeout import Timeout
@@ -99,7 +100,7 @@ def alias_check(state: BaseState, event: ToolStarting, settings: Settings) -> Tr
     if hints:
         return state.none(hints[0])
     command, shape = event.call.command, event.call.recorded().shape
-    if event.shape_runs < ALIAS_RUNS or Chain.is_journal(command) or Chain.is_read_line(command) or " " not in shape:
+    if event.shape_runs < ALIAS_RUNS or Chain.is_journal(CommandShape.inner(command)) or Chain.is_read_line(command) or " " not in shape:
         return state.none()
     reader = next((r.name for r in shell.readers if r.commands.is_read(command)), "<the reader that reads its output>")
     tip = Shell.ALIAS_SUGGESTION.create(shape=shape, reader=f" --reader {reader}")

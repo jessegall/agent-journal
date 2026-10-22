@@ -36,8 +36,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "tool uses left before your writes wait for message 1: 3"
-        },
-        "systemMessage": "tool uses left before your writes wait for message 1: 3"
+        }
       },
       "typed": [],
       "nudges": [

@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.9
+
+- The copy of the agent's hook lines in its terminal is a developer setting, Show the agent's hook lines in the terminal, off by default; the agent gets its lines either way.
+- A journal command with variables set before it is never asked to become an alias.
+
 ## 4.5.8
 
 - A subagent's command no longer reaches the main agent: the journal's note about it, an output kept or moved to the background, stays in the subagent's own result, told apart by the subagent's own hook announcing the command; and no note about a command is ever typed to an idle agent, it waits for the agent's next tool use.

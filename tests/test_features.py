@@ -1241,7 +1241,11 @@ def test_a_message_reaches_a_working_agent_on_its_next_tool_use_and_an_idle_one_
     app.console().run(["message", "send", "look at the footer too"], USER)
     assert keystrokes == [], "the agent is at work: nothing is typed"
     reply = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]
-    assert "new message " in reply["hookSpecificOutput"]["additionalContext"] and "new message " in reply["systemMessage"], "its next tool use carries the line, and the user sees it in the terminal"
+    assert "new message " in reply["hookSpecificOutput"]["additionalContext"] and "systemMessage" not in reply, "its next tool use carries the line, kept from the user's terminal by default"
+    app.container.get(SettingRows).set("faults.terminal_hook_lines", True, Actor.user(1))
+    app.console().run(["message", "send", "and the sidebar"], USER)
+    shown = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "c.py"})[1]
+    assert "new message " in shown.get("systemMessage", ""), "with the developer setting on, the user sees the agent's lines in the terminal too"
     app.console().run(["message", "unread"], AGENT)
     hook(app, "Stop")
     app.console().run(["message", "send", "and the header"], USER)

@@ -7,8 +7,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PostToolUse",
           "additionalContext": "chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
-        },
-        "systemMessage": "chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
+        }
       },
       "typed": [
         "[journal] new message 1"
@@ -32,8 +31,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PostToolUse",
           "additionalContext": "new message 2"
-        },
-        "systemMessage": "new message 2"
+        }
       },
       "typed": [],
       "nudges": [
@@ -49,8 +47,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PostToolUse",
           "additionalContext": "new message 3"
-        },
-        "systemMessage": "new message 3"
+        }
       },
       "typed": [],
       "nudges": [
@@ -66,8 +63,7 @@
         "hookSpecificOutput": {
           "hookEventName": "PostToolUse",
           "additionalContext": "new message 4"
-        },
-        "systemMessage": "new message 4"
+        }
       },
       "typed": [],
       "nudges": [

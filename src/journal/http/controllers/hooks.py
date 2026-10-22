@@ -1,3 +1,4 @@
+from journal.repositories.setting_rows import SettingRows
 from journal.support.announced_commands import AnnouncedCommands
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
@@ -13,8 +14,8 @@ WORKER_TOKEN_HEADER = "x-journal-worker-token"
 
 
 class HookController:
-    def __init__(self, receiver: Receiver, providers: Providers, announced: AnnouncedCommands, calls: ToolCalls) -> None:
-        self.receiver, self.providers, self.announced, self.calls = receiver, providers, announced, calls
+    def __init__(self, receiver: Receiver, providers: Providers, announced: AnnouncedCommands, calls: ToolCalls, settings: SettingRows) -> None:
+        self.receiver, self.providers, self.announced, self.calls, self.settings = receiver, providers, announced, calls, settings
 
     def receive(self, request: Request) -> Response:
         parsed = Hook.parse(request.body, request.environment, request.params["agent"], request.headers.get(LAUNCH_HEADER, ""))
@@ -26,7 +27,12 @@ class HookController:
             return self.announce(hook)
         if hook.kind == HookKind.PRE_TOOL_USE:
             self.announced.withdraw(hook.environment, hook.session, self.shell_parts(hook))
-        return self.providers.lookup(hook.provider).answer(hook, self.receiver.receive(hook))
+        provider, decision = self.providers.lookup(hook.provider), self.receiver.receive(hook)
+        return provider.answer(hook, decision) if self.is_copy_shown() else provider.agent_answer(hook, decision)
+
+    def is_copy_shown(self) -> bool:
+        from journal.features.faults.feature import Faults
+        return bool(self.settings.option(Faults.HOOK_LINE_COPY))
 
     def announce(self, hook: Hook) -> Response:
         if parts := self.shell_parts(hook):

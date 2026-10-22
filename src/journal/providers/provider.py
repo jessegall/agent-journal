@@ -189,6 +189,12 @@ class Provider(ABC):
         return ""
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
+        return self.reply(hook, decision, self.user_line_key)
+
+    def agent_answer(self, hook: Hook, decision: Decision) -> Response:
+        return self.reply(hook, decision, "")
+
+    def reply(self, hook: Hook, decision: Decision, copy_key: str) -> Response:
         kind = hook.kind
         if kind == HookKind.STOP and (not decision.allowed or decision.context):
             return Response(200, {"decision": "block", "reason": "\n".join(part for part in (decision.reason, decision.context) if part)})
@@ -197,7 +203,7 @@ class Provider(ABC):
         if not decision.context:
             return Response(200, {})
         if kind in CONTEXT_HOOKS:
-            shown = {self.user_line_key: decision.context} if self.user_line_key else {}
+            shown = {copy_key: decision.context} if copy_key else {}
             return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}, **shown})
         return Response(200, {})
 

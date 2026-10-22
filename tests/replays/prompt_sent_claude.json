@@ -35,8 +35,7 @@
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
           "additionalContext": "new message 1"
-        },
-        "systemMessage": "new message 1"
+        }
       },
       "typed": [],
       "nudges": [
@@ -74,8 +73,7 @@
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
           "additionalContext": "new message 3\nnew message 4\nnew messages 1, 3, 4"
-        },
-        "systemMessage": "new message 3\nnew message 4\nnew messages 1, 3, 4"
+        }
       },
       "typed": [],
       "nudges": [
@@ -102,8 +100,7 @@
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
           "additionalContext": "new message 6\n4 messages unread: `journal message unread`"
-        },
-        "systemMessage": "new message 6\n4 messages unread: `journal message unread`"
+        }
       },
       "typed": [],
       "nudges": [
