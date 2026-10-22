@@ -9682,6 +9682,9 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         with a.container.get(Scope).environment(ada_main.row_id):
             assert comment.id not in [message.id for message in a.container.get(Messages).unread()], "it is not among Ada's unread"
             assert comment.id not in [message.id for message in a.container.get(Messages).unanswered()], "nor among what her agent owes an answer"
+            assert comment.id in [message.id for message in a.container.get(Messages).unread_comments()], "a comment that came while no agent ran waits to be named at the next start"
+            a.container.get(Messages).read(a.container.get(Messages).find(comment.id), Actor.agent("s1"), 0)
+            assert comment.id not in [message.id for message in a.container.get(Messages).unread_comments()], "and once the agent read it, it is named no more"
         assert urlopen_refusal(f"http://127.0.0.1:{b.server().port}/journal/environments/{ada_main.row_id}/stop").find("only comment") >= 0, "and Bob cannot stop Ada's agent from his viewer"
         made = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/environments", data=json.dumps({"name": "feature-x"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"}), timeout=5))
         assert made["name"] == "bob-feature-x", "an environment made from the viewer carries its person"

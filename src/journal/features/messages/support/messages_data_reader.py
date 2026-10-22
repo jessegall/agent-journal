@@ -23,4 +23,5 @@ class MessagesDataReader:
             inbox_tool_uses=agent.tool_uses - agent.inbox_position if newest else 0,
             uses_unanswered=agent.tool_uses - min(read_positions) if read_positions else 0,
             peer_questions=tuple(PeerQuestion(m.row_id, m.data[Message.PEER]) for m in self.messages.peer_questions()),
+            unread_comments=tuple(m.row_id for m in self.messages.unread_comments()),
         )

@@ -32,6 +32,9 @@ class Messages(ScopedRepository[Message]):
             authored = authored.commented(self.owners.person_name(int(actor.id)), int(actor.id))
         return super().save(authored, actor)
 
+    def unread_comments(self) -> list[Message]:
+        return self.selected(self.main_chat().filter(author=Author.COLLEAGUE).filter_null("read_at").order("id"))
+
     def side_thread(self) -> list[Message]:
         return self.newest(self.query().filter(agent_role=AgentRole.PEOPLE))
 

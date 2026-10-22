@@ -7,6 +7,7 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.events.agent.session_started import SessionStarted
 from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.user_resumed import UserResumed
 from journal.events.rows.reaction_added import ReactionAdded
@@ -17,7 +18,11 @@ TRUNCATED = re.compile(r"(?:^|[;&|(]\s*)\S*journal\s+(?:message\s+(?:read|unread
 
 
 class MessagesConduct(Conduct):
-    """The messages feature's conduct in every state: the inbox named at a prompt and a stop and every so many of the agent's own tool uses, a write held once the unread were named often enough, the tools held while a read message stays unanswered past so many uses and an answer asked for before that, a read of the user's words piped into a filter held, the reply tag hinted after a message sent by command, the user's face on a message told, and a colleague's comment told as no words of the user's."""
+    """The messages feature's conduct in every state: the inbox named at a prompt and a stop and every so many of the agent's own tool uses, a write held once the unread were named often enough, the tools held while a read message stays unanswered past so many uses and an answer asked for before that, a read of the user's words piped into a filter held, the reply tag hinted after a message sent by command, the user's face on a message told, a colleague's comment told as no words of the user's, and at a session start the comments that came while no agent ran."""
+
+    def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
+        comments = event.data.part(messages_feature()).unread_comments
+        return self.none(messages_feature().UNREAD_COMMENTS.create(ns=", ".join(map(str, comments)))) if comments else self.none()
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
         return self.none(*inbox_line(event.data.part(messages_feature()).unread))
