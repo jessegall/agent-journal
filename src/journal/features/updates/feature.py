@@ -6,6 +6,7 @@ from journal.features.updates.listeners.supervisor_upgrade import SupervisorUpgr
 from journal.features.updates.listeners.session_restart_close import SessionRestartClose
 from journal.features.updates.support.release_source import REPOSITORY
 from journal.support.option import Option
+from journal.support.option_scope import OptionScope
 from journal.engine.nudge import Nudge
 from journal.features.updates.support.release_notes import ReleaseNotes
 from journal.features.updates.support.release_notes_reader import ReleaseNotesReader
@@ -15,9 +16,9 @@ from journal.features.updates.seeds.supervisor_check import SupervisorCheck
 
 
 class Updates(Feature[ReleaseNotes]):
-    REPOSITORY = Option("updates.repository", "Install from this repository", "The git address the journal installs itself from", REPOSITORY, kind="text")
-    BRANCH = Option("updates.branch", "Follow this branch", "Empty follows the releases of this major version; a branch name installs that branch's newest commit instead, with Install update, journal update and the hourly check", "", kind="text")
-    AUTO = Option("updates.auto", "Install new releases on its own", "When a newer release of this major version is out, or a newer commit of the followed branch, install it and restart the journal; a new major version is never installed on its own; once a new version runs, every plugin installed from a release moves to its newest release that runs on it", False, kind="switch")
+    REPOSITORY = Option("updates.repository", "Install from this repository", "The git address the journal installs itself from", REPOSITORY, kind="text", scope=OptionScope.MACHINE)
+    BRANCH = Option("updates.branch", "Follow this branch", "Empty follows the releases of this major version; a branch name installs that branch's newest commit instead, with Install update, journal update and the hourly check", "", kind="text", scope=OptionScope.MACHINE)
+    AUTO = Option("updates.auto", "Install new releases on its own", "When a newer release of this major version is out, or a newer commit of the followed branch, install it and restart the journal; a new major version is never installed on its own; once a new version runs, every plugin installed from a release moves to its newest release that runs on it", False, kind="switch", scope=OptionScope.MACHINE)
     name = "updates"
     RELEASE_MESSAGES = Nudge(name, "release_messages", "the journal was updated and has release messages for you, {{count}} unread", "read them with `journal update messages` and do what they ask", repeat_interval=0)
     title = "Updates"

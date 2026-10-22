@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from journal.support.rejection import Rejection
 from journal.support.wrong_setting_kind import WrongSettingKind
+from journal.support.option_scope import OptionScope
 
 USER = "user"
 AGENT = "agent"
@@ -10,7 +11,7 @@ SWITCH_VALUES = {"on": True, "true": True, "yes": True, "1": True, "off": False,
 
 @dataclass(frozen=True)
 class Option:
-    """A setting a feature reads, declared once: its key as feature.name, the words the settings page shows, its default, its kind, and who may set it from the command line: the user alone, or the agent too."""
+    """A setting a feature reads, declared once: its key as feature.name, the words the settings page shows, its default, its kind, who may set it from the command line, the user alone or the agent too, and whether a shared journal shares it with the team or keeps it to one machine or one person."""
 
     key: str
     title: str
@@ -21,6 +22,7 @@ class Option:
     choices: tuple[str, ...] = ()
     provider: str = ""
     setter: str = USER
+    scope: OptionScope = OptionScope.TEAM
 
     def integer(self, value: object) -> int:
         if not isinstance(value, (int, float, str)):

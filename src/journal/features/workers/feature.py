@@ -15,6 +15,7 @@ from journal.features.workers.seeds.workers_seed import WorkersSeed
 from journal.features.workers.jobs.worker_watch import WorkerWatch
 from journal.engine.nudge import Nudge
 from journal.support.option import AGENT, Option
+from journal.support.option_scope import OptionScope
 from journal.support.skill import Skill
 from journal.features.workers.commands.subagent_command import SubagentCommand
 from journal.features.workers.commands.worker_command import WorkerCommand
@@ -40,13 +41,13 @@ from journal.features.workers.states.soloing import Soloing
 class Workers(Feature[WorkersData]):
     """A worker is an agent sent to write: code in a worktree of its own, a document, a change. A subagent only reads; a worker is the one that writes."""
     TIMEOUT = Option("workers.timeout_minutes", "Time limit of a worker run", "Minutes a worker may run before it is stopped and its report says so; 0 sets no limit", 60, unit="min")
-    MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"))
+    MODE = Option("workers.mode", "Work mode", "Builder: the agent builds it itself and sends workers when a job is better done beside it. Orchestrator: it plans, hands the work to workers, then reviews and merges it. Solo: it does everything itself, with no workers", "builder", kind="choice", choices=("builder", "orchestrator", "solo"), scope=OptionScope.PERSON)
     WORKER_LIMIT = Option("workers.most_out", "Workers out at once", "The most workers out at a time; a dispatch past it is refused until one reports. 0 is no limit", 3, unit="workers")
     SUBAGENT_LIMIT = Option("workers.most_subagents", "Subagents running at once", "The most subagents running at a time; one more is held until one finishes. 0 is no limit", 5, unit="subagents")
     PROFILE_LIMIT = Option("workers.idle_kept", "Workers kept for reuse per profile", "The most workers of one profile kept out or idle for reuse; past it a dispatch of that profile is refused while one of them is idle, so the job goes to that one. Reviewers always start fresh. 0 is no limit", 8, unit="workers")
-    WORKTREE_STEP = Option("workers.worktree_step", "Make worker worktrees the journal's way", "The journal makes a worker's worktree, a worktree of each inner repository it needs and its library folders; off, your own commands below make them, told where in JOURNAL_WORKTREE and on which branch in JOURNAL_BRANCH", True, kind="switch", setter=AGENT)
-    PREPARATION_COMMANDS = Option("workers.preparation_commands", "Commands before a worker's worktree is made", "Your own shell commands, one per line, run in the project folder just before a worker's worktree is made; each is told JOURNAL_WORKTREE, JOURNAL_BRANCH, JOURNAL_PROJECT, JOURNAL_REPOSITORIES, JOURNAL_LIBRARIES and JOURNAL_COPIES", [], kind="lines", setter=AGENT)
-    COMPLETION_COMMANDS = Option("workers.completion_commands", "Commands after a worker's worktree is made", "Your own shell commands, one per line, run inside a worker's worktree once it is made, such as installing its dependencies; told the same as the commands before", [], kind="lines", setter=AGENT)
+    WORKTREE_STEP = Option("workers.worktree_step", "Make worker worktrees the journal's way", "The journal makes a worker's worktree, a worktree of each inner repository it needs and its library folders; off, your own commands below make them, told where in JOURNAL_WORKTREE and on which branch in JOURNAL_BRANCH", True, kind="switch", setter=AGENT, scope=OptionScope.MACHINE)
+    PREPARATION_COMMANDS = Option("workers.preparation_commands", "Commands before a worker's worktree is made", "Your own shell commands, one per line, run in the project folder just before a worker's worktree is made; each is told JOURNAL_WORKTREE, JOURNAL_BRANCH, JOURNAL_PROJECT, JOURNAL_REPOSITORIES, JOURNAL_LIBRARIES and JOURNAL_COPIES", [], kind="lines", setter=AGENT, scope=OptionScope.MACHINE)
+    COMPLETION_COMMANDS = Option("workers.completion_commands", "Commands after a worker's worktree is made", "Your own shell commands, one per line, run inside a worker's worktree once it is made, such as installing its dependencies; told the same as the commands before", [], kind="lines", setter=AGENT, scope=OptionScope.MACHINE)
 
     name = "workers"
     title = "Workers"

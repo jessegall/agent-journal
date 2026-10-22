@@ -425,7 +425,7 @@ def test_each_write_to_a_shared_row_is_queued_for_the_team_once_joined_and_waiti
 
     config = Config(tmp_path)
     changes, tasks = OutgoingChanges(connection, bus), tasks_of(connection, bus, scope)
-    bus.listen(ModelEvent, RecordOutgoingChange(changes, TeamAccount(config)))
+    bus.listen(ModelEvent, RecordOutgoingChange(changes, TeamAccount(config), team_scopes(connection, bus, scope)))
     with scope.environment(1):
         before = tasks.save(Task(environment_id=1, title="before joining"), actor=USER)
         assert changes.waiting() == [], "a journal in no team queues nothing"
@@ -482,6 +482,15 @@ def test_a_new_shared_row_takes_its_number_from_the_machines_blocks_once_joined_
             tasks.save(Task(environment_id=1, title="one too many"), actor=USER)
 
 
+def team_scopes(connection, bus, scope):
+    from journal.features.registry import Registry
+    from journal.features.standard import Standard
+    from journal.repositories.setting_rows import SettingRows
+    from journal.sync.setting_scopes import SettingScopes
+
+    return SettingScopes(Registry(Standard.FEATURES, SettingRows(connection, bus, scope)))
+
+
 def team_journal(tmp_path, name: str):
     from journal.config import Config
     from journal.db.connection import Connection
@@ -510,7 +519,7 @@ def team_journal(tmp_path, name: str):
     bus = Bus()
     scope = Scope(Environments(connection, bus))
     outgoing = OutgoingChanges(connection, bus)
-    bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config)))
+    bus.listen(ModelEvent, RecordOutgoingChange(outgoing, TeamAccount(config), team_scopes(connection, bus, scope)))
     bus.listen(Purged, RecordPurge(outgoing, TeamAccount(config)))
     bus.listen(Deleted, UnlinkDeleted(Links(connection, bus)))
     return bus, scope, tasks_of(connection, bus, scope), outgoing, IncomingChanges(SharedTables(connection, bus), outgoing, Links(connection, bus))
@@ -607,3 +616,18 @@ def test_a_shipped_template_is_written_once_for_the_team_by_the_machine_that_hol
     incoming_b.apply(team_changes(outgoing_a))
     BuiltinTemplates(templates_b, TeamAccount(Config(tmp_path / "b"))).run()
     assert sorted(template.title for template in templates_b.rows()) == sorted(template.title for template in SHIPPED), "each shipped template once, as the machine with the upgrade wrote it"
+
+
+def test_only_the_teams_settings_reach_the_other_journal_never_a_machines_or_a_persons(tmp_path):
+    from journal.features.voices.feature import Voices
+    from journal.features.workers.feature import Workers as WorkersFeature
+    from journal.repositories.setting_rows import SettingRows
+
+    _, scope_a, tasks_a, outgoing_a, _ = team_journal(tmp_path, "a")
+    _, scope_b, tasks_b, _, incoming_b = team_journal(tmp_path, "b")
+    settings_a, settings_b = SettingRows(tasks_a.connection, tasks_a.bus, scope_a), SettingRows(tasks_b.connection, tasks_b.bus, scope_b)
+    settings_a.set(WorkersFeature.WORKER_LIMIT.key, 3, USER)
+    settings_a.set(WorkersFeature.PREPARATION_COMMANDS.key, ["make env"], USER)
+    settings_a.set(Voices.NAME.key, "Ada", USER)
+    incoming_b.apply(team_changes(outgoing_a))
+    assert settings_b.project_values() == {WorkersFeature.WORKER_LIMIT.key: 3}, "the team's setting arrives; the machine's commands and the person's name stay where they were set"
