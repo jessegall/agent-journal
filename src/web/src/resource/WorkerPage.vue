@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import WorkerShift from "./WorkerShift.vue";
-import {useScope} from "../composables/scope.js";
+import {scopeOfChat, useScope} from "../composables/scope.js";
 import {ending} from "../domain/agentState.js";
 import {isWorking, stateAt, WORKER_WORDS, workerActions, workerEnding, workerLine, workerName, workerReport, workerReuses, workerState} from "../domain/workers.js";
 import {seconds} from "../domain/row.js";
@@ -12,6 +12,7 @@ import {route} from "../route.js";
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const {env, api} = useScope();
+const ownChat = computed(() => (props.resource.conversation ? scopeOfChat(props.resource.conversation, (text) => api.act("workers", props.resource.id, "message", {text})) : null));
 const environment = computed(() => env || route.value.env);
 
 const ACTIONS = {
@@ -54,6 +55,7 @@ const info = computed(() => {
         :info="info"
         :env="env"
         :transcripts="transcripts"
+        :own-chat="ownChat"
         :run="(key, answer) => ACTIONS[key](resource.id, answer)"
         @close="emit('close')"
     >

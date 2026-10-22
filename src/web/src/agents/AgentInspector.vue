@@ -9,6 +9,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import PresetList from "../kit/PresetList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import FileFeed from "../chat/FileFeed.vue";
+import OwnChat from "../chat/OwnChat.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import Thread from "../chat/Thread.vue";
@@ -39,6 +40,7 @@ const props = defineProps({
     skills: {type: Array, default: () => []},
     run: {type: Function, default: async () => {}},
     transcripts: {type: Object, default: null},
+    ownChat: {type: Object, default: null},
 });
 const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
@@ -80,6 +82,8 @@ usePoll(
     }
 );
 const agent = computed(() => props.agent || found.value);
+usePoll(pollKey(), () => (props.ownChat ? props.ownChat.chat.refresh() : Promise.resolve(null)), EVERY, () => {});
+const chatRows = computed(() => (props.ownChat ? props.ownChat.rows("messages").length : 0));
 const sequence = computed(() => (ownTranscript ? null : agent.value?.sequence));
 const sequenceHistory = computed(() => agent.value?.sequence_history || []);
 
@@ -238,7 +242,10 @@ const openSkills = () => go("skills");
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <template v-if="ownTranscript">
+                        <template v-if="chatRows">
+                            <OwnChat :scope="ownChat" />
+                        </template>
+                        <template v-else-if="ownTranscript">
                             <SubagentChat
                                 :turns="turns"
                                 :loading="transcriptLoading"

@@ -4,6 +4,8 @@ from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.models.entry import Entry
 
 ACTIVITY_ROW_SECONDS = 10.0
+DISPLAY_SECONDS = 0.25
+FILE_CHANGE_DISPLAY_SECONDS = 1.0
 TOOLS = ("ToolStarting", "ToolFinished")
 
 
@@ -45,4 +47,7 @@ class BarRow:
     def item(self) -> dict:
         command, _, argument = self.detail[:80].partition(" ")
         detail = [{"value": word, "color": "muted"} for word in (command, argument) if word]
-        return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": 0.25, "lingers": ACTIVITY_ROW_SECONDS}
+        return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": self.display_seconds(), "lingers": ACTIVITY_ROW_SECONDS}
+
+    def display_seconds(self) -> float:
+        return FILE_CHANGE_DISPLAY_SECONDS if self.added or self.removed else DISPLAY_SECONDS

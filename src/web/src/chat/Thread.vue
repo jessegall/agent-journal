@@ -45,7 +45,7 @@ const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
 const pane = computed(() => props.view || store.pane);
 const scope = useScope();
-const here = !scope.env;
+const here = !scope.env && !scope.chat;
 const rows = (table) => scope.rows(table);
 const owner = computed(() =>
     here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null
@@ -94,7 +94,7 @@ const dumpOffer = {
     },
 };
 
-const chat = computed(() => rows("messages").filter((m) => m.agent_role === "main"));
+const chat = computed(() => (scope.chat ? rows("messages") : rows("messages").filter((m) => m.agent_role === "main")));
 const mine = computed(() => chat.value.filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {
@@ -303,6 +303,12 @@ async function post(text, files) {
     }
     const replying = quote.value;
     const body = withQuote(replying.text, text);
+    if (scope.chat) {
+        quote.value = {text: "", ref: ""};
+        await scope.chat.send(body);
+        await scope.chat.refresh();
+        return;
+    }
     const replyTo = replying.ref ? Number(replying.ref.split(":")[1]) : null;
     quote.value = {text: "", ref: ""};
     const id = token();
@@ -403,21 +409,23 @@ watch(
                         <button type="button" class="thread-answering-x" title="Leave it as it was (Esc)" @click="unedit">×</button>
                     </div>
                 </template>
-                <Compose
-                    :send="post"
-                    :waiting="waitingNow"
-                    @waiting-list="toggleWaiting"
-                    :quote="quote.text"
-                    quote-label="Replying to"
-                    @unquote="quote = {text: '', ref: ''}"
-                    @typing="toBottom(true)"
-                    :preset="editing ? editing.text : ''"
-                    :up="editLast"
-                    :down="unedit"
-                    :many="here ? dumpOffer : null"
-                    :idle="here ? dumpIdle : null"
-                    :figure-home="here"
-                />
+                <template v-if="!scope.chat || scope.chat.send">
+                    <Compose
+                        :send="post"
+                        :waiting="waitingNow"
+                        @waiting-list="toggleWaiting"
+                        :quote="quote.text"
+                        quote-label="Replying to"
+                        @unquote="quote = {text: '', ref: ''}"
+                        @typing="toBottom(true)"
+                        :preset="editing ? editing.text : ''"
+                        :up="editLast"
+                        :down="unedit"
+                        :many="here ? dumpOffer : null"
+                        :idle="here ? dumpIdle : null"
+                        :figure-home="here"
+                    />
+                </template>
                 <template v-if="waitingOpen && waitingNow">
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
                 </template>

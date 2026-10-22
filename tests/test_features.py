@@ -2162,6 +2162,7 @@ def test_a_file_edit_in_the_bar_says_editing_and_counts_the_lines_it_added_and_r
     hook(app, "PostToolUse", tool_name="Edit", tool_input=edit, tool_response={}, tool_use_id="e-1")
     row = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/bar?env=main"), timeout=5))[-1]
     assert [(p["value"], p["color"], p.get("prefix", ""), p.get("increments", False)) for p in row["parts"]] == [("editing", "gray", "", False), ("src/app.py", "muted", "", False), (2, "green", "+", True), (1, "red", "-", True)]
+    assert row["hold"] == 1.0, "a change to files stays on the line for at least a second"
 
 
 def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app: App, monkeypatch, tmp_path):

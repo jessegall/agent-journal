@@ -159,6 +159,11 @@ export class ApiClient {
         return this.get(this.here(`/${table}${query({limit, before, after, since, ids: ids.join(","), closed: closed ? "1" : ""})}`));
     }
 
+    // the own chat of a worker or a subagent, by its session
+    chat(session, {limit, before, since} = {}) {
+        return this.get(this.here(`/chats/${encodeURIComponent(session)}${query({limit, before, since})}`));
+    }
+
     show(table, id) {
         return this.get(this.here(`/${table}/${id}`));
     }

@@ -56,7 +56,7 @@ class WorkerController(Controller[Worker]):
 
     def shown_page(self, rows: list[Worker]) -> list[dict]:
         views = self.task_views(rows)
-        return [{**ModelFields.build(w), "report": self.reports.last(w), "files": w.files_line(), "task": views.get(w.row_id, WorkerTaskView())} for w in rows]
+        return [{**ModelFields.build(w), "report": self.reports.last(w), "files": w.files_line(), "conversation": w.conversation(), "task": views.get(w.row_id, WorkerTaskView())} for w in rows]
 
     def task_views(self, rows: list[Worker]) -> dict[int, WorkerTaskView]:
         numbers = {w.row_id for w in rows}

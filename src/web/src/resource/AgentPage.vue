@@ -3,7 +3,7 @@ import {subagentsOf} from "../domain/subagents.js";
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import {stopAgentNamed} from "../actions/agents.js";
-import {useScope} from "../composables/scope.js";
+import {scopeOfChat, useScope} from "../composables/scope.js";
 import {loadedSkills, modelFamily, providerName} from "../domain/agents.js";
 import {ending, heldTask} from "../domain/agentState.js";
 import {createdAt, updatedAt} from "../domain/row.js";
@@ -80,6 +80,7 @@ const subagentInfo = computed(() => ({
     actions: [],
 }));
 
+const pickedChat = computed(() => (picked.value ? scopeOfChat(picked.value.session) : null));
 const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
 </script>
 
@@ -93,6 +94,7 @@ const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
             :agent="resource"
             :session="picked.session"
             :chat-session="picked.session"
+            :own-chat="pickedChat"
             @back="showSession('')"
             @close="emit('close')"
         />
