@@ -25,6 +25,9 @@ MIGRATIONS = (
     """
     CREATE TABLE team_details (name TEXT PRIMARY KEY, value TEXT NOT NULL);
     """,
+    """
+    CREATE TABLE leases (name TEXT PRIMARY KEY, device_id INTEGER NOT NULL, account_id INTEGER NOT NULL, renewed_at REAL NOT NULL);
+    """,
 )
 
 

@@ -251,3 +251,38 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         assert call("/copy", token=bob["token"])[0] == 403 and call("/login", {"email": "bob@example.com", "password": PASSWORD, "device_name": "again"})[0] == 403, "a removed person's devices are refused and they cannot log in"
     finally:
         team.close(server)
+
+
+def test_two_devices_racing_for_a_lease_leave_exactly_one_holder_and_an_unrenewed_lease_lapses(store):
+    import threading
+    from sync_server.db.lease_rows import LeaseRows
+    from sync_server.leases import LAPSE_SECONDS, Leases
+
+    accounts, devices = people(store)
+    ada_account = accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    bob_account = accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    ada, _ = devices.login("ada@example.com", PASSWORD, "laptop", "10.0.0.1", 2.0)
+    bob, _ = devices.login("bob@example.com", PASSWORD, "desktop", "10.0.0.2", 2.0)
+    leases = Leases(store, LeaseRows(store), accounts)
+    winners, losers = [], []
+
+    def race(device, person):
+        try:
+            winners.append(leases.acquire("team-chat", device, person, 100.0).holder)
+        except Refusal as refused:
+            losers.append(str(refused))
+
+    racers = [threading.Thread(target=race, args=pair) for pair in ((ada, ada_account), (bob, bob_account)) * 5]
+    for racer in racers:
+        racer.start()
+    for racer in racers:
+        racer.join(5)
+    assert len(set(winners)) == 1 and losers and "is held by" in losers[0], "two devices racing for one lease leave exactly one holder"
+    holder = ada if winners[0] == "Ada" else bob
+    other, other_account = (bob, bob_account) if holder is ada else (ada, ada_account)
+    assert leases.acquire("team-chat", holder, ada_account if holder is ada else bob_account, 130.0).renewed_at == 130.0, "the holder renews it by taking it again"
+    with pytest.raises(Refusal, match="is held by"):
+        leases.acquire("team-chat", other, other_account, 131.0)
+    assert leases.state("team-chat", 130.0 + LAPSE_SECONDS + 1).is_lapsed, "a lease nobody renews lapses"
+    assert leases.acquire("team-chat", other, other_account, 130.0 + LAPSE_SECONDS + 1).holder == other_account.name, "and another device may take it"
+    assert leases.release("team-chat", other, 300.0).holder == "", "its holder lets it go"

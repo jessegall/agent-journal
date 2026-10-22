@@ -9,6 +9,8 @@ from sync_server.db.invitation_rows import InvitationRows
 from sync_server.invitations import Invitations
 from sync_server.upload_handler import UploadHandler
 from sync_server.file_store import FileStore
+from sync_server.leases import Leases
+from sync_server.db.lease_rows import LeaseRows
 from sync_server.team_details import TeamDetails
 from sync_server.db.team_detail_rows import TeamDetailRows
 from sync_server.change_log import ChangeLog
@@ -52,6 +54,7 @@ class TeamServer:
         self.admins = AdminHandler(self.devices, self.accounts, self.invitations, self.clock)
         self.details = TeamDetails(TeamDetailRows(self.store), self.log)
         self.files = FileStore(data / FILES)
+        self.leases = Leases(self.store, LeaseRows(self.store), self.accounts)
         self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices, self.details)
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock)

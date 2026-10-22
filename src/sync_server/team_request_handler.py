@@ -9,6 +9,7 @@ from sync_server.admin_request import AdminRequest
 from sync_server.blocks_request import BlocksRequest
 from sync_server.file_answer import FileAnswer
 from sync_server.file_place import FilePlace
+from sync_server.lease_request import LeaseRequest
 from sync_server.login_request import LoginRequest
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
@@ -20,7 +21,7 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; and /files/<table>/<row>/<name>, read with GET and written with POST of its bytes; a refusal is a 403 with its line, an unknown path a 404."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404."""
 
     def do_GET(self) -> None:
         url = urlsplit(self.path)
@@ -29,7 +30,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             return
         query = dict(parse_qsl(url.query))
         team = self.server.team
-        routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer()}
+        routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer(), "/leases": lambda: self.lease_state(query.get("name", ""))}
         self.answered(routes.get(url.path))
 
     def do_POST(self) -> None:
@@ -46,6 +47,8 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             "/devices/revoke": lambda: team.admins.revoke(self.token(), self.typed(AdminRequest).device_id),
             "/people/remove": lambda: team.admins.remove(self.token(), self.typed(AdminRequest).account_id),
             "/upload": lambda: self.uploaded(self.typed(UploadRequest.parsed)),
+            "/leases/take": lambda: team.leases.acquire(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.devices.person(self.token()), team.clock.time()),
+            "/leases/release": lambda: team.leases.release(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.clock.time()),
         }
         self.answered(routes.get(urlsplit(self.path).path))
 
@@ -84,6 +87,10 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(text)))
         self.end_headers()
         self.wfile.write(text)
+
+    def lease_state(self, name: str):
+        self.server.team.devices.device(self.token())
+        return self.server.team.leases.state(name, self.server.team.clock.time())
 
     def uploaded(self, request: UploadRequest):
         return self.server.team.uploads.answer(self.token(), request.rows, request.highest, request.repository)
