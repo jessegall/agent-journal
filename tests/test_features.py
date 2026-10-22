@@ -9461,3 +9461,27 @@ def test_a_running_subagent_is_cut_off_as_failed_when_the_agents_turn_fails_on_i
     app.runtime().deferred.drain()
     [row] = rows()
     assert row.state.value == "failed" and "rate_limit" in row.reason, "the failed turn cuts it off, though no end of it ever came"
+
+
+def test_a_watch_or_wait_through_a_reader_is_refused_on_an_output_its_reader_does_not_read_and_a_card_can_be_undocked(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    console, outputs = app.console(), app.container.get(CommandOutputs)
+    for name, command in (("edit", "python3 - <<'EOF'"), ("tests", "pytest -q tests/test_server.py")):
+        folder = app.config.root / name
+        folder.mkdir()
+        (folder / "parts").write_text("R-\n")
+        (folder / "0.part").write_text(command)
+        (folder / "0.out").write_text("")
+        app.container.get(OutputLog).start(name, command, folder, Caller.agent("main", "s1", "claude"))
+    edit, tests = outputs.find(1), outputs.find(2)
+    refused = console.run(["output", "watch", str(edit.id), "--reader", "pytest"], AGENT)
+    assert refused.code != 0 and "the reader pytest reads pytest, and output 1 is python3" in refused.error, refused.error
+    awaited = console.run(["await", "the test run of the server", "--output", str(edit.id), "--reader", "pytest"], AGENT)
+    assert awaited.code != 0 and "the reader pytest reads pytest" in awaited.error, "a wait through a reader is refused the same way"
+    assert console.run(["output", "watch", str(tests.id), "--reader", "pytest"], AGENT).code == 0, "the output the reader reads is watched"
+    assert console.run(["output", "undock", str(tests.id)], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert not app.container.get(Messages).with_key(f"watch:{tests.id}")[0].data.get("docked"), "and its card can be taken down"

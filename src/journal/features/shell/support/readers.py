@@ -5,6 +5,7 @@ from journal.config import Config
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.script_reader import ScriptReader
 from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
+from journal.models.command_output import CommandOutput
 from journal.support.rejection import Rejection
 
 KINDS: dict[str, Callable[[Path], Reader | ScriptReader]] = {".pattern": Reader.loaded, ".sh": ScriptReader.loaded}
@@ -29,6 +30,12 @@ class Readers:
 
     def file_stamp(self, name: str) -> float:
         return max((path.stat().st_mtime for suffix in KINDS if (path := self.config.readers / f"{name}{suffix}").is_file()), default=0.0)
+
+    def reading_output(self, name: str, output: CommandOutput) -> Reader | ScriptReader:
+        reader = self.lookup(name)
+        if reader.commands.programs and not reader.commands.is_read(output.command):
+            raise Rejection(f"the reader {name} reads {reader.commands.text()}, and output {output.id} is {output.headline()}: check the output's number with journal output list")
+        return reader
 
     def reading(self, line: str) -> Reader | ScriptReader | None:
         return next((reader for reader in self.all() if reader.commands.is_read(line)), None)

@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 
 from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
+from journal.chat.docking import Docking
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.card_line import CardLine
 from journal.features.shell.support.card_progress import CardProgress
@@ -24,8 +25,8 @@ UNDOCK_AT = "undock_at"
 class OutputViews:
     """The view of a watched output, read from its files through its reader, and the card in the chat that shows it, kept in place by its key."""
 
-    def __init__(self, readers: Readers, cards: Cards, messages: Messages, settings: SettingRows) -> None:
-        self.readers, self.cards, self.messages, self.settings = readers, cards, messages, settings
+    def __init__(self, readers: Readers, cards: Cards, messages: Messages, settings: SettingRows, docking: Docking) -> None:
+        self.readers, self.cards, self.messages, self.settings, self.docking = readers, cards, messages, settings, docking
 
     def view(self, output: CommandOutput) -> OutputView:
         files = OutputFiles(Path(output.folder))
@@ -108,6 +109,10 @@ class OutputViews:
             return output.headline()
         open_parts = [i for i in files.recorded() if not files.has_ended(i)]
         return files.part_text(open_parts[0] if open_parts else files.recorded()[-1])
+
+    def undocked(self, output: CommandOutput, actor: Actor) -> None:
+        for card in self.messages.keyed(OutputView.key(output.row_id), Actor.system()):
+            self.docking.release(card, actor)
 
     def card_view(self, output: CommandOutput) -> OutputView:
         cards = self.messages.keyed(OutputView.key(output.row_id), Actor.system())

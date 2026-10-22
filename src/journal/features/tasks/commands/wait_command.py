@@ -44,7 +44,8 @@ class WaitCommand(Command):
             raise Rejection(f"\"{args.what}\" is too short for the user to read in the top bar: name what you wait for in a few words, such as \"the test run of task 217\" or \"Lady Lovelace's report on the parser\"")
         unended = self.running(args.output)
         if args.reader:
-            self.readers.lookup(args.reader)
+            for output in unended:
+                self.readers.reading_output(args.reader, output)
             for output in unended:
                 self.awaitables.outputs.watch(output, args.reader, "", caller.actor)
         names = [self.awaitables.ref(output) for output in unended] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])

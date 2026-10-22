@@ -43,6 +43,7 @@ class OutputCommand(Command):
         watch.add_argument("--reader", default="", help="the reader whose lines are shown, by its name")
         watch.add_argument("--title", default="", help="what the card in the chat says the run is doing, such as Running tests; never a bare name such as Tests")
         self.verb(verbs, "unwatch", "end the watch on your output")
+        self.verb(verbs, "undock", "take an output's card down from above the chat").add_argument("n", type=int)
 
     def owned(self, n: int, caller: Caller) -> CommandOutput:
         output = self.outputs.find(n)
@@ -123,9 +124,15 @@ class OutputCommand(Command):
         if output.ended:
             raise Rejection(f"output {output.id} {output.ending()}; read it with journal output read {output.id} --summary")
         if args.reader:
-            self.readers.lookup(args.reader)
+            self.readers.reading_output(args.reader, output)
         self.views.card(self.outputs.watch(output, args.reader, ActivityTitle.checked(args.title), caller.actor))
         print(f"watching output {output.id}: you see its view after every tool use until its command ends")
+        return 0
+
+    def undock(self, args: Namespace, caller: Caller) -> int:
+        output = self.owned(args.n, caller)
+        self.views.undocked(output, caller.actor)
+        print(f"output {output.id}'s card undocked")
         return 0
 
     def unwatch(self, args: Namespace, caller: Caller) -> int:
