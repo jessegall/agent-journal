@@ -74,7 +74,7 @@ watch(
     padding: 0 15px 4px;
     overflow: hidden;
     color: var(--text-3);
-    font-size: 11px;
+    font-size: 9.5px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
