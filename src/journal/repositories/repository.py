@@ -11,6 +11,7 @@ from journal.events.models.created import Created
 from journal.events.models.creating import Creating
 from journal.events.models.deleted import Deleted
 from journal.events.models.deleting import Deleting
+from journal.events.models.number_request import NumberRequest
 from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
@@ -167,11 +168,16 @@ class Repository(Generic[M]):
         Title.check_target(row)
         stamped = row.with_(created_at=time, creator=actor, updated_at=time, updater=actor)
         self.bus.dispatch(Creating(model=stamped, actor=actor))
-        cursor = self.connection.execute(*self.query().insert(**self._column_values(stamped)))
+        number = self._number(stamped)
+        values = {"id": number, **self._column_values(stamped)} if number else self._column_values(stamped)
+        cursor = self.connection.execute(*self.query().insert(**values))
         created = stamped.with_(id=cursor.lastrowid)
         self.stored()
         self.bus.dispatch(Created(model=created, actor=actor))
         return created
+
+    def _number(self, row: M) -> int:
+        return next((answer for answer in self.bus.dispatch(NumberRequest(model=row)) if answer), 0)
 
     def _update(self, row: M, actor: Actor) -> M:
         stamped = row.with_(updated_at=self._time(), updater=actor)

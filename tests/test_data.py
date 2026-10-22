@@ -410,7 +410,7 @@ def test_the_tasks_repository_answers_which_tasks_are_open_blocked_parked_and_un
 def test_each_model_says_whether_it_is_shared_with_the_team_or_kept_on_one_machine():
     from journal.models.all_models import AllModels
     local = sorted(model.__name__ for model in AllModels.MODELS if not model.shared)
-    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
+    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "IdBlock", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
     assert all(model.shared for model in AllModels.MODELS if model.__name__ in ("Task", "Message", "Alias", "Worker", "Setting")), "everything else is shared"
 
 
@@ -451,3 +451,32 @@ def test_each_write_to_a_shared_row_is_queued_for_the_team_once_joined_and_waiti
         assert changes.waiting()[0].action == "deleted" and changes.waiting()[0].fields == {}
         ReleaseMessages(connection, bus).save(ReleaseMessage(version="9.9.9", text="local"), USER)
         assert [change.row_table for change in changes.waiting()] == ["tasks"], "a model kept on one machine is never queued"
+
+
+def test_a_new_shared_row_takes_its_number_from_the_machines_blocks_once_joined_and_from_sqlite_before(connection, bus, scope, tmp_path):
+    from journal.config import Config
+    from journal.events.models.number_request import NumberRequest
+    from journal.models.release_message import ReleaseMessage
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.release_messages import ReleaseMessages
+    from journal.support.rejection import Rejection
+    from journal.sync.block_numbers import BlockNumbers
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    config, blocks, tasks = Config(tmp_path), IdBlocks(connection, bus), tasks_of(connection, bus, scope)
+    bus.listen(NumberRequest, BlockNumbers(blocks, TeamAccount(config)))
+    with scope.environment(1):
+        assert [tasks.save(Task(environment_id=1, title=title), actor=USER).id for title in "ab"] == [1, 2], "a journal in no team numbers as before"
+        config.home.mkdir(parents=True, exist_ok=True)
+        (config.home / TEAM_FILE).write_text("{}")
+        blocks.add("tasks", 1001, 1003)
+        blocks.add("tasks", 2001, 2010)
+        assert [tasks.save(Task(environment_id=1, title=str(n)), actor=USER).id for n in range(4)] == [1001, 1002, 1003, 2001], "past a block's end the next block numbers"
+        assert blocks.is_wanted("tasks") and blocks.is_wanted("messages"), "nine numbers left of a block of ten wants another, and a table with no block wants one"
+        blocks.add("tasks", 3001, 3010)
+        assert not blocks.is_wanted("tasks"), "a block and a fifth of one left is enough"
+        assert ReleaseMessages(connection, bus).save(ReleaseMessage(version="9.9.9"), USER).id == 1, "a model kept on one machine is numbered by SQLite"
+        for _ in range(19):
+            tasks.save(Task(environment_id=1, title="more"), actor=USER)
+        with pytest.raises(Rejection):
+            tasks.save(Task(environment_id=1, title="one too many"), actor=USER)
