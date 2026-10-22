@@ -29,4 +29,4 @@ class OutgoingChange(Model):
         return self.with_(fields={**(self.fields or {}), **(later.fields or {})}, changed_at={**(self.changed_at or {}), **(later.changed_at or {})}, writer=later.writer)
 
     def payload(self) -> dict:
-        return {"row_table": self.row_table, "row": self.row, "action": self.action, "actor": self.writer, "fields": self.fields or {}, "changed_at": self.changed_at or {}}
+        return {"row_table": self.row_table, "row": self.row, "action": self.action, "actor": self.writer, "fields": self.fields or {}, "changed_at": self.changed_at or {}, "local_number": self.row_id}

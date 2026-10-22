@@ -15,6 +15,9 @@ MIGRATIONS = (
     """
     ALTER TABLE rows ADD COLUMN writers TEXT NOT NULL DEFAULT '{}';
     """,
+    """
+    CREATE TABLE push_results (device_id INTEGER NOT NULL, local_number INTEGER NOT NULL, sequence INTEGER NOT NULL, rejected TEXT NOT NULL, PRIMARY KEY (device_id, local_number));
+    """,
 )
 
 

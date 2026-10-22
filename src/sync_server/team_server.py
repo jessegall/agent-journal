@@ -10,6 +10,7 @@ from sync_server.db.change_rows import ChangeRows
 from sync_server.db.device_rows import DeviceRows
 from sync_server.db.failed_login_rows import FailedLoginRows
 from sync_server.db.id_block_rows import IdBlockRows
+from sync_server.db.push_result_rows import PushResultRows
 from sync_server.db.row_values import RowValues
 from sync_server.db.server_schema import ServerSchema
 from sync_server.db.store import Store
@@ -18,6 +19,7 @@ from sync_server.id_ranges import IdRanges
 from sync_server.login_handler import LoginHandler
 from sync_server.pull_handler import PullHandler
 from sync_server.push_handler import PushHandler
+from sync_server.push_results import PushResults
 from sync_server.server_clock import ServerClock
 from sync_server.team_request_handler import TeamRequestHandler
 
@@ -36,7 +38,7 @@ class TeamServer:
         self.log = ChangeLog(self.store, ChangeRows(self.store), RowValues(self.store))
         self.ranges = IdRanges(self.store, IdBlockRows(self.store))
         self.logins = LoginHandler(self.devices, self.clock)
-        self.pushes = PushHandler(self.log, self.devices)
+        self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock)
         self.copies = CopyHandler(self.store, self.log, self.devices, self.clock)
 

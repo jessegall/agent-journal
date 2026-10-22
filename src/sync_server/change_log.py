@@ -11,12 +11,13 @@ PAGE_ROWS = 500
 
 
 class ChangeLog:
-    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows."""
+    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows. A held pull waits on the newest sequence kept in memory, never on the database, so a push that holds the store while it wakes the pulls cannot meet a pull that waits for the store."""
 
     def __init__(self, store: Store, changes: ChangeRows, values: RowValues) -> None:
         self.store, self.changes, self.values = store, changes, values
         self.signal = threading.Condition()
         self.is_closed = False
+        self.latest = changes.head()
 
     def appended(self, change: LoggedChange) -> LoggedChange:
         with self.store.transaction():
@@ -24,6 +25,7 @@ class ChangeLog:
             current = self.row(change.row_table, change.row) or StoredRow()
             self.values.write(change.row_table, change.row, StoredRow({**current.fields, **change.fields}, {**current.changed_at, **change.changed_at}, {**current.writers, **{name: change.account_id for name in change.fields}}), change.is_deletion(), sequence)
         with self.signal:
+            self.latest = max(self.latest, sequence)
             self.signal.notify_all()
         return LoggedChange(**{**change.__dict__, "sequence": sequence})
 
@@ -45,7 +47,7 @@ class ChangeLog:
 
     def wait_past(self, head: int, seconds: float) -> None:
         with self.signal:
-            self.signal.wait_for(lambda: self.is_closed or self.head() > head, timeout=seconds)
+            self.signal.wait_for(lambda: self.is_closed or self.latest > head, timeout=seconds)
 
     def close(self) -> None:
         with self.signal:

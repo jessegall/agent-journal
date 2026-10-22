@@ -94,6 +94,8 @@ def test_number_blocks_never_overlap_and_start_above_a_shared_journals_numbers(s
 
 def test_a_push_keeps_the_later_edit_of_a_field_puts_times_on_the_servers_clock_and_rejects_the_older(store):
     from sync_server.push_handler import PushHandler
+    from sync_server.push_results import PushResults
+    from sync_server.db.push_result_rows import PushResultRows
     from sync_server.push_request import PushRequest
     from sync_server.rejected_field import RejectedField
 
@@ -103,7 +105,7 @@ def test_a_push_keeps_the_later_edit_of_a_field_puts_times_on_the_servers_clock_
     _, ada = devices.login("ada@example.com", PASSWORD, "ada's laptop", "10.0.0.1", 2.0)
     _, bob = devices.login("bob@example.com", PASSWORD, "bob's laptop", "10.0.0.2", 2.0)
     log = ChangeLog(store, ChangeRows(store), RowValues(store))
-    push = PushHandler(log, devices)
+    push = PushHandler(store, log, devices, PushResults(PushResultRows(store)))
 
     def request(action, actor, fields, seconds, clock_offset=0.0):
         return PushRequest.parsed([{"row_table": "tasks", "row": 7, "action": action, "actor": actor, "fields": fields, "changed_at": {name: seconds for name in fields}}], clock_offset)
@@ -177,3 +179,29 @@ def test_over_http_a_pull_waits_and_wakes_on_a_push_while_other_requests_go_on_a
         server.shutdown()
         server.server_close()
         team.store.close()
+
+
+def test_a_push_sent_again_after_a_lost_answer_is_kept_once_and_answered_as_the_first_time(store):
+    from sync_server.db.push_result_rows import PushResultRows
+    from sync_server.push_handler import PushHandler
+    from sync_server.push_request import PushRequest
+    from sync_server.push_results import PushResults
+
+    accounts, devices = people(store)
+    accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    _, ada = devices.login("ada@example.com", PASSWORD, "laptop", "10.0.0.1", 2.0)
+    _, bob = devices.login("bob@example.com", PASSWORD, "desktop", "10.0.0.2", 2.0)
+    log = ChangeLog(store, ChangeRows(store), RowValues(store))
+    push = PushHandler(store, log, devices, PushResults(PushResultRows(store)))
+
+    def request(local_number, actor, title, seconds):
+        return PushRequest.parsed([{"row_table": "tasks", "row": 7, "action": "updated", "actor": actor, "fields": {"title": title}, "changed_at": {"title": seconds}, "local_number": local_number}])
+
+    push.answer(bob, request(1, "user:2", "bob's", 20.0), 21.0)
+    first = push.answer(ada, request(5, "user:1", "ada's", 10.0), 22.0)
+    again = push.answer(ada, request(5, "user:1", "ada's", 10.0), 23.0)
+    assert (again.sequences, again.rejected) == (first.sequences, first.rejected) and first.rejected[0].writer == "Bob", "the second answer is the first, rejection and all"
+    bob_again = push.answer(bob, request(1, "user:2", "bob's", 20.0), 24.0)
+    assert bob_again.sequences == (1,) and bob_again.rejected == () and log.head() == 1, "a change sent twice is kept once and never rejected by itself"
+    assert push.answer(ada, request(6, "user:1", "ada's newest", 30.0), 31.0).sequences == (2,), "a new local number is a new change"
