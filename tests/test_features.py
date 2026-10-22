@@ -6932,6 +6932,35 @@ def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_
         assert plans.find(1).state == "done", "and the plan is done when its last task closes"
 
 
+def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_branch import WorkerBranch
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    root = app.config.root
+    git = lambda *argv, cwd=root: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *argv], cwd=cwd, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    (root / ".gitignore").write_text(".journal/\n")
+    git("add", ".gitignore")
+    git("commit", "-qm", "start")
+    head = git("rev-parse", "HEAD").stdout.strip()
+    hook(app, "SessionStart")
+    console = app.console()
+    for n in (1, 2):
+        console.run(["task", "create", f"piece {n}", "--brief", f"piece {n} is written"], AGENT)
+        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    runner, branch = app.container.get(WorkerRunner), app.container.get(WorkerBranch)
+    commit = ["sh", "-c", "echo x > piece.txt && git add piece.txt && git -c user.email=t@t -c user.name=t commit -qm piece && echo written"]
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        runner.run(workers.find(1), commit, Actor.agent("s1"))
+        subprocess.run(commit, cwd=runner.place(workers.find(2)), capture_output=True, timeout=30)
+        runner.finish(workers.save(workers.find(2).with_(token_hash="h").delivered(1.0), Actor.system()), 0, Actor.agent("s1"))
+        assert git("rev-parse", "HEAD").stdout.strip() == head and not (root / "piece.txt").exists(), "neither run's end, unfinished or clocked out, moves the project's head"
+        assert all(git("rev-parse", "--verify", "-q", branch.name(workers.find(n))).returncode == 0 for n in (1, 2)), "and each keeps its branch for its merge"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
