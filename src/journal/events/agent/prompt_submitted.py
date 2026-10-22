@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from journal.support.typed_lines import JOURNAL_PREFIX
 from journal.events.agent.agent_event import AgentEvent
 
 
@@ -14,3 +15,6 @@ class PromptSubmitted(AgentEvent):
     @property
     def is_users(self) -> bool:
         return not self.prompt.lstrip().startswith(("[journal]", "[plugin ", "<", "[Cross-session "))
+
+    def journal_text(self) -> str:
+        return self.prompt if self.prompt.startswith(JOURNAL_PREFIX) else ""

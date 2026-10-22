@@ -59,7 +59,8 @@ class StateMachine(AgentListener[AgentEvent]):
             self.type_lines(event.environment_id, decision.context, event.typing_delay)
         return self.main_decision(event, decision)
 
-    def main_decision(self, event: AgentEvent, decision: Decision) -> Decision:
+    def main_decision(self, event: AgentEvent, answered: Decision) -> Decision:
+        decision = answered.without(event.journal_text()) if event.journal_text() else answered
         if event.is_turn_end:
             self.supervisor.resting(event.environment_id)
         if not event.is_work:

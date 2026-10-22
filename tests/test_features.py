@@ -1254,6 +1254,18 @@ def test_a_message_reaches_a_working_agent_on_its_next_tool_use_and_an_idle_one_
     assert any("new message " in line for line in keystrokes), "at its prompt, the line is typed at once"
 
 
+def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
+    """A prompt that is a journal line already says its words, so its hook adds no line it carries."""
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    app.console().run(["message", "send", "look at the footer"], USER)
+    from journal.repositories.messages import Messages
+    with app.container.get(Scope).environment(1):
+        number = app.container.get(Messages).last_user_message().id
+    added = hook(app, "UserPromptSubmit", prompt=f"[journal] new message {number}")[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    assert f"new message {number}" not in added, "the line the prompt carries is not added again"
+
+
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: App, monkeypatch):
     keystrokes = []
     from journal.supervisor_link import SupervisorLink
