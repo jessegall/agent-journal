@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.18
+
+- The top bar's state word (Idle, Working) and its status line roll when they change, the new words coming up as the old go, in the same place; they were swapped at once.
+
 ## 4.5.17
 
 - A journal of the project still running older code after an update is stopped when the installed one starts, so the installed code takes its port. A journal started by an earlier launch could stay on its port through every later launch, which stood by behind it, and answer the new runner's commands with a route it did not have, which came back empty.

@@ -1,4 +1,5 @@
 <script setup>
+import RollingWord from "../kit/RollingWord.vue";
 import {agent} from "../composables/leadAgent.js";
 import {autoOn, workMode} from "../composables/settings.js";
 import {MODES} from "../domain/modes.js";
@@ -133,7 +134,7 @@ async function runBar(p) {
             <Dot :class="['statusbar-dot', {live: state !== 'stopped', paused, silent: state === SILENT}]" kind="started" solid :size="8" />
         </template>
         <span class="statusbar-text">
-            <b :class="{silent: state === SILENT}">{{ wordOf(state) }}</b>
+            <b :class="{silent: state === SILENT}"><RollingWord :text="wordOf(state)" /></b>
             <component
                 :is="current || waitingNow ? 'button' : 'span'"
                 :type="current || waitingNow ? 'button' : null"
@@ -145,9 +146,7 @@ async function runBar(p) {
                     <span class="statusbar-head">{{ sentence.head }}</span>
                 </template>
                 <span class="statusbar-tail">
-                    <Transition name="roll">
-                        <span :key="sentence.tail" class="statusbar-line">{{ sentence.tail }}</span>
-                    </Transition>
+                    <RollingWord :text="sentence.tail" class="statusbar-line" />
                 </span>
                 <template v-if="current || waitingNow">
                     <Icon name="caret" :size="12" :class="['statusbar-chevron', {open: waitingOpen}]" />
