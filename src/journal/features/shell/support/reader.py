@@ -63,6 +63,9 @@ class Reader:
     def read(self, lines: list[str]) -> list[str]:
         return [f"{i}: {line}" for i, line in self.picked_lines(lines)]
 
+    def card_lines(self, lines: list[str]) -> list[str]:
+        return [line for _, line in self.picked_lines(lines)]
+
     def picked_lines(self, lines: list[str]) -> list[tuple[int, str]]:
         rows = re.compile(self.pattern)
         return [(i, line) for i, line in enumerate(lines, 1) if rows.search(line)]

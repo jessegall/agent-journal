@@ -52,5 +52,8 @@ class ScriptReader:
             raise Rejection(f"reader {self.name} failed with code {completed.returncode}: {completed.stderr.strip()[-300:]}")
         return completed.stdout.splitlines()
 
+    def card_lines(self, lines: list[str]) -> list[str]:
+        return self.read(lines)
+
     def progress(self, lines: list[str]) -> Progress:
         return Progress.empty()

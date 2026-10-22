@@ -44,7 +44,7 @@ class OutputViews:
         files = OutputFiles(Path(output.folder))
         if not output.watch_reader or not files.is_stored():
             return view.lines
-        return tuple(CardLine.plain(line) for _, line in self.readers.lookup(output.watch_reader).variant(output.stage()).picked_lines(files.lines())[-VIEW_LINES:])
+        return tuple(CardLine.plain(line) for line in self.readers.lookup(output.watch_reader).variant(output.stage()).card_lines(files.lines())[-VIEW_LINES:])
 
     @staticmethod
     def ending_lines(output: CommandOutput) -> tuple[str, ...]:

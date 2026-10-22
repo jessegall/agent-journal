@@ -4857,6 +4857,11 @@ def test_an_output_is_read_by_its_number_whole_by_its_ends_or_in_part_and_listed
     script.write_text("wc -l | tr -d ' '\n")
     assert console.run(["reader", "add", "count", "--script", str(script), "--about", "how many lines"], AGENT).code == 0
     assert console.run(["output", "read", "1", "--reader", "count"], AGENT).text == "50\n", "a script reader is handed the output and prints what matters"
+    from journal.features.shell.support.output_views import OutputViews
+    from journal.repositories.command_outputs import CommandOutputs
+    watched = app.container.get(CommandOutputs).find(1).with_(watch_reader="count")
+    views = app.container.get(OutputViews)
+    assert views.card_lines(watched, views.view(watched)) == ("50",), "a watched output's card shows what its script reader prints"
     assert "count: how many lines\n" in console.run(["reader", "list"], AGENT).text
 
 
