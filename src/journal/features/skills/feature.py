@@ -50,8 +50,8 @@ lists the verbs.
   `journal reader add` keeps a reader that picks the lines worth seeing.
 - **alias**: `journal alias add <name> "<line>" --reader <reader>` names a command line; `journal <name> [args]` runs it
   with the args at its end and watches a long run through its reader. Plugins ship aliases too; `journal alias list` names them.
-- `journal environment overview` after a compaction or a takeover lists what is in flight, then runs the journal commands
-  the setting briefing.look_commands names, each under its heading: by default the started plan with its phase in hand,
+- `journal environment overview` after a compaction or a takeover lists what is in flight, then runs the commands
+  the setting briefing.look_commands names, each under its heading, a line not starting with journal in the project's shell: by default the started plan with its phase in hand,
   the task list, the unread messages, the workers, the open questions and the task in hand read whole. `journal plan show
   current` and `journal task show current` show the started plan and the task in hand.
 - `journal await "<what>" --output <n>` or `--until "<script>"` when you wait on something outside your hands, then end

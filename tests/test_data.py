@@ -371,7 +371,7 @@ def test_a_line_said_before_lines_carried_the_tool_use_gains_it_and_its_moment(t
     first.runtime().stop()
     db = sqlite3.connect(first.config.database)
     db.execute("INSERT INTO entries (environment_id, kind, actor, data, created_at, creator, updated_at, updater) VALUES (1, 'nudge', 'system', ?, '2026-10-01T10:00:00+00:00', 'system', '2026-10-01T10:00:00+00:00', 'system')", (json.dumps({"key": "shell.outputs_ended", "session": "s1", "line": "output 1 finished"}),))
-    db.execute("DELETE FROM migrations WHERE number = 37")
+    db.execute("DELETE FROM migrations WHERE number >= 37")
     db.commit()
     db.close()
     second = App(Config(tmp_path, port=0))

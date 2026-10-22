@@ -1904,12 +1904,16 @@ def test_the_look_runs_the_commands_the_setting_names_each_under_its_heading_in_
     console.run(["task", "create", "write the notes", "--start"], AGENT)
     console.run(["task", "log", "1", "opened NOTES.md"], AGENT)
     app.container.get(SettingRows).set("briefing.look_commands", ["task show {{task_in_hand}}", "plan show {{started_plan}}", "question list", "task list"], Actor.user(1))
-    from journal.features.briefing.seeds.overview_command_update import OverviewCommandUpdate
-    app.container.get(OverviewCommandUpdate).run()
-    assert app.container.get(SettingRows).project("briefing.look_commands") == ["task show current", "plan show current", "question list", "task list"], "a stored list with the old placeholders is brought up to date"
+    from journal.db.connection import Connection
+    from journal.db.migrations.overview_whole_lines import OverviewWholeLines
+    OverviewWholeLines().apply(app.container.get(Connection))
+    stored = app.container.get(SettingRows).project("briefing.look_commands")
+    assert stored == ["journal task show current", "journal plan show current", "journal question list", "journal task list"], "a list saved in the short form, placeholders and all, is written as whole lines"
+    app.container.get(SettingRows).set("briefing.look_commands", [*stored, "echo a line of the project"], Actor.user(1))
     shown = console.run(["environment", "overview"], AGENT).text
-    headings = [line for line in shown.splitlines() if line.startswith("== journal ")]
-    assert headings == ["== journal task show current ==", "== journal plan show current ==", "== journal question list ==", "== journal task list =="], "each command under its heading, in the order the setting names them"
+    headings = [line for line in shown.splitlines() if line.startswith("== ")]
+    assert headings == ["== journal task show current ==", "== journal plan show current ==", "== journal question list ==", "== journal task list ==", "== echo a line of the project =="], "each command under its heading, in the order the setting names them"
+    assert shown.rstrip().endswith("== echo a line of the project ==\na line of the project"), "a line that is no journal command runs in the project's shell"
     assert "opened NOTES.md" in shown and "no plan is started" in shown, "the task in hand read whole, and the started plan said to be missing"
     assert shown.index("task in hand: 1 write the notes") < shown.index("== journal task show current =="), "the summary comes first"
     console.run(["task", "suspend", "1", "for a moment"], AGENT)

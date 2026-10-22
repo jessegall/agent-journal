@@ -1,17 +1,20 @@
 import shlex
 from dataclasses import dataclass
 
+JOURNAL = "journal"
+
 
 @dataclass(frozen=True)
 class ChainedLine:
-    """A journal line a command hands the console to run after its own verb, printed under its heading."""
+    """A whole command line a command hands the console to run after its own verb, printed under its heading: a journal line the console runs itself, any other in the project's shell."""
 
     text: str
-    argv: tuple[str, ...]
 
-    @classmethod
-    def runnable(cls, text: str) -> "ChainedLine":
-        return cls(text, tuple(shlex.split(text)))
+    def is_journal(self) -> bool:
+        return self.text.split(maxsplit=1)[:1] == [JOURNAL]
+
+    def journal_argv(self) -> list[str]:
+        return shlex.split(self.text)[1:]
 
     def heading(self) -> str:
-        return f"== journal {self.text} =="
+        return f"== {self.text} =="

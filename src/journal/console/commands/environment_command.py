@@ -43,7 +43,7 @@ class EnvironmentCommand(Command):
         self.memory, self.overview_commands, self.taking = memory, overview_commands, taking
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders, then each journal command the setting briefing.look_commands names, under its heading; owed at every session start")
+        self.verb(verbs, "overview", "everything in flight in this environment: the task in hand, open tasks, messages, questions, workers, background runs, and the rules, facts and reminders, then each command the setting briefing.look_commands names, under its heading; owed at every session start")
         self.verb(verbs, "list", "every environment and when it was last used")
         self.verb(verbs, "json", "the same, for the boot menu")
         self.verb(verbs, "create", "a new line of work").add_argument("name")

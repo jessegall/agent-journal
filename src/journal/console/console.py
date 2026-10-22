@@ -17,6 +17,7 @@ from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
 from journal.container import Container
+from journal.support.project_shell import ProjectShell
 
 
 HELP_FLAGS = ("-h", "--help")
@@ -25,8 +26,8 @@ HELP_FLAGS = ("-h", "--help")
 class Console:
     """journal <noun> <verb> ...: finds the command and runs it, wherever the argv came from."""
 
-    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs) -> None:
-        self.container, self.environments, self.agents, self.scope, self.row_verbs = container, environments, agents, scope, row_verbs
+    def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs, shell: ProjectShell) -> None:
+        self.container, self.environments, self.agents, self.scope, self.row_verbs, self.shell = container, environments, agents, scope, row_verbs, shell
         self.commands: dict[str, Command] = {}
         self._parsers: dict[CallerKind, argparse.ArgumentParser] = {}
 
@@ -95,8 +96,11 @@ class Console:
         return f"a {kind} may not run journal {args.noun} {args.verb}; a {kind} may run {', '.join(allowed) or 'no journal command'}"
 
     def chained_text(self, line: ChainedLine, caller: Caller) -> str:
-        outcome = self.run(list(line.argv), caller)
-        return (outcome.text or outcome.error).rstrip() or "nothing"
+        return (self.journal_text(line, caller) if line.is_journal() else self.shell.output(line.text)).rstrip() or "nothing"
+
+    def journal_text(self, line: ChainedLine, caller: Caller) -> str:
+        outcome = self.run(line.journal_argv(), caller)
+        return outcome.text or outcome.error
 
     @staticmethod
     def exit_status(ended: SystemExit) -> int:
