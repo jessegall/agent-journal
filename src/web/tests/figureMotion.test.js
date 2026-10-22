@@ -1,6 +1,6 @@
 import {describe, expect, it} from "vitest";
 import {FALLS} from "../src/domain/falls.js";
-import {KEPT_WITHIN, aimedAt, catching, chaseRoom, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
+import {KEPT_WITHIN, SNAP_WAIT_FRAMES, aimedAt, catching, chaseRoom, eased, fallFrame, floorAt, floorBelow, legAt, underWalker} from "../src/domain/figureMotion.js";
 
 const floor = (id, top, left = 0, right = 1000, kind = id === "home" ? "compose" : id) => ({id, kind, left, right, top, vy: 0});
 const FRAME = 1 / 60;
@@ -134,9 +134,18 @@ describe("the squire's chase", () => {
     });
 });
 
-it("at the top of a jump a floor a few pixels above the feet is landed on, and one far above is not", () => {
-    const shelf = floor("bubble", 488);
-    expect(fallFrame({x: 400, y: 495, speed: 0}, [shelf, floor("home", 900)], FRAME, FALLS.butler, 112)).toMatchObject({y: 488, landed: {id: "bubble"}});
-    expect(fallFrame({x: 400, y: 495, speed: 0}, [floor("bubble", 450), floor("home", 900)], FRAME, FALLS.butler, 112).landed).toBe(null);
-    expect(fallFrame({x: 400, y: 495, speed: 400}, [shelf, floor("home", 900)], FRAME, FALLS.butler, 112).landed).toBe(null);
+it("snaps onto a floor only at the top of a jump, within 5 pixels, and only if it is still there after a short wait", () => {
+    const step = (body, floors) => fallFrame(body, floors, FRAME, FALLS.butler, 112);
+    const shelf = floor("bubble", 491);
+    let state = {x: 400, y: 495, speed: 0};
+    state = step(state, [shelf, floor("home", 900)]);
+    expect([state.landed, state.y, state.peak]).toEqual([null, 495, SNAP_WAIT_FRAMES]);
+    for (let frame = 1; frame < SNAP_WAIT_FRAMES; frame++) state = step(state, [shelf, floor("home", 900)]);
+    expect(state.landed).toBe(null);
+    expect(step(state, [shelf, floor("home", 900)])).toMatchObject({y: 491, landed: {id: "bubble"}});
+    let settling = {x: 400, y: 495, speed: 0};
+    for (let frame = 0; frame < SNAP_WAIT_FRAMES; frame++) settling = step(settling, [shelf, floor("home", 900)]);
+    expect(step(settling, [floor("bubble", 470), floor("home", 900)]).landed).toBe(null);
+    expect(step({x: 400, y: 495, speed: 0}, [floor("bubble", 488), floor("home", 900)]).peak).toBe(undefined);
+    expect(step({x: 400, y: 495, speed: 400}, [shelf, floor("home", 900)]).landed).toBe(null);
 });

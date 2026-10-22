@@ -20,10 +20,11 @@ export const floorAt = (floors, x, y, within = ON_FLOOR) =>
 export const floorBelow = (floors, x, y, reach = ON_FLOOR) =>
     floors.filter((floor) => holds(floor, x) && floor.top >= y - reach).sort((a, b) => a.top - b.top)[0] ?? null;
 
-// At the top of a jump, the moment the figure stops rising and would fall, a floor whose top is this many pixels above its feet is
-// close enough to land on, so a jump that misses an edge by a hair lands instead of falling back to try again.
-export const APEX_REACH = 12;
-const APEX_SPEED = 40;
+// At the top of a jump, the one frame the figure stops rising and would fall, a floor whose top is this many pixels above its feet at
+// most is close enough to land on, so a jump that misses an edge by a hair lands instead of falling back to try again; the figure hangs
+// there this many frames and lands only if the floor is still that close then, so a page still settling is never landed on.
+export const SNAP_WITHIN = 5;
+export const SNAP_WAIT_FRAMES = 3;
 
 // The floors at home, the only ones that throw a figure up or let it drop: anywhere else a floor that moves, as a bubble the chat scrolls,
 // carries the figure with it
@@ -71,12 +72,28 @@ export function legAt(leg, from, elapsed, still = false) {
 // floor the moment it touches, with the floor it landed on, and falls to the window's foot when nothing else is under it; with motion
 // kept `still`, it is on that floor at once
 export function fallFrame(body, floors, seconds, fall, size, still = false) {
-    const floor = floorBelow(floors, body.x, body.y, Math.abs(body.speed || 0) < APEX_SPEED ? APEX_REACH : ON_FLOOR);
+    const peak = peakFrame(body, floors);
+    if (peak) return peak;
+    const floor = floorBelow(floors, body.x, body.y, 0);
     if (!floor) return {...body, landed: null};
     if (floor.top < body.y) return {x: body.x, y: floor.top, speed: 0, landed: floor};
     if (still) return {x: body.x, y: floor.top, speed: 0, landed: floor};
     const step = fallStep({y: body.y, speed: body.speed}, floor.top, seconds, fall, size);
     return {x: body.x, y: step.y, speed: step.speed, landed: step.landed ? floor : null};
+}
+
+// The floor just above a figure's feet at the top of its jump: one whose top is SNAP_WITHIN pixels above them at most
+const shelfAbove = (floors, x, y) => floors.filter((floor) => holds(floor, x) && floor.top < y && y - floor.top <= SNAP_WITHIN).sort((a, b) => b.top - a.top)[0] ?? null;
+
+// The top of a jump, a fall's first frame (no speed yet, `peak` not set): with a shelf just above the feet the figure hangs for
+// SNAP_WAIT_FRAMES frames, then lands on the shelf if it is still that close, else falls on; with none, or once the wait is over, null,
+// and the fall goes on as any other
+function peakFrame(body, floors) {
+    if (body.peak === 0 || (body.peak === undefined && body.speed)) return null;
+    const shelf = shelfAbove(floors, body.x, body.y);
+    if (body.peak === undefined) return shelf ? {...body, peak: SNAP_WAIT_FRAMES, landed: null} : null;
+    if (body.peak > 1) return {...body, peak: body.peak - 1, landed: null};
+    return shelf ? {x: body.x, y: shelf.top, speed: 0, peak: 0, landed: shelf} : {...body, peak: 0, landed: null};
 }
 
 // A trip re-aimed at where its destination is now, `landed`: the legs that end on the destination's line, and the leg under way among
