@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.actor import Actor
+from journal.db.query import Query
+from journal.models.agent_role import AgentRole
 from journal.models.author import Author
 from journal.models.message import Message
 from journal.repositories.links import Links
@@ -25,23 +27,29 @@ class Messages(ScopedRepository[Message]):
     def save(self, row: Message, actor: Actor) -> Message:
         return super().save(row.authored(actor.agent_session()), actor)
 
+    def main_chat(self) -> Query:
+        return self.query().filter(agent_role=AgentRole.MAIN)
+
+    def main_voice(self) -> Query:
+        return self.main_chat().filter(author=Author.AGENT).filter_present("session")
+
     def unread(self) -> list[Message]:
-        return self.selected(self.query().filter(author=Author.USER).filter_null("read_at").order("id"))
+        return self.selected(self.main_chat().filter(author=Author.USER).filter_null("read_at").order("id"))
 
     def last_user_message(self) -> Message | None:
-        return next((m for m in self.selected(self.query().filter(author=Author.USER).order_descending("id").limit(20)) if not m.is_terminal_line), None)
+        return next((m for m in self.selected(self.main_chat().filter(author=Author.USER).order_descending("id").limit(20)) if not m.is_terminal_line), None)
 
     def unanswered(self) -> list[Message]:
         voiced_at = self.last_message()
-        query = self.query().filter(author=Author.USER).filter_present("read_at")
+        query = self.main_chat().filter(author=Author.USER).filter_present("read_at")
         read = self.selected((query if voiced_at is None else query.filter_greater("read_at", voiced_at)).order("id"))
         return [m for m in read if not m.is_terminal_line and not self.answered(m) and not self.agent_reaction(m)]
 
     def last_message(self) -> str | None:
-        return self.maximum(self.query().filter(author=Author.AGENT, acknowledgement=False).filter_unequal("data->kind", Message.THOUGHT), "created_at", None)
+        return self.maximum(self.main_voice().filter(acknowledgement=False).filter_unequal("data->kind", Message.THOUGHT), "created_at", None)
 
     def answered(self, message: Message) -> bool:
-        return bool(self.selected_globally(self.query().filter(reply_target=message.id, author=Author.AGENT).limit(1))) or bool(self.links.sources(message, self.ANSWERS))
+        return bool(self.selected_globally(self.main_voice().filter(reply_target=message.id).limit(1))) or bool(self.links.sources(message, self.ANSWERS))
 
     def agent_reaction(self, message: Message) -> bool:
         return any(r.author == Author.AGENT for r in self.reactions.reactions(message))
@@ -78,7 +86,7 @@ class Messages(ScopedRepository[Message]):
         return self.selected_globally(self.query().filter_json("data->key", key).filter(creator=actor))
 
     def replies(self, message: Message) -> list[Message]:
-        matched = self.selected(self.query().filter(reply_target=message.id, author=Author.AGENT).order("id"))
+        matched = self.selected(self.main_voice().filter(reply_target=message.id).order("id"))
         linked = [self.find(ref.id) for ref in self.links.sources(message, self.ANSWERS)]
         return sorted([*matched, *linked], key=lambda m: m.row_id)
 
@@ -87,13 +95,16 @@ class Messages(ScopedRepository[Message]):
         return replies[0] if replies else None
 
     def recent_replies(self, time: datetime) -> list[Message]:
-        return self.selected(self.query().filter(author=Author.AGENT).filter_present("reply_target").filter_greater_equal("created_at", time).order("id"))
+        return self.selected(self.main_voice().filter_present("reply_target").filter_greater_equal("created_at", time).order("id"))
 
     def reply_text(self, n: int, text: str) -> list[Message]:
-        return self.selected(self.query().filter(reply_target=n, author=Author.AGENT, text=text.strip()))
+        return self.selected(self.main_voice().filter(reply_target=n, text=text.strip()))
 
     def recent(self, last: int) -> list[Message]:
         return self.window(last)
+
+    def recent_voice(self, last: int) -> list[Message]:
+        return list(reversed(self.selected(self.main_voice().order_descending("id").limit(last))))
 
     def thoughts(self, session: str, last: int = 60) -> list[Message]:
         rows = self.selected(self.query().filter(creator=Actor.agent(session)).filter_json("data->kind", Message.THOUGHT).order_descending("id").limit(last))

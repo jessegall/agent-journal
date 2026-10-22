@@ -1539,6 +1539,24 @@ def test_a_line_typed_in_the_terminal_reaches_the_chat_and_a_face_answers_any_me
     assert messages.unanswered() == [], "a face on a message answers it, whatever its length"
 
 
+def test_a_workers_words_never_answer_the_users_message_nor_count_as_the_main_agents(app: App):
+    """A worker's turn and its report, saved after the user's message, leave that message unanswered, and a user's message in a worker's chat is never the main agent's to read; the main agent's own words are its alone."""
+    from journal.models.agent_role import AgentRole
+    from journal.models.message import Message
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    app.console().run(["message", "send", "please look at the footer"], USER)
+    app.console().run(["message", "read", "1"], AGENT)
+    messages = app.container.get(Messages)
+    with app.container.get(Scope).environment(1):
+        messages.save(Message(environment_id=1, author="agent", text="Done.", reply_target=1, session="w1", agent_role=AgentRole.WORKER), Actor.agent("w1"))
+        messages.save(Message(environment_id=1, author="agent", text="The footer is fixed.", reply_target=1), Actor.worker(1))
+        messages.save(Message(environment_id=1, author="user", text="and the header?", agent_role=AgentRole.WORKER), Actor.user(1))
+        assert [m.id for m in messages.unanswered()] == [1], "neither the worker's turn nor its report answers the user"
+        assert [m.text for m in messages.unread()] == [], "a message in a worker's chat is not the main agent's to read"
+        assert [m.text for m in messages.recent_voice(30)] == [], "nothing here was the main agent's own words"
+
+
 def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, tmp_path):
     text = tmp_path / "doc.md"
     hook(app, "SessionStart")

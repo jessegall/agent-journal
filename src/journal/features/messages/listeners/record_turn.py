@@ -101,7 +101,7 @@ class RecordTurn(AgentListener[TurnDisplayed]):
 
     def is_recorded(self, part: str) -> bool:
         text = Tags.visible(part)
-        return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
+        return any(m.text == text for m in self.messages.recent_voice(30))
 
     @staticmethod
     def sections(full: str) -> list[tuple[list[int], str]]:
