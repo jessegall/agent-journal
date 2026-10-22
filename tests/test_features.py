@@ -6879,6 +6879,10 @@ def test_the_main_agent_is_told_a_workers_work_is_ready_and_checks_each_proof(ap
     assert console.run(["clock-out", "the parser is done"], lovelace).code == 0
     app.runtime().deferred.drain()
     with app.container.get(Scope).environment(MAIN):
+        from journal.repositories.messages import Messages
+        messages = app.container.get(Messages)
+        reports = [m for m in messages.selected(messages.main_chat()) if m.data.get("kind") == "report"]
+        assert [(m.text.endswith("the parser is done"), m.session) for m in reports] == [(True, None)], "the worker's report is in the main chat, written as the worker's, never as the main agent's words"
         lines = [entry.data["key"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["session"] == "s1"]
     assert lines.count("workers.work_ready") == 1, "the ready line is said once"
     assert "workers.worker_reported" not in lines and "workers.unread_worker_reports" not in lines, "and the old report lines stay silent for a new worker"
