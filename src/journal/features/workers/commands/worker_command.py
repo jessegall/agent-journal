@@ -19,8 +19,6 @@ from journal.repositories.subagents import Subagents
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
 
-UNCHECKED_HOOKS = "a {provider} worker needs its hooks checked first: {provider} is not yet shown to run the journal's hooks in a worker's folder, so dispatch the worker with --provider claude"
-
 class WorkerCommand(Command):
     noun = "worker"
 
@@ -69,8 +67,6 @@ class WorkerCommand(Command):
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
         provider = args.provider or self.provider_default(caller)
-        if not self.providers.lookup(provider).has_worker_hooks():
-            raise Rejection(UNCHECKED_HOOKS.format(provider=provider))
         moment = datetime.now(timezone.utc).timestamp()
         worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)

@@ -62,9 +62,6 @@ def live(tmp_path: Path, monkeypatch, provider: str):
     assert port > 20000 and not 8420 <= port <= 8429, f"the scratch server took {port}"
     (tmp_path / ".journal" / "port").write_text(str(port))
     app.console().run(["setup"], Caller.user("main"))
-    if Providers().lookup(provider).hooks_ready(tmp_path) != HooksReady.READY:
-        app.runtime().stop()
-        pytest.skip(f"{provider}'s hooks are not trusted in this config folder, so no hook would reach the journal: inconclusive")
     try:
         yield app
     finally:
@@ -84,6 +81,8 @@ def launched(app: App, provider: str) -> dict[str, str]:
 
 def run_agent(app: App, provider: str, prompt: str, resume: str = "", seconds: int = CASE_SECONDS) -> subprocess.CompletedProcess:
     """The program headless on one prompt, as the launched agent of main: its hooks post to the scratch server."""
+    if Providers().lookup(provider).hooks_ready(app.config.root) != HooksReady.READY:
+        pytest.skip(f"{provider}'s hooks are not trusted in this config folder, so no hook would reach the journal: inconclusive")
     command = Providers().lookup(provider).worker_command(prompt, CHEAP_MODEL[provider], resume, resume)
     return subprocess.run(command, cwd=app.config.root, env=launched(app, provider), stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=seconds)
 
@@ -189,16 +188,16 @@ def test_a_refused_stop_leads_to_work(live: App, provider: str):
 
 
 def test_a_worker_reports_and_resumes_with_its_memory(live: App, provider: str):
-    if not Providers().lookup(provider).has_worker_hooks():
-        pytest.skip(f"a {provider} worker is refused until its hooks are shown to run in a worker's folder")
     launched(live, provider)
     console, workers, reports = live.console(), live.container.get(Workers), live.container.get(WorkerReports)
-    dispatched = console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "journal-medior"], Caller.user("main"))
+    subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-q", "--allow-empty", "-m", "first"], cwd=live.config.root, check=True, timeout=10)
+    dispatched = console.run(["worker", "dispatch", "Lady Lovelace", "Say the word amber and nothing else.", "--provider", provider, "--profile", "journal-medior", "--worktree"], Caller.user("main"))
     assert dispatched.code == 0, dispatched.error
     with live.container.get(Scope).environment(MAIN):
         first = wait_for(lambda: [(worker, report) for worker in workers.all() if (report := reports.last(worker))], WORKER_SECONDS)
     assert first and "amber" in first[0][1].lower() and first[0][0].session, "the worker's session is read from its output and its report filed"
     worker = first[0][0]
+    assert any(entry.data.get("session_id") == worker.session for entry in entries(live, "SessionStarted")), "the worker's own hooks reached the journal from its folder"
     assert all(entry.actor != Actor.agent(worker.session) for entry in entries(live, "ToolStarting")), "the worker's commands are its own, not its parent's"
     console.run(["worker", "send", str(worker.id), "What word did you say last time? Answer with that word only."], Caller.user("main"))
     with live.container.get(Scope).environment(MAIN):

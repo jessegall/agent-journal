@@ -176,8 +176,8 @@ class Provider(ABC):
     @abstractmethod
     def worker_session(self, resume: str) -> str: ...
 
-    def has_worker_hooks(self) -> bool:
-        return True
+    @abstractmethod
+    def worker_hook_file(self, folder: Path, runtime: Path) -> Path: ...
 
     @abstractmethod
     def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...

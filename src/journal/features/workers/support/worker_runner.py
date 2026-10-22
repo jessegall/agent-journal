@@ -21,6 +21,7 @@ from journal.repositories.setting_rows import SettingRows
 from journal.repositories.agents import Agents
 from journal.repositories.workers import Workers
 from journal.repositories.environments import Environments
+from journal.support.worktree import Worktree
 from journal.support.worktree_failure import WorktreeFailure
 
 REPORT_CHARACTERS = 12000
@@ -54,10 +55,13 @@ class WorkerRunner:
         threading.Thread(target=self.run_scoped, args=(worker, command, actor), name=f"worker-{worker.id}", daemon=True).start()
 
     def hook_settings(self, worker: Worker) -> Path:
-        provider = self.providers.lookup(worker.provider)
-        path = self.outputs(worker)[0].with_suffix(".settings.json")
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps({"hooks": provider.hook_block(provider.hook_command(self.config.root))}, indent=2) + "\n")
+        provider, folder = self.providers.lookup(worker.provider), self.place(worker)
+        path = provider.worker_hook_file(folder, self.outputs(worker)[0].with_suffix(".settings.json"))
+        if not path.exists():
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps({"hooks": provider.hook_block(provider.hook_command(self.config.root))}, indent=2) + "\n")
+        if worker.worktree and path.is_relative_to(folder):
+            Worktree(self.config.root, folder.name).excluded([path.relative_to(folder)])
         return path
 
     def instructed(self, worker: Worker) -> str:

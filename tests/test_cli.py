@@ -113,11 +113,13 @@ def test_a_shells_variables_name_its_caller_by_kind_with_the_provider_that_marks
     assert CallerVariables.parsed(variables.body(), "claude") == variables, "what the shim posts reads back as the variables it posted"
 
 
-def test_a_codex_agent_with_no_row_yet_is_refused_a_worker_of_its_own_program(app: App, monkeypatch):
+def test_a_codex_agent_with_no_row_yet_dispatches_a_codex_worker_and_raises_its_events(app: App, monkeypatch):
     from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.workers import Workers
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     codex = Caller.agent("main", "t9", "codex")
-    assert "a codex worker needs its hooks checked first" in app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], codex).error, "the provider comes with the caller, not from the agent's row"
+    assert app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], codex).code == 0
+    assert app.container.get(Workers).find(1).provider == "codex", "the provider comes with the caller, not from the agent's row"
     assert app.console().run(["stuck", "the build is red"], MAIN).code == 1, "only an agent says it is stuck"
 
 

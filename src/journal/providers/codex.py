@@ -182,13 +182,13 @@ class Codex(Provider):
         return path
 
     def worker_settings_flags(self, path: Path) -> list[str]:
-        return []
+        return ["--dangerously-bypass-hook-trust"]
 
     def worker_session(self, resume: str) -> str:
         return resume
 
-    def has_worker_hooks(self) -> bool:
-        return False
+    def worker_hook_file(self, folder: Path, runtime: Path) -> Path:
+        return folder / self.home / self.settings_file
 
     def worker_command(self, brief: str, model: str, resume: str, session: str) -> list[str]:
         resumed = ["resume", resume] if resume else []

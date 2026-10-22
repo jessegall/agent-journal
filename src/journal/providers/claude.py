@@ -173,6 +173,9 @@ class Claude(Provider):
     def worker_settings_flags(self, path: Path) -> list[str]:
         return ["--settings", str(path)]
 
+    def worker_hook_file(self, folder: Path, runtime: Path) -> Path:
+        return runtime
+
     def worker_session(self, resume: str) -> str:
         return resume or str(uuid.uuid4())
 

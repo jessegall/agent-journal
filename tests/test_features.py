@@ -601,12 +601,10 @@ def test_a_worker_runs_the_dispatching_agents_own_program(app: App, monkeypatch)
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     app.container.get(Agents).save(Agent(environment_id=1, session="c1", provider="codex", state="idle"), Actor.system())
     console = app.console()
-    refused = console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
-    assert refused.code != 0 and "a codex worker needs its hooks checked first" in refused.error and "--provider claude" in refused.error, "a Codex agent's worker would run Codex, whose hooks are not shown to run in a worker's folder"
-    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--provider", "claude"], Caller.agent("main", "c1", "codex"))
+    console.run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], Caller.agent("main", "c1", "codex"))
     console.run(["worker", "dispatch", "Mr. Babbage", "write cli.py", "--profile", "journal-medior", "--model", "sonnet"], USER)
     workers = app.container.get(Workers)
-    assert workers.find(1).provider == "claude" and workers.find(2).provider == "claude"
+    assert workers.find(1).provider == "codex" and workers.find(2).provider == "claude", "a Codex agent's worker runs Codex, so its model names fit"
     assert "`journal worker wait 1 2` waits for a report" in console.run(["worker", "list"], Caller.agent("main", "c1", "codex")).text, "a list of workers out points at the wait"
 
 
@@ -6559,7 +6557,8 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
-def test_a_claude_worker_is_started_with_hook_settings_of_its_own(app: App):
+def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
+    import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.models.worker import Worker
     from journal.providers.claude import Claude
@@ -6571,7 +6570,15 @@ def test_a_claude_worker_is_started_with_hook_settings_of_its_own(app: App):
     hooks = json.loads(path.read_text())["hooks"]
     commands = {block["hooks"][0]["command"] for blocks in hooks.values() for block in blocks}
     assert commands == {Claude().hook_command(app.config.root)} and "PreToolUse" in hooks, "every hook kind runs the journal's hook script for the project, whatever the worktree commits"
-    assert Claude().worker_settings_flags(path) == ["--settings", str(path)] and Codex().worker_settings_flags(path) == [], "Claude takes the file; Codex waits for its hooks to be checked"
+    assert Claude().worker_settings_flags(path) == ["--settings", str(path)], "Claude takes the file on its command line"
+    subprocess.run(["git", "init", "-q"], cwd=app.config.root, capture_output=True, timeout=30)
+    with app.container.get(Scope).environment(MAIN):
+        codex = app.container.get(Workers).save(Worker(environment_id=1, name="Ada Lovelace", brief="b", provider="codex", worktree=True), Actor.system())
+    runner = app.container.get(WorkerRunner)
+    written = runner.hook_settings(codex)
+    assert written == runner.place(codex) / ".codex" / "hooks.json" and {block["hooks"][0]["command"] for blocks in json.loads(written.read_text())["hooks"].values() for block in blocks} == {Codex().hook_command(app.config.root)}, "Codex reads its hooks from the worktree's own file"
+    assert "/.codex/hooks.json" in (app.config.root / ".git" / "info" / "exclude").read_text().splitlines(), "which git never sees, so the worker cannot commit it"
+    assert Codex().worker_settings_flags(written) == ["--dangerously-bypass-hook-trust"], "and Codex runs the journal's hooks without asking to trust them"
 
 
 def test_a_workers_agent_row_is_never_the_main_agent_and_ends_with_its_process(app: App):
