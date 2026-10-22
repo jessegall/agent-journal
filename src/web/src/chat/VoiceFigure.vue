@@ -4,10 +4,35 @@ import {agent} from "../composables/leadAgent.js";
 import {useHomeViews} from "../composables/homeViews.js";
 import {figureStatus, figureVisible, shownIn} from "../composables/voiceFigure.js";
 import {fallOf} from "../domain/falls.js";
-import {KEPT_WITHIN, ON_FLOOR, aimedAt, airborneFrame, chaseRoom, fallingFrom, floorAt, legAt, legEnded, slideAt, underWalker} from "../domain/figureMotion.js";
+import {
+    KEPT_WITHIN,
+    ON_FLOOR,
+    aimedAt,
+    airborneFrame,
+    chaseRoom,
+    fallingFrom,
+    floorAt,
+    legAt,
+    legEnded,
+    slideAt,
+    underWalker,
+} from "../domain/figureMotion.js";
 import {footingNow, footingOn, groundUnder, landingOn, latestFloors} from "../figure/floors.js";
 import {useFigureBody} from "../composables/figureBody.js";
-import {beatsAfter, cardsAfter, canSwitch, clipFor, modeOf, closeAt, facesAfter, figureStateOf, frameIn, testResultsAfter, waitingSinceAt, withSystemCards} from "../domain/figureState.js";
+import {
+    beatsAfter,
+    cardsAfter,
+    canSwitch,
+    clipFor,
+    modeOf,
+    closeAt,
+    facesAfter,
+    figureStateOf,
+    frameIn,
+    testResultsAfter,
+    waitingSinceAt,
+    withSystemCards,
+} from "../domain/figureState.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {keptClear, stayAtHome, stepAside, stayForLook, stayingAt, targetFor} from "../figure/perches.js";
 import {LOOK_FPS, answerTo, eyesAt, lookOf, pastimeFor, stretchClip, walkingMoment, workMoments} from "../figure/reactions.js";
@@ -144,9 +169,11 @@ const frameOf = (shown) => Math.floor(((performance.now() - playing.started) / 1
 
 // A clip plays out before another starts, or gives way at once when it is interruptible (figureState.js canSwitch). It is the one rule every
 // clip goes through, so no clip needs its own check.
-const playedOut = () => !playing.shown || (playing.closing !== null
-    ? frameOf(playing.shown) >= playing.closing + playing.shown.clip.outro
-    : canSwitch(playing.shown.clip, frameOf(playing.shown), playing.index));
+const playedOut = () =>
+    !playing.shown ||
+    (playing.closing !== null
+        ? frameOf(playing.shown) >= playing.closing + playing.shown.clip.outro
+        : canSwitch(playing.shown.clip, frameOf(playing.shown), playing.index));
 
 // how far through its step the walk under a clip on the move is, stepped as the walk's own frames are, `pace` times as quick
 function strideNow(pace) {
@@ -161,7 +188,8 @@ function step() {
     if (playing.shown?.clip.outro && wanted.clip.name !== playing.shown.clip.name && playing.closing === null) {
         playing.closing = closeAt(playing.shown.clip, frameOf(playing.shown));
     }
-    if (playing.closing !== null && wanted.clip.name === playing.shown.clip.name && frameOf(playing.shown) < playing.closing) playing.closing = null;
+    if (playing.closing !== null && wanted.clip.name === playing.shown.clip.name && frameOf(playing.shown) < playing.closing)
+        playing.closing = null;
     const finished = playedOut();
     const continuing = keyOf(wanted) === playing.name && playing.closing === null;
     const shown = continuing || finished ? wanted : playing.shown;
@@ -245,7 +273,7 @@ function slideOn() {
 // the trip to a spot, from where the figure is in the posture it travels in to that spot in the one it travels in there (places.js); the
 // clip on screen is drawn in that posture first, so the figure gets to its feet or takes its grip where it is before the first leg
 async function moveTo(spot, {straight = false, pace = 1} = {}) {
-    if (!tripTo(body.place, spot, figureSize(), {straight, pace})) return settle(spot);
+    if (!tripTo(body.place, spot, figureSize(), {straight, pace})) return restOn(spot);
     body.trip = {to: spot, straight, pace, footing: footingOn(spot)};
     // read back, since the ref hands out its reactive copy, never the object it was given
     const trip = body.trip;
@@ -303,7 +331,11 @@ function depart() {
     }
     body.trip = {...body.trip, moves: true, departed: true, legs};
     const feet = feetOf(from);
-    body.walk = {from, began: performance.now(), on: next.hopping ? null : floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null};
+    body.walk = {
+        from,
+        began: performance.now(),
+        on: next.hopping ? null : (floorAt(latestFloors().floors, feet.x, feet.y, KEPT_WITHIN)?.id ?? null),
+    };
     body.leg = next;
 }
 
@@ -311,6 +343,13 @@ function depart() {
 function endLeg() {
     if (body.trip.hopping) body.landing = Boolean(body.trip.lands);
     nextLeg();
+}
+
+// a look that finds the figure already at its spot keeps the footing it stands by on that floor, so a look never re-anchors a resting figure
+function restOn(spot) {
+    const held = footingOn(spot);
+    if (held && body.footing && held.id === body.footing.id) return;
+    settle(spot, held);
 }
 
 function settle(spot, held = footingOn(spot)) {
@@ -450,7 +489,14 @@ function uprooted() {
 }
 
 // the scene the reactions are decided in
-const scene = () => ({voice: voice.value, moving: Boolean(body.trip), place: body.place, beats: beats.value.length, arriving: body.arriving, leaving: body.leaving});
+const scene = () => ({
+    voice: voice.value,
+    moving: Boolean(body.trip),
+    place: body.place,
+    beats: beats.value.length,
+    arriving: body.arriving,
+    leaving: body.leaving,
+});
 
 function look() {
     clearTimeout(lookTimer);
@@ -674,7 +720,7 @@ const style = computed(() => ({
             <template v-if="sleeping">
                 <span class="voice-figure-sleep" :style="sleepStyle">
                     <template v-for="index in SLEEP_GLYPHS" :key="index">
-                        <span :style="{animationDelay: `${-(index - 1) * SLEEP_DRIFT_SECONDS / SLEEP_GLYPHS}s`}">Z</span>
+                        <span :style="{animationDelay: `${(-(index - 1) * SLEEP_DRIFT_SECONDS) / SLEEP_GLYPHS}s`}">Z</span>
                     </template>
                 </span>
             </template>
@@ -706,14 +752,26 @@ const style = computed(() => ({
 }
 
 @keyframes voice-figure-sleep {
-    0% {transform: translate(0, 0) scale(0.65); opacity: 0;}
-    20% {opacity: 0.65;}
-    100% {transform: translate(14px, -28px) scale(1); opacity: 0;}
+    0% {
+        transform: translate(0, 0) scale(0.65);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.65;
+    }
+    100% {
+        transform: translate(14px, -28px) scale(1);
+        opacity: 0;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .voice-figure-sleep > span {animation: none;}
-    .voice-figure-sleep > span:first-child {opacity: 0.5;}
+    .voice-figure-sleep > span {
+        animation: none;
+    }
+    .voice-figure-sleep > span:first-child {
+        opacity: 0.5;
+    }
 }
 
 .voice-figure {

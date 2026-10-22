@@ -1,5 +1,5 @@
 import {RESTS} from "../domain/figureState.js";
-import {holds, latestFloors} from "./floors.js";
+import {holds, readFloors} from "./floors.js";
 import {boxAt, clearOf, hiddenAt, openTabs, overlaps, pointedView, cornerAt, restOf, standRise, spotOf} from "./places.js";
 import {letsGoFor} from "./reactions.js";
 
@@ -78,7 +78,8 @@ export function perchSpot(perch, floors, figure) {
 }
 
 function spotOn(perch, floor, figure) {
-    if (perch.kind === STANDS) return {...cornerAt({...floor, width: floor.right - floor.left}, perch.side, figure, PERCH_INBOARD), on: floor.element};
+    if (perch.kind === STANDS)
+        return {...cornerAt({...floor, width: floor.right - floor.left}, perch.side, figure, PERCH_INBOARD), on: floor.element};
     const out = (perch.side === "left" ? -1 : 1) * HANG_OUT * figure.size;
     const x = (perch.side === "left" ? floor.left : floor.right) + out;
     return {x, y: floor.top, face: perch.face, posture: "hang", grip: perch.grip, on: floor.element};
@@ -91,7 +92,7 @@ export function nextStay(now, figure, hands, random) {
     const {where, stay: seconds} = roamNext(random);
     const until = now + seconds;
     if (where === "bubble") {
-        const perch = perchOn(latestFloors(), figure, hands, random);
+        const perch = perchOn(readFloors(), figure, hands, random);
         return {where, until: perch?.kind === HANGS ? now + between(HANG_STAY, random) : until, perch};
     }
     if (where === "tab") {
@@ -106,7 +107,7 @@ export function nextStay(now, figure, hands, random) {
 // visits is not one it points at
 export function stayingAt(stay, figure, near) {
     if (stay.where === "bubble") {
-        const spot = stay.perch && perchSpot(stay.perch, latestFloors(), figure);
+        const spot = stay.perch && perchSpot(stay.perch, readFloors(), figure);
         return spot ? {...spot, view: null} : null;
     }
     if (stay.where === "tab") {
