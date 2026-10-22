@@ -69,9 +69,9 @@ class Workers(Feature[WorkersData]):
     RUN_UNFINISHED = Nudge(name, "run_unfinished", "worker {{n}}, {{name}}, ended its run without clocking out, and still holds its task", "send it again with journal worker send {{n}} \"<job>\", or let the task go with journal worker release {{n}}", repeat_interval=0)
     WORKER_ARRIVAL = Nudge(name, "worker_clocked_in", "worker {{n}}, {{name}}, clocked in and is at work on its task", repeat_interval=0)
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_interval=0)
-    ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch \"<Name>\" --task <n>; keep the reviews for yourself. decide and go on without waiting for the user; stop for them only before a step that cannot be undone or reaches outside the project", repeat_interval=0)
+    ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch \"<Name>\" --task <n>; keep the reviews for yourself. decide and go on without waiting for the user; stop for them only before a step that cannot be undone or reaches outside the project. a task that waits on something blocks that task alone: block it with journal task block and go on with every other open task", repeat_interval=0)
     TASK_DELEGATION = Nudge(name, "delegate_the_task", "{{name}} is in hand and you orchestrate; {{logged}}", "hand it to a worker, journal worker dispatch \"<Name>\" --task <n> with this task's number, and review its report; log what the worker is on", repeat_interval=0)
-    ORCHESTRATOR_MODE = Nudge(name, "now_orchestrating", "you now work as the orchestrator", "plan, hand every task you can to a worker with journal worker dispatch, and review and merge what comes back; a task in hand is one to hand over, never to do yourself. you make the decisions and keep the work moving without waiting for the user, who is asked only before a step that cannot be undone or reaches outside the project", repeat_interval=0)
+    ORCHESTRATOR_MODE = Nudge(name, "now_orchestrating", "you now work as the orchestrator", "plan, hand every task you can to a worker with journal worker dispatch, and review and merge what comes back; a task in hand is one to hand over, never to do yourself. you make the decisions and keep the work moving without waiting for the user, who is asked only before a step that cannot be undone or reaches outside the project. a task that waits blocks only itself: block it and keep every other open task moving", repeat_interval=0)
     SOLO_MODE = Nudge(name, "now_solo", "you now work solo", "do every job yourself: no worker is dispatched", repeat_interval=0)
     SOLO_DISPATCH = Nudge(name, "no_workers_when_solo", "you work solo: no worker is dispatched", "do the job yourself, or ask the user to switch the work mode", repeat_interval=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_interval=0)
@@ -100,7 +100,8 @@ A subagent only reads. A worker writes: code in a worktree of its own, a documen
   is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand
   over, never to do yourself. The orchestrator decides on its own and keeps the work moving; it waits for the user only
-  before a step that cannot be undone or reaches outside the project. Solo: you do everything yourself and a worker's dispatch is refused. The user sets it
+  before a step that cannot be undone or reaches outside the project. A task that waits on something blocks that task
+  alone: it blocks it and goes on with every other open task. Solo: you do everything yourself and a worker's dispatch is refused. The user sets it
   with the plan bar's buttons.
 - A worker works a shift on its task: it clocks in with `journal clock-in`, keeps its own list with `journal todo`,
   proves each point of the brief with `journal proof <point> "<file:line, and the test>"` or says why not with

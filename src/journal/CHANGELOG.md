@@ -4,7 +4,7 @@ What each release of agent-journal version 4 brought, newest first.
 
 ## 4.5.23
 
-- The orchestrator is told to decide on its own and keep the work moving, waiting for the user only before a step that cannot be undone or reaches outside the project.
+- The orchestrator is told to decide on its own and keep the work moving, waiting for the user only before a step that cannot be undone or reaches outside the project; a task that waits on something blocks that task alone, and every other open task goes on.
 - A wait the agent declares is named in at least two words, so the top bar says what it waits for; a bare noun such as Plan is refused with examples.
 
 ## 4.5.22

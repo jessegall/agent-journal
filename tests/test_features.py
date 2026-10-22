@@ -1329,6 +1329,7 @@ def test_switching_the_work_mode_tells_the_agent_once_which_mode_it_now_works_in
     switched = use("b.py")
     assert "you now work as the orchestrator" in switched, "the switch is told at the next step"
     assert "without waiting for the user" in switched and "cannot be undone" in switched, "the orchestrator decides alone, and waits for the user only before a step that cannot be undone"
+    assert "blocks only itself" in switched, "and a task that waits never stops the others"
     assert "you now work" not in use("c.py"), "and only once"
     app.container.get(SettingRows).set("workers.mode", "solo", Actor.user(1))
     assert "you now work solo" in use("d.py")
