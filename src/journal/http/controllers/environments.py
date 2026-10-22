@@ -41,6 +41,9 @@ class EnvironmentController(Controller[Environment]):
 
     def stop(self, request: Request) -> Response:
         environment = self.repository.find(request.number("id"))
+        refusal = self.owners.write_refusal(request.actor, environment)
+        if refusal:
+            raise Rejection(refusal)
         self.supervisor.stop(environment.row_id)
         return Response.json(environment)
 

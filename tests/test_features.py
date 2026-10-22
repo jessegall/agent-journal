@@ -9574,6 +9574,11 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     from journal.models.message import Message
     from journal.models.author import Author
     from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    from journal.repositories.questions import Questions
+    from journal.models.reaction import Reaction
+    from journal.models.question import Question
+    from journal.support.rejection import Rejection
     from pathlib import Path
     from journal.repositories.environment_owners import EnvironmentOwners
     from journal.models.worker import Worker
@@ -9657,6 +9662,20 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert b.container.get(Messages).global_matching(id=note.id)[0].read_at is None, "a colleague reading Ada's chat marks nothing read"
         timing.sleep(0.3)
         assert a.container.get(Messages).global_matching(id=note.id)[0].read_at is None, "nor on Ada's machine"
+        with b.container.get(Scope).environment(ada_main.row_id):
+            ada_task = b.container.get(Tasks).global_matching(environment_id=ada_main.row_id)
+            assert ada_task, "Ada's task is on Bob's machine"
+            for refused_write in (
+                lambda: b.container.get(Tasks).save(ada_task[0].with_(title="renamed by Bob"), Actor.user(2)),
+                lambda: b.container.get(Reactions).save(Reaction(environment_id=ada_main.row_id, face="👍"), Actor.user(2)),
+                lambda: b.container.get(Questions).save(Question(environment_id=ada_main.row_id, text="Bob asks?"), Actor.user(2)),
+                lambda: b.container.get(Environments).save(b.container.get(Environments).existing("ada-main").with_(name="bob-took-it"), Actor.user(2)),
+            ):
+                with pytest.raises(Rejection, match="in a colleague's environment you only comment"):
+                    refused_write()
+            comment = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="a word from Bob"), Actor.user(2))
+        assert comment.id, "a message in a colleague's environment still goes through"
+        assert urlopen_refusal(f"http://127.0.0.1:{b.server().port}/journal/environments/{ada_main.row_id}/stop").find("only comment") >= 0, "and Bob cannot stop Ada's agent from his viewer"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
         request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
