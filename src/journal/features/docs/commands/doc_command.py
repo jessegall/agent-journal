@@ -1,7 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.support.outline import Outline
 from journal.features.docs.support.version3_doc import Version3Doc
@@ -14,6 +14,7 @@ from journal.engine.clock import Clock
 
 class DocCommand(Command):
     noun = "doc"
+    callers = {"show": HELPER_KINDS}
 
     def __init__(self, docs: Docs, revisions: DocRevisions, clock: Clock) -> None:
         self.docs, self.doc_revisions, self.clock = docs, revisions, clock

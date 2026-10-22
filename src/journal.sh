@@ -26,8 +26,7 @@ if [ -n "$port" ]; then
     [ -n "$line" ] && cd "$root" && exec sh -c "$line"
     [ "$status" -ne 255 ] && exit "$status"
 fi
-# No server answered (none up, or a port file left by one that died): the package runs the command itself, unless a sub-agent runs it,
-# or a worker, whose token only the server can check.
-[ "${JOURNAL_ACTOR:-agent}" = sub-agent ] && exit 0
-if [ "${JOURNAL_ACTOR:-agent}" = worker-agent ]; then echo "the journal is restarting: run the command again in a moment" >&2; exit 1; fi
+# No server answered (none up, or a port file left by one that died): the package runs the command itself, unless a sub-agent
+# or a worker runs it, whose commands only the server can check.
+case "${JOURNAL_ACTOR:-agent}" in sub-agent|worker-agent) echo "the journal is restarting: run the command again in a moment" >&2; exit 1 ;; esac
 cd "$root" && exec "$py" "$here/journal.py" "$@"

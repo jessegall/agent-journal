@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.plans.support.review_rounds import ReviewRounds
 from journal.features.tasks.active_task import ActiveTask
@@ -23,6 +23,7 @@ from journal.repositories.tasks import Tasks
 
 class PlanCommand(Command):
     noun = "plan"
+    callers = {"show": HELPER_KINDS}
 
     def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: SubagentEntries, waits: Waits, rounds: ReviewRounds, taking: ActiveTask) -> None:
         self.plans, self.phases, self.tasks, self.links, self.subagents, self.waits = plans, phases, tasks, links, subagents, waits

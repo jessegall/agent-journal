@@ -2,7 +2,7 @@ from argparse import Namespace
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.engine.clock import Clock
 from journal.support.rejection import Rejection
@@ -27,6 +27,7 @@ from journal.features.tasks.support.next_open_task import NextOpenTask
 
 class TaskCommand(Command):
     noun = "task"
+    callers = {"show": HELPER_KINDS, "list": HELPER_KINDS}
 
     def __init__(self, tasks: Tasks, logs: TaskLogs, messages: Messages, links: Links, plans: Plans, taking: ActiveTask, questions: Questions, waits: Waits, briefing: TaskBriefing, clock: Clock, next_task: NextOpenTask) -> None:
         self.clock, self.next_task = clock, next_task

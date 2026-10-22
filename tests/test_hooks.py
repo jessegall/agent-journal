@@ -155,12 +155,12 @@ def post_command(app, argv: list[str], headers: dict | None = None, session: str
 
 
 def test_a_claude_subagents_command_is_told_by_the_hook_that_announced_it(app: App):
-    status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task list"}})
+    status, body = post_hook(app, {"hook_event_name": "PreToolUse", "session_id": "s1", "agent_id": "sub1", "tool_name": "Bash", "tool_input": {"command": "journal task create x"}})
     assert status == 200 and body == {} and app.container.get(Entries).scoped() == [], "announced, never recorded as the agent's"
-    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s2")["code"] == 0, "another session's command is not the subagent's"
-    refused = post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")
-    assert refused["code"] == 1 and "a subagent runs no journal command" in refused["error"]
-    assert post_command(app, ["task", "list"], {"X-Journal-Env": "main"}, "s1")["code"] == 0, "the announcement is used up by its command"
+    assert post_command(app, ["task", "create", "x"], {"X-Journal-Env": "main"}, "s2")["code"] == 0, "another session's command is not the subagent's"
+    refused = post_command(app, ["task", "create", "x"], {"X-Journal-Env": "main"}, "s1")
+    assert refused["code"] == 1 and "a subagent may not run journal task create" in refused["error"]
+    assert post_command(app, ["task", "create", "x"], {"X-Journal-Env": "main"}, "s1")["code"] == 0, "the announcement is used up by its command"
 
 
 def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_token(app: App):
@@ -187,9 +187,14 @@ def test_a_command_or_a_shell_line_that_says_it_is_a_workers_must_carry_its_toke
     assert "token" in shown and shown.rstrip().endswith("__journal_exit 1"), "the shell route runs no line for a worker that cannot prove which it is"
 
 
-def test_a_command_under_the_sub_agent_actor_is_refused(app: App):
-    refused = post_command(app, ["task", "list"], {"X-Journal-Actor": "sub-agent"})
-    assert refused["code"] == 1 and "writes nothing" in refused["error"]
+def test_a_command_under_the_sub_agent_actor_runs_only_the_journals_reads(app: App):
+    assert post_command(app, ["task", "create", "the parser"], {"X-Journal-Actor": "agent"})["code"] == 0
+    subagent = {"X-Journal-Actor": "sub-agent"}
+    assert post_command(app, ["task", "show", "1"], subagent)["code"] == 0 and post_command(app, ["task", "list"], subagent)["code"] == 0, "a subagent reads tasks"
+    assert "a subagent may not" not in post_command(app, ["doc", "show", "1"], subagent)["error"], "and documents"
+    for argv in (["task", "create", "x"], ["message", "send", "hello"], ["plan", "approve", "1"]):
+        refused = post_command(app, argv, subagent)
+        assert refused["code"] == 1 and refused["error"].startswith(f"a subagent may not run journal {argv[0]} {argv[1]}; a subagent may run ") and "journal task show" in refused["error"] and "journal search find" in refused["error"], f"a subagent writes nothing: {argv}"
     assert post_command(app, ["task", "list"], {"X-Journal-Actor": "worker-agent"})["code"] == 0
 
 
@@ -199,7 +204,8 @@ def test_a_codex_command_from_another_thread_than_the_session_started_with_is_a_
     from journal.repositories.agents import Agents
     app.container.get(Agents).save(Agent(session="thread-1", provider="codex"), Actor.system())
     shell = {"agent": True, "provider": "codex"}
-    assert "a subagent runs no journal command" in post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-2"}, body=shell)["error"]
+    posted = post_command(app, ["task", "create", "x"], {"X-Journal-Thread": "thread-2"}, body=shell)
+    assert "a subagent may not run journal task create" in posted["error"], posted
     assert post_command(app, ["task", "list"], {"X-Journal-Thread": "thread-1"}, body=shell)["code"] == 0
 
 

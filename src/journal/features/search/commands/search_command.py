@@ -1,6 +1,6 @@
 from argparse import Namespace
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.chat.cards import Cards
 from journal.features.search.support.search import CONVERSATION, Search
@@ -12,6 +12,7 @@ class SearchCommand(Command):
     """journal search "<words>" [--model message,plan]: every row here that holds all the words, in every model or the ones named, and a mark in the chat that opens what was found."""
 
     noun = "search"
+    callers = {"find": HELPER_KINDS}
     default_verb = "find"
 
     def __init__(self, search: Search, cards: Cards, scope: Scope) -> None:

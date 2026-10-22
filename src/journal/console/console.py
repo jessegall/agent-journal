@@ -1,4 +1,5 @@
 import argparse
+from dataclasses import replace
 import io
 from journal.console.support.chained_line import ChainedLine
 
@@ -36,7 +37,7 @@ class Console:
         if not caller.is_unnamed_agent():
             return caller
         present = self.agents.current()
-        return Caller.agent(caller.environment, present.session, present.provider) if present else caller
+        return replace(caller, session=present.session, provider=present.provider) if present else caller
 
     def parser(self) -> argparse.ArgumentParser:
         if self._parser is None:

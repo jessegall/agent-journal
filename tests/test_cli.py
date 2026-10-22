@@ -316,7 +316,7 @@ def test_a_worker_or_a_subagent_runs_only_the_verbs_its_kind_is_declared(app: Ap
     assert refused.code == 1 and refused.error.startswith("a worker may not run journal panic apply; a worker may run ") and "journal fact list" in refused.error and "journal rule read" in refused.error, "a verb its kind does not declare is refused, naming the verbs it may run"
     assert agent.subagent_caller().kind == CallerKind.SUBAGENT and console.run(["panic", "pop"], agent.subagent_caller()).error.startswith("a subagent may not run journal panic apply")
     assert console.run(["fact", "list"], worker).code == 0 and console.run(["fact", "create", "x"], worker).code == 1, "a declared verb runs, and its neighbour stays refused"
-    assert console.run(["fact", "create", "the port is 9"], agent).code == 0 and console.run(["task", "list"], MAIN).code == 0 and console.run(["task", "list"], worker).code == 1, "the main agent and the user run every verb"
+    assert console.run(["fact", "create", "the port is 9"], agent).code == 0 and console.run(["task", "list"], MAIN).code == 0 and console.run(["task", "create", "x"], worker).code == 1, "the main agent and the user run every verb"
     assert FactCommand.callers is not RuleCommand.callers and set(FactCommand.callers) == set(RuleCommand.callers) == {"list", "read"}, "fact and rule each declare their own"
 
 

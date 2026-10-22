@@ -7,7 +7,7 @@
 # Who runs the hook: JOURNAL_ACTOR is agent, sub-agent or worker-agent; the agent's and a worker's own hooks reach the journal.
 # A hook whose body carries a subagent's id is a sub-agent's, whatever the variable says, since a subagent inherits the agent's shell;
 # only its start, its stop and its PreToolUse reach the server. The server records and judges none of a subagent's PreToolUse and answers it {};
-# it only notes a Bash one's command, to pair with the journal command the shim posts.
+# it only notes a Bash one's command, to pair with the journal command the shim posts, which then runs only a subagent's reading verbs.
 [ "$AGENT_JOURNAL_ACTIVE" = 1 ] || exit 0
 case "${JOURNAL_ACTOR:-agent}" in agent|worker-agent) ;; *) exit 0 ;; esac
 agent=$1

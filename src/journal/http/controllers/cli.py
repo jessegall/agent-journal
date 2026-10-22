@@ -3,12 +3,11 @@ from dataclasses import replace
 from journal.console.console import Console
 from journal.features.aliases.support.alias_lines import AliasLines
 from journal.support.caller import Caller
-from journal.support.caller_kind import CallerKind
 from journal.support.caller_variables import CallerVariables
 from journal.features.workers.support.worker_identity import REFUSAL as WORKER_REFUSAL, WorkerIdentity
 from journal.providers.providers import Providers
 from journal.support.plugin_tokens import PluginTokens
-from journal.http.support.subagent_commands import REFUSAL, SubagentCommands
+from journal.http.support.subagent_commands import SubagentCommands
 from journal.console.support.outcome import Outcome
 from journal.http.support.cli_post import CliPost
 from journal.http.support.request import Request
@@ -55,10 +54,7 @@ class CliController:
         return Outcome.refused(WORKER_REFUSAL)
 
     def outcome(self, variables: CallerVariables, argv: list[str], request: Request) -> Outcome:
-        caller = self.caller(variables, argv, request)
-        if caller.kind == CallerKind.SUBAGENT:
-            return Outcome.refused(REFUSAL)
-        return self.console.run(argv, caller)
+        return self.console.run(argv, self.caller(variables, argv, request))
 
     def caller(self, variables: CallerVariables, argv: list[str], request: Request) -> Caller:
         caller = (variables if self.launches.is_launch(variables.environment, variables.launch) else replace(variables, agent_shell=False)).caller()

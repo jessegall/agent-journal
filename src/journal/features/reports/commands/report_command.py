@@ -2,7 +2,7 @@ import re
 from argparse import Namespace
 from pathlib import Path
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.support.outline import Outline
 from journal.models.link import Link
@@ -18,6 +18,7 @@ ROW = re.compile(r"^[a-z_]+:\d+$")
 
 class ReportCommand(Command):
     noun = "report"
+    callers = {"show": HELPER_KINDS}
 
     def __init__(self, reports: Reports, links: Links) -> None:
         self.reports, self.links = reports, links

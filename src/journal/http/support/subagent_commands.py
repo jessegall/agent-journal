@@ -7,7 +7,6 @@ from journal.repositories.scope import Scope
 
 SUB_AGENT = "sub-agent"
 CODEX = "codex"
-REFUSAL = "a subagent runs no journal command and writes nothing\n"
 
 
 class SubagentCommands:

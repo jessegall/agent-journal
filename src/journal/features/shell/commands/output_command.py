@@ -1,7 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_views import OutputViews
@@ -18,6 +18,7 @@ class OutputCommand(Command):
     """The outputs the runner kept, by number: read one whole or in part, say how one stands, list the newest, or watch a running one."""
 
     noun = "output"
+    callers = {"read": HELPER_KINDS}
 
     def __init__(self, outputs: CommandOutputs, readers: Readers, views: OutputViews) -> None:
         self.outputs, self.readers, self.views = outputs, readers, views
