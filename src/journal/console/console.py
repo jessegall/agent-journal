@@ -2,9 +2,10 @@ import argparse
 from dataclasses import replace
 import io
 from journal.console.support.chained_line import ChainedLine
+from journal.console.support.kind_verbs import KindVerbs
 
 from journal.console.support.captured_stream import CapturedStream
-from journal.console.command import Command
+from journal.console.command import HELPER_KINDS, Command
 from journal.console.creations import Creations
 from journal.console.support.outcome import Outcome
 from journal.console.support.row_verbs import RowVerbs
@@ -27,11 +28,11 @@ class Console:
     def __init__(self, container: Container, environments: Environments, agents: Agents, scope: Scope, row_verbs: RowVerbs) -> None:
         self.container, self.environments, self.agents, self.scope, self.row_verbs = container, environments, agents, scope, row_verbs
         self.commands: dict[str, Command] = {}
-        self._parser: argparse.ArgumentParser | None = None
+        self._parsers: dict[CallerKind, argparse.ArgumentParser] = {}
 
     def add(self, command: type[Command]) -> None:
         self.commands[command.noun] = self.container.get(command)
-        self._parser = None
+        self._parsers.clear()
 
     def attributed(self, caller: Caller) -> Caller:
         if not caller.is_unnamed_agent():
@@ -39,16 +40,22 @@ class Console:
         present = self.agents.current()
         return replace(caller, session=present.session, provider=present.provider) if present else caller
 
-    def parser(self) -> argparse.ArgumentParser:
-        if self._parser is None:
-            parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
-            nouns = parser.add_subparsers(dest="noun", required=True)
-            for noun, command in self.commands.items():
-                verbs = nouns.add_parser(noun).add_subparsers(dest="verb", required=True)
-                command.arguments(verbs)
-                self.row_verbs.add(noun, verbs)
-            self._parser = parser
-        return self._parser
+    def parser(self, kind: CallerKind) -> argparse.ArgumentParser:
+        shown = kind if kind in HELPER_KINDS else CallerKind.MAIN_AGENT
+        if shown not in self._parsers:
+            self._parsers[shown] = self.built(shown)
+        return self._parsers[shown]
+
+    def built(self, kind: CallerKind) -> argparse.ArgumentParser:
+        parser = argparse.ArgumentParser(prog="journal", exit_on_error=False)
+        nouns = parser.add_subparsers(dest="noun", required=True)
+        groups = {}
+        for noun, command in self.commands.items():
+            groups[noun] = KindVerbs(nouns.add_parser(noun).add_subparsers(dest="verb", required=True), command, kind)
+            command.arguments(groups[noun])
+            self.row_verbs.add(noun, groups[noun])
+        nouns.metavar = "{" + ",".join(noun for noun, verbs in groups.items() if verbs.shown) + "}"
+        return parser
 
     def run(self, argv: list[str], caller: Caller) -> Outcome:
         output, err = io.StringIO(), io.StringIO()
@@ -101,10 +108,10 @@ class Console:
         produced = Creations.begin()
         with CapturedStream.capture(output, err):
             try:
-                args = self.parser().parse_args(argv)
+                args = self.parser(caller.kind).parse_args(argv)
                 code = self.perform(args, self.attributed(caller))
             except argparse.ArgumentError as refused:
-                self.parser().print_usage(err)
+                self.parser(caller.kind).print_usage(err)
                 print(refused, file=err)
                 code = 2
             except SystemExit as ended:

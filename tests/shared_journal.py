@@ -3,6 +3,7 @@ import shutil
 import sqlite3
 import threading
 import types
+from journal.support.caller_kind import CallerKind
 from enum import Enum
 from pathlib import Path
 
@@ -29,7 +30,7 @@ class SharedJournal:
 
     def __init__(self, app: App) -> None:
         self.app = app
-        app.console().parser()
+        app.console().parser(CallerKind.MAIN_AGENT)
         self.settled()
         self.rows = sqlite3.connect(":memory:")
         with sqlite3.connect(app.config.database) as live:

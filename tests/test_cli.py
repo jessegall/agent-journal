@@ -320,6 +320,21 @@ def test_a_worker_or_a_subagent_runs_only_the_verbs_its_kind_is_declared(app: Ap
     assert FactCommand.callers is not RuleCommand.callers and set(FactCommand.callers) == set(RuleCommand.callers) == {"list", "read"}, "fact and rule each declare their own"
 
 
+def test_help_shows_a_worker_only_the_verbs_its_kind_may_run(app: App):
+    console, worker = app.console(), Caller.worker("main", 1, "w1", "claude")
+    nouns = console.run(["-h"], worker)
+    shown = nouns.text + nouns.error
+    listed_nouns = shown.split("{")[1].split("}")[0].split(",")
+    assert "task" in listed_nouns and "worker" in listed_nouns and "message" not in listed_nouns and "panic" not in listed_nouns, "journal -h lists only the nouns a worker may use"
+    verbs = console.run(["task", "-h"], worker)
+    listed = verbs.text + verbs.error
+    assert "show" in listed and "log" in listed and "create" not in listed and "complete" not in listed, "journal task -h lists only its verbs"
+    usage = console.run(["task"], worker)
+    assert usage.code != 0 and "{log,show}" in usage.text + usage.error and "create" not in usage.text + usage.error, "and so does a usage error"
+    full = console.run(["task", "-h"], MAIN)
+    assert "create" in full.text + full.error and "complete" in full.text + full.error, "the user sees every verb as before"
+
+
 def test_the_help_of_a_noun_with_a_default_verb_lists_every_verb(app: App):
     shown = app.console().run(["setup", "--help"], MAIN)
     assert "restart" in shown.text + shown.error and "project" in shown.text + shown.error, "setup --help names every verb, its default among them"
