@@ -1405,7 +1405,7 @@ def test_the_start_block_carries_the_quiet_rule_the_laws_a_takeover_and_what_wai
     data = json.dumps({"hook_event_name": "SessionStart", "session_id": "earlier"}).encode()
     urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     notified = hook(app, "SessionStart")[1]["hookSpecificOutput"]["additionalContext"]
-    assert "handle the journal quietly" in notified and "laws L1 to L9" in notified and "another agent worked this environment until" in notified
+    assert "handle the journal quietly" in notified and "laws L1 to L10" in notified and "another agent worked this environment until" in notified
     assert "waiting for you here: 1 tasks, 1 messages" in notified
 
 def test_an_unread_inbox_is_named_every_third_tool_use_and_holds_the_write_after_five_reminders(app: App):

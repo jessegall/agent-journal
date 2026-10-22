@@ -70,13 +70,13 @@ class WorkerBranch:
             return blocked
         clashing = self.rebased(worker)
         if clashing:
-            return f"rebased onto this branch it conflicts in {clashing}"
+            return f"rebased onto this branch there is a conflict in {clashing}"
         merged = self.git("merge", "--no-edit", self.name(worker))
         if merged.returncode == 0:
             return ""
         clashing = self.conflicts(self.config.root) or (merged.stderr.strip().splitlines() or ["git refused"])[-1]
         self.git("merge", "--abort")
-        return f"it conflicts in {clashing}"
+        return f"there is a conflict in {clashing}"
 
     def blocked(self, worker: Worker) -> str:
         if self.git("symbolic-ref", "-q", "HEAD").returncode != 0:
