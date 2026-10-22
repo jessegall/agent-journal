@@ -27,13 +27,16 @@ from journal.sync.sync_client import SyncClient
 from journal.sync.team_account import TeamAccount
 from journal.sync.team_server_link import TeamServerLink
 from sync_server.copied_row import CopiedRow
+from sync_server.file_place import FilePlace
+from journal.sync.attachments import FOLDERS
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
+TABLES = {folder: table for table, folder in FOLDERS.items()}
 
 
 class TeamJoin:
-    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the team's environment of the same name, and adds this person's user row. The sync client starts once it is done."""
+    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the team's environment of the same name, and adds this person's user row. The sync client starts once it is done."""
 
     def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
@@ -70,9 +73,16 @@ class TeamJoin:
         highest = {table: max((row.row for row in rows if row.row_table == table), default=0) for table in self.tables.names()}
         answer = self.link.upload(rows, highest, repository)
         self.account.record_sequence(answer.head)
+        files = self.upload_files()
         self.client.refill()
         self.stamp_workers()
-        return f"this journal is now the team's: {answer.rows} rows uploaded"
+        return f"this journal is now the team's: {answer.rows} rows and {files} files uploaded"
+
+    def upload_files(self) -> int:
+        files = [path for table, folder in FOLDERS.items() for path in (self.config.files / folder).glob("*/*") if path.is_file() and path.parent.name.isdigit()]
+        for path in files:
+            self.link.upload_file(FilePlace(TABLES[path.parent.parent.name], int(path.parent.name), path.name), path.read_bytes())
+        return len(files)
 
     def downloaded(self, account_id: int, name: str) -> str:
         self.client.refill()

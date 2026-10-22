@@ -9571,6 +9571,7 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
 def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_and_a_stranger_is_refused(tmp_path, template_journal, monkeypatch):
     import re
     import subprocess
+    from journal.sync.attachments import Attachments
     from journal.features.shell.support.output_log import OutputLog
     from journal.features.shell.jobs.watch_refresh import WatchRefresh
     from journal.repositories.command_outputs import CommandOutputs
@@ -9631,9 +9632,12 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         with a.container.get(Scope).environment(MAIN):
             task = a.container.get(Tasks).save(Task(environment_id=MAIN, title="made before the team"), Actor.user(1))
             worker = a.container.get(Workers).save(Worker(environment_id=MAIN, name="Mr. Faraday"), Actor.user(1))
+        with a.container.get(Scope).environment(MAIN):
+            early = a.container.get(Messages).save(Message(environment_id=MAIN, author=Author.USER, text="a file from before the team"), Actor.user(1))
+        a.container.get(Attachments).store("messages", early.id, "before.txt", b"attached before the team")
         assert a.console().run(["team", "join", address, "--code", admin_code], USER).error.startswith("run journal team join yourself in a terminal")
         joined = a.console().run(["team", "join", address, "--code", admin_code, "--password", "correct horse battery"], USER)
-        assert joined.code == 0 and "this journal is now the team's" in joined.text, joined.error
+        assert joined.code == 0 and "this journal is now the team's" in joined.text and "1 files uploaded" in joined.text, joined.text + joined.error
         assert a.container.get(Workers).find(worker.id).device == str(a.container.get(TeamAccount).device()), "the first journal's workers are its device's"
         invitation = a.console().run(["team", "invite", "bob@example.com"], USER).text
         bob_code = re.search(r"--code (\S+)", invitation).group(1)
@@ -9734,6 +9738,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         attached(a, f"dumps/{dump['id']}/files", "notes.txt", b"dumped notes")
         assert eventually(lambda: file_on(b, f"messages/{picture_message['id']}/files/pic.png") == b"\x89PNG picture"), "a picture attached on Ada's machine opens on Bob's"
         assert eventually(lambda: file_on(b, f"dumps/{dump['id']}/files/notes.txt") == b"dumped notes"), "and so does a file dropped in a dump"
+        assert file_on(b, f"messages/{early.id}/files/before.txt") == b"attached before the team", "a file attached before the journal became shared opens on a journal that joined"
         with b.container.get(Scope).environment(bob_main.row_id):
             comment_with_picture = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="look at this"), Actor.user(2))
         attached(b, f"messages/{comment_with_picture.id}/files", "bob.png", b"bob's picture")
