@@ -24,7 +24,12 @@ export const loadedSkills = (agent) => Object.keys((agent && agent.skills_loaded
 const stopped = (a) => (a.status === "stopped" ? 1 : 0);
 
 // The environment's agent: the live one most lately heard from, else the one most lately seen.
-export const leadOf = (agents) => [...agents].sort((a, b) => stopped(a) - stopped(b) || seconds(b.heard_at) - seconds(a.heard_at))[0] || null;
+const WORKER_ROLE = "worker";
+
+// The environment's own agent: its main agent heard from last, the running one first; a worker or a subagent's row never leads, so
+// the views that follow the lead agent, its edits among them, never flip to a worker's
+export const leadOf = (agents) =>
+    agents.filter((agent) => agent.role !== WORKER_ROLE).sort((a, b) => stopped(a) - stopped(b) || seconds(b.heard_at) - seconds(a.heard_at))[0] || null;
 
 export const runningAgent = (agent) => (agent && agent.status !== "stopped" ? agent : null);
 
