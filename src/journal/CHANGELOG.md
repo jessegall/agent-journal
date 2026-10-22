@@ -2,6 +2,17 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.42
+
+- A task that has started can only be parked, never blocked; parking takes `--on` and `--until` as a block does, and the agent is told when what a parked task waits on comes.
+- Parked work comes first. A closed task names a parked one before any open one, and the checks of blocked tasks name parked ones too.
+- A stop is a round, for any agent:
+  1. Parked tasks are named.
+  2. Then the blocked ones, to check that each is still truly blocked.
+  3. Then, in auto mode, the open ones.
+
+  After that, stops stay held, and `journal stuck` is the way out. Working again starts the round over.
+
 ## 4.5.41
 
 - A worktree dispatch names its library folders:
