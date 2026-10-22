@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.36
+
+- The orchestrator's blocked lines name only the task numbers and send it to read each one, instead of writing every blocked task out in full at each stop.
+- The stats bar's usage chip shows the account's newest plan limits when a session has not reported its own yet, such as a worker's, instead of a bare usage.
+
 ## 4.5.35
 
 - A worker whose work is all journal rows, a document, a report or read-only checks, is merged by closing its task once its proofs are checked; since 4.5.16 a worktree with no commit was refused, so such a task could not be closed without releasing the worker.

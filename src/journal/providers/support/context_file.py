@@ -6,7 +6,7 @@ from journal.providers.support.rate_window import RateWindow
 
 
 class ContextFile:
-    """What a program reports about a session through the journal's status script, not a hook: the script writes one file per session, Claude Code's status line feeds it and Codex has none, and this reads the latest whole one."""
+    """What a program reports about a session through the journal's status script, not a hook: the script writes one file per session, Claude Code's status line feeds it and Codex has none, and this reads the latest whole one. The plan's limits belong to the account, so a session whose status line has not carried them yet shows the newest any session reported."""
 
     def __init__(self, home: Path) -> None:
         self.home = home
@@ -33,8 +33,12 @@ class ContextFile:
         return self.status(session).get("effort", {}).get("level", "")
 
     def windows(self, session: str) -> tuple[RateWindow, ...]:
-        limits = self.status(session).get("rate_limits", {})
+        limits = self.status(session).get("rate_limits") or self.account_limits()
         return tuple(RateWindow(key, label, limits[key].get("used_percentage", 0), limits[key].get("resets_at", 0)) for key, label in (("five_hour", "5h"), ("seven_day", "7d")) if isinstance(limits.get(key), dict))
+
+    def account_limits(self) -> dict:
+        newest = sorted(self.home.glob("*.json"), key=lambda path: path.stat().st_mtime, reverse=True) if self.home.is_dir() else []
+        return next((limits for path in newest if (limits := self.status(path.stem).get("rate_limits"))), {})
 
     def reading(self, session: str) -> AgentStatus:
         return AgentStatus(self.model(session), self.effort(session), self.build(session), self.windows(session))

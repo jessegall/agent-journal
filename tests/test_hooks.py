@@ -127,6 +127,15 @@ def test_a_status_file_caught_half_written_keeps_the_last_whole_reading(tmp_path
     assert context.build("s1") == 0.55
 
 
+
+def test_a_session_whose_status_has_no_plan_limits_yet_shows_the_newest_the_account_reported(tmp_path: Path):
+    from journal.providers.support.context_file import ContextFile
+    context = ContextFile(tmp_path)
+    (tmp_path / "lead.json").write_text(json.dumps({"rate_limits": {"five_hour": {"used_percentage": 30, "resets_at": 1}}}))
+    (tmp_path / "worker.json").write_text(json.dumps({"context_window": {"used_percentage": 2}}))
+    assert [(w.label, w.used) for w in context.windows("worker")] == [("5h", 30)], "the limits are the account's, so a worker's session shows them too"
+
+
 class Raising(AgentListener[ToolStarting]):
     blocking = True
 
