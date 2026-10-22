@@ -328,12 +328,14 @@ export function recallEntries() {
 
 const ROW_CHANGES = ["created", "updated", "deleted"];
 
-// The tables a row's change touches in the viewer: a comment is a message read through its own table, so a message's change is a comment's too.
-const SHOWN_AS = {messages: ["messages", "comments"]};
+// The tables a row's change touches in the viewer: a comment is a message read through its own table, so a message's change is a comment's
+// too; a plan is shown with its phases, so a phase's change is the plans' too.
+const SHOWN_AS = {messages: ["messages", "comments"], phases: ["phases", "plans"]};
 export const tablesOf = (table) => SHOWN_AS[table] || [table];
 
-// The tables an entry tells the viewer to read again: a row's change names its table, a setting's change the settings.
-const owedBy = (e) => (!ROW_CHANGES.includes(e.kind) ? [] : tablesOf(e.data.table));
+// The tables an entry tells the viewer to read again: a row's change names its table, a link's change the tables of the two rows it joins,
+// as a task put under a plan's phase changes the plan, a setting's change the settings.
+const owedBy = (e) => (!ROW_CHANGES.includes(e.kind) ? [] : [...tablesOf(e.data.table), ...(e.data.joins || []).flatMap(tablesOf)]);
 
 function dropDeleted(entries) {
     for (const e of entries.filter((e) => e.kind === "deleted")) {

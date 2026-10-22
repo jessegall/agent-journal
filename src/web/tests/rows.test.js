@@ -99,6 +99,15 @@ describe("entries", () => {
         expect(store.entries).toEqual([{id: 9}]);
     });
 
+    test("a phase added to a plan, or a task linked under it, reads the plans again", async () => {
+        store.rows.plans = [];
+        await takeEntries([{id: 5, kind: "created", data: {table: "phases", id: 7}}]);
+        await vi.waitFor(() => expect(api.list.mock.calls.map((call) => call[0])).toContain("plans"));
+        api.list.mockClear();
+        await takeEntries([{id: 6, kind: "created", data: {table: "links", id: 9, joins: ["phases", "tasks"]}}]);
+        await vi.waitFor(() => expect(api.list.mock.calls.map((call) => call[0])).toContain("plans"));
+    });
+
     test("an entry that changes a row reads that table's rows and counts again", async () => {
         api.list.mockResolvedValue({rows: [row(1)], is_last_page: true, counts: {open: 1, all: 1, unread: 0}});
         await takeEntries([{id: 1, kind: "created", data: {table: "tasks", id: 1}}]);
