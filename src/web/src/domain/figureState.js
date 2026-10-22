@@ -122,12 +122,15 @@ const BEATS = [
     {beat: "answered", matches: (card) => card.icon === "question"},
 ];
 
-// The beats for faces the user has put on messages since `seenAt` (seconds), oldest first; `reactions` are the journal's reaction rows. The
-// card is the message the face is on.
+// the moment a face on a message is, by who put it there: the user's is aimed at the figure, the agent's is the figure's own to play out
+const FACE_MOMENTS = {user: "reacted", agent: "agent_reacted"};
+
+// The beats for faces the user or the agent has put on messages since `seenAt` (seconds), oldest first; `reactions` are the journal's
+// reaction rows. The card is the message the face is on.
 export function facesAfter(reactions, seenAt) {
     return reactions
-        .filter((row) => row.author === "user" && createdAt(row) > seenAt)
-        .map((row) => ({beat: `reacted:${row.face}`, time: createdAt(row), card: `messages:${row.message_id}`}))
+        .filter((row) => FACE_MOMENTS[row.author] && createdAt(row) > seenAt)
+        .map((row) => ({beat: `${FACE_MOMENTS[row.author]}:${row.face}`, time: createdAt(row), card: `messages:${row.message_id}`}))
         .sort((a, b) => a.time - b.time);
 }
 

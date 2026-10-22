@@ -7,6 +7,7 @@ const {
     FLIP_OVER,
     LOOK_SECONDS,
     REACTIONS,
+    VOICE_FACES,
     WORKED_SECONDS,
     WORK_VARIANTS,
     ambientFor,
@@ -128,10 +129,12 @@ test("every moment a reaction waits for is one the journal makes, from cards sha
         {time: 2, key: "messages:2", icon: "terminal", watch: {figure: "Tests 90%", ending: "failed with code 1"}},
     ];
     const agent = {data: {cards, person_at: 2}};
-    const faces = FACES.map((face, n) => ({
+    // the user's faces, and the agent's own in every voice's set
+    const put = [...FACES.map((face) => ["user", face]), ...Object.values(VOICE_FACES).flatMap((faces) => Object.keys(faces).map((face) => ["agent", face]))];
+    const faces = put.map(([author, face], n) => ({
         table: "reactions",
         id: n + 1,
-        author: "user",
+        author,
         created_at: new Date(2000).toISOString(),
         face,
         message_id: n,

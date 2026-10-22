@@ -252,7 +252,22 @@ export class Posing {
     }
 
     holdProp(name, side, offset = [0, 0, 0], turn = {}) {
-        this.props.set(name, {side, offset, turn});
+        this.props.set(name, {bone: `hand_${side}`, frame: `hand_${side}`, at: this.grip(side, offset), turn});
+    }
+
+    // a prop in the hand on `side` that keeps turned as the body is, not as the hand is, so a glass or a trophy stays upright
+    holdUpright(name, side, offset = [0, 0, 0], turn = {}) {
+        this.props.set(name, {bone: `hand_${side}`, frame: "root", at: this.grip(side, offset), turn});
+    }
+
+    // a prop worn on the head, `offset` from the head's own place at rest, as the hat lifted from it or the sunglasses put on
+    wearProp(name, offset, turn = {}) {
+        this.props.set(name, {bone: "head", frame: "head", at: this.rig.heads.get("head").clone().add(new THREE.Vector3(...offset)), turn});
+    }
+
+    // where the hand on `side` grips at rest, `offset` from its own grip
+    grip(side, offset) {
+        return this.rig.heads.get(`hand_${side}`).clone().add(new THREE.Vector3(SIDES[side] * (HAND.grip + offset[0]), HAND.forward + offset[1], offset[2]));
     }
 
     putAway(...items) {
@@ -1487,6 +1502,289 @@ function pointed(pose, stance, t) {
     POINTED[stance.voice](pose, stance, onceTime(t, 20));
 }
 
+// Each voice's answer to one of its own faces, put by the agent on the user's message: a gesture in the voice's manner, played once, starting
+// and ending at rest. The hand that gestures is the free one; what the other carries stays in it.
+export const REACTING = {
+    frames: 36, fps: 12,
+    hatOn: 1.101, hatLift: 0.15, hatTip: 12, hatGrip: 35, hatReach: 0.85, hatBow: 22, hatNod: 14,
+    monocleWrist: [0.55, -0.8, 2.62], monocleWorn: [0.354, -0.95, 0.66], monoclePeer: 8, monocleTilt: 9,
+    toastWrist: [0.78, -0.72, 2.55], toastClink: 0.12, sipWrist: [0.42, -0.78, 2.38], sipTip: 20,
+    shakaWrist: [1.22, -0.25, 2.72], shakaWaggle: 28, shakaWaggles: 3,
+    shadesWrist: [0.5, -0.82, 2.55], shadesWorn: [0, -0.96, 0.66], shadesLean: 7, shadesTilt: 10,
+    fireWrist: [0.48, -0.86, 2.28], fireSize: 2.4,
+    thumbWrist: [0.62, -0.84, 2.3],
+    glassesWrist: [0.32, -0.8, 2.47], peerLean: 12, peerTurn: 18,
+    heartWrist: [0.18, -0.58, 2.12], thanksBow: 14,
+    popperWrist: [0.95, -0.45, 2.85], popAt: 0.4, popHop: 0.12,
+    flex: {y: 0, x: -85, z: 15, bend: 115}, flexPump: 15,
+    trophy: {y: -55, x: 15, z: 0, bend: 15}, trophyHop: 0.1,
+    sword: {y: -62, x: 18, z: 0, bend: 12}, swordThrust: 12,
+    shieldWrist: [0.24, -0.78, 2.3], shieldCrouch: 0.08, shieldBump: 0.5,
+    castleWrist: [0.55, -0.88, 2.34],
+};
+
+// what the hand that does not gesture carries stays in it while the gesturing hand holds a prop
+const keepCarrying = (pose) => BUSY_ITEMS.forEach((item) => pose.keep.add(item));
+
+// the clip's time as {u, ready}, ready rising from rest and back to it over the whole clip
+const reacting = (t) => gestureTime(t, REACTING.frames);
+
+// the hand on `side` taken from hanging toward `target` (k), and turned so its back faces out and its grip points up
+function handUp(pose, side, k, target, turn = {}) {
+    propHand(pose, side, k, target, {x: -60 * k, ...turn});
+}
+
+// the butler lifts his hat off by the brim, bows a little with it held up, and puts it back on
+function hat_tip(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const sign = SIDES[side];
+    const lifted = rise(u, 0.22, 0.34) * (1 - rise(u, 0.68, 0.8));
+    const bow = swell(u, 0.32, 0.72);
+    breathe(pose, 0);
+    trunk(pose, {lean: REACTING.hatBow * bow, nod: REACTING.hatNod * bow});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    const offset = [0, 0, REACTING.hatOn + REACTING.hatLift * lifted];
+    const turn = {x: 0.6 * REACTING.hatTip * lifted, y: sign * REACTING.hatTip * lifted};
+    const head = pose.matrix("head");
+    const hat = euler(turn.x, turn.y, 0);
+    const grip = radians(REACTING.hatGrip);
+    const brim = new THREE.Vector3(sign * REACTION_PROPS.hat.brim * Math.cos(grip), -REACTION_PROPS.hat.brim * Math.sin(grip), 0).applyMatrix4(hat).add(pose.rig.heads.get("head")).add(new THREE.Vector3(...offset));
+    const up = new THREE.Vector3(0, 0, 1).applyMatrix4(hat).transformDirection(head);
+    const target = brim.applyMatrix4(head).addScaledVector(up, -REACTING.hatReach);
+    if (ready) {
+        handTo(pose, side, ready, target, new THREE.Vector3(...ACTING.elbow));
+        pose.aim(`hand_${side}`, pose.rig.along.get(`hand_${side}`).clone().transformDirection(pose.matrix(`hand_${side}`)).lerp(up, ready));
+    }
+    if (u > 0.22 && u < 0.8) {
+        pose.putAway("butler_bowler_hat");
+        pose.wearProp("bowler_hat", offset, turn);
+    }
+    eyesAs(pose, "amused", bow);
+}
+
+// the butler brings up a monocle, screws it into his eye, peers through it a moment, and lets it drop
+function monocle(pose, stance, t) {
+    const {u} = reacting(t);
+    const side = freeSide(stance);
+    const sign = SIDES[side];
+    const raised = rise(u, 0, 0.2) * (1 - rise(u, 0.82, 1));
+    const peer = rise(u, 0.26, 0.36) * (1 - rise(u, 0.66, 0.76));
+    breathe(pose, 0);
+    trunk(pose, {lean: REACTING.monoclePeer * peer, nod: REACTING.monoclePeer * peer, tilt: sign * REACTING.monocleTilt * peer});
+    armsAtRest(pose, stance, raised ? [side] : []);
+    const away = 1 - 0.35 * peer;
+    handUp(pose, side, raised, REACTING.monocleWrist.map((value, axis) => (axis === 2 ? value - 0.25 * (1 - away) : value)));
+    const [x, y, z] = REACTING.monocleWorn;
+    if (u > 0.18 && u < 0.8) pose.wearProp("monocle", [sign * x, y, z]);
+    else if (raised > 0.4) pose.holdUpright("monocle", side, [0, 0, 0.2]);
+    eyesAs(pose, "startled", 0.6 * peer);
+}
+
+// the butler raises a glass of champagne to you, clinks it toward you, and takes a sip
+function toast(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const clink = swell(u, 0.3, 0.42);
+    const sip = swell(u, 0.5, 0.78);
+    breathe(pose, 0);
+    trunk(pose, {lean: 4 * clink, nod: -6 * sip});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    const target = REACTING.toastWrist.map((value, axis) => mix(value, REACTING.sipWrist[axis], sip) + (axis === 1 ? -REACTING.toastClink * clink : 0));
+    handUp(pose, side, ready, target);
+    if (ready > 0.3) pose.holdUpright("champagne_flute", side, [0, 0, 0.1], {x: REACTING.sipTip * sip, y: SIDES[side] * REACTING.sipTip * sip});
+    pose.shutEyes(1 - 0.7 * sip);
+    if (clink > 0.5) eyesAs(pose, "amused", clink);
+}
+
+// the homie throws a shaka up beside his head and waggles it, leaning back easy
+function shaka(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const sign = SIDES[side];
+    breathe(pose, 0);
+    trunk(pose, {lean: -5 * ready, tilt: -sign * 8 * ready, turn: -sign * 6 * ready});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    handUp(pose, side, ready, REACTING.shakaWrist, {y: REACTING.shakaWaggle * waveOf(span(u, 0.2, 0.8), REACTING.shakaWaggles) * ready});
+    if (ready > 0.5) pose.holdUpright("shaka", side, [0, 0, 0.32]);
+    eyesAs(pose, "amused", ready);
+}
+
+// the homie puts on a pair of sunglasses, leans back and nods slowly to himself, then takes them off again
+function shades(pose, stance, t) {
+    const {u} = reacting(t);
+    const side = freeSide(stance);
+    const sign = SIDES[side];
+    const putting = rise(u, 0, 0.15) * (1 - rise(u, 0.15, 0.3));
+    const taking = rise(u, 0.72, 0.86) * (1 - rise(u, 0.86, 1));
+    const worn = u > 0.22 && u < 0.82;
+    const cool = rise(u, 0.28, 0.38) * (1 - rise(u, 0.66, 0.76));
+    breathe(pose, 0);
+    trunk(pose, {lean: -REACTING.shadesLean * cool, tilt: sign * REACTING.shadesTilt * cool, nod: 6 * cool * Math.max(waveOf(span(u, 0.38, 0.66), 2), 0)});
+    const hand = Math.max(putting, taking);
+    armsAtRest(pose, stance, hand ? [side] : []);
+    handUp(pose, side, hand, REACTING.shadesWrist);
+    if (worn) pose.wearProp("sunglasses", REACTING.shadesWorn);
+    else if (hand > 0.4) pose.holdUpright("sunglasses", side, [0, -0.1, 0.25]);
+}
+
+// the homie holds up a hand with a flame on it, nods along to how hot that was, shakes it out and blows on his fingers
+function fire(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const burning = rise(u, 0.18, 0.28) * (1 - rise(u, 0.66, 0.74));
+    const shaking = swell(u, 0.66, 0.84);
+    breathe(pose, 0);
+    trunk(pose, {nod: 8 * burning * Math.max(waveOf(span(u, 0.28, 0.66), 3), 0) + 6 * shaking, tilt: SIDES[side] * 5 * burning});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    handUp(pose, side, ready, REACTING.fireWrist, {y: 25 * shaking * waveOf(u, 9)});
+    if (burning > 0.02) {
+        pose.holdUpright("flame", side, [0, 0, 0.18]);
+        Object.assign(pose.props.get("flame"), {phase: u, size: REACTING.fireSize * burning});
+    }
+    eyesAs(pose, shaking > 0.3 ? "startled" : "amused", Math.max(burning, shaking));
+}
+
+// the colleague gives a thumbs up and a firm nod
+function thumbs_up(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const nodded = swell(u, 0.35, 0.6);
+    breathe(pose, 0);
+    trunk(pose, {nod: 14 * nodded, lean: 3 * ready});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    handUp(pose, side, ready, REACTING.thumbWrist, {y: 0});
+    if (ready > 0.5) {
+        pose.holdUpright("thumb", side, [0, 0, 0.3]);
+        keepCarrying(pose);
+    }
+    eyesAs(pose, "amused", nodded);
+}
+
+// the colleague pushes his glasses up his nose, leans in and looks it over, one side and the other
+function peer(pose, stance, t) {
+    const {u} = reacting(t);
+    const side = freeSide(stance);
+    const push = rise(u, 0, 0.14) * (1 - rise(u, 0.24, 0.36));
+    const leaning = rise(u, 0.26, 0.38) * (1 - rise(u, 0.8, 0.95));
+    const look = swell(u, 0.38, 0.58) - swell(u, 0.58, 0.8);
+    breathe(pose, 0);
+    trunk(pose, {lean: REACTING.peerLean * leaning, nod: 6 * leaning, turn: REACTING.peerTurn * look});
+    armsAtRest(pose, stance, push ? [side] : []);
+    const [x, y, z] = REACTING.glassesWrist;
+    handUp(pose, side, push, [x, y, z + 0.08 * rise(u, 0.12, 0.22)]);
+    eyesAs(pose, "reading", leaning);
+}
+
+// the colleague puts a hand to his chest and gives a small bow, eyes closed: thanks
+function thanks(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const bow = swell(u, 0.25, 0.8);
+    breathe(pose, 0);
+    trunk(pose, {lean: REACTING.thanksBow * bow, nod: 10 * bow});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    propHand(pose, side, ready, REACTING.heartWrist, {x: -20 * ready});
+    pose.shutEyes(1 - 0.85 * bow);
+}
+
+// the coach pulls a party popper over his head; the confetti bursts out and he hops with it
+function party_popper(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const hop = swell(u, REACTING.popAt, REACTING.popAt + 0.2);
+    pose.lift("root", {z: REACTING.popHop * hop});
+    breathe(pose, 0);
+    trunk(pose, {lean: -4 * hop, nod: -8 * hop});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    handUp(pose, side, ready, REACTING.popperWrist);
+    if (ready > 0.4) {
+        pose.holdUpright("party_popper", side, [0, 0, 0.1], {y: SIDES[side] * 25});
+        pose.props.get("party_popper").burst = span(u, REACTING.popAt, 0.95);
+        keepCarrying(pose);
+    }
+    eyesAs(pose, "amused", hop);
+}
+
+// the coach flexes the free arm, pumping it twice, chest out
+function flex(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const pump = Math.max(waveOf(span(u, 0.25, 0.75), 2), 0);
+    breathe(pose, 0);
+    trunk(pose, {lean: -5 * ready, twist: -SIDES[side] * 10 * ready, tilt: SIDES[side] * 4 * ready, nod: -4 * ready});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    if (ready) armTo(pose, side, ready, {...REACTING.flex, bend: REACTING.flex.bend + REACTING.flexPump * pump});
+    eyesAs(pose, "angry", 0.6 * pump);
+}
+
+// the coach holds a trophy up over his head and bounces with it twice
+function trophy(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = freeSide(stance);
+    const bounce = Math.max(waveOf(span(u, 0.25, 0.75), 2), 0);
+    pose.lift("root", {z: REACTING.trophyHop * bounce});
+    breathe(pose, 0);
+    trunk(pose, {nod: -12 * ready, lean: -4 * ready});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    if (ready) armTo(pose, side, ready, REACTING.trophy);
+    if (ready > 0.4) {
+        pose.holdUpright("trophy", side, [0, 0, 0.3]);
+        keepCarrying(pose);
+    }
+    eyesAs(pose, "amused", ready);
+}
+
+// the squire puts the quill away, draws a sword and raises it high, thrusting it up twice, onwards
+function sword(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = heldUp(stance)[0] || freeSide(stance);
+    const thrust = Math.max(waveOf(span(u, 0.25, 0.75), 2), 0);
+    breathe(pose, 0);
+    trunk(pose, {lean: -4 * ready, nod: -10 * ready});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    if (ready) armTo(pose, side, ready, {...REACTING.sword, y: REACTING.sword.y - REACTING.swordThrust * thrust});
+    if (ready) pose.putAway("squire_quill");
+    if (ready > 0.4) {
+        pose.holdUpright("sword", side, [0, 0, 0.15], {x: -15});
+        keepCarrying(pose);
+    }
+    eyesAs(pose, "angry", ready);
+}
+
+// the squire raises his shield before him and braces behind it as a blow lands, then lowers it
+function shield_up(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const shield = [...stance.shield][0];
+    if (!shield) return idle(pose, stance, t);
+    const bump = swell(u, REACTING.shieldBump, REACTING.shieldBump + 0.12);
+    crouch(pose, REACTING.shieldCrouch * ready);
+    breathe(pose, 0);
+    trunk(pose, {lean: 8 * ready - 8 * bump, nod: 6 * ready});
+    armsAtRest(pose, stance, ready ? [shield] : []);
+    const [x, y, z] = REACTING.shieldWrist;
+    propHand(pose, shield, ready, [x, y + 0.08 * bump, z]);
+    pose.keep.add("squire_shield");
+    eyesAs(pose, bump > 0.3 ? "startled" : "angry", ready);
+}
+
+// the squire holds out a small castle on his palm, the realm he keeps, and bows his head over it
+function castle(pose, stance, t) {
+    const {u, ready} = reacting(t);
+    const side = heldUp(stance)[0] || freeSide(stance);
+    const bow = swell(u, 0.35, 0.75);
+    breathe(pose, 0);
+    trunk(pose, {nod: 12 * bow, lean: 4 * bow});
+    armsAtRest(pose, stance, ready ? [side] : []);
+    propHand(pose, side, ready, REACTING.castleWrist, {x: -30 * ready});
+    if (ready) pose.putAway("squire_quill");
+    if (ready > 0.4) {
+        pose.holdUpright("castle", side, [0, 0, 0.12]);
+        keepCarrying(pose);
+    }
+    eyesAs(pose, "amused", bow);
+}
+
 // What a posture does to the legs of whatever clip is drawn in it: what it sets before the clip poses the body, and what it lays over the
 // legs after. Standing, the clip has the legs to itself.
 const LEGS = {
@@ -1552,6 +1850,21 @@ export const CLIPS = [
     {name: "stretch", frames: 24, fps: 8, loops: false, postures: GESTURE, pose: stretch},
     {name: "squire_chase", frames: 24, fps: 12, loops: false, postures: MOVE, pose: squire_chase},
     {name: "pointed", frames: 20, fps: 10, loops: false, postures: MOVE, pose: pointed},
+    {name: "hat_tip", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["butler"], pose: hat_tip},
+    {name: "monocle", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["butler"], pose: monocle},
+    {name: "toast", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["butler"], pose: toast},
+    {name: "shaka", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["homie"], pose: shaka},
+    {name: "shades", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["homie"], pose: shades},
+    {name: "fire", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["homie"], pose: fire},
+    {name: "thumbs_up", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["colleague"], pose: thumbs_up},
+    {name: "peer", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["colleague"], pose: peer},
+    {name: "thanks", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["colleague"], pose: thanks},
+    {name: "party_popper", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["coach"], pose: party_popper},
+    {name: "flex", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["coach"], pose: flex},
+    {name: "trophy", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["coach"], pose: trophy},
+    {name: "sword", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["squire"], pose: sword},
+    {name: "shield_up", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["squire"], pose: shield_up},
+    {name: "castle", frames: REACTING.frames, fps: REACTING.fps, loops: false, postures: GESTURE, voices: ["squire"], pose: castle},
 ];
 
 // An eye closes about its own middle before the head carries it, as rig.Figure.shut_eyes scales the eye object
@@ -1943,6 +2256,13 @@ function propsOf() {
         }
         if (tablet) part(root, "screen", new THREE.BoxGeometry(paper.width * paper.screenWidth, paper.thickness, paper.depth * paper.screenDepth), colours.accent, [0, paper.thickness * paper.screenLift, 0]);
     }
+    props.get("papers").userData.shape = ({phase}) => {
+        const square = rise(phase, 0, 0.3) * (1 - rise(phase, 0.8, 1));
+        props.get("papers").userData.sheets.forEach((sheet, index) => {
+            sheet.position.x = paper.spread * index * (1 - square);
+            sheet.rotation.y = paper.spread * index * (1 - square);
+        });
+    };
     const clock = group("pocket_watch");
     const rim = part(clock, "rim", new THREE.CylinderGeometry(watch.radius, watch.radius, watch.depth, watch.sides), colours.silver);
     rim.rotation.x = Math.PI / 2;
@@ -1956,29 +2276,128 @@ function propsOf() {
     part(whistle, "mouthpiece", new THREE.BoxGeometry(...TOOLS.whistle.mouthpiece), colours.silver, TOOLS.whistle.mouthAt);
     const wipe = group("polishing_cloth");
     part(wipe, "fold", new THREE.BoxGeometry(cloth.width, cloth.thickness, cloth.depth), colours.white);
+    reactionPropsOf(group, part);
     return props;
 }
 
-function heldPropOf(rig, moves, {side, offset, turn}) {
-    const at = rig.heads.get(`hand_${side}`).clone().add(new THREE.Vector3(SIDES[side] * (HAND.grip + offset[0]), HAND.forward + offset[1], offset[2]));
-    return TO_GLB.clone().multiply(moves.get(`hand_${side}`)).multiply(translation(at))
+// The things the voices bring out when the agent answers with one of their faces, sized against the figure, each standing up its y axis
+// with its front toward the viewer (+z): the butler's bowler as it sits on his head, from its brim, so it can be lifted off and put back
+export const REACTION_PROPS = {
+    hat: {brim: 1.084, brimDepth: 0.074, crown: 0.9, crownHeight: 0.787, band: 0.905, bandFrom: 0.104, bandDepth: 0.137, sides: 32},
+    monocle: {radius: 0.2, tube: 0.028, chain: 0.55, chainWidth: 0.012},
+    flute: {base: 0.13, baseDepth: 0.025, stem: 0.022, stemLength: 0.35, rim: 0.12, bottom: 0.05, bowl: 0.4, fill: 0.27},
+    shades: {lens: [0.56, 0.34, 0.05], apart: 0.37, bridge: [0.2, 0.05, 0.05], temple: [0.04, 0.04, 0.7], shine: [0.2, 0.035, 0.01]},
+    flame: {outer: [0.17, 0.55], inner: [0.09, 0.32], sides: 12, flickers: 7},
+    finger: {radius: 0.09, length: 0.22, splay: 0.6},
+    popper: {mouth: 0.14, length: 0.45, sides: 12},
+    confetti: {count: 18, size: 0.08, reach: 1.5, fall: 0.9, spin: 9},
+    trophy: {base: [0.38, 0.12, 0.38], stem: [0.05, 0.08, 0.22], rim: 0.3, bottom: 0.12, cup: 0.38, handle: 0.12, handleTube: 0.03},
+    sword: {grip: [0.035, 0.26], guard: [0.42, 0.06, 0.07], blade: [0.09, 1.3, 0.025], point: 0.15, pommel: 0.06},
+    castle: {wall: [0.6, 0.3, 0.25], crenel: [0.1, 0.08, 0.25], tower: [0.11, 0.5], roof: [0.15, 0.24], gate: [0.14, 0.18], pole: 0.24, flag: 0.14},
+    colours: {hat: 0x292a3b, band: 0xf4f2ed, gold: 0xe8b84a, glass: 0xdde6ee, champagne: 0xf1d27a, lens: 0x14161c, flame: 0xff7a1a,
+        fire: 0xffd23f, hand: 0xf5ecdf, wood: 0x7a4a26, stone: 0xc9c2b4, confetti: [0x6366f1, 0xe8b84a, 0xef476f, 0x06d6a0, 0x118ab2]},
+};
+
+function reactionPropsOf(group, part) {
+    const {hat, monocle, flute, shades, flame, finger, popper, confetti, trophy, sword, castle, colours} = REACTION_PROPS;
+    const ink = TOOLS.colours.ink, silver = TOOLS.colours.silver, accent = TOOLS.colours.accent;
+    const bowler = group("bowler_hat");
+    part(bowler, "brim", new THREE.CylinderGeometry(hat.brim, hat.brim, hat.brimDepth, hat.sides), colours.hat, [0, hat.brimDepth / 2, 0]);
+    part(bowler, "crown", new THREE.SphereGeometry(hat.crown, hat.sides, 12, 0, 2 * Math.PI, 0, Math.PI / 2), colours.hat).scale.y = hat.crownHeight / hat.crown;
+    part(bowler, "band", new THREE.CylinderGeometry(hat.band, hat.band, hat.bandDepth, hat.sides), colours.band, [0, hat.bandFrom + hat.bandDepth / 2, 0]);
+    const glass = group("monocle");
+    part(glass, "ring", new THREE.TorusGeometry(monocle.radius, monocle.tube, 8, 24), colours.gold);
+    part(glass, "lens", new THREE.CircleGeometry(monocle.radius, 24), colours.glass);
+    part(glass, "chain", new THREE.CylinderGeometry(monocle.chainWidth, monocle.chainWidth, monocle.chain, 6), colours.gold, [monocle.radius * 0.7, -monocle.radius * 0.7 - monocle.chain / 2, 0]);
+    const toast = group("champagne_flute");
+    part(toast, "base", new THREE.CylinderGeometry(flute.base, flute.base, flute.baseDepth, 16), colours.glass, [0, -flute.stemLength / 2, 0]);
+    part(toast, "stem", new THREE.CylinderGeometry(flute.stem, flute.stem, flute.stemLength, 8), colours.glass);
+    part(toast, "bowl", new THREE.CylinderGeometry(flute.rim, flute.bottom, flute.bowl, 16, 1, true), colours.glass, [0, (flute.stemLength + flute.bowl) / 2, 0]);
+    part(toast, "wine", new THREE.CylinderGeometry(flute.rim * 0.9, flute.bottom * 0.9, flute.fill, 16), colours.champagne, [0, flute.stemLength / 2 + flute.fill / 2 + 0.01, 0]);
+    const cool = group("sunglasses");
+    for (const sign of [1, -1]) {
+        part(cool, `lens_${sign}`, new THREE.BoxGeometry(...shades.lens), colours.lens, [sign * shades.apart, 0, 0]);
+        part(cool, `temple_${sign}`, new THREE.BoxGeometry(...shades.temple), ink, [sign * (shades.apart + shades.lens[0] / 2), shades.lens[1] / 4, -shades.temple[2] / 2]);
+        part(cool, `shine_${sign}`, new THREE.BoxGeometry(...shades.shine), TOOLS.colours.white, [sign * shades.apart - shades.lens[0] / 5, shades.lens[1] / 4, shades.lens[2] / 2]).rotation.z = 0.5;
+    }
+    part(cool, "bridge", new THREE.BoxGeometry(...shades.bridge), ink, [0, shades.lens[1] / 4, 0]);
+    const fire = group("flame");
+    const outer = part(fire, "outer", new THREE.ConeGeometry(flame.outer[0], flame.outer[1], flame.sides), colours.flame, [0, flame.outer[1] / 2, 0]);
+    const inner = part(fire, "inner", new THREE.ConeGeometry(flame.inner[0], flame.inner[1], flame.sides), colours.fire, [0, flame.inner[1] / 2, 0.03]);
+    fire.userData.shape = ({phase, size}) => {
+        const flicker = 1 + 0.18 * Math.sin(2 * Math.PI * flame.flickers * phase) + 0.08 * Math.sin(2 * Math.PI * 2.3 * flame.flickers * phase);
+        fire.scale.set(size * (2 - flicker), size * flicker, size * (2 - flicker));
+        outer.rotation.z = inner.rotation.z = 0.12 * Math.sin(2 * Math.PI * 1.7 * flame.flickers * phase);
+    };
+    const digit = () => new THREE.CapsuleGeometry(finger.radius, finger.length, 4, 8);
+    part(group("thumb"), "thumb", digit(), colours.hand, [0, finger.length / 2 + finger.radius, 0]);
+    const shaka = group("shaka");
+    for (const sign of [1, -1]) part(shaka, `finger_${sign}`, digit(), colours.hand, [sign * finger.length * 0.6, finger.length / 2, 0]).rotation.z = -sign * finger.splay;
+    const party = group("party_popper");
+    part(party, "cone", new THREE.ConeGeometry(popper.mouth, popper.length, popper.sides, 1, true), accent, [0, popper.length / 2, 0]).rotation.x = Math.PI;
+    part(party, "rim", new THREE.TorusGeometry(popper.mouth, 0.02, 6, popper.sides), colours.gold, [0, popper.length, 0]).rotation.x = Math.PI / 2;
+    const pieces = Array.from({length: confetti.count}, (_, index) => {
+        const piece = part(party, `confetti_${index}`, new THREE.PlaneGeometry(confetti.size, confetti.size), colours.confetti[index % colours.confetti.length]);
+        const around = index * 2.39996;
+        const lean = 0.25 + 0.5 * ((index * 7) % confetti.count) / confetti.count;
+        piece.userData.way = new THREE.Vector3(Math.sin(lean) * Math.cos(around), Math.cos(lean), Math.sin(lean) * Math.sin(around));
+        return piece;
+    });
+    party.userData.shape = ({burst}) => {
+        for (const [index, piece] of pieces.entries()) {
+            piece.visible = burst > 0 && burst < 1;
+            const out = confetti.reach * Math.sqrt(burst);
+            piece.position.set(piece.userData.way.x * out, popper.length + piece.userData.way.y * out - confetti.fall * burst * burst, piece.userData.way.z * out);
+            piece.rotation.set(confetti.spin * burst + index, confetti.spin * burst * 0.7, index);
+        }
+    };
+    const cup = group("trophy");
+    part(cup, "base", new THREE.BoxGeometry(...trophy.base), colours.wood, [0, -trophy.stem[2] - trophy.base[1] / 2, 0]);
+    part(cup, "stem", new THREE.CylinderGeometry(trophy.stem[0], trophy.stem[1], trophy.stem[2], 12), colours.gold, [0, -trophy.stem[2] / 2, 0]);
+    part(cup, "cup", new THREE.CylinderGeometry(trophy.rim, trophy.bottom, trophy.cup, 16), colours.gold, [0, trophy.cup / 2, 0]);
+    for (const sign of [1, -1]) part(cup, `handle_${sign}`, new THREE.TorusGeometry(trophy.handle, trophy.handleTube, 6, 12), colours.gold, [sign * trophy.rim, trophy.cup * 0.6, 0]);
+    const blade = group("sword");
+    part(blade, "grip", new THREE.CylinderGeometry(sword.grip[0], sword.grip[0], sword.grip[1], 8), colours.wood);
+    part(blade, "pommel", new THREE.SphereGeometry(sword.pommel, 8, 6), colours.gold, [0, -sword.grip[1] / 2 - sword.pommel / 2, 0]);
+    part(blade, "guard", new THREE.BoxGeometry(...sword.guard), colours.gold, [0, sword.grip[1] / 2 + sword.guard[1] / 2, 0]);
+    part(blade, "blade", new THREE.BoxGeometry(...sword.blade), silver, [0, sword.grip[1] / 2 + sword.guard[1] + sword.blade[1] / 2, 0]);
+    const point = part(blade, "point", new THREE.ConeGeometry(sword.blade[0] / Math.SQRT2, sword.point, 4), silver, [0, sword.grip[1] / 2 + sword.guard[1] + sword.blade[1] + sword.point / 2, 0]);
+    point.rotation.y = Math.PI / 4;
+    point.scale.z = sword.blade[2] / sword.blade[0];
+    const keep = group("castle");
+    part(keep, "wall", new THREE.BoxGeometry(...castle.wall), colours.stone, [0, castle.wall[1] / 2, 0]);
+    for (const x of [-1, 0, 1]) part(keep, `crenel_${x}`, new THREE.BoxGeometry(...castle.crenel), colours.stone, [x * castle.wall[0] / 3, castle.wall[1] + castle.crenel[1] / 2, 0]);
+    for (const sign of [1, -1]) {
+        part(keep, `tower_${sign}`, new THREE.CylinderGeometry(castle.tower[0], castle.tower[0], castle.tower[1], 12), colours.stone, [sign * castle.wall[0] / 2, castle.tower[1] / 2, 0]);
+        part(keep, `roof_${sign}`, new THREE.ConeGeometry(...castle.roof, 12), accent, [sign * castle.wall[0] / 2, castle.tower[1] + castle.roof[1] / 2, 0]);
+    }
+    part(keep, "gate", new THREE.PlaneGeometry(...castle.gate), ink, [0, castle.gate[1] / 2, castle.wall[2] / 2 + 0.005]);
+    const top = castle.tower[1] + castle.roof[1];
+    part(keep, "pole", new THREE.CylinderGeometry(0.01, 0.01, castle.pole, 4), ink, [castle.wall[0] / 2, top + castle.pole / 2, 0]);
+    const pennant = new THREE.Shape();
+    pennant.moveTo(0, 0);
+    pennant.lineTo(castle.flag, -castle.flag / 3);
+    pennant.lineTo(0, -castle.flag * 2 / 3);
+    pennant.closePath();
+    part(keep, "flag", new THREE.ShapeGeometry(pennant), colours.gold, [castle.wall[0] / 2, top + castle.pole, 0]);
+}
+
+// A prop's place: at its spot on the bone that carries it, turned as `frame` is turned
+function heldPropOf(moves, {bone, frame, at, turn}) {
+    const placed = at.clone().applyMatrix4(moves.get(bone));
+    return TO_GLB.clone().multiply(translation(placed)).multiply(new THREE.Matrix4().extractRotation(moves.get(frame)))
         .multiply(euler(turn.x || 0, turn.y || 0, turn.z || 0)).multiply(FROM_GLB);
 }
 
+// every prop placed where the pose holds it, and one whose shape moves, as the papers squared or the confetti flying, shaped as it says
 function moveProps(figure, pose, moves) {
     for (const [name, prop] of figure.propByName) {
         const held = pose.props.get(name);
         prop.visible = Boolean(held);
         if (!held) continue;
-        prop.matrix.copy(heldPropOf(figure.rig, moves, held));
+        prop.matrix.copy(heldPropOf(moves, held));
         prop.matrixWorldNeedsUpdate = true;
-        if (name === "papers") {
-            const square = rise(held.phase, 0, 0.3) * (1 - rise(held.phase, 0.8, 1));
-            prop.userData.sheets.forEach((sheet, index) => {
-                sheet.position.x = TOOLS.paper.spread * index * (1 - square);
-                sheet.rotation.y = TOOLS.paper.spread * index * (1 - square);
-            });
-        }
+        prop.userData.shape?.(held);
     }
 }
 

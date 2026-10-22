@@ -4,6 +4,15 @@ import {WORKING, clipOf, eggFor} from "../domain/figureState.js";
 // Nothing fires every time: `odds` is the chance a moment is reacted to at all, and `cooldown` the seconds before the same reaction may
 // play again, so the figure is a creature that notices things now and then, not a status icon.
 
+// The clip each voice plays when the agent puts one of the voice's own faces on a message, by voice and then by face
+export const VOICE_FACES = {
+    butler: {"🎩": "hat_tip", "🧐": "monocle", "🥂": "toast"},
+    homie: {"🤙": "shaka", "😎": "shades", "🔥": "fire"},
+    colleague: {"👍": "thumbs_up", "👀": "peer", "🙏": "thanks"},
+    coach: {"🎉": "party_popper", "💪": "flex", "🏆": "trophy"},
+    squire: {"⚔️": "sword", "🛡️": "shield_up", "🏰": "castle"},
+};
+
 // The reactions to a moment, by its name; the first whose roll succeeds plays. `moment` is a beat, a card seen to change, or a held state.
 // A clip moves the body once; a look changes only the eyes. Card-directed clips face their source.
 export const REACTIONS = [
@@ -33,6 +42,10 @@ export const REACTIONS = [
     {moment: "reacted:\ud83c\udfa9", look: "amused", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83e\uddd0", look: "reading", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83e\udd42", look: "amused", odds: 1, cooldown: 0},
+    // a face the agent puts on a message in its own voice is played out by the figure, every time
+    ...Object.entries(VOICE_FACES).flatMap(([voice, faces]) =>
+        Object.entries(faces).map(([face, clip]) => ({moment: `agent_reacted:${face}`, voice, clip, odds: 1, cooldown: 0}))
+    ),
 ];
 
 // how long the eyes keep a look, counted only while they are shown
