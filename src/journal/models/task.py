@@ -54,7 +54,7 @@ class Task(Scoped):
         return self.plan_started(time, 0)
 
     def plan_started(self, time: datetime, plan_id: int) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id))
+        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id, prior_state=self.state))
 
     def suspended(self, reason: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:

@@ -946,6 +946,7 @@ def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_fo
     console.run(["task", "block", "2", "waits on the client's logo"], AGENT)
     console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "complete", "1", "--how", "the parser reads"], AGENT)
+    console.run(["task", "unblock", "2"], AGENT)
     app.runtime().deferred.drain()
     with app.container.get(Scope).environment(MAIN):
         from journal.repositories.messages import Messages
@@ -953,6 +954,8 @@ def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_fo
     texts = [text for text, _ in marks]
     assert "Started task 1: the parser" in texts and "Parked task 1: the parser" in texts and "Blocked task 2: the footer" in texts and "Finished task 1: the parser" in texts, texts
     assert ("Blocked task 2: the footer", "waits on the client's logo") in marks, "a parked or blocked mark says why"
+    assert texts.count("Started task 1: the parser") == 1 and "Resumed task 1: the parser" in texts, "a parked task taken up again is resumed, not started"
+    assert "Unblocked task 2: the footer" in texts, "and a blocked task opened again has a mark too"
 
 
 def test_a_task_the_user_opens_is_told_at_once_to_an_idle_agent_and_frees_a_stuck_one(app: App, monkeypatch):
