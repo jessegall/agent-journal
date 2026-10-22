@@ -1,12 +1,13 @@
 <script setup>
 import {useWindowEvent} from "../composables/windowEvent.js";
 import {computed} from "vue";
+import FileView from "./FileView.vue";
 import Icon from "./Icon.vue";
 import {ui} from "../state/ui.js";
 
-const picture = computed(() => ui.lightbox.pictures[ui.lightbox.at] || null);
+const file = computed(() => ui.lightbox.files[ui.lightbox.at] || null);
 const close = () => (ui.lightbox.at = -1);
-const step = (by) => (ui.lightbox.at = (ui.lightbox.at + by + ui.lightbox.pictures.length) % ui.lightbox.pictures.length);
+const step = (by) => (ui.lightbox.at = (ui.lightbox.at + by + ui.lightbox.files.length) % ui.lightbox.files.length);
 
 function keys(e) {
     if (ui.lightbox.at < 0) return;
@@ -19,19 +20,20 @@ useWindowEvent("keydown", keys);
 </script>
 
 <template>
-    <template v-if="picture">
+    <template v-if="file">
         <div class="lightbox" @click.self="close">
-            <template v-if="ui.lightbox.pictures.length > 1">
+            <template v-if="ui.lightbox.files.length > 1">
                 <button type="button" class="lightbox-step prev" title="Previous" @click="step(-1)"><Icon name="arrow" /></button>
                 <button type="button" class="lightbox-step next" title="Next" @click="step(1)"><Icon name="arrow" /></button>
             </template>
-            <img class="lightbox-image" :src="picture.url" :alt="picture.name" />
+            <div class="lightbox-file">
+                <FileView :key="file.url" :name="file.name" :url="file.url" />
+            </div>
             <div class="lightbox-foot">
-                <span class="lightbox-name">{{ picture.name }}</span>
-                <template v-if="ui.lightbox.pictures.length > 1">
-                    <span class="lightbox-count">{{ ui.lightbox.at + 1 }} of {{ ui.lightbox.pictures.length }}</span>
+                <span class="lightbox-name">{{ file.name }}</span>
+                <template v-if="ui.lightbox.files.length > 1">
+                    <span class="lightbox-count">{{ ui.lightbox.at + 1 }} of {{ ui.lightbox.files.length }}</span>
                 </template>
-                <a class="lightbox-open" :href="picture.url" target="_blank">Open the file</a>
                 <button type="button" class="lightbox-x" aria-label="Close" @click="close"><Icon name="close" /></button>
             </div>
         </div>
@@ -51,11 +53,16 @@ useWindowEvent("keydown", keys);
     background: rgba(0, 0, 0, 0.82);
 }
 
-.lightbox-image {
-    max-width: 92vw;
-    max-height: 84vh;
-    border-radius: 8px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+.lightbox-file {
+    display: flex;
+    justify-content: center;
+    width: min(92vw, 1100px);
+    height: 84vh;
+}
+
+.lightbox-file .file-view {
+    width: 100%;
+    height: 100%;
 }
 
 .lightbox-foot {
@@ -70,8 +77,12 @@ useWindowEvent("keydown", keys);
     color: var(--text-3);
 }
 
-.lightbox-open {
-    color: var(--accent-text);
+.lightbox-name {
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .lightbox-x {

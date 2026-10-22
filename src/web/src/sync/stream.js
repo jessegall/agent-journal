@@ -30,15 +30,18 @@ function receive(message) {
 function watchSilence() {
     clearInterval(watching);
     watching = setInterval(() => {
-        if (store.streamOpen && Date.now() - heardAt >= SILENT_AFTER) listen();
+        if (!store.streamOpen || Date.now() - heardAt < SILENT_AFTER) return;
+        failing ||= Date.now();
+        listen();
     }, WATCH_EVERY);
 }
 
+// A stream opened after a failing one may have missed entries in between, however short the break, so the rows are read again.
 function opened() {
     heard();
+    if (failing) reload();
     failing = 0;
     store.streamOpen = true;
-    if (store.offline) reload();
     store.offline = false;
     wakePolls();
 }

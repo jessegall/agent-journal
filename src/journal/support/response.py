@@ -1,8 +1,6 @@
-import json
 from dataclasses import dataclass
 
-from journal.http.support.json_out import JsonOut
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 
 @dataclass(frozen=True)
@@ -15,16 +13,14 @@ class Response:
         return cls(status, body)
 
     @classmethod
-    def not_found(cls, what: str = "") -> "Response":
-        return cls(404, {"error": what or "not found"})
+    def absent(cls, subject: str = "") -> "Response":
+        return cls(404, {"error": subject or "not found"})
 
     @classmethod
-    def missing(cls, error: NotFound) -> "Response":
-        return cls.not_found(str(error))
+    def missing(cls, error: MissingRow) -> "Response":
+        return cls.absent(str(error))
 
     @classmethod
-    def refused(cls, why: str) -> "Response":
-        return cls(409, {"error": why})
+    def refused(cls, reason: str) -> "Response":
+        return cls(409, {"error": reason})
 
-    def encoded(self) -> bytes:
-        return json.dumps(self.body, cls=JsonOut).encode()

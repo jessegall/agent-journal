@@ -1,48 +1,47 @@
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Callable
+from typing import Callable, TypeVar
 
-from journal.http.listed_page import ListedPage
+from journal.http.row_list_page import RowListPage
 from journal.models.model import Model
 
-PAGE = 50
+PAGE_ROWS = 50
+
+M = TypeVar("M", bound=Model)
 
 
 @dataclass(frozen=True)
 class Listing:
     """What the viewer asks of a list: the newest `limit` rows and every open one besides, the closed ones alone when asked, older than `before`, newer than `after`, changed since `since`, or only the ids named."""
 
-    limit: int = PAGE
+    limit: int = PAGE_ROWS
     closed: bool = False
-    before: int = 0
-    after: int = 0
-    """The last id the viewer has seen: a poll carries only the rows above it."""
-    since: float = 0.0
-    """Seconds since the epoch: a catch-up carries only the rows changed after it."""
+    upper_id: int = 0
+    lower_id: int = 0
+    cutoff_at: float = 0.0
     ids: tuple[int, ...] = ()
 
     @classmethod
-    def from_query(cls, query: dict) -> "Listing":
+    def query_listing(cls, query: dict) -> "Listing":
         ids = tuple(int(n) for n in str(query.get("ids", "")).split(",") if n.strip().isdigit())
-        numbers = {name: kind(query[name]) for name, kind in (("limit", int), ("before", int), ("after", int), ("since", float)) if query.get(name)}
-        return cls(**numbers, closed=str(query.get("closed", "")).lower() in ("1", "true", "yes"), ids=ids)
-
-    def listed(self, rows: list[Model], is_open: Callable[[Model], bool], timeline: bool = False) -> ListedPage:
-        """{rows, more}, in order of id. A timeline, such as the chat, pages strictly by id: an open row older than the page waits for a scroll up like any other."""
-        rows = sorted(rows, key=lambda r: r.id)
-        if self.ids:
-            return ListedPage(rows=[r for r in rows if r.id in self.ids], more=False)
-        if self.since:
-            return ListedPage(rows=[r for r in rows if self.seconds(r.updated_at) > self.since], more=False)
-        if self.closed:
-            closed = [r for r in rows if not is_open(r) and (not self.before or r.id < self.before)]
-            return ListedPage(rows=closed[-self.limit:], more=len(closed) > self.limit)
-        wanted = [r for r in rows if (not self.before or r.id < self.before) and r.id > self.after]
-        page = wanted[-self.limit:]
-        shown = {r.id for r in page}
-        open_ = [r for r in rows if is_open(r) and r.id > self.after and r.id not in shown] if not self.before and not timeline else []
-        return ListedPage(rows=sorted([*open_, *page], key=lambda r: r.id), more=len(wanted) > self.limit)
+        cutoff = float(query["since"]) if query.get("since") else 0.0
+        closed = str(query.get("closed", "")).lower() in ("1", "true", "yes")
+        return cls(cls.query_number(query, "limit", PAGE_ROWS), closed, cls.query_number(query, "before", 0), cls.query_number(query, "after", 0), cutoff, ids)
 
     @staticmethod
-    def seconds(at: datetime | None) -> float:
-        return at.timestamp() if at else 0.0
+    def query_number(query: dict, key: str, default: int) -> int:
+        return int(query[key]) if query.get(key) else default
+
+    def listed(self, rows: list[M], is_open: Callable[[M], bool], timeline: bool = False) -> RowListPage:
+        rows = sorted(rows, key=lambda r: r.row_id)
+        if self.ids:
+            return RowListPage(rows=[r for r in rows if r.row_id in self.ids], is_last_page=True)
+        if self.cutoff_at:
+            return RowListPage(rows=[r for r in rows if r.update_time.timestamp() > self.cutoff_at], is_last_page=True)
+        if self.closed:
+            closed = [r for r in rows if not is_open(r) and (not self.upper_id or r.row_id < self.upper_id)]
+            return RowListPage(rows=closed[-self.limit:], is_last_page=len(closed) <= self.limit)
+        wanted = [r for r in rows if (not self.upper_id or r.row_id < self.upper_id) and r.row_id > self.lower_id]
+        page = wanted[-self.limit:]
+        shown = {r.row_id for r in page}
+        open_ = [r for r in rows if is_open(r) and r.row_id > self.lower_id and r.row_id not in shown] if not self.upper_id and not timeline else []
+        return RowListPage(rows=sorted([*open_, *page], key=lambda r: r.row_id), is_last_page=len(wanted) <= self.limit)

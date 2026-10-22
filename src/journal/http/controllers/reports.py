@@ -6,8 +6,10 @@ from journal.repositories.reports import Reports
 class ReportController(WritingController[Report]):
     """What was checked or researched, written up here."""
 
+    repository: Reports
+
     def __init__(self, reports: Reports) -> None:
         self.repository = reports
 
     def rows(self) -> list[Report]:
-        return self.repository.in_()
+        return self.repository.scoped()

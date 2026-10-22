@@ -1,106 +1,140 @@
-from journal.engine.states.paused import Paused
-from journal.support.states_catalogue import StatesCatalogue
+from dataclasses import asdict
+
+from journal.engine.support.stack_history import StackHistory
+from journal.engine.states.wait import Wait
+from journal.engine.states_catalogue import StatesCatalogue
 from journal.features.sequences.listeners.record_run_changes import RUN
-from journal.features.shell.commands.shell_command import RAN, RUNNING
+from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.features.tasks.states.working import Working
 from journal.support.chain import Chain
-from journal.support.context_file import ContextFile
+from journal.config import Config
+from journal.providers.providers import Providers
 from journal.http.agents.current_work import CurrentWork
-from journal.http.agents.sequence_in_hand import SequenceInHand
+from journal.http.agents.current_sequence import CurrentSequence
 from journal.http.files.project_files import ProjectFiles
 from journal.http.support.model_fields import ModelFields
 from journal.models.agent import Agent
 from journal.support.sequence_run import SequenceRun
 from journal.repositories.entries import Entries
 from journal.repositories.messages import Messages
+from journal.support.agent_message import AgentMessage
+from journal.support.file_edit import FileEdit
+from journal.support.file_read import FileRead
+from journal.support.file_write import FileWrite
+from journal.support.recorded_call import RecordedCall
+from journal.support.undecoded_tool import UndecodedTool
+from journal.support.skill_load import SkillLoad
+from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.user_question import UserQuestion
 
-STATUS = {"Idle": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
-WORKING = frozenset({"working", "following_plan"})
-"""The states in which the agent has declared its work: only then is it working; an agent merely running is busy."""
-KEPT = 400
-HISTORY = 5
-"""How many of an agent's latest sequence changes its panel shows."""
-TOOL_VERBS = {"Read": "reading a file", "Edit": "editing a file", "Write": "writing a file", "MultiEdit": "editing files", "Grep": "searching", "Glob": "finding files", "Agent": "waiting for a subagent", "WebFetch": "fetching a page", "WebSearch": "searching the web", "Skill": "reading a skill"}
+STATUS = {"Stop": "idle", "SessionStarted": "idle", "SessionEnded": "stopped", "Compacting": "compacting", "PromptSubmitted": "busy", "ToolStarting": "busy", "ToolFinished": "busy", "ToolFailed": "busy", "SubagentStarted": "busy", "SubagentEnded": "busy"}
+WORKING = frozenset({"working", "following_plan", "delegating", "orchestrating_plan"})
+ENTRY_COUNT = 400
+HISTORY_ENTRIES = 5
+OPERATION_VERBS = {FileRead.kind: "reading a file", FileEdit.kind: "editing files", FileWrite.kind: "writing a file", SubagentDispatch.kind: "waiting for a subagent", SkillLoad.kind: "reading a skill", AgentMessage.kind: "messaging an agent", UserQuestion.kind: "asking you"}
 ENDED = "ended"
 
 
 class AgentActivity:
     """An agent with what it is doing, read from the timeline: its status from its latest hook, the tool or shell part in hand, its latest thought, what it waits for, its model and context, and the sequence it runs."""
 
-    def __init__(self, entries: Entries, states: StatesCatalogue, context: ContextFile, files: ProjectFiles, messages: Messages, current: CurrentWork) -> None:
-        self.entries, self.states, self.context, self.files, self.messages, self.current = entries, states, context, files, messages, current
+    def __init__(self, entries: Entries, states: StatesCatalogue, config: Config, providers: Providers, files: ProjectFiles, messages: Messages, current: CurrentWork) -> None:
+        self.entries, self.states, self.config, self.providers, self.files, self.messages, self.current = entries, states, config, providers, files, messages, current
 
     def page(self, agents: list[Agent]) -> list[dict]:
-        """Each agent, the live ones read from one read of the recent entries; an ended one from its own row alone."""
-        recent = list(reversed(self.entries.of_kind_in(KEPT))) if any(a.state != ENDED for a in agents) else []
-        return [self.of(a, [] if a.state == ENDED else [e for e in recent if e.data.get("session") == a.session or (e.actor and e.actor.id == a.session)]) for a in agents]
+        recent = list(reversed(self.entries.kind_entries_scoped(ENTRY_COUNT))) if any(item.state != ENDED for item in agents) else []
+        return [self.row(item, [] if item.state == ENDED else [e for e in recent if e.data.get("session") == item.session or (e.actor and e.actor.id == item.session)]) for item in agents]
 
     @staticmethod
-    def work_of(entry) -> str:
-        """What a shell tool's line does, reading, searching or running, so the figure shows it; empty for any other tool, which its name says."""
-        tool = entry.data.get("tool_input", {})
-        return Chain.work_of(str(tool.get("command", ""))) if entry.data.get("tool_name") == "Bash" else ""
+    def work(entry) -> str:
+        return entry.recorded_call().work
 
-    def of(self, agent: Agent, entries) -> dict:
+    def row(self, agent: Agent, entries) -> dict:
         hooks = [e for e in entries if e.kind not in ("nudge", "created", "updated", "deleted")]
         moves = [e for e in hooks if e.kind in STATUS]
         last = moves[-1] if moves else None
         kind = last.kind if last else ""
-        state = self.states.named(agent.state, agent.data)
-        awaiting, on = self.current.awaited(agent)
+        state = self.states.restored(agent.state, agent.data)
+        waiting_state, enabled = self.current.wait_text(agent)
+        provider = self.providers.lookup(agent.provider)
+        status = provider.status(agent.session, self.config.status_home)
         return {
-            **ModelFields.of(agent),
-            "status": "stopped" if agent.state == ENDED else self.status_of(agent.state, STATUS.get(kind, "idle")),
+            **ModelFields.build(agent),
+            "status": "stopped" if agent.state == ENDED else self.status(agent.state, STATUS.get(kind, "idle")),
             "heard_at": last.created_at if last else agent.updated_at,
             "tool": last.data.get("tool_name", "") if last and kind in ("ToolStarting", "ToolFinished") else "",
-            "tool_work": self.work_of(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
-            "tool_running": kind == "ToolStarting",
-            "awaiting": awaiting, "awaiting_on": on, "awaiting_since": agent.updated_at if awaiting else None,
-            "model": self.context.model(agent.session), "effort": self.context.effort(agent.session), "usage": self.context.usage(agent.session),
-            "branch": self.files.branch(), "context": round((self.context.of(agent.session) or 0) * 100),
+            "tool_work": self.work(last) if last and kind in ("ToolStarting", "ToolFinished") else "",
+            "tool_running": kind == "ToolStarting" or self.unended_part(entries) is not None,
+            "awaiting": waiting_state, "wait_refs": enabled, "awaiting_since": agent.updated_at if waiting_state else None,
+            "model": status.model, "effort": status.effort, "usage": [asdict(window) for window in status.windows], "capabilities": sorted(provider.capabilities),
+            "branch": self.files.branch(), "context": round(status.context * 100) if status.context is not None else None,
             "question_id": agent.data.get("question_id", 0) if agent.state == "waiting" else 0,
-            "doing": self.doing(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", RUNNING, RAN)]),
+            "doing": self.activity(state, [e for e in entries if e.kind in ("ToolStarting", "ToolFinished", PART_START, PART_END)]),
             "thinking": self.thinking(agent.session, hooks) if agent.state != ENDED else "",
-            "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnWritten"), ""),
+            "last_message": next((e.data.get("delta", "") for e in reversed(hooks) if e.kind == "TurnDisplayed"), ""),
             "stuck": agent.data.get("why", "") if agent.state == "stuck" else "",
-            "sequence": self.sequence_of(agent),
-            "sequence_history": [{"at": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY],
+            "sequence": self.sequence(agent),
+            "stack": self.stack(agent),
+            "trail": [self.trail_entry(e) for e in [e for e in entries if e.kind == StackHistory.KIND][-HISTORY_ENTRIES:]],
+            "sequence_history": [{"time": e.created_at, "text": f"Sequence {e.data['n']}, {e.data['title']}: {e.data['what']}"} for e in reversed([e for e in entries if e.kind == RUN])][:HISTORY_ENTRIES],
         }
 
     @staticmethod
-    def status_of(state: str, heard: str) -> str:
-        """A live agent's status: working when its state is one of work and its last hook says it is busy, else what the hook says."""
-        return "working" if state in WORKING and heard == "busy" else heard
+    def status(state: str, reported: str) -> str:
+        return "working" if state in WORKING and reported == "busy" else reported
 
     def thinking(self, session: str, hooks) -> str:
-        """What the working bubble shows: the agent's latest thought of the turn in progress, until it next writes something visible; a thought from before the turn's prompt is never shown as now."""
-        thoughts = self.messages.thoughts_of(session, 1)
+        thoughts = self.messages.thoughts(session, 1)
         if not thoughts:
             return ""
-        written = [e.created_at for e in hooks if e.kind == "TurnWritten"]
-        later = [at for at in (written[-1] if written else None, self.entries.last_prompt_of(session)) if at is not None]
-        return "" if any(at > thoughts[-1].created_at for at in later) else thoughts[-1].text
+        saved = [e.created_at for e in hooks if e.kind == "TurnDisplayed"]
+        later = [time for time in (saved[-1] if saved else None, self.entries.last_prompt(session)) if time is not None]
+        return "" if any(time > thoughts[-1].creation_time for time in later) else thoughts[-1].text
 
     @staticmethod
-    def sequence_of(agent: Agent) -> SequenceInHand | None:
-        """The run in hand, as the agent's panel shows it: the step, and what it holds."""
-        runs = [SequenceRun.of(raw) for raw in agent.sequence_runs or ()]
+    def sequence(agent: Agent) -> CurrentSequence | None:
+        runs = [SequenceRun.build(raw) for raw in agent.sequence_runs or ()]
         if not runs:
             return None
         run = runs[-1]
-        return SequenceInHand(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, holds=run.holds, about=run.about, under=len(runs) - 1)
+        return CurrentSequence(sequence_id=run.sequence_id, title=run.title, step=run.step + 1, steps=len(run.steps), text=run.text, blocks=run.blocks, subject=run.subject, waiting_runs=len(runs) - 1)
 
-    def doing(self, state, hooks) -> str:
-        """What the agent is doing this moment: the shell part it runs, the tool it uses, or what its state says."""
+    def activity(self, state, hooks) -> str:
         last = hooks[-1] if hooks else None
-        if last and last.kind == RUNNING:
-            return last.data["doing"]
+        if last and last.kind in (PART_START, PART_END):
+            return last.data["part"]
         if last and last.kind == "ToolStarting":
-            return TOOL_VERBS.get(last.data.get("tool_name", ""), "working")
+            return self.tool_activity(last.recorded_call())
+        part = self.unended_part(hooks)
+        if part is not None:
+            return part.data["part"]
         return self.described(state) or ("at work" if hooks else "")
 
+    @staticmethod
+    def unended_part(entries):
+        parts = [e for e in entries if e.kind in (PART_START, PART_END)]
+        return parts[-1] if parts and parts[-1].kind == PART_START else None
+
+    @staticmethod
+    def tool_activity(call: RecordedCall) -> str:
+        if call.parts:
+            return call.parts[0].text
+        if isinstance(call.operation, UndecodedTool):
+            return f"using {call.operation.name}"
+        return OPERATION_VERBS.get(call.operation.kind, "working")
+
     def described(self, state) -> str:
-        """The work a state names: what a pause awaits, else the work it holds underneath, else the work declared without a task."""
-        if isinstance(state, Paused):
-            return state.awaiting()[0] or (self.described(self.states.named(state.resume["state"], state.resume["data"])) if state.resume else "")
-        return state.what if isinstance(state, Working) else ""
+        if isinstance(state, Wait):
+            return state.wait_description()[0]
+        return state.focus if isinstance(state, Working) else ""
+
+    def stack(self, agent: Agent) -> list[dict]:
+        shown = []
+        for state in reversed(self.states.stack(agent).states):
+            awaits = state.wait_description()[0] if isinstance(state, Wait) else ""
+            shown.append({"name": state.name, "title": self.states.title(state.name), "values": state.serialized(), "awaits": awaits})
+        return shown
+
+    @staticmethod
+    def trail_entry(entry) -> dict:
+        return {"time": entry.created_at, "before": [row["state"] for row in entry.data.get("before", [])], "after": [row["state"] for row in entry.data.get("after", [])], "cause": entry.data.get("cause", ""), "refused": entry.data.get("refused", ""), "line": entry.data.get("line", "")}

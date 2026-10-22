@@ -1,50 +1,50 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
-from journal.support.chosen_voice import ChosenVoice
-from journal.support.shipped import Shipped
-from journal.repositories.settings import Settings
+from journal.support.caller import Caller
+from journal.features.voices.support.voice_choice import VoiceChoice
+from journal.features.voices.support.builtin_catalogue import BuiltinCatalogue
+from journal.repositories.setting_rows import SettingRows
 
 
 class VoiceCommand(Command):
     noun = "voice"
 
-    def __init__(self, settings: Settings, chosen: ChosenVoice) -> None:
-        self.settings, self.chosen = settings, chosen
+    def __init__(self, settings: SettingRows, selection: VoiceChoice) -> None:
+        self.settings, self.chosen = settings, selection
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the voices, and which is chosen")
-        self.verb(verbs, "choose", "talk in this voice").add_argument("name", choices=[v.name for v in Shipped.ALL])
-        me = self.verb(verbs, "me", "what the agent calls you")
-        me.add_argument("--title", default=None)
-        me.add_argument("--name", default=None)
+        self.verb(verbs, "choose", "talk in this voice").add_argument("name", choices=[v.name for v in BuiltinCatalogue.ALL])
+        profile = self.verb(verbs, "address", "what the agent calls you")
+        profile.add_argument("--title", default=None)
+        profile.add_argument("--name", default=None)
         self.verb(verbs, "show", "the instruction the agent is given")
 
-    def list(self, args: Namespace, where: Where) -> int:
-        chosen = self.chosen.voice().name
-        for voice in Shipped.ALL:
-            print(f"{'*' if voice.name == chosen else ' '} {voice.name:<10} {voice.sample.replace('{you}', self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), voice.address) or 'you')}")
+    def list(self, args: Namespace, caller: Caller) -> int:
+        selection = self.chosen.voice().name
+        for voice in BuiltinCatalogue.ALL:
+            print(f"{'*' if voice.name == selection else ' '} {voice.name:<10} {voice.sample.replace('{you}', self.chosen.voice().address_form.called(self.chosen.title(), self.chosen.first_name(), voice.address) or 'you')}")
         return 0
 
-    def choose(self, args: Namespace, where: Where) -> int:
+    def choose(self, args: Namespace, caller: Caller) -> int:
         from journal.features.voices.feature import Voices
-        self._set(Voices.PROFILE.key, args.name, where)
+        self._set(Voices.PROFILE.key, args.name, caller)
         print(f"voice: {args.name}")
         return 0
 
-    def me(self, args: Namespace, where: Where) -> int:
+    def address(self, args: Namespace, caller: Caller) -> int:
         from journal.features.voices.feature import Voices
         if args.title is not None:
-            self._set(Voices.TITLE.key, args.title, where)
+            self._set(Voices.TITLE.key, args.title, caller)
         if args.name is not None:
-            self._set(Voices.NAME.key, args.name, where)
-        print(f"the agent calls you {self.chosen.voice().calling.called(self.chosen.title(), self.chosen.first_name(), self.chosen.voice().address) or 'nothing'}")
+            self._set(Voices.NAME.key, args.name, caller)
+        print(f"the agent calls you {self.chosen.voice().address_form.called(self.chosen.title(), self.chosen.first_name(), self.chosen.voice().address) or 'nothing'}")
         return 0
 
-    def show(self, args: Namespace, where: Where) -> int:
+    def show(self, args: Namespace, caller: Caller) -> int:
         print(self.chosen.instruction())
         return 0
 
-    def _set(self, key: str, value: str, where: Where) -> None:
-        self.settings.set(key, value, where.actor)
+    def _set(self, key: str, value: str, caller: Caller) -> None:
+        self.settings.set(key, value, caller.actor)

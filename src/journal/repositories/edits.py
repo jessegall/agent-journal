@@ -2,11 +2,10 @@ from journal.db.connection import Connection
 from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.edit import Edit
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
 
-KEEP = 500
-"""How many edits an environment keeps: the older ones go as new ones come."""
+EDIT_ROWS = 500
 
 
 class Edits(ScopedRepository[Edit]):
@@ -15,13 +14,14 @@ class Edits(ScopedRepository[Edit]):
     def __init__(self, connection: Connection, bus: Bus, scope: Scope) -> None:
         super().__init__(connection, bus, scope)
 
-    def record(self, edit: Edit, by: Actor) -> Edit:
-        """An edit kept, and the oldest beyond the last five hundred let go."""
-        kept = self.save(edit, by)
-        for old in self.selected("1 ORDER BY id DESC LIMIT -1 OFFSET ?", (KEEP,)):
-            self.delete(old, by)
-        return kept
+    def record(self, edit: Edit, actor: Actor) -> Edit:
+        stored = self.save(edit, actor)
+        for old in self.selected(self.query().order_descending("id").offset(EDIT_ROWS)):
+            self.delete(old, actor)
+        return stored
 
-    def of_agent(self, session: str, since: float, last: int) -> list[Edit]:
-        """An agent's newest edits after the moment given, at most so many, oldest first."""
-        return list(reversed(self.selected("session = ? AND at > ? ORDER BY id DESC LIMIT ?", (session, since, last))))
+    def tool_use_edits(self, session: str, tool_use: int) -> list[Edit]:
+        return self.selected(self.query().filter(session=session, tool_use=tool_use).order("id"))
+
+    def agent_edits(self, session: str, start: float, last: int) -> list[Edit]:
+        return list(reversed(self.selected(self.query().filter(session=session).filter_greater("time", start).order_descending("id").limit(last))))

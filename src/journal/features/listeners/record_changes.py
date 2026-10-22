@@ -6,7 +6,7 @@ from journal.events.listener import Listener
 from journal.models.entry import Entry
 from journal.models.scoped import Scoped
 from journal.repositories.entries import Entries
-from journal.support.scope import PROJECT
+from journal.repositories.scope import PROJECT
 
 ACTIONS = {Created: "created", Updated: "updated", Deleted: "deleted"}
 
@@ -19,9 +19,9 @@ class RecordChanges(Listener[ModelEvent]):
 
     def handle(self, event: ModelEvent) -> None:
         action = ACTIONS.get(type(event))
-        if action is None or not event.model.in_timeline:
+        if action is None or not event.model.timeline_visible:
             return
         model = event.model
         environment = model.environment_id if isinstance(model, Scoped) else PROJECT
         changed = list(event.changed()) if isinstance(event, Updated) else []
-        self.entries.save(Entry(environment_id=environment, kind=action, actor=event.by, data={"table": model.table(), "id": model.id, "title": getattr(model, "title", "") or getattr(model, "text", "")[:80], "changed": changed}), event.by)
+        self.entries.save(Entry(environment_id=environment, kind=action, actor=event.actor, data={"table": model.table(), "id": model.id, "title": getattr(model, "title", "") or getattr(model, "text", "")[:80], "changed": changed}), event.actor)

@@ -4,7 +4,7 @@ import CloseButton from "../kit/CloseButton.vue";
 import Notice from "../kit/Notice.vue";
 import {onMounted, ref} from "vue";
 import {useScope} from "../composables/scope.js";
-import {isRef, peekRef} from "../route.js";
+import {isRef, peekRef, refOfOwnLink} from "../route.js";
 import {startMigration} from "../composables/migration.js";
 
 const props = defineProps({notice: Object, fixed: Boolean});
@@ -47,8 +47,8 @@ function close() {
         <template v-if="notice.link === MIGRATION">
             <Btn small :busy="working" @click="bringAcross">Copy into version 4</Btn>
         </template>
-        <template v-else-if="notice.link && isRef(notice.link)">
-            <button type="button" class="chat-notice-go" @click="peekRef(notice.link)">{{ notice.label || "open" }}</button>
+        <template v-else-if="notice.link && (isRef(notice.link) || refOfOwnLink(notice.link))">
+            <button type="button" class="chat-notice-go" @click="peekRef(isRef(notice.link) ? notice.link : refOfOwnLink(notice.link))">{{ notice.label || "open" }}</button>
         </template>
         <template v-else-if="notice.link">
             <a class="chat-notice-go" :href="notice.link" target="_blank" rel="noopener">{{ notice.label || "open" }}</a>

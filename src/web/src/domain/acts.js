@@ -17,7 +17,7 @@ const ACTS = {
     plans: (r) => [
         ...(UNAPPROVED.includes(r.state) ? [act("approve", "Approve")] : []),
         ...(["approved", "parked"].includes(r.state) ? [act("start", "Start")] : []),
-        ...(RUNNING.includes(r.state) ? [act("park", "Park"), act("finish", "Finish")] : []),
+        ...(RUNNING.includes(r.state) ? [act("suspend", "Park"), act("finish", "Finish")] : []),
         ...(isClosed(r) ? [] : [act("abandon", "Abandon", {danger: true})]),
     ],
     notices: (r) => (isClosed(r) ? [] : [act("close", "Close")]),
@@ -38,6 +38,7 @@ const EDITS = {
     plans: {title: "line", brief: "text"},
     docs: {title: "line", abstract: "text", body: "text"},
     reports: {title: "line", abstract: "text", body: "text"},
+    collections: {title: "line", abstract: "text"},
     facts: {text: "text"},
     reminders: {text: "text"},
     rules: {text: "text", reason: "text"},

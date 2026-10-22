@@ -19,6 +19,9 @@ onMounted(start);
         </template>
         <template v-if="about">
             <p class="version">Agent journal {{ about.installed }}</p>
+            <template v-if="about.branch">
+                <p class="hint">This journal follows the branch {{ about.branch }}, set under Settings, Updates: it installs that branch's newest commit instead of a release.</p>
+            </template>
             <template v-if="status">
                 <div class="update-line">
                     <template v-if="status.busy">
@@ -31,7 +34,7 @@ onMounted(start);
                 </div>
             </template>
             <TextDisplay class="changelog" :text="about.changelog" />
-            <template v-if="about.more">
+            <template v-if="!about.is_last_page">
                 <Btn class="more-releases" @click="loadMore()">Show older releases</Btn>
             </template>
         </template>
@@ -77,6 +80,10 @@ onMounted(start);
 
 .more-releases {
     align-self: flex-start;
+}
+
+.hint {
+    color: var(--text-2);
 }
 
 .earlier summary {

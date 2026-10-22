@@ -22,19 +22,18 @@ class CapturedStream(io.TextIOBase):
 
     @staticmethod
     @contextmanager
-    def into(out: io.StringIO, err: io.StringIO) -> Iterator[None]:
-        """Within the block, this context's printing goes to out and err; the streams are wrapped again whenever something replaced them since."""
+    def capture(output: io.StringIO, err: io.StringIO) -> Iterator[None]:
         if not isinstance(sys.stdout, CapturedStream):
-            sys.stdout = CapturedStream(sys.stdout, OUT)
+            sys.stdout = CapturedStream(sys.stdout, CAPTURED_OUTPUT)
         if not isinstance(sys.stderr, CapturedStream):
             sys.stderr = CapturedStream(sys.stderr, ERR)
-        tokens = OUT.set(out), ERR.set(err)
+        tokens = CAPTURED_OUTPUT.set(output), ERR.set(err)
         try:
             yield
         finally:
-            OUT.reset(tokens[0])
+            CAPTURED_OUTPUT.reset(tokens[0])
             ERR.reset(tokens[1])
 
 
-OUT: ContextVar[io.StringIO | None] = ContextVar("command_out", default=None)
+CAPTURED_OUTPUT: ContextVar[io.StringIO | None] = ContextVar("command_out", default=None)
 ERR: ContextVar[io.StringIO | None] = ContextVar("command_err", default=None)

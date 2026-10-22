@@ -32,7 +32,7 @@ function open(line) {
         <ol class="record">
             <template v-for="(line, i) in record || []" :key="i">
                 <li :class="['record-line', line.kind]">
-                    <span class="record-at">{{ clock(line.at) }}</span>
+                    <span class="record-at">{{ clock(line.time) }}</span>
                     <template v-if="line.ref">
                         <button type="button" class="record-text opens" @click="open(line)">{{ line.text }}</button>
                     </template>

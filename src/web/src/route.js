@@ -117,10 +117,19 @@ const ROW_REF = /^[a-z_]+:\d+(@.+)?$/;
 
 export const isRef = (link) => ROW_REF.test(link);
 
-export function peekRef(ref) {
+// the row ref a link to this journal's own address names with open=, or "": such a link opens in place, not in a new tab
+export function refOfOwnLink(link, origin = window.location.origin) {
+    if (!link.startsWith(origin)) return "";
+    const open = new URL(link).searchParams.get("open") || "";
+    const first = open.split(",")[0];
+    return isRef(first) ? first : "";
+}
+
+// opens the row a ref names, at the place `sub` names in it, a line or a section; a row already open is only scrolled there
+export function peekRef(ref, sub = "") {
     const [row, env] = ref.split("@");
     const [table, id] = row.split(":");
-    return env ? peekThere(env, table, Number(id)) : peek(table, Number(id));
+    return env ? peekThere(env, table, Number(id), 0, sub) : peek(table, Number(id), 0, sub);
 }
 
 export function chipTarget(event) {
@@ -133,7 +142,7 @@ export function chipTarget(event) {
 
 export function peekChip(event) {
     const target = chipTarget(event);
-    if (target) peekRef(target);
+    if (target) peekRef(target, event.target.closest("[data-peek]").dataset.sub || "");
 }
 
 export function swap(table, id) {
@@ -160,4 +169,4 @@ export function unpeek() {
     opening(route.value.stack.slice(0, -1));
 }
 
-export const PAGES = ["settings", "files", "search", "attachments", "skills", "profiles", "plugins", "secrets", "mcp", "chart", "file", "resources", "about"];
+export const PAGES = ["settings", "files", "search", "attachments", "skills", "profiles", "plugins", "secrets", "mcp", "file", "resources", "about"];

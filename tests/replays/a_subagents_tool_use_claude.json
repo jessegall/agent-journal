@@ -8,69 +8,44 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "messages.new"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "the subagent's write 2",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "the agent's own read",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
-        }
+          "additionalContext": "tool uses left before your writes wait for message 1: 3"
+        },
+        "systemMessage": "tool uses left before your writes wait for message 1: 3"
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.writes_held_soon_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:42:times_named": 1,
-        "charts:42:tools_used": 1,
-        "charts:43:tools_used": 1,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 1,
-          "284": 1,
-          "296": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

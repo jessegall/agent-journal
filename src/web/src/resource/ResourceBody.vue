@@ -26,6 +26,7 @@ import ResourceMadeFor from "./ResourceMadeFor.vue";
 import ResourceOutcome from "./ResourceOutcome.vue";
 import ResourceWaits from "./ResourceWaits.vue";
 import TaskLogs from "./TaskLogs.vue";
+import TaskWork from "./TaskWork.vue";
 
 const props = defineProps({
     resource: Object,
@@ -93,7 +94,7 @@ async function follow() {
         <template v-if="!editing && !readOnly">
             <ResourceControls :resource="resource" @edit="edit" @close="emit('close')" />
         </template>
-        <template v-if="!isClosed(resource) && (resource.blocked_why || resource.parked_why)">
+        <template v-if="!isClosed(resource) && (resource.block_reason || resource.suspension_reason)">
             <ResourceWaits :resource="resource" />
         </template>
         <template v-if="table === 'checks'">
@@ -104,7 +105,7 @@ async function follow() {
             <OptionsPicker :question="resource" />
         </template>
         <template v-if="table === 'templates'">
-            <ResourceMadeFor :types="resource.applies_to" />
+            <ResourceMadeFor :types="resource.targets" />
         </template>
         <template v-if="table === 'triggers'">
             <TriggerEditor :resource="resource" />
@@ -122,7 +123,7 @@ async function follow() {
             </template>
         </template>
         <template v-else-if="sections.length && kind.view === 'document'">
-            <Folded :key="resource.id" :at="PAGE" :keep="PAGE">
+            <Folded :key="resource.id" :name="`${table}:${resource.id}`" :at="PAGE" :keep="PAGE">
                 <Sections :sections="sections" :writing="writing?.section || ''" document />
             </Folded>
         </template>
@@ -132,6 +133,7 @@ async function follow() {
             </ResourceBlock>
         </template>
         <template v-if="table === 'tasks'">
+            <TaskWork :task="resource" />
             <TaskLogs :task="resource" />
         </template>
         <template v-if="resource.outcome && isClosed(resource)">

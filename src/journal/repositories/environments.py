@@ -1,28 +1,26 @@
+from journal.db.query import Query
 from journal.support.actor import Actor
-from journal.support.all_models import AllModels
+from journal.models.all_models import AllModels
 from journal.models.environment import Environment
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.repository import Repository
 
 
 class Environments(Repository[Environment]):
     model = Environment
 
-    def named(self, name: str) -> Environment:
-        """The environment of that name, made by the system the first time it is asked for."""
-        found = self.where(name=name)
-        return found[0] if found else self.save(Environment(name=name), Actor.system())
+    def lookup(self, name: str) -> Environment:
+        rows = self.matching(name=name)
+        return rows[0] if rows else self.save(Environment(name=name), Actor.system())
 
     def existing(self, name: str) -> Environment:
-        """The environment of that name, which a read never makes: an unknown name is not found."""
-        found = self.where(name=name)
-        if not found:
-            raise NotFound("environment", name)
-        return found[0]
+        rows = self.matching(name=name)
+        if not rows:
+            raise MissingRow("environment", name)
+        return rows[0]
 
-    def wipe(self, environment: Environment, by: Actor) -> None:
-        """Deletes the environment and every row recorded in it, in one transaction and without a model event per row; the environment's own deletion is heard."""
+    def wipe(self, environment: Environment, actor: Actor) -> None:
         with self.connection.transaction():
             for model in AllModels.SCOPED:
-                self.connection.execute(f"DELETE FROM {model.table()} WHERE environment_id = ?", (environment.id,))
-            self.delete(environment, by)
+                self.purged(Query.build(model).filter(environment_id=environment.id))
+            self.delete(environment, actor)

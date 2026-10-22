@@ -1,4 +1,5 @@
 from journal.features.edits.listeners.record_edit import RecordEdit
+from journal.features.edits.listeners.script_start_recorder import ScriptStartRecorder
 from journal.features.feature import Feature
 
 
@@ -8,4 +9,4 @@ class EditsFeature(Feature):
     name = "edits"
     title = "File edits"
     help = "Every file the agent changes, by a tool or a shell command, is kept as an edit with its changed lines; the last five hundred stay."
-    listeners = (RecordEdit,)
+    listeners = (ScriptStartRecorder, RecordEdit)

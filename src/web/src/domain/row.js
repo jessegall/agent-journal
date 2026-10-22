@@ -27,7 +27,7 @@ const TITLES = {
     environments: (r) => r.name,
     agents: (r) => r.session,
     workers: (r) => r.name,
-    triggers: (r) => (r.words || []).join(", "),
+    triggers: (r) => (r.phrases || []).join(", "),
     reactions: (r) => r.face,
     nudges: (r) => r.data?.line || "",
     plugins: (r) => r.manifest?.title || r.name,
@@ -69,7 +69,7 @@ export const createdAt = (row) => seconds(row.created_at);
 export const updatedAt = (row) => seconds(row.updated_at) || createdAt(row);
 
 // Who made the row: the user, the agent, the journal or a plugin, from its stamp, user:1 or agent:s1.
-export const madeBy = (row) => (row.created_by || "system").split(":")[0];
+export const madeBy = (row) => (row.creator || "system").split(":")[0];
 
 // The second-level headings of a document's or report's body, each with the text under it.
 export function sectionsOf(body) {

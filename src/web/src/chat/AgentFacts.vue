@@ -3,7 +3,7 @@ import {subagentsOf} from "../domain/subagents.js";
 import {agent} from "../composables/leadAgent.js";
 import {computed} from "vue";
 import AgentFact from "./AgentFact.vue";
-import {loadedSkills, modelFamily, providerName, usageWindows} from "../domain/agents.js";
+import {loadedSkills, modelFamily, offers, providerName, usageWindows} from "../domain/agents.js";
 import {createdAt} from "../domain/row.js";
 import {span} from "../format/time.js";
 
@@ -27,7 +27,7 @@ const activityCounts = computed(() => [
     {
         key: "subagents",
         icon: "agents",
-        n: live(agent.value ? subagentsOf(agent.value.id) : []),
+        n: live(subagentsOf(agent.value)),
         title: "Subagents: helpers the agent started",
     },
 ]);
@@ -46,6 +46,17 @@ const toggle = (key, e) => emit("toggle", key, e);
             >
                 {{ name }}
             </AgentFact>
+            <template v-if="data.stack && data.stack.length">
+                <AgentFact
+                    :class="['agent-fact', 'agent-count', {open: open === 'states'}]"
+                    icon="activity"
+                    title="The states the agent is in and its latest changes"
+                    :aria-expanded="open === 'states'"
+                    @click="toggle('states', $event)"
+                >
+                    {{ data.stack[0].title }}
+                </AgentFact>
+            </template>
             <template v-if="['claude', 'codex'].includes(data.provider)">
                 <AgentFact
                     :class="['agent-fact', 'agent-count', 'agent-usage', {open: open === 'usage'}]"
@@ -60,16 +71,18 @@ const toggle = (key, e) => emit("toggle", key, e);
                     {{ usageLabel }}
                 </AgentFact>
             </template>
-            <AgentFact
-                :class="['agent-fact', 'agent-count', 'agent-context', {open: open === 'context'}]"
-                icon="gauge"
-                :title="`context ${filled}% full — clear or compact it`"
-                :aria-expanded="open === 'context'"
-                @click="toggle('context', $event)"
-            >
-                <span class="agent-context-bar"><span :style="{width: `${filled}%`}" /></span>
-                {{ filled }}%
-            </AgentFact>
+            <template v-if="offers(data, 'context status')">
+                <AgentFact
+                    :class="['agent-fact', 'agent-count', 'agent-context', {open: open === 'context'}]"
+                    icon="gauge"
+                    :title="`context ${filled}% full — clear or compact it`"
+                    :aria-expanded="open === 'context'"
+                    @click="toggle('context', $event)"
+                >
+                    <span class="agent-context-bar"><span :style="{width: `${filled}%`}" /></span>
+                    {{ filled }}%
+                </AgentFact>
+            </template>
             <template v-if="family">
                 <AgentFact
                     :class="['agent-fact', 'agent-count', {open: open === 'model'}]"

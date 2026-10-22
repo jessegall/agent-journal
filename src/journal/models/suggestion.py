@@ -20,3 +20,6 @@ class Suggestion(Model):
 
     def answered(self, answer: SuggestionAnswer) -> "Suggestion":
         return self.with_(answer=answer)
+
+    def title_words(self) -> str:
+        return self.title

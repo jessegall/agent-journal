@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "push",
+                    "pop",
+                    "changed"
+                ]
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "function"
+                        },
+                        {
+                            "nameIn": [
+                                "on_push",
+                                "on_suspend",
+                                "on_pop"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "hook-that-moves",
+        "description": "A lifecycle hook pushes, pops or changes the state; a hook answers nudges, it moves nothing.",
+        "rule": "Answer the nudges to say and nothing else; only on_resume may answer a pop, and only on_push a Held.",
+        "skill": "stack-machine"
+    }
+}

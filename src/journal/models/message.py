@@ -2,64 +2,85 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import ClassVar
 
+from journal.events.rows.message_arrived import MessageArrived
+from journal.models.agent_role import AgentRole
 from journal.models.author import Author
 from journal.models.scoped import Scoped
-TYPED = "typed"
+TERMINAL_LINE = "typed"
 
 
 @dataclass(frozen=True)
 class Message(Scoped):
+    """A bubble of a chat: who wrote it, its words and files, and the session and kind of the agent whose chat it is in."""
+
     text_fields: ClassVar[tuple[str, ...]] = ("text",)
 
     THOUGHT = "thought"
+    REPORT = "report"
     PEER = "peer"
-    """The data key naming the agent that sent the message, when another agent did."""
-    SENT_TO = "sent_to"
-    """The data key naming the agent the agent sent the message to."""
+    RECIPIENT_KEY = "sent_to"
+    ASKS_KEY = "asks"
 
     author: Author = Author.USER
+    session: str | None = None
+    agent_role: AgentRole = AgentRole.MAIN
     text: str = ""
-    reply_to: int | None = None
+    reply_target: int | None = None
     read_at: datetime | None = None
+    read_position: int = 0
     idempotency: str = ""
-    """The key the sender gave it, so a message sent twice lands once and the viewer can match what it sent."""
     acknowledgement: bool = False
-    """An agent's turn that only answered a journal line and changed nothing: kept, and left out of the chat unless shown."""
     files: tuple[str, ...] = ()
-    """The names of the files attached, kept under the journal's files folder."""
     captions: dict = field(default_factory=dict)
-    """What each attached picture shows, in the agent's words once it has opened it, so it can be found later."""
     data: dict = field(default_factory=dict)
-    """Its metadata: a system message's card (its kind, icon, tone, detail, the row it opens and the session it belongs to), an agent's thought (kind thought), the agent that sent it (peer), or the buttons a message offers and those pressed."""
 
     @classmethod
-    def from_agent(cls, sender: str, text: str, session: str, at: datetime) -> "Message":
-        """A message another session's agent sent the agent here, which came to it by Claude Code's own road: read as it came, named as that agent's, never the user's."""
-        return cls(author=Author.SYSTEM, text=text, read_at=at, data={"kind": cls.PEER, cls.PEER: sender, "session": session})
+    def agent_message(cls, sender: str, text: str, session: str, time: datetime, asks: bool) -> "Message":
+        return cls(author=Author.SYSTEM, text=text, read_at=time, session=session, data={"kind": cls.PEER, cls.PEER: sender, cls.ASKS_KEY: asks})
 
     @classmethod
-    def sent_to(cls, receiver: str, text: str, session: str) -> "Message":
-        """A message the agent sent another agent, kept in this chat beside the rest."""
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.SENT_TO: receiver, "session": session})
+    def outgoing(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
+        return cls(author=Author.SYSTEM, text=text, session=session, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "address": address or receiver})
+
+    @classmethod
+    def send_failed(cls, receiver: str, text: str, session: str, address: str, reason: str) -> "Message":
+        return cls(author=Author.SYSTEM, text=text, session=session, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "address": address or receiver, "failure": reason})
+
+    @classmethod
+    def answer(cls, target: "Message", text: str) -> "Message":
+        if target.agent_role == AgentRole.MAIN:
+            return cls(author=Author.AGENT, text=text, reply_target=target.id)
+        return cls(author=Author.AGENT, text=text, reply_target=target.id, session=target.session, agent_role=target.agent_role)
+
+    def authored(self, session: str | None) -> "Message":
+        return self.with_(session=session) if self.is_new and self.session is None else self
+
+    def arrived(self) -> "Message":
+        return self.with_event(MessageArrived(text=self.text))
 
     @property
     def sender(self) -> str:
-        """Who wrote it, as the agent reading it is told: the agent that sent it, or its author."""
         return self.data[self.PEER] if self.PEER in self.data else f"the {self.author}"
 
     @property
     def is_agents_reply(self) -> bool:
-        return self.reply_to is not None and self.author == Author.AGENT
+        return self.reply_target is not None and self.author == Author.AGENT
 
     @property
     def quoted_lines(self) -> int:
-        """How many lines the quote above a reply takes, the lines starting with > the viewer puts there."""
         lines = self.text.split("\n")
         return next((i for i, line in enumerate(lines) if not line.startswith(">")), len(lines))
 
     @property
-    def own_words(self) -> str:
-        """The words without the quote above them."""
+    def is_passage_comment(self) -> bool:
+        return self.quoted_lines > 0 and self.reply_target is None
+
+    @property
+    def quote(self) -> str:
+        return "\n".join(line.removeprefix(">").strip() for line in self.text.split("\n")[: self.quoted_lines])
+
+    @property
+    def text_body(self) -> str:
         return "\n".join(self.text.split("\n")[self.quoted_lines:]).strip()
 
     @property
@@ -67,11 +88,14 @@ class Message(Scoped):
         return self.data.get("kind") == self.THOUGHT
 
     @property
-    def is_typed_in_terminal(self) -> bool:
-        return self.data.get("kind") == TYPED
+    def is_terminal_line(self) -> bool:
+        return self.data.get("kind") == TERMINAL_LINE
 
     @property
-    def speaks_to_the_user(self) -> bool:
-        """The agent's own words in the chat: not a thought, and not a turn that only acknowledged a journal line."""
+    def is_main_unread(self) -> bool:
+        return self.author == Author.USER and self.read_at is None and self.agent_role == AgentRole.MAIN
+
+    @property
+    def is_user_facing(self) -> bool:
         return self.author == Author.AGENT and not self.acknowledgement and not self.is_thought
 

@@ -6,4 +6,4 @@ class Docs(Repository[Doc]):
     model = Doc
 
     def titled(self, title: str) -> bool:
-        return bool(self.where(title=title))
+        return bool(self.matching(title=title))

@@ -1,11 +1,11 @@
 import threading
-from http.server import ThreadingHTTPServer
 
 from journal.db.connection import Connection
-from journal.support.share_place import SharePlace
+from journal.features.sharing.support.share_place import SharePlace
 from journal.http.phone.phone_pages import PhonePages
-from journal.http.support.share_handler import ShareHandler
+from journal.http.share_handler import ShareHandler
 from journal.http.sharing.share_pages import SharePages
+from journal.http.threading_server import ThreadingServer
 
 READ_SECONDS = 15
 
@@ -16,29 +16,27 @@ class ShareServer:
     def __init__(self, pages: SharePages, phone: PhonePages, place: SharePlace, database: Connection) -> None:
         self.place = place
         self.handler = type("BoundShareHandler", (ShareHandler,), {"pages": pages, "phone": phone, "database": database, "timeout": READ_SECONDS})
-        self._server: ThreadingHTTPServer | None = None
+        self._server: ThreadingServer | None = None
 
     @property
     def port(self) -> int:
-        """The port it listens on, as it kept it when it started."""
-        return self.place.kept().port
+        return self.place.stored().port
 
     def start(self) -> None:
-        """Listens on the port it had before, or any free one when that is taken, and keeps the one it got."""
-        self._server = self._bind(self.place.kept().port)
-        self._server.daemon_threads = True
-        self.place.keep(port=self._server.server_address[1])
-        threading.Thread(target=lambda: self._server.serve_forever(poll_interval=0.2), name="share", daemon=True).start()
+        server = self._bind(self.place.stored().port)
+        self._server = server
+        self.place.store(port=server.server_address[1])
+        threading.Thread(target=server.serve_requests, name="share", daemon=True).start()
 
     def stop(self) -> None:
         if self._server:
             self._server.shutdown()
             self._server.server_close()
 
-    def _bind(self, kept: int) -> ThreadingHTTPServer:
-        if kept:
+    def _bind(self, stored: int) -> ThreadingServer:
+        if stored:
             try:
-                return ThreadingHTTPServer(("127.0.0.1", kept), self.handler)
+                return ThreadingServer(("127.0.0.1", stored), self.handler)
             except OSError:
                 pass
-        return ThreadingHTTPServer(("127.0.0.1", 0), self.handler)
+        return ThreadingServer(("127.0.0.1", 0), self.handler)

@@ -12,6 +12,8 @@ import Dialog from "../kit/Dialog.vue";
 import AgentPage from "./AgentPage.vue";
 import WorkerPage from "./WorkerPage.vue";
 import Comments from "./Comments.vue";
+import AgentBar from "../chat/AgentBar.vue";
+import Thread from "../chat/Thread.vue";
 import {scopeIn} from "../composables/scope.js";
 import {useKept} from "../composables/kept.js";
 import {usePoll} from "../composables/poll.js";
@@ -52,7 +54,13 @@ const SHAPES = {plans: "plan", agents: "agent", workers: "worker"};
 const DIALOG_PAGES = {agent: AgentPage, worker: WorkerPage};
 const shape = computed(() => (!props.table ? "" : SHAPES[props.table] || kind.value?.view));
 const WIDTHS = {small: "normal", wide: "wide"};
-const panelWidth = computed(() => WIDTHS[shape.value] || "page");
+const discussing = ref(false);
+provide("discussion", {on: discussing, toggle: () => (discussing.value = !discussing.value)});
+watch(
+    () => `${props.table}:${props.id}`,
+    () => (discussing.value = false)
+);
+const panelWidth = computed(() => (discussing.value ? "full" : WIDTHS[shape.value] || "page"));
 const panel = computed(() => (["small", "wide", "check"].includes(shape.value) ? "inspector" : shape.value));
 const close = () => (route.value.open ? unpeek() : go(props.table));
 useWindowEvent("keydown", (event) => {
@@ -78,7 +86,7 @@ watch(
     <template v-if="DIALOG_PAGES[shape]">
         <Dialog large bare :open="!!resource && !leaving" @dismiss="close" @close="emit('gone')">
             <template v-if="resource">
-                <DocumentPage :resource="resource" :focus="focusComment" @close="close">
+                <DocumentPage :resource="resource" :focus="focusComment" read-only @close="close">
                     <component :is="DIALOG_PAGES[shape]" :resource="resource" @close="close" />
                 </DocumentPage>
             </template>
@@ -120,7 +128,13 @@ watch(
                 </div>
             </template>
             <template v-else>
-                <div class="page">
+                <div :class="['page', {discussing}]">
+                    <template v-if="discussing">
+                        <div class="discussion-chat">
+                            <AgentBar />
+                            <Thread />
+                        </div>
+                    </template>
                     <SwitchCase :value="shape">
                         <template #plan>
                             <DocumentPage :resource="resource" :focus="focusComment" @close="close">
@@ -198,6 +212,7 @@ watch(
     bottom: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    padding-bottom: 44px;
     background: var(--bg);
 }
 
@@ -301,6 +316,29 @@ watch(
 }
 .page {
     min-height: 100%;
+}
+
+.page.discussing {
+    display: grid;
+    grid-template-columns: minmax(360px, 2fr) minmax(0, 3fr);
+    height: 100%;
+    min-height: 0;
+}
+
+.page.discussing > :deep(.document) {
+    min-width: 0;
+}
+
+.discussion-chat {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.discussion-chat > :deep(.thread) {
+    padding: 0 12px;
 }
 .page > :deep(.body) {
     max-width: 800px;

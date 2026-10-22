@@ -5,7 +5,7 @@
         "select": "call",
         "where": [
             {
-                "nameIn": ["execute", "executemany", "all", "one"]
+                "nameIn": ["execute", "executemany", "executescript", "transaction", "all", "one"]
             },
             {
                 "of": "child:func",

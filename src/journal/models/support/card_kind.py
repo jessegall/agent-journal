@@ -12,5 +12,5 @@ class CardKind:
     collapsed: bool = False
 
     @classmethod
-    def from_json(cls, data: dict) -> "CardKind":
+    def parsed(cls, data: dict) -> "CardKind":
         return cls(**data)

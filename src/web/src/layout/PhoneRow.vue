@@ -10,7 +10,7 @@ const emit = defineEmits(["disconnect"]);
     <div class="phone-row">
         <div class="phone-row-text">
             <span class="phone-name">{{ phone.name }}</span>
-            <span class="phone-when">Last seen {{ phoneTime(phone.last_seen_at) }}, until {{ phoneTime(phone.expires_at) }}</span>
+            <span class="phone-when">Last seen {{ phoneTime(phone.last_visited_at) }}, until {{ phoneTime(phone.expires_at) }}</span>
         </div>
         <Btn small :busy="busy" @click="emit('disconnect')">Stop this session</Btn>
     </div>

@@ -16,32 +16,29 @@ class Version3Rows:
         return self.read(self.folder / "project" / kind)
 
     def docs(self) -> list[Version3Row]:
-        """The project's documents, each in a folder of its own beside its revisions and files."""
-        return sorted((Version3Row.from_text(path.read_text()) for path in (self.folder / "project" / "doc").glob("*/doc.md")), key=lambda row: row.n)
+        return sorted((Version3Row.parsed(path.read_text()) for path in (self.folder / "project" / "doc").glob("*/doc.md")), key=lambda row: row.n)
 
-    def of(self, environment: str, kind: str) -> list[Version3Row]:
+    def rows(self, environment: str, kind: str) -> list[Version3Row]:
         return self.read(self.folder / "environments" / environment / kind)
 
-    def read(self, where: Path) -> list[Version3Row]:
-        """Every row of the folder, loose files over packed ones of the same number, by number."""
-        if not where.is_dir():
+    def read(self, caller: Path) -> list[Version3Row]:
+        if not caller.is_dir():
             return []
-        rows = {row.n: row for row in self.packed(where)}
-        rows.update({row.n: row for row in (Version3Row.from_text(path.read_text()) for path in where.glob("*.md"))})
+        rows = {row.n: row for row in self.packed(caller)}
+        rows.update({row.n: row for row in (Version3Row.parsed(path.read_text()) for path in caller.glob("*.md"))})
         return [rows[n] for n in sorted(rows)]
 
     @staticmethod
-    def packed(where: Path) -> list[Version3Row]:
+    def packed(caller: Path) -> list[Version3Row]:
         rows = []
-        for path in sorted((where / "packed").glob("*.zip")):
+        for path in sorted((caller / "packed").glob("*.zip")):
             with zipfile.ZipFile(path) as packed:
-                rows += [Version3Row.from_text(packed.read(name).decode()) for name in packed.namelist() if name.endswith(".md")]
+                rows += [Version3Row.parsed(packed.read(name).decode()) for name in packed.namelist() if name.endswith(".md")]
         return rows
 
-    def is_in_use(self, environment: Version3Row) -> bool:
-        """Main, a worktree's still on disk, or holding open to-dos or questions: work still waits there. Unread agent messages and recent events do not count, since nearly every old environment has them."""
+    def is_used(self, environment: Version3Row) -> bool:
         if environment.title == "main" or environment.data.get("kind") == "main":
             return True
         if (self.folder.parents[1] / ".claude" / "worktrees" / environment.title).is_dir():
             return True
-        return any(row.is_open() for kind in ("todo", "question") for row in self.of(environment.title, kind))
+        return any(row.is_open() for kind in ("todo", "question") for row in self.rows(environment.title, kind))

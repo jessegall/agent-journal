@@ -6,20 +6,38 @@ from journal.repositories.repository import Repository
 class Statistics(Repository[Statistic]):
     model = Statistic
 
-    def under(self, prefix: str) -> dict[str, int]:
-        """Every statistic whose key starts with the prefix, by key; one never counted is not there."""
-        return {row.key: row.value for row in self.selected("key >= ? AND key < ? ORDER BY key", (prefix, prefix + "\uffff"))}
+    def lower(self, prefix: str) -> dict[str, int]:
+        return {row.key: row.value for row in self.selected(self.query().filter_prefix("key", prefix).order("key"))}
 
-    def counted(self, key: str, by: Actor) -> Statistic:
-        """One more, read and written under the write lock."""
+    def counted(self, key: str, actor: Actor) -> Statistic:
+        return self.added(key, 1, actor)
+
+    def added(self, key: str, amount: int, actor: Actor) -> Statistic:
         with self.connection.transaction():
-            return self.save(self.of(key).with_(value=self.of(key).value + 1), by)
+            row = self.series(key)
+            return self.save(row.with_(value=row.value + amount), actor)
 
-    def set(self, key: str, value: int, by: Actor) -> Statistic:
+    def measured(self, prefix: str, ms: int, actor: Actor) -> None:
         with self.connection.transaction():
-            return self.save(self.of(key).with_(value=value), by)
+            self.added(f"{prefix}.count", 1, actor)
+            self.added(f"{prefix}.total_ms", ms, actor)
+            self.raised(f"{prefix}.slowest_ms", ms, actor)
 
-    def of(self, key: str) -> Statistic:
-        """The statistic of that key, a fresh one at zero before anything counted it."""
-        found = self.where(key=key)
-        return found[0] if found else Statistic(key=key)
+    def raised(self, key: str, value: int, actor: Actor) -> None:
+        with self.connection.transaction():
+            row = self.series(key)
+            if value > row.value:
+                self.save(row.with_(value=value), actor)
+
+    def cleared(self, prefix: str, actor: Actor) -> None:
+        with self.connection.transaction():
+            for row in self.selected(self.query().filter_prefix("key", prefix)):
+                self.delete(row, actor)
+
+    def set(self, key: str, value: int, actor: Actor) -> Statistic:
+        with self.connection.transaction():
+            return self.save(self.series(key).with_(value=value), actor)
+
+    def series(self, key: str) -> Statistic:
+        rows = self.matching(key=key)
+        return rows[0] if rows else Statistic(key=key)

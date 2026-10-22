@@ -1,5 +1,6 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
+import {busyLine} from "../domain/agentState.js";
 import {openQuestion, questionView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
@@ -22,14 +23,18 @@ import Icon from "../kit/Icon.vue";
 import {openInChat, route} from "../route.js";
 import {quoted, withQuote} from "../format/quote.js";
 import {laidOut} from "../platform/view.js";
-import {threadTurns} from "../domain/thread.js";
+import {mainChat, threadTurns} from "../domain/thread.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
+import {useLiveOutputs} from "../composables/liveOutputs.js";
+import {useSharedNow} from "../composables/now.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
 import OutputDialog from "./OutputDialog.vue";
 import DumpDock from "./DumpDock.vue";
-import {dockedDump} from "../domain/docks.js";
+import {dockedDump, dockedRows, streamRows} from "../domain/docks.js";
+import RowDock from "./RowDock.vue";
+import WatchDock from "./WatchDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
@@ -42,9 +47,11 @@ const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
 const pane = computed(() => props.view || store.pane);
 const scope = useScope();
-const here = !scope.env;
+const here = !scope.env && !scope.chat;
 const rows = (table) => scope.rows(table);
-const owner = computed(() => (here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null));
+const owner = computed(() =>
+    here ? agent.value : [...rows("agents")].sort((a, b) => seconds(b.heard_at) - seconds(a.heard_at))[0] || null
+);
 const threadRoot = ref(null);
 const askHere = (id) => !!threadRoot.value?.offsetParent && (openQuestion(id, threadRoot.value), true);
 const outputOpen = ref(0);
@@ -89,7 +96,8 @@ const dumpOffer = {
     },
 };
 
-const mine = computed(() => rows("messages").filter((m) => m.author === "user" && !m.read_at));
+const chat = useLiveOutputs(computed(() => (scope.chat ? rows("messages") : mainChat(rows("messages")))));
+const mine = computed(() => chat.value.filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {
     const last = mine.value[mine.value.length - 1];
@@ -103,12 +111,15 @@ const busy = computed(() => !!owner.value && ["working", "compacting"].includes(
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner);
 const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
-const dockCount = computed(() => [dumpDock.value, planCard.value].filter(Boolean).length);
-const thought = computed(() => (owner.value && owner.value.thinking) || "");
-const helping = computed(() => (owner.value ? subagentsOf(owner.value.id) : []).filter((sub) => sub.running).at(-1));
-const activity = computed(() =>
-    owner.value && owner.value.status === "compacting" ? "compacting" : helping.value ? `Waiting: ${helping.value.task}` : "working"
+const dockNow = useSharedNow();
+const rowDocks = computed(() => dockedRows(chat.value, dockNow.value));
+const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
+const helping = computed(() =>
+    subagentsOf(owner.value)
+        .filter((sub) => sub.running)
+        .at(-1)
 );
+const line = computed(() => (owner.value ? busyLine(owner.value, helping.value) : {thinking: "", doing: "working"}));
 const planOpen = ref(true);
 let lastTop = 0;
 let lastScroll = 0;
@@ -126,7 +137,7 @@ const {away, missed, showNewest, follow: atTheFoot, toBottom: glideTo, left: rea
 const settledOnce = ref(false);
 const ready = ref(false);
 const unseen = computed(() =>
-    rows("messages")
+    chat.value
         .filter((m) => m.author === "agent" && !m.read_at)
         .map((m) => m.id)
 );
@@ -142,7 +153,7 @@ let frame = 0;
 
 const revoke = (p) => Object.values(p.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
-const thread = computed(() => threadTurns(rows("messages"), pending.value, here && !!store.paging.more.messages, props.hidden));
+const thread = computed(() => threadTurns(streamRows(chat.value, dockNow.value), pending.value, here && !!store.paging.more.messages, props.hidden));
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 const turnsLoaded = computed(() => scope.loaded("messages"));
@@ -295,6 +306,12 @@ async function post(text, files) {
     }
     const replying = quote.value;
     const body = withQuote(replying.text, text);
+    if (scope.chat) {
+        quote.value = {text: "", ref: ""};
+        await scope.chat.send(body);
+        await scope.chat.refresh();
+        return;
+    }
     const replyTo = replying.ref ? Number(replying.ref.split(":")[1]) : null;
     quote.value = {text: "", ref: ""};
     const id = token();
@@ -303,7 +320,7 @@ async function post(text, files) {
     toBottom(true);
     let sent;
     try {
-        sent = await sendMessage(scope.env || route.value.env, {text: body, reply_to: replyTo}, files, id);
+        sent = await sendMessage(scope.env || route.value.env, {text: body, reply_target: replyTo}, files, id);
     } catch (e) {
         drop(placeholder);
         if (!quote.value.ref && !quote.value.text) quote.value = replying;
@@ -328,7 +345,11 @@ async function promised(body, files, idempotency) {
         const size = f.type.startsWith("image/") ? await measured(previews[f.name]) : null;
         if (size) pictures[f.name] = size;
     }
-    return promise("messages", {text: body, idempotency}, {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_to: null, read_at: null});
+    return promise(
+        "messages",
+        {text: body, idempotency},
+        {author: "user", files: files.map((f) => f.name), previews, pictures, data: {}, reply_target: null, read_at: null}
+    );
 }
 
 watch(busy, async () => {
@@ -391,21 +412,23 @@ watch(
                         <button type="button" class="thread-answering-x" title="Leave it as it was (Esc)" @click="unedit">×</button>
                     </div>
                 </template>
-                <Compose
-                    :send="post"
-                    :waiting="waitingNow"
-                    @waiting-list="toggleWaiting"
-                    :quote="quote.text"
-                    quote-label="Replying to"
-                    @unquote="quote = {text: '', ref: ''}"
-                    @typing="toBottom(true)"
-                    :preset="editing ? editing.text : ''"
-                    :up="editLast"
-                    :down="unedit"
-                    :many="here ? dumpOffer : null"
-                    :idle="here ? dumpIdle : null"
-                    :figure-home="here"
-                />
+                <template v-if="!scope.chat || scope.chat.send">
+                    <Compose
+                        :send="post"
+                        :waiting="waitingNow"
+                        @waiting-list="toggleWaiting"
+                        :quote="quote.text"
+                        quote-label="Replying to"
+                        @unquote="quote = {text: '', ref: ''}"
+                        @typing="toBottom(true)"
+                        :preset="editing ? editing.text : ''"
+                        :up="editLast"
+                        :down="unedit"
+                        :many="here ? dumpOffer : null"
+                        :idle="here ? dumpIdle : null"
+                        :figure-home="here"
+                    />
+                </template>
                 <template v-if="waitingOpen && waitingNow">
                     <WaitingPanel :waiting="waitingNow" :anchor="waitingAnchor" @close="waitingOpen = false" />
                 </template>
@@ -441,6 +464,16 @@ watch(
                             />
                         </TransitionGroup>
                         <div :class="['chat-docks', {docked: dockCount}]" :data-figure-docked-bars="dockCount ? '' : null">
+                            <TransitionGroup name="dock">
+                                <template v-for="docked in rowDocks" :key="docked.id">
+                                    <template v-if="docked.data.output">
+                                        <WatchDock :message="docked" :folded="short || !planOpen" />
+                                    </template>
+                                    <template v-else>
+                                        <RowDock :message="docked" :folded="short || !planOpen" />
+                                    </template>
+                                </template>
+                            </TransitionGroup>
                             <Transition name="dock">
                                 <DumpDock v-if="dumpDock" :key="dumpDock.id" :dump="dumpDock" :folded="short || !planOpen" />
                             </Transition>
@@ -449,15 +482,19 @@ watch(
                             </Transition>
                         </div>
                         <Transition name="status">
-                            <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${activity}`">
+                            <div
+                                v-if="busy && !waitingNow"
+                                class="thread-turn busy"
+                                :aria-label="`The agent is ${line.doing || 'thinking'}`"
+                            >
                                 <div class="thread-meta">
                                     <Dot kind="started" solid :size="6" />
-                                    <template v-if="thought">
+                                    <template v-if="line.thinking">
                                         <span>thinking</span>
-                                        <span class="thread-meta-on thought">{{ thought }}</span>
+                                        <span class="thread-meta-on thought">{{ line.thinking }}</span>
                                     </template>
                                     <template v-else>
-                                        <RunningCommand :idle="activity" />
+                                        <RunningCommand :idle="line.doing" />
                                     </template>
                                 </div>
                             </div>

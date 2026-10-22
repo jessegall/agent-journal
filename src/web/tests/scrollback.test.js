@@ -53,18 +53,31 @@ describe("paging back in a chat", () => {
         expect(host.querySelectorAll(".skeleton-message").length).toBe(3);
     });
 
-    test("waits two seconds after a page before the next, so the top of the chat never pulls in the whole history", async () => {
-        vi.useFakeTimers();
+    test("loads one older page at the top and the next only after the reader leaves the top and returns", async () => {
+        const box = window.document.createElement("div");
+        const mark = window.document.createElement("div");
+        let markTop = 0;
+        box.getBoundingClientRect = () => ({top: 0});
+        mark.getBoundingClientRect = () => ({top: markTop});
         const load = vi.fn(async () => true);
-        const {made} = paged(load);
+        const made = {};
+        createApp({
+            setup() {
+                Object.assign(made, useScrollback(ref(box), ref(mark), load));
+                return () => h("div");
+            },
+        }).mount(window.document.createElement("div"));
         await made.older();
-        expect(await made.older()).toBe(false);
+        await made.older();
+        box.dispatchEvent(new Event("scroll"));
+        await made.older();
         expect(load).toHaveBeenCalledTimes(1);
-        vi.advanceTimersByTime(2100);
-        await nextTick();
-        expect(load).toHaveBeenCalledTimes(1);
-        expect(await made.older()).not.toBe(false);
+        markTop = -900;
+        box.dispatchEvent(new Event("scroll"));
+        markTop = 0;
+        await made.older();
         expect(load).toHaveBeenCalledTimes(2);
-        vi.useRealTimers();
+        await made.older();
+        expect(load).toHaveBeenCalledTimes(2);
     });
 });

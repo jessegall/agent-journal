@@ -7,10 +7,10 @@ import ColorSwatch from "./ColorSwatch.vue";
 import FormField from "./FormField.vue";
 import ModelPicker from "./ModelPicker.vue";
 import ResetButton from "./ResetButton.vue";
-import SettingReaders from "./SettingReaders.vue";
 import Segmented from "./Segmented.vue";
 import Switch from "./Switch.vue";
 import SwitchCase from "./SwitchCase.vue";
+import TextArea from "./TextArea.vue";
 import TextInput from "./TextInput.vue";
 import UnitTextInput from "./UnitTextInput.vue";
 import TimingChip from "./TimingChip.vue";
@@ -19,7 +19,12 @@ const props = defineProps({row: {type: Object, required: true}, sheet: Boolean, 
 const emit = defineEmits(["change", "timing", "act"]);
 
 const id = useId();
-const field = computed(() => ["number", "text", "choice", "model"].includes(props.row.kind));
+const field = computed(() => ["number", "text", "lines", "choice", "model"].includes(props.row.kind));
+const linesOf = (text) =>
+    text
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
 const resettable = computed(() => canReset(props.row));
 
 function reset() {
@@ -54,6 +59,15 @@ function reset() {
                     <template #text>
                         <TextInput :id="id" class="setting-text" :value="row.value" @change="emit('change', $event.target.value)" />
                     </template>
+                    <template #lines>
+                        <TextArea
+                            :id="id"
+                            class="setting-lines"
+                            :rows="Math.max(3, row.value.length)"
+                            :value="row.value.join('\n')"
+                            @change="emit('change', linesOf($event.target.value))"
+                        />
+                    </template>
                     <template #choice>
                         <Segmented wrap :fill="sheet" :options="row.options" :value="row.value" @pick="emit('change', $event)" />
                     </template>
@@ -62,7 +76,6 @@ function reset() {
                     </template>
                 </SwitchCase>
             </FormField>
-            <SettingReaders :readers="row.readers" />
         </div>
     </template>
     <template v-else>
@@ -78,7 +91,6 @@ function reset() {
                 <template v-if="row.hint">
                     <div class="setting-hint">{{ row.hint }}</div>
                 </template>
-                <SettingReaders :readers="row.readers" />
                 <template v-if="sheet && row.timing">
                     <TimingChip
                         class="setting-timing"
@@ -134,6 +146,12 @@ function reset() {
 </template>
 
 <style scoped>
+.setting-lines {
+    width: 100%;
+    font-family: var(--mono);
+    font-size: 12px;
+}
+
 .setting-row {
     display: flex;
     align-items: center;

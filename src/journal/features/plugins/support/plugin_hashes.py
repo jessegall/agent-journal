@@ -1,13 +1,13 @@
 import hashlib
 from pathlib import Path
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_folders import PluginFolders
-from journal.support.plugin_manifest import PluginManifest
+from journal.models.support.plugin_manifest import PluginManifest
 from journal.support.actor import Actor
 from journal.models.plugin import Plugin
 from journal.repositories.plugins import Plugins
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 
 class PluginHashes:
@@ -15,18 +15,26 @@ class PluginHashes:
 
     def __init__(self, folders: PluginFolders, plugins: Plugins, cards: Cards) -> None:
         self.folders, self.plugins, self.cards = folders, plugins, cards
+        self.checked: dict[Path, tuple[int, int, str]] = {}
 
-    def of(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
+    def digest(self, folder: Path, manifest: PluginManifest) -> dict[str, str]:
         return {path: self.hashed(folder / path) for path in manifest.programs}
 
     def intact(self, plugin: Plugin, environment_id: int) -> bool:
-        changed = [path for path, was in plugin.hashes.items() if self.hashed(self.folders.of(plugin) / path) != was]
+        changed = [path for path, prior_row in plugin.hashes.items() if self.hashed(self.folders.folder(plugin) / path) != prior_row]
         if not changed:
             return True
-        self.plugins.save(self.plugins.named(plugin.name).with_(enabled=False), Actor.system())
-        self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad", shows=ChatMark.PLUGINS)
+        self.plugins.save(self.plugins.lookup(plugin.name).with_(enabled=False), Actor.system())
+        self.cards.show(environment_id, "", f"Plugin {plugin.name} is off: {', '.join(changed)} changed since you installed it or switched it on. Read the change, then switch it on with journal plugin enable {plugin.name}", "bolt", tone="bad", shows=CardKind.PLUGINS)
         return False
 
-    @staticmethod
-    def hashed(path: Path) -> str:
-        return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ""
+    def hashed(self, path: Path) -> str:
+        if not path.is_file():
+            return ""
+        stat = path.stat()
+        record = self.checked.get(path)
+        if record and record[0] == stat.st_mtime_ns and record[1] == stat.st_size:
+            return record[2]
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        self.checked[path] = (stat.st_mtime_ns, stat.st_size, digest)
+        return digest

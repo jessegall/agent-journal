@@ -5,6 +5,7 @@ import "./copyBlock.js";
 
 const FENCE = /^(```|~~~)\s*(\w+)?\s*$/;
 const INDENTED = /^\s{4,}\S/;
+const HEAD = /^(@\w|(async\s+)?def |class |if |elif |else\b|for |while |try\b|except\b|finally\b|with |switch |function\b|[\w$.]+\s*\([^)]*\)\s*(:|\{)?\s*$)|[:{]\s*$|=>\s*\{?\s*$/;
 const LANGS = [
     ["py", /\b(def |elif |None\b|self\b|lambda |print\(|import \w+$)|:\s*$/m],
     ["php", /<\?php|\$\w+->|\bforeach\b|\becho\b/],
@@ -33,7 +34,7 @@ function block(lines, lang) {
     return {kind: "html", html: `<div class="chat-code-block"><button type="button" class="chat-code-copy">Copy</button><pre class="chat-code"><code>${code}</code></pre></div>`};
 }
 
-function lift(text) {
+export function lift(text) {
     const lines = text.split("\n");
     const out = [];
     let held = [];
@@ -56,12 +57,15 @@ function lift(text) {
             let stop = i;
             while (stop < lines.length && (INDENTED.test(lines[stop]) || !lines[stop].trim())) stop += 1;
             while (stop > i && !lines[stop - 1].trim()) stop -= 1;
-            if (stop - i >= 2) {
+            const head = [];
+            while (held.length && held[held.length - 1].trim() && HEAD.test(held[held.length - 1].trim())) head.unshift(held.pop());
+            if (stop - i + head.length >= 2) {
                 flush();
-                out.push(block(lines.slice(i, stop).map(withoutChips), ""));
+                out.push(block([...head, ...lines.slice(i, stop)].map(withoutChips), ""));
                 i = stop;
                 continue;
             }
+            held.push(...head);
         }
         held.push(lines[i]);
         i += 1;

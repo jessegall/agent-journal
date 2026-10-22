@@ -1,8 +1,8 @@
 import struct
 import zlib
 
-DARKER = 90
-DISC = 0.22
+DIM_PERCENT = 90
+DISC_RATIO = 0.22
 WHITE = b"\xff\xff\xff"
 
 
@@ -14,19 +14,19 @@ class PhoneIcon:
         self.top = tuple(int(code[i:i + 2], 16) for i in (0, 2, 4))
 
     def png(self, side: int) -> bytes:
-        middle, radius = side / 2, side * DISC
+        middle, radius = side / 2, side * DISC_RATIO
         rows = []
-        for y, shade in enumerate(self.shades(side)):
+        for y, tint in enumerate(self.shades(side)):
             reach = radius ** 2 - (y + 0.5 - middle) ** 2
-            left, right = (round(middle - reach ** 0.5), round(middle + reach ** 0.5)) if reach > 0 else (side, side)
-            rows.append(shade * left + WHITE * (right - left) + shade * (side - right))
+            remaining, right = (round(middle - reach ** 0.5), round(middle + reach ** 0.5)) if reach > 0 else (side, side)
+            rows.append(tint * remaining + WHITE * (right - remaining) + tint * (side - right))
         header = struct.pack(">IIBBBBB", side, len(rows), 8, 2, 0, 0, 0)
         pixels = b"".join(b"\x00" + row for row in rows)
         return b"\x89PNG\r\n\x1a\n" + self.chunk(b"IHDR", header) + self.chunk(b"IDAT", zlib.compress(pixels, 9)) + self.chunk(b"IEND", b"")
 
     def shades(self, height: int) -> list[bytes]:
-        bottom = tuple(max(0, value - DARKER) for value in self.top)
-        return [bytes(round(a + (b - a) * y / height) for a, b in zip(self.top, bottom)) for y in range(height)]
+        bottom = tuple(max(0, value - DIM_PERCENT) for value in self.top)
+        return [bytes(round(item + (b - item) * y / height) for item, b in zip(self.top, bottom)) for y in range(height)]
 
     @staticmethod
     def chunk(kind: bytes, body: bytes) -> bytes:

@@ -1,11 +1,19 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
 
+from journal.events.rows.row_resolved import RowResolved
+from journal.events.rows.task_briefed import TaskBriefed
+from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.task_reopened import TaskReopened
+from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
+
+BULLET = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.+)$", re.MULTILINE)
 
 @dataclass(frozen=True)
 class Task(Scoped):
@@ -17,40 +25,55 @@ class Task(Scoped):
     started_at: datetime | None = None
     finished_at: datetime | None = None
     outcome: str = ""
-    parked_why: str = ""
-    blocked_why: str = ""
-    """What outside the agent's hands the task waits on; blocked is neither offered nor nudged, only listed."""
+    suspension_reason: str = ""
+    block_reason: str = ""
 
     def is_closed(self) -> bool:
         return self.state.is_closed()
 
-    def has_just_closed(self, was: "Task | None") -> bool:
-        """Closed now, and open before this change."""
-        return self.is_closed() and (was is None or not was.is_closed())
+    def is_newly_closed(self, prior_row: "Task | None") -> bool:
+        return self.is_closed() and (prior_row is None or not prior_row.is_closed())
 
-    def is_settled(self) -> bool:
-        """Nothing waiting on it waits any longer."""
+    def is_resolved(self) -> bool:
         return self.is_closed()
 
-    def started(self, at: datetime) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=at, parked_why="", blocked_why="")
+    def points(self) -> tuple[str, ...]:
+        bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
+        return bullets or (self.brief.strip(),)
 
-    def parked(self, why: str) -> "Task":
-        """Put aside after it was started; a task never started is not parked, it is still open."""
+    def briefed(self, brief: str, time: float) -> "Task":
+        rewritten = self.with_(brief=brief)
+        changes = tuple(n for n, point in enumerate(rewritten.points(), start=1) if n > len(self.points()) or self.points()[n - 1] != point)
+        return rewritten.with_event(TaskBriefed(environment_id=self.environment_id, time=time, task_id=self.row_id, points=changes))
+
+    def started(self, time: datetime) -> "Task":
+        return self.plan_started(time, 0)
+
+    def plan_started(self, time: datetime, plan_id: int) -> "Task":
+        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id))
+
+    def suspended(self, reason: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:
-            raise Refused(f"task {self.id} is {self.state}: only a started task is parked")
-        return self.with_(state=TaskState.PARKED, parked_why=why)
+            raise Rejection(f"task {self.id} is {self.state}: only a started task is parked")
+        return self.closed(self.with_(state=TaskState.SUSPENDED, suspension_reason=reason), time, "parked")
 
-    def cancelled(self, at: datetime) -> "Task":
-        """Given up: finished, with no outcome, so nothing counts it as open."""
-        return self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or at)
+    def cancelled(self, time: datetime) -> "Task":
+        return self.closed(self.with_(state=TaskState.CANCELLED, finished_at=self.finished_at or time), time, "cancelled")
 
-    def blocked(self, why: str) -> "Task":
-        return self.with_(state=TaskState.BLOCKED, blocked_why=why)
+    def closed(self, task: "Task", time: datetime, manner: str) -> "Task":
+        return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, outcome=manner)).with_event(RowResolved(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
 
-    def unblocked(self) -> "Task":
-        return self.with_(state=TaskState.OPEN, blocked_why="")
+    def blocked(self, reason: str, time: datetime) -> "Task":
+        return self.closed(self.with_(state=TaskState.BLOCKED, block_reason=reason), time, "blocked")
 
-    def finished(self, at: datetime, outcome: str) -> "Task":
-        return self.with_(state=TaskState.DONE, finished_at=at, outcome=outcome)
+    def unblocked(self, reason: str, time: float) -> "Task":
+        return self.with_(state=TaskState.OPEN, block_reason="").with_event(TaskReopened(environment_id=self.environment_id, time=time, task_id=self.row_id, reason=reason))
 
+    def finished(self, time: datetime, outcome: str) -> "Task":
+        return self.closed(self.with_(state=TaskState.FINISHED, finished_at=time, outcome=outcome), time, "done")
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary_line(self) -> str:
+        return self.opening_line(self.brief)

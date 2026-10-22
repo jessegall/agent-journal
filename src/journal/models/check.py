@@ -4,48 +4,67 @@ from datetime import datetime
 
 from journal.support.check_progress import CheckProgress
 from journal.support.check_report import CheckReport
+from journal.events.rows.check_completed import CheckCompleted
+from journal.events.rows.row_resolved import RowResolved
 from journal.models.model import Model
 
 
 @dataclass(frozen=True)
 class Check(Model):
-    """A script that passes or fails about the project, run by hand or every so many minutes."""
+    """A script that passes or fails about the project, run by hand or every so many minutes, and when its failure was last reported to the agent."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief", "command")
     title: str = ""
     brief: str = ""
-    """What it checks and what its failure means, in a few lines."""
     command: str = ""
-    every: float = 0
-    """Minutes between runs; 0 runs it only by hand."""
+    interval: float = 0
     last_passed: bool | None = None
     last_output: str = ""
-    last_ran_at: datetime | None = None
-    last_took: float = 0.0
-    """Seconds the last run took, so the next run's bar can estimate before the check says how far it is."""
+    last_run_at: datetime | None = None
+    last_duration: float = 0.0
     last_report: CheckReport | None = None
-    """What the last run wrote to its report file; None when it wrote none."""
-    running: CheckProgress | None = None
-    """The run under way; None while none runs."""
+    progress: CheckProgress | None = None
     last_fault: str = ""
-    waited_on: bool = False
+    wait_target: bool = False
+    is_retired: bool = False
+    failure_reported_at: float = 0.0
 
-    def started(self, at: float) -> "Check":
-        return self.with_(running=CheckProgress(at))
+    def edited(self, title: str, brief: str, command: str, interval_minutes: float) -> "Check":
+        return self.with_(title=title, brief=brief, command=command, interval=interval_minutes)
 
-    def ran(self, passed: bool, output: str, at: datetime, took: float, report: CheckReport | None, fault: str) -> "Check":
-        return self.with_(last_passed=passed, last_output=output, last_ran_at=at, last_took=took, last_report=report, running=None, last_fault=fault)
+    def started(self, time: float) -> "Check":
+        return self.with_(progress=CheckProgress(time))
 
-    def due_at(self, now: datetime) -> bool:
-        if self.every <= 0 or (self.waited_on and self.is_settled()):
+    def completed(self, passed: bool, output: str, time: datetime, elapsed: float, report: CheckReport | None, fault: str) -> "Check":
+        executed = CheckCompleted(environment_id=0, time=time.timestamp(), check_id=self.row_id, title=self.title, passed=passed, output=output, prior_failure=self.last_passed is False, wait_target=self.wait_target, failure_reported_at=self.failure_reported_at)
+        recorded = self.with_(last_passed=passed, last_output=output, last_run_at=time, last_duration=elapsed, last_report=report, progress=None, last_fault=fault).with_event(executed)
+        if self.wait_target and passed and not self.is_resolved():
+            return recorded.with_event(RowResolved(environment_id=0, time=time.timestamp(), ref=f"{self.table()}:{self.id}", outcome=recorded.outcome()))
+        return recorded
+
+    def failure_reported(self, time: float) -> "Check":
+        return self.with_(failure_reported_at=time)
+
+    def retired(self, time: float) -> "Check":
+        retired = self.with_(is_retired=True, progress=None)
+        return retired if self.is_resolved() else retired.with_event(RowResolved(environment_id=0, time=time, ref=f"{self.table()}:{self.id}", outcome=f"check {self.id} removed"))
+
+    def needs_run(self, time: datetime) -> bool:
+        if self.is_retired or self.interval <= 0 or (self.wait_target and self.is_resolved()):
             return False
-        return self.last_ran_at is None or (now - self.last_ran_at).total_seconds() >= self.every * 60
+        return self.last_run_at is None or (time - self.last_run_at).total_seconds() >= self.interval * 60
 
-    def is_settled(self) -> bool:
-        return self.last_passed is True
+    def is_resolved(self) -> bool:
+        return self.last_passed is True or self.is_retired
 
-    def came_to(self) -> str:
+    def outcome(self) -> str:
         return f"check {self.id} passed"
 
     def cannot_run(self) -> bool:
         return bool(self.last_fault)
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary_line(self) -> str:
+        return self.opening_line(self.brief)

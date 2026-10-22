@@ -10,13 +10,11 @@ class Edit(Scoped):
     session: str = ""
     path: str = ""
     kind: str = "edit"
-    """create for a file written whole, edit for a change inside one."""
-    at: float = 0.0
+    time: float = 0.0
     added: int = 0
     removed: int = 0
     first_line: int = 1
     last_line: int = 1
     rows: tuple = ()
-    """The changed lines with their numbers, as the pane draws them; none for a shell command's change."""
     command: str = ""
-    """The shell command that changed the file, when one did."""
+    tool_use: int = 0

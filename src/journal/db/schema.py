@@ -1,12 +1,11 @@
 from dataclasses import fields
 from typing import get_type_hints
 
-from journal.support.column import Column
+from journal.models.support.column import Column
 from journal.db.connection import Connection
 from journal.models.model import Model
 
 FULL = 1
-"""SQLite's auto_vacuum mode that frees deleted rows' pages at every commit."""
 
 
 class Schema:
@@ -15,23 +14,23 @@ class Schema:
     def __init__(self, connection: Connection, models: tuple[type[Model], ...]) -> None:
         self.connection, self.models = connection, models
 
-    def create(self) -> None:
-        self.vacuum_on_its_own()
+    def create(self) -> bool:
+        self.vacuum_alone()
+        empty = not self.connection.all("SELECT name FROM sqlite_master WHERE type = 'table' AND name != 'sqlite_sequence'")
         with self.connection.transaction() as db:
             db.execute("CREATE TABLE IF NOT EXISTS migrations (number INTEGER PRIMARY KEY, ran_at TEXT NOT NULL)")
             for model in self.models:
                 db.execute(self.statement(model))
                 self.add_new_columns(db, model)
+        return empty
 
-    def vacuum_on_its_own(self) -> None:
-        """The file gives the space of deleted rows back to the disk at every commit: a database made before that is switched over once, by a compaction."""
-        if self.connection.one("PRAGMA auto_vacuum")[0] == FULL:
+    def vacuum_alone(self) -> None:
+        if self.connection.result("PRAGMA auto_vacuum")[0] == FULL:
             return
         self.connection.execute(f"PRAGMA auto_vacuum = {FULL}")
         self.connection.execute("VACUUM")
 
     def add_new_columns(self, db, model: type[Model]) -> None:
-        """A column a model gained after its table was made is added to the table; nothing is ever dropped."""
         present = {row["name"] for row in db.execute(f"PRAGMA table_info({model.table()})").fetchall()}
         for column in self.columns(model):
             if column.name not in present:
@@ -44,8 +43,8 @@ class Schema:
     @staticmethod
     def columns(model: type[Model]) -> tuple[Column, ...]:
         hints = get_type_hints(model)
-        return tuple(Column.of(field.name, hints[field.name]) for field in fields(model))
+        return tuple(Column.build(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
 
     def version(self) -> int:
-        row = self.connection.one("SELECT MAX(number) AS number FROM migrations")
+        row = self.connection.result("SELECT MAX(number) AS number FROM migrations")
         return row["number"] or 0

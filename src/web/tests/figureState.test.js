@@ -79,9 +79,9 @@ test("while the agent works the figure shows the work, as the bar says Working, 
 test("a beat fires only for what reached the row after it was last seen, oldest first", () => {
     const row = agent({
         cards: [
-            {at: 5, tone: "commit"},
-            {at: 20, icon: "check", tone: "danger"},
-            {at: 30, tone: "danger"},
+            {time: 5, tone: "commit"},
+            {time: 20, icon: "check", tone: "danger"},
+            {time: 30, tone: "danger"},
         ],
         person_at: 25,
     });
@@ -105,7 +105,7 @@ const STATES = [
 ];
 // every moment the figure can meet: each beat, and each held state both fresh and long held
 const MOMENTS = [
-    ...[...new Set(REACTIONS.map((each) => each.moment))].map((beat) => ({beat, at: 1})),
+    ...[...new Set(REACTIONS.map((each) => each.moment))].map((beat) => ({beat, time: 1})),
     ...STATES.flatMap((state) => [0, POINTED_AFTER - 1, POINTED_AFTER, 10 * POINTED_AFTER].map((lasted) => ({state, since: 1, lasted}))),
 ];
 // the design, said plainly: the squire's chase on a failed check, any voice's remark after a long wait
@@ -120,20 +120,20 @@ test("no egg can fire without its own moment: for every voice and every moment, 
             expect(eggFor(voice, moment, [])?.clip ?? null).toBe(expected(voice, moment));
         }
     }
-    expect(eggFor("homie", {beat: "failed", at: 1}, [])).toBe(null);
-    expect(eggFor("squire", {beat: "committed", at: 1}, [])).toBe(null);
+    expect(eggFor("homie", {beat: "failed", time: 1}, [])).toBe(null);
+    expect(eggFor("squire", {beat: "committed", time: 1}, [])).toBe(null);
     expect(eggFor("butler", {state: "asking", since: 1, lasted: POINTED_AFTER - 1}, [])).toBe(null);
     expect(EGGS.map((egg) => egg.clip).sort()).toEqual(["pointed", "squire_chase"]);
 });
 
 test("an egg plays at most once for one occurrence of its moment, and never twice in a row", () => {
-    const first = eggFor("squire", {beat: "failed", at: 5}, []);
+    const first = eggFor("squire", {beat: "failed", time: 5}, []);
     expect(first).toEqual({clip: "squire_chase", occurrence: 5});
-    expect(eggFor("squire", {beat: "failed", at: 6}, [first])).toBe(null);
+    expect(eggFor("squire", {beat: "failed", time: 6}, [first])).toBe(null);
     const pointed = eggFor("squire", {state: "asking", since: 7, lasted: POINTED_AFTER}, [first]);
     expect(pointed).toEqual({clip: "pointed", occurrence: 7});
     expect(eggFor("squire", {state: "asking", since: 7, lasted: 2 * POINTED_AFTER}, [first, pointed])).toBe(null);
-    const again = eggFor("squire", {beat: "failed", at: 8}, [first, pointed]);
+    const again = eggFor("squire", {beat: "failed", time: 8}, [first, pointed]);
     expect(again).toEqual({clip: "squire_chase", occurrence: 8});
     expect(eggFor("squire", {state: "asking", since: 7, lasted: 3 * POINTED_AFTER}, [first, pointed, again])).toBe(null);
 });

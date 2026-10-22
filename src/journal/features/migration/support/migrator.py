@@ -1,62 +1,61 @@
 from textwrap import dedent
 
-from journal.features.migration.support.brings.bring_agents import BringAgents
-from journal.features.migration.support.brings.bring_checks import BringChecks
-from journal.features.migration.support.brings.bring_comments import BringComments
-from journal.features.migration.support.brings.bring_docs import BringDocs
-from journal.features.migration.support.brings.bring_environments import BringEnvironments
-from journal.features.migration.support.brings.bring_facts import BringFacts
-from journal.features.migration.support.brings.bring_helpers import BringHelpers
-from journal.features.migration.support.brings.bring_messages import BringMessages
-from journal.features.migration.support.brings.bring_plans import BringPlans
-from journal.features.migration.support.brings.bring_questions import BringQuestions
-from journal.features.migration.support.brings.bring_reactions import BringReactions
-from journal.features.migration.support.brings.bring_reminders import BringReminders
-from journal.features.migration.support.brings.bring_reports import BringReports
-from journal.features.migration.support.brings.bring_rules import BringRules
-from journal.features.migration.support.brings.bring_secrets import BringSecrets
-from journal.features.migration.support.brings.bring_sequences import BringSequences
-from journal.features.migration.support.brings.bring_settings import BringSettings
-from journal.features.migration.support.brings.bring_templates import BringTemplates
-from journal.features.migration.support.brings.bring_triggers import BringTriggers
-from journal.features.migration.support.brings.bring_waits import BringWaits
-from journal.features.migration.support.brings.bring_todos import BringTodos
-from journal.features.migration.support.brings.bring_work import BringWork
-from journal.features.migration.support.brought import Brought
-from journal.support.version_3_backup import Version3Backup
+from journal.features.migration.support.brings.agent_import import AgentImport
+from journal.features.migration.support.brings.check_import import CheckImport
+from journal.features.migration.support.brings.comment_import import CommentImport
+from journal.features.migration.support.brings.doc_import import DocImport
+from journal.features.migration.support.brings.environment_import import EnvironmentImport
+from journal.features.migration.support.brings.fact_import import FactImport
+from journal.features.migration.support.brings.helper_import import HelperImport
+from journal.features.migration.support.brings.message_import import MessageImport
+from journal.features.migration.support.brings.plan_import import PlanImport
+from journal.features.migration.support.brings.question_import import QuestionImport
+from journal.features.migration.support.brings.reaction_import import ReactionImport
+from journal.features.migration.support.brings.reminder_import import ReminderImport
+from journal.features.migration.support.brings.report_import import ReportImport
+from journal.features.migration.support.brings.rule_import import RuleImport
+from journal.features.migration.support.brings.secret_import import SecretImport
+from journal.features.migration.support.brings.sequence_import import SequenceImport
+from journal.features.migration.support.brings.setting_import import SettingImport
+from journal.features.migration.support.brings.template_import import TemplateImport
+from journal.features.migration.support.brings.trigger_import import TriggerImport
+from journal.features.migration.support.brings.wait_import import WaitImport
+from journal.features.migration.support.brings.todo_import import TodoImport
+from journal.features.migration.support.brings.work_import import WorkImport
+from journal.features.migration.support.import_tally import ImportTally
+from journal.features.migration.support.version_3_backup import Version3Backup
 from journal.support.actor import Actor
 from journal.models.version3_migration import Version3Migration
 from journal.models.report import Report
 from journal.repositories.version3_migrations import Version3Migrations
 from journal.repositories.reports import Reports
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class Migrator:
     """Brings the kept version 3 journal across, kind by kind, and says what came in a report; nothing that fails stops it: a row or a kind that cannot come across is named in the report with its error, and the run goes on."""
 
-    def __init__(self, backup: Version3Backup, migrations: Version3Migrations, reports: Reports, scope: Scope, environments: BringEnvironments, messages: BringMessages, todos: BringTodos, waits: BringWaits, work: BringWork, plans: BringPlans, questions: BringQuestions, facts: BringFacts, rules: BringRules, reminders: BringReminders, docs: BringDocs, old_reports: BringReports, checks: BringChecks, triggers: BringTriggers, sequences: BringSequences, templates: BringTemplates, settings: BringSettings, agents: BringAgents, helpers: BringHelpers, secrets: BringSecrets, comments: BringComments, reactions: BringReactions) -> None:
+    def __init__(self, backup: Version3Backup, migrations: Version3Migrations, reports: Reports, scope: Scope, environments: EnvironmentImport, messages: MessageImport, todos: TodoImport, waits: WaitImport, work: WorkImport, plans: PlanImport, questions: QuestionImport, facts: FactImport, rules: RuleImport, reminders: ReminderImport, docs: DocImport, old_reports: ReportImport, checks: CheckImport, triggers: TriggerImport, sequences: SequenceImport, templates: TemplateImport, settings: SettingImport, agents: AgentImport, helpers: HelperImport, secrets: SecretImport, comments: CommentImport, reactions: ReactionImport) -> None:
         self.backup, self.migrations, self.reports, self.scope = backup, migrations, reports, scope
         self.kinds = (environments, messages, todos, waits, work, plans, questions, facts, rules, reminders, docs, old_reports, checks, triggers, sequences, templates, settings, agents, helpers, secrets, comments, reactions)
 
-    def begin(self, by: Actor) -> Version3Migration:
-        return self.migrations.save(self.migrations.current().begun(), by)
+    def begin(self, actor: Actor) -> Version3Migration:
+        return self.migrations.save(self.migrations.current().is_started(), actor)
 
-    def run(self, migration: Version3Migration, by: Actor) -> Version3Migration:
-        brought = [self.brought(kind, by) for kind in self.kinds]
-        self.reports.save(self.report(brought), by)
-        return self.migrations.save(migration.done(), by)
+    def run(self, migration: Version3Migration, actor: Actor) -> Version3Migration:
+        ported = [self.imported(kind, actor) for kind in self.kinds]
+        self.reports.save(self.report(ported), actor)
+        return self.migrations.save(migration.is_finished(), actor)
 
-    def brought(self, kind, by: Actor) -> Brought:
-        """One kind brought across; a kind that cannot be read at all is named in the report, and the run goes on with the next."""
+    def imported(self, kind, actor: Actor) -> ImportTally:
         try:
-            return kind.bring(self.backup.folder, by)
+            return kind.import_rows(self.backup.folder, actor)
         except Exception as fault:
-            return Brought(kind.title, 0, (f"the whole kind could not be read: {fault}",))
+            return ImportTally(kind.title, 0, (f"the whole kind could not be read: {fault}",))
 
-    def report(self, brought: list[Brought]) -> Report:
-        rows = "\n".join(one.line() for one in brought)
-        skipped = "\n".join(f"- {one.kind}: {why}" for one in brought for why in one.skipped) or "Nothing."
+    def report(self, imported: list[ImportTally]) -> Report:
+        rows = "\n".join(single.line() for single in imported)
+        skipped = "\n".join(f"- {single.kind}: {reason}" for single in imported for reason in single.skipped) or "Nothing."
         body = dedent("""\
             ## Brought across
 

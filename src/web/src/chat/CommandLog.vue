@@ -15,26 +15,26 @@ const {members: opened, toggle} = useToggledSet();
 
 <template>
     <Console>
-        <template v-for="c in lines" :key="c.at">
+        <template v-for="c in lines" :key="c.time">
             <div :class="['log-line', {shell: c.tool === 'Bash', noted: c.tool === 'Journal'}]">
                 <span class="log-mark">{{ commandMark(c.tool) }}</span>
                 <span
-                    :class="['log-text', {open: opened.has(c.at)}]"
-                    :title="opened.has(c.at) ? 'Click to collapse this line' : 'Click to show the whole line'"
-                    @click="toggle(c.at)"
+                    :class="['log-text', {open: opened.has(c.time)}]"
+                    :title="opened.has(c.time) ? 'Click to collapse this line' : 'Click to show the whole line'"
+                    @click="toggle(c.time)"
                 >
                     {{ c.command }}
                 </span>
             </div>
             <template v-if="c.output">
                 <pre
-                    :class="['log-output', {open: opened.has(c.at)}]"
-                    :title="opened.has(c.at) ? 'Click to collapse the output' : 'Click to show the whole output'"
-                    @click="toggle(c.at)"
+                    :class="['log-output', {open: opened.has(c.time)}]"
+                    :title="opened.has(c.time) ? 'Click to collapse the output' : 'Click to show the whole output'"
+                    @click="toggle(c.time)"
                     >{{ c.output }}</pre>
             </template>
         </template>
-        <template v-for="q in queued" :key="q.at">
+        <template v-for="q in queued" :key="q.time">
             <div class="log-line shell queued" title="Waiting to be typed into the agent's terminal">
                 <span class="log-mark">$</span>
                 <span class="log-text">{{ q.command }}</span>

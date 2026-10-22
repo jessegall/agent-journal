@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "nameMatches": "^([A-Z0-9_]*_)?(AFTER|EVERY|WITHIN|FOR|LIMIT|LONGEST|LARGEST|SHORTEST|TIMEOUT|INTERVAL|WAIT|TAIL|PAGE|RECENT|LENGTH|DELAY|WINDOW)$"
+            },
+            {
+                "of": "parent",
+                "is": "assignment"
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "of": "child:value",
+                        "is": "literal"
+                    },
+                    {
+                        "of": "child:value",
+                        "textMatches": "^-?[0-9][0-9_.]*$"
+                    }
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "name": "unitless-quantity-name",
+        "description": "A constant holding a quantity is named without its unit: NEXT_TASK_AFTER = 60, KEPT_LIMIT = 400, PAGE = 50.",
+        "rule": "Name the unit the number counts in: NEXT_TASK_AFTER_SECONDS, KEPT_LINES, PAGE_ROWS.",
+        "skill": "plain-code-words"
+    }
+}

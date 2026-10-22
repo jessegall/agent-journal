@@ -72,15 +72,16 @@ describe("setting changes", () => {
         expect(settingChanges({path: ["a", "b"], invert: true}, true, {})).toEqual({a: {b: false}});
     });
 
-    test("a sparse value equal to its shipped one is removed", () => {
+    test("a sparse value equal to its shipped one is sent as null, which clears it; the other keys are untouched", () => {
         const target = {path: ["a", "b"], sparse: true, shipped: 5};
-        expect(settingChanges(target, 5, {a: {b: 9, c: 1}})).toEqual({a: {c: 1}});
+        expect(settingChanges(target, 5, {a: {b: 9, c: 1}})).toEqual({a: {c: 1, b: null}});
         expect(settingChanges(target, 6, {a: {c: 1}})).toEqual({a: {c: 1, b: 6}});
     });
 
-    test("defaults keep only the saved values that differ", () => {
+    test("defaults keep the saved values that differ and clear the ones equal to their default", () => {
         const target = {path: ["a", "b"], defaults: {b: 1, c: 2}};
         expect(settingChanges(target, 3, {a: {b: 1, c: 9, other: 7}})).toEqual({a: {c: 9, b: 3}});
+        expect(settingChanges(target, 4, {a: {b: 7, c: 2}})).toEqual({a: {c: null, b: 4}});
     });
 });
 
@@ -147,7 +148,7 @@ describe("the manifest's features", () => {
                 options: [
                     option("timeout_minutes", "number", {default: 60, unit: "min"}),
                     option("mode", "choice", {default: "builder", choices: ["builder", "orchestrator", "solo"]}),
-                    option("model", "model", {default: "sonnet", choices: ["opus", "sonnet"], provider: "claude", read_by: [{workflow: "Send work", id: 4}]}),
+                    option("model", "model", {default: "sonnet", choices: ["opus", "sonnet"], provider: "claude"}),
                 ],
             },
         ],
@@ -171,10 +172,10 @@ describe("the manifest's features", () => {
         expect(mode.value).toBe("builder");
     });
 
-    test("an option's help says only what it does, and the workflows that read it come apart, to be shown as links", () => {
+    test("an option's help says only what it does", () => {
         const [, timeout, , model] = rows({});
-        expect([timeout.hint, timeout.readers]).toEqual(["About timeout_minutes.", []]);
-        expect([model.hint, model.readers]).toEqual(["About model.", [{workflow: "Send work", id: 4}]]);
+        expect(timeout.hint).toBe("About timeout_minutes.");
+        expect(model.hint).toBe("About model.");
         expect(model.provider).toBe("claude");
     });
 
@@ -185,5 +186,14 @@ describe("the manifest's features", () => {
 
     test("a feature switched off reads as off", () => {
         expect(rows({features: {workers: false}})[0].value).toBe(false);
+    });
+});
+
+describe("the Developer tab", () => {
+    test("it follows Environments and holds the groups the server places in it", () => {
+        const keys = TABS.map((t) => t.key);
+        expect(keys.indexOf("developer")).toBe(keys.indexOf("environments") + 1);
+        const sections = [{title: "Developer", groups: [{key: "faults", tab: "developer"}, {key: "updates", tab: "system"}]}];
+        expect(inTab(sections, "developer")[0].groups.map((g) => g.key)).toEqual(["faults"]);
     });
 });

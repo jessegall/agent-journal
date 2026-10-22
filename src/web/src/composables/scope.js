@@ -9,6 +9,31 @@ const merged = (list, fresh) => [...list.filter((row) => !fresh.some((f) => f.id
 
 export const useScope = () => inject("scope", HERE);
 
+// The own chat of a worker or a subagent: its messages read from its own rows and paged apart from the main chat's, every other
+// table as this environment holds it; written to by send, or by no one, as a subagent's is.
+export function scopeOfChat(session, send = null) {
+    const key = `chat:${session}`;
+    const chatRows = () => store.elsewhere[key] || [];
+    const keep = (got) => (store.elsewhere[key] = merged(chatRows(), (got && got.rows) || []));
+    let more = true;
+    async function earlierOf(...tables) {
+        if (!tables.includes("messages") || !more) return;
+        const before = chatRows().reduce((low, r) => Math.min(low, r.id), Infinity);
+        const got = await api.chat(session, {limit: PAGE, before: Number.isFinite(before) ? before : 0});
+        keep(got);
+        more = !got.is_last_page;
+    }
+    return {
+        env: "",
+        api,
+        rows: (table) => (table === "messages" ? chatRows() : rows(table)),
+        loaded: (table) => (table === "messages" ? key in store.elsewhere : hasLoaded(table)),
+        holding: (table, ids) => (table === "messages" ? Promise.resolve() : holding(table, ids)),
+        earlier: earlierOf,
+        chat: {session, send, refresh: async () => keep(await api.chat(session, {limit: PAGE}))},
+    };
+}
+
 // The rows of another environment, read and kept apart from this one's, for a panel that shows that environment.
 export function scopeIn(env) {
     const there = api.in(env);
@@ -30,7 +55,7 @@ export function scopeIn(env) {
                     const before = (closed.length ? closed : held).reduce((low, r) => Math.min(low, r.id), Infinity);
                     const got = await there.list(table, {limit: PAGE, before: Number.isFinite(before) ? before : 0});
                     keep(table, got);
-                    more[table] = got.more;
+                    more[table] = !got.is_last_page;
                 })
         );
     }

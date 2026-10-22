@@ -5,99 +5,147 @@ import time
 from pathlib import Path
 
 from journal.config import Config
-from journal.engine.support.typed_line import TypedLine
-from journal.support.held_line import HeldLine
-from journal.support.typed_lines import TypedLines
+from journal.support.foreground_option import FOREGROUND_OPTION
+from journal.support.typed_line import TypedLine
+from journal.support.queued_line import QueuedLine
+from journal.support.typed_lines import BATCH_OPTION, TypedLines
+from journal.repositories.setting_rows import SettingRows
 from journal.support.old_supervisor import OldSupervisor
 from journal.support.supervisor_announcement import SupervisorAnnouncement
 from journal.support.supervisor_reply import SupervisorReply
 from journal.support.supervisor_socket import SupervisorSocket
 from journal.repositories.environments import Environments
 
-MARK = "[journal]"
-AGENT, JOURNAL = "agent", "journal"
-"""The names of the supervisor's two processes: the agent in front, the journal beside it."""
+JOURNAL_PREFIX = "[journal]"
+LINE_ERASE = "\x15"
+ERASE_MARGIN_LINES = 2
+AGENT, JOURNAL, SUPERVISOR = "agent", "journal", "supervisor"
 
 
 class SupervisorLink:
     """The journal's end of each supervisor's inbox: a request a line of JSON, its answer a line back, or, to a supervisor that takes datagrams, a datagram with nothing read back. A supervisor announces its inbox under the runtime folder by its environment's name while it runs; an environment with none announced hears nothing. Every line typed starts with the mark, so the agent can tell the journal from the user."""
 
-    def __init__(self, config: Config, environments: Environments, typed: TypedLines) -> None:
-        self.config, self.environments, self.typed = config, environments, typed
+    def __init__(self, config: Config, environments: Environments, keystrokes: TypedLines, settings: SettingRows) -> None:
+        self.config, self.environments, self.typed, self.settings = config, environments, keystrokes, settings
         self._chosen_at: dict[int, float] = {}
         self._viewer_keyed_at: dict[int, float] = {}
 
-    def type(self, environment_id: int, line: str, after: float = 0.0) -> None:
-        """A line of the journal's, marked, on one line however many it was handed, and noted until its prompt hook proves it arrived; held while an earlier line is still on its way. A line with breaks reaches the agent as pasted text, which never matches it, so it would be typed again."""
-        marked = TypedLine.cut(f"{MARK} {' '.join(line.split())}")
-        if self.typed.is_waiting(environment_id):
-            self.typed.hold(HeldLine(environment_id, marked, after))
+    def type(self, environment_id: int, line: str, following: float = 0.0) -> None:
+        if self.typed.is_disabled(environment_id):
             return
-        self.typed.typed(environment_id, marked)
-        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": after})
+        flagged = f"{JOURNAL_PREFIX} {' '.join(line.split())}"
+        if self.is_busy(environment_id):
+            self.typed.queue(QueuedLine(environment_id, flagged, following))
+            return
+        self.type_whole(environment_id, flagged, following)
+
+    def remark(self, environment_id: int, line: str) -> None:
+        if not self.typed.is_disabled(environment_id):
+            self.typed.queue(QueuedLine(environment_id, f"{JOURNAL_PREFIX} {' '.join(line.split())}", is_remark=True))
+
+    def type_whole(self, environment_id: int, flagged: str, following: float) -> None:
+        segment, remainder = TypedLine.opening_segment(flagged, JOURNAL_PREFIX)
+        self.typed.typed(environment_id, segment)
+        self._send(environment_id, "type", {"name": AGENT, "line": segment, "after": following})
+        if remainder:
+            self.typed.queue(QueuedLine(environment_id, remainder, following))
+
+    def is_busy(self, environment_id: int) -> bool:
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds()) or self.is_queue_open(environment_id)
+
+    def is_queue_open(self, environment_id: int) -> bool:
+        oldest = self.typed.queue_start(environment_id)
+        return self.typed.is_working(environment_id) and (oldest is None or time.time() - oldest < self.settings.integer(FOREGROUND_OPTION))
+
+    def working(self, environment_id: int) -> None:
+        self.typed.work(environment_id)
+
+    def stop_refused(self, environment_id: int) -> None:
+        self.typed.refuse_stop(environment_id)
+
+    def silence(self, environment_id: int, seconds: float) -> None:
+        if self.typed.is_stop_refused(environment_id) and seconds >= self.settings.integer(FOREGROUND_OPTION):
+            self.resting(environment_id)
+
+    def resting(self, environment_id: int) -> None:
+        self.typed.rest(environment_id)
+        self.release(environment_id)
+
+    def pending_lines(self, environment_id: int) -> str:
+        return "\n".join(self.typed.pending_lines(environment_id))
+
+    def disable(self, environment_id: int) -> None:
+        self.typed.disable(environment_id)
+
+    def enable(self, environment_id: int) -> None:
+        self.typed.enable(environment_id)
+
+    def clear(self, environment_id: int) -> None:
+        self.typed.clear(environment_id)
+
+    def pause(self, environment_id: int) -> None:
+        self.typed.pause(environment_id)
+
+    def resume(self, environment_id: int) -> None:
+        self.typed.resume(environment_id)
+        self.release(environment_id)
 
     def release(self, environment_id: int) -> None:
-        """The next held line typed, once no earlier line is on its way."""
-        if self.typed.is_waiting(environment_id):
+        if self.is_busy(environment_id):
             return
-        held = self.typed.next_held(environment_id)
-        if held is not None:
-            self.typed.typed(environment_id, held.line)
-            self._send(environment_id, "type", {"name": AGENT, "line": held.line, "after": held.after})
+        blocked = self.typed.batched(environment_id)
+        if blocked is not None:
+            self.type_whole(environment_id, blocked.line, blocked.delay_seconds)
 
-    def type_again(self, environment_id: int, marked: str) -> None:
-        """A marked line typed once more, as it was."""
-        self._send(environment_id, "type", {"name": AGENT, "line": marked, "after": 0.0})
+    def batch_seconds(self) -> float:
+        return self.settings.decimal(BATCH_OPTION)
+
+    def erase(self, environment_id: int) -> None:
+        self.keys(environment_id, LINE_ERASE * (self.typed.waiting_count(environment_id) + ERASE_MARGIN_LINES))
+
+    def retype(self, environment_id: int, flagged: str) -> None:
+        self._send(environment_id, "type", {"name": AGENT, "line": flagged, "after": 0.0})
 
     def type_raw(self, environment_id: int, line: str) -> None:
-        """What the user typed in the viewer's terminal pane, as the user, without the mark."""
         self._viewer_keyed_at[environment_id] = time.time()
         self._send(environment_id, "type", {"name": AGENT, "line": line, "after": 0.0})
 
     def keys(self, environment_id: int, keys: str) -> None:
-        """Keys written to the agent's terminal as they are, with no Enter after them: an arrow, Enter, Escape."""
         self._send(environment_id, "keys", {"name": AGENT, "keys": keys})
 
     def choose(self, environment_id: int, command: str) -> None:
-        """A provider command typed for the user's pick in the agent bar, noted so a confirmation it brings up is the journal's to answer."""
         self._chosen_at[environment_id] = time.time()
         self._send(environment_id, "type", {"name": AGENT, "line": command, "after": 0.0})
 
-    def chosen_at(self, environment_id: int) -> float:
+    def last_selection(self, environment_id: int) -> float:
         return self._chosen_at.get(environment_id, 0.0)
 
     def confirmed(self, environment_id: int) -> None:
-        """The pick's confirmation is answered: a later menu is not the pick's."""
         self._chosen_at.pop(environment_id, None)
 
     def screen(self, environment_id: int) -> str:
-        """The newest output of the agent's terminal, as the supervisor mirrors it, read as text; empty when there is none."""
         path = self.mirrored(environment_id, "out")
         return path.read_bytes().decode(errors="replace") if path else ""
 
-    def screen_changed_at(self, environment_id: int) -> float:
+    def last_screen_change(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "out")
         return path.stat().st_mtime if path else 0.0
 
-    def keyed_at(self, environment_id: int) -> float:
-        """When the user last pressed a key for the agent: at the keyboard, as the supervisor notes it, or in the viewer's terminal pane."""
+    def last_keystroke(self, environment_id: int) -> float:
         path = self.mirrored(environment_id, "keyed")
-        at_keyboard = path.stat().st_mtime if path else 0.0
-        return max(at_keyboard, self._viewer_keyed_at.get(environment_id, 0.0))
+        keyboard_input = path.stat().st_mtime if path else 0.0
+        return max(keyboard_input, self._viewer_keyed_at.get(environment_id, 0.0))
 
     def mirrored(self, environment_id: int, kind: str) -> Path | None:
-        """The mirror of the agent's screen, or the file noting keys beside it, where the supervisor announced it; none when no supervisor runs or the file is not there yet."""
         announced = self.announced(environment_id)
         path = Path(announced.screen).with_suffix(f".{kind}") if announced and announced.screen else None
         return path if path and path.exists() else None
 
     def start(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path) -> SupervisorReply:
-        """A service started under the environment's supervisor; one already running under the name is left as it is."""
         return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log)})
 
-    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, keep: bool) -> SupervisorReply:
-        """A service started with the environment it is given and nothing of the supervisor's own, such as a plugin's; keep says whether it is started again when it dies."""
-        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": keep})
+    def start_clean(self, environment_id: int, name: str, command: list[str], folder: Path, environ: dict[str, str], log: Path, retain: bool) -> SupervisorReply:
+        return self._send(environment_id, "start", {"name": name, "command": command, "folder": str(folder), "env": environ, "log": str(log), "inherit": False, "keep": retain})
 
     def stop_service(self, environment_id: int, name: str) -> None:
         self._send(environment_id, "stop", {"name": name})
@@ -108,42 +156,51 @@ class SupervisorLink:
     def restart_journal(self, environment_id: int) -> None:
         self._send(environment_id, "restart", {"name": JOURNAL})
 
+    def restart_supervisor(self, environment_id: int, resume: tuple[str, ...]) -> None:
+        self._send(environment_id, "restart", {"name": SUPERVISOR, "resume": list(resume)})
+
+    def is_outdated(self, environment_id: int) -> bool:
+        announced = self.announced(environment_id)
+        if announced is None or not announced.is_compatible:
+            return False
+        try:
+            return self._send(environment_id, "hello", {}).outdated
+        except OSError:
+            return False
+
     def stop(self, environment_id: int) -> None:
         self._send(environment_id, "stop", {"name": AGENT})
 
     def hosting(self) -> int | None:
-        """The environment whose supervisor hosts this journal, by the name it was started under; none when no supervisor runs it, as under plain claude or a worker's journal."""
-        hosts = self.environments.where(name=os.environ.get("JOURNAL_ENV", ""))
-        return hosts[0].id if hosts and self.runs(hosts[0].id) else None
+        hosts = self.environments.matching(name=os.environ.get("JOURNAL_ENV", ""))
+        return hosts[0].id if hosts and self.runs(hosts[0].row_id) else None
 
     def runs(self, environment_id: int) -> bool:
-        """Whether a supervisor answers for the environment: one on the protocol says hello, one from before it has its socket open; an announce file a dead supervisor left answers nothing."""
         announced = self.announced(environment_id)
         if announced is None:
             return False
-        if not announced.speaks_the_protocol:
+        if not announced.is_compatible:
             return Path(announced.socket).is_socket()
         try:
-            return self._send(environment_id, "hello", {}).ok
+            return self._send(environment_id, "hello", {}).success
         except OSError:
             return False
 
     def announced(self, environment_id: int) -> SupervisorAnnouncement | None:
-        """What the environment's supervisor announced: its socket and the protocol it speaks, or a bare path from a datagram supervisor; nothing when none runs."""
         path = self.config.home / "runtime" / "inboxes" / self.environments.find(environment_id).name
         text = path.read_text().strip() if path.is_file() else ""
         if not text:
             return None
-        return SupervisorAnnouncement.from_json(json.loads(text)) if text.startswith("{") else SupervisorAnnouncement(text, OldSupervisor.screen(self.config.home, path.name))
+        return SupervisorAnnouncement.parsed(json.loads(text)) if text.startswith("{") else SupervisorAnnouncement(text, OldSupervisor.screen(self.config.home, path.name))
 
     def _send(self, environment_id: int, verb: str, fields: dict) -> SupervisorReply:
         announced = self.announced(environment_id)
         if announced is None:
             return SupervisorReply(False, "no supervisor runs here")
-        if announced.speaks_the_protocol:
+        if announced.is_compatible:
             return SupervisorSocket.ask(announced.socket, {"verb": verb, **fields})
         if not OldSupervisor.takes(verb):
             return SupervisorReply(False, f"the supervisor running predates the protocol and takes no {verb}")
-        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as out:
-            out.sendto(json.dumps(OldSupervisor.datagram(verb, fields)).encode(), announced.socket)
+        with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as output:
+            output.sendto(json.dumps(OldSupervisor.datagram(verb, fields)).encode(), announced.socket)
         return SupervisorReply(True)

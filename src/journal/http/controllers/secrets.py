@@ -7,8 +7,8 @@ from journal.http.support.request import Request
 from journal.support.response import Response
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
-from journal.support.scope import Scope
+from journal.support.rejection import Rejection
+from journal.repositories.scope import Scope
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
 
@@ -24,7 +24,7 @@ class SecretController(Controller[Secret]):
 
     def store(self, request: Request) -> Response:
         body = request.body
-        kind, title = SecretKind.named(body.get("kind") or SecretKind.CUSTOM.value), str(body.get("title", "")).strip()
+        kind, title = SecretKind.lookup(body.get("kind") or SecretKind.CUSTOM.value), str(body.get("title", "")).strip()
         secret = Secret(title=title, brief=body.get("brief", ""), kind=kind, fields=tuple(body.get("fields") or kind.first_fields(title)),
                         programs=self.allowed(body.get("programs", ())), helpers=bool(body.get("helpers")))
         return Response.json(self.repository.save(secret, request.actor), 201)
@@ -39,10 +39,10 @@ class SecretController(Controller[Secret]):
     def fill(self, request: Request) -> Response:
         secret, value = self.repository.find(request.number("id")), str(request.body.get("value", ""))
         if not value:
-            raise Refused("an empty value is no value: type it in, or leave the field as it is")
+            raise Rejection("an empty value is no value: type it in, or leave the field as it is")
         field = str(request.body.get("field", ""))
-        self.values.put(secret.field(field).variable, value)
-        return Response.json(self.repository.save(secret.filled_in(field), request.actor))
+        self.values.put_field(secret.field(field), value)
+        return Response.json(self.repository.save(secret.is_filled(field), request.actor))
 
     def delete(self, request: Request) -> Response:
         return Response.json(self.repository.save(self.repository.find(request.number("id")).deleted(datetime.now(timezone.utc)), request.actor))
@@ -54,25 +54,21 @@ class SecretController(Controller[Secret]):
         return Response.json(self.window.open(self.repository.find(request.number("id")), self.scope.id, request.actor))
 
     def allow_login(self, request: Request) -> Response:
-        """The agent may log in to this site on its own from now on, and a login is taken now."""
         secret = self.repository.save(self.repository.find(request.number("id")).with_(auto_login=True), request.actor)
         return Response.json(self.window.open(secret, self.scope.id, request.actor))
 
     def revoke_login(self, request: Request) -> Response:
-        """The agent asks with a Log in button again; the saved login stays."""
         return Response.json(self.repository.save(self.repository.find(request.number("id")).with_(auto_login=False), request.actor))
 
-    def forget_login(self, request: Request) -> Response:
-        """The saved login deleted and taken from the agent's browser."""
-        return Response.json(self.window.forgotten(self.repository.find(request.number("id")), request.actor))
+    def drop_login(self, request: Request) -> Response:
+        return Response.json(self.window.dropped(self.repository.find(request.number("id")), request.actor))
 
-    def where(self, request: Request) -> Response:
+    def location(self, request: Request) -> Response:
         return Response.json({"path": str(self.values.path)})
 
     @staticmethod
     def allowed(programs) -> tuple[str, ...]:
-        """The programs a secret may go to, by name; one never given is refused."""
-        refused = [p for p in programs if Programs.never_given(p)]
+        refused = [p for p in programs if Programs.is_withheld(p)]
         if refused:
-            raise Refused(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")
+            raise Rejection(f"a secret is never given to {', '.join(refused)}: allow the program that uses it directly, such as curl or gh")
         return tuple(dict.fromkeys(programs))

@@ -71,22 +71,25 @@ export function follow(running, step = "") {
     return true;
 }
 
-// The version this page came from, kept the first time the server names one so a later answer can be held against it.
-let loadedWith = "";
+// The server this page came from, its version and the moment it started, kept the first time the server names them so a
+// later answer can be held against them.
+let loadedWith = {version: "", started: 0};
 
-// Whether the server is serving a journal other than the one this page was built from, which is the one thing a reload mends.
-function newVersion(version) {
-    if (!version) return false;
-    if (!loadedWith) loadedWith = version;
-    return version !== loadedWith;
+// Whether the server answering is another than the one this page was built from: a new version, or the same version started
+// again after an install, which runs new code under a page still holding the old bundle. A reload is the one thing that mends it.
+export function otherServer(got) {
+    if (!got.version) return false;
+    if (!loadedWith.version) loadedWith = {version: got.version, started: got.started || 0};
+    return got.version !== loadedWith.version || (got.started || 0) !== loadedWith.started;
 }
 
 // What the server says about an update, taken the same way by the viewer and the phone. It reloads once an upgrade it watched
-// has finished, and on a version it has not seen before whether or not it watched the update that brought it.
+// has finished, and once the server answering is another than the page came from, whether or not it watched the update or
+// the restart that brought it.
 export function followServer(got) {
     counting(got.countdown);
     starting(got.ready, got.step);
-    if (follow(Boolean(got.updating), got.step) || (!got.updating && newVersion(got.version))) reloadWhenFree(window);
+    if (follow(Boolean(got.updating), got.step) || (!got.updating && otherServer(got))) reloadWhenFree(window);
 }
 
 export const updatedTo = () => remembered(UPDATED_KEY, "");

@@ -2,6 +2,7 @@ import json
 import traceback
 from urllib.parse import parse_qs, urlsplit
 
+from journal.http.support.json_out import JsonOut
 from journal.http.support.file_response import FileResponse
 from journal.http.support.identity import Identity
 from journal.http.support.multipart import Multipart
@@ -22,17 +23,16 @@ class Handler(PooledHandler):
 
     def do_GET(self) -> None:
         request = self._request()
-        if not request.path.startswith(("/journal/", "/hooks/", "/cli")) and (found := self.static.serve(request.path)):
-            return self._file(found)
+        if not request.path.startswith(("/journal/", "/hooks/", "/cli")) and (rows := self.static.serve(request.path)):
+            return self._file(rows)
         self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:
         self._answer(self._dispatched(self._request()))
 
     def _dispatched(self, request: Request):
-        """The router's answer, or a 500 naming the fault: a handler that raises still answers, and the fault is in the log with its trace."""
         try:
-            return self.router.dispatch(request)
+            return self.router.route(request)
         except Exception as fault:
             traceback.print_exc()
             return Response(500, {"error": f"{type(fault).__name__}: {fault}"})
@@ -53,16 +53,20 @@ class Handler(PooledHandler):
         raw = self.rfile.read(length) if length else b""
         headers = {name.lower(): value for name, value in self.headers.items()}
         query = {k: v[-1] for k, v in parse_qs(url.query).items()}
+        if headers.get("content-type", "") == "application/octet-stream":
+            return Request(self.command, url.path, query, {"raw": raw}, {}, headers, self.identity.build(headers))
         if headers.get("content-type", "").startswith("multipart/form-data"):
             form = Multipart(headers["content-type"], raw)
-            return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.of(headers), form.files())
-        return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.of(headers))
+            return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.build(headers), form.files())
+        return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.build(headers))
 
     def _file(self, file: FileResponse) -> None:
         self.send_response(file.status)
         self.send_header("Content-Type", file.kind)
         self.send_header("Content-Length", str(len(file.body)))
         self.send_header("Cache-Control", "no-cache")
+        for name, value in file.headers().items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(file.body)
 
@@ -73,14 +77,14 @@ class Handler(PooledHandler):
         self.send_header("Connection", "close")
         self.end_headers()
         try:
-            for chunk in response.chunks:
-                self.wfile.write(chunk)
+            for block in response.blocks:
+                self.wfile.write(block)
                 self.wfile.flush()
         except (BrokenPipeError, ConnectionResetError, OSError):
             return
 
     def _reply(self, response: Response) -> None:
-        body = response.encoded()
+        body = JsonOut.encoded(response.body)
         self.send_response(response.status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))

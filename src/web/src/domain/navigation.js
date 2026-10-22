@@ -9,7 +9,6 @@ export const PAGES = {
     attachments: {title: "Attachments", icon: "paperclip", text: "Files attached to messages, tasks and other rows"},
     secrets: {title: "Secrets", icon: "key", text: "Keys and logins the agent may use without ever seeing them"},
     mcp: {title: "MCP", icon: "share", text: "The MCP servers the agents are given"},
-    chart: {title: "Workflows", icon: "bolt", text: "How the journal treats the agent, as flowcharts you edit"},
     plugins: {title: "Plugins", icon: "plug", text: "Installed plugins, with their dashboards and settings"},
     settings: {title: "Settings", icon: "settings", text: "Features, notifications and how the viewer behaves"},
 };
@@ -20,3 +19,6 @@ export const RESOURCE_GROUPS = [
 ];
 
 export const pluralTitle = (title) => `${title}s`;
+
+// The pages drawn as a dialog over the Home page, so Home stays behind them as it was.
+export const OVER_HOME = ["tasks"];

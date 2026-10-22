@@ -8,12 +8,12 @@ import FormField from "../kit/FormField.vue";
 import TriggerEditor from "./TriggerEditor.vue";
 
 const emit = defineEmits(["made", "close"]);
-const blank = () => ({words: [], action: "nudge", text: ""});
+const blank = () => ({phrases: [], action: "nudge", text: ""});
 const draft = reactive(blank());
 const error = ref("");
 
 const missing = computed(() => {
-    if (!draft.words.length) return "Add at least one word.";
+    if (!draft.phrases.length) return "Add at least one word.";
     if (draft.action === "sequence") return draft.text ? "" : "Pick the sequence it starts.";
     return draft.text.trim() ? "" : `Write ${doesOf(draft.action).ask.toLowerCase()}.`;
 });

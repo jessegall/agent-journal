@@ -9,5 +9,5 @@ class PluginClaim:
     token: str = ""
 
     @classmethod
-    def from_headers(cls, headers: dict) -> "PluginClaim":
+    def header_claim(cls, headers: dict) -> "PluginClaim":
         return cls(headers.get("x-journal-plugin", ""), headers.get("x-journal-plugin-token", ""))

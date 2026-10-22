@@ -9,7 +9,7 @@ class SetupStep:
     name: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "SetupStep":
+    def parsed(cls, data: dict) -> "SetupStep":
         return cls(**data)
 
     @property

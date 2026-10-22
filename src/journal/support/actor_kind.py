@@ -8,4 +8,4 @@ class ActorKind(StrEnum):
     PLUGIN = "plugin"
     PHONE = "phone"
     EXTERNAL = "external"
-    """An agent of another project or session, by the name it goes by, such as a Claude session that sent a message across."""
+    WORKER = "worker"

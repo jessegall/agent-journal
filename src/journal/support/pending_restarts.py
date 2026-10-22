@@ -7,7 +7,7 @@ class PendingRestarts:
     def add(self, session: str, environment_id: int, resume: tuple[str, ...]) -> None:
         self._sessions[session] = (environment_id, resume)
 
-    def take(self, session: str) -> tuple[int, tuple[str, ...]] | None:
+    def claim(self, session: str) -> tuple[int, tuple[str, ...]] | None:
         return self._sessions.pop(session, None)
 
     def sessions(self) -> list[str]:

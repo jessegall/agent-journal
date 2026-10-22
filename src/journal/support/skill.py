@@ -9,8 +9,7 @@ class Skill:
     description: str
     body: str
     keywords: tuple[str, ...] = ()
-    required_in: tuple[str, ...] = ()
-    """The states an agent must have read this skill to be in."""
+    required_states: tuple[str, ...] = ()
 
     @property
     def folder(self) -> str:

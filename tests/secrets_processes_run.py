@@ -7,18 +7,18 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.actor import Actor
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
-AGENT = Where("main", "s1")
+AGENT = Caller.agent("main", "s1", "claude")
 
 
 @pytest.fixture
 def app(journal_root: Path):
     app = App(Config(journal_root, port=0))
     app.runtime().start()
-    with app.container.get(Scope).of(1):
+    with app.container.get(Scope).environment(1):
         yield app
     app.runtime().stop()
 
@@ -39,19 +39,19 @@ def test_secret_run_gives_a_value_to_an_allowed_program_and_masks_every_form_of_
     secrets = app.container.get(Secrets)
     secrets.save(Secret(title="Fake", kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields("Fake"), programs=("fakeapi",)), Actor.user("u"))
     console = app.console()
-    assert "no value for key on this machine" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).err
+    assert "no value for key on this machine" in console.run(["secret", "run", "Fake", "--", "fakeapi"], AGENT).error
     app.container.get(SecretValues).put("FAKE_KEY", "s3cretvalue123")
-    secrets.save(secrets.find(1).filled_in("key"), Actor.user("u"))
-    ran = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
-    assert ran.code == 0 and "got:[secret FAKE_KEY]" in ran.out and "var:[secret FAKE_KEY]" in ran.out, ran.out
-    assert "s3cretvalue123" not in ran.out and "czNjcmV0dmFsdWUxMjM" not in ran.out, "the value is masked as it is and in base64"
-    assert "/runs/run-" in ran.out, "the program's home is a throwaway one inside the secrets folder"
+    secrets.save(secrets.find(1).is_filled("key"), Actor.user("u"))
+    completed = console.run(["secret", "run", "1", "--env", "--", "fakeapi"], AGENT)
+    assert completed.code == 0 and "got:[secret FAKE_KEY]" in completed.text and "var:[secret FAKE_KEY]" in completed.text, completed.text
+    assert "s3cretvalue123" not in completed.text and "czNjcmV0dmFsdWUxMjM" not in completed.text, "the value is masked as it is and in base64"
+    assert "/runs/run-" in completed.text, "the program's home is a throwaway one inside the secrets folder"
     templated = console.run(["secret", "run", "Fake", "--stdin", "Bearer {key}", "--", "fakeapi"], AGENT)
-    assert "got:Bearer [secret FAKE_KEY]" in templated.out
-    assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).err
-    assert "never given to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).err
-    assert "`journal secret propose 1 ls`" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).err
-    assert "proposed for secret 1" in console.run(["secret", "propose", "1", "ls"], AGENT).out and secrets.find(1).proposed == ("ls",)
-    assert "never given to python3" in console.run(["secret", "propose", "1", "python3"], AGENT).err
-    assert "already" in console.run(["secret", "propose", "1", "fakeapi"], AGENT).out
+    assert "got:Bearer [secret FAKE_KEY]" in templated.text
+    assert "name the program bare" in console.run(["secret", "run", "Fake", "--", str(echoer)], AGENT).error
+    assert "never given to bash" in console.run(["secret", "run", "Fake", "--", "bash", "-c", "echo"], AGENT).error
+    assert "`journal secret propose 1 ls`" in console.run(["secret", "run", "Fake", "--", "ls"], AGENT).error
+    assert "proposed for secret 1" in console.run(["secret", "propose", "1", "ls"], AGENT).text and secrets.find(1).proposed == ("ls",)
+    assert "never given to python3" in console.run(["secret", "propose", "1", "python3"], AGENT).error
+    assert "already" in console.run(["secret", "propose", "1", "fakeapi"], AGENT).text
     assert secrets.find(1).used_at is not None

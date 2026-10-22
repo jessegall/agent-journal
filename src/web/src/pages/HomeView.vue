@@ -14,8 +14,7 @@ import FileFeed from "../chat/FileFeed.vue";
 import {DEFAULT_LEVEL} from "../domain/verbosity.js";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import RailWaiting from "../rail/RailWaiting.vue";
-import RailTodos from "../rail/RailTodos.vue";
-import {peek} from "../route.js";
+import TasksTab from "../tasks/TasksTab.vue";
 
 defineProps({
     view: {type: String, required: true},
@@ -50,7 +49,7 @@ const feedKey = computed(() => (agent.value ? `${agent.value.id}:${agent.value.s
             </template>
             <template #terminal><TerminalWindow :key="level" :level="level" /></template>
             <template #questions><RailWaiting table="questions" /></template>
-            <template #tasks><RailTodos @open="peek('tasks', $event)" /></template>
+            <template #tasks><TasksTab /></template>
             <template #agents><AgentGrid /></template>
             <template #default><RailWaiting /></template>
         </SwitchCase>

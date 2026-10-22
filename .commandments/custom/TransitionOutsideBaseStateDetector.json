@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Transition"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/engine/base_state.py"
+            },
+            {
+                "file": "src/journal/engine/conduct.py"
+            },
+            {
+                "file": "src/journal/engine/support/transition.py"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "transition-outside-base-state",
+        "description": "A Transition is built outside the base state's answers.",
+        "rule": "Answer with unchanged, changed, push, pop or hold on the state; only engine/base_state.py and engine/support/transition.py build one.",
+        "skill": "stack-machine"
+    }
+}

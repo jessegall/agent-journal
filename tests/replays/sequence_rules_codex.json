@@ -6,33 +6,28 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a write before the step is taken up",
       "answer": {
-        "error": "a write waits for sequence 5, step 1: tag it. `journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside"
+        "error": "a write waits for sequence 5, step 1: tag it. `journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "nudges": [
+        "sequences.write_held_for_the_step"
+      ],
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop at step one",
@@ -41,31 +36,21 @@
         "reason": "sequence 5, step 1: tag it. `journal sequence follow` to take it up, `journal sequence next` when it is done"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "nudges": [
+        "sequences.step_to_follow"
+      ],
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a write once it is taken up",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop at step two",
@@ -74,16 +59,12 @@
         "reason": "sequence 5, step 2: push. `journal sequence follow` to take it up, `journal sequence next` when it is done"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "nudges": [
+        "sequences.step_to_follow"
+      ],
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

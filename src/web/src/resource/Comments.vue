@@ -6,34 +6,55 @@ import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import TextDisplay from "../kit/TextDisplay.vue";
-import {quoted, withQuote} from "../format/quote.js";
+import {quoted} from "../format/quote.js";
 import {age} from "../format/time.js";
 import {markPassage, passageIn} from "../platform/passage.js";
-import {pendingRow} from "../domain/placeholders.js";
 import {createdAt, refOf} from "../domain/row.js";
-import {optimistic} from "../sync/rows.js";
-import Compose from "../chat/Compose.vue";
+import CommentWrite from "./CommentWrite.vue";
+import {useCommenting} from "../composables/commenting.js";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 
 const props = defineProps({
     resource: Object,
     quote: {type: String, default: ""},
+    hint: {type: String, default: ""},
     showThread: {type: Boolean, default: true},
     compose: {type: Boolean, default: true},
     focus: {type: Number, default: 0},
 });
 const emit = defineEmits(["sent"]);
 const talk = inject("talk", null);
+const discussion = inject("discussion", null);
 const scope = useScope();
 const list = ref(null);
 const on = computed(() => refOf(props.resource));
-const thread = computed(() =>
+const onRow = computed(() =>
     scope
         .rows("comments")
         .filter((c) => (c.on || []).includes(on.value))
         .sort((a, b) => createdAt(a) - createdAt(b))
         .map((c) => ({...c, ...quoted(c.data?.visitor ? c.data.detail : c.text)}))
 );
+// the thread: each comment that answers none, followed by the replies under it, in order; a reply whose comment is gone stands on its own
+const thread = computed(() => {
+    const ids = new Set(onRow.value.map((c) => c.id));
+    const tops = onRow.value.filter((c) => !c.reply_target || !ids.has(c.reply_target));
+    return tops.flatMap((top) => [top, ...onRow.value.filter((c) => c.reply_target === top.id && c !== top).map((c) => ({...c, under: top.id}))]);
+});
+const replying = reactive({id: 0, text: "", error: ""});
+const replyTo = (c) => Object.assign(replying, {id: c.id, text: "", error: ""});
+
+async function sendReply() {
+    const text = replying.text.trim();
+    if (!text) return;
+    replying.error = "";
+    try {
+        await scope.api.create("comments", {on: on.value, text, reply_target: replying.id});
+        Object.assign(replying, {id: 0, text: ""});
+    } catch (e) {
+        replying.error = e.message;
+    }
+}
 const WHO = {user: "You", agent: "Agent"};
 const who = (c) => c.data?.visitor || WHO[c.author] || "Someone";
 const plain = (text) => text.replace(/`/g, "");
@@ -84,24 +105,8 @@ async function save() {
 }
 
 const remove = (c) => scope.api.act("comments", c.id, "delete");
-const notSaved = ref("");
-
-function comment(text) {
-    notSaved.value = "";
-    const made = pendingRow("comments", {text, on: [on.value]}, {author: "user"});
-    optimistic("comments", made, () => scope.api.comment(on.value, text)).catch((e) => (notSaved.value = e.message));
-    return made;
-}
-
+const {notSaved, comment} = useCommenting(() => props.resource);
 const quick = (text) => comment(text);
-
-async function send(text) {
-    const made = comment(withQuote(props.quote, text));
-    emit("sent");
-    await nextTick();
-    const row = list.value?.querySelector(`[data-comment="${made.key}"]`);
-    if (row) row.scrollIntoView({behavior: "smooth", block: "nearest"});
-}
 </script>
 
 <template>
@@ -114,6 +119,11 @@ async function send(text) {
                         <span class="comments-count">{{ thread.length }}</span>
                     </template>
                     <span class="grow" />
+                    <template v-if="discussion">
+                        <button type="button" :class="['discussion', {on: discussion.on.value}]" :title="discussion.on.value ? 'Back to the document alone' : 'Show the chat beside the document'" @click="discussion.toggle()">
+                            {{ discussion.on.value ? "Close discussion" : "Discussion" }}
+                        </button>
+                    </template>
                     <CloseButton title="Close the comments" @click="talk.toggle()" />
                 </header>
             </template>
@@ -121,25 +131,32 @@ async function send(text) {
                 <div class="none">
                     <Icon name="bubble" :size="16" />
                     <p>No comments yet.</p>
-                    <p class="none-hint">Select text in the document to comment on that passage.</p>
+                    <template v-if="hint">
+                        <p class="none-hint">{{ hint }}</p>
+                    </template>
                 </div>
             </template>
             <template v-for="c in thread" :key="c.key || c.id">
                 <article
-                    :class="['comment', {focused: c.id && c.id === props.focus}]"
+                    :class="['comment', {focused: c.id && c.id === props.focus, under: c.under}]"
                     :data-comment="c.id || c.key"
                     @mouseenter="hover(c)"
                     @mouseleave="hover(null)"
                 >
                     <Byline :side="c.author" :name="who(c)" :when="age(createdAt(c))">
-                        <template v-if="!c.pending && c.author === 'user'">
+                        <template v-if="!c.pending">
                             <span class="tools">
-                                <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
-                                    <Icon name="pencil" :size="12" />
+                                <button type="button" class="tool" title="Reply under this comment" @click="replyTo(c)">
+                                    <Icon name="bubble" :size="12" />
                                 </button>
-                                <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
-                                    <Icon name="close" :size="12" />
-                                </button>
+                                <template v-if="c.author === 'user'">
+                                    <button type="button" class="tool" title="Edit this comment" @click="edit(c)">
+                                        <Icon name="pencil" :size="12" />
+                                    </button>
+                                    <button type="button" class="tool" title="Delete this comment" @click="remove(c)">
+                                        <Icon name="close" :size="12" />
+                                    </button>
+                                </template>
                             </span>
                         </template>
                     </Byline>
@@ -161,26 +178,30 @@ async function send(text) {
                     <template v-else>
                         <TextDisplay class="said" :text="c.text" />
                     </template>
+                    <template v-if="replying.id && replying.id === c.id">
+                        <textarea v-model="replying.text" rows="2" placeholder="Reply…" @keydown.esc="replying.id = 0" @keydown.meta.enter.prevent="sendReply" />
+                        <span class="edit-row">
+                            <Btn kind="primary" small @click="sendReply">Reply</Btn>
+                            <Btn small @click="replying.id = 0">Cancel</Btn>
+                            <template v-if="replying.error">
+                                <span class="error">{{ replying.error }}</span>
+                            </template>
+                        </span>
+                    </template>
                 </article>
             </template>
         </section>
     </template>
     <template v-if="props.compose">
-        <template v-if="notSaved">
-            <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
-        </template>
         <template v-if="!props.showThread">
+            <template v-if="notSaved">
+                <p class="unsaved">Couldn't save the comment: {{ notSaved }}</p>
+            </template>
             <QuickCommentBar :send="quick" :count="talk ? thread.length : 0" @show="talk.toggle()" />
         </template>
-        <div v-else class="comment-write">
-            <Compose
-                :placeholder="quote ? 'Say something about this passage…' : 'Write a comment…'"
-                submit="Comment"
-                :quote="quote"
-                :send="send"
-                @unquote="emit('sent')"
-            />
-        </div>
+        <template v-else>
+            <CommentWrite :resource="resource" :quote="quote" @sent="emit('sent')" />
+        </template>
     </template>
 </template>
 
@@ -200,6 +221,23 @@ async function send(text) {
     padding: 12px 12px 10px 16px;
     border-bottom: 1px solid var(--border);
     background: var(--side);
+}
+
+.discussion {
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.discussion:hover,
+.discussion.on {
+    border-color: var(--accent);
+    color: var(--accent-text);
 }
 
 .comments-title {
@@ -425,6 +463,12 @@ textarea:focus {
     outline: none;
 }
 
+.comment.under {
+    margin-left: 18px;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+}
+
 .edit-row {
     display: flex;
     align-items: center;
@@ -437,22 +481,6 @@ textarea:focus {
     font-size: 11.5px;
 }
 
-.comment-write {
-    position: sticky;
-    bottom: 0;
-    margin: 12px -16px 0;
-    padding: 8px 16px 10px;
-    background: var(--bg);
-}
-
-.comment-write :deep(textarea) {
-    min-height: 34px;
-    transition: min-height 0.15s ease-out;
-}
-
-.comment-write :deep(textarea:focus) {
-    min-height: 74px;
-}
 </style>
 
 <style>

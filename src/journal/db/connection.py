@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Callable, Iterator
 
+from journal.db.empty_result import EmptyResult
 from journal.support.masks import Masks
 
 
@@ -20,31 +21,34 @@ class Connection:
         self._free: list[sqlite3.Connection] = []
 
     def release(self) -> None:
-        """Returns this thread's connection to the pool; the next thread takes it instead of opening another."""
         local = getattr(self._threads, "connection", None)
         if local is None:
             return
         self._threads.connection = None
         self._threads.returned.detach()
-        self._given_back(local)
+        self._returned(local)
 
-    def _given_back(self, local: sqlite3.Connection) -> None:
+    def _returned(self, local: sqlite3.Connection) -> None:
         with self._pooling:
             self._free.append(local)
 
     def execute(self, sql: str, params: tuple = ()) -> sqlite3.Cursor:
-        """Every text it is given masked first, so no secret value is ever written."""
-        return self._local().execute(sql, tuple(self.masks.masked(p) if isinstance(p, str) else p for p in params))
+        return self._local().execute(sql, self.masks.masked(params))
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
         return self.execute(sql, params).fetchone()
+
+    def result(self, sql: str, params: tuple = ()) -> sqlite3.Row:
+        row = self.one(sql, params)
+        if row is None:
+            raise EmptyResult(sql)
+        return row
 
     def all(self, sql: str, params: tuple = ()) -> list[sqlite3.Row]:
         return self.execute(sql, params).fetchall()
 
     @contextmanager
     def transaction(self) -> Iterator["Connection"]:
-        """Holds the write lock for the block; committed at the end, rolled back on an exception. Nested blocks join the outer one."""
         with self._writing:
             local = self._local()
             if local.in_transaction:
@@ -62,8 +66,7 @@ class Connection:
         for work in self._threads.__dict__.pop("committed", []):
             work()
 
-    def after_commit(self, work: Callable[[], None]) -> None:
-        """Runs once the open write commits, and never if it rolls back; at once when no write is open."""
+    def commit_callback(self, work: Callable[[], None]) -> None:
         if self._local().in_transaction:
             self._threads.committed.append(work)
             return
@@ -79,7 +82,7 @@ class Connection:
         if local is None:
             local = self._leased()
             self._threads.connection = local
-            self._threads.returned = weakref.finalize(threading.current_thread(), self._given_back, local)
+            self._threads.returned = weakref.finalize(threading.current_thread(), self._returned, local)
         return local
 
     def _leased(self) -> sqlite3.Connection:
@@ -89,6 +92,7 @@ class Connection:
             local = sqlite3.connect(self.path, autocommit=True, check_same_thread=False)
             local.row_factory = sqlite3.Row
             local.execute("PRAGMA journal_mode=WAL")
+            local.execute("PRAGMA synchronous=NORMAL")
             local.execute("PRAGMA foreign_keys=ON")
             local.execute("PRAGMA busy_timeout=5000")
             self._open.append(local)

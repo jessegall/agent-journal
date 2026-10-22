@@ -9,7 +9,7 @@ class Suggester(ABC):
 
     @abstractmethod
     def applies(self) -> bool:
-        """Whether the project is in the state this suggestion is for."""
+        pass
 
     @abstractmethod
     def title(self) -> str:
@@ -20,5 +20,5 @@ class Suggester(ABC):
         ...
 
     @abstractmethod
-    def goes_to(self) -> str:
-        """The viewer's address an accepted suggestion opens, where the user finishes it themselves."""
+    def target(self) -> str:
+        pass

@@ -1,25 +1,23 @@
-from journal.engine.machine import Machine
-from journal.engine.states.ended import Ended
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.repositories.agents import Agents
+from journal.support.actor import Actor
 from journal.supervisor_link import SupervisorLink
 
-QUIET_FOR = 3600.0
-"""Seconds without a hook before a session is taken for gone: an agent closed without its end hook never says so itself."""
+SILENCE_SECONDS = 3600.0
 
 
 class EndSilentSessions(AgentListener[Ticked]):
-    """A session that has sent nothing for an hour is ended, so a closed terminal does not stay the live agent for good; the live agent a supervisor still runs is only idle, and stays live."""
+    """Ends a session silent for an hour, so a closed terminal is not the current agent; the current agent a supervisor runs stays current."""
 
-    def __init__(self, machine: Machine, agents: Agents, supervisor: SupervisorLink) -> None:
-        self.machine, self.agents, self.supervisor = machine, agents, supervisor
+    def __init__(self, agents: Agents, supervisor: SupervisorLink) -> None:
+        self.agents, self.supervisor = agents, supervisor
 
     def handle(self, event: Ticked) -> None:
-        if event.quiet_for < QUIET_FOR or self.is_supervised(event):
+        if event.silence_seconds < SILENCE_SECONDS or self.is_supervised(event):
             return
-        self.machine.move(event.session, event.environment_id, Ended())
+        self.agents.save(self.agents.session_agent(event.session).retired(event.time), Actor.system())
 
     def is_supervised(self, event: Ticked) -> bool:
-        live = self.agents.live()
-        return live is not None and live.session == event.session and self.supervisor.runs(event.environment_id)
+        agent = self.agents.current()
+        return agent is not None and agent.session == event.session and self.supervisor.runs(event.environment_id)

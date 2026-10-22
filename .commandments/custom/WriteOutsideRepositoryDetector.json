@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "nameMatches": "^journal\\.db\\.connection$"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/repositories/**"
+            },
+            {
+                "file": "src/journal/db/**"
+            },
+            {
+                "file": "src/journal/app.py"
+            },
+            {
+                "file": "src/journal/http/server.py"
+            },
+            {
+                "file": "src/journal/http/share_server.py"
+            },
+            {
+                "file": "src/journal/http/support/pooled_handler.py"
+            },
+            {
+                "file": "src/journal/features/plugins/listeners/plugins_hear_rows.py"
+            },
+            {
+                "file": "src/journal/features/plugins/listeners/tell_a_plugin_its_settings.py"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "write-outside-repository",
+        "description": "A file outside the repositories and the database layer takes the Connection: whatever it runs on it skips the one funnel that stamps the actor, fires the model events and bounds every read. The boot, the server's pool and the two plugin listeners that wait on the commit are the named exceptions; they run no SQL.",
+        "rule": "Rows are written only through a repository: save(row, actor) and delete(row, actor). Take the repository in the constructor instead of the Connection, and put any SQL the work needs in the repository as a named method.",
+        "skill": "rows-through-their-repository"
+    }
+}

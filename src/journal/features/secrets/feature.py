@@ -2,21 +2,22 @@ from journal.features.feature import Feature
 from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.secrets.commands.secret_command import SecretCommand
-from journal.features.secrets.listeners.keep_out_of_private import KeepOutOfPrivate
-from journal.features.secrets.listeners.alarm_on_leak import AlarmOnLeak
-from journal.features.secrets.listeners.ask_when_expired import AskWhenExpired
-from journal.features.secrets.listeners.purge_after_thirty_days import PurgeAfterThirtyDays
-from journal.features.secrets.listeners.tell_allowed import TellAllowed
+from journal.features.secrets.secrets_conduct import SecretsConduct
+from journal.features.secrets.support.secrets_data_reader import SecretsDataReader
+from journal.features.secrets.support.secrets_data import SecretsData
+from journal.features.secrets.listeners.leak_alarm import LeakAlarm
+from journal.features.secrets.listeners.expiry_question import ExpiryQuestion
+from journal.features.secrets.listeners.secret_purge import SecretPurge
 from journal.features.secrets.seeds.secret_files import SecretFiles
 
 
-class Secrets(Feature):
+class Secrets(Feature[SecretsData]):
     name = "secrets"
     title = "Secrets"
     help = "A key or a login the agent may use without seeing it: its values live in a file in your home folder, never in the journal, and you fill them in on the Secrets page."
-    KEPT_OUT = Nudge(name, "kept_out", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_after=0)
-    ALLOWED = Nudge(name, "allowed", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_after=0)
-    nudges = (KEPT_OUT, ALLOWED)
+    PRIVATE_SECRETS = Nudge(name, "secrets_out_of_reach", "the secrets and the MCP keys in the private folder are out of your reach", "a secret reaches a program through `journal secret run <n> -- <program>`; its value is never yours to read", repeat_interval=0)
+    SECRET_PROGRAM_GRANT = Nudge(name, "secret_allowed_for_programs", "the user let secret {{n}}, {{title}}, go to {{programs}}", "run it with `journal secret run {{n}} -- <program> ...`", repeat_interval=0)
+    nudges = (PRIVATE_SECRETS, SECRET_PROGRAM_GRANT)
     commands = (SecretCommand,)
     seeds = (SecretFiles,)
     skill = Skill("secrets", "Keys and logins the agent uses without seeing them; load it when a task needs a key, a login or a site you must be logged in to", """
@@ -47,7 +48,9 @@ outside the project, and never in the journal; the journal masks a value anywher
   variables while it runs.
 - A value you made yourself, such as a generated password, goes in with `journal secret store <n> <field> <file>`,
   which deletes the file.
-- `journal secret where` names the file the values live in; `journal secret delete <n>` puts one away.
+- `journal secret folder` names the file the values live in; `journal secret delete <n>` puts one away.
 - A deleted secret keeps its values thirty days for `journal secret restore <n>`, then they go.
 """, keywords=("secret", "secrets", "api key", "token", "password", "login"))
-    listeners = (AlarmOnLeak, KeepOutOfPrivate, TellAllowed, AskWhenExpired, PurgeAfterThirtyDays)
+    listeners = (LeakAlarm, ExpiryQuestion, SecretPurge)
+    data = (SecretsDataReader,)
+    conduct = (SecretsConduct,)

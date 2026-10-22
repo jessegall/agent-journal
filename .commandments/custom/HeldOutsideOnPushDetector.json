@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Held"
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "function"
+                        },
+                        {
+                            "name": "on_push"
+                        }
+                    ]
+                }
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "held-outside-on-push",
+        "description": "A Held is built outside on_push, the one hook that may refuse a push.",
+        "rule": "Refuse a push in on_push with Held(nudge); everywhere else answer hold(nudge) on the state.",
+        "skill": "stack-machine"
+    }
+}

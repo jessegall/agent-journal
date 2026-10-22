@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import {span} from "../format/time.js";
 import {store} from "../state/store.js";
 import {useNow} from "../composables/now.js";
@@ -7,26 +7,25 @@ import TextDisplay from "../kit/TextDisplay.vue";
 
 const props = defineProps({
     rows: {type: Array, default: () => []},
-    total: {type: Number, default: 0},
     started: {type: String, default: "started"},
     heading: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
 const now = useNow();
 const minutes = computed(() => Number(((store.settings && store.settings.agent_sessions) || {}).recent ?? 60));
-const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.at || 0) <= minutes.value * 60));
-const listed = computed(() => [...recent.value.filter((r) => r.running), ...recent.value.filter((r) => !r.running).reverse()]);
-const hidden = computed(() => Math.max(0, props.total - listed.value.length));
+const everyRow = ref(false);
+const recent = computed(() => props.rows.filter((r) => r.running || now.value - (r.ended || r.time || 0) <= minutes.value * 60));
+const shown = computed(() => (everyRow.value ? props.rows : recent.value));
+const listed = computed(() => [...shown.value.filter((r) => r.running), ...shown.value.filter((r) => !r.running).reverse()]);
+const hidden = computed(() => props.rows.length - listed.value.length);
 const running = computed(() => props.rows.filter((r) => r.running).length);
-const summary = computed(
-    () =>
-        `${running.value} running, ${props.total} ${props.started} in this session` +
-        (hidden.value ? `, ${hidden.value} earlier not shown.` : ".")
-);
+const summary = computed(() => `${running.value} running, ${props.rows.length} ${props.started} in this session.`);
 
 function lasted(row) {
-    if (!row.at) return "";
-    return row.running ? `running ${span(now.value - row.at)}` : `${row.status || "finished"} · ${span((row.ended || row.at) - row.at)}`;
+    if (!row.time) return "";
+    return row.running
+        ? `running ${span(now.value - row.time)}`
+        : `${row.status || "finished"} · ${span((row.ended || row.time) - row.time)}`;
 }
 
 function detail(row) {
@@ -55,9 +54,26 @@ function detail(row) {
             <small class="crew-when">{{ lasted(row) }}</small>
         </button>
     </template>
+    <template v-if="hidden">
+        <button type="button" class="crew-earlier" @click.stop="everyRow = true">Show {{ hidden }} earlier</button>
+    </template>
 </template>
 
 <style scoped>
+.crew-earlier {
+    margin: 4px 8px 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: 12px var(--font);
+    cursor: pointer;
+}
+
+.crew-earlier:hover {
+    color: var(--text);
+}
+
 .crew-heading {
     margin: 0;
     padding: 6px 8px 0;

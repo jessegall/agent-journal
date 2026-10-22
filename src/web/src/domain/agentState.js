@@ -1,6 +1,7 @@
+import {busyWording} from "./busyWording.js";
 import {ago, elapsed} from "../format/time.js";
 import {seconds} from "./row.js";
-import {workerName, workerState} from "./workers.js";
+import {WORKER_WORDS, workerName, workerState} from "./workers.js";
 
 export const SILENT = "silent";
 
@@ -15,7 +16,7 @@ export const silentIn = (summary, env) => Boolean((summary?.environments || []).
 
 const WORKER = "workers:";
 const STATUS_WORDS = {worker: "At work", question: "Waiting on you"};
-const statusOf = (item) => (item.reported ? "Report ready" : STATUS_WORDS[item.kind] || "At work");
+const statusOf = (item) => (item.reported ? WORKER_WORDS.reported : STATUS_WORDS[item.kind] || "At work");
 const countOf = (n) => `${n} ${n === 1 ? "worker" : "workers"}`;
 
 function workerItem(workers, ref) {
@@ -44,7 +45,7 @@ export function waitingFor({text, on, since}, {workers = [], now = Date.now() / 
 
 export function waitingOn(agent, workers = [], now = Date.now() / 1000) {
     if (!agent?.awaiting) return null;
-    return waitingFor({text: agent.awaiting, on: agent.awaiting_on, since: seconds(agent.awaiting_since)}, {workers, now});
+    return waitingFor({text: agent.awaiting, on: agent.wait_refs, since: seconds(agent.awaiting_since)}, {workers, now});
 }
 
 export function stateOf(agent) {
@@ -90,7 +91,15 @@ export function lineOf(agent, task, auto = false, workers = []) {
     if (state === "waiting") return waitingOn(agent, workers)?.line || "something it has not named";
     if (task) return named(task);
     if (state === "idle") return phrase(auto ? "auto" : "idle");
-    return agent.doing || phrase("bearings");
+    return ["working", "busy"].includes(state) ? busyWording(agent) : phrase("bearings");
+}
+
+// What the chat's status line says while the agent works: the part or tool running now, its thought only when nothing runs.
+export function busyLine(agent, helping = null) {
+    if (agent.status === "compacting") return {thinking: "", doing: "compacting"};
+    if (agent.tool_running) return {thinking: "", doing: agent.doing || "working"};
+    if (agent.thinking) return {thinking: agent.thinking, doing: ""};
+    return {thinking: "", doing: helping ? `Waiting: ${helping.task}` : "thinking"};
 }
 
 const PHRASES = {
@@ -102,3 +111,21 @@ const PHRASES = {
 export function phrase(kind) {
     return PHRASES[kind] || PHRASES.bearings;
 }
+
+const namesOf = (names) => (names.length ? names.join(", ") : "nothing");
+
+const valueWords = (values) =>
+    Array.isArray(values)
+        ? values.map(String)
+        : Object.entries(values || {})
+              .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+              .map(([key, value]) => `${key.replaceAll("_", " ")} ${value}`);
+
+// The agent's stack of states top first, each with the words of its own values and what it waits for.
+export const stackOf = (agent) => (agent?.stack || []).map((s) => ({name: s.name, title: s.title, values: valueWords(s.values).join(" · "), awaits: s.awaits ? `Waiting for ${s.awaits}` : ""}));
+
+// The last changes of the stack, newest first, each in one plain line.
+export const trailOf = (agent) =>
+    [...(agent?.trail || [])]
+        .reverse()
+        .map((t) => (t.refused ? `push of ${t.refused} refused: ${t.line}` : `${namesOf(t.before)} > ${namesOf(t.after)}, by ${t.cause}`));

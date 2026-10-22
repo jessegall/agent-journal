@@ -8,6 +8,7 @@
     --tone-helper: #4fb8ab;
     --tone-sequence: #a78bfa;
     --tone-danger: var(--danger);
+    --tone-bad: var(--danger);
     --raised: #18191c;
     --hover: #1d1e22;
     --sel: #212329;

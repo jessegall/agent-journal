@@ -1,35 +1,43 @@
+import json
+from dataclasses import asdict
 import difflib
 from pathlib import Path
 
+from journal.support.event_window import EventWindow
+
 COMPARED = ("version", "program", "hears", "holds", "services", "settings", "skills")
-"""What an upgrade shows changing in a manifest: what the plugin runs, hears and holds."""
-MOST_LINES = 400
+CHANGE_LINES = 400
 
 
 class PluginChanges:
     """What changes between two states of a plugin: in its manifest, and in its code, file by file."""
 
     @staticmethod
-    def manifest(was: dict, now: dict) -> list[str]:
+    def plain(manifest) -> dict:
+        return json.loads(json.dumps(manifest.published(), default=asdict))
+
+    @staticmethod
+    def manifest(prior_row: dict, time: dict) -> list[str]:
         lines = []
         for key in COMPARED:
-            before, after = was.get(key), now.get(key)
-            if isinstance(after, (list, tuple)):
-                before, after = list(before or ()), list(after)
-                lines += [f"{key}: + {item}" for item in after if item not in before] + [f"{key}: - {item}" for item in before if item not in after]
-            elif before != after:
-                lines.append(f"{key}: {before} -> {after}")
+            previous, following = prior_row.get(key), time.get(key)
+            if isinstance(following, (list, tuple)):
+                previous, following = list(previous or ()), list(following)
+                if key == "holds":
+                    previous, following = [EventWindow.parsed(h).as_text() for h in previous], [EventWindow.parsed(h).as_text() for h in following]
+                lines += [f"{key}: + {item}" for item in following if item not in previous] + [f"{key}: - {item}" for item in previous if item not in following]
+            elif previous != following:
+                lines.append(f"{key}: {previous} -> {following}")
         return lines
 
     @staticmethod
     def code(old: Path, new: Path) -> list[str]:
-        """A unified diff of every text file that differs, .git left out, cut at MOST_LINES."""
         files = sorted({p.relative_to(root) for root in (old, new) for p in root.rglob("*") if p.is_file() and ".git" not in p.relative_to(root).parts})
-        lines = []
+        lines: list[str] = []
         for file in files:
-            before, after = PluginChanges.text(old / file), PluginChanges.text(new / file)
-            lines += difflib.unified_diff(before, after, f"a/{file}", f"b/{file}", lineterm="")
-        return lines[:MOST_LINES] + ([f"... {len(lines) - MOST_LINES} more lines"] if len(lines) > MOST_LINES else [])
+            previous, following = PluginChanges.text(old / file), PluginChanges.text(new / file)
+            lines += difflib.unified_diff(previous, following, f"a/{file}", f"b/{file}", lineterm="")
+        return lines[:CHANGE_LINES] + ([f"... {len(lines) - CHANGE_LINES} more lines"] if len(lines) > CHANGE_LINES else [])
 
     @staticmethod
     def text(path: Path) -> list[str]:

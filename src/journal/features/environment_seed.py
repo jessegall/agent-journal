@@ -1,6 +1,6 @@
 from journal.features.seed import Seed
 from journal.repositories.environments import Environments
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 
 class EnvironmentSeed(Seed):
@@ -11,8 +11,8 @@ class EnvironmentSeed(Seed):
 
     def run(self) -> None:
         for environment in self.environments.all():
-            with self.scope.of(environment.id):
-                self.run_in()
+            with self.scope.environment(environment.row_id):
+                self.run_scoped()
 
-    def run_in(self) -> None:
+    def run_scoped(self) -> None:
         raise NotImplementedError

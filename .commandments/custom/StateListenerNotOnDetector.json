@@ -1,0 +1,47 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "BaseState"
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "parameter"
+                        },
+                        {
+                            "name": "event"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "nameMatches": "^on_"
+            },
+            {
+                "file": ".commandments/custom/samples/**/righteous/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "state-listener-not-on",
+        "description": "A method on a state takes an event but is not named on_, so the dispatch never finds it.",
+        "rule": "Name every listener on_<moment> with its event annotated; only on_ methods are listeners.",
+        "skill": "stack-machine"
+    }
+}

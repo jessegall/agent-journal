@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "member-access",
+        "where": [
+            {
+                "name": "was"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "BaseState"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "state-reads-was",
+        "description": "A state reads a row as it was before the change.",
+        "rule": "A state hears an event named for the moment, PlanStarted or TaskClosed, and never reads was.",
+        "skill": "stack-machine"
+    }
+}

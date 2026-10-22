@@ -6,4 +6,4 @@ class Questions(ScopedRepository[Question]):
     model = Question
 
     def open(self) -> list[Question]:
-        return self.selected("answer IS NULL ORDER BY id", ())
+        return self.selected(self.query().filter_null("answer").order("id"))

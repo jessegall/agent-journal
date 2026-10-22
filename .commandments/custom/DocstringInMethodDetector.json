@@ -1,0 +1,46 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "expression-statement"
+                        },
+                        {
+                            "position": "first"
+                        },
+                        {
+                            "of": "parent",
+                            "is": "function"
+                        },
+                        {
+                            "count": {
+                                "child": {
+                                    "all": [
+                                        {
+                                            "is": "literal"
+                                        },
+                                        {
+                                            "textMatches": "[A-Za-z]"
+                                        }
+                                    ]
+                                },
+                                "atLeast": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "docstring-in-method",
+        "description": "A method or a function carries a docstring inside it.",
+        "rule": "Say it in the method's name or in the class's one line at the top; a method's body carries no prose.",
+        "skill": "plain-code-words"
+    }
+}

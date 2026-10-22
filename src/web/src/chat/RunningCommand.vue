@@ -7,7 +7,7 @@ import {useBarLine} from "../composables/barLine.js";
 defineProps({idle: {type: String, default: "working"}});
 
 const COUNT_UP = 360;
-const {state, message, elapsed} = useBarLine(() => store.bar && store.bar.queue);
+const {state, message, elapsed} = useBarLine(() => store.bar);
 const counted = ref({});
 const frames = {};
 onUnmounted(() => Object.values(frames).forEach(cancelAnimationFrame));
@@ -35,7 +35,7 @@ function amount(part) {
 }
 
 watch(
-    () => state.value.at,
+    () => state.value.time,
     () => (counted.value = {})
 );
 watch(runningLine, (now) => {
@@ -127,6 +127,11 @@ watch(runningLine, (now) => {
 .running-token.gray {
     color: var(--text-2);
     font-weight: 500;
+}
+
+.running-token.command {
+    color: color-mix(in srgb, var(--text-3) 76%, transparent);
+    font-size: 0.88em;
 }
 
 .running-token.muted {

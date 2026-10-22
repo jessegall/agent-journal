@@ -7,7 +7,7 @@ from journal.support.actor_kind import ActorKind
 from journal.models.plugin import Plugin
 from journal.models.secret import Secret
 from journal.models.secret_kind import SecretKind
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.plugins import Plugins
 from journal.repositories.secrets import Secrets
 from journal.support.secret_values import SecretValues
@@ -24,61 +24,58 @@ class PluginSettings:
 
     def schema(self, plugin: Plugin) -> list[PluginSetting]:
         path = plugin.manifest.settings
-        return [PluginSetting.from_json(setting) for setting in json.loads((self.folders.of(plugin) / path).read_text())] if path else []
+        return [PluginSetting.parsed(setting) for setting in json.loads((self.folders.folder(plugin) / path).read_text())] if path else []
 
-    def started(self, plugin: Plugin, by: Actor) -> dict:
-        """Its settings at their defaults, and a secret asked for each secret setting, proposed for the plugin."""
-        settings = {}
+    def started(self, plugin: Plugin, actor: Actor) -> dict:
+        settings: dict[str, object] = {}
         for setting in self.schema(plugin):
             if setting.is_secret:
-                secret = self.secrets.save(Secret(title=f"{plugin.name} {setting.title}", brief=setting.help, kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields(f"{plugin.name} {setting.key}"), proposed=(self.program(plugin),)), by)
-                settings[setting.key] = {"secret": secret.id}
+                secret = self.secrets.save(Secret(title=f"{plugin.name} {setting.title}", brief=setting.help, kind=SecretKind.API_KEY, fields=SecretKind.API_KEY.first_fields(f"{plugin.name} {setting.key}"), proposed=(self.program(plugin),)), actor)
+                settings[setting.key] = {"secret": secret.row_id}
             else:
                 settings[setting.key] = setting.default
         return settings
 
-    def configure(self, name: str, key: str, value: str, by: Actor) -> Plugin:
-        if by.kind != ActorKind.USER:
-            raise Refused("only the user configures a plugin")
-        plugin = self.plugins.named(name)
+    def configure(self, name: str, key: str, value: str, actor: Actor) -> Plugin:
+        if actor.kind != ActorKind.USER:
+            raise Rejection("only the user configures a plugin")
+        plugin = self.plugins.lookup(name)
         setting = next((s for s in self.schema(plugin) if s.key == key), None)
         if setting is None:
-            raise Refused(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
-        return self.plugins.save(plugin.with_(settings={**plugin.settings, key: self.parsed(setting, value)}), by)
+            raise Rejection(f"{name} has no setting {key}: it has {', '.join(s.key for s in self.schema(plugin)) or 'none'}")
+        return self.plugins.save(plugin.with_(settings={**plugin.settings, key: self.parsed(setting, value)}), actor)
 
     @staticmethod
     def parsed(setting: PluginSetting, value: str) -> object:
         kind = setting.kind
         if setting.is_secret:
-            raise Refused(f"{setting.key} is a secret: the user fills it on the Secrets page, never through a command")
+            raise Rejection(f"{setting.key} is a secret: the user fills it on the Secrets page, never through a command")
         if kind == "number":
             try:
                 return float(value) if "." in value else int(value)
             except ValueError:
-                raise Refused(f"{setting.key} is a number; {value!r} is not") from None
+                raise Rejection(f"{setting.key} is a number; {value!r} is not") from None
         if kind == "flag":
             if value.lower() not in FLAGS:
-                raise Refused(f"{setting.key} is on or off; {value!r} is neither")
+                raise Rejection(f"{setting.key} is on or off; {value!r} is neither")
             return FLAGS[value.lower()]
         if kind == "choice" and value not in setting.choices:
-            raise Refused(f"{setting.key} is one of {', '.join(setting.choices)}")
+            raise Rejection(f"{setting.key} is one of {', '.join(setting.choices)}")
         if kind == "list":
             return [item.strip() for item in value.split(",") if item.strip()]
         return value
 
-    def given(self, plugin: Plugin) -> dict[str, str]:
-        """The values of its secret settings that the user filled and let the plugin have, by their variables."""
+    def supplied(self, plugin: Plugin) -> dict[str, str]:
         values = self.values.values()
-        given = {}
+        value: dict[str, str] = {}
         for setting in plugin.settings.values():
             if not isinstance(setting, dict) or "secret" not in setting:
                 continue
             secret = self.secrets.find(setting["secret"])
             if self.program(plugin) in secret.programs:
-                given |= {f["variable"]: values[f["variable"]] for f in secret.fields if f["variable"] in values}
-        return given
+                value |= {f["variable"]: values[f["variable"]] for f in secret.fields if f["variable"] in values}
+        return value
 
     @staticmethod
     def program(plugin: Plugin) -> str:
-        """The name a secret is allowed to the plugin under, as the Secrets page lists programs."""
         return f"plugin:{plugin.name}"

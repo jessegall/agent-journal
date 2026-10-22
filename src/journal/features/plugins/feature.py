@@ -3,22 +3,30 @@ from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.plugins.commands.dashboard_command import DashboardCommand
 from journal.features.plugins.commands.plugin_command import PluginCommand
-from journal.features.plugins.listeners.hold_plugin_folders import HoldPluginFolders
-from journal.features.plugins.listeners.plugins_hear_agents import PluginsHearAgents
-from journal.features.plugins.listeners.plugins_hear_rows import PluginsHearRows
-from journal.features.plugins.listeners.tell_a_plugin_its_settings import TellAPluginItsSettings
-from journal.features.plugins.seeds.plugin_services_at_boot import PluginServicesAtBoot
+from journal.features.plugins.listeners.plugin_agent_relay import PluginAgentRelay
+from journal.features.plugins.listeners.plugin_row_relay import PluginRowRelay
+from journal.features.plugins.listeners.plugin_settings_notice import PluginSettingsNotice
+from journal.features.plugins.seeds.plugin_services_seed import PluginServicesSeed
+from journal.features.plugins.plugins_conduct import PluginsConduct
+from journal.features.plugins.support.plugins_data_reader import PluginsDataReader
+from journal.features.plugins.support.plugins_data import PluginsData
+from journal.engine.nudge import Nudge
+from journal.features.plugins.listeners.release_upgrade import ReleaseUpgrade
 
 
-class PluginsFeature(Feature):
+class PluginsFeature(Feature[PluginsData]):
+    PLUGIN_ANSWER_WINDOW = Option("plugins.hold_window_ms", "A plugin's hold window at most", "Milliseconds a plugin holding an event may take to answer; a plugin's own window in its manifest is cut to this, and one past its window is skipped and its fault recorded", 50, unit="ms")
     name = "plugins"
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
-    DEADLINE = Option("plugins.deadline", "Wait for plugins at most", "The time every plugin that holds one event shares, below the hook's own ten seconds; a plugin not reached in it is skipped and its fault recorded", 6, unit="seconds")
-    options = (DEADLINE,)
-    listeners = (HoldPluginFolders, PluginsHearAgents, PluginsHearRows, TellAPluginItsSettings)
+    options = (PLUGIN_ANSWER_WINDOW,)
+    listeners = (PluginAgentRelay, PluginRowRelay, PluginSettingsNotice, ReleaseUpgrade)
+    data = (PluginsDataReader,)
+    conduct = (PluginsConduct,)
+    PLUGIN_FILE_OWNERSHIP = Nudge(name, "plugin_files_are_the_users", "an installed plugin's files are the user's to change", "propose the change to them, or work in the plugin's own folder and let them upgrade it", repeat_interval=0)
+    nudges = (PLUGIN_FILE_OWNERSHIP,)
     commands = (PluginCommand, DashboardCommand)
-    seeds = (PluginServicesAtBoot,)
+    seeds = (PluginServicesSeed,)
     skill = Skill("plugins", "Plugins the user installs that hear the journal's events; load it when a plugin holds you, a plugin's card or line appears, or a plugin would help", """
 # Plugins
 

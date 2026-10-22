@@ -96,6 +96,14 @@ export class ApiClient {
         return this.get(this.here("/bar"));
     }
 
+    developer() {
+        return this.get("/developer");
+    }
+
+    developerReset() {
+        return this.post("/developer/reset");
+    }
+
     settings() {
         return this.get(this.here("/settings"));
     }
@@ -151,6 +159,11 @@ export class ApiClient {
         return this.get(this.here(`/${table}${query({limit, before, after, since, ids: ids.join(","), closed: closed ? "1" : ""})}`));
     }
 
+    // the own chat of a worker or a subagent, by its session
+    chat(session, {limit, before, since} = {}) {
+        return this.get(this.here(`/chats/${encodeURIComponent(session)}${query({limit, before, since})}`));
+    }
+
     show(table, id) {
         return this.get(this.here(`/${table}/${id}`));
     }
@@ -182,6 +195,25 @@ export class ApiClient {
 
     fileUrl(table, id, name) {
         return this.address(`/${table}/${id}/files/${encoded(name)}`);
+    }
+
+    // a document's revisions in order, and keeping the open one as it is
+    docRevisions(id) {
+        return this.get(this.here(`/docs/${id}/revisions`));
+    }
+
+    keepDoc(id) {
+        return this.act("docs", id, "keep");
+    }
+
+    // a document or report as a file to download, named by the journal
+    exportUrl(table, id) {
+        return this.address(`/${table}/${id}/export`);
+    }
+
+    // the bytes at a file's address, so the viewer can tell text from a file it must not print
+    fileBytes(url) {
+        return transport.bytes(url);
     }
 
     // messages
@@ -220,13 +252,17 @@ export class ApiClient {
         return this.get(this.here(`/plans/${id}/tasks`));
     }
 
+    addPlanTask(id, body) {
+        return this.post(this.here(`/plans/${id}/tasks`), body);
+    }
+
     taskLogs(id) {
         return this.get(this.here(`/tasks/${id}/logs`));
     }
 
     // what starts a sequence, and its steps
     setStartsOn(id, startsOn) {
-        return this.act("sequences", id, "starts", {starts_on: startsOn});
+        return this.act("sequences", id, "starts", {trigger_event: startsOn});
     }
 
     setSteps(id, steps) {
@@ -308,6 +344,10 @@ export class ApiClient {
         return this.get(this.here(`/outputs/${id}`));
     }
 
+    outputProgress(ids) {
+        return this.get(this.here(`/outputs/views?ids=${ids.join(",")}`));
+    }
+
     // skills and voices
 
     skills(agent = 0) {
@@ -342,6 +382,10 @@ export class ApiClient {
 
     projectFile(path) {
         return this.get(this.here(`/project-files/file${query({path})}`));
+    }
+
+    projectFileUrl(path) {
+        return this.address(`/project-files/raw${query({path})}`);
     }
 
     fileDiff(path) {
@@ -459,55 +503,19 @@ export class ApiClient {
         return this.get(this.here(`/plugins/${id}/dashboard`));
     }
 
-    // the workflows, the agent profiles and the MCP servers
+    // the agent profiles and the MCP servers
 
-    chart() {
-        return this.get("/chart");
-    }
 
-    chartOne(id) {
-        return this.get(`/chart/${id}`);
-    }
 
-    chartStanding(id) {
-        return this.get(`/chart/${id}/standing`);
-    }
 
-    chartNew(body) {
-        return this.post("/chart", body);
-    }
 
-    chartSave(id, body) {
-        return this.post(`/chart/${id}`, body);
-    }
 
-    chartRemove(id) {
-        return this.post(`/chart/${id}/remove`, {});
-    }
 
-    chartReset(id) {
-        return this.post(`/chart/${id}/reset`, {});
-    }
 
-    chartOff(id) {
-        return this.post(`/chart/${id}/off`, {});
-    }
 
-    chartOn(id) {
-        return this.post(`/chart/${id}/on`, {});
-    }
 
-    chartOrder(trigger, order) {
-        return this.post("/chart/order", {trigger, order});
-    }
 
-    chartRuns(last = 10) {
-        return this.get(`/chart/runs?last=${last}`);
-    }
 
-    chartTry(body) {
-        return this.post("/chart/try", body);
-    }
 
     agentProfiles() {
         return this.get("/profiles");

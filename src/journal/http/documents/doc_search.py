@@ -5,11 +5,9 @@ from journal.models.doc import Doc
 from journal.repositories.docs import Docs
 
 WEIGHTS = {"title": 8, "number": 8, "abstract": 3, "text": 1}
-"""How much a word found in each part of a document counts."""
-AROUND = 70
-"""How many characters of the passage are shown on each side of the first word found."""
+SNIPPET_RADIUS_CHARACTERS = 70
 SPACES = re.compile(r"\s+")
-MARKS = re.compile(r"[*`#]+")
+MARKDOWN_SYMBOLS = re.compile(r"[*`#]+")
 
 
 class DocSearch:
@@ -18,26 +16,25 @@ class DocSearch:
     def __init__(self, docs: Docs) -> None:
         self.docs = docs
 
-    def located(self, words: str) -> list[DocHit]:
-        asked = words.lower().split()
-        if not asked:
+    def located(self, text: str) -> list[DocHit]:
+        requested = text.lower().split()
+        if not requested:
             return []
-        hits = [hit for hit in (self.hit(doc, asked) for doc in self.docs.all()) if hit["score"]]
+        hits = [hit for hit in (self.hit(doc, requested) for doc in self.docs.all()) if hit["score"]]
         return sorted(hits, key=lambda hit: -hit["score"])
 
-    def hit(self, doc: Doc, asked: list[str]) -> DocHit:
+    def hit(self, doc: Doc, requested: list[str]) -> DocHit:
         parts = {"title": doc.title.lower(), "number": f"doc {doc.id}", "abstract": doc.abstract.lower(), "text": doc.body.lower()}
-        whole = " ".join(parts.values())
-        if not all(word in whole for word in asked):
-            return DocHit(id=doc.id, score=0, where="", text="")
-        found = [part for part, words in parts.items() if any(word in words for word in asked)]
-        return DocHit(id=doc.id, score=sum(WEIGHTS[part] for part in found), where=found[0], text=self.passage(doc.body, asked))
+        full = " ".join(parts.values())
+        if not all(word in full for word in requested):
+            return DocHit(id=doc.row_id, score=0, place="", text="")
+        rows = [part for part, text in parts.items() if any(word in text for word in requested)]
+        return DocHit(id=doc.row_id, score=sum(WEIGHTS[part] for part in rows), place=rows[0], text=self.passage(doc.body, requested))
 
     @staticmethod
-    def passage(body: str, asked: list[str]) -> str:
-        """The text around the first word found in the body, on one line."""
-        flat = SPACES.sub(" ", MARKS.sub("", body))
-        at = min((i for i in (flat.lower().find(word) for word in asked) if i >= 0), default=-1)
-        if at < 0:
+    def passage(body: str, requested: list[str]) -> str:
+        flat = SPACES.sub(" ", MARKDOWN_SYMBOLS.sub("", body))
+        time = min((i for i in (flat.lower().find(word) for word in requested) if i >= 0), default=-1)
+        if time < 0:
             return ""
-        return flat[max(0, at - AROUND):at + AROUND].strip()
+        return flat[max(0, time - SNIPPET_RADIUS_CHARACTERS):time + SNIPPET_RADIUS_CHARACTERS].strip()

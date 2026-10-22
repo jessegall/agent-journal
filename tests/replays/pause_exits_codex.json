@@ -6,64 +6,41 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "a tool use lifts the await",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a stop back at work",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -71,84 +48,49 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "stuck"
+      ]
     },
     {
       "name": "a tool use lifts being stuck",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "waiting on a question",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "waiting"
+      ]
     },
     {
       "name": "the answer releases the wait",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on"
       },
       "typed": [
         "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
-        "chart.line",
+        "questions.question_answered",
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -156,107 +98,61 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "the report releases the wait",
       "answer": {
         "decision": "block",
-        "reason": "worker 1 (Lady Lovelace) reported and you have not acted on it yet. read its report, then give it its next job (`journal worker say <n> \"<job>\"`), stop it, or `journal worker done <n>` once its work is merged or used\ntask 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on\nworker 1 (Lady Lovelace) reported and you have not acted on it yet. read its report, then give it its next job, stop it, or mark it done once its work is merged or used"
       },
       "typed": [
-        "[journal] worker 1, Lady Lovelace, reported in the chat",
-        "[journal] what you waited on came back: carry on"
+        "[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported",
+        "[journal] worker 1, Lady Lovelace, reported in the chat"
       ],
       "nudges": [
-        "workers.reported",
-        "workers.returned",
-        "workers.reports_waiting",
+        "tasks.wait_over",
+        "workers.worker_reported",
+        "workers.act_on_the_reports",
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "running a sequence",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 13,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "the last step ends the sequence",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 14,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

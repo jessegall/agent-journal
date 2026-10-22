@@ -14,7 +14,7 @@ const state = computed(() => agentState(props.entry.card));
 const asks = computed(() => state.value.key !== "working" && props.entry.card.reason);
 const status = computed(() => asks.value || props.entry.doing);
 const now = useNow();
-const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value) : null));
+const quiet = computed(() => (props.entry.time ? quietOf(props.entry.time, now.value) : null));
 </script>
 
 <template>
@@ -36,7 +36,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
         </template>
         <p class="aw-title">{{ entry.title }}</p>
         <template v-if="entry.says">
-            <Folded :at="60" :keep="52">
+            <Folded :time="60" :keep="52">
                 <p class="aw-says">{{ entry.says }}</p>
             </Folded>
         </template>
@@ -72,7 +72,7 @@ const quiet = computed(() => (props.entry.at ? quietOf(props.entry.at, now.value
                 <p class="aw-line" title="When the agent last did anything">
                     <span class="aw-key">Last active</span>
                     <span :class="['aw-seen', quiet.tone, {waits: entry.waits && quiet.tone}]">
-                        {{ clock(entry.at) }} · {{ quiet.ago }}
+                        {{ clock(entry.time) }} · {{ quiet.ago }}
                     </span>
                 </p>
             </template>

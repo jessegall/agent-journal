@@ -8,6 +8,7 @@ import TurnHeader from "./TurnHeader.vue";
 import TurnQuote from "./TurnQuote.vue";
 import TurnParent from "./TurnParent.vue";
 import TurnFromMain from "./TurnFromMain.vue";
+import TurnReport from "./TurnReport.vue";
 import TurnBriefMarker from "./TurnBriefMarker.vue";
 import TurnText from "./TurnText.vue";
 import TurnQuestion from "./TurnQuestion.vue";
@@ -17,6 +18,7 @@ import {useTurnLinks} from "./turnLinks.js";
 import {useTurnText} from "./turnText.js";
 import {useTurnShape} from "./turnShape.js";
 import {quoted} from "../format/quote.js";
+import {reportOf} from "../domain/report.js";
 import {EARLIER, answered} from "../domain/thread.js";
 import {pendingRow} from "../domain/placeholders.js";
 import {focusTurn, laidOut} from "../platform/view.js";
@@ -31,19 +33,27 @@ const FOLD_AT = 420;
 
 const {scope, env, open, openChip} = useTurnLinks();
 const rowsOf = (table) => scope.rows(table);
-const {words, html} = useTurnText(() => props.turn, env);
+const report = computed(() => reportOf(props.turn));
+const {words, html} = useTurnText(() => (report.value ? {...props.turn, text: report.value.text} : props.turn), env);
 
-const peer = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.sent_to));
-const fromMain = computed(() => Boolean(props.turn.data?.from_main) || peer.value);
+const sent = computed(() => Boolean(props.turn.data?.sent_to));
+const received = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.from_main));
+const fromMain = computed(() => sent.value || received.value);
 const opening = computed(() => Boolean(props.turn.data?.opening));
-const mine = computed(() => props.turn.who === "user" || fromMain.value);
+const mine = computed(() => props.turn.who === "user");
+const faces = computed(() => {
+    const seen = {};
+    for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);
+    return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
+});
+
 const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const answers = computed(() => answered(props.turn));
 const answer = computed(() => {
     if (words.value.quote || !answers.value) return "";
-    const row = rowsOf("messages").find((m) => m.id === props.turn.reply_to);
+    const row = rowsOf("messages").find((m) => m.id === props.turn.reply_target);
     return row ? quoted(row.text).text : EARLIER;
 });
 const quoteText = computed(() => words.value.quote || answer.value);
@@ -68,11 +78,6 @@ function toQuoted() {
 
 // The tasks filed from this message, each a pill that opens it.
 const filed = computed(() => (props.turn.filed || []).map((id) => ({id, word: `task ${id}`})));
-const faces = computed(() => {
-    const seen = {};
-    for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);
-    return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
-});
 const files = computed(() => props.turn.files || []);
 useTurnShape(bubble, {sources: [html, laidOut], holdsCard: () => files.value.length > 0 || props.turn.kind === "question"});
 
@@ -89,16 +94,19 @@ async function drop() {
 
 <template>
     <div
-        :class="['thread-turn', {mine, peer, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
+        :class="['thread-turn', {mine, report, ask: turn.kind === 'question', long, quoting: quoteText, lit: store.focus === turn.key, 'comment-origin': resourceComment}]"
         :data-ref="turn.key"
         @mouseleave="picking = false"
     >
         <template v-if="opening">
-            <TurnBriefMarker :at="turn.at" />
+            <TurnBriefMarker :time="turn.time" />
         </template>
         <div v-show="bubbled && !opening" ref="bubble" class="thread-bubble md" data-figure-bubble :data-figure-mark="turn.key" @click="resourceComment && openComment()">
             <template v-if="fromMain">
-                <TurnFromMain :at="turn.at" :data="turn.data" />
+                <TurnFromMain :time="turn.time" :data="turn.data" />
+            </template>
+            <template v-if="report">
+                <TurnReport :worker="report.worker" :time="turn.time" />
             </template>
             <template v-if="resourceComment">
                 <TurnParent :label="commentParent.label" @open="openComment" />
@@ -118,7 +126,7 @@ async function drop() {
             <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
-            <TurnText :html="html" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
+            <TurnText :html="html" :name="turn.key" :fold-at="FOLD_AT" :keep="320" @activate="openChip" />
             <template v-if="turn.kind === 'question'">
                 <TurnQuestion :turn="turn" />
             </template>
@@ -148,26 +156,6 @@ async function drop() {
 <style scoped>
 .thread-turn.has-update {
     width: min(78%, calc(100% - var(--turn-gutter)));
-}
-
-.thread-turn.peer {
-    align-self: stretch;
-    width: 100%;
-}
-
-.thread-turn.peer .thread-bubble {
-    width: 100%;
-
-    --pill-text: var(--text-4);
-    --pill-border: var(--border);
-    --pill-size: 0.92em;
-
-    padding: 7px 10px;
-    border-color: #1d1e22;
-    background: none;
-    color: var(--text-3);
-    font-size: 12px;
-    line-height: 1.5;
 }
 
 .thread-turn > .thread-from {
@@ -213,6 +201,12 @@ async function drop() {
 .thread-turn.mine .thread-bubble {
     border-color: color-mix(in srgb, var(--accent) 45%, transparent);
     background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.thread-turn.report .thread-bubble {
+    border-color: color-mix(in srgb, var(--tone-good, var(--green)) 40%, var(--border-2));
+    border-left-width: 3px;
+    background: color-mix(in srgb, var(--tone-good, var(--green)) 7%, #161719);
 }
 
 .thread-turn.comment-origin .thread-bubble {

@@ -1,10 +1,12 @@
 <script setup>
+import {ref} from "vue";
 import {clock} from "../format/time.js";
 import {briefOpen} from "../composables/briefBand.js";
 import Btn from "../kit/Btn.vue";
 import Notice from "../kit/Notice.vue";
 import OpenableText from "../kit/OpenableText.vue";
 import SequenceBand from "./SequenceBand.vue";
+import TextArea from "../kit/TextArea.vue";
 
 defineProps({
     confirm: {type: Object, default: null},
@@ -19,16 +21,22 @@ defineProps({
     sequenceBusy: {type: String, default: ""},
 });
 const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume", "skip-step", "end-sequence"]);
+const answer = ref("");
 </script>
 
 <template>
     <div class="inspector-bands">
         <template v-if="confirm">
-            <Notice tone="danger">
+            <Notice :tone="confirm.input ? 'ask' : 'danger'">
                 {{ confirm.text }}
+                <template v-if="confirm.input">
+                    <TextArea class="confirm-input" :placeholder="confirm.input" @input="answer = $event.target.value" />
+                </template>
                 <template #actions>
                     <Btn small @click="emit('cancel')">{{ confirm.cancel }}</Btn>
-                    <Btn small kind="danger" @click="emit('confirmed')">{{ confirm.button }}</Btn>
+                    <Btn small :kind="confirm.input ? 'primary' : 'danger'" :disabled="Boolean(confirm.input) && !answer.trim()" @click="emit('confirmed', answer.trim())">
+                        {{ confirm.button }}
+                    </Btn>
                 </template>
             </Notice>
         </template>
@@ -45,7 +53,7 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume", "skip-st
                     @close="briefOpen = false"
                 >
                     <template #more>
-                        <small class="inspector-sent">Sent {{ clock(brief.at) }}</small>
+                        <small class="inspector-sent">Sent {{ clock(brief.time) }}</small>
                     </template>
                 </OpenableText>
             </Notice>
@@ -93,6 +101,11 @@ const emit = defineEmits(["cancel", "confirmed", "show-plan", "resume", "skip-st
 </template>
 
 <style scoped>
+.confirm-input {
+    min-height: 72px;
+    margin-top: 8px;
+}
+
 .inspector-bands {
     display: flex;
     flex: none;

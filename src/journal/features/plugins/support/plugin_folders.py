@@ -12,7 +12,7 @@ class PluginFolders:
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def of(self, plugin: Plugin) -> Path:
+    def folder(self, plugin: Plugin) -> Path:
         return Path(plugin.source) if plugin.linked else self.config.home / "plugins" / plugin.name
 
     def data(self, plugin: Plugin) -> Path:
@@ -24,6 +24,5 @@ class PluginFolders:
         return self.data(plugin) / "settings.json"
 
     def socket(self, plugin: Plugin, environment: str) -> Path:
-        """Where a plugin's answering service listens in an environment: a short path, since a socket's path is limited to about a hundred characters."""
-        mark = hashlib.sha1(f"{self.config.root}|{environment}|{plugin.name}".encode()).hexdigest()[:12]
-        return Path(f"/tmp/journal-{os.getuid()}") / f"plugin-{mark}.sock"
+        threshold = hashlib.sha1(f"{self.config.root}|{environment}|{plugin.name}".encode()).hexdigest()[:12]
+        return Path(f"/tmp/journal-{os.getuid()}") / f"plugin-{threshold}.sock"

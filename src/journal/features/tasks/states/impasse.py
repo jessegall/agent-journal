@@ -1,0 +1,15 @@
+from dataclasses import dataclass
+
+from journal.engine.states.wait import Wait
+
+
+@dataclass(frozen=True)
+class Impasse(Wait):
+    """The agent said it is truly stuck. Nothing is said until it works again or the user speaks: its own next tool use or a word from the user pops it."""
+
+    name = "stuck"
+    title = "Stuck"
+    reason: str = ""
+
+    def wait_description(self) -> tuple[str, str]:
+        return self.reason, ""

@@ -57,8 +57,8 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
                 </template>
             </div>
         </template>
-        <template v-if="phase.complete_when">
-            <div class="when">complete when {{ phase.complete_when }}</div>
+        <template v-if="phase.completion_rule">
+            <div class="when">complete when {{ phase.completion_rule }}</div>
         </template>
         <template v-for="run in runs" :key="run.rows[0].id">
             <div :class="['held', {group: grouped(run), closed: run.holder && closedHolder(run.holder)}]">

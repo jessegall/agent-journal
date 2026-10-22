@@ -13,13 +13,12 @@ class TranscriptRead:
     lines: int = 0
     turns: tuple[Turn, ...] = ()
 
-    def further(self, provider: Provider, path: Path) -> "TranscriptRead":
-        """The read carried on over the whole lines written since; a last line still being written is left for the next."""
+    def more(self, provider: Provider, path: Path) -> "TranscriptRead":
         with path.open("rb") as file:
             file.seek(self.offset)
-            written = file.read()
-        whole = written[: written.rfind(b"\n") + 1]
-        if not whole:
+            saved = file.read()
+        full = saved[: saved.rfind(b"\n") + 1]
+        if not full:
             return self
-        text = whole.decode(errors="replace")
-        return TranscriptRead(self.offset + len(whole), self.lines + len(text.splitlines()), self.turns + tuple(provider.turns_in(Provider.rows_of(text, self.lines))))
+        text = full.decode(errors="replace")
+        return TranscriptRead(self.offset + len(full), self.lines + len(text.splitlines()), self.turns + tuple(provider.turn_rows(Provider.rows(text, self.lines))))

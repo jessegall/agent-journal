@@ -14,7 +14,7 @@ class CodexRow:
     timestamp: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "CodexRow":
+    def parsed(cls, data: dict) -> "CodexRow":
         item = data.get("payload", {})
         text = "\n".join(str(b.get("text", "")) for b in item.get("content", []) if isinstance(b, dict))
         return cls(str(data.get("type", "")), str(item.get("type", "")), str(item.get("role", "")), text, str(item.get("name", "")), str(item.get("output", "")), str(data.get("timestamp", "")))

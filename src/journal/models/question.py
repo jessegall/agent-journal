@@ -2,6 +2,9 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
+from journal.events.rows.question_answered import QuestionAnswered
+from journal.events.rows.question_posed import QuestionPosed
+from journal.events.rows.row_resolved import RowResolved
 from journal.models.scoped import Scoped
 
 
@@ -17,14 +20,17 @@ class Question(Scoped):
     def is_answered(self) -> bool:
         return self.answer is not None
 
-    def is_settled(self) -> bool:
-        """Nothing waiting on it waits any longer."""
+    def is_resolved(self) -> bool:
         return self.is_answered()
 
     def unclear_options(self) -> list[str]:
-        """The options that say I, we or you, where the reader cannot tell whether the agent or the user is meant."""
         return [option for option in self.options if self.PERSONAL.search(option)]
 
-    def answered(self, answer: str) -> "Question":
-        return self.with_(answer=answer)
+    def posed(self, time: float) -> "Question":
+        return self.with_event(QuestionPosed(environment_id=self.environment_id, time=time, question_id=self.row_id))
 
+    def answered(self, answer: str, time: float) -> "Question":
+        return self.with_(answer=answer).with_event(QuestionAnswered(environment_id=self.environment_id, time=time, question_id=self.row_id)).with_event(RowResolved(environment_id=self.environment_id, time=time, ref=f"questions:{self.id}"))
+
+    def summary_line(self) -> str:
+        return self.opening_line(self.text)

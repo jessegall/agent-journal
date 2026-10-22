@@ -6,54 +6,42 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "half a minute",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "a minute and a half",
       "answer": null,
       "typed": [
-        "[journal] while you wait for the build, task 2 is next: if you can work on it meanwhile, carry on with it; if you need the output first, waiting is fine"
+        "[journal] while you wait for the build, task 2, the header is next. if you can work on it meanwhile, carry on with it; if you need what you wait for, end your turn"
       ],
       "nudges": [
-        "chart.line"
+        "tasks.next_task_while_waiting"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "179": 90,
-          "195": 90,
-          "196": null
-        }
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
       ]
     },
     {
@@ -61,13 +49,11 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     }
   ]
 }

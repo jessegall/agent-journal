@@ -27,7 +27,7 @@ Give the dispatch a description and a bounded prompt. If no suitable specializat
 Everything a tool returns stays in the context for good and is paid for on every turn after it.
 
 **L4 - Related work goes back to the worker or subagent that already worked on it; never start a fresh one on work another already knows.**
-A worker that reported takes its next job with `journal worker say <n> "<job>"`, with its memory of the last; a subagent takes its next job by a message to the one you started.
+A worker that reported takes its next job with `journal worker send <n> "<job>"`, with its memory of the last; a subagent takes its next job by a message to the one you started.
 
 **L5 - Every subagent and worker is named after a distinguished historical figure with a gentle twist on their trade, such as Lady Lovelace for a programmer, and addresses you, never the user.**
 
@@ -41,6 +41,10 @@ A worker that reported takes its next job with `journal worker say <n> "<job>"`,
 A subagent works in your own checkout, so what it writes lands beside your edits, unlogged. Reading, searching, reviewing and
 designing go to a subagent; a job that changes a file goes to a worker (`journal worker dispatch`, with `--worktree` for code).
 
+**L10 - A worker's work is merged only once each point of its task's brief has a proof you checked.**
+Read each proof with `journal task show <n>`, check it with `journal worker check <worker> <point>` or send it back with
+`--short "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
+
 ## How you work with the journal
 
 Load the `journal` skill first in every session; the journal holds writes until you have. Declare a task before you write.
@@ -49,8 +53,7 @@ A guard that raises lets the event through and says so in the chat: a hold is ne
 """
 
     @classmethod
-    def written_into(cls, text: str) -> str:
-        """The file's text with our block replacing any earlier one of ours, or added at the end."""
+    def installed(cls, text: str) -> str:
         begin, end = text.find("<!-- BEGIN: agent-journal"), text.find("<!-- END: agent-journal")
         block = f"{cls.BEGIN}\n{cls.BLOCK.strip()}\n{cls.END}\n"
         if begin >= 0 and end >= 0:

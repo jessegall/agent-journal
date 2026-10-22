@@ -1,76 +1,98 @@
 import json
 import re
+import shlex
+from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar, Iterator
+from typing import Callable, ClassVar, Iterator
 
+from journal.support.tool_call import ToolCall
+from journal.support.operation import Operation
+from journal.models.mcp_server import McpServer
+from journal.providers.support.agent_status import AgentStatus
+from journal.providers.support.context_file import ContextFile
+from journal.providers.support.hooks_ready import HooksReady
+from journal.providers.support.profile import Profile
+from journal.support.undecoded_tool import UndecodedTool
+from journal.support.alias_call import AliasCall
+from journal.support.chain import Chain
+from journal.support.command_part import CommandPart
 from journal.support.reads import Reads
 from journal.support.writes import Writes
+from journal.features.shell.support.output_reads import OutputReads
+from journal.providers.support.profile_view import ProfileView
 from journal.support.decision import Decision
 from journal.support.hook import Hook
 from journal.support.hook_kind import HookKind
 from journal.support.response import Response
-from journal.models.entry import Entry
-from journal.support.tool_input import ToolInput
-from journal.events.agent.message_crossed import MessageCrossed
+from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.turn import Turn
-from journal.providers.support.written import Written
+from journal.providers.support.file_writes import FileWrites
+from journal.providers.support.capability import Capability
+from journal.providers.support.worker_outcome import WorkerOutcome
+from journal.support.choice import Choice
+from journal.providers.support.status_line import StatusLine
 
 CONTEXT_HOOKS = (HookKind.SESSION_START, HookKind.USER_PROMPT, HookKind.PRE_TOOL_USE, HookKind.POST_TOOL_USE)
 
 
-TAIL = 400_000
-"""How far from its end a transcript is read for its last turn."""
+TAIL_BYTES = 400_000
+HOOK_SCRIPT = Path(__file__).resolve().parents[1] / "hooks" / "hook.sh"
 PATH_KEYS = ("file_path", "path", "notebook_path")
-"""The keys an editing tool names its file by."""
 
 VERSION_3_HOOKS = ("/.journal/src/hook.sh", "/.journal/hook.py", "/.journal/journal hook")
-"""Where version 3 wired its hook; an upgrade takes them out, or they fail on every tool call."""
 
-class Provider:
-    """One agent program, Claude or Codex: the few things the journal has to know about it and nothing else."""
+class Provider(ABC):
+    """One agent program, Claude Code or Codex: everything the journal knows about it, and nowhere else."""
 
     name: ClassVar[str]
     home: ClassVar[str]
-    """The folder the program keeps in a project, such as .claude."""
     settings_file: ClassVar[str]
-    """The file in that folder that holds the hooks."""
-    write_tools: ClassVar[frozenset[str]]
-    read_tool: ClassVar[str]
-    shell_tool: ClassVar[str] = "Bash"
+    prompt_flags: ClassVar[tuple[str, ...]]
+    session_variable: ClassVar[str]
+    user_line_key: ClassVar[str] = ""
+    inherited_markers: ClassVar[tuple[str, ...]]
+    question_model: ClassVar[str]
+    settings_files: ClassVar[tuple[str, ...]]
     settings_extras: ClassVar[dict] = {}
-    other_settings: ClassVar[tuple[str, ...]] = ()
-    """Settings files beside the main one that may still hold an older hook of ours."""
-    """What else the program's settings file must say for the journal's sake, such as taking the project's MCP servers without asking."""
+    foreign_settings: ClassVar[tuple[str, ...]] = ()
     hook_kinds: ClassVar[tuple[HookKind, ...]] = tuple(HookKind)
     controls: ClassVar[dict] = {"groups": [], "note": ""}
-    """The model, effort and context choices the viewer's agent bar offers, each with the line typed into the agent to take it."""
+    capabilities: ClassVar[frozenset[Capability]]
+    decoders: ClassVar[dict[str, Callable[[dict], Operation]]]
+    profile_suffix: ClassVar[str]
+    default: ClassVar[bool]
+    session_inbox: ClassVar[bool]
 
+    def __init__(self) -> None:
+        self._status_files: dict[Path, ContextFile] = {}
+
+    @abstractmethod
+    def profile_model(self, profile: ProfileView) -> str: ...
+
+    @abstractmethod
     def transcript(self, project: Path, session: str) -> Path | None: ...
 
-    def latest_session(self, project: Path, since: float) -> str:
-        """The session of the newest conversation the provider wrote for the project since a time, for a run whose answer named none; none for a provider that keeps no such file."""
-        return ""
+    @abstractmethod
+    def latest_session(self, project: Path, start: float) -> str: ...
 
-    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None:
-        """The file a subagent of the parent session wrote its conversation in; none for a provider that keeps no such file."""
-        return None
+    @abstractmethod
+    def subagent_transcript(self, project: Path, parent: str, agent_id: str) -> Path | None: ...
 
     def turns(self, path: Path) -> list[Turn]:
-        return self.turns_in(self.json_lines(path))
+        return self.turn_rows(self.json_lines(path))
 
-    def turns_in(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
+    @abstractmethod
+    def turn_rows(self, rows: Iterator[tuple[int, dict]]) -> list[Turn]: ...
 
     @staticmethod
     def json_lines(path: Path) -> Iterator[tuple[int, dict]]:
-        """Each whole line of a transcript with its number; a last line still being written is left for the next read."""
         text = path.read_text(errors="replace")
-        return Provider.rows_of(text[: text.rfind("\n") + 1], 0)
+        return Provider.rows(text[: text.rfind("\n") + 1], 0)
 
     @staticmethod
-    def rows_of(text: str, before: int) -> Iterator[tuple[int, dict]]:
-        """Each line of whole lines of a transcript with its number, counted on from the lines before them."""
-        for number, line in enumerate(text.splitlines(), before + 1):
+    def rows(text: str, previous: int) -> Iterator[tuple[int, dict]]:
+        for number, line in enumerate(text.splitlines(), previous + 1):
             if line.startswith("{"):
                 yield number, json.loads(line)
 
@@ -78,74 +100,95 @@ class Provider:
     def seconds(stamp: str) -> float:
         return datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp() if stamp else 0.0
 
-    def thoughts_this_turn(self, project: Path, session: str) -> list[str]:
-        """What the agent thought since the user's last prompt, when the provider writes thinking down: nothing for most."""
-        return []
+    @abstractmethod
+    def turn_thoughts(self, project: Path, session: str) -> list[str]: ...
 
-    def texts_written_before(self, project: Path, session: str, read: int, until: float) -> Written:
-        """The text blocks and messages from other sessions written since the byte read last up to a moment, and the byte of the first line after it: what the hooks have not read and are past waiting for."""
+    def earlier_texts(self, project: Path, session: str, read: int, deadline: float) -> FileWrites:
         path = self.transcript(project, session)
         if path is None or read < 0:
-            return Written([], [], read)
+            return FileWrites([], [], read)
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
-        rows, at = [], read
+        rows, time = [], read
         for line in raw[:raw.rfind(b"\n") + 1].splitlines(keepends=True):
             row = json.loads(line) if line.startswith(b"{") else {}
-            if self.seconds(str(row.get("timestamp", ""))) >= until:
+            if self.seconds(str(row.get("timestamp", ""))) >= deadline:
                 break
             rows.append(row)
-            at += len(line)
-        return self.written_in(rows, at)
+            time += len(line)
+        return self.edited_files(rows, time)
 
-    def texts_written(self, project: Path, session: str, read: int) -> Written:
-        path = self.transcript(project, session)
+    def authored_texts(self, project: Path, session: str, read: int) -> FileWrites:
+        return self.path_texts(self.transcript(project, session), read)
+
+    def path_texts(self, path: Path | None, read: int) -> FileWrites:
         if path is None:
-            return Written([], [], read)
+            return FileWrites([], [], read)
         size = path.stat().st_size
         if read > size:
-            return Written([], [], size)
+            return FileWrites([], [], size)
         if read < 0:
             read = self.last_line_start(path, size)
         with path.open("rb") as file:
             file.seek(read)
             raw = file.read()
-        whole = raw.rfind(b"\n") + 1
-        lines = [json.loads(line) for line in raw[:whole].decode(errors="replace").splitlines() if line.startswith("{")]
-        return self.written_in(lines, read + whole)
+        full = raw.rfind(b"\n") + 1
+        lines = [json.loads(line) for line in raw[:full].decode(errors="replace").splitlines() if line.startswith("{")]
+        return self.edited_files(lines, read + full)
 
-    def written_in(self, rows: list[dict], at: int) -> Written:
-        return Written([text for row in rows for text in self.texts_in(row)], [crossed for row in rows for crossed in self.crossed_in(row)], at)
+    def edited_files(self, rows: list[dict], time: int) -> FileWrites:
+        return FileWrites([text for row in rows for text in self.texts(row)], [arrived for row in rows for arrived in self.peer_messages(row)], time)
 
-    def texts_in(self, line: dict) -> list[str]:
-        return []
+    @abstractmethod
+    def texts(self, line: dict) -> list[str]: ...
 
-    def crossed_in(self, line: dict) -> list[MessageCrossed]:
-        """The messages another session's agent sent in this line of the transcript: none for a provider that has no such road."""
-        return []
+    @abstractmethod
+    def peer_messages(self, line: dict) -> list[PeerMessage]: ...
 
     @staticmethod
     def last_line_start(path: Path, size: int) -> int:
         with path.open("rb") as file:
-            file.seek(max(0, size - TAIL))
+            file.seek(max(0, size - TAIL_BYTES))
             tail = file.read()
         body = tail[:-1] if tail.endswith(b"\n") else tail
         cut = body.rfind(b"\n")
-        return max(0, size - TAIL) + cut + 1 if cut != -1 else max(0, size - TAIL)
+        return max(0, size - TAIL_BYTES) + cut + 1 if cut != -1 else max(0, size - TAIL_BYTES)
 
+    @abstractmethod
+    def interactive_command(self, choice: Choice, status: StatusLine, args: tuple[str, ...]) -> list[str]: ...
+
+    @abstractmethod
+    def launch_environment(self, runner: Path) -> dict[str, str]: ...
+
+    @abstractmethod
     def resume(self, session: str) -> tuple[str, ...]: ...
 
-    def worker_command(self, brief: str, model: str, resume: str) -> list[str]:
-        """The program run headless on one job, printing its report; given a session, the same worker again with its memory."""
-        ...
+    def status(self, session: str, home: Path) -> AgentStatus:
+        return self._status_files.setdefault(home, ContextFile(home)).reading(session)
 
-    def worker_outcome(self, out: str, err: str) -> tuple[str, str]:
-        """What a finished worker printed, as its report, and the session a next job can resume, when the provider names one."""
-        return out.strip() or err.strip(), ""
+    @abstractmethod
+    def write_mcp(self, project: Path, servers: list[McpServer]) -> Path: ...
+
+    @abstractmethod
+    def profile_text(self, profile: Profile, model: str, codex_model: str) -> str: ...
+
+    @abstractmethod
+    def worker_command(self, brief: str, model: str, resume: str, session: str) -> list[str]: ...
+
+    @abstractmethod
+    def worker_session(self, resume: str) -> str: ...
+
+    @abstractmethod
+    def worker_hook_file(self, folder: Path, runtime: Path) -> Path: ...
+
+    @abstractmethod
+    def worker_outcome(self, output: str, err: str) -> WorkerOutcome: ...
+
+    def output_session(self, output: str, err: str) -> str:
+        return ""
 
     def answer(self, hook: Hook, decision: Decision) -> Response:
-        """The hook's reply in this program's shape. A refusal is 409, which the script turns into exit 2 and the reason on stderr; on Stop a line to say holds the stop in the form the program shows as feedback, not as an error, since that is how the program is told to go on, and a stop already refused once is let through."""
         kind = hook.kind
         if kind == HookKind.STOP and (not decision.allowed or decision.context):
             return Response(200, {"decision": "block", "reason": "\n".join(part for part in (decision.reason, decision.context) if part)})
@@ -154,19 +197,25 @@ class Provider:
         if not decision.context:
             return Response(200, {})
         if kind in CONTEXT_HOOKS:
-            return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}})
+            shown = {self.user_line_key: decision.context} if self.user_line_key else {}
+            return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}, **shown})
         return Response(200, {})
+
+    def hook_command(self, root: Path) -> str:
+        return f"test -f {shlex.quote(str(HOOK_SCRIPT))} && exec {shlex.join(['sh', str(HOOK_SCRIPT), self.name, str(root)])}; exit 0"
+
+    @abstractmethod
+    def worker_settings_flags(self, path: Path) -> list[str]: ...
 
     def hook_block(self, command: str) -> dict:
         return {kind.value: [{"hooks": [{"type": "command", "command": command}]}] for kind in self.hook_kinds}
 
     def wire_hooks(self, project: Path, script: Path, command: str) -> Path:
-        """Writes the journal's hook into the program's settings file, replacing any older block of ours and keeping everything else."""
-        for other in self.other_settings:
-            self.unwired(project / self.home / other)
+        for counterpart in self.foreign_settings:
+            self.unwired(project / self.home / counterpart)
         path = project / self.home / self.settings_file
         settings = json.loads(path.read_text()) if path.is_file() else {}
-        hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
+        hooks = {kind: [b for b in blocks if not self.journal_paths(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
         for kind, blocks in self.hook_block(command).items():
             hooks[kind] = [*hooks.get(kind, []), *blocks]
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -177,45 +226,41 @@ class Provider:
         if not path.is_file():
             return
         settings = json.loads(path.read_text())
-        hooks = {kind: [b for b in blocks if not self.ours(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
+        hooks = {kind: [b for b in blocks if not self.journal_paths(b)] for kind, blocks in (settings.get("hooks") or {}).items()}
         if hooks == settings.get("hooks", {}):
             return
         settings["hooks"] = {k: v for k, v in hooks.items() if v}
         path.write_text(json.dumps({k: v for k, v in settings.items() if v or k != "hooks"}, indent=2) + "\n")
 
     @staticmethod
-    def ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has, or version 3's; a hook.sh of another package is somebody else's."""
+    def journal_paths(block: dict) -> bool:
         text = json.dumps(block)
         return "journal/hooks/hook.sh" in text or any(old in text for old in VERSION_3_HOOKS)
 
-    def hooks_trusted(self, project: Path) -> bool:
-        """Whether the program runs the journal's hooks in this project without asking the user first."""
-        return True
+    @abstractmethod
+    def hooks_ready(self, project: Path) -> HooksReady: ...
 
-    def read_paths(self, tool: str, input: dict) -> tuple[str, ...]:
-        """The files this tool use reads: the read tool's file, or those a shell line prints."""
-        if tool == self.read_tool:
-            return tuple(p for p in (ToolInput.from_json(input).file,) if p)
-        return Reads.of(ToolInput.from_json(input).command) if tool == self.shell_tool else ()
+    def is_wired(self, project: Path) -> bool:
+        path = project / self.home / self.settings_file
+        hooks = (json.loads(path.read_text()).get("hooks") or {}) if path.is_file() else {}
+        return any(self.journal_paths(block) for blocks in hooks.values() for block in blocks)
 
-    def written_paths(self, tool: str, input: dict) -> list[str]:
-        """The files this tool use writes: the targets a shell line writes to, or the path an editing tool names."""
-        if tool == self.shell_tool:
-            return Writes.targets(ToolInput.from_json(input).command)
-        return [value for key, value in input.items() if key in PATH_KEYS and isinstance(value, str)]
+    def operation(self, tool: str, input: dict) -> Operation:
+        decoder = self.decoders.get(tool)
+        return decoder(input) if decoder else UndecodedTool(tool)
 
-    def skill_loaded(self, tool: str, input: dict) -> str:
-        """The skill folder a skill tool call loaded, or empty."""
-        return ToolInput.from_json(input).skill if tool == "Skill" else ""
+    def call(self, tool: str, input: dict, aliases: frozenset[str]) -> ToolCall:
+        operation = self.operation(tool, input)
+        return ToolCall.decoded(tool, input, operation, tuple(self.parts(operation.line(), aliases)))
 
-    def wrote(self, use: Entry) -> bool:
-        """A recorded tool use that changed files and was not held."""
-        return not use.data.get("refused") and self.writes(use.data.get("tool_name", ""), use.data.get("tool_input", {}) or {})
+    @staticmethod
+    def parts(command: str, aliases: frozenset[str]) -> list[CommandPart]:
+        recorded = [part for part in Chain.parts(command) if part.recorded] if command else []
+        return [CommandPart(text=part.text, is_journal=Chain.is_journal(part.text) and AliasCall.parsed(part.text).name not in aliases, writes=Writes.part(part.text), files=tuple(Writes.part_targets(part.text) or Reads.part(part.text)), reads_output=OutputReads.is_one(part.text), read_shape=OutputReads.shape(part.text) if OutputReads.is_one(part.text) else part.text) for part in recorded]
 
-    def writes(self, tool: str, input: dict) -> bool:
-        """Whether this tool use changes files: the editor's writing tools, or a shell line that writes."""
-        return tool in self.write_tools or (tool == self.shell_tool and Writes.of(ToolInput.from_json(input).command))
+    @staticmethod
+    def file_paths(input: dict) -> tuple[str, ...]:
+        return tuple(value for key in PATH_KEYS if isinstance(value := input.get(key), str) and value)
 
     @staticmethod
     def folder_name(project: Path) -> str:

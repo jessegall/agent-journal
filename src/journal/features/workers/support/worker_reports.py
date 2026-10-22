@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
+
 from journal.support.actor import Actor
 from journal.models.author import Author
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
@@ -11,7 +13,6 @@ from journal.repositories.workers import Workers
 
 
 REPORTED = "reported"
-"""The kind of the link from a worker to the message that holds its report."""
 
 
 class WorkerReports:
@@ -20,14 +21,17 @@ class WorkerReports:
     def __init__(self, workers: Workers, messages: Messages, links: Links) -> None:
         self.workers, self.messages, self.links = workers, messages, links
 
-    def file(self, worker: Worker, text: str, by: Actor, session: str = "") -> Message:
-        message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}"), by)
-        self.links.save(Link(source=Ref.to(worker), target=Ref.to(message), kind=REPORTED), by)
-        self.workers.save(worker.with_(session=session).reported(), by)
+    def file(self, worker: Worker, text: str, actor: Actor) -> Message:
+        message = self.posted(worker, text, actor)
+        self.workers.save(worker.reported(datetime.now(timezone.utc).timestamp(), message.row_id), actor)
+        return message
+
+    def posted(self, worker: Worker, text: str, actor: Actor) -> Message:
+        message = self.messages.save(Message(environment_id=worker.environment_id, author=Author.AGENT, text=f"{self.lead(worker)}{text}", data={"kind": Message.REPORT, "worker": worker.name, "worker_id": worker.id}), actor)
+        self.links.save(Link(source=Ref.build(worker), target=Ref.build(message), kind=REPORTED), actor)
         return message
 
     def last(self, worker: Worker) -> str:
-        """What the worker reported last; none while it works on a next job."""
         reports = self.links.targets(worker, REPORTED)
         if worker.state == WorkerState.DISPATCHED or not reports:
             return ""

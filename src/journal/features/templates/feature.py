@@ -1,7 +1,7 @@
 from journal.features.feature import Feature
 from journal.support.skill import Skill
 from journal.features.templates.commands.template_command import TemplateCommand
-from journal.features.templates.seeds.shipped_templates import ShippedTemplates
+from journal.features.templates.seeds.builtin_templates import BuiltinTemplates
 
 
 class TemplatesFeature(Feature):
@@ -9,7 +9,7 @@ class TemplatesFeature(Feature):
     title = "Templates"
     help = "Saved instructions and a starting outline for new items; the critique templates are offered on a plan."
     commands = (TemplateCommand,)
-    seeds = (ShippedTemplates,)
+    seeds = (BuiltinTemplates,)
 
     skill = Skill("templates", 'Load it when something is to be made from a template, or a template is written, or the user asks for a critique that names one', """
 # Templates

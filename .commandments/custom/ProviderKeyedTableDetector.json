@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^[\"']?(claude|codex)[\"']?$"
+            },
+            {
+                "of": "parent",
+                "kind": "Dict"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/providers/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "provider-keyed-table",
+        "description": "Shared code keeps a table keyed by provider names, so what one program needs is written outside its provider.",
+        "rule": "Move each entry into its provider, as a value or a method on it, and ask the provider for it.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,31 +1,45 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.features.updates.support.updating import Updating
-from journal.support.where import Where
+from journal.features.updates.support.updater import Updater
+from journal.support.caller import Caller
 
 
 class UpdateCommand(Command):
     """journal update: the newest release of this major version installed as Install update does, the journal restarted on it."""
 
     noun = "update"
-    default_verb = "now"
+    default_verb = "apply"
 
-    def __init__(self, updating: Updating) -> None:
+    def __init__(self, updating: Updater) -> None:
         self.updating = updating
 
     def arguments(self, verbs) -> None:
-        self.verb(verbs, "now", "install the newest release of this major version and restart the journal on it")
+        self.verb(verbs, "apply", "install the newest release of this major version and restart the journal on it")
         self.verb(verbs, "check", "say whether a newer release of this major version is out")
+        follow = self.verb(verbs, "follow", "follow a branch: install its newest commit instead of the releases")
+        follow.add_argument("branch", help="the branch's name")
+        self.verb(verbs, "unfollow", "follow the releases of this major version again")
 
-    def now(self, args: Namespace, where: Where) -> int:
+    def apply(self, args: Namespace, caller: Caller) -> int:
         self.updating.read()
-        newest = self.updating.newest().version
-        self.updating.update_now(where.actor)
-        print(f"updating from {self.updating.running().version} to {newest}: the journal restarts on {newest} once the install is done, within a few minutes")
+        target = self.updating.target()
+        self.updating.update_immediately(caller.actor)
+        print(f"updating from {self.updating.label()} to {target.label}: the journal restarts on it once the install is done, within a few minutes")
         return 0
 
-    def check(self, args: Namespace, where: Where) -> int:
+    def follow(self, args: Namespace, caller: Caller) -> int:
+        self.updating.follow(args.branch, caller.actor)
         self.updating.read()
-        print(self.updating.said())
+        print(f"following the branch {args.branch}: {self.updating.line()}")
+        return 0
+
+    def unfollow(self, args: Namespace, caller: Caller) -> int:
+        self.updating.follow("", caller.actor)
+        print("following the releases again")
+        return 0
+
+    def check(self, args: Namespace, caller: Caller) -> int:
+        self.updating.read()
+        print(self.updating.line())
         return 0

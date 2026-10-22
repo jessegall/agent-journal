@@ -6,16 +6,15 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "the phone leaves a message",
@@ -24,33 +23,24 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "waiting on the question",
       "answer": null,
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "waiting"
+      ]
     },
     {
       "name": "the phone answers",
@@ -59,18 +49,12 @@
         "[journal] question 1 is answered. `journal question show 1` reads it whole, with the messages linked to it; act on the answer"
       ],
       "nudges": [
-        "chart.line"
+        "questions.question_answered"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     }
   ]
 }

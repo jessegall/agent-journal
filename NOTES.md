@@ -24,9 +24,15 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **Relations are rows, never columns.** `Link` joins any two rows by `Ref` (type and id)
   with a `kind` that says what it means. Models declare no relations. `Links` checks both
   ends exist on save; `UnlinkDeleted` removes a deleted row's links.
-- **Repositories do the SQL.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
+- **Repositories own the queries.** `Repository[M]` for CRUD, `ScopedRepository[S]` adds `in_()`.
   A model's own repository adds only its own queries. No ActiveRecord, no global connection.
 - **One SQL funnel**: `db/connection.py`. Nothing else executes SQL.
+- **A query is composed, never written (2026-10-21, task 1136).** A repository builds each read and
+  write with `db/query.py`, `self.query().filter(state=...).order_descending("id").limit(n)`, and hands
+  it to `selected`, `counted`, `maximum`, `repeated` or `purged`; the builder renders the text and the
+  connection runs it. A column the table lacks raises `UnknownColumn` as it is named; `data->key` is a
+  JSON path. The methods are `filter_*`, not Laravel's `where_*`, because the naming rules ban `where`,
+  `in` and `by`. `SqlOutsideDatabaseLayerDetector` flags SQL text outside `src/journal/db/`.
 - **Dependency injection** through `container.py`: constructors name what they need by type.
   No globals, no service locators in bodies.
 - **Task, not to-do.** A task carries its own state, start, finish and log lines (`TaskLog`
@@ -71,13 +77,23 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
   RunningSequence, Awaiting, Waiting, Stuck, CatchingUp, AtMark, Subagent, Ended. The last
   five extend `Paused`, which holds `resume` (the state it left, serialised) and goes back
   with `back()`; a pause inside a pause nests in the data, so no stack is kept anywhere.
+- **A span a state waits out is a `Timeout`** (`support/timeout.py`): `Timeout.minutes(15)`,
+  `.seconds(30)`, `.tool_uses(25)`, `.edits(50)`, `.marks(1)`, started or reset at a moment the
+  event carries (its time, its tool-use count, a count of edits or context marks) and asked
+  `is_elapsed` at a later one. A state keeps one as a field (Awaiting's next-task delay and
+  check reminder), stored as a dict in its row's data and restored by its field's type.
 - **Settings, not states**: auto mode and the work mode (hands-on, orchestrator, solo). They
   change what a state allows or says. Liveness (alive, compacting now) is not a state either;
   the viewer derives it from the last event's time.
-- **The runtime is the server process.** `engine/runtime.py` keeps three threads: HTTP, the
-  `Deferred` worker and the `Clock`, which tells `Ticked` for every live agent every few
-  seconds so a state can act on time (five quiet minutes, helpers back). The machine holds
-  nothing between events; the agent row is the state.
+- **The runtime is the server process.** `runtime.py` keeps three threads: HTTP, the
+  `Deferred` worker and the `JobRunner`. Every background poller is a `Job` with a
+  `tick(time)` and its own `interval_seconds`, registered with the runner, never a thread or
+  wait loop of its own: the `Clock`, which tells `Ticked` for every live agent every five
+  seconds so a state can act on time, the `MenuWatcher`, and each feature's `jobs`. A tick
+  that raises is logged and the job ticked at its next turn; one over a second is logged and
+  told on the bus as `SlowTick`, which the faults feature says to the agent when the
+  Developer setting asks. The machine holds nothing between events; the agent row is the
+  state.
 - **Hooks are deferred by default.** A feature's `AgentListener` has `blocking = False`: the
   server records the entry, replies to the agent, then runs it on the one `Deferred` worker
   thread. A listener that must answer before the agent goes on (the write gate, a hold)
@@ -104,7 +120,7 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - **A nudge is not a model.** It is a declaration on a feature (name, template) and, once
   said, an `Entry` of kind `nudge` in the same timeline as the hook that caused it. The
   `Nudger` in `engine/` renders it, queries the entries to drop a repeat, writes the entry
-  and delivers. Standing nudges are not stored: the state says them again and dedupe
+  and delivers. Readings nudges are not stored: the state says them again and dedupe
   decides. No nudge page, no nudge commands; wording is a feature setting if ever needed.
 - **Delivery**: a nudge born in a transition rides back in the hook's answer (context, or the
   Stop hook's carry-on); one born later (clock, deferred) is typed in through the supervisor.
@@ -256,8 +272,14 @@ F. **The viewer reads version 4's rows**: its catalogue of tables (titles, icons
    (title, body, closed, times as ISO strings); `domain/acts.js` names what each table offers.
    Deleted with version 3's API, having no version 4 server (the phone came back in 4.2.0): the board and tickets,
    the organisation, the hub of journals, hosting and members, the browser extension,
-   suggestions, collections, document revisions, update reports, layout links, agent pause and
+   suggestions, collections, update reports, layout links, agent pause and
    appoint, agent hooks, work modes, priorities, the plugin services panel, replies on shares.
+   Document revisions came back in task 1227, as version 3 kept them (report 35): a DocRevision row per
+   revision, linked to its document by a `revision_of` Link, written by the docs feature's DocRevisionRecord on
+   every save that changes the text; a save within `docs.revision_window` minutes (30) of the last folds into the
+   open revision with its change noted section by section, a later one opens the next; `journal doc revisions`,
+   `revision` and `keep`, `GET /journal/docs/{id}/revisions` and `POST .../keep`, and the strip and section diff above
+   a document. No restore, as in version 3; the phone and the share page do not show revisions yet.
 D2. **The boot menu** is version 3's, rebuilt in the supervisor and moved to the journal's launcher (`src/journal/launcher`) in plan 8: a banner, then one question
    at a time under it, moved through with ↑ ↓ (or j k), a number to jump, Enter to pick and
    Esc to leave; the space under the banner is cleared before each question. It asks which
@@ -756,15 +778,21 @@ ProfileFiles and serves them at /journal/profiles. The journal's own three (rese
 shipped and setup puts them back. The critic profile is gone and the designer profile has no critique rounds: a
 design is one designer's work, judged by the orchestrator against what the user wants.
 
-Worker reuse, 2026-10-16 on the user's word (task 210): a worker keeps the provider's session of its last run
-(Claude answers in JSON with its session id; Codex names its session id in the run's header) and `journal worker
-say <n> "<next job>"` sends a reported worker out again on that session, in the same worktree, so its memory of
-the last job comes with it; a worker still out is told to report first, and one whose session was not captured is
-dispatched again. Subagents are reused the same way by the orchestrator's own message to the agent it already
-started, never a fresh one on work another knows.
+Worker reuse, 2026-10-16 on the user's word (task 210), as version 3 reused them since plan 21 (2026-10-21): a
+worker keeps the provider's session of its last run, saved the moment the run prints it, and `journal worker send
+<n> "<next job>"` gives a worker that reported, or was stopped, its next job in that session and its own worktree
+and branch, so its memory of the last job comes with it; each send counts one reuse on its row. A worker still out
+takes a message in its live session with `journal worker notify`, Claude only. A dispatch whose brief names files
+an idle worker's branch touched is refused in favour of that worker unless `--fresh`, and a dispatch past
+workers.idle_kept workers of one profile is refused while one of them is idle; reviewers start fresh. Retiring an
+idle worker asks whether it could be reused and keeps the --why as its reason. A worker out silent for twenty
+minutes is named once. A worker reaches only its own dispatcher's other workers, with `journal worker peers`, send
+and notify. Subagents are rows written from the hook entries: the census counts the running ones against
+workers.most_subagents, `journal worker list` shows them, a job on files an idle subagent read is refused with its
+SendMessage line, and `journal subagent retire` lets one go.
 
 The plan state, 2026-10-16 at night on the user's word (tasks 211 to 213): Following a plan holds the agent for the
-plan's whole life. A checkpoint stands in the plan's state with no task in hand, said as "plan N, standing at a
+plan's whole life. A checkpoint stands in the plan's state with no task in hand, said as "plan N, readings at a
 checkpoint"; the checkpoint branch moved from Idle's stop workflow into Following a plan's own stop and start
 workflows, beside the carry-on; Idle keeps nothing of plans. A plan parked or cancelled sends its follower back to
 rest; a session that starts at rest while a plan is started follows it, beneath its orienting pause, at the plan's
@@ -805,10 +833,10 @@ read, refusing a stale one naming who saved first; the page is an event list and
 to reorder, filtered by state; a locked workflow or step is the journal's law: the seed draws the holds locked, a
 locked workflow keeps the head of its event's list and is neither deleted nor turned off, a locked step is neither
 taken out, reworded (its numbers may change) nor gated by a check or a Run no later workflows of the user's, and the
-DRAWINGS_VERSION bump that locks the holds in a standing journal came with the Always workflows: the tool conduct
+DRAWINGS_VERSION bump that locks the holds in a readings journal came with the Always workflows: the tool conduct
 is the locked the guards at Tool about to run (whole, the holds and the naming around them, since one path cannot be
 split), the inbox and the message named are Always workflows per shared event after the locked ones, a state's
-shipped workflow carries only its own steps and a state with nothing own at an event ships none there, a standing
+shipped workflow carries only its own steps and a state with nothing own at an event ships none there, a readings
 journal's copies are released at boot (unedited gone, edited kept as the user's with the shared nodes stripped),
 and A message is updated has no conduct to ship, so no Always workflow stands there yet.
 
@@ -838,7 +866,7 @@ a debt never changes which workflows run; it holds writes and stops only. The re
 journal's own commands must never be held, whatever a workflow says: task 406, on the user's ruling.
 
 Phase two closed on 2026-10-17 just after midnight: the three pause states are deleted with the owed-pause
-machinery; the first migration, run at boot by the migrator the app now wires, unwraps an agent standing in one
+machinery; the first migration, run at boot by the migrator the app now wires, unwraps an agent readings in one
 of them with its fact set; a user's workflow bound to one is kept off and named; the holds hold under Codex as
 under Claude; CLAUDE.md names the facts beside the state and the pauses as the waits; DRAWINGS_VERSION 9. The
 suite: 237 tests, 19 s of CPU and 38 s of wall on a loaded box; the replays: 46 in about twenty seconds now that
@@ -900,7 +928,7 @@ Who owns what, decided at the start of the plan (task 443) on the rulings of mes
 - Workers stay outside the protocol: the journal runs them itself.
 - Nothing but the agent's own end, or a stop asked for, ends a supervisor (message 6316): a fault in a verb is answered with why, a fault in a turn of the loop is skipped, and each is written to runtime/supervisor.log. A service's group is signalled only while its leader runs, never the group of a process reaped long before.
 - send stays in the protocol: it is the message bus of message 1613; its first user comes with a later service.
-- "Never another restart" covers new processes and the protocol growing by versioned verbs. A fix to the supervisor itself reaches a user at their next launch: the supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test), and it stays small so such a fix is rare.
+- "Never another restart" covers new processes and the protocol growing by versioned verbs. The supervisor imports every module at start, so an upgrade that overwrites its files leaves a running one untouched (task 438, a test); since task 1169 a fix to it lands at the end of the agent's next turn, through the launcher's loop (see The launcher's loop below).
 - The menu watcher stays a thread in the journal server (question 6, the user's answer): it reads every environment's mirror and shares what it chose with SupervisorLink in memory. Phase 3 proves services through the protocol with the next real one, or a fake one in its test.
 
 The protocol, first version (tasks 436, 437, 439):
@@ -912,6 +940,16 @@ The protocol, first version (tasks 436, 437, 439):
 - send carries text to a named process's input: a service's, or the agent's terminal. The agent is the only terminal process; one started beside it, with its own mirror under runtime/screens, waits for its first user.
 - The agent in front owns the terminal: the keyboard, the resize and the band; a restart of it through the protocol fits it again. When it ends, or the journal stops it, the supervisor ends and takes its services, its inbox and its mirror with it, so no stale screen is read. Stopping the agent is the viewer's Stop, a deliberate act; nothing guards it further.
 - Features declare the services they need (Service, a name and a module of the package); at boot the journal asks the supervisor hosting it, the environment the launch names in JOURNAL_ENV, to start each. An upgrade restarts the journal, so a new service starts with it and the supervisor runs on. A journal no supervisor hosts, under plain claude or a worker's, starts none and its log says which are off. Workers stay outside the protocol: the journal runs them itself.
+
+## The launcher's loop (task 1169, 2026-10-21)
+
+On messages 11891 and 11894:
+
+- The launcher is `src/supervisor/launcher.sh`, a shell loop of a few lines that never changes and loads no code. It runs `python -m supervisor <launch file>`, starts it again whenever it exits, after a second, and exits when the supervisor exits 0. The journal's Python launch (`Launch.supervise`) runs the loop and waits, then puts the other hooks back and removes the launch file, as before.
+- The supervisor's exit codes: 0 (ENDED) when its agent is done: the agent quit, died three times in two minutes, or was stopped, a SIGTERM or a hang-up; also a launch file it cannot read, which would fail again. 75 (RESTART) for its own restart. Any other code, a crash, starts it again too. The agent's own exit code is no longer passed up.
+- `restart` with the name `supervisor` (and `resume`, else the conversation running) is the supervisor's own restart: it writes the conversation to resume into the launch file's `front.resume`, stops the agent and every service, and exits 75. The next supervisor starts from the launch file: the agent resumed on its conversation, the journal as a service, and the journal at boot asks again for the services the features declare. A restart of the agent alone writes its resume into the launch file too, so a supervisor started again after a crash resumes the newest conversation.
+- `hello` answers `outdated`: whether the supervisor's code on disk (a hash of its `*.py`, `SourceHash`) differs from the code it started with. The supervisor hashes itself, so the journal imports nothing of the supervisor package.
+- When it is restarted: at the journal's boot the updates feature's seed `SupervisorCheck` asks each environment's announced supervisor once and keeps the outdated ones (`OutdatedSupervisors`); `SupervisorUpgrade` restarts a kept one at the end of its agent's turn, never in the middle of one, and once. A journal boots after every launch, `journal setup restart` and update, so the answer is fresh where the code can have changed, and no Stop asks anything. An environment with no supervisor announced, or one from before the protocol, is not outdated and is never asked. `journal setup restart` and an update restart the journal at once as before; the supervisor follows at the agent's next turn end, so its code changes land without a new launch. A supervisor from before task 1169 answers no `outdated` and is left as it is until the next launch.
 
 ## A reply the transcript never kept (2026-10-17)
 
@@ -939,7 +977,7 @@ The agent proposes a program (`journal secret propose`), the user allows it on t
   canvas with what they count; a count may not take a reading's name.
 - Raising, starting and setting a count happen in one database transaction; a lock around the walk deadlocked
   against a row's save, which walks its workflows inside the transaction.
-- The walk entry records where each path ended with the workflow's counts (`stops`); `GET /journal/chart/<n>/standing`
+- The walk entry records where each path ended with the workflow's counts (`stops`); `GET /journal/chart/<n>/readings`
   serves each agent's last stop, its counts, readings and the numbers checks compare with.
 - A count no node names any more is cleared with a card; a user's workflow reading another's count is turned off at
   boot; migration 6 cleared counts of the old shape.
@@ -951,8 +989,14 @@ The protocol, the manifest and the version 3 mapping are in docs/plugins.md. Dec
 
 - One listener per kind of event, on the bus from boot, reads the enabled plugins at each event. There is no
   Bus.unlisten, so switching a plugin off between two events neither drops nor doubles one.
-- One deadline, `plugins.deadline` (6 seconds), is shared by every plugin holding an event. It replaces the per-plugin
-  2 and 10 second budgets. A plugin not reached in time is not asked, and its fault is recorded.
+- A plugin holds an event only inside the window its manifest declares, `{"event": "tool_starting", "window_ms": 5}`,
+  cut to the ceiling `plugins.hold_window_ms` (50 ms); a bare event name takes the ceiling. A hold that fast is answered
+  by the plugin's service from what it already knows; judging and sins run on the plugin's own time and ride on the
+  next hook. One past its window is cut, its answer dropped and the miss recorded as unanswered, never a fault, so it is asked again next time (messages 11346, 11408; doc 61). This replaced the one shared
+  deadline of six seconds on 2026-10-21.
+- A plugin's queue (message 11346, task 1142): the folder `queue` under its data folder, one `.json` file per line out
+  with `env`, drained at every hook on the answer path, a line for the hook's environment riding on it; a plugin that
+  judges asynchronously writes there and never holds. One parser for a queued file and an answer: the protocol's.
 - A plugin is asked to hold only while nothing has held the event yet (`asked_while_free` on the listener). After that
   it hears the event after the reply, and a refusal then is recorded as `plugin_unanswered`.
 - A stop is held once a turn: Idle carries `held_before` from `stop_hook_active`. There is no count of four in a row.
@@ -994,7 +1038,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
 - The packages import one way: `models` and `events` at the bottom, then `db` and `repositories`, `engine`, `providers`,
   `features`, `hooks`, `http` and `console`, with `app.py`, `runtime.py` and `service_start.py` at the top. The bus,
   `Listener`, `AgentListener` and `Decision` live in `events/`; `Said`, `Nudge` and `Deferred` in `engine/`; `Option` in
-  `models/`; `Hook` and `HookKind` in `providers/`; `Floor` in `features/`. The runtime and the service start wire the
+  `models/`; `Hook` and `HookKind` in `providers/`; `PluginRefusalExemption` in `features/`. The runtime and the service start wire the
   features, so they sit beside `app.py`, not in `engine/`: the engine imports nothing from `features/`, and asks
   `FeaturesKnown` (its protocol, which `Registry` implements) for the states and whether a line is switched off.
   CLAUDE.md still lists the runtime among what the engine holds; that line is the user's to change.
@@ -1064,6 +1108,45 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   forgotten. A file opened on the phone is sandboxed. Left as it is: anyone who reaches the tunnel can void an open
   pairing code with ten wrong tries; the user makes another, and a code lives ten minutes.
 
+## Rulings of 2026-10-20, evening (on the development branch)
+
+- The journal follows a branch when Settings, Updates, Follow this branch names one, or `journal update follow
+  <branch>`: the check reads the branch's head on GitHub and compares it with the commit the installer recorded in
+  `.journal/src/commit`; only a pushed commit counts, never a working tree. This checkout's journal follows
+  development.
+- Lines typed to the agent go at most once a window, `delivery.batch_seconds` (5): a line within the window of the
+  last is held in the typing funnel, SupervisorLink.type, never in a workflow, and the tick types the held lines as
+  one marked line, the instructions joined with " | ". The window and the hold until a line is seen back are the
+  same hold; 0 types each line at once, which the tests about other conduct set.
+- A settings save from the viewer names only the keys it sets, null clearing one; the server never unsets a key
+  by its absence. Before, a pane layout or colour scheme save dropped every other viewer key, the tour's finished
+  mark among them, so the tour replayed after every update.
+- A pin above the chat whose link is a row's ref (`--link docs:55`), or the journal's own address opening one,
+  opens the row in place as its card does; an outside address opens a new tab.
+- A comment on a document's passage is read with the passage: `journal message read` prints the quoted lines under
+  the comment when the message is no reply; a reply's quote of the message it answers is still left out.
+- The chart goes (task 979, plan 19, doc 55): the states carry the journal's conduct on a stack machine. Settled
+  with Sir Jesse in messages 9364 to 9427: a stack of states with push and pop, the trail; one BaseState with the
+  mechanism and the shared listeners (compaction pushes Compacting, the session's end pushes Ended); listeners are
+  methods named on_<moment>, bound to their event by the annotation and found by type, overridden on purpose; a
+  journal panic command always allowed; Tuning as a frozen readings of the options; Readings on the stop and the
+  tick. Plan 19 waits for his approval. Later the same evening (messages 9491 to 9516): only the states move the
+  agent, answering events; a command writes rows and the feature dispatches a named event beside the write
+  (PlanStarted, TaskClosed, QuestionAnswered, WorkerBack), and a state never reads a row as it was before; the
+  state machine is the engine's alone, `journal panic` the one hand on it from outside; the class is StateMachine;
+  the options reach a state as a frozen Settings value; the lifecycle hooks on_push, on_suspend, on_resume and
+  on_pop are always called, and on_push may refuse the push; no docstring and no comment inside a method, and none
+  on a field, a class keeps its one line at the top. Six reviews of plan 19 (four on Opus by phase, two critiques)
+  were filed into it the same night: 40 tasks, 24 briefs rewritten, the phases retitled, phase 2 in three steps
+  each ending with the replays green, the repositories and the judge before the live check and the pull request.
+- Also that evening: JOURNAL_ACTOR (agent, sub-agent, worker-agent) read by the hook and command shims, a hook with
+  a subagent's agent_id returning at once; a subagent's shell is the agent's whole, so its commands are told apart
+  by the server later (task 1032), for Codex by the thread id; the journal's own update installs the journal and
+  nothing else, never a plugin, and takes its marker down when its thread fails; five plain-code-words rules under
+  .commandments/custom (poetic names, docstrings in methods and under fields, the state machine outside the engine),
+  1591 findings left for the rewrite by Sir Jesse's word; the worker and subagent chat draws the same Turn bubbles
+  as the main chat, from transcript turns shaped like messages (kind and text).
+
 ## Workflow parts (plan 18, 2026-10-20)
 
 - Sir Jesse's answers (message 7237): a workflow's values are kept per environment, in its own record, and no
@@ -1103,3 +1186,194 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   hook or the walk that said it; its walks that only count are not recorded.
 - A downgrade past 4.3.0 is not supported: migrations 15 and 16 merge the agents' counts per environment and move a
   workflow's one place onto each of its events, and an older version reads neither.
+
+## Plan 19, phase 1, as built (2026-10-20, night)
+
+- The stack machine's values, `Stack`, `Transition`, `Held`, `Hooked`, `Settings`, `SnapshotReaders`, live under
+  `engine/support/`, not `support/`: only the engine builds them, and `support/` may not import the engine. `Readings`
+  is an event's payload and lives in `events/readings.py`.
+- Until phase 2 moves the features' conduct, the old `AgentState` extends `BaseState` and the pause chain (`Paused.resume`)
+  stays what the old states express; the stack on the agent's row is kept as its mirror: a pause that resumes the top is
+  pushed on it, a resume that names the state beneath pops to it, anything else stands on its own chain with Idle at the
+  floor. `StateMachine.move` is that bridge and goes with the commands' moves.
+- Every change of the stack is a trail entry of kind `state`, with the stack before and after, the cause (the event's name,
+  `a feature moved the agent`, or the panic command's words) and a refused push with its line; the agents page carries
+  `stack` top first and `trail`.
+- `journal panic` lives under `console/commands/`, since the engine imports nothing from the console; the rule that keeps
+  the state machine inside the engine excepts it and `runtime.py`.
+- One nudge registry (`engine/nudge_registry.py`): every feature's nudges and the engine's are registered at boot, the
+  nudger refuses an unregistered one, `journal nudge list` prints them. A nudge's name says what the line does; a
+  hundred and four were renamed by one map, the replay records and the shipped drawings rewritten by it.
+- Twelve guard rules under the custom `stack-machine` skill and two more poetry rules (parameters and variables); the
+  custom docstring rule looks at a statement's own literal. The worklist the judge writes is cleared on purpose: the
+  pre-existing findings are phase 4's (task 1052).
+- Phase 1's commits were pushed to `development` as they landed, since this journal follows that branch; the plan's
+  "nothing pushed until the migration is proved" was not kept, and task 1053 still proves the migration on a copy before
+  the pull request.
+- The files of task 1002 were wiped from the working tree before their commit while a worker's commit was taken into the
+  branch (task 1082); they were written again from the record.
+
+## Plan 19, phase 2, task 1035: the speaking listeners become conduct (2026-10-21)
+
+- Voices, etiquette, pins, migration, git, checks, triggers and plugins each have a conduct mixin and, where the lines need facts, a readings reader: the voice's instruction, the lines said since the last reminder, the pinned and lately suggested links, whether a version 3 journal waits, every trigger, the plugins folder. The listeners that said those lines are gone: IntroduceAtStart, SayVoiceWhenChanged, ReadTurn, UnpinnedLink, UnpinnedLinkInOutput, LinkSuggestions, HoldPluginFolders; the drawings say_voice, remind_what_a_line_is and tell_of_version_3 with them.
+- A setting's write, a check's run and a user's message are row events the models carry: SettingChanged, CheckRan, MessageArrived. A row that is new when it carries its event has no environment or time yet, so the repository's carried() places the event by the saved row (RowEvent.placed_by); that is the one place it happens.
+- A commit stays an agent event: SpotCommit records the card, closes the tasks the trailer names and dispatches CommitMade with what it closed and the task open next; the git conduct says the lines, and because they ride the reply of the command that committed (never typed, as ruled on 2026-10-17), CommitMade answers the hook and SpotCommit hands the machine's decision back. The dispatch in SpotCommit is the one agent event a feature listener makes; the DispatchOutsideFunnels rule still names it, and phase 6 gives the rule a principled reject for an agent event that answers a hook.
+- The tool call carries the paths it writes (ToolStarting.written_paths, filled in the hook translation from the provider), so the plugins conduct holds a write into the plugins folder with nothing but the event and the readings.
+- PluginsHearAgents stays a listener on purpose: it is the funnel through which each plugin's own words and holds reach the agent, never the journal's conduct. Watching still hands back the first step of a sequence a trigger starts; task 1034 makes sequences states and takes that line with it. Both are named by the FeatureListenerSpeaks rule until then.
+- AfterAClose answers with the next open task as a value (OpenTask, in models); the task command and the git conduct each render the line from it.
+- A stopped runtime takes its conducts off the base state, so a hand-built state in a test answers with its own listeners alone.
+
+## Plan 19, phase 2, task 1059: messages, laws, shell, secrets, questions, profiles and workers speak as conduct (2026-10-21)
+
+- Each of the seven features has a conduct mixin; the readings carries what the lines need: for messages the unread, the unanswered and the folders of their files, the agent's own tool uses since the newest message came, how often the unread were named since, and its uses while a read message stays unanswered, all derived from the entries and the nudge lines said, never kept as counts; for shell the background commands and since when, the untold ended ones, the shapes of the last reads of outputs by hand, the project's readers and the reader tips said; for workers the subagents running besides the newest dispatch, every dispatch of the session, the reports waiting and the workers' worktrees; for profiles every profile by name, the subagents' and the workers'; for secrets the private folders by every spelling.
+- The four inbox workflows are one conduct: the inbox named every so many own tool uses since the newest message, a write held once the unread were named often enough, the tools held past so many uses with a read message unanswered and an answer asked for before that. A journal command and a read of the message's own files pass the unanswered hold, as before.
+- A reaction (ReactionGiven, by the Reaction model), a secret let go to new programs (SecretAllowed, by the Secret model) and a worker's report (WorkerBack now names the worker and its report message) are row events; a user's message (MessageArrived) came with task 1035.
+- The tool call carries the paths it reads and the lines of the file the read tool reads whole (ToolStarting.read_paths, file_lines), filled in the hook translation from the provider, so the shell conduct holds a whole read of a long file without touching the disk.
+- MarkOutputsTold is the one listener left that records for the shell conduct: it marks the ended outputs told at the tick the conduct names them.
+- DeliverMessage and DeliverUnreadAtStart stay the engine's delivery in the messages feature; TellInbox is their base and the FeatureListenerSpeaks rule still names it. The two one-line listeners of one body for two events (the inbox at a prompt and at a stop, the reports at a stop and on the tick) are named by the duplication rule; a listener answers one event type, so each stays.
+- The ten drawings of the inbox, the reports, the background check and the report-came line are gone from the shipped chart.
+- A state silences a conduct listener by defining a method of the same name: the dispatch leaves out a conduct method whose name the state or its bases have, so Awaiting answers a worker's report itself and the workers conduct's line stays quiet while the agent waits on workers.
+- The custom poetic rules ban poetry, not coding words (messages 10144 to 10163): the words of speech and story, mood and magic, craft and journey, the vague fillers, and the past participles that say nothing of the thing (made, done, seen, taken, heard, noted, got, met, gone, lost). Plain coding words such as created, deleted, written, moved, pushed, fetched and merged stay. The judge found 329 such names on 2026-10-21; task 1095 in phase 6 renames them.
+
+## Plan 19, phase 2, task 1060: the skill, look and mark debts are conduct (2026-10-21)
+
+- The debts stay facts on the agent's row, set by recording listeners: OweSkills notes the skills a start or a prompt calls for, OweTheLookAtStart sets the look owed, TakeTheMark takes a crossed context mark. The lines and the holds are the skills, briefing and memory conducts', from the readings: which skills are owed, loaded by hash and shipped (SkillsSnapshot with the catalogue, so the conduct works out what a start or a prompt calls for with the state's own name and no repository), whether the agent has looked and what the start block names (BriefingSnapshot), the mark owed and taken and every fact, rule and reminder with its keywords (MemorySnapshot).
+- The rows that pay a debt carry its event: the agent row carries LookTaken, MarkDecided and SkillRead (Agent.look_taken, mark_decided, skill_read), a rule carries RuleMade with who made it. Every row event gets the row's number on save (RowEvent.row_id, filled by the repository with the environment and the time), so a new row's event can name it.
+- What a start or a prompt owes is worked out once, on SkillsSnapshot (due_at_start, named_in); the conduct says it and OweSkills records it from the same reading. The same for the mark (Memory.mark_due) and the whisper (MemorySnapshot.whispered_by): the conduct types the line, MarkWhispered shows the card.
+- A transition's typed lines are typed by the machine after the event's delay, so the introduction is the voices conduct's on the session start, typed four seconds after the start block; JournalStarted and AnnounceStart are gone.
+- The whisper and the question about a new rule are typed lines now, where they were the hook's context and the command's output.
+
+## The mend after tasks 1059 and 1060 (2026-10-21, night)
+
+- A test run that ends in a pipe reports the pipe's exit code, not pytest's: twenty failures hid behind a tail. A test run never ends in a pipe; the pytest reader (journal output read N --reader pytest) picks the failures out of the kept output.
+- The tests of the chart drawings removed on purpose are gone with the drawings (twelve tests, chart-only).
+- A skill read is recorded under the write lock, its event carried: Repository.rewritten(row, by, change) re-reads the row, applies the model's change, writes what differs and carries the events, so two reads sent together both stay.
+- A prompt typed in the terminal is watched as a prompt; its record as a message (RecordTypedPrompt) is not watched again, or a trigger started its sequence twice.
+- Awaiting hears each worker's return and stop (WorkerBack, WorkerStopped) itself, tells it, and pops on the last with the waited-on line; the two awaiting drawings are gone. The workers conduct tells a report only to the agent that dispatched the worker (the row event names the session it reaches, RowEvent.session, and the worker names who dispatched it).
+- The machine types lines one at a time, as the terminal takes them: a line with breaks would be pasted and typed again.
+- A fact, rule or reminder is whispered once per context window: the lines whispered since the last compaction travel on the memory readings, and the card follows the line said (MarkWhispered on LineSaid, which now carries the line's values).
+- The rule question is a typed line, as the whisper is; the test reads it from the typed lines.
+- The resume chain lives on the stack since phase 1; the unwrap test reads the stack.
+- The custom rules ban poetry in names (PoeticVariable/Parameter/Method/TypeNameDetector) and sentences as method names (SentenceMethodNameDetector): articles, pronouns, adverbs and preposition phrases in a name. Tasks 1095, 1101 and 1105 rename what they catch. Since task 1102 the banned words sit in .commandments/custom/lists.json, which the plugin reads since v5.27.0: `poetic` holds the 261 words every name rule bans, written capitalised so the type rule matches them in a class name, `poetic_values` the 177 words banned in parameters and variables but allowed as methods, and a rule names a list as `${poetic}` in its matcher; the method rule's 64 own words and the type rule's 98 own class names stay inline. A banned word is added to the list once.
+
+## Plan 19, phase 2, task 983: Idle is the plan's (2026-10-21)
+
+- Idle keeps quiet_since and parked_asked; a start, a prompt and a tool use make it active again. on_stop holds in the order parked, broken wait, approved plan, next open task in auto mode, and passes a stop held once this turn; on_ticked asks about a parked task once after a minute of quiet, a blocked task with no wait after 45 minutes, and checks in after half an hour in auto mode. The listener is on_stop though the event is still named Idle: the event's rename to Stop waits for the chart's deletion, since the chart keys its triggers by the event's name.
+- The tasks readings names what the stop and the tick read in words: parked_named, broken_waits_named, blocked_without_wait (a blocked task with no wait link, nothing the journal can see that opens it) and next_open; the plans readings's approved plans. Plans.APPROVED_UNSTARTED is a nudge of the plans feature now.
+- The seven idle drawings are gone; the approved-plan drawing stays for Working until task 984.
+- The riddle nudges are named for what they do: parked_task_asked_about, blocked_task_asked_about, check_in_after_quiet, parked_task_named_at_close; TaskOpenedAgain and PlanOpenedAgain are TaskReopened and PlanReopened.
+- A state prints with the fields set past their defaults and no times: working(task_id=3), idle; the panic command and the trail read it from BaseState.printed.
+- The 71 tests of the chart itself are dropped ahead of phase 3, since the suite carried every chart walk; the shell's short and shown limits are 400 characters (message 10389); the code-commandments plugin runs v5.20.1.
+
+## Plan 19, phase 2, task 984: Working is the plan's (2026-10-21)
+
+- Working keeps edits and active_at beside task_id, what and logged_at. A write past tasks.log_after is refused until the log line; at tasks.first_nudge_after edits behind it the log is asked for, and every tasks.name_every the task in hand is repeated; the asks read the edits already made, so "5 edits since you logged" comes on the sixth write. A stop is refused while an approved plan is not started, with the log line first when the log is ten minutes old, else with carry on, and a stop held once this turn is refused again: with a task in hand there is no escape by stopping twice (the standing test), where doc 55 let the second stop pass. A session start says carry on, and after a compaction where the work stands, from the tasks readings's last log line and the git readings's uncommitted files. A quiet quarter hour is told the task is still open. TaskLogged keeps logged_at, TaskClosed pops, and on_resume pops when the task is no longer in hand, else says carry on.
+- The machine hands a resumed state the agent's readings (through_hooks takes it; a move by hand reads it inside the agent's environment). A refusal of a switched-off feature passes: the machine asks the nudger whether the nudge is silenced before refusing.
+- The nine working drawings are gone, the approved-plan drawing with them.
+- Standing is Readings everywhere (messages 10270, 10423): Readings, <Feature>Readings, <Feature>SnapshotReader, event.readings, SnapshotReaders. The look stays until its column migration (task 1101: oriented becomes overview_read, LookTaken becomes OverviewRead).
+- Names renamed on the way: task_in_hand_repeated, last_log_line, the *_summary fields, rules_numbered, facts_numbered, reminders_numbered, last_other_session_at; the rules ban held, hold, named, back and forth as well.
+
+## Plan 19, phase 2, task 985: FollowingPlan is the plan's (2026-10-21)
+
+- FollowingPlan extends Working with plan_id, approved, moved_from, at_checkpoint and phase. A push of an unapproved plan is refused (PLAN_NOT_APPROVED). At a checkpoint a stop is refused in auto mode with the phase complete and go on, else told the user looks first; a session start says the same; a tool use counts nothing. A task's close keeps the state with no task in hand, at the checkpoint when the readings says so; the next task's start, by the plan or by number, keeps the top as that task; PlanDone pops with the plan done line.
+- Only a state moves the agent: Idle pushes Working on TaskStarted and FollowingPlan on PlanStarted (or on a task of the started plan); Working becomes FollowingPlan when its task's plan starts; a blocked task carries its close like a done or parked one, so the state lets it go. InHand.start and the plan control's start only write rows; AdvancePlan only writes the next task, finding the follower by the stacks on the agent rows, and the plan's end is PlanDone carried by Plan.done(at).
+- The three following-plan drawings are gone. A plan parked or abandoned still moves the agent by the plan control until task 1061.
+
+## Plan 19, phase 2, the last tasks and the replays (2026-10-21, early morning)
+
+- A closing command prints the next task (number, title, brief) itself; the plans conduct types the plan's next task only for a start the agent did not cause: every row event carries the actor's stamp (RowEvent.actor, by_agent) (task 1076).
+- One tool-use counter per session lives on the agent's row (Agent.tool_uses), moved as a plain tool use of the agent's own is placed (hooks ToolUses) and carried on ToolStarting and ToolFinished as tool_use; a journal command and a subagent's use carry the unchanged number, lift no wait and earn no inbox reminder. The inbox counts from the mark a message's arrival leaves (Agent.inbox_mark, set by MarkInboxArrival on MessageArrived) and from the count a message was read at (Message.read_mark); the namings since a message are nudge entries with a tool_use at or past the mark (Entries.nudge_count); the pin suggestions count the same way (task 1085).
+- A paused session ends its turn: PausedByUser refuses every tool but a read of the user's messages, the messages conduct names the inbox at a stop only where tools are not all refused (BaseState.refuses_every_tool), and the inbox is named again on resume (task 1088).
+- Awaiting (features/tasks/states) is the one wait on something outside the chat: what in words, ends_on as table:id refs (workers, outputs, checks, tasks, questions), start_time, reminder_time, next_task_named, outcomes. A worker's dispatch pushes it (Awaiting.on_workers) and widens it; a wait on workers stands through the agent's own tool use, any other is lifted by it; the last row settling pops it with WAIT_OVER. Expecting and the workers' Awaiting are gone (task 1096).
+- The ToolCall is the one reading of a line: its parts carry reads_output and read_shape, Running.names and AnnouncedCommands compare parts, RecordEdit and SpotCommit read the call, and a tool entry records the call (Entry.recorded_call, is_write) beside the raw hook; nothing outside the provider's call() reads a line into parts but the shell runner, which runs it (tasks 1111 to 1114, 1112).
+- Working says nothing on resume (the wait that popped said what came; the start block names the task after a compaction), counts its still-open reminder from the agent's quiet time, and says the name-back beside the log line. The machine types a tick's lines; the clock only dispatches.
+- The replay harness runs one journal (played) and lists what differs from the record; a step records the stack, not the chart's counts; records are re-frozen only where the conduct changed on purpose, each reason in task 991's log; the replay fixture switches the chart feature off (tasks 1043, 991).
+- The name rules match a word anywhere in a name, ignore case, forbid prepositions, pronouns, adverbs, verb forms, slang nouns and the journal's voice, have sentence rules for parameters and class names, and flag a string standing alone at the top of a file; report 32 holds the two readers' findings. by is forbidden too: the briefing says save(row, actor) and task 1135 renames it. A quantity names its unit (task 1133).
+
+## The ruling: the workflows are gone (2026-10-21, phase 3 of plan 19)
+
+- The chart feature, its models, repositories, support, controller, routes, page, command, skill and docs are deleted; the states and the conducts carry every line (docs/the-rules.md is generated from the source and names each state and each line's sayer).
+- Migration 19 keeps a workflow the user made or edited as a document, 'Workflow: <title>', from its nodes and lines, then drops charts, nodes, counts and noted_times, the node_of, yes, no and then links, the settings listeners.off, chart.drawings_version and features.chart, and the walk entries. The migrations 6, 15 and 16, which touched the chart's tables, are deleted; migration 13 indexes no counts.
+- The keeping of the user's workflows as documents was the orchestrator's choice; the pull request says so.
+
+## Plan 19, phases 8 and 9 and the morning's rulings (2026-10-21)
+
+- The compacting state is on the stack at last: the chart's leftover `AgentState` answered the compaction with
+  stay and the catalogue did not know `Compacting`, so no compaction had ever pushed it. `AgentState` is gone;
+  `Idle` and `Working` extend `BaseState`.
+- A listener may stop an event's propagation, `event.stop_propagation()`, and the listeners after it never hear
+  it; the walk starts again at the next `on`. The compacting state uses none of it.
+- A state entering or leaving the stack is handed the typist, `on_enter(typist)` and `on_exit(typist)`, the
+  lifecycle handlers that come first in a state class (rule 2, detector `lifecycle-handler-not-first`). The
+  typist has pause and resume (queue, then type as one), disable and enable (queue nothing), and clear. The
+  compacting state clears and disables on entering and enables on leaving: a line the journal would type while
+  the context compacts is dropped, since the look at the next start brings the agent up to date. The tool-use
+  count and the inbox mark go back to zero at a compaction.
+- The work mode is the floor state: `Idle` is the builder's, `Orchestrating` and `Soloing` are swapped in by the
+  `workers.mode` setting at a session start, at the setting's change and on resume, through `Workers.MODE_STATES`,
+  never an if on the mode. A floor pushes its own family: the orchestrator's pushes `OrchestratingPlan` and
+  `Delegating`, whose lines say hand it to a worker where the builder's say carry on; the orchestrator's floor
+  answers a stop, a long quiet and a worker's report with the open tasks across the plans and the workers to
+  dispatch. The solo floor refuses a worker's dispatch at the floor. Proven by a test driving an orchestrator
+  through a plan of twenty tasks with three workers out at once.
+- The plan's listener finds its follower by the state's class, `isinstance(state, FollowingPlan)`, never by the
+  state's name: by name, the orchestrator's plan state never advanced the plan.
+- A fact, rule or reminder carries its presence in the agent's context window. The start block hands every row
+  over at a session start (a listener sets them all), the look hands them all over, and `journal <noun> read <n>`
+  hands one over; a keyword hit on a row not in the context tells the agent to read it, never its words. The
+  funnel is `MemoryContext`.
+- A secret's field shown while typing is no secret: its value is kept for the programs and named in the shown
+  file beside the values, and only a hidden field's value becomes a mask.
+- Still open: the
+  plugins upgraded by a `journal.updated` event (task 1167); the remote journal two people share (task 1164); the
+  rest of the name sweep (task 1052) and the custom name detectors' noise on every `on_` listener.
+
+## Plan 19, phase 5, the live checks (2026-10-21, late morning)
+
+- A real Claude session on Sonnet and a real Codex session, headless and resumed at every step, each walked a
+  scratch journal (port 8765) through a task, a log, a question answered from the user's side, a worker whose
+  real report popped Awaiting, an await on a flag, a plan with a checkpoint approved from the user's side, refused
+  to start while a task was in hand, done through its checkpoint in auto mode with the stop held by the parked
+  task, the parked task resumed and done, and `journal panic now compacting` from the user's side popped by the
+  next start. The nudge keys match doc 55's table; the rail has no Workflows entry; the chart route answers 404.
+- Found on the way and fixed: `journal question show` crashed on an answered question's link (a Ref has a type,
+  not a table); the chart drop counted a shipped workflow's revisions as the user's edits and wrote documents for
+  them, now only workflows a user or an agent last wrote are kept.
+- Noted: Codex sends no session-start hook, so a Codex session cannot end an earlier one that still runs in its
+  environment; a scratch set up from a source checkout needs `.journal/journal` for the global command to find
+  it; the Building-a-plan sequence stays open on its first step when the agent builds the plan by commands.
+- Environments: on a second and a fresh third environment, Claude and Codex each put every row where it belongs
+  and nothing on the first; the old fault of Codex going to main is gone.
+- Two records from before the chart's removal, backed up from other journals on this machine, upgraded in-process
+  through App and Config: 22 migrations, the chart tables gone, every live agent's stack seeded.
+
+## The type check passes (task 1173, 2026-10-21)
+
+- `python3 -m mypy src/journal` finds no error, and it stays that way: an Optional the design always has is made
+  certain where it is born, never cast or ignored.
+- A saved row answers `row.row_id`, `row.creation_time`, `row.update_time` and `row.creation_actor`; each raises
+  `UnsavedRow` on a row not yet saved, so code that needs a saved row says so and `Model.id` stays `int | None`.
+- `Conduct` extends `BaseState`, not the other way round: a conduct's listener runs with the state as itself, so
+  it is typed as one, and the answers `none`, `swap`, `push`, `pop`, `forward` and `refuse` live on `BaseState`.
+  A conduct holds its `on_` listeners and nothing else; a helper one listener merges is a module function that
+  takes the state.
+- A setting is read by its option's kind: `settings.integer`, `decimal`, `texts`, and `SettingRows.mapping` for a
+  raw key, each raising `WrongSettingKind` on a stored value of another kind.
+- An entry's data is a dict, empty when it has none. A phone's and a pairing code's expiry is required.
+- A route answers `Answer`, a JSON response, a file or a stream; `Router.page` is what a phone may reach, never a
+  stream.
+
+## The task in hand per agent (task 1232, 2026-10-21)
+
+- Each agent has its own task in hand: an `in_hand` link from its holder to the task, written by `Tasks.holder_started`
+  (and `assign_holder` for a plan's start, before the plan's row moves) wherever a task starts, the one-task
+  refusal checked per holder there. `Tasks.current(agent)` is the started task the agent holds.
+- The holder: a worker's command makes the worker row the holder, since a worker's hooks never reach the journal and
+  it has no agent row; an agent's command its own agent row; the user, at the terminal or in the viewer, the
+  environment's agent at work; a plan's next task, whoever held the task that closed. A task started by another
+  moves to it, and the link from the one before goes.
+- The tasks data carries `agent_tasks`, the tasks this agent holds; Ready, PlansReady and FollowingPlan push or swap
+  only for a task of the agent's own, and the plan's next-task line goes to the agent that holds it. SingleTaskRule
+  is gone: the refusal lives where the holder is known.
+- The viewer's task inspector shows "Held by" on a started task: a worker by number and name, an agent by program
+  and session.

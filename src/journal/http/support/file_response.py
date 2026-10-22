@@ -8,3 +8,6 @@ class FileResponse:
     kind: str
     body: bytes
     status: int = 200
+
+    def headers(self) -> dict:
+        return {}

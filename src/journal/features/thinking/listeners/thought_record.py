@@ -1,0 +1,21 @@
+from journal.config import Config
+from journal.events.agent.tool_starting import ToolStarting
+from journal.events.agent_listener import AgentListener
+from journal.support.actor import Actor
+from journal.models.author import Author
+from journal.models.message import Message
+from journal.providers.providers import Providers
+from journal.repositories.messages import Messages
+
+
+class ThoughtRecord(AgentListener[ToolStarting]):
+    """Before each tool use, every thought of the agent's turn not yet kept is read from its transcript and kept as a message in the chat, marked a thought."""
+
+    def __init__(self, config: Config, providers: Providers, messages: Messages) -> None:
+        self.config, self.providers, self.messages = config, providers, messages
+
+    def handle(self, event: ToolStarting) -> None:
+        stored = {m.text for m in self.messages.thoughts(event.session)}
+        saved = (t.strip() for t in self.providers.lookup(event.provider).turn_thoughts(self.config.root, event.session))
+        for thought in dict.fromkeys(t for t in saved if t and t not in stored):
+            self.messages.save(Message(author=Author.AGENT, text=thought, data={"kind": Message.THOUGHT}), Actor.agent(event.session))

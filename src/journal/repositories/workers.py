@@ -1,53 +1,37 @@
 from journal.db.connection import Connection
 from journal.events.bus import Bus
-from journal.support.actor import Actor
-from journal.models.link import Link
-from journal.support.ref import Ref
+from journal.models.agent import Agent
+from journal.models.agent_role import AgentRole
+from journal.models.support.ref import Ref
 from journal.models.worker import Worker
 from journal.models.worker_state import WorkerState
 from journal.repositories.links import Links
-from journal.support.not_found import NotFound
-from journal.support.scope import Scope
+from journal.repositories.rows import Rows
+from journal.repositories.scope import Scope
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.tasks import Tasks
 
 
-WORKS_ON = "works_on"
-"""The link from a worker to the task it was dispatched on, so the plan holding the task leaves it to the worker and the viewer shows who holds it."""
 
 
 class Workers(ScopedRepository[Worker]):
     model = Worker
 
-    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links) -> None:
+    def __init__(self, connection: Connection, bus: Bus, scope: Scope, links: Links, rows: Rows, tasks: Tasks) -> None:
         super().__init__(connection, bus, scope)
-        self.links = links
+        self.links, self.rows, self.tasks = links, rows, tasks
 
-    def out(self) -> list[Worker]:
-        return self.where(state=WorkerState.DISPATCHED)
+    def active(self) -> list[Worker]:
+        return self.matching(state=WorkerState.DISPATCHED)
 
-    def put_on(self, worker: Worker, task: int, by: Actor) -> None:
-        """The worker recorded as working on the task, which must be there."""
-        target = Ref("tasks", task)
-        if not self.links.is_row(target):
-            raise NotFound("tasks", task)
-        self.links.save(Link(source=Ref.to(worker), target=target, kind=WORKS_ON), by)
+    def containing(self, task_ids: set[int]) -> dict[int, Worker]:
+        holdings = {task: worker for task, worker in self.tasks.worker_holdings().items() if task in task_ids}
+        rows = {worker.id: worker for worker in self.global_matching()} if holdings else {}
+        return {task: rows[worker] for task, worker in holdings.items() if worker in rows}
 
-    def holding(self, task_ids: set[int]) -> dict[int, Worker]:
-        """By task number, the worker still out on each of these tasks."""
-        held = {}
-        for worker in self.across_environments(state=WorkerState.DISPATCHED):
-            for ref in self.links.targets(worker, WORKS_ON):
-                if ref.id in task_ids:
-                    held[ref.id] = worker
-        return held
+    def agent_holder(self, agent: Agent) -> Ref:
+        rows = self.session_worker(agent.session) if agent.role == AgentRole.WORKER else []
+        return Ref.build(rows[0]) if rows else Ref.build(agent)
 
-    def reports_waiting(self) -> list[Worker]:
-        """The workers here whose last report the agent has not acted on yet."""
-        return [worker for worker in self.in_state_reported() if worker.has_report_waiting()]
-
-    def in_state_reported(self) -> list[Worker]:
-        return self.where(state=WorkerState.REPORTED)
-
-    def by_session(self, session: str) -> list[Worker]:
-        """The workers whose own session this is: a command run from a worker's shell."""
-        return [w for w in self.in_() if session and session in (w.session, w.resume)]
+    def session_worker(self, session: str) -> list[Worker]:
+        return [w for w in self.scoped() if session and session in (w.session, w.resume)]

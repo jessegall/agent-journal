@@ -19,7 +19,7 @@ export function useTerminal(agentOf = () => agent.value, client = api) {
             showing = id;
             lines.value = [];
         }
-        const after = lines.value.length ? lines.value[lines.value.length - 1].at : 0;
+        const after = lines.value.length ? lines.value[lines.value.length - 1].time : 0;
         return id ? client.terminal(id, after).then((got) => ({id, lines: got})) : Promise.resolve({id, lines: []});
     }
 

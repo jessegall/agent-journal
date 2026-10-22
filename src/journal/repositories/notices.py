@@ -1,16 +1,16 @@
 from journal.models.notice import Notice
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.repositories.tasks import USER_PREFIX
 
 
 class Notices(ScopedRepository[Notice]):
     model = Notice
 
-    def unseen_by_user(self) -> int:
-        """How many notices are open and were not made by the user."""
-        return self.counted_in("closed_at IS NULL AND (created_by IS NULL OR created_by NOT LIKE 'user:%')")
+    def unviewed(self) -> int:
+        return self.counted(self.query().filter_null("closed_at").filter_lacking_prefix("creator", USER_PREFIX))
 
     def open_count(self) -> int:
-        return self.counted_in("closed_at IS NULL")
+        return self.counted(self.query().filter_null("closed_at"))
 
-    def open_in(self) -> list[Notice]:
-        return [n for n in self.in_() if n.closed_at is None]
+    def open_scoped(self) -> list[Notice]:
+        return [n for n in self.scoped() if n.closed_at is None]

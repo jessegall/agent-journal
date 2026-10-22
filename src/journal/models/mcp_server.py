@@ -14,11 +14,8 @@ class McpServer(Model):
     args: tuple[str, ...] = ()
     url: str = ""
     key_var: str = ""
-    """The environment variable the server reads its key from; empty when it needs none or signs in on its own."""
     auth: str = "none"
-    """none, key or oauth: how the server is let in."""
     state: str = "installed"
-    """installed, needs_key, connected, needs_auth or failed, as the last check found it."""
     last_error: str = ""
 
     @classmethod
@@ -26,15 +23,12 @@ class McpServer(Model):
         return "MCP server"
 
     def unchecked(self, state: str) -> "McpServer":
-        """How it stands before the program has said, with no error."""
         return self.with_(state=state, last_error="")
 
-    def checked(self, state: str, words: str) -> "McpServer":
-        """How it stood when checked; the words are its error only when it failed."""
-        return self.with_(state=state, last_error=words if state == "failed" else "")
+    def checked(self, state: str, text: str) -> "McpServer":
+        return self.with_(state=state, last_error=text if state == "failed" else "")
 
     def shape(self) -> dict:
-        """The server as the provider's configuration names it; a key is referred to by its variable, never written down."""
         return self.started_shape() if self.transport == "stdio" else self.reached_shape()
 
     def started_shape(self) -> dict:
@@ -45,9 +39,11 @@ class McpServer(Model):
 
     @staticmethod
     def present(**fields) -> dict:
-        """The fields given, those given as None left out."""
         return {name: value for name, value in fields.items() if value is not None}
 
     @property
     def needs_key(self) -> bool:
         return self.auth == "key"
+
+    def title_words(self) -> str:
+        return self.title

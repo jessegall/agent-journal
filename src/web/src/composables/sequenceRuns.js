@@ -9,7 +9,7 @@ const runs = computed(() =>
         .map((agent) => {
             const sequence = rows("sequences").find((s) => s.id === agent.sequence.sequence_id) || null;
             const titles = sequence ? sequence.steps : [];
-            return {sequence, named: agent.sequence.title, opens: `sequences:${agent.sequence.sequence_id}`, about: agent.sequence.about, step: agent.sequence.step, titles, steps: titles.length, agent};
+            return {sequence, named: agent.sequence.title, opens: `sequences:${agent.sequence.sequence_id}`, about: agent.sequence.subject, step: agent.sequence.step, titles, steps: titles.length, agent};
         })
 );
 

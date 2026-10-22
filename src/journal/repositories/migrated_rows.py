@@ -3,30 +3,34 @@ from typing import Callable
 from journal.support.actor import Actor
 from journal.models.migrated_row import MigratedRow
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.repository import Repository
+from journal.support.missing_row import MissingRow
 
 
 class MigratedRows(Repository[MigratedRow]):
     model = MigratedRow
 
-    def is_brought(self, source: str) -> bool:
-        return self.connection.one("SELECT 1 AS found FROM migrated_rows WHERE source = ?", (source,)) is not None
+    def is_imported(self, source: str) -> bool:
+        return bool(self.all_matching(source=source))
 
-    def brought_as(self, source: str) -> Ref | None:
-        """The row a version 3 row became, when it was brought across."""
-        found = self.connection.one("SELECT target FROM migrated_rows WHERE source = ?", (source,))
-        return None if found is None else Ref.parse(found["target"])
+    def imported_ref(self, source: str) -> Ref | None:
+        rows = self.all_matching(source=source)
+        return Ref.parse(rows[0].target) if rows else None
 
     def referred(self, environment: str, ref: str) -> Ref | None:
-        """The row a version 3 reference such as message:185 or doc:7 became: one of the environment's rows, else one of the project's."""
         kind, _, n = ref.partition(":")
-        return self.brought_as(f"environments/{environment}/{kind}/{n}") or self.brought_as(f"project/{kind}/{n}")
+        return self.imported_ref(f"environments/{environment}/{kind}/{n}") or self.imported_ref(f"project/{kind}/{n}")
 
-    def bring(self, source: str, made: Callable[[], Model], by: Actor) -> None:
-        """The row made and recorded in one transaction: one that fails to come across leaves nothing half written behind."""
+    def counterpart(self, environment: str, refs: tuple[str, ...]) -> Ref:
+        counterpart = next((imported for ref in refs if (imported := self.referred(environment, ref))), None)
+        if counterpart is None:
+            raise MissingRow(self.table, ", ".join(refs))
+        return counterpart
+
+    def import_rows(self, source: str, produced: Callable[[], Model], actor: Actor) -> None:
         with self.connection.transaction():
-            self.record(source, made(), by)
+            self.record(source, produced(), actor)
 
-    def record(self, source: str, row: Model, by: Actor) -> None:
-        self.save(MigratedRow(source=source, target=str(Ref.to(row))), by)
+    def record(self, source: str, row: Model, actor: Actor) -> None:
+        self.save(MigratedRow(source=source, target=str(Ref.build(row))), actor)

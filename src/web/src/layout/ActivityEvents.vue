@@ -33,7 +33,7 @@ const {items, unfold, expanded, toggle, heading, title, who} = useActivity(toRef
                     <template v-if="expanded(item.entry) && title(item.entry)">
                         <TextDisplay inline class="activity-title" :text="title(item.entry)" />
                     </template>
-                    <span class="activity-age">{{ who(item.entry) }} · {{ age(atOf(item.entry)) || "just now" }}</span>
+                    <span class="activity-age">{{ who(item.entry) }} · {{ age(atOf(item.entry)) || "just now" }}<template v-if="item.entry.data && item.entry.data.hook_ms !== undefined"> · {{ item.entry.data.hook_ms }} ms</template></span>
                 </div>
             </template>
         </template>

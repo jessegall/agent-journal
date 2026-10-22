@@ -7,7 +7,7 @@ vi.mock("../src/composables/poll.js", () => ({pollNow: vi.fn(), startPoll: vi.fn
 const {sendMessage, onOutboxChange} = await import("../src/chat/outbox.js");
 
 const queued = () => JSON.parse(localStorage.getItem("journal.outbox.v4") || "[]");
-const body = {text: "A line", reply_to: 3};
+const body = {text: "A line", reply_target: 3};
 const text = (name, words) => new File([words], name, {type: "text/plain"});
 const delivered = async (env, sent, files, id) => (await sendMessage(env, sent, files, id)).delivered;
 
@@ -22,7 +22,7 @@ describe("sending a message", () => {
     test("a message that reaches the server leaves nothing queued", async () => {
         expect(await delivered("main", body, [], "id-1")).toBe(true);
         expect(queued()).toEqual([]);
-        expect(server.create).toHaveBeenCalledWith("messages", {text: "A line", reply_to: 3, idempotency: "id-1"});
+        expect(server.create).toHaveBeenCalledWith("messages", {text: "A line", reply_target: 3, idempotency: "id-1"});
     });
 
     test("a message sent while the server is away stays queued and says so", async () => {

@@ -1,30 +1,26 @@
-from journal.engine.machine import Machine
-from journal.engine.nudger import Nudger
-from journal.features.pausing.states.paused_by_user import PausedByUser
+from datetime import datetime, timezone
+
+from journal.features.pausing.states.user_pause import UserPause
 from journal.models.agent import Agent
-from journal.support.refused import Refused
-from journal.supervisor_link import SupervisorLink
+from journal.repositories.agents import Agents
+from journal.support.actor import Actor
+from journal.support.rejection import Rejection
 
 
 class AgentPause:
-    """The user's pause of an agent: the agent finishes the step it is on and its next tool call is held; a resume puts it back where it was and tells it to carry on."""
+    """The user's pause of an agent, written on its row: the pause pushes PausedByUser, whose hold stops the agent's next tool call, and the resume pops it and tells the agent to carry on. The row comes back as the state machine left it."""
 
-    def __init__(self, machine: Machine, nudger: Nudger, supervisor: SupervisorLink) -> None:
-        self.machine, self.nudger, self.supervisor = machine, nudger, supervisor
+    def __init__(self, agents: Agents) -> None:
+        self.agents = agents
 
-    def pause(self, agent: Agent) -> Agent:
-        current = self.machine.current(agent.session)
-        if isinstance(current, PausedByUser):
+    def pause(self, agent: Agent, actor: Actor) -> Agent:
+        if agent.state == UserPause.name:
             return agent
-        return self.machine.move(agent.session, agent.environment_id, PausedByUser.leaving(current))
+        self.agents.save(agent.user_paused(datetime.now(timezone.utc).timestamp()), actor)
+        return self.agents.find(agent.row_id)
 
-    def resume(self, agent: Agent) -> Agent:
-        from journal.features.pausing.feature import PausingFeature
-        current = self.machine.current(agent.session)
-        if not isinstance(current, PausedByUser):
-            raise Refused(f"agent {agent.id} is not paused")
-        resumed = self.machine.move(agent.session, agent.environment_id, current.back().to)
-        line = self.nudger.say(resumed, PausingFeature.RESUMED.about())
-        if line:
-            self.supervisor.type(agent.environment_id, line)
-        return resumed
+    def resume(self, agent: Agent, actor: Actor) -> Agent:
+        if agent.state != UserPause.name:
+            raise Rejection(f"agent {agent.id} is not paused")
+        self.agents.save(agent.user_resumed(datetime.now(timezone.utc).timestamp()), actor)
+        return self.agents.find(agent.row_id)

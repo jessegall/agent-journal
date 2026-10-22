@@ -14,6 +14,6 @@ class SharePassword:
         return f"{salt}${hashlib.pbkdf2_hmac('sha256', password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex()}"
 
     @staticmethod
-    def matches(password: str, kept: str) -> bool:
-        salt, _, digest = kept.partition("$")
+    def matches(password: str, stored: str) -> bool:
+        salt, _, digest = stored.partition("$")
         return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt), HASH_ROUNDS).hex(), digest)

@@ -35,7 +35,7 @@ watch(
                         <template v-if="line === current">
                             <WorkingDots />
                         </template>
-                        <span class="dump-line-age">{{ ageOf(line.at) }}</span>
+                        <span class="dump-line-age">{{ ageOf(line.time) }}</span>
                     </span>
                     <template v-if="line.detail">
                         <span class="dump-line-detail">{{ line.detail }}</span>

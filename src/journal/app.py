@@ -1,5 +1,6 @@
 from journal.config import Config
 from journal.container import Container
+from journal.repositories.scope import Scope
 from journal.console.console import Console
 from journal.console.standard_commands import StandardCommands
 from journal.db.connection import Connection
@@ -7,19 +8,19 @@ from journal.support.masks import Masks
 from journal.db.migrations import MIGRATIONS
 from journal.db.migrator import Migrator
 from journal.db.schema import Schema
-from journal.support.features_known import FeaturesKnown
+from journal.engine.support.feature_registry import FeatureRegistry
 from journal.events.bus import Bus
 from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
-from journal.support.context_file import ContextFile
-from journal.repositories.settings import Settings
+from journal.engine.support.data_readers import DataReaders
+from journal.repositories.setting_rows import SettingRows
 from journal.http.router import Router
 from journal.http.routes.routes import Routes
 from journal.http.server import Server
 from journal.http.static_files import StaticFiles
 from pathlib import Path
-from journal.support.all_models import AllModels
+from journal.models.all_models import AllModels
 
 
 class App:
@@ -31,20 +32,22 @@ class App:
         self.container.instance(Container, self.container)
         self.container.instance(Config, config)
         self.container.instance(Bus, Bus())
-        self.container.bind(ContextFile, lambda: ContextFile(config.status_home))
         self.container.bind(Connection, self.connection)
         self.container.bind(Router, lambda: Routes(self.container).mount(self.container.call(Router)))
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))
-        self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(Settings)))
-        self.container.bind(FeaturesKnown, lambda: self.container.get(Registry))
+        self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
+        self.container.bind(FeatureRegistry, lambda: self.container.get(Registry))
+        self.container.bind(DataReaders, lambda: DataReaders({getattr(reader, "source", feature).name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}, self.container.get(Scope)))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)
         connection = Connection(self.config.database, self.container.get(Masks))
         schema = Schema(connection, AllModels.MODELS)
-        schema.create()
-        Migrator(connection, schema, MIGRATIONS).run()
+        migrator = Migrator(connection, schema, MIGRATIONS)
+        if schema.create():
+            migrator.record_all()
+        migrator.run()
         return connection
 
     def server(self) -> Server:

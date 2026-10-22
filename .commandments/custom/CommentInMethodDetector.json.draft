@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "of": "child:body",
+                "commentMatches": "\\S"
+            }
+        ]
+    },
+    "sin": {
+        "name": "comment-in-method",
+        "description": "A method or a function carries a comment inside its body.",
+        "rule": "Say it in a name instead, or in the class's one line; a body that needs a comment is a method waiting to be extracted.",
+        "skill": "plain-code-words"
+    }
+}

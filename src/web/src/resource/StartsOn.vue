@@ -11,14 +11,14 @@ import Segmented from "../kit/Segmented.vue";
 const props = defineProps({resource: Object, bare: Boolean});
 const MODES = [
     {key: "hand", label: "Only when you or the agent start it"},
-    {key: "event", label: "When a row is created"},
+    {key: "event", label: "When a record is made"},
     {key: "trigger", label: "When a trigger matches"},
 ];
 const error = ref("");
 const chosen = ref("");
-const stored = computed(() => ((props.resource.trigger_ids || []).length ? "trigger" : props.resource.starts_on ? "event" : "hand"));
+const stored = computed(() => ((props.resource.trigger_ids || []).length ? "trigger" : props.resource.trigger_event ? "event" : "hand"));
 const mode = computed(() => chosen.value || stored.value);
-const created = computed(() => props.resource.starts_on.split(".")[0]);
+const created = computed(() => props.resource.trigger_event.split(".")[0]);
 const kinds = computed(() => tables.value.filter((t) => t.in_sidebar && !["sequences", "triggers"].includes(t.name)));
 
 async function save(value) {
@@ -38,7 +38,7 @@ function pickMode(key) {
 
 const kindChoices = computed(() => kinds.value.map((t) => ({value: t.name, label: t.title, current: created.value === t.name})));
 const triggerChoices = computed(() =>
-    open("triggers").map((t) => ({value: `trigger:${t.id}`, label: wordsText(t.words) || `Trigger ${t.id}`, current: (props.resource.trigger_ids || []).includes(t.id)}))
+    open("triggers").map((t) => ({value: `trigger:${t.id}`, label: wordsText(t.phrases) || `Trigger ${t.id}`, current: (props.resource.trigger_ids || []).includes(t.id)}))
 );
 </script>
 
@@ -52,7 +52,7 @@ const triggerChoices = computed(() =>
             <Segmented fill wrap :options="MODES" :value="mode" @pick="pickMode" />
         </FormField>
         <template v-if="mode === 'event'">
-            <FormField label="Row that starts this sequence when it is created">
+            <FormField label="Record that starts this sequence when one is made">
                 <ChoiceList :choices="kindChoices" @pick="(table) => save(`${table}.created`)" />
             </FormField>
         </template>

@@ -8,12 +8,11 @@ class DashboardView:
     title: str = ""
     start: str = ""
     pages: dict = field(default_factory=dict)
-    """Each page by its id, its title and the view drawn in it."""
     missing: str = ""
 
     @classmethod
-    def from_json(cls, raw: dict) -> "DashboardView":
+    def parsed(cls, raw: dict) -> "DashboardView":
         return cls(title=str(raw.get("title", "")), start=str(raw.get("start", "")), pages=dict(raw.get("pages", {})))
 
-    def to_json(self) -> dict:
+    def serialized(self) -> dict:
         return {"missing": self.missing} if self.missing else {"title": self.title, "start": self.start, "pages": self.pages}

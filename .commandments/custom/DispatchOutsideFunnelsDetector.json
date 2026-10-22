@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "dispatch"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/repositories/**"
+            },
+            {
+                "file": "src/journal/engine/**"
+            },
+            {
+                "file": "src/journal/hooks/**"
+            },
+            {
+                "file": "src/journal/events/**"
+            },
+            {
+                "file": "tests/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "dispatch-outside-funnels",
+        "description": "An event is dispatched outside the repositories, the engine and the hooks.",
+        "rule": "A command or a listener writes a row that carries its event with with_event, and the repository dispatches it on save.",
+        "skill": "stack-machine"
+    }
+}

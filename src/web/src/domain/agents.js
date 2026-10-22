@@ -16,6 +16,9 @@ export function modelFamily(model) {
 // The windows of the provider's usage the agent's context file reports, each with how much is used.
 export const usageWindows = (agent) => (agent && agent.usage) || [];
 
+// Whether the agent's program reports what the viewer would show: its context, its thoughts, its model controls.
+export const offers = (agent, capability) => Boolean(agent && (agent.capabilities || []).includes(capability));
+
 export const loadedSkills = (agent) => Object.keys((agent && agent.skills_loaded) || {});
 
 const stopped = (a) => (a.status === "stopped" ? 1 : 0);

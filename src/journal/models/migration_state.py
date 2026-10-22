@@ -6,9 +6,8 @@ class MigrationState(StrEnum):
 
     OFFERED = "offered"
     LATER = "later"
-    RUNNING = "running"
-    DONE = "done"
+    BUSY = "running"
+    FINISHED = "done"
 
     def is_open(self) -> bool:
-        """The user has still to bring it across."""
         return self in (MigrationState.OFFERED, MigrationState.LATER)

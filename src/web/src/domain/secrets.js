@@ -54,10 +54,10 @@ export const isSet = (row, field) => (row.filled || []).includes(field.name);
 
 export const isWaiting = (row) => fieldsOf(row).some((field) => !isSet(row, field));
 
-export const asking = (rows) => rows.filter((row) => row.asked_at && isWaiting(row));
+export const asking = (rows) => rows.filter((row) => row.questioned_at && isWaiting(row));
 
 function browserLoginWords(row) {
-    if (row.logging_in_at) return "A browser is open for you to log in";
+    if (row.login_started_at) return "A browser is open for you to log in";
     return row.session_at ? `Logged in ${ago(seconds(row.session_at))}` : "Not logged in yet";
 }
 

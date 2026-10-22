@@ -48,7 +48,7 @@ onMounted(load);
                 <template v-else-if="!tunnelStatus.installed">
                     <p class="tunnel-line">tunler isn't installed on this machine, so sharing and phones can't reach it.</p>
                 </template>
-                <template v-else-if="tunnelStatus.logged_in && !switching">
+                <template v-else-if="tunnelStatus.authenticated && !switching">
                     <p class="tunnel-line">
                         Connected as
                         <b>{{ tunnelStatus.account }}</b>

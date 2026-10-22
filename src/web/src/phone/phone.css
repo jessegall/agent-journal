@@ -11,3 +11,13 @@ html.phone button {
     min-width: 40px;
     min-height: 40px;
 }
+
+.phone-elsewhere {
+    max-width: 420px;
+    margin: 30vh auto 0;
+    padding: 0 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    text-align: center;
+    color: var(--text-2);
+}

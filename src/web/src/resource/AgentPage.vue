@@ -3,7 +3,7 @@ import {subagentsOf} from "../domain/subagents.js";
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
 import {stopAgentNamed} from "../actions/agents.js";
-import {useScope} from "../composables/scope.js";
+import {scopeOfChat, useScope} from "../composables/scope.js";
 import {loadedSkills, modelFamily, providerName} from "../domain/agents.js";
 import {ending, heldTask} from "../domain/agentState.js";
 import {createdAt, updatedAt} from "../domain/row.js";
@@ -11,13 +11,12 @@ import {project} from "../state/identity.js";
 import {store} from "../state/store.js";
 import {span} from "../format/time.js";
 import {route, showSession} from "../route.js";
-import CommentToggle from "./CommentToggle.vue";
 
 const props = defineProps({resource: Object});
 const emit = defineEmits(["close"]);
 const {env, api} = useScope();
 const environment = computed(() => env || route.value.env);
-const subagents = computed(() => subagentsOf(props.resource.id).filter((r) => r.session));
+const subagents = computed(() => subagentsOf(props.resource).filter((r) => r.session));
 const picked = computed(() => subagents.value.find((r) => r.session === route.value.sub) || null);
 const skills = computed(() => loadedSkills(props.resource));
 const family = computed(() => modelFamily(props.resource.model));
@@ -40,7 +39,7 @@ const facts = computed(() => {
         environment.value,
         ...(a.branch ? [a.branch] : []),
         `running for ${span(Date.now() / 1000 - createdAt(a))}`,
-        `context ${Math.round(Number(a.context || 0))}% full`,
+        ...(a.context === null ? [] : [`context ${Math.round(Number(a.context))}% full`]),
     ];
 });
 
@@ -73,13 +72,15 @@ const mainInfo = computed(() => ({
 const subagentInfo = computed(() => ({
     kind: "Subagent",
     name: picked.value.type || "general",
-    title: picked.value.task,
     back: "Main agent",
-    state: picked.value.running ? {key: "working", word: "Working", dot: "running"} : {key: "idle", ...ending(picked.value.status, picked.value.at)},
+    state: picked.value.running
+        ? {key: "working", word: "Working", dot: "running"}
+        : {key: "idle", ...ending(picked.value.status, picked.value.time)},
     facts: [picked.value.model || "its parent's model", `subagent of agent ${props.resource.id}`, environment.value],
     actions: [],
 }));
 
+const pickedChat = computed(() => (picked.value ? scopeOfChat(picked.value.session) : null));
 const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
 </script>
 
@@ -93,6 +94,7 @@ const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
             :agent="resource"
             :session="picked.session"
             :chat-session="picked.session"
+            :own-chat="pickedChat"
             @back="showSession('')"
             @close="emit('close')"
         />
@@ -109,10 +111,6 @@ const ACTIONS = {stop: () => stopAgentNamed(api, environment.value)};
             :run="(key) => ACTIONS[key]()"
             @open-subagent="showSession"
             @close="emit('close')"
-        >
-            <template #tools>
-                <CommentToggle :resource="resource" />
-            </template>
-        </AgentInspector>
+        />
     </template>
 </template>

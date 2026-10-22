@@ -1,38 +1,41 @@
+from collections.abc import Sequence
+
+from journal.db.query import Query
 from journal.models.link import Link
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.repository import Repository
 
 
 class Links(Repository[Link]):
     model = Link
 
-    def of(self, model: Model) -> list[Link]:
-        """Every link from or to this row."""
-        ref = str(Ref.to(model))
-        return self.selected("source = ? OR target = ? ORDER BY id", (ref, ref))
+    def link_rows(self, model: Model) -> list[Link]:
+        return self.selected(self.touching(model).order("id"))
 
     def targets(self, model: Model, kind: str) -> list[Ref]:
-        return [link.target for link in self.selected("source = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
+        return [link.target for link in self.selected(self.query().filter(source=Ref.build(model), kind=kind).order("id"))]
 
-    def every_target(self, model: Model) -> list[Ref]:
-        """What the model links to, by a link of any kind."""
-        return [link.target for link in self.selected("source = ? ORDER BY id", (str(Ref.to(model)),))]
+    def all_targets(self, model: Model) -> list[Ref]:
+        return [link.target for link in self.selected(self.query().filter(source=Ref.build(model)).order("id"))]
 
-    def every_source(self, model: Model) -> list[Ref]:
-        """What links to the model, by a link of any kind."""
-        return [link.source for link in self.selected("target = ? ORDER BY id", (str(Ref.to(model)),))]
+    def all_sources(self, model: Model) -> list[Ref]:
+        return [link.source for link in self.selected(self.query().filter(target=Ref.build(model)).order("id"))]
+
+    def model_links(self, column: str, models: Sequence[Model], kind: str) -> list[Link]:
+        if not models:
+            return []
+        return self.selected(self.query().filter_listed(column, [Ref.build(model) for model in models]).filter(kind=kind).order("id"))
 
     def sources(self, model: Model, kind: str) -> list[Ref]:
-        return [link.source for link in self.selected("target = ? AND kind = ? ORDER BY id", (str(Ref.to(model)), kind))]
+        return [link.source for link in self.selected(self.query().filter(target=Ref.build(model), kind=kind).order("id"))]
 
-    def is_row(self, ref: Ref) -> bool:
-        """Whether the row a ref names is there, so a link never points at nothing."""
-        return self.connection.one(f"SELECT 1 AS found FROM {ref.type} WHERE id = ?", (ref.id,)) is not None
+    def connecting(self, source: Model, target: Model) -> list[Link]:
+        return self.matching(source=Ref.build(source), target=Ref.build(target))
 
-    def between(self, source: Model, target: Model) -> list[Link]:
-        return self.where(source=Ref.to(source), target=Ref.to(target))
+    def remove_links(self, model: Model) -> None:
+        self.purged(self.touching(model))
 
-    def remove_all_of(self, model: Model) -> None:
-        ref = str(Ref.to(model))
-        self.connection.execute(f"DELETE FROM {self.table} WHERE source = ? OR target = ?", (ref, ref))
+    def touching(self, model: Model) -> Query:
+        ref = Ref.build(model)
+        return self.query().filter_alternatives(self.query().filter(source=ref), self.query().filter(target=ref))

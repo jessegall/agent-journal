@@ -9,6 +9,7 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import PresetList from "../kit/PresetList.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import FileFeed from "../chat/FileFeed.vue";
+import OwnChat from "../chat/OwnChat.vue";
 import SubagentChat from "../chat/SubagentChat.vue";
 import TerminalWindow from "../chat/TerminalWindow.vue";
 import Thread from "../chat/Thread.vue";
@@ -39,6 +40,7 @@ const props = defineProps({
     skills: {type: Array, default: () => []},
     run: {type: Function, default: async () => {}},
     transcripts: {type: Object, default: null},
+    ownChat: {type: Object, default: null},
 });
 const emit = defineEmits(["back", "close", "open-subagent"]);
 const EVERY = 5000;
@@ -80,6 +82,8 @@ usePoll(
     }
 );
 const agent = computed(() => props.agent || found.value);
+usePoll(pollKey(), () => (props.ownChat ? props.ownChat.chat.refresh() : Promise.resolve(null)), EVERY, () => {});
+const chatRows = computed(() => (props.ownChat ? props.ownChat.rows("messages").length : 0));
 const sequence = computed(() => (ownTranscript ? null : agent.value?.sequence));
 const sequenceHistory = computed(() => agent.value?.sequence_history || []);
 
@@ -102,7 +106,9 @@ refreshers.push([
 const log = ref(null);
 const scroller = computed(() => log.value && log.value.scroller);
 const transcriptViews = () => shown("transcript") || (ownTranscript && shown("chat"));
-const transcript = useTranscript(() => (agent.value ? agent.value.id : 0), props.session, scroller, props.transcripts || there, transcriptViews);
+// a worker's transcript is read by the worker's own road, whether or not it has an agent row yet; the others need the agent
+const transcriptOwner = () => (props.kind === "worker" ? "worker" : agent.value ? agent.value.id : 0);
+const transcript = useTranscript(transcriptOwner, props.session, scroller, props.transcripts || there, transcriptViews);
 refreshers.push([transcriptViews, transcript.refresh]);
 watch(
     () => (panes.value ? panes.value.shown.join() : ""),
@@ -146,11 +152,11 @@ const refusal = ref("");
 const actionOf = (key) => props.info.actions.find((action) => action.key === key);
 const question = computed(() => (asking.value ? actionOf(asking.value) : null));
 
-async function perform(key) {
+async function perform(key, answer = "") {
     refusal.value = "";
     asking.value = "";
     try {
-        await props.run(key);
+        await props.run(key, answer);
     } catch (e) {
         refusal.value = plainRefusal(e.message, key);
     }
@@ -226,16 +232,20 @@ const openSkills = () => go("skills");
             :sequence-history="sequenceHistory"
             :sequence-busy="sequenceBusy"
             @cancel="asking = ''"
-            @confirmed="perform(question.key)"
+            @confirmed="(answer) => perform(question.key, answer)"
             @resume="choose('resume')"
             @skip-step="onSequence('skip')"
             @end-sequence="onSequence('end')"
         />
+        <slot name="bands" />
         <AgentPanes ref="panes" :views="VIEWS" :available="available" :flushable="['feed']">
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
                     <template #chat>
-                        <template v-if="ownTranscript">
+                        <template v-if="chatRows">
+                            <OwnChat :scope="ownChat" />
+                        </template>
+                        <template v-else-if="ownTranscript">
                             <SubagentChat
                                 :turns="turns"
                                 :loading="transcriptLoading"

@@ -2,11 +2,12 @@ from datetime import datetime
 from typing import TypeVar
 
 from journal.db.connection import Connection
+from journal.db.query import Query
 from journal.events.bus import Bus
 from journal.support.actor import Actor
 from journal.models.scoped import Scoped
 from journal.repositories.repository import Repository
-from journal.support.scope import PROJECT, Scope
+from journal.repositories.scope import PROJECT, Scope
 
 S = TypeVar("S", bound=Scoped)
 
@@ -18,39 +19,44 @@ class ScopedRepository(Repository[S]):
         super().__init__(connection, bus)
         self.scope = scope
 
-    def selected(self, clause: str, params: tuple = ()) -> list[S]:
-        return super().selected(f"environment_id = ? AND {clause}", (self.scope.id, *params))
+    def selected(self, query: Query) -> list[S]:
+        return super().selected(self._scoped(query))
 
-    def with_project(self, clause: str, params: tuple = ()) -> list[S]:
-        return super().selected(f"environment_id IN (?, ?) AND {clause}", (self.scope.id, PROJECT, *params))
+    def with_project(self, query: Query) -> list[S]:
+        return super().selected(query.filter_listed("environment_id", (self.scope.id, PROJECT)))
 
-    def across_environments(self, **fields) -> list[S]:
-        clause, params = self.matching(fields)
-        return self.selected_everywhere(f"{clause} ORDER BY id", params)
+    def global_matching(self, **fields) -> list[S]:
+        return self.selected_globally(self.query().filter(**fields).order("id"))
 
-    def selected_everywhere(self, clause: str, params: tuple = ()) -> list[S]:
-        return super().selected(clause, params)
+    def selected_globally(self, query: Query) -> list[S]:
+        return super().selected(query)
 
-    def aggregate(self, select: str, clause: str = "1", params: tuple = ()):
-        return self.connection.one(f"SELECT {select} FROM {self.table} WHERE environment_id = ? AND {clause}", (self.scope.id, *params))
+    def counted(self, query: Query) -> int:
+        return self.connection.result(*self._scoped(query).count())["value"]
 
-    def in_(self) -> list[S]:
-        """The newest page of the scope's rows, oldest first."""
+    def maximum(self, query: Query, column: str, empty_value):
+        return self.connection.result(*self._scoped(query).maximum(column, empty_value))["value"]
+
+    def repeated(self, query: Query, column: str, minimum: int) -> list:
+        return [row["value"] for row in self.connection.all(*self._scoped(query).repeated(column, minimum))]
+
+    def scoped(self) -> list[S]:
         return self.all()
 
-    def counted_in(self, clause: str = "1", params: tuple = ()) -> int:
-        """How many of the scope's rows a WHERE clause picks, counted by the database."""
-        return self.aggregate("count(*) AS n", clause, params)["n"]
+    def count(self) -> int:
+        return self.counted(self.query())
 
-    def every_in(self) -> list[S]:
-        """Every row of the scope, for the rare read that must see them all."""
-        return self.every()
+    def scoped_rows(self) -> list[S]:
+        return self.rows()
 
-    def page_in(self, limit: int, before: int | None = None) -> list[S]:
-        return self.page(limit, before)
+    def scoped_page(self, limit: int, previous: int | None = None) -> list[S]:
+        return self.page(limit, previous)
 
-    def _insert(self, row: S, by: Actor, now: datetime) -> S:
-        return super()._insert(self._placed(row), by, now)
+    def _insert(self, row: S, actor: Actor, time: datetime) -> S:
+        return super()._insert(self._placed(row), actor, time)
+
+    def _scoped(self, query: Query) -> Query:
+        return query.filter(environment_id=self.scope.id)
 
     def _placed(self, row: S) -> S:
         return row if row.environment_id else row.with_(environment_id=self.scope.id)

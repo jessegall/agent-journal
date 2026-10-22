@@ -11,19 +11,21 @@ class Container:
         self._factories: dict[type, Callable[[], object]] = {}
         self._instances: dict[type, object] = {}
 
-    def bind(self, kind: type[T], factory: Callable[[], T]) -> None:
+    def bind(self, kind: type, factory: Callable[[], object]) -> None:
         self._factories[kind] = factory
 
-    def instance(self, kind: type[T], obj: T) -> None:
-        self._instances[kind] = obj
+    def instance(self, kind: type[T], value: T) -> None:
+        self._instances[kind] = value
 
     def get(self, kind: type[T]) -> T:
         if kind not in self._instances:
             self._instances[kind] = self._factories[kind]() if kind in self._factories else self.call(kind)
-        return self._instances[kind]
+        instance = self._instances[kind]
+        if not isinstance(instance, kind):
+            raise TypeError(f"the container holds a {type(instance).__name__} for {kind.__name__}")
+        return instance
 
     def call(self, fn: Callable[..., T]) -> T:
-        """Calls with every parameter resolved by its annotation; a parameter with a default and no resolvable type keeps the default."""
         target = fn.__init__ if inspect.isclass(fn) else fn
         hints = get_type_hints(target)
         kwargs = {}
@@ -31,6 +33,9 @@ class Container:
             if name == "self" or name not in hints:
                 continue
             kind = hints[name]
-            if kind in self._instances or kind in self._factories or inspect.isclass(kind) and parameter.default is inspect.Parameter.empty:
+            if self.is_buildable(kind, parameter):
                 kwargs[name] = self.get(kind)
         return fn(**kwargs)
+
+    def is_buildable(self, kind: object, parameter: inspect.Parameter) -> bool:
+        return kind in self._instances or kind in self._factories or inspect.isclass(kind) and parameter.default is inspect.Parameter.empty

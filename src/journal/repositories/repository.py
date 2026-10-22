@@ -1,8 +1,11 @@
+from dataclasses import fields
 from datetime import datetime, timezone
 from typing import Callable, Generic, TypeVar
 
-from journal.support.column import Column
+from journal.models.support.column import Column
+from journal.repositories.load_tally import LoadTally
 from journal.db.connection import Connection
+from journal.db.query import Query
 from journal.db.schema import Schema
 from journal.events.models.created import Created
 from journal.events.models.creating import Creating
@@ -11,21 +14,21 @@ from journal.events.models.deleting import Deleting
 from journal.events.models.saved import Saved
 from journal.events.models.saving import Saving
 from journal.events.models.updated import Updated
+from journal.events.rows.row_event import RowEvent
 from journal.events.models.updating import Updating
 from journal.events.bus import Bus
 from journal.support.actor import Actor
+from journal.models.link import Link
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.support.title import Title
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 
 M = TypeVar("M", bound=Model)
 
 
-PAGE = 500
-"""The most rows a read returns unless it asks for every one by name."""
-FOUND = 40
-"""The most rows a search returns of one kind."""
+PAGE_ROWS = 500
+MATCH_ROWS = 40
 
 
 class Repository(Generic[M]):
@@ -36,160 +39,168 @@ class Repository(Generic[M]):
     def __init__(self, connection: Connection, bus: Bus) -> None:
         self.connection, self.bus = connection, bus
         self.columns: tuple[Column, ...] = Schema.columns(self.model)
+        self.column_map = {column.name: column for column in self.columns}
         self.table = self.model.table()
+        self.link_query = Query.build(Link)
+
+    def query(self) -> Query:
+        return Query(self.table, self.column_map)
 
     def find(self, id: int) -> M:
-        row = self.connection.one(f"SELECT * FROM {self.table} WHERE id = ?", (id,))
-        if row is None:
-            raise NotFound(self.table, id)
-        return self._load(row)
+        rows = self._loaded(self.query().filter(id=id))
+        if not rows:
+            raise MissingRow(self.table, id)
+        return rows[0]
 
     def all(self) -> list[M]:
-        """The newest page of rows, oldest first: a read never loads a whole table unless it asks for every row by name."""
-        return self.newest("1", ())
+        return self.newest(self.query())
 
-    def every(self) -> list[M]:
-        """Every row, for the rare read that must see them all; it says so by its name."""
-        return self.selected("1 ORDER BY id")
+    def rows(self) -> list[M]:
+        return self.selected(self.query().order("id"))
 
-    def selected(self, clause: str, params: tuple = ()) -> list[M]:
-        """The rows a WHERE clause picks, in the order and number it names."""
-        return [self._load(row) for row in self.connection.all(f"SELECT * FROM {self.table} WHERE {clause}", params)]
+    def selected(self, query: Query) -> list[M]:
+        return self._loaded(query)
+
+    def purged(self, query: Query) -> None:
+        self.connection.execute(*query.delete())
 
     def linked(self, kind: str) -> dict[int, list[Ref]]:
-        """What this table's rows link to by a kind, by row number, from one read of the links: every model can have links."""
-        return self._linked("kind = ? AND ", (kind,))
+        return self._linked(self.link_query.filter(kind=kind))
 
-    def every_linked(self) -> dict[int, list[Ref]]:
-        """What this table's rows link to by a link of any kind, by row number, from one read of the links."""
-        return self._linked("", ())
+    def linked_rows(self) -> dict[int, list[Ref]]:
+        return self._linked(self.link_query)
 
-    def _linked(self, clause: str, params: tuple) -> dict[int, list[Ref]]:
-        found: dict[int, list[Ref]] = {}
-        for link in self.connection.all(f"SELECT source, target FROM links WHERE {clause}source >= ? AND source < ? ORDER BY id", (*params, f"{self.table}:", f"{self.table};")):
-            found.setdefault(Ref.parse(link["source"]).id, []).append(Ref.parse(link["target"]))
-        return found
+    def _linked(self, query: Query) -> dict[int, list[Ref]]:
+        rows: dict[int, list[Ref]] = {}
+        for link in self.connection.all(*query.filter_prefix("source", f"{self.table}:").order("id").select()):
+            targets = rows.setdefault(Ref.parse(link["source"]).id, [])
+            if (target := Ref.parse(link["target"])) not in targets:
+                targets.append(target)
+        return rows
 
-    def where(self, **fields) -> list[M]:
-        """The newest page of the rows with these fields, oldest first."""
-        return self.newest(*self.matching(fields))
+    def matching(self, **fields) -> list[M]:
+        return self.newest(self.query().filter(**fields))
 
-    def every_where(self, **fields) -> list[M]:
-        """Every row with these fields, for the rare read that must see them all."""
-        clause, params = self.matching(fields)
-        return self.selected(f"{clause} ORDER BY id", params)
+    def single(self, **fields) -> M:
+        rows = self.matching(**fields)
+        if not rows:
+            raise MissingRow(self.table, ", ".join(map(str, fields.values())))
+        return rows[0]
 
-    def newest(self, clause: str, params: tuple) -> list[M]:
-        """At most a page of the newest rows the clause picks, oldest first."""
-        return list(reversed(self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, PAGE))))
+    def all_matching(self, **fields) -> list[M]:
+        return self.selected(self.query().filter(**fields).order("id"))
+
+    def newest(self, query: Query) -> list[M]:
+        return list(reversed(self.selected(query.order_descending("id").limit(PAGE_ROWS))))
 
     def numbered(self, ids) -> list[M]:
-        """The rows of these numbers in one read, in the order asked; a number with no row is left out."""
         ids = list(ids)
         if not ids:
             return []
-        found = {row.id: row for row in self.selected(f"id IN ({', '.join('?' for _ in ids)})", tuple(ids))}
-        return [found[n] for n in ids if n in found]
+        rows = {row.id: row for row in self.selected(self.query().filter_listed("id", ids))}
+        return [rows[n] for n in ids if n in rows]
 
-    def search(self, words: list[str]) -> list[M]:
-        clause, params = self.matching_words(words)
-        return self.selected(f"{clause} ORDER BY id DESC LIMIT ?", (*params, FOUND))
+    def search(self, terms: list[str]) -> list[M]:
+        return self.search_rows(self.query(), terms)
 
-    def matching_words(self, words: list[str]) -> tuple[str, tuple]:
-        each = "(" + " OR ".join(f"{name} LIKE ? ESCAPE '\\'" for name in self.model.text_fields) + ")"
-        escaped = [word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") for word in words]
-        return " AND ".join(each for _ in words), tuple(f"%{word}%" for word in escaped for _ in self.model.text_fields)
+    def search_rows(self, query: Query, terms: list[str]) -> list[M]:
+        for word in terms:
+            query = query.filter_alternatives(*(self.query().filter_containing(name, word) for name in self.model.text_fields))
+        return self.selected(query.order_descending("id").limit(MATCH_ROWS))
 
-    def matching(self, fields: dict) -> tuple[str, tuple]:
-        return " AND ".join(f"{name} = ?" for name in fields) or "1", tuple(self._column(name).to_sql(value) for name, value in fields.items())
+    def page(self, limit: int, previous: int | None = None, **fields) -> list[M]:
+        query = self.query().filter(**fields)
+        if previous is not None:
+            query = query.filter_less("id", previous)
+        return self.selected(query.order_descending("id").limit(limit))
 
-    def page(self, limit: int, before: int | None = None, **fields) -> list[M]:
-        """The newest rows first, at most limit of them, older than the id before when given; so a list never loads more than a screen."""
-        where = [f"{name} = ?" for name in fields]
-        params = [self._column(name).to_sql(value) for name, value in fields.items()]
-        if before is not None:
-            where.append("id < ?")
-            params.append(before)
-        return self.selected(f"{' AND '.join(where) or '1'} ORDER BY id DESC LIMIT ?", (*params, limit))
+    def scoped_page(self, limit: int, previous: int | None = None) -> list[M]:
+        return self.page(limit, previous)
 
-    def page_in(self, limit: int, before: int | None = None) -> list[M]:
-        """A page of the rows the request's scope sees; a model kept for the whole project is seen in every scope."""
-        return self.page(limit, before)
-
-    def save(self, row: M, by: Actor) -> M:
+    def save(self, row: M, actor: Actor) -> M:
         with self.connection.transaction():
-            self.bus.dispatch(Saving(model=row, by=by))
-            saved = self._insert(row, by, self._now()) if row.is_new else self._update(row, by)
-            self.bus.dispatch(Saved(model=saved, by=by))
+            self.bus.dispatch(Saving(model=row, actor=actor))
+            saved = self._insert(row, actor, self._time()) if row.is_new else self._update(row, actor)
+            self.bus.dispatch(Saved(model=saved, actor=actor))
+            return self.dispatched(saved, actor)
+
+    def imported(self, row: M, time: datetime, actor: Actor) -> M:
+        with self.connection.transaction():
+            self.bus.dispatch(Saving(model=row, actor=actor))
+            saved = self._insert(row, actor, time)
+            self.bus.dispatch(Saved(model=saved, actor=actor))
             return saved
 
-    def imported(self, row: M, at: datetime, by: Actor) -> M:
-        """A new row brought from elsewhere, such as a version 3 journal, stamped with when it was made there rather than now."""
+    def touch(self, row: M, actor: Actor, **fields) -> M:
         with self.connection.transaction():
-            self.bus.dispatch(Saving(model=row, by=by))
-            saved = self._insert(row, by, at)
-            self.bus.dispatch(Saved(model=saved, by=by))
-            return saved
-
-    def touch(self, row: M, by: Actor, **fields) -> M:
-        """The named columns alone written, stamped, from the row as it stands in the database: two threads each touching their own column never write over each other."""
-        with self.connection.transaction():
-            was = self.find(row.id)
-            stamped = was.with_(**fields, updated_at=self._now(), updated_by=by)
-            names = [*fields, "updated_at", "updated_by"]
-            values = tuple(self._column(name).to_sql(getattr(stamped, name)) for name in names)
-            self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
-            self.written()
-            self.bus.dispatch(Updated(model=stamped, by=by, was=was))
+            prior_row = self.find(row.row_id)
+            stamped = prior_row.with_(**fields, updated_at=self._time(), updater=actor)
+            self.connection.execute(*self.query().filter(id=stamped.id).update(**{name: getattr(stamped, name) for name in (*fields, "updated_at", "updater")}))
+            self.stored()
+            self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
             return stamped
 
-    def touched(self, row: M, by: Actor, fields_of: Callable[[M], dict]) -> M:
-        """The named columns written from the row as it stands under the write lock, worked out from it there, so a change another thread made in between is built on and never written over."""
+    def rewritten(self, row: M, actor: Actor, change: Callable[[M], M]) -> M:
         with self.connection.transaction():
-            now = self.find(row.id)
-            return self.touch(now, by, **fields_of(now))
+            time = self.find(row.row_id)
+            changed = change(time)
+            differing = {f.name: getattr(changed, f.name) for f in fields(changed) if f.metadata.get("column", True) and getattr(changed, f.name) != getattr(time, f.name)}
+            return self.dispatched(self.touch(time, actor, **differing).with_events(changed.events), actor)
 
-    def delete(self, row: M, by: Actor) -> None:
+    def touched(self, row: M, actor: Actor, field_map: Callable[[M], dict]) -> M:
         with self.connection.transaction():
-            self.bus.dispatch(Deleting(model=row, by=by))
-            self.connection.execute(f"DELETE FROM {self.table} WHERE id = ?", (row.id,))
-            self.written()
-            self.bus.dispatch(Deleted(model=row, by=by))
+            time = self.find(row.row_id)
+            return self.touch(time, actor, **field_map(time))
 
-    def _insert(self, row: M, by: Actor, now: datetime) -> M:
-        Title.check_on(row)
-        stamped = row.with_(created_at=now, created_by=by, updated_at=now, updated_by=by)
-        self.bus.dispatch(Creating(model=stamped, by=by))
-        names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
-        cursor = self.connection.execute(f"INSERT INTO {self.table} ({', '.join(names)}) VALUES ({', '.join('?' for _ in names)})", values)
+    def delete(self, row: M, actor: Actor) -> None:
+        with self.connection.transaction():
+            self.bus.dispatch(Deleting(model=row, actor=actor))
+            self.purged(self.query().filter(id=row.id))
+            self.stored()
+            self.bus.dispatch(Deleted(model=row, actor=actor))
+            self.dispatched(row, actor)
+
+    def remove(self, id: int, actor: Actor) -> None:
+        self.delete(self.find(id), actor)
+
+    def _insert(self, row: M, actor: Actor, time: datetime) -> M:
+        Title.check_target(row)
+        stamped = row.with_(created_at=time, creator=actor, updated_at=time, updater=actor)
+        self.bus.dispatch(Creating(model=stamped, actor=actor))
+        cursor = self.connection.execute(*self.query().insert(**self._column_values(stamped)))
         created = stamped.with_(id=cursor.lastrowid)
-        self.written()
-        self.bus.dispatch(Created(model=created, by=by))
+        self.stored()
+        self.bus.dispatch(Created(model=created, actor=actor))
         return created
 
-    def _update(self, row: M, by: Actor) -> M:
-        stamped = row.with_(updated_at=self._now(), updated_by=by)
-        was = self.find(row.id)
-        Title.check_on(row, was)
-        self.bus.dispatch(Updating(model=stamped, by=by))
-        names = [column.name for column in self.columns if column.name != "id"]
-        values = tuple(column.to_sql(getattr(stamped, column.name)) for column in self.columns if column.name != "id")
-        self.connection.execute(f"UPDATE {self.table} SET {', '.join(f'{name} = ?' for name in names)} WHERE id = ?", (*values, stamped.id))
-        self.written()
-        self.bus.dispatch(Updated(model=stamped, by=by, was=was))
+    def _update(self, row: M, actor: Actor) -> M:
+        stamped = row.with_(updated_at=self._time(), updater=actor)
+        prior_row = self.find(row.row_id)
+        Title.check_target(row, prior_row)
+        self.bus.dispatch(Updating(model=stamped, actor=actor))
+        self.connection.execute(*self.query().filter(id=stamped.id).update(**self._column_values(stamped)))
+        self.stored()
+        self.bus.dispatch(Updated(model=stamped, actor=actor, previous=prior_row))
         return stamped
 
-    def written(self) -> None:
-        """A write of this table landed, before anyone hears of it: a repository that keeps rows in memory drops them here."""
+    def dispatched(self, row: M, actor: Actor) -> M:
+        for event in row.events:
+            self.bus.dispatch(event.placed(getattr(row, "environment_id", 0), row.creation_time.timestamp(), row.row_id, actor.stamp) if isinstance(event, RowEvent) else event)
+        return row.without_events()
+
+    def stored(self) -> None:
+        ...
+
+    def _loaded(self, query: Query) -> list[M]:
+        return [self._load(row) for row in self.connection.all(*query.select())]
+
+    def _column_values(self, row: M) -> dict:
+        return {column.name: getattr(row, column.name) for column in self.columns if column.name != "id"}
 
     def _load(self, row) -> M:
-        """A NULL is a value the row never had, such as a column added after it was written: the model's own default stands in."""
-        return self.model(**{column.name: value for column in self.columns if (value := column.from_sql(row[column.name])) is not None})
-
-    def _column(self, name: str) -> Column:
-        return next(column for column in self.columns if column.name == name)
+        LoadTally.counted(self.table)
+        return self.model(**{column.name: value for column in self.columns if (value := column.parsed(row[column.name])) is not None})
 
     @staticmethod
-    def _now() -> datetime:
+    def _time() -> datetime:
         return datetime.now(timezone.utc)

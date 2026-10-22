@@ -56,7 +56,7 @@ const tabs = computed(() => [
     {key: "open", title: "Open links", count: open.value.length + waiting.value.length},
 ]);
 const loggedIn = (status) => (store.tunnel = status);
-const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.logged_in));
+const blocked = computed(() => tunnelStatus.value && (!tunnelStatus.value.installed || !tunnelStatus.value.authenticated));
 
 onMounted(async () => {
     checkTunnel();

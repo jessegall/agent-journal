@@ -1,23 +1,23 @@
 import json
 import os
-import time
+import time as timing
 import uuid
 from functools import cached_property
 from pathlib import Path
 
 from journal.config import Config
 from journal.support.private_folder import PrivateFolder
+from journal.support.secret_field import SecretField
 
 RETIRED = "RETIRED_"
-AT = "_AT_"
-"""A replaced value's name: RETIRED_<variable>_AT_<when it was replaced>."""
+EMAIL_SIGN_TOKEN = "_AT_"
 HEADER = """# The values of this project's secrets, written by agent-journal.
 # One line per field: NAME="value". The journal never copies this file anywhere.
 """
 
 
 class SecretValues:
-    """The project's secret values, one file in the private folder named by the project's id, readable by its user alone and written whole, so a crash never leaves half a file."""
+    """The project's secret values, one file in the private folder named by the project's id, readable by its user alone and written whole, so a crash never leaves half a file. A field shown while typing is no secret: its value is kept for the programs that need it and named in the shown file beside, so no mask is made of it."""
 
     def __init__(self, config: Config) -> None:
         self.config = config
@@ -27,7 +27,6 @@ class SecretValues:
         return PrivateFolder(self.config.root).secrets() / f"{self.project_id()}.env"
 
     def project_id(self) -> str:
-        """The project's id, made the first time it is needed and kept in the project's journal folder, so a folder moved on disk keeps its values."""
         path = self.config.home / "project-id"
         if not path.is_file():
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -38,34 +37,54 @@ class SecretValues:
         path = self.path
         if not path.is_file():
             return {}
-        return dict(found for found in map(self.parsed, path.read_text().splitlines()) if found)
+        return dict(rows for rows in map(self.parsed, path.read_text().splitlines()) if rows)
+
+    def put_field(self, field: SecretField, value: str) -> None:
+        if field.hidden:
+            self.put(field.variable, value)
+        else:
+            self.put_shown(field.variable, value)
 
     def put(self, variable: str, value: str) -> None:
-        """The value set; one it replaces is kept under a retired name for thirty days, so it is still masked wherever it was printed."""
         current = self.values()
-        retired = {f"{RETIRED}{variable}{AT}{int(time.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
+        retired = {f"{RETIRED}{variable}{EMAIL_SIGN_TOKEN}{int(timing.time())}": current[variable]} if current.get(variable) and current[variable] != value else {}
         self.write({**current, **retired, variable: value})
+        self.write_shown(self.shown() - {variable})
 
-    def retired_before(self, at: float) -> list[str]:
-        """The retired names older than the moment given."""
-        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(AT, 1)[1]) < at]
+    def put_shown(self, variable: str, value: str) -> None:
+        self.write({**self.values(), variable: value})
+        self.write_shown(self.shown() | {variable})
+
+    @cached_property
+    def shown_path(self) -> Path:
+        return self.path.with_suffix(".shown")
+
+    def shown(self) -> set[str]:
+        return set(self.shown_path.read_text().split()) if self.shown_path.is_file() else set()
+
+    def write_shown(self, names: set[str]) -> None:
+        PrivateFolder.created(self.shown_path.parent)
+        self.shown_path.write_text("".join(f"{name}\n" for name in sorted(names)))
+
+    def retired_earlier(self, time: float) -> list[str]:
+        return [name for name in self.values() if name.startswith(RETIRED) and int(name.rsplit(EMAIL_SIGN_TOKEN, 1)[1]) < time]
 
     def drop(self, variables: list[str]) -> None:
         self.write({name: value for name, value in self.values().items() if name not in variables})
+        self.write_shown(self.shown() - set(variables))
 
     def write(self, values: dict[str, str]) -> None:
         path = self.path
-        PrivateFolder.made(path.parent)
+        PrivateFolder.created(path.parent)
         writing = path.with_suffix(".writing")
         handle = os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-        with os.fdopen(handle, "w") as out:
-            out.write(HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
+        with os.fdopen(handle, "w") as output:
+            output.write(HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
         os.replace(writing, path)
 
     @staticmethod
     def parsed(line: str) -> tuple[str, str] | None:
-        """A NAME="value" line as its name and value; a comment or a blank line is none."""
-        name, equals, rest = line.strip().partition("=")
+        name, equals, remainder = line.strip().partition("=")
         if not equals or name.startswith("#"):
             return None
-        return name.strip(), json.loads(rest) if rest.startswith('"') else rest
+        return name.strip(), json.loads(remainder) if remainder.startswith('"') else remainder

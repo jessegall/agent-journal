@@ -6,7 +6,7 @@ const becomes = (state) => (plan) => (plan.state = state);
 
 export const approvePlan = (plan) => patched(plan, becomes("approved"), () => act(plan, "approve"));
 
-export const parkPlan = (plan) => patched(plan, becomes("parked"), () => act(plan, "park"));
+export const parkPlan = (plan) => patched(plan, becomes("parked"), () => act(plan, "suspend"));
 
 export function startPlan(plan) {
     const takeOver = (row) => {

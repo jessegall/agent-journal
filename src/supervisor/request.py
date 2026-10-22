@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass, field
 
-from supervisor.band_words import BandWords
+from supervisor.band_labels import BandLabels
 
 
 @dataclass(frozen=True)
@@ -12,31 +12,28 @@ class Request:
     name: str = ""
     command: tuple[str, ...] = ()
     folder: str = "."
-    env: dict[str, str] = field(default_factory=dict)
+    environ: dict[str, str] = field(default_factory=dict)
     log: str = os.devnull
-    keep: bool = True
+    persistent: bool = True
     inherit: bool = True
     keys: str = ""
     line: str = ""
-    after: float = 0.0
+    delay_seconds: float = 0.0
     data: str = ""
     resume: tuple[str, ...] = ()
-    words: BandWords | None = None
-    """The band's words, when the request carries them."""
-    given: frozenset[str] = frozenset()
-    """The fields the request carried, so a verb can say which one it lacks."""
+    labels: BandLabels | None = None
+    payload_keys: frozenset[str] = frozenset()
 
     def needs(self, *fields: str) -> "Request":
-        """The request itself, when it carries every field named; else it is refused with the first it lacks."""
-        missing = [name for name in fields if name not in self.given]
+        missing = [name for name in fields if name not in self.payload_keys]
         if missing:
             raise LookupError(f"{self.verb} needs {missing[0]!r}")
         return self
 
     @classmethod
-    def from_json(cls, payload: dict) -> "Request":
-        words = BandWords(str(payload["left"]), str(payload["middle"]), str(payload["right"])) if {"left", "middle", "right"} <= payload.keys() else None
+    def parsed(cls, payload: dict) -> "Request":
+        labels = BandLabels.parsed(payload) if BandLabels.has_wire_keys(payload) else None
         return cls(verb=str(payload.get("verb", "")), name=str(payload.get("name", "")), command=tuple(payload.get("command", ())), folder=str(payload.get("folder", ".")),
-                   env=dict(payload.get("env", {})), log=str(payload.get("log", os.devnull)), keep=bool(payload.get("keep", True)), inherit=bool(payload.get("inherit", True)),
-                   keys=str(payload.get("keys", "")), line=str(payload.get("line", "")), after=float(payload.get("after", 0)), data=str(payload.get("data", "")),
-                   resume=tuple(payload.get("resume", ())), words=words, given=frozenset(payload))
+                   environ=dict(payload.get("env", {})), log=str(payload.get("log", os.devnull)), persistent=bool(payload.get("keep", True)), inherit=bool(payload.get("inherit", True)),
+                   keys=str(payload.get("keys", "")), line=str(payload.get("line", "")), delay_seconds=float(payload.get("after", 0)), data=str(payload.get("data", "")),
+                   resume=tuple(payload.get("resume", ())), labels=labels, payload_keys=frozenset(payload))

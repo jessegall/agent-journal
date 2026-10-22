@@ -1,50 +1,46 @@
-from journal.support.entry import Entry
 from journal.features.feature import Feature
+from journal.features.sequences.support.sequences_data_reader import SequencesDataReader
+from journal.features.sequences.support.sequences_data import SequencesData
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
-from journal.models.node_kind import NodeKind
 from journal.support.skill import Skill
 from journal.features.sequences.commands.sequence_command import SequenceCommand
-from journal.features.sequences.listeners.carry_runs_to_the_next_session import CarryRunsToTheNextSession
-from journal.features.sequences.listeners.end_runs_of_a_cancelled_row import EndRunsOfACancelledRow
-from journal.features.sequences.listeners.end_runs_of_a_deleted_row import EndRunsOfADeletedRow
-from journal.features.sequences.listeners.end_runs_of_a_deleted_sequence import EndRunsOfADeletedSequence
-from journal.features.sequences.listeners.hold_writes_for_the_step import HoldWritesForTheStep
+from journal.features.sequences.listeners.session_run_transfer import SessionRunTransfer
+from journal.features.sequences.listeners.cancelled_row_run_end import CancelledRowRunEnd
+from journal.features.sequences.listeners.deleted_row_run_end import DeletedRowRunEnd
+from journal.features.sequences.listeners.deleted_sequence_run_end import DeletedSequenceRunEnd
 from journal.features.sequences.listeners.record_run_changes import RecordRunChanges
-from journal.features.sequences.listeners.say_the_step_at_a_pace import SayTheStepAtAPace
-from journal.features.sequences.listeners.say_the_step_at_a_stop import SayTheStepAtAStop
-from journal.features.sequences.listeners.say_the_step_at_start import SayTheStepAtStart
-from journal.features.sequences.listeners.say_the_step_when_a_wait_ends import SayTheStepWhenAWaitEnds
-from journal.features.sequences.listeners.start_on_created import StartOnCreated
-from journal.features.sequences.seeds.shipped_sequences import ShippedSequences
+from journal.features.sequences.listeners.step_command_match import StepCommandMatch
+from journal.features.sequences.listeners.creation_start import CreationStart
+from journal.features.sequences.sequences_conduct import SequencesConduct
+from journal.features.sequences.seeds.builtin_sequences import BuiltinSequences
 
 
-class Sequences(Feature):
+class Sequences(Feature[SequencesData]):
+    STALENESS_LIMIT = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
+    STEP_REPEAT_INTERVAL = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
     name = "sequences"
     title = "Sequences"
     help = "Steps the agent follows one at a time."
     commands = (SequenceCommand,)
-    listeners = (StartOnCreated, CarryRunsToTheNextSession, SayTheStepAtStart, SayTheStepAtAStop, HoldWritesForTheStep, SayTheStepWhenAWaitEnds, SayTheStepAtAPace, EndRunsOfADeletedSequence, EndRunsOfADeletedRow, EndRunsOfACancelledRow, RecordRunChanges)
-    actions = (
-        Entry(NodeKind.ACTION, 'start_sequence', 'Start a sequence', 'starts the sequence named in the text at its first step', takes_text=True),
-    )
-    seeds = (ShippedSequences,)
+    listeners = (CreationStart, SessionRunTransfer, StepCommandMatch, DeletedSequenceRunEnd, DeletedRowRunEnd, CancelledRowRunEnd, RecordRunChanges)
+    data = (SequencesDataReader,)
+    conduct = (SequencesConduct,)
+    seeds = (BuiltinSequences,)
 
-    STEP = Nudge(name, "step", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_after=0)
-    FOLLOWING = Nudge(name, "following", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_after=0)
-    HELD = Nudge(name, "held", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence park --why \"<why>\"` sets the run aside", repeat_after=0)
-    STALE = Nudge(name, "stale", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence park --why \"<why>\"`", repeat_after=0)
-    PARKED = Nudge(name, "parked", "sequence {{n}} is parked at step {{step}}: {{why}}", "`journal sequence follow` resumes it", repeat_after=0)
-    ENDED = Nudge(name, "ended", "sequence {{n}} ran its last step", repeat_after=0)
-    ABANDONED = Nudge(name, "abandoned", "sequence {{n}} abandoned", repeat_after=0)
-    CANNOT_FINISH = Nudge(name, "cannot_finish", "sequence {{n}} ended: {{why}}", repeat_after=0)
-    SKIPPED = Nudge(name, "skipped", "the user skipped step {{step}} of sequence {{n}}", repeat_after=0)
-    ENDED_BY_USER = Nudge(name, "ended_by_user", "the user ended sequence {{n}}", repeat_after=0)
-    nudges = (STEP, FOLLOWING, HELD, STALE, PARKED, ENDED, ABANDONED, CANNOT_FINISH, SKIPPED, ENDED_BY_USER)
+    PENDING_STEP = Nudge(name, "step_to_follow", "sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` to take it up, `journal sequence next` when it is done", repeat_interval=0)
+    CURRENT_STEP = Nudge(name, "following_the_step", "following sequence {{n}}, step {{step}}: {{text}}", "`journal sequence next` when it is done", repeat_interval=0)
+    STEP_EDIT_BLOCK = Nudge(name, "write_held_for_the_step", "a write waits for sequence {{n}}, step {{step}}: {{text}}", "`journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside", repeat_interval=0)
+    STALE_STEP = Nudge(name, "step_stale_move_it_on", "{{writes}} writes since sequence {{n}}, step {{step}} was taken up: {{text}}", "`journal sequence next` if it is done, `journal sequence follow` to carry on with it, or `journal sequence suspend --why \"<why>\"`", repeat_interval=0)
+    SEQUENCE_SUSPENDED = Nudge(name, "sequence_parked", "sequence {{n}} is parked at step {{step}}: {{why}}", "`journal sequence follow` resumes it", repeat_interval=0)
+    SEQUENCE_ENDED = Nudge(name, "sequence_ended", "sequence {{n}} ran its last step", repeat_interval=0)
+    SEQUENCE_ABANDONED = Nudge(name, "sequence_abandoned", "sequence {{n}} abandoned", repeat_interval=0)
+    SEQUENCE_CANNOT_FINISH = Nudge(name, "sequence_cannot_finish", "sequence {{n}} ended: {{why}}", repeat_interval=0)
+    STEP_OMISSION = Nudge(name, "the_user_skipped_a_step", "the user skipped step {{step}} of sequence {{n}}", repeat_interval=0)
+    SEQUENCE_CANCELLED = Nudge(name, "the_user_ended_the_sequence", "the user ended sequence {{n}}", repeat_interval=0)
+    nudges = (PENDING_STEP, CURRENT_STEP, STEP_EDIT_BLOCK, STALE_STEP, SEQUENCE_SUSPENDED, SEQUENCE_ENDED, SEQUENCE_ABANDONED, SEQUENCE_CANNOT_FINISH, STEP_OMISSION, SEQUENCE_CANCELLED)
 
-    STALE_AFTER = Option("sequences.stale_after", "Hold writes again after", "Writes since a step was taken up before the next write waits for the step to be moved on, followed again or parked", 25)
-    SAY_EVERY = Option("sequences.say_every", "Say the step again after", "Minutes a step stands unheard before it is said again to a quiet agent; three times as long while the agent waits", 10, unit="minutes")
-    options = (STALE_AFTER, SAY_EVERY)
+    options = (STALENESS_LIMIT, STEP_REPEAT_INTERVAL)
 
     skill = Skill("sequences", 'Follow a sequence of steps one at a time; load it when a sequence is run or written', """
 # Sequences
@@ -58,7 +54,7 @@ until its last step is done.
 - `journal sequence next` when the step is done: you are told the next one, or that the sequence ended and what
   you were doing before it. A step never taken up cannot be moved on.
 - A step taken up that stands for many writes holds the next write again: move it on, follow it again, or park it.
-- `journal sequence park --why "<why>"` sets the run aside, its holds quiet; `journal sequence follow` resumes it.
+- `journal sequence suspend --why "<why>"` sets the run aside, its holds quiet; `journal sequence follow` resumes it.
 - A sequence about a row ends only when the row is where it promises: Building a plan's last step waits for a ready
   plan. A row cancelled or deleted, or the sequence deleted, ends the run and you are told.
 - `journal sequence abandon --why "<why>"` names the steps it would leave undone; again with `--sure` it gives the run

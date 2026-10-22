@@ -3,14 +3,13 @@ from urllib.parse import quote
 
 from journal.http.attachments.attached_file import AttachedFile
 from journal.http.attachments.attachments import Attachments
-from journal.http.attachments.files_asked import FilesAsked
-from journal.http.attachments.files_shown import FilesShown
+from journal.http.attachments.file_request import FileRequest
+from journal.http.attachments.file_view import FileView
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.repositories.messages import Messages
 
-TITLE = 80
-"""How much of a message's text titles a file attached to it."""
+TITLE_CHARACTERS = 80
 
 
 class AttachedFiles:
@@ -19,19 +18,19 @@ class AttachedFiles:
     def __init__(self, messages: Messages, attachments: Attachments) -> None:
         self.messages, self.attachments = messages, attachments
 
-    def page(self, asked: FilesAsked) -> FilesShown:
-        every = sorted((f for m in self.messages.in_() for f in self.of(m)), key=lambda f: -f.at)
-        found = [f for f in every if asked.holds(f)]
-        shelves = {Message.table(): len(every)} if every else {}
-        images = sum(f.image for f in every)
-        return FilesShown(files=found[asked.skip:asked.skip + asked.last], more=len(found) > asked.skip + asked.last, found=len(found),
-                          counts={"all": len(every), "images": images, "other": len(every) - images, "shelves": shelves})
+    def page(self, requested: FileRequest) -> FileView:
+        all_items = sorted((f for m in self.messages.scoped() for f in self.build(m)), key=lambda f: -f.time)
+        rows = [f for f in all_items if requested.contains(f)]
+        shelves = {Message.table(): len(all_items)} if all_items else {}
+        images = sum(f.image for f in all_items)
+        return FileView(files=rows[requested.offset:requested.offset + requested.last], is_last_page=len(rows) <= requested.offset + requested.last, total=len(rows),
+                          counts={"all": len(all_items), "images": images, "other": len(all_items) - images, "shelves": shelves})
 
-    def of(self, message: Message) -> list[AttachedFile]:
+    def build(self, message: Message) -> list[AttachedFile]:
         files = []
         for name in message.files:
-            path = self.attachments.path(Message.table(), message.id, name)
+            path = self.attachments.path(Message.table(), message.row_id, name)
             if path.is_file():
-                files.append(AttachedFile(str(Ref.to(message)), message.text[:TITLE], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
+                files.append(AttachedFile(str(Ref.build(message)), message.text[:TITLE_CHARACTERS], name, message.captions.get(name, ""), path.stat().st_size, path.stat().st_mtime,
                                           (mimetypes.guess_type(name)[0] or "").startswith("image/"), f"/journal/messages/{message.id}/files/{quote(name, safe='')}"))
         return files

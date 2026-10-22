@@ -4,7 +4,7 @@ from journal.models.plan import Plan
 from journal.models.plan_review import PlanReview
 from journal.repositories.links import Links
 from journal.repositories.scoped_repository import ScopedRepository
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
 REVIEWS = "reviews"
 FILED = "filed"
@@ -17,9 +17,8 @@ class PlanReviews(ScopedRepository[PlanReview]):
         super().__init__(connection, bus, scope)
         self.links = links
 
-    def of(self, plan: Plan) -> list[PlanReview]:
-        """The plan's review rounds, newest first."""
+    def reviews(self, plan: Plan) -> list[PlanReview]:
         return list(reversed(self.numbered(ref.id for ref in self.links.sources(plan, REVIEWS))))
 
-    def open_of(self, plan: Plan) -> list[PlanReview]:
-        return [review for review in self.of(plan) if review.is_open()]
+    def open_review(self, plan: Plan) -> list[PlanReview]:
+        return [review for review in self.reviews(plan) if review.is_open()]

@@ -13,7 +13,7 @@ const agent = computed(() => props.agent || own.value);
 const listed = computed(() => (agent.value && agent.value.data.queued_commands) || []);
 const sending = ref([]);
 const queued = computed(() => [...listed.value, ...sending.value.filter((s) => !listed.value.some((q) => q.command === s.command))]);
-const drop = (at) => (sending.value = sending.value.filter((s) => s.at !== at));
+const drop = (key) => (sending.value = sending.value.filter((s) => s.key !== key));
 
 watch(
     () => agent.value && agent.value.updated_at,
@@ -33,14 +33,14 @@ const refusal = ref("");
 async function send(line, now) {
     if (!agent.value || !line.trim()) return;
     refusal.value = "";
-    const at = `sending-${Date.now()}`;
+    const key = `sending-${Date.now()}`;
     if (line === command.value) command.value = "";
-    if (!now) sending.value = [...sending.value, {at, command: line, sent: false}];
+    if (!now) sending.value = [...sending.value, {key, command: line, sent: false}];
     try {
         await scope.api.runShell(agent.value.title, line, now);
-        sending.value = sending.value.map((s) => (s.at === at ? {...s, sent: true} : s));
+        sending.value = sending.value.map((s) => (s.key === key ? {...s, sent: true} : s));
     } catch (e) {
-        drop(at);
+        drop(key);
         refusal.value = e.message;
     }
 }

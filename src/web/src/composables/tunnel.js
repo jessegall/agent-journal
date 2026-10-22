@@ -4,7 +4,7 @@ import {checkTunnel} from "./shares.js";
 
 export async function tunnelDomains() {
     const status = await checkTunnel();
-    return status && status.logged_in ? api.tunnelDomains().catch(() => []) : [];
+    return status && status.authenticated ? api.tunnelDomains().catch(() => []) : [];
 }
 
 export async function logOutTunnel() {

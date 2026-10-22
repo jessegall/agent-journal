@@ -7,9 +7,8 @@ from pathlib import Path
 class ProgramSettings:
     """An agent program's settings file: its hooks by event, and everything else in it, kept as it was."""
 
-    rest: dict
+    remainder: dict
     hooks: dict | None = None
-    """None for a file that names no hooks, so writing it back adds none."""
 
     @classmethod
     def read(cls, path: Path) -> "ProgramSettings":
@@ -17,22 +16,20 @@ class ProgramSettings:
         hooks = data.get("hooks")
         return cls({key: value for key, value in data.items() if key != "hooks"}, hooks if isinstance(hooks, dict) else None)
 
-    def to_json(self) -> dict:
+    def serialized(self) -> dict:
         if self.hooks is None:
-            return self.rest
-        return {**self.rest, "hooks": self.hooks}
+            return self.remainder
+        return {**self.remainder, "hooks": self.hooks}
 
-    def kept(self) -> "ProgramSettings":
-        """The same settings with only the journal's own hooks."""
+    def stored(self) -> "ProgramSettings":
         if self.hooks is None:
             return self
-        ours = {event: [block for block in blocks if self.is_ours(block)] for event, blocks in self.hooks.items()}
-        return replace(self, hooks={event: blocks for event, blocks in ours.items() if blocks})
+        journal_owned = {event: [block for block in blocks if self.is_journals(block)] for event, blocks in self.hooks.items()}
+        return replace(self, hooks={event: blocks for event, blocks in journal_owned.items() if blocks})
 
-    def with_hooks_of(self, other: "ProgramSettings") -> "ProgramSettings":
-        return replace(self, hooks=other.hooks or {})
+    def with_hook_settings(self, counterpart: "ProgramSettings") -> "ProgramSettings":
+        return replace(self, hooks=counterpart.hooks or {})
 
     @staticmethod
-    def is_ours(block: dict) -> bool:
-        """The journal's own hook, by the one path only this package's script has; a hook.sh of another package is somebody else's."""
+    def is_journals(block: dict) -> bool:
         return "journal/hooks/hook.sh" in json.dumps(block)

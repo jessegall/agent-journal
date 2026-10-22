@@ -1,27 +1,26 @@
 import shlex
 
 from journal.console.console import Console
-from journal.support.where import Where
-from journal.support.cards import Cards
+from journal.support.caller import Caller
+from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_steps import PluginSteps
-from journal.features.plugins.support.plugin_words import PluginWords
+from journal.features.plugins.support.plugin_text import PluginText
 from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.features.plugins.support.plugin_answer import PluginAnswer
 from journal.features.plugins.support.plugin_card import PluginCard
 from journal.repositories.entries import Entries
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 COMMAND = "plugin_command"
-"""The entry each command a plugin ran leaves: the line, its exit code and what it printed on error."""
 
 
 class PluginAnswers:
-    """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key, and its journal commands run as the plugin, a step deeper."""
+    """What a plugin's answer asks beyond the hook's reply: its cards in the chat, one with a key replacing the earlier of that key where it stands if the user has not written since, else at the bottom of the chat, and its journal commands run as the plugin, a step deeper."""
 
-    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, words: PluginWords) -> None:
-        self.cards, self.console, self.entries, self.steps, self.words = cards, console, entries, steps, words
+    def __init__(self, cards: Cards, console: Console, entries: Entries, steps: PluginSteps, text: PluginText) -> None:
+        self.cards, self.console, self.entries, self.steps, self.text = cards, console, entries, steps, text
 
     def apply(self, plugin: Plugin, answer: PluginAnswer, environment: str, environment_id: int) -> None:
         for card in answer.cards:
@@ -32,17 +31,17 @@ class PluginAnswers:
 
     def show(self, plugin: Plugin, card: PluginCard, environment_id: int) -> None:
         kind = plugin.manifest.card_kind(card.kind)
-        label = self.words.plain(card.label or kind.label)
-        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "detail": self.words.plain(card.detail), "collapsed": kind.collapsed}
-        self.cards.keyed(environment_id, card.key, label, data, Actor.plugin(plugin.name), ChatMark.PLUGINS)
+        label = self.text.plain(card.label or kind.label)
+        data = {"kind": "plugin", "plugin": plugin.name, "card": card.kind, "icon": kind.icon, "tone": card.tone or kind.tone, "collapsed": kind.collapsed}
+        self.cards.keyed_recent(environment_id, card.key, label, data, Actor.plugin(plugin.name), CardKind.PLUGINS, self.text.plain(card.detail))
 
     def run(self, plugin: Plugin, line: str, environment: str, environment_id: int) -> None:
         argv = shlex.split(line)
         if argv[:1] != ["journal"]:
             self.record(plugin, line, environment_id, 1, "a plugin runs journal commands only")
             return
-        outcome = self.console.run(argv[1:], Where(environment or "main", "", False, plugin.name))
-        self.record(plugin, line, environment_id, outcome.code, outcome.err.strip()[-300:])
+        outcome = self.console.run(argv[1:], Caller.plugin(environment or "main", plugin.name))
+        self.record(plugin, line, environment_id, outcome.code, outcome.error.strip()[-300:])
 
     def record(self, plugin: Plugin, line: str, environment_id: int, code: int, err: str) -> None:
         self.entries.save(Entry(environment_id=environment_id, kind=COMMAND, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "command": line, "code": code, "err": err}), Actor.plugin(plugin.name))

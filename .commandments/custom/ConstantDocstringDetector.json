@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "expression-statement",
+        "where": [
+            {
+                "count": {
+                    "child": {
+                        "is": "literal"
+                    },
+                    "atLeast": 1
+                }
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "is": "function"
+                }
+            },
+            {
+                "inside": {
+                    "is": "type-declaration"
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "constant-docstring",
+        "description": "A string literal stands alone at the top level of a file: a docstring under a constant, or a module docstring. Only a class carries a docstring.",
+        "rule": "Remove it: name the constant so it needs none, and say what a file is in its class's one line.",
+        "skill": "plain-code-words"
+    }
+}

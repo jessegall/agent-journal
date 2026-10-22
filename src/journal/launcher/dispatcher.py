@@ -25,7 +25,6 @@ class Dispatcher:
         self.path = home / ".local" / "bin" / "journal"
 
     def write(self) -> Path | None:
-        """Written when ~/.local/bin exists; the same text is left alone."""
         if not self.path.parent.is_dir():
             return None
         if not self.path.is_file() or self.path.read_text() != TEXT:

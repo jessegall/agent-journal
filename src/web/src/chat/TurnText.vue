@@ -1,12 +1,12 @@
 <script setup>
 import Folded from "../kit/Folded.vue";
 
-defineProps({html: {type: String, required: true}, foldAt: {type: Number, required: true}, keep: {type: Number, required: true}});
+defineProps({html: {type: String, required: true}, name: {type: String, default: ""}, foldAt: {type: Number, required: true}, keep: {type: Number, required: true}});
 const emit = defineEmits(["activate"]);
 </script>
 
 <template>
-    <Folded :at="foldAt" :keep="keep">
+    <Folded :name="name" :at="foldAt" :keep="keep">
         <div class="thread-text" @click="emit('activate', $event)" v-html="html" />
     </Folded>
 </template>

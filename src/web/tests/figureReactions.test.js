@@ -48,7 +48,8 @@ test("typing and reactions change the eyes; messages and work can move the body"
         for (const each of reactions) expect([each.look, each.clip], moment).toEqual([expect.any(String), undefined]);
     }
     expect(reactionTo("reacted:\u2764\ufe0f", new Map(), 0, () => 0.99).look).toBe("hearts");
-    for (const each of REACTIONS.filter((reaction) => !user.includes(reaction.moment))) expect(each.clip, each.moment).toEqual(expect.any(String));
+    for (const each of REACTIONS.filter((reaction) => !user.includes(reaction.moment)))
+        expect(each.clip, each.moment).toEqual(expect.any(String));
 });
 
 test("every clip and look the figure is ever asked for exists, so no reaction, egg, held state or pastime is dead on arrival", () => {
@@ -59,7 +60,16 @@ test("every clip and look the figure is ever asked for exists, so no reaction, e
         ...AMBIENT.map((each) => each.clip),
         ...Object.values(HELD),
         ...WORK_VARIANTS.map(([clip]) => clip),
-        "walk", "jump", "fall", "backflip", "land", "enter", "exit", "point", "hang_l", "hang_r",
+        "walk",
+        "jump",
+        "fall",
+        "backflip",
+        "land",
+        "enter",
+        "exit",
+        "point",
+        "hang_l",
+        "hang_r",
     ];
     for (const clip of asked) expect(named.has(clip), clip).toBe(true);
     for (const each of REACTIONS.filter((reaction) => reaction.look)) expect(EYES[each.look], each.look).toBeDefined();
@@ -85,14 +95,17 @@ test("only a jump of more than the figure's own height sometimes turns over, and
     expect(workClip(() => 0.99)).toBe("");
 });
 
-test("a test card that ends is seen once, as a pass or a failure, and a card already known is not seen again", () => {
-    const card = (key, state) => ({key, state, at: 5, ended: 9});
+test("a watched test run that ends is seen once, as a pass or a failure, and a run already known is not seen again", () => {
+    const card = (key, ending) => ({key, time: 9, watch: {figure: "Tests 100%", ending}});
     const known = new Map();
     const agent = (...cards) => ({data: {cards}});
-    expect(testResultsAfter(agent(card("tests:1", "running")), known)).toEqual([]);
-    expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([{beat: "tests_passed", at: 9, card: "tests:1"}]);
-    expect(testResultsAfter(agent(card("tests:1", "done")), known)).toEqual([]);
-    expect(testResultsAfter(agent(card("tests:2", "failed")), known)).toEqual([{beat: "tests_failed", at: 9, card: "tests:2"}]);
+    expect(testResultsAfter(agent(card("messages:1", "")), known)).toEqual([]);
+    expect(testResultsAfter(agent(card("messages:1", "finished")), known)).toEqual([{beat: "tests_passed", time: 9, card: "messages:1"}]);
+    expect(testResultsAfter(agent(card("messages:1", "finished")), known)).toEqual([]);
+    expect(testResultsAfter(agent(card("messages:2", "failed with code 1")), known)).toEqual([
+        {beat: "tests_failed", time: 9, card: "messages:2"},
+    ]);
+    expect(testResultsAfter(agent({key: "messages:3", time: 9, watch: {figure: "", ending: "finished"}}), known)).toEqual([]);
 });
 
 test("the user typing now and then makes its eyes read, and finishing a long stretch of work now and then makes it stretch", () => {
@@ -104,28 +117,37 @@ test("the user typing now and then makes its eyes read, and finishing a long str
 });
 
 test("every moment a reaction waits for is one the journal makes, from cards shaped as the server writes them", () => {
-    // features/git_actions, features/checks (a failing check and a test run), features/journal_laws, features/ask_questions,
+    // features/git_actions, features/checks (a failing check), a watched test run, features/journal_laws, features/ask_questions,
     // and the person_at runner/hook_report stamps when the user writes
     const cards = [
-        {at: 2, tone: "commit", icon: "branch"},
-        {at: 2, icon: "check", tone: "danger"},
-        {at: 2, icon: "terminal", tone: "danger"},
-        {at: 2, icon: "question"},
-        {at: 2, key: "tests:1", icon: "check", state: "done", ended: 3},
-        {at: 2, key: "tests:2", icon: "check", state: "failed", ended: 3},
+        {time: 2, tone: "commit", icon: "branch"},
+        {time: 2, icon: "check", tone: "danger"},
+        {time: 2, icon: "terminal", tone: "danger"},
+        {time: 2, icon: "question"},
+        {time: 2, key: "messages:1", icon: "terminal", watch: {figure: "Tests 100%", ending: "finished"}},
+        {time: 2, key: "messages:2", icon: "terminal", watch: {figure: "Tests 90%", ending: "failed with code 1"}},
     ];
     const agent = {data: {cards, person_at: 2}};
-    const faces = FACES.map((face, n) => ({table: "reactions", id: n + 1, author: "user", created_at: new Date(2000).toISOString(), face, message_id: n}));
-    const made = new Set([
-        ...beatsAfter(agent, 1),
-        ...cardsAfter(agent, new Set()),
-        ...testResultsAfter(agent, new Map()),
-        ...facesAfter(faces, 1),
-        // the figure's own page sees these two: a key pressed in the compose box, and the agent settling after WORKED_SECONDS of work
-        {beat: "typing"},
-        {beat: "work_done"},
-        {beat: "long_walk"},
-    ].map((fire) => fire.beat));
+    const faces = FACES.map((face, n) => ({
+        table: "reactions",
+        id: n + 1,
+        author: "user",
+        created_at: new Date(2000).toISOString(),
+        face,
+        message_id: n,
+    }));
+    const made = new Set(
+        [
+            ...beatsAfter(agent, 1),
+            ...cardsAfter(agent, new Set()),
+            ...testResultsAfter(agent, new Map()),
+            ...facesAfter(faces, 1),
+            // the figure's own page sees these two: a key pressed in the compose box, and the agent settling after WORKED_SECONDS of work
+            {beat: "typing"},
+            {beat: "work_done"},
+            {beat: "long_walk"},
+        ].map((fire) => fire.beat)
+    );
     for (const each of REACTIONS) expect(made.has(each.moment), each.moment).toBe(true);
 });
 
@@ -157,22 +179,34 @@ test("the laptop is rolled once for a stretch of work and kept from one tool to 
 });
 
 test("typing is a moment, and so is the end of a stretch of work long enough, timed from when the work began", () => {
-    expect(workMoments("idle", true, 0, 50)).toEqual({moments: [{beat: "typing", at: 50}], began: 0});
+    expect(workMoments("idle", true, 0, 50)).toEqual({moments: [{beat: "typing", time: 50}], began: 0});
     expect(workMoments("running", false, 0, 50)).toEqual({moments: [], began: 50});
     expect(workMoments("thinking", false, 50, 60).began).toBe(50);
-    expect(workMoments("idle", false, 50, 50 + WORKED_SECONDS)).toEqual({moments: [{beat: "work_done", at: 50 + WORKED_SECONDS}], began: 0});
+    expect(workMoments("idle", false, 50, 50 + WORKED_SECONDS)).toEqual({
+        moments: [{beat: "work_done", time: 50 + WORKED_SECONDS}],
+        began: 0,
+    });
     expect(workMoments("idle", false, 50, 51).moments).toEqual([]);
 });
 
 test("a moment is answered by its egg first, else by its reaction, a beat for the body or a look for the eyes, and a missing clip by nothing", () => {
     const memory = () => ({reacted: new Map(), played: []});
     const has = () => true;
-    expect(answerTo({beat: "failed", at: 1}, "squire", memory(), 0, () => 0, has)).toEqual({beat: {clip: "squire_chase", card: ""}});
-    expect(answerTo({beat: "reacted:\u2764\ufe0f", at: 1}, "butler", memory(), 0, () => 0, has)).toEqual({look: "hearts"});
-    expect(answerTo({beat: "tests_passed", at: 1, card: "tests:1"}, "butler", memory(), 0, () => 0, has)).toEqual({
+    expect(answerTo({beat: "failed", time: 1}, "squire", memory(), 0, () => 0, has)).toEqual({beat: {clip: "squire_chase", card: ""}});
+    expect(answerTo({beat: "reacted:\u2764\ufe0f", time: 1}, "butler", memory(), 0, () => 0, has)).toEqual({look: "hearts"});
+    expect(answerTo({beat: "tests_passed", time: 1, card: "tests:1"}, "butler", memory(), 0, () => 0, has)).toEqual({
         beat: {clip: "joy", card: "tests:1"},
     });
-    expect(answerTo({beat: "tests_passed", at: 1}, "butler", memory(), 0, () => 0, () => false)).toBe(null);
+    expect(
+        answerTo(
+            {beat: "tests_passed", time: 1},
+            "butler",
+            memory(),
+            0,
+            () => 0,
+            () => false
+        )
+    ).toBe(null);
 });
 
 test("the figure does something by itself only while it is calm: idle, not hanging, with nothing to play and neither coming nor going", () => {
@@ -185,10 +219,11 @@ test("the figure does something by itself only while it is calm: idle, not hangi
     expect(pastimeFor(calm, {...waited, state: "running"}, new Map(), 0, () => 0, has)).toBe(null);
 });
 
-
 test("reading shows the book even when the stretch rolled a laptop, without rerolling the stretch", () => {
     const rolled = stretchClip("running", {stretch: "", clip: ""}, () => 0);
-    const noRoll = () => { throw new Error("the working stretch must keep its roll"); };
+    const noRoll = () => {
+        throw new Error("the working stretch must keep its roll");
+    };
     const reading = stretchClip("reading", rolled, noRoll);
     expect(reading).toEqual({stretch: "work", clip: "type", shows: "read"});
     expect(stretchClip("running", reading, noRoll).shows).toBe("type");

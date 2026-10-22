@@ -12,11 +12,13 @@ from journal.repositories.shares import Shares
 class ShareController(Controller[Share]):
     """The links that let someone outside read one document, report or plan: each with its address and what it opens, and whether it asks for a password, never the password."""
 
+    repository: Shares
+
     def __init__(self, shares: Shares, actions: ShareActions, targets: ShareTargets, tunnel: Tunnel) -> None:
         self.repository, self.actions, self.targets, self.tunnel = shares, actions, targets, tunnel
 
     def rows(self) -> list[Share]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Share) -> bool:
         return row.stopped_at is None
@@ -25,9 +27,9 @@ class ShareController(Controller[Share]):
         return [self.described(share) for share in rows]
 
     def described(self, share: Share) -> dict:
-        target = self.targets.of(share)
-        fields = {name: value for name, value in ModelFields.of(share).items() if name != "password"}
-        return {**fields, "locked": bool(share.password), "link": self.tunnel.link_of(share.token), "target": str(target) if target else "",
+        target = self.targets.targets(share)
+        fields = {name: value for name, value in ModelFields.build(share).items() if name != "password"}
+        return {**fields, "locked": bool(share.password), "link": self.tunnel.share_link(share.token), "target": str(target) if target else "",
                 "opens": self.targets.opens(str(target)) if target else []}
 
     def store(self, request: Request) -> Response:
@@ -42,5 +44,4 @@ class ShareController(Controller[Share]):
         return Response.json(self.shown(self.actions.stop(self.repository.find(request.number("id")), request.actor)))
 
     def opens(self, request: Request) -> Response:
-        """What a link to a row would open, before it is made."""
         return Response.json(self.targets.opens(request.query.get("target", "")))

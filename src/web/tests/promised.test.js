@@ -9,7 +9,7 @@ describe("a promised row", () => {
         const two = promise("messages", {text: "again"});
         expect(pending.value.map((p) => p.text)).toEqual(["hi", "again"]);
         expect(one.key).not.toBe(two.key);
-        expect(one).toMatchObject({table: "messages", pending: true, created_by: "user", id: 0});
+        expect(one).toMatchObject({table: "messages", pending: true, creator: "user", id: 0});
     });
 
     test("changing one leaves the others alone", () => {

@@ -5,13 +5,12 @@ from dataclasses import dataclass
 class CheckProgress:
     """A check's run under way: when it started, the tail of what it printed so far, and how far it says it is."""
 
-    at: float
+    time: float
     output: str = ""
-    done: int = 0
+    finished_count: int = 0
     total: int = 0
     percent: float | None = None
-    """How far, out of a hundred; None while the check has said nothing that measures it."""
 
     @classmethod
-    def from_json(cls, data: dict) -> "CheckProgress":
+    def parsed(cls, data: dict) -> "CheckProgress":
         return cls(**data)

@@ -14,20 +14,25 @@ class Creations(Listener[Created]):
     """Every row made while a command runs, by the command or by what its events caused, so the agent is told each one's name and number."""
 
     def handle(self, event: Created) -> None:
-        made = RUN.get()
-        if made is not None and event.by.kind != ActorKind.SYSTEM and not isinstance(event.model, (Entry, CommandOutput)):
-            made.append(event.model)
+        produced = RUN.get()
+        if produced is not None and event.actor.kind != ActorKind.SYSTEM and not isinstance(event.model, (Entry, CommandOutput)):
+            produced.append(event.model)
 
     @staticmethod
     def begin() -> list[Model]:
-        made: list[Model] = []
-        RUN.set(made)
-        return made
+        produced: list[Model] = []
+        RUN.set(produced)
+        return produced
 
     @staticmethod
     def end() -> None:
         RUN.set(None)
 
+    @classmethod
+    def line(cls, produced: list[Model], line_text: str) -> str:
+        anonymous = [name for m in produced if (name := cls.lookup(m)) not in line_text]
+        return "created: " + ", ".join(anonymous) if anonymous else ""
+
     @staticmethod
-    def line(made: list[Model]) -> str:
-        return "created: " + ", ".join(f"{m.table()[:-1] if not m.table().endswith('ies') else m.table()[:-3] + 'y'} {m.id}" for m in made)
+    def lookup(produced: Model) -> str:
+        return f"{produced.noun()} {produced.id}"

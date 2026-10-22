@@ -6,42 +6,27 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "fifty quiet minutes",
       "answer": null,
       "typed": [
-        "[journal] blocked, with nothing that opens it by itself: 1 the footer (waiting on: the designer's answer). has what it waits on come? `journal task unblock <n>` when it has",
-        "[journal] nothing has happened for half an hour: is there anything left for you to do? Carry on, take the next task, or say so in one line"
+        "[journal] blocked, with nothing that opens it by itself: task 1 (the footer). has what it waits on come? `journal task unblock <n>` when it has"
       ],
       "nudges": [
-        "tasks.blocked_still",
-        "tasks.check_in"
+        "tasks.blocked_task_asked_about"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "42": 3000,
-          "56": 3000
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -49,13 +34,7 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": []
     }
   ]
 }

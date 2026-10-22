@@ -9,5 +9,5 @@ class FinishCancelledTasks(Migration):
 
     number: ClassVar[int] = 2
 
-    def up(self, connection: Connection) -> None:
+    def apply(self, connection: Connection) -> None:
         connection.execute("UPDATE tasks SET finished_at = updated_at WHERE state = 'cancelled' AND finished_at IS NULL")

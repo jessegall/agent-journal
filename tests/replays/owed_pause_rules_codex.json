@@ -5,60 +5,50 @@
       "name": "a stop before orienting",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a look at what is in flight here. run `journal environment here` first, or `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "you stopped before running `journal environment overview` this session. run it first"
       },
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
+        "briefing.stopped_unoriented"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a tool use at the mark",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal nothing \"<why>\"`; writes wait until you do"
+          "additionalContext": "context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal memory skip \"<why>\"`; writes wait until you do"
         }
       },
       "typed": [],
       "nudges": [
-        "memory.decide"
+        "memory.decide_at_the_mark"
       ],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop under the mark",
       "answer": {
         "decision": "block",
-        "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. `journal fact create`, `journal rule create`, or `journal nothing \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "you stopped while the journal awaits a decision at the context mark, 80% full. `journal fact create`, `journal rule create`, or `journal memory skip \"<why>\"` first, or `journal stuck \"<why>\"` if you are truly stuck"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0
-      },
-      "read": []
+      "nudges": [
+        "memory.stopped_at_mark"
+      ],
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

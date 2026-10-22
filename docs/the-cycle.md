@@ -4,19 +4,16 @@ How the journal speaks to the agent, from A to Z, as version 4 runs it on 2026-1
 Claude Code's hooks or one journal command; every quoted line is typed into the agent's terminal or handed
 back in a hook's answer. A 409 is a hook answered "no": the agent reads why and goes on.
 
-## 0. The chart comes first
+## 0. The states come first
 
-Since 2026-10-16 the journal's conduct is workflows, edited on the Workflows page and read afresh at every event.
-A trigger has a list of workflows in the order the user drags: the locked guards first, then the Always ones that
-run whatever the agent is doing, then the states' own, each bound to the state it runs in; a Run no later workflows node ends
-the event's walk for the workflows after it. An agent event is walked before its hook is answered, right after
-the machine, so a hold or a blocked stop reaches the agent and a said line rides on the answer; the first hold of
-an event wins and one move per event is taken; a row event is walked on the worker thread and can only say or
-type. The counts the workflows keep for the agent, started, counted and read by nodes on the canvas, carry the
-cadences that the engine once counted in secret. What the agent owes the journal, a skill to read, the look at what is in flight, a decision at a context mark, is a
-fact on its row, set by a node and paid by a command, with the guards holding its writes and the Always workflow at Stop
-its stops meanwhile; no state stands for it. What the
-workflows do not carry the states and listeners below still do; the-rules.md lists which is which, and the-chart.md says how a workflow is read and edited.
+Since 2026-10-21 the journal's conduct is its states: a stack on the agent's row, Idle at the floor and the state in hand
+on top, with every feature's conduct folded into each state at boot. An agent event is answered by the top of the stack
+before its hook is answered, right after the engine's own listeners, so a hold or a blocked stop reaches the agent and a
+said line rides on the answer; the first hold of an event wins and one push or pop per event is taken; a row event is
+answered on the worker thread and can only say or type. A pause is a state pushed over the work and popped when what it
+waits for comes. What the agent owes the journal, a skill to read, the look at what is in flight, a decision at a context
+mark, is a fact on its row, set by a feature's recording listener and held by that feature's conduct. the-rules.md is the
+table of every state and every line and who says it.
 
 ## 1. One session, start to stop
 
@@ -31,7 +28,7 @@ workflows do not carry the states and listeners below still do; the-rules.md lis
                                                  ▼
                        facts on the row ─► the journal skill owed, the look owed
                        a write held by the guards until the journal skill is read
-                       a write held until `journal environment here` is run
+                       a write held until `journal environment overview` is run
                                                  ▼
                      ┌──────────────────────── WORK LOOP ─────────────────────────┐
                      │                                                             │
@@ -103,7 +100,7 @@ the user; the agent acts on it and says nothing about it in the chat.
 ```
    PreCompact ──► the skills read are forgotten; nothing is said
    SessionStart(compact) ──► the start block again, the look owed again: writes wait for
-                            `journal environment here`, which names the task in hand, open and parked
+                            `journal environment overview`, which names the task in hand, open and parked
                             tasks, unread and unanswered messages, questions, workers, background runs,
                             rules, facts and reminders
    a session that ended and starts again ──► idle, then the same start

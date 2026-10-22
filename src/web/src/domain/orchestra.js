@@ -37,7 +37,7 @@ function environmentEntry(standing) {
         says: agent.last_message || "",
         doing: agent.doing || "",
         model: agent.model || "",
-        at: seconds(agent.heard_at),
+        time: seconds(agent.heard_at),
         since: 0,
         waits: Boolean(standing.questions || agent.awaiting),
         opens: {table: "agents", id: agent.id},
@@ -59,7 +59,7 @@ function workerEntry(worker, env) {
         says: "",
         doing: "",
         model: worker.model,
-        at: seconds(worker.updated_at),
+        time: seconds(worker.updated_at),
         since: workerState(worker) === "running" ? seconds(worker.created_at) : 0,
         waits: workerState(worker) === "reported",
         opens: {table: "workers", id: worker.id},
@@ -81,8 +81,8 @@ function subagentEntry(sub, agent, env) {
         says: "",
         doing: sub.type || "",
         model: sub.model || "",
-        at: sub.at,
-        since: sub.running ? sub.at : 0,
+        time: sub.time,
+        since: sub.running ? sub.time : 0,
         waits: false,
         opens: {table: "agents", id: agent.id, session: sub.session},
         card: {state: sub.running ? "working" : "idle", reason: sub.running ? "" : sub.status || "finished"},
@@ -91,7 +91,7 @@ function subagentEntry(sub, agent, env) {
 
 export function orchestraOf(summary, workers, lead, env) {
     const environments = ((summary && summary.environments) || []).filter((s) => s.agent).map(environmentEntry);
-    const subs = lead ? subagentsOf(lead.id).map((sub) => subagentEntry(sub, lead, env)) : [];
+    const subs = subagentsOf(lead).map((sub) => subagentEntry(sub, lead, env));
     return [...environments, ...workers.map((w) => workerEntry(w, env)), ...subs];
 }
 
@@ -148,8 +148,8 @@ export const slotsFor = (slots, entries) => [...slots, ...entries.filter((e) => 
 
 const RANK = {waiting: 0, working: 1, idle: 2, stopped: 3};
 const BY = {
-    state: (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)] || b.at - a.at,
-    active: (a, b) => b.at - a.at,
+    state: (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)] || b.time - a.time,
+    active: (a, b) => b.time - a.time,
 };
 
 export const ordered = (entries, order, slots = []) =>

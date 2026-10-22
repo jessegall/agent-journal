@@ -38,7 +38,6 @@ const TOOL_STATES = {
     Bash: "running",
 };
 
-
 const BAR_STATES = {paused: "paused", stopped: "stopped", compacting: "compacting", waiting: "waiting", running: "waiting"};
 
 // An idle agent's figure falls asleep after this many seconds of nothing.
@@ -128,19 +127,19 @@ const BEATS = [
 export function facesAfter(reactions, seenAt) {
     return reactions
         .filter((row) => row.author === "user" && createdAt(row) > seenAt)
-        .map((row) => ({beat: `reacted:${row.face}`, at: createdAt(row), card: `messages:${row.message_id}`}))
-        .sort((a, b) => a.at - b.at);
+        .map((row) => ({beat: `reacted:${row.face}`, time: createdAt(row), card: `messages:${row.message_id}`}))
+        .sort((a, b) => a.time - b.time);
 }
 
-// A test run's card is made when it starts and changes when it ends, so its result is a change seen between two looks: the beats for each
-// test card that has ended since `known` (card key to the state it had) was last filled in, which this fills in
+// A test run is a watched output whose reader's figure says Tests, so its result is its watch card's ending seen between two looks: the
+// beats for each such card that has ended since `known` (card key to the ending it had) was last filled in, which this fills in
 export function testResultsAfter(agent, known) {
-    const ended = (agent?.data?.cards || []).filter((card) => card.key?.startsWith("tests:") && ["done", "failed"].includes(card.state));
-    const fresh = ended.filter((card) => known.get(card.key) !== card.state);
-    fresh.forEach((card) => known.set(card.key, card.state));
+    const ended = (agent?.data?.cards || []).filter((card) => card.watch?.figure?.startsWith("Tests") && card.watch.ending);
+    const fresh = ended.filter((card) => known.get(card.key) !== card.watch.ending);
+    fresh.forEach((card) => known.set(card.key, card.watch.ending));
     return fresh.map((card) => ({
-        beat: card.state === "done" ? "tests_passed" : "tests_failed",
-        at: Number(card.ended || card.at),
+        beat: card.watch.ending === "finished" ? "tests_passed" : "tests_failed",
+        time: Number(card.time),
         card: card.key,
     }));
 }
@@ -154,8 +153,15 @@ export const withSystemCards = (agent, messages) =>
             cards: [
                 ...(agent.data?.cards || []),
                 ...messages
-                    .filter((m) => m.author === "system" && [undefined, "", agent.session].includes(m.data?.session))
-                    .map((m) => ({key: refOf(m), at: createdAt(m), icon: m.data.icon, tone: m.data.tone, label: m.text})),
+                    .filter((m) => m.author === "system" && [undefined, null, "", agent.session].includes(m.session))
+                    .map((m) => ({
+                        key: refOf(m),
+                        time: createdAt(m),
+                        icon: m.data.icon,
+                        tone: m.data.tone,
+                        label: m.text,
+                        watch: m.data.output ? {figure: m.data.figure || "", ending: m.data.ending || ""} : null,
+                    })),
             ],
         },
     };
@@ -163,17 +169,17 @@ export const withSystemCards = (agent, messages) =>
 export function cardsAfter(agent, known) {
     const cards = (agent?.data?.cards || []).filter((card) => card.key && !known.has(card.key));
     cards.forEach((card) => known.add(card.key));
-    return cards.map((card) => ({beat: "card_arrived", at: Number(card.at), card: card.key}));
+    return cards.map((card) => ({beat: "card_arrived", time: Number(card.time), card: card.key}));
 }
 
 // The beats for what reached the agent's row after `seenAt` (seconds), oldest first: its cards, and the user's own message
 export function beatsAfter(agent, seenAt) {
-    const cards = (agent?.data?.cards || []).filter((card) => card.at > seenAt);
+    const cards = (agent?.data?.cards || []).filter((card) => card.time > seenAt);
     const fired = cards
-        .map((card) => ({beat: BEATS.find((rule) => rule.matches(card))?.beat, at: card.at, card: card.key}))
+        .map((card) => ({beat: BEATS.find((rule) => rule.matches(card))?.beat, time: card.time, card: card.key}))
         .filter((fire) => fire.beat);
     const heard = Number(agent?.data?.person_at || 0);
-    return [...fired, ...(heard > seenAt ? [{beat: "heard", at: heard}] : [])].sort((a, b) => a.at - b.at);
+    return [...fired, ...(heard > seenAt ? [{beat: "heard", time: heard}] : [])].sort((a, b) => a.time - b.time);
 }
 
 // The figure's easter eggs. Each belongs to one true moment read from the agent's row, as the status bar reads it - a beat that fired,
@@ -186,7 +192,7 @@ export const EGGS = [
 ];
 
 // A moment is a beat that fired ({beat, at}) or a held state ({state, since, lasted}); `at` or `since` tells one occurrence from the next
-const occurrenceOf = (moment) => moment.at ?? moment.since;
+const occurrenceOf = (moment) => moment.time ?? moment.since;
 const belongs = (egg, voice, moment) =>
     (!egg.voice || egg.voice === voice) &&
     (egg.beat ? egg.beat === moment.beat : egg.state === moment.state && moment.lasted >= egg.lasted);

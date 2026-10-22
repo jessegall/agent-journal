@@ -7,4 +7,4 @@ class Option:
 
     label: str
     badges: tuple[str, ...] = ()
-    apart: bool = False
+    separate: bool = False

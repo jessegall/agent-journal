@@ -108,7 +108,8 @@ async function retry() {
     <template v-if="visible">
         <div class="band">
             <span class="text">
-                Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.
+                <template v-if="upstream.branch">{{ upstream.branch }} has a newer commit, {{ upstream.latest }}; this is {{ upstream.installed }}.</template>
+                <template v-else>Agent journal {{ upstream.latest }} is out — this is {{ upstream.installed }}.</template>
                 <template v-if="lines.length">
                     <span class="done">{{ lines.join(" · ") }}</span>
                 </template>

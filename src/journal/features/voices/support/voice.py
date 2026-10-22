@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-from journal.features.voices.support.calling import Calling
+from journal.features.voices.support.address_form import AddressForm
 
-PLAIN_WORDS = ("The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, "
+PLAIN_VOCABULARY = ("The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, "
                "whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language.")
 
 
@@ -12,16 +12,15 @@ class Voice:
 
     name: str
     text: str
-    calling: Calling
+    address_form: AddressForm
     sample: str
     humour: str
     naming: str
     address: str | None = None
-    """The words the user is called by, for a voice that calls them in its own words."""
     emoji: str | None = None
 
     def instruction(self, title: str, first_name: str) -> str:
-        called = self.calling.called(title, first_name, self.address)
-        parts = (self.text, self.calling.instruction(called), self.humour, f"When you name a subagent or a worker: {self.naming}",
-                 f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write." if self.emoji is not None else "", PLAIN_WORDS)
+        called = self.address_form.called(title, first_name, self.address)
+        parts = (self.text, self.address_form.instruction(called), self.humour, f"When you name a subagent or a worker: {self.naming}",
+                 f"Your own emoji are {self.emoji}: react with them, and now and then use one in what you write." if self.emoji is not None else "", PLAIN_VOCABULARY)
         return " ".join(part for part in parts if part)

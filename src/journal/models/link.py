@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from journal.models.model import Model
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 
 
 @dataclass(frozen=True, kw_only=True)

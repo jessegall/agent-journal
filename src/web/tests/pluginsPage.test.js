@@ -15,7 +15,7 @@ const ROW = {
     status: "failing",
     manifest: {title: "Echo", description: "Answers what it hears, for the tests.", version: "1.0.0", holds: ["tool_starting", "prompt_submitted"]},
     last_fault: "its answer is not JSON",
-    failing_since: new Date(Date.now() - 120000).toISOString(),
+    failed_at: new Date(Date.now() - 120000).toISOString(),
     settings: {repeat: 3, token: {secret: 7}},
     schema: [
         {key: "repeat", title: "Repeat", kind: "number", default: 1},

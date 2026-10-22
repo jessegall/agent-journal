@@ -6,16 +6,15 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "message 1 arrives",
@@ -24,15 +23,11 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a prompt after 1",
@@ -40,123 +35,92 @@
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
           "additionalContext": "new message 1"
-        }
+        },
+        "systemMessage": "new message 1"
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 7,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "message 2 arrives",
       "answer": null,
-      "typed": [
-        "[journal] new message 3"
-      ],
+      "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 8,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "message 3 arrives",
       "answer": null,
-      "typed": [
-        "[journal] new message 4"
-      ],
+      "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 9,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a prompt after 3",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
-          "additionalContext": "new messages 1, 3, 4"
-        }
+          "additionalContext": "new message 3\nnew message 4\nnew messages 1, 3, 4"
+        },
+        "systemMessage": "new message 3\nnew message 4\nnew messages 1, 3, 4"
       },
       "typed": [],
       "nudges": [
-        "messages.some"
+        "messages.new_messages_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 10,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "message 4 arrives",
       "answer": null,
-      "typed": [
-        "[journal] new message 6"
-      ],
+      "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:31:said": 11,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a prompt after 4",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
-          "additionalContext": "4 messages unread: `journal message unread`"
-        }
+          "additionalContext": "new message 6\n4 messages unread: `journal message unread`"
+        },
+        "systemMessage": "new message 6\n4 messages unread: `journal message unread`"
       },
       "typed": [],
       "nudges": [
-        "messages.many"
+        "messages.unread_messages_to_read"
       ],
-      "counts": {
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a prompt again after 4",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

@@ -1,10 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
-from journal.support.said import Said
 from journal.events.agent.session_started import SessionStarted
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
-from journal.repositories.environments import Environments
 from journal.repositories.facts import Facts
 from journal.repositories.messages import Messages
 from journal.repositories.questions import Questions
@@ -12,51 +10,34 @@ from journal.repositories.reminders import Reminders
 from journal.repositories.rules import Rules
 from journal.repositories.tasks import Tasks
 
-TAKEN_OVER_WITHIN = timedelta(days=1)
-"""Another session that worked here this recently makes a start a takeover."""
+TAKEOVER_WINDOW = timedelta(days=1)
 
 
 class StartLines:
-    """The start block the engine says at every session start and after a compaction, in its order: ready, quiet, the laws, a takeover, the rules, facts and reminders, and what waits; what each line names is worked out here once, for the block and for a workflow that names the same."""
+    """What the start block names, worked out here once: when another session worked here lately, the rules, facts and reminders numbered, and what waits; the briefing conduct says the block from the feature data that carries them."""
 
-    def __init__(self, environments: Environments, agents: Agents, rules: Rules, facts: Facts, reminders: Reminders, tasks: Tasks, messages: Messages, questions: Questions) -> None:
-        self.environments, self.agents, self.rules, self.facts, self.reminders = environments, agents, rules, facts, reminders
+    def __init__(self, agents: Agents, rules: Rules, facts: Facts, reminders: Reminders, tasks: Tasks, messages: Messages, questions: Questions) -> None:
+        self.agents, self.rules, self.facts, self.reminders = agents, rules, facts, reminders
         self.tasks, self.messages, self.questions = tasks, messages, questions
 
-    def said(self, event: SessionStarted) -> list[Said]:
-        from journal.features.briefing.feature import Briefing
-        taken_over_at, rules, facts, reminders, waiting = self.taken_over_at(event), self.rules_said(), self.facts_said(), self.reminders_said(), self.waiting()
-        optional = (
-            (taken_over_at, lambda: Briefing.TAKEOVER.about(at=taken_over_at)),
-            (rules, lambda: Briefing.RULES.about(count=len(self.rules.all()), rows=rules)),
-            (facts, lambda: Briefing.FACTS.about(rows=facts)),
-            (reminders, lambda: Briefing.REMINDERS.about(rows=reminders)),
-            (waiting, lambda: Briefing.WAITING.about(rows=waiting)),
-        )
-        return [Briefing.READY.about(env=self.environments.find(event.environment_id).name), Briefing.QUIET.about(), Briefing.LAWS.about(), *(line() for named, line in optional if named)]
+    def takeover_note(self, event: SessionStarted) -> str:
+        return "" if event.source == "compact" else self.other_session_time(event.session)
 
-    def taken_over_at(self, event: SessionStarted) -> str:
-        """The time of day another session that worked here within a day last did anything, when this start is not the same session going on after a compaction; empty when none did."""
-        if event.source == "compact":
-            return ""
-        others = self.agents.others_lately(event.session, datetime.now(timezone.utc) - TAKEN_OVER_WITHIN)
-        return others[-1].updated_at.astimezone().strftime("%H:%M") if others else ""
+    def other_session_time(self, session: str) -> str:
+        peers = self.agents.recent_peers(session, datetime.now(timezone.utc) - TAKEOVER_WINDOW)
+        return peers[-1].update_time.astimezone().strftime("%H:%M") if peers else ""
 
-    def rules_said(self) -> str:
-        """The rules in force, numbered."""
+    def rules_numbered(self) -> str:
         return self.numbered(r.text for r in self.rules.all())
 
-    def facts_said(self) -> str:
-        """The facts about this environment, numbered."""
-        return self.numbered(f.text for f in self.facts.in_())
+    def facts_numbered(self) -> str:
+        return self.numbered(f.text for f in self.facts.scoped())
 
-    def reminders_said(self) -> str:
-        """The reminders here, numbered."""
-        return self.numbered(r.text for r in self.reminders.in_())
+    def reminders_numbered(self) -> str:
+        return self.numbered(r.text for r in self.reminders.scoped())
 
     def waiting(self) -> str:
-        """What waits for the agent, by count: open tasks, unread messages, open questions."""
-        counts = {"tasks": len(self.tasks.in_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
+        counts = {"tasks": len(self.tasks.with_state(TaskState.OPEN)), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}
         return ", ".join(f"{n} {name}" for name, n in counts.items() if n)
 
     @staticmethod

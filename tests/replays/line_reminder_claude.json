@@ -7,93 +7,74 @@
         "hookSpecificOutput": {
           "hookEventName": "PostToolUse",
           "additionalContext": "chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
-        }
+        },
+        "systemMessage": "chat etiquette: a line from the journal is an instruction, not a message. act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat"
       },
       "typed": [
         "[journal] new message 1"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "messages.new",
-        "etiquette.remind"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
+        "messages.new_message_to_answer",
+        "etiquette.a_line_is_an_instruction"
       ],
-      "counts": {
-        "charts:31:said": 0,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
-      },
-      "read": [
-        {
-          "220": 6
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
       "name": "message 2",
-      "answer": {},
-      "typed": [
-        "[journal] new message 2"
-      ],
-      "nudges": [
-        "messages.new"
-      ],
-      "counts": {
-        "charts:31:said": 1,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PostToolUse",
+          "additionalContext": "new message 2"
+        },
+        "systemMessage": "new message 2"
       },
-      "read": [
-        {
-          "220": 1
-        }
+      "typed": [],
+      "nudges": [
+        "messages.new_message_to_answer"
+      ],
+      "stack": [
+        "idle"
       ]
     },
     {
       "name": "message 3",
-      "answer": {},
-      "typed": [
-        "[journal] new message 3"
-      ],
-      "nudges": [
-        "messages.new"
-      ],
-      "counts": {
-        "charts:31:said": 2,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PostToolUse",
+          "additionalContext": "new message 3"
+        },
+        "systemMessage": "new message 3"
       },
-      "read": [
-        {
-          "220": 2
-        }
+      "typed": [],
+      "nudges": [
+        "messages.new_message_to_answer"
+      ],
+      "stack": [
+        "idle"
       ]
     },
     {
       "name": "message 4",
-      "answer": {},
-      "typed": [
-        "[journal] new message 4"
-      ],
-      "nudges": [
-        "messages.new"
-      ],
-      "counts": {
-        "charts:31:said": 3,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PostToolUse",
+          "additionalContext": "new message 4"
+        },
+        "systemMessage": "new message 4"
       },
-      "read": [
-        {
-          "220": 3
-        }
+      "typed": [],
+      "nudges": [
+        "messages.new_message_to_answer"
+      ],
+      "stack": [
+        "idle"
       ]
     }
   ]

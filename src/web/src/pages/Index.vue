@@ -9,7 +9,7 @@ import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
 import {go, href, peek, route} from "../route.js";
-import {groupOf, GROUPS, open, recordCount} from "../domain/records.js";
+import {listedOpen, recordCount} from "../domain/records.js";
 import {closedAt, createdAt, isClosed} from "../domain/row.js";
 import {closedEarlier, closedFirst, closedHasMore, earlier, hasLoaded, rows} from "../sync/rows.js";
 import RowGroups from "../resource/RowGroups.vue";
@@ -28,7 +28,7 @@ const filter = ref("open");
 const adding = ref(false);
 const all = computed(() => rows(props.table));
 const SHOWS = {
-    open: () => open(props.table),
+    open: () => listedOpen(props.table),
     closed: () => all.value.filter(isClosed),
     every: () => all.value,
 };
@@ -76,14 +76,9 @@ const listed = computed(() =>
 
 const total = computed(() => (kind.value.filters.length ? COUNTS[filter.value] || COUNTS.every : COUNTS.every)());
 
-const groups = computed(() => {
-    if (props.table !== "tasks" || closedTab.value) return [{key: "all", title: closedTab.value ? "Closed" : kind.value.title + "s", count: total.value, list: listed.value}];
-    const buckets = {};
-    for (const r of listed.value) (buckets[groupOf(r)] ||= []).push(r);
-    return Object.keys(GROUPS)
-        .filter((k) => buckets[k])
-        .map((k) => ({key: k, title: GROUPS[k], count: k === "open" && Object.keys(buckets).length === 1 ? total.value : undefined, list: buckets[k]}));
-});
+const groups = computed(() => [
+    {key: "all", title: closedTab.value ? "Closed" : kind.value.title + "s", count: total.value, list: listed.value},
+]);
 
 function select(id) {
     adding.value = false;

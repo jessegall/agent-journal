@@ -6,11 +6,10 @@ class WordOverlap:
 
     WORD = re.compile(r"[a-z0-9']{4,}")
     FEWEST = 8
-    """Words a text needs before it can be said to repeat another: a line of a few words shares them by chance."""
 
     @classmethod
-    def share(cls, text: str, other: str) -> float:
-        words = set(cls.WORD.findall(text.lower()))
-        if len(words) < cls.FEWEST:
+    def share(cls, text: str, counterpart: str) -> float:
+        terms = set(cls.WORD.findall(text.lower()))
+        if len(terms) < cls.FEWEST:
             return 0.0
-        return len(words & set(cls.WORD.findall(other.lower()))) / len(words)
+        return len(terms & set(cls.WORD.findall(counterpart.lower()))) / len(terms)

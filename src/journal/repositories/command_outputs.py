@@ -1,27 +1,50 @@
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from journal.support.actor import Actor
 
 from journal.models.command_output import CommandOutput
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.repositories.scoped_repository import ScopedRepository
 
 
 class CommandOutputs(ScopedRepository[CommandOutput]):
     model = CommandOutput
 
-    def of_chain(self, chain: str) -> CommandOutput:
-        found = self.selected_everywhere("chain = ? ORDER BY id", (chain,))
-        if not found:
-            raise NotFound(self.table, chain)
-        return found[-1]
+    def chain_output(self, chain: str) -> CommandOutput:
+        rows = self.selected_globally(self.query().filter(chain=chain).order("id"))
+        if not rows:
+            raise MissingRow(self.table, chain)
+        return rows[-1]
 
-    def in_background(self, session: str) -> list[CommandOutput]:
-        return [o for o in self.selected("session = ? AND moved = 1 AND ended = 0 ORDER BY id", (session,)) if self.is_running(Path(o.folder))]
+    def background(self, session: str) -> list[CommandOutput]:
+        return [o for o in self.selected(self.query().filter(session=session, moved=True, ended=False).order("id")) if self.is_running(Path(o.folder))]
 
-    def ended_untold(self, session: str) -> list[CommandOutput]:
-        """The session's commands that ended in the background and the agent was not told of yet, oldest first."""
-        return self.selected("session = ? AND moved = 1 AND ended = 1 AND told = 0 ORDER BY id", (session,))
+    def unfinished(self, creator: Actor) -> list[CommandOutput]:
+        return self.selected(self.query().filter(creator=creator, moved=True, ended=False).order("id"))
+
+    def backgrounded(self, session: str | None) -> list[CommandOutput]:
+        return self.selected(self.query().filter(session=session, moved=True).order("id"))
+
+    def moved_unended(self) -> list[CommandOutput]:
+        return self.selected_globally(self.query().filter(moved=True, ended=False).order("id"))
+
+    def watch(self, output: CommandOutput, reader: str, title: str, actor: Actor) -> CommandOutput:
+        for watched in self.watched(output.session):
+            self.save(watched.unwatched(), actor)
+        return self.save(output.watched(reader, title), actor)
+
+    def all_watched(self) -> list[CommandOutput]:
+        return self.selected_globally(self.query().filter(is_watched=True).order("id"))
+
+    def watched(self, session: str | None) -> list[CommandOutput]:
+        return self.selected(self.query().filter(session=session, is_watched=True).order("id"))
+
+    def unread(self, session: str) -> list[CommandOutput]:
+        return self.selected(self.query().filter(session=session, moved=True, ended=True, is_announced=True, is_read=False, watch_reader="").order("id"))
+
+    def unannounced(self, session: str) -> list[CommandOutput]:
+        return self.selected(self.query().filter(session=session, moved=True, ended=True, is_announced=False).order("id"))
 
     @staticmethod
     def is_running(folder: Path) -> bool:
@@ -35,6 +58,5 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
             return False
         return True
 
-    def beyond(self, kept: int) -> list[CommandOutput]:
-        """The rows older than the newest so many, across every environment: the rolling log keeps no more."""
-        return self.selected_everywhere("id NOT IN (SELECT id FROM command_outputs ORDER BY id DESC LIMIT ?) ORDER BY id", (kept,))
+    def surplus(self, stored: int) -> list[CommandOutput]:
+        return list(reversed(self.selected_globally(self.query().order_descending("id").offset(stored))))

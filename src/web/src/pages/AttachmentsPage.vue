@@ -12,7 +12,7 @@ import FileRow from "../resource/FileRow.vue";
 import {api} from "../api/client.js";
 import {href, route} from "../route.js";
 import {ageGroups} from "../format/time.js";
-import {openPictures} from "../platform/view.js";
+import {openFiles} from "../platform/view.js";
 import {useSlashFocus} from "../composables/slashFocus.js";
 
 const PAGE = 60;
@@ -39,7 +39,7 @@ async function fetchPage(at, skip) {
     const asked = {kind: kind.value, shelf: shelf.value, search: words.value, last: PAGE, skip};
     const got = await api.attachments(asked);
     const held = views[at] || {files: []};
-    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: got.more, found: got.found};
+    views[at] = {files: [...held.files, ...got.files.map(addressed)], more: !got.is_last_page, found: got.found};
     counts.value = got.counts;
 }
 
@@ -66,17 +66,16 @@ const shelves = computed(() => [
 ]);
 const listedFiles = computed(() => (view.value ? view.value.files : []));
 const groups = computed(() =>
-    ageGroups(listedFiles.value, (f) => f.at).map((g) => ({
+    ageGroups(listedFiles.value, (f) => f.time).map((g) => ({
         ...g,
         images: g.list.filter((f) => f.image),
         others: g.list.filter((f) => !f.image),
     }))
 );
-const pictures = computed(() => listedFiles.value.filter((f) => f.image).map((f) => ({url: f.url, name: f.description || f.name})));
 const show = (f) =>
-    openPictures(
-        pictures.value,
-        pictures.value.findIndex((p) => p.url === f.url)
+    openFiles(
+        listedFiles.value.map((listed) => ({name: listed.name, url: listed.url})),
+        listedFiles.value.indexOf(f)
     );
 const pickKind = (picked) => {
     kind.value = picked;
@@ -121,10 +120,10 @@ const pickKind = (picked) => {
             </template>
             <template v-if="words && listedFiles.length">
                 <SectionHeading class="group-head">
-                    {{ view.found }} {{ view.found === 1 ? "file matches" : "files match" }}
+                    {{ view.total }} {{ view.total === 1 ? "file matches" : "files match" }}
                 </SectionHeading>
             </template>
-            <PagedList :shown="listedFiles.length" :total="view.found" :more="view.more" :load="loadMore">
+            <PagedList :shown="listedFiles.length" :total="view.total" :more="view.more" :load="loadMore">
                 <template v-for="g in groups" :key="g.title">
                     <section class="group">
                         <SectionHeading class="group-head">
@@ -141,7 +140,7 @@ const pickKind = (picked) => {
                         <template v-if="g.others.length">
                             <div class="rows">
                                 <template v-for="f in g.others" :key="f.url">
-                                    <FileRow :file="f" />
+                                    <FileRow :file="f" @view="show(f)" />
                                 </template>
                             </div>
                         </template>

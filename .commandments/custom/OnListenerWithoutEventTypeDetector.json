@@ -1,0 +1,67 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "function",
+        "where": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "BaseState"
+                        }
+                    ]
+                }
+            },
+            {
+                "nameMatches": "^on_"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "parameter"
+                        },
+                        {
+                            "name": "event"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "nameIn": [
+                    "on_push",
+                    "on_suspend",
+                    "on_resume",
+                    "on_pop"
+                ]
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "parameter"
+                        },
+                        {
+                            "name": "event"
+                        },
+                        {
+                            "parameterType": "*"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "on-listener-without-event-type",
+        "description": "An on_ listener's event parameter has no annotation, so nothing binds it to the event it hears.",
+        "rule": "Annotate the event parameter with the event type: def on_tool_starting(self, event: ToolStarting, settings).",
+        "skill": "stack-machine"
+    }
+}

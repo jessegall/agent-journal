@@ -2,8 +2,11 @@ from pathlib import Path
 from typing import ClassVar
 
 from journal.console.command import Command
-from journal.engine.agent_state import AgentState
-from journal.support.entry import Entry
+from journal.engine.conduct import Conduct
+from journal.engine.base_state import BaseState
+from journal.engine.job import Job
+from journal.engine.support.modes import Modes
+from journal.events.data_source import DataSource
 from journal.events.listener import Listener
 from journal.engine.nudge import Nudge
 from journal.support.option import Option
@@ -12,27 +15,28 @@ from journal.features.support.service import Service
 from journal.support.skill import Skill
 
 
-class Feature:
-    """One switchable subject. It brings its states, its nudges, its state-free listeners, its commands, and the checks and actions a workflow may name; nothing else knows a feature exists."""
+class Feature[D](DataSource[D]):
+    """One switchable subject. It brings its states, its work modes if it has them, its nudges, its state-free listeners, its jobs and its commands; nothing else knows a feature exists. D is the class of the part it reads into the feature data an event carries."""
 
     name: ClassVar[str]
     title: ClassVar[str] = ""
     help: ClassVar[str] = ""
     fixed: ClassVar[bool] = False
-    """Always on: the settings page shows it with no switch, since turning it off would only break what it does."""
-    states: ClassVar[tuple[type[AgentState], ...]] = ()
+    states: ClassVar[tuple[type[BaseState], ...]] = ()
     nudges: ClassVar[tuple[Nudge, ...]] = ()
     options: ClassVar[tuple[Option, ...]] = ()
     listeners: ClassVar[tuple[type[Listener], ...]] = ()
-    checks: ClassVar[tuple[Entry, ...]] = ()
-    actions: ClassVar[tuple[Entry, ...]] = ()
+    data: ClassVar[tuple[type, ...]] = ()
+    conduct: ClassVar[tuple[type[Conduct], ...]] = ()
+    worker_conduct: ClassVar[tuple[type[Conduct], ...]] = ()
     commands: ClassVar[tuple[type[Command], ...]] = ()
     seeds: ClassVar[tuple[type[Seed], ...]] = ()
+    jobs: ClassVar[tuple[type[Job], ...]] = ()
     skill: ClassVar[Skill | None] = None
     services: ClassVar[tuple[Service, ...]] = ()
     default: ClassVar[bool] = True
+    modes: ClassVar[Modes | None] = None
 
     @classmethod
-    def applies_in(cls, root: Path) -> bool:
-        """Whether the feature means anything in the project at this root; the settings page shows only those that do."""
+    def applies(cls, root: Path) -> bool:
         return True

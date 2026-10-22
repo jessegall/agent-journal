@@ -16,6 +16,9 @@ const UNSTARTED = ["draft", "ready", "reviewing", "approved"];
 
 export const open = (table) => rows(table).filter((r) => !isClosed(r));
 
+// The open rows a page lists, which its open count counts: a plan's tasks stay behind their plan.
+export const listedOpen = (table) => open(table).filter((r) => !r.plan_id);
+
 // What the user has not seen: the agent's messages not read yet, and the open rows of a table that someone else made.
 const unseen = (r) => (r.table === "messages" ? r.author === "agent" && !r.read_at : madeBy(r) !== "user");
 export const unreadByUser = (table) => open(table).filter(unseen);
@@ -50,14 +53,15 @@ export function planned(task) {
 
 export const parked = (task) => task.state === "parked";
 
-const asked = (task) => rows("questions").some((q) => !isClosed(q) && (q.text || "").includes(`task ${task.id}`));
+// the open question that names the task, which asks the user about it
+export const questionAbout = (task) => rows("questions").find((q) => !isClosed(q) && (q.text || "").includes(`task ${task.id}`)) || null;
 
 export function groupOf(task) {
     if (task.state === "blocked") return "blocked";
     if (parked(task)) return "parked";
     if (planned(task)) return "planned";
     if (task.state === "started") return "started";
-    return asked(task) ? "asked" : "open";
+    return questionAbout(task) ? "asked" : "open";
 }
 
 export const state = (task) =>

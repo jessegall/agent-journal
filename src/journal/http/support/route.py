@@ -2,10 +2,13 @@ import re
 from dataclasses import dataclass
 from typing import Callable
 
+from journal.http.support.file_response import FileResponse
 from journal.http.support.request import Request
+from journal.http.support.stream_response import StreamResponse
 from journal.support.response import Response
 
-Handler = Callable[[Request], Response]
+Answer = Response | FileResponse | StreamResponse
+Handler = Callable[[Request], Answer]
 
 
 @dataclass(frozen=True)
@@ -16,10 +19,8 @@ class Route:
     pattern: str
     handler: Handler
     outward: bool = False
-    """Its answer waits on a server outside the journal, so its time is the network's and never judged against a budget."""
 
-    def params(self, method: str, path: str) -> dict | None:
-        """The named parts when this route matches, None when it does not."""
+    def params(self, method: str, path: str) -> dict[str, str] | None:
         if method != self.method:
             return None
         regex = "^" + re.sub(r"\{(\w+)\}", r"(?P<\1>[^/]+)", re.escape(self.pattern).replace("\\{", "{").replace("\\}", "}")) + "$"

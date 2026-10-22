@@ -2,47 +2,51 @@ from argparse import Namespace
 from dataclasses import replace
 from datetime import datetime, timezone
 
-from journal.console.command import Command
-from journal.support.where import Where
-from journal.engine.machine import Machine
-from journal.features.plans.support.plan_control import PlanControl
+from journal.console.command import SUBAGENT_KINDS, Command
+from journal.support.caller import Caller
 from journal.features.plans.support.review_rounds import ReviewRounds
-from journal.features.plans.states.following_plan import FollowingPlan
-from journal.support.waits import Waits
-from journal.support.subagents import Subagents
+from journal.features.tasks.active_task import ActiveTask
+from journal.features.tasks.support.waits import Waits
+from journal.features.workers.support.subagent_entries import SubagentEntries
 from journal.models.link import Link
 from journal.models.phase import Phase
 from journal.models.plan import Plan
 from journal.models.plan_state import PlanState
-from journal.models.task_state import TaskState
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.repositories.links import Links
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 from journal.repositories.phases import Phases
-from journal.repositories.plans import IN_PHASE, IN_PLAN, PHASE_OF, Plans
-from journal.repositories.tasks import Tasks, WAITS_ON
+from journal.repositories.plans import PHASE_LINK, PLAN_LINK, PHASE_TASK_LINK, Plans
+from journal.repositories.tasks import Tasks
+CURRENT = "current"
 
 
 class PlanCommand(Command):
     noun = "plan"
+    callers = {"show": SUBAGENT_KINDS}
 
-    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, machine: Machine, subagents: Subagents, control: PlanControl, waits: Waits, rounds: ReviewRounds) -> None:
-        self.plans, self.phases, self.tasks, self.links, self.machine, self.subagents, self.control, self.waits = plans, phases, tasks, links, machine, subagents, control, waits
-        self.rounds = rounds
+    def __init__(self, plans: Plans, phases: Phases, tasks: Tasks, links: Links, subagents: SubagentEntries, waits: Waits, rounds: ReviewRounds, taking: ActiveTask) -> None:
+        self.plans, self.phases, self.tasks, self.links, self.subagents, self.waits = plans, phases, tasks, links, subagents, waits
+        self.rounds, self.taking = rounds, taking
 
     def arguments(self, verbs) -> None:
-        create = self.verb(verbs, "create", "draft a plan")
-        create.add_argument("title")
-        create.add_argument("--brief", default="")
-        add = self.verb(verbs, "add", "add a task to a plan, after the ones it has")
-        add.add_argument("n", type=int)
-        add.add_argument("title")
-        add.add_argument("--brief", default="")
-        add.add_argument("--first", action="store_true", help="put it before the tasks the plan has")
+        creation = self.verb(verbs, "create", "draft a plan")
+        creation.add_argument("title")
+        creation.add_argument("--brief", default="")
+        addition = self.verb(verbs, "add", "add a task to a plan, after the ones it has")
+        addition.add_argument("n", type=int)
+        addition.add_argument("title")
+        addition.add_argument("--brief", default="")
+        addition.add_argument("--first", action="store_true", help="put it before the tasks the plan has")
         brief = self.verb(verbs, "brief", "set a plan's goal, what is true when it is done")
         brief.add_argument("n", type=int)
         brief.add_argument("text")
+        rephase = self.verb(verbs, "rephase", "a phase's title or its complete-when line written anew")
+        rephase.add_argument("n", type=int)
+        rephase.add_argument("phase", type=int, help="the phase's number from 1")
+        rephase.add_argument("--title", default="")
+        rephase.add_argument("--when", default="")
         phase = self.verb(verbs, "phase", "add a phase to a plan, after the ones it has")
         phase.add_argument("n", type=int)
         phase.add_argument("title")
@@ -52,152 +56,181 @@ class PlanCommand(Command):
         todos.add_argument("n", type=int)
         todos.add_argument("phase", type=int)
         todos.add_argument("tasks", type=int, nargs="+")
+        removal = self.verb(verbs, "remove", "take tasks out of a plan and its phases; they stay open as tasks of their own")
+        removal.add_argument("n", type=int)
+        removal.add_argument("tasks", type=int, nargs="+")
         ready = self.verb(verbs, "ready", "the plan is built: every phase has its tasks, and the user may approve it")
         ready.add_argument("n", type=int)
         ready.add_argument("--changed", help="after a review: what the round changed in the plan, in one line (tasks added, merged, moved, reworded)")
         self.verb(verbs, "review", "reviewers are reading the plan: it cannot be approved until they are back and their findings are in it").add_argument("n", type=int)
         self.verb(verbs, "approve", "the user's word: the plan may start").add_argument("n", type=int)
         self.verb(verbs, "start", "follow an approved plan, or go on past a checkpoint: its next open task is started").add_argument("n", type=int)
-        self.verb(verbs, "park", "put a plan aside").add_argument("n", type=int)
+        self.verb(verbs, "suspend", "put a plan aside").add_argument("n", type=int)
         block = self.verb(verbs, "block", "a started plan waits on one thing before any of its work can go on; a plan whose every task left is blocked blocks itself")
         block.add_argument("n", type=int)
         block.add_argument("why", nargs="?", default="")
         Waits.arguments(block, "plan")
         self.verb(verbs, "unblock", "what the plan waited on came: it is started again").add_argument("n", type=int)
         self.verb(verbs, "cancel", "a plan given up, with the tasks that are its alone; one another live plan holds stays").add_argument("n", type=int)
-        self.verb(verbs, "show", "a plan and its tasks").add_argument("n", type=int)
+        self.verb(verbs, "show", "a plan and its tasks").add_argument("n", help="the plan's number, or current for the started plan")
         self.verb(verbs, "list", "every plan here")
 
-    def create(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(Plan(title=args.title, brief=args.brief), where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.save(Plan(title=args.title, brief=args.brief), caller.actor)
         print(f"plan {plan.id} {plan.state}")
         return 0
 
-    def add(self, args: Namespace, where: Where) -> int:
+    def add(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        before = self.plans.tasks_of(plan) if args.first else []
-        task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), where.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
-        for other in before:
-            self.relink(other, plan, where)
+        previous = self.plans.plan_tasks(plan) if args.first else []
+        task = self.tasks.save(Task(environment_id=plan.environment_id, title=args.title, brief=args.brief), caller.actor)
+        self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
+        for counterpart in previous:
+            self.relink(counterpart, plan, caller)
         print(f"task {task.id} added to plan {plan.id}{' first' if args.first else ''}")
         return 0
 
-    def relink(self, task: Task, plan: Plan, where: Where) -> None:
-        """A plan's tasks stand in the order their links were made: a task linked again goes to the end."""
-        for link in self.links.between(task, plan):
-            self.links.delete(link, where.actor)
-        self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
+    def relink(self, task: Task, plan: Plan, caller: Caller) -> None:
+        for link in self.links.connecting(task, plan):
+            self.links.delete(link, caller.actor)
+        self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
 
-    def phase(self, args: Namespace, where: Where) -> int:
+    def rephase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, complete_when=args.when, checkpoint=args.checkpoint), where.actor)
-        self.links.save(Link(source=Ref.to(phase), target=Ref.to(plan), kind=PHASE_OF), where.actor)
-        print(f"phase {len(self.plans.phases_of(plan))} of plan {plan.id}")
+        phase = self.plans.plan_phases(plan)[args.phase - 1]
+        changed = phase.with_(title=args.title or phase.title, completion_rule=args.when or phase.completion_rule)
+        self.phases.save(changed, caller.actor)
+        print(f"phase {args.phase} of plan {plan.id} is now: {changed.title}")
         return 0
 
-    def todos(self, args: Namespace, where: Where) -> int:
-        """Tasks put under a phase, in the order given and after the ones it has: a task under another phase of the plan moves from it."""
+    def phase(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phases = self.plans.phases_of(plan)
+        phase = self.phases.save(Phase(environment_id=plan.environment_id, title=args.title, completion_rule=args.when, checkpoint=args.checkpoint), caller.actor)
+        self.links.save(Link(source=Ref.build(phase), target=Ref.build(plan), kind=PHASE_TASK_LINK), caller.actor)
+        print(f"phase {len(self.plans.plan_phases(plan))} of plan {plan.id}")
+        return 0
+
+    def todos(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.find(args.n)
+        phases = self.plans.plan_phases(plan)
         if not 1 <= args.phase <= len(phases):
-            raise Refused(f"plan {plan.id} has {len(phases)} phases: name one by its number from 1")
+            raise Rejection(f"plan {plan.id} has {len(phases)} phases: name one by its number from 1")
         phase = phases[args.phase - 1]
         for n in args.tasks:
             task = self.tasks.find(n)
-            if not self.links.between(task, plan):
-                self.links.save(Link(source=Ref.to(task), target=Ref.to(plan), kind=IN_PLAN), where.actor)
-            for link in [link for other in phases for link in self.links.between(task, other)]:
-                self.links.delete(link, where.actor)
-            self.links.save(Link(source=Ref.to(task), target=Ref.to(phase), kind=IN_PHASE), where.actor)
+            if not self.links.connecting(task, plan):
+                self.links.save(Link(source=Ref.build(task), target=Ref.build(plan), kind=PLAN_LINK), caller.actor)
+            for link in [link for counterpart in phases for link in self.links.connecting(task, counterpart)]:
+                self.links.delete(link, caller.actor)
+            self.links.save(Link(source=Ref.build(task), target=Ref.build(phase), kind=PHASE_LINK), caller.actor)
         print(f"tasks {', '.join(str(n) for n in args.tasks)} under phase {args.phase} of plan {plan.id}")
         return 0
 
-    def ready(self, args: Namespace, where: Where) -> int:
+    def remove(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        phases = self.plans.phases_of(plan)
+        counterparts = [plan, *self.plans.plan_phases(plan)]
+        for n in args.tasks:
+            task = self.tasks.find(n)
+            for link in [link for counterpart in counterparts for link in self.links.connecting(task, counterpart)]:
+                self.links.delete(link, caller.actor)
+        print(f"tasks {', '.join(str(n) for n in args.tasks)} taken out of plan {plan.id}")
+        return 0
+
+    def ready(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.find(args.n)
+        phases = self.plans.plan_phases(plan)
         if not phases:
-            raise Refused(f"plan {plan.id} has no phase yet: journal plan phase {plan.id} \"<title>\" --when \"<complete when>\"")
-        empty = [i for i, phase in enumerate(phases, 1) if not self.plans.tasks_in(phase)]
+            raise Rejection(f"plan {plan.id} has no phase yet: journal plan phase {plan.id} \"<title>\" --when \"<complete when>\"")
+        empty = [i for i, phase in enumerate(phases, 1) if not self.plans.phase_tasks(phase)]
         if empty:
-            raise Refused(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
-        out = self.subagents.running_about(where.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and where.session else 0
-        if out:
-            raise Refused(f"plan {plan.id} is in review and {out} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
+            raise Rejection(f"phase {', '.join(str(i) for i in empty)} of plan {plan.id} has no task yet: journal plan todos {plan.id} <phase> <tasks>")
+        output = self.subagents.running_mentioning(caller.session, f"plan {plan.id}") if plan.state == PlanState.REVIEWING and caller.session is not None else 0
+        if output:
+            raise Rejection(f"plan {plan.id} is in review and {output} of its reviewers are still out: wait for them, put what they found into the plan, then ready it")
         if plan.state == PlanState.REVIEWING:
-            self.close_round(plan, args.changed, where)
-        plan = self.plans.save(plan.ready(), where.actor)
+            self.close_round(plan, args.changed, caller)
+        plan = self.plans.save(plan.ready(), caller.actor)
         print(f"plan {plan.id} ready: the user approves it on the plan page")
         return 0
 
-    def close_round(self, plan: Plan, changed: str | None, where: Where) -> None:
+    def close_round(self, plan: Plan, changed: str | None, caller: Caller) -> None:
         if changed is None:
-            raise Refused(f"plan {plan.id} is in review: say in one line what this round changed, journal plan ready {plan.id} --changed \"<tasks added, merged, moved, reworded>\"")
-        self.rounds.close(plan, changed, where)
+            raise Rejection(f"plan {plan.id} is in review: say in one line what this round changed, journal plan ready {plan.id} --changed \"<tasks added, merged, moved, reworded>\"")
+        self.rounds.close(plan, changed, caller)
 
-    def review(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(self.plans.find(args.n).reviewing(), where.actor)
-        self.rounds.open(plan, where.actor)
+    def review(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.save(self.plans.find(args.n).reviewing(), caller.actor)
+        self.rounds.open(plan, caller.actor)
         print(f"plan {args.n} in review: put what the reviewers find straight into it, then journal plan ready {args.n}")
         return 0
 
-    def approve(self, args: Namespace, where: Where) -> int:
-        if not where.actor.is_the_user():
-            raise Refused("only the user approves a plan: ask, then wait for their word")
-        plan = self.plans.approve(self.plans.find(args.n), where.actor)
+    def approve(self, args: Namespace, caller: Caller) -> int:
+        if not caller.actor.is_user():
+            raise Rejection("only the user approves a plan: ask, then wait for their word")
+        plan = self.plans.approve(self.plans.find(args.n), caller.actor)
         print(f"plan {plan.id} {plan.state}")
         return 0
 
-    def start(self, args: Namespace, where: Where) -> int:
-        print(self.control.start(self.plans.find(args.n), where.session, where.actor).rendered())
+    def start(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.start(self.plans.find(args.n), self.taking.holder(caller), caller.actor)
+        current = self.plans.started_task(plan)
+        print(f"plan {plan.id} {plan.state}" + (f": task {current.id}, {current.title} is started" if current else ""))
         return 0
 
-    def block(self, args: Namespace, where: Where) -> int:
+    def block(self, args: Namespace, caller: Caller) -> int:
         self.waits.refuse_unnamed(args.why, args.on, args.until)
-        plan = self.plans.save(self.plans.find(args.n).blocked(args.why), where.actor)
-        for ref in self.waits.named(args.on, args.until, args.every, f"plan {plan.id}", where.actor):
-            self.links.save(Link(source=Ref.to(plan), target=ref, kind=WAITS_ON), where.actor)
+        plan = self.plans.save(self.plans.find(args.n).blocked(args.why, datetime.now(timezone.utc).timestamp()), caller.actor)
+        self.waits.linked(plan, args.on, args.until, args.every, caller.actor)
         print(f"plan {plan.id} blocked, waiting on: {self.tasks.reason(plan)}")
         return 0
 
-    def unblock(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(self.plans.find(args.n).unblocked(), where.actor)
+    def unblock(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.save(self.plans.find(args.n).unblocked("the user opened it", datetime.now(timezone.utc).timestamp()), caller.actor)
         print(f"plan {plan.id} open again: `journal plan start {plan.id}` goes on with it")
         return 0
 
-    def park(self, args: Namespace, where: Where) -> int:
-        plan = self.control.park(self.plans.find(args.n), where.session, where.actor)
+    def suspend(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.postpone(self.plans.find(args.n), caller.actor)
         print(f"plan {plan.id} parked")
         return 0
 
-    def cancel(self, args: Namespace, where: Where) -> int:
+    def cancel(self, args: Namespace, caller: Caller) -> int:
         plan = self.plans.find(args.n)
-        gone = self.control.abandon(plan, where.session, where.actor)
-        print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in gone)}" if gone else ""))
+        cancelled = self.plans.cancel(plan, caller.actor)
+        print(f"plan {plan.id} cancelled" + (f", with tasks {', '.join(str(t.id) for t in cancelled)}" if cancelled else ""))
         return 0
 
-    def brief(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), where.actor)
+    def brief(self, args: Namespace, caller: Caller) -> int:
+        plan = self.plans.save(replace(self.plans.find(args.n), brief=args.text), caller.actor)
         print(f"plan {plan.id} brief set")
         return 0
 
-    def show(self, args: Namespace, where: Where) -> int:
-        plan = self.plans.find(args.n)
+    def show(self, args: Namespace, caller: Caller) -> int:
+        if args.n == CURRENT:
+            started = next((p for p in self.plans.scoped() if p.state == PlanState.STARTED), None)
+            if started is None:
+                print("no plan is started")
+                return 0
+            args.n = started.id
+        plan = self.plans.find(int(args.n))
         print(f"plan {plan.id} {plan.state}: {plan.title}")
+        if plan.state == PlanState.STARTED and (phases := self.plans.phased(plan)):
+            current = phases[plan.current_phase(phases) - 1]
+            print(f"phase in hand: {current.number} of {len(phases)}, {current.phase.title}")
         phased = set()
-        for i, phase in enumerate(self.plans.phases_of(plan), 1):
-            print(f"phase {i}: {phase.title}" + (f" (complete when {phase.complete_when})" if phase.complete_when else "") + (" [checkpoint]" if phase.checkpoint else ""))
-            for task in self.plans.tasks_in(phase):
+        for i, phase in enumerate(self.plans.plan_phases(plan), 1):
+            print(f"phase {i}: {phase.title}" + (f" (complete when {phase.completion_rule})" if phase.completion_rule else "") + (" [checkpoint]" if phase.checkpoint else ""))
+            for task in self.plans.phase_tasks(phase):
                 phased.add(task.id)
                 print(f"{task.id:>4}  {task.state:<8} {task.title}")
-        loose = [t for t in self.plans.tasks_of(plan) if t.id not in phased]
+        loose = [t for t in self.plans.plan_tasks(plan) if t.id not in phased]
         if loose:
             print("under no phase yet:")
         for task in loose:
             print(f"{task.id:>4}  {task.state:<8} {task.title}")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
-        for plan in self.plans.in_():
+    def list(self, args: Namespace, caller: Caller) -> int:
+        for plan in self.plans.scoped():
             print(f"{plan.id:>4}  {plan.state:<8} {plan.title}")
         return 0

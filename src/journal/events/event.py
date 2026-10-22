@@ -1,12 +1,21 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from journal.events.propagation import Propagation
 
 
 @dataclass(frozen=True, kw_only=True)
 class Event:
-    """Something that happened inside the journal, told on the bus to whoever listens."""
+    """Something that happened inside the journal, told on the bus to whoever listens. A listener that stops its propagation is the last to hear it."""
+
+    propagation: Propagation = field(default_factory=Propagation, compare=False, repr=False)
 
     @property
     def key(self) -> str:
-        """The event by its name as the catalogue and plugins spell it: Idle as idle, ToolStarting as tool_starting."""
         return re.sub(r"(?<!^)(?=[A-Z])", "_", type(self).__name__).lower()
+
+    def has_hook_lines(self) -> bool:
+        return False
+
+    def stop_propagation(self) -> None:
+        self.propagation.stop()

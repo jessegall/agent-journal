@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from journal.models.scoped import Scoped
@@ -8,58 +8,48 @@ from journal.models.scoped import Scoped
 class Phone(Scoped):
     """A phone paired with the journal through the tunnel: the name its browser gave, its key's hash, and how long it stays paired."""
 
-    SEEN_EVERY = timedelta(minutes=1)
-    PUSH_RETRY_AFTER = timedelta(minutes=1)
+    PRESENCE_INTERVAL = timedelta(minutes=1)
+    NOTIFICATION_RETRY_DELAY = timedelta(minutes=1)
 
     name: str = ""
     key: str = ""
-    """The hash of the key the phone holds; the key itself is never kept."""
-    expires_at: datetime | None = None
-    last_seen_at: datetime | None = None
+    expires_at: datetime = field(kw_only=True)
+    last_visited_at: datetime | None = None
     ended_at: datetime | None = None
-    """When it was disconnected, from the desk or from the phone."""
-    push: str = ""
-    """The push service's address the phone subscribed with; empty while it has not."""
+    subscription: str = ""
     pushed: str = ""
-    """What the phone was last pushed about, by reference, a space between each, so the next push names only what is new."""
-    push_failed_at: datetime | None = None
-    """When the last push could not be delivered; it is tried again a minute after."""
+    subscription_failed_at: datetime | None = None
 
-    def is_live(self, now: datetime) -> bool:
-        return self.ended_at is None and self.expires_at is not None and self.expires_at > now
+    def is_active(self, time: datetime) -> bool:
+        return self.ended_at is None and self.expires_at > time
 
-    def is_due_a_sighting(self, now: datetime) -> bool:
-        """Last seen long enough ago to be written down again: once a minute at most, so reads write nothing in between."""
-        return self.last_seen_at is None or now - self.last_seen_at >= self.SEEN_EVERY
+    def is_presence_due(self, time: datetime) -> bool:
+        return self.last_visited_at is None or time - self.last_visited_at >= self.PRESENCE_INTERVAL
 
-    def seen(self, at: datetime) -> "Phone":
-        return self.with_(last_seen_at=at)
+    def visit(self, time: datetime) -> "Phone":
+        return self.with_(last_visited_at=time)
 
     def pushed_refs(self) -> list[str]:
         return self.pushed.split()
 
-    def has_news(self, owed: list[str]) -> bool:
-        """Something waits that the phone was not pushed about."""
-        return bool(set(owed) - set(self.pushed_refs()))
+    def has_updates(self, obligations: list[str]) -> bool:
+        return bool(set(obligations) - set(self.pushed_refs()))
 
-    def is_owed_a_push(self, owed: list[str], now: datetime) -> bool:
-        """Something new waits, and no push failed in the last minute."""
-        resting = self.push_failed_at is not None and now - self.push_failed_at < self.PUSH_RETRY_AFTER
-        return self.has_news(owed) and not resting
+    def is_push_due(self, obligations: list[str], time: datetime) -> bool:
+        resting = self.subscription_failed_at is not None and time - self.subscription_failed_at < self.NOTIFICATION_RETRY_DELAY
+        return self.has_updates(obligations) and not resting
 
-    def subscribed(self, endpoint: str, owed: list[str]) -> "Phone":
-        """Subscribed to pushes, what already waits counted as pushed, so it is told only of what comes after."""
-        return self.with_(push=endpoint, pushed=" ".join(owed))
+    def subscribed(self, endpoint: str, obligations: list[str]) -> "Phone":
+        return self.with_(subscription=endpoint, pushed=" ".join(obligations))
 
-    def told(self, owed: list[str]) -> "Phone":
-        return self.with_(pushed=" ".join(owed), push_failed_at=None)
+    def notified(self, obligations: list[str]) -> "Phone":
+        return self.with_(pushed=" ".join(obligations), subscription_failed_at=None)
 
-    def push_failed(self, at: datetime) -> "Phone":
-        return self.with_(push_failed_at=at)
+    def push_failed(self, time: datetime) -> "Phone":
+        return self.with_(subscription_failed_at=time)
 
     def unsubscribed(self) -> "Phone":
-        """The push service no longer knows the address, so it is forgotten until the phone subscribes again."""
-        return self.with_(push="", push_failed_at=None)
+        return self.with_(subscription="", subscription_failed_at=None)
 
-    def ended(self, at: datetime) -> "Phone":
-        return self.with_(ended_at=at)
+    def ended(self, time: datetime) -> "Phone":
+        return self.with_(ended_at=time)

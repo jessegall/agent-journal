@@ -5,15 +5,13 @@ import subprocess
 import time
 from pathlib import Path
 
-from journal.support.kept_tips import KEPT
-from journal.support.worktree_not_made import WorktreeNotMade
+from journal.support.worktree_refs import TIPS_REF
+from journal.support.worktree_failure import WorktreeFailure
 
 GIT_SECONDS = 60
 JOURNAL = ".journal"
 SKILL_FOLDERS = (".claude/skills", ".agents/skills")
-"""Each skill in them is shared when the project does not track it."""
-IF_IGNORED = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json", ".codex/agents", ".claude/agents", "AGENTS.md", "CLAUDE.md")
-"""Shared when the project's git ignores them; a tracked one comes with the checkout."""
+IGNORED_COPIES = (".claude/settings.json", ".claude/settings.local.json", ".codex/hooks.json", ".codex/agents", ".claude/agents", "AGENTS.md", "CLAUDE.md")
 
 
 class Worktree:
@@ -36,64 +34,64 @@ class Worktree:
         return (f"worktree on {self.current_branch()}",)
 
     def current_branch(self) -> str:
-        return self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        return self.run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
 
-    def made(self) -> Path:
+    def created(self) -> Path:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with (self.path.parent / f".{self.name}.lock").open("w") as lock:
             fcntl.flock(lock, fcntl.LOCK_EX)
             if self.path.exists() and not self.is_registered():
-                self.moved_aside()
+                self.archived()
             if not self.path.is_dir():
                 self.added()
             self.shared()
-            self.git("update-ref", f"{KEPT}/{self.name}", self.branch_here())
+            self.git("update-ref", f"{TIPS_REF}/{self.name}", self.local_branch())
         return self.path
 
-    def branch_here(self) -> str:
-        return self.git_in("rev-parse", "HEAD").stdout.strip()
+    def local_branch(self) -> str:
+        return self.run_git("rev-parse", "HEAD").stdout.strip()
 
     def added(self) -> None:
         self.git("worktree", "prune")
         if self.has(f"refs/heads/{self.branch}"):
             added = self.git("worktree", "add", str(self.path), self.branch)
-        elif self.has(f"{KEPT}/{self.name}"):
-            added = self.git("worktree", "add", "-b", self.branch, str(self.path), f"{KEPT}/{self.name}")
+        elif self.has(f"{TIPS_REF}/{self.name}"):
+            added = self.git("worktree", "add", "-b", self.branch, str(self.path), f"{TIPS_REF}/{self.name}")
         else:
             added = self.git("worktree", "add", "-b", self.branch, str(self.path))
         if added.returncode != 0:
             self.git("worktree", "prune")
             if self.path.exists():
-                self.moved_aside()
-            raise WorktreeNotMade(self.name, added.stderr.strip())
+                self.archived()
+            raise WorktreeFailure(self.name, added.stderr.strip())
 
     def dropped(self) -> str:
         if not self.path.is_dir():
             return ""
-        left = [line[3:] for line in self.git_in("status", "--porcelain").stdout.splitlines() if line.strip()]
-        if left:
-            return f"its worktree {self.path} stays, since {len(left)} files in it are not committed: {', '.join(left[:10])}"
-        tip = self.git_in("rev-parse", "HEAD").stdout.strip()
+        remaining = [line[3:] for line in self.run_git("status", "--porcelain").stdout.splitlines() if line.strip()]
+        if remaining:
+            return f"its worktree {self.path} stays, since {len(remaining)} files in it are not committed: {', '.join(remaining[:10])}"
+        tip = self.run_git("rev-parse", "HEAD").stdout.strip()
         if self.git("merge-base", "--is-ancestor", tip, "HEAD").returncode != 0:
             return f"its worktree {self.path} stays, since its branch has commits not yet in {self.git('rev-parse', '--abbrev-ref', 'HEAD').stdout.strip()}"
-        self.git("update-ref", f"{KEPT}/{self.name}", tip)
-        branch = self.git_in("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        self.git("update-ref", f"{TIPS_REF}/{self.name}", tip)
+        branch = self.run_git("rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
         self.git("worktree", "remove", "--force", str(self.path))
         self.git("branch", "-D", branch)
-        return f"its worktree and branch are removed, its work already merged; its last commit is kept as {KEPT}/{self.name}"
+        return f"its worktree and branch are removed, its work already merged; its last commit is kept as {TIPS_REF}/{self.name}"
 
     def is_registered(self) -> bool:
         listed = self.git("worktree", "list", "--porcelain").stdout.splitlines()
         return f"worktree {self.path.resolve()}" in listed or f"worktree {self.path}" in listed
 
-    def moved_aside(self) -> Path:
-        aside = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
-        self.path.rename(aside)
+    def archived(self) -> Path:
+        stashed = self.path.with_name(f"{self.name}.moved-aside-{int(time.time())}")
+        self.path.rename(stashed)
         self.git("worktree", "prune")
-        return aside
+        return stashed
 
     def shared(self) -> None:
-        wanted = [Path(JOURNAL), *self.untracked(self.skills()), *self.ignored([Path(p) for p in IF_IGNORED if (self.root / p).exists()])]
+        wanted = [Path(JOURNAL), *self.untracked(self.skills()), *self.ignored([Path(p) for p in IGNORED_COPIES if (self.root / p).exists()])]
         self.excluded(wanted)
         self.cleared(self.path / JOURNAL)
         for path in wanted:
@@ -107,23 +105,23 @@ class Worktree:
         return [path for path in paths if path.parts[:3] not in tracked]
 
     def ignored(self, paths: list[Path]) -> list[Path]:
-        named = set(self.git("check-ignore", *map(str, paths)).stdout.splitlines()) if paths else set()
-        return [path for path in paths if str(path) in named]
+        matched = set(self.git("check-ignore", *map(str, paths)).stdout.splitlines()) if paths else set()
+        return [path for path in paths if str(path) in matched]
 
     def excluded(self, paths: list[Path]) -> None:
         exclude = Path(self.root, self.git("rev-parse", "--git-common-dir").stdout.strip(), "info", "exclude")
         exclude.parent.mkdir(parents=True, exist_ok=True)
-        had = exclude.read_text() if exclude.is_file() else ""
-        lines = [line for line in ("/.claude/worktrees/", *(f"/{path}" for path in paths)) if line not in had.splitlines()]
+        prior = exclude.read_text() if exclude.is_file() else ""
+        lines = [line for line in ("/.claude/worktrees/", *(f"/{path}" for path in paths)) if line not in prior.splitlines()]
         if lines:
-            exclude.write_text(had + ("" if had.endswith("\n") or not had else "\n") + "\n".join(lines) + "\n")
+            exclude.write_text(prior + ("" if prior.endswith("\n") or not prior else "\n") + "\n".join(lines) + "\n")
 
     def cleared(self, place: Path) -> None:
         if place.is_symlink() or not place.is_dir():
             return
-        tracked = [name for name in self.git_in("ls-files", "-z", "--", JOURNAL).stdout.split("\0") if name]
+        tracked = [name for name in self.run_git("ls-files", "-z", "--", JOURNAL).stdout.split("\0") if name]
         if tracked:
-            self.git_in("update-index", "--skip-worktree", "--", *tracked)
+            self.run_git("update-index", "--skip-worktree", "--", *tracked)
         shutil.rmtree(place)
 
     @staticmethod
@@ -133,12 +131,12 @@ class Worktree:
         if place.exists() and not place.is_symlink():
             return
         place.parent.mkdir(parents=True, exist_ok=True)
-        fresh = place.with_name(f".{place.name}.{os.getpid()}.link")
-        fresh.unlink(missing_ok=True)
-        fresh.symlink_to(target, target_is_directory=target.is_dir())
-        os.replace(fresh, place)
+        recent = place.with_name(f".{place.name}.{os.getpid()}.link")
+        recent.unlink(missing_ok=True)
+        recent.symlink_to(target, target_is_directory=target.is_dir())
+        os.replace(recent, place)
 
-    def git_in(self, *args: str) -> subprocess.CompletedProcess:
+    def run_git(self, *args: str) -> subprocess.CompletedProcess:
         return subprocess.run(["git", "-C", str(self.path), *args], capture_output=True, text=True, timeout=GIT_SECONDS)
 
     def has(self, ref: str) -> bool:

@@ -57,14 +57,18 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
   `tasks`, `plans`, `messages`, `secrets` or `plugins`); install names the clash when there is one.
 - `protocol`: the version of the protocol it speaks; this journal speaks 1.
 - `program`: a path inside the folder, run for each event: an executable file, its first line naming its interpreter.
-- `hears`: agent events by name (`tool_starting`, `tool_finished`, `idle`, `prompt_submitted`, `session_started`,
+- `hears`: agent events by name (`tool_starting`, `command_starting`, `tool_finished`, `file_edited`, `idle`, `prompt_submitted`, `session_started`,
   `session_ended`, `compacting`, `subagent_started`, `subagent_ended`, `ticked`), `plugin.updated` when someone
   else changed its own settings, its `data` then being `{"settings": ...}`, and rows as `<table>.created`, `.updated`
   or `.deleted`. The secrets, users and MCP server rows are
   never sent, nor a row the plugin wrote itself. A subagent's events come with `subagent` set and are held only at
   `tool_starting`.
-- `holds`: the events it hears that it answers before the agent goes on: `tool_starting` and `idle` may be refused,
-  `prompt_submitted` and `session_started` only told. A line told at an event it hears but does not hold reaches the
+- `holds`: the events it hears that it answers before the agent goes on, each with the window in milliseconds it
+  answers in: `[{"event": "tool_starting", "window_ms": 5}]`; a bare name takes the journal's ceiling, the setting
+  `plugins.hold_window_ms` (50), and a window above the ceiling is cut to it. `tool_starting`, `command_starting`, `file_edited` and `idle` may be refused,
+  `prompt_submitted` and `session_started` only told; a refused command holds the whole tool, and a refused edit
+  blocks the tool's result, so the agent must put the file right before it goes on. A hold inside a few milliseconds cannot start a process: a plugin
+  that holds runs a service with `answers` and decides from what it already knows, never from a judge. A line told at an event it hears but does not hold reaches the
   agent at its next tool use or prompt; hold the event for the line to come with it.
 - `settings`: a path to its settings file, described under Settings.
 - `skills`: a folder holding one folder per skill with its `SKILL.md`, published under that folder's name, which no
@@ -91,6 +95,15 @@ The journal's own tests run this plugin, from `tests/plugins/echo`.
 - `setup`: steps run in order at install, in its folder with its environment, each `{"name": ..., "run": "<shell
   line>"}`. A step that fails stops the install and leaves nothing behind.
 - `installed`: a command run after the setup, whose answer, a JSON object, fills its settings.
+- `aliases`: the commands it ships, each `{"name": ..., "line": "<shell line>", "env": {"KEY": "value"}, "args": ["--changes",
+  "<path>"], "reader": "<reader>", "description": "<what it does>"}`. The line's first word is a path inside the folder; the
+  alias is kept as the project's with that path made whole, so `journal <name> [args]` runs it in the project with
+  `env` put before it and the args at the line's end, or in place of `{args}` where the line has it; `args` says what it
+  takes. A run that moves to the background is watched at once through `reader`. A name that is a journal command or an
+  alias already kept is skipped, the install saying which, and the plugin installs all the same. The readers ship in
+  the folder as `.journal-plugin/readers/<name>.pattern`, in the shape `journal reader add` writes, and are copied into
+  `.journal/readers` with `plugin: <name>` on a line of their own; a reader of the project's of that name is left as it
+  is. Both go when the plugin is removed, and an upgrade writes them again.
 - `version`, `title`, `description`: what the Plugins page shows; `journal`: the least journal version it runs on.
 - `cards`: the kinds of card it shows, each `{"kind": ..., "label": ..., "tone": "good" | "warn" | "danger" | "note" |
   "muted", "icon": ..., "collapsed": true}`.
@@ -110,8 +123,15 @@ One line of JSON, ending in a newline:
 - `event`: the event's name as the manifest's `hears` spells it. `state`: the agent's state at an agent event, one
   word such as `working`, `idle` or `awaiting`, empty at a row event.
 - `session`, `provider`, `subagent`: whose event it was, sent with agent events only.
-- `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `tool_finished` the same with its
-  `output` and `response`; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
+- `data`, by event: `tool_starting` the `tool`, its `input` and whether it `writes`; `command_starting`, one per
+  command of a shell line as the journal cut the chain, the command's `text`, whether it `writes`, the `files` it
+  touches, its `position` in the chain and the chain's `parts`, a journal command never among them; `tool_finished`
+  the same as `tool_starting` with its `output` and `response`; `file_edited`, one per file a tool changed, once
+  the journal has recorded the edit, at the tool's end for a plugin that holds it and after the reply for the rest: the `path` inside the project, the `kind` (`create` for a file
+  written whole, `edit` for a change inside one, `delete` for a file gone), the lines `added` and `removed`, the span
+  `first_line` to `last_line`, the changed `lines` as `{kind: add|del|ctx, line, text}` up to two hundred, every
+  line of a created or deleted file among them, and the shell `command` when one made the change; a file outside the
+  project is never sent; `prompt_submitted` the `prompt`; `session_started` its `source`; `idle` whether the stop
   was `held_before`; `ticked` the time `at` and the seconds the agent was `quiet_for`; `subagent_started` and
   `subagent_ended` the `subagent`; `plugin.updated` its `settings`. A row event's `data` is the row's `table`, `id`,
   who wrote it (`by`) and, when updated, the fields that `changed`; tables go by their plural names (`tasks`,
@@ -138,7 +158,8 @@ One line of JSON on its output, the last line counting; an empty output is `allo
 - `cards`: shown in the chat after the reply, each `{kind, key, label, tone, detail}`. Its `kind` is one the
   manifest's `cards` names, and its tone is the kind's unless it gives one; a kind marked `collapsed` keeps the detail
   to the card's tooltip. A `key` is any text, unique within the plugin, and a card with a key settles the plugin's
-  earlier card of that key in place, where it stands in the chat. A card is drawn with the plugin's name on it and
+  earlier card of that key in place, where it stands in the chat, while the user has written nothing since it; an
+  earlier card from before the user's latest message is taken out and the new one shown at the bottom. A card is drawn with the plugin's name on it and
   written as the plugin.
 - `commands`: journal command lines, at most 20, run after the reply as the plugin; each leaves a `plugin_command`
   entry with its exit code. A row a plugin's command writes is heard by the other plugins, and a row their commands
@@ -148,6 +169,24 @@ One line of JSON on its output, the last line counting; an empty output is `allo
   text and every secret value masked.
 - An answer that does not parse is a fault: the event goes through and the fault is recorded. A fault is never a
   refusal.
+
+## The queue
+
+A plugin that works on its own time, a judge that runs after the tool finished, say, hands the journal what it found
+through its queue: the folder `queue` under `JOURNAL_PLUGIN_DATA`. Each message is one file holding one line out, the
+same JSON as an answer, with `env` naming the environment it is for (the plugin's `JOURNAL_ENV` at the event), written
+to a `.tmp` name and renamed to `.json` so the journal never reads half a file:
+
+```json
+{"v": 1, "env": "main", "tell": "two sins in a.py", "cards": [{"kind": "sin", "key": "a.py", "label": "A sin in a.py"}], "commands": []}
+```
+
+The journal drains every enabled plugin's queue at every hook, oldest file first, and deletes what it read. A `tell`
+for the environment of the hook rides on that hook's answer, so the agent reads it with its next tool use; one for
+another environment waits for that environment's live agent's next hook. The `cards` and `commands` apply after the
+reply as they do for an answer, so a card with a key updates the plugin's earlier card of that key. An `answer` of
+`refuse` in the queue is too late to hold anything and is recorded as `plugin_unanswered`. A file that does not parse
+is a fault, named with its file, and deleted.
 
 ## How it runs
 
@@ -167,7 +206,8 @@ input. It is given these variables and nothing else of the journal's environment
   `/usr/bin` and `/bin`. A program it needs from elsewhere belongs in `requires`.
 
 An event it holds is answered inside the hook: the plugins holding one event are asked in the order they were
-installed and share one deadline, the setting `plugins.deadline` (6 seconds), below the hook's own ten. A plugin is
+installed, each inside the window its manifest declares, cut to the ceiling `plugins.hold_window_ms` (50 ms). A plugin
+past its window is cut: its answer is dropped, the event goes through, the miss is recorded on its record as unanswered with the milliseconds, it counts as no fault, and the plugin is asked again at the next event. A plugin is
 asked only while the event is not yet held; once the journal or an earlier plugin holds it, the rest hear it after the
 reply, and a refusal then is recorded as `plugin_unanswered`. A journal command and the read of a skill always go
 through, the refusal's words told instead. Every other event, and every row, is heard after the reply, a row only once
@@ -235,12 +275,12 @@ Every key of a version 3 `plugin.json` and of its answers, and where it went.
   beyond that is a setting or a secret.
 - `on` (handlers per event pattern) and `hooks` (each hook sync or async): become `hears` and `holds`. One program
   answers every event it hears, and an event it holds is answered inside the hook.
-- `refuse`, `refuse_seconds`, `refuse_socket`: become holding `tool_starting`. One deadline, `plugins.deadline`, covers
-  every plugin, and the service's socket replaces the refusal socket.
+- `refuse`, `refuse_seconds`, `refuse_socket`: become holding `tool_starting` inside a declared window, cut to the
+  ceiling `plugins.hold_window_ms`, and the service's socket replaces the refusal socket.
 - `reads`: dropped. The line for `tool_starting` says whether the tool `writes`, and the plugin decides for itself.
 - `events` (a plugin's own kinds of card, each with a title and a tone): become `cards`.
 - `load` (skills the agent must load at an event): dropped. A plugin's skills are published with the journal's;
-  requiring one in a state waits for a workflow action that names a skill.
+  requiring one in a state is the skills feature's, said by its conduct.
 - `command` (a command of the plugin's own under `journal`): dropped. A plugin acts through the journal's own commands,
   as itself.
 - `dashboards`: kept as one `dashboard`.

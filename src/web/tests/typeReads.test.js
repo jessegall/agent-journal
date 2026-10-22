@@ -7,7 +7,7 @@ const answering = (body) => vi.fn(async () => new Response(JSON.stringify(body),
 const client = () => new ApiClient({env: () => "main"});
 
 test("each table is read on its own path, by the one list protocol", async () => {
-    const fetched = answering({rows: [], more: false, counts: {all: 0, open: 0, unread: 0}});
+    const fetched = answering({rows: [], is_last_page: true, counts: {all: 0, open: 0, unread: 0}});
     vi.stubGlobal("fetch", fetched);
     await client().list("tasks", {limit: 50, before: 12});
     await client().list("messages", {limit: 50});

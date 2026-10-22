@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "expression-statement",
+        "where": [
+            {
+                "inside": {
+                    "is": "type-declaration"
+                }
+            },
+            {
+                "descendant": {
+                    "is": "literal"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "is": "function"
+                }
+            },
+            {
+                "position": "first"
+            }
+        ]
+    },
+    "sin": {
+        "name": "field-docstring",
+        "description": "A field or a constant carries a docstring under it.",
+        "rule": "Name the field so it needs none, or say it in the class's one line at the top.",
+        "skill": "plain-code-words"
+    }
+}

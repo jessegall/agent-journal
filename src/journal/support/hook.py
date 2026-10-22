@@ -1,27 +1,35 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from journal.support.hook_kind import HookKind
 
 
 @dataclass(frozen=True)
 class Hook:
-    """What the agent's hook script posts, as the agent sent it."""
+    """What the agent's hook script posts, as the agent sent it, with the id of the launch it came from and the millisecond the script started at when it stamped its request; stored, a tool's response is cut to KEPT characters a text, so a long read or a command's whole output is not kept once more for every call."""
 
-    KEPT = 4000
-    """Characters of each text in a tool's response the stored record keeps: what is read back from it later, an agent id or a short answer, fits well inside."""
+    RESPONSE_CHARACTERS = 4000
 
     kind: HookKind
     session: str
     environment: str
     provider: str = "claude"
     body: dict = field(default_factory=dict)
+    started_ms: int = 0
+    launch: str = ""
+    worker: int | None = None
+    worker_token: str | None = None
 
     @classmethod
-    def parse(cls, body: dict, environment: str, provider: str) -> "Hook":
-        return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body)
+    def parse(cls, body: dict, environment: str, provider: str, launch: str) -> "Hook":
+        return cls(HookKind(body["hook_event_name"]), body["session_id"], environment, provider, body, launch=launch)
+
+    def worker_hook(self, number: int, token: str | None) -> "Hook":
+        return replace(self, worker=number, worker_token=token)
+
+    def stamped(self, started_ms: int) -> "Hook":
+        return replace(self, started_ms=started_ms)
 
     def stored(self) -> dict:
-        """The body as the record keeps it: a tool's response cut to KEPT characters a text, so a long read or a command's whole output is not stored once more for every call."""
         if "tool_response" not in self.body:
             return self.body
         return {**self.body, "tool_response": self.cut(self.body["tool_response"])}
@@ -29,7 +37,7 @@ class Hook:
     @classmethod
     def cut(cls, value):
         if isinstance(value, str):
-            return value[: cls.KEPT]
+            return value[: cls.RESPONSE_CHARACTERS]
         if isinstance(value, dict):
             return {key: cls.cut(inner) for key, inner in value.items()}
         if isinstance(value, list):
@@ -46,16 +54,19 @@ class Hook:
 
     @property
     def output(self) -> str:
-        return self.printed(self.body.get("tool_response", ""))
+        return self.output_text(self.body.get("tool_response", ""))
+
+    @property
+    def error(self) -> str:
+        return str(self.body.get("error", ""))
 
     @property
     def response(self) -> dict:
-        got = self.body.get("tool_response", "")
-        return got if isinstance(got, dict) else {}
+        response = self.body.get("tool_response", "")
+        return response if isinstance(response, dict) else {}
 
     @staticmethod
-    def printed(response) -> str:
-        """What a tool call printed: Claude hands a shell's output as a dict of stdout and stderr, other tools as text."""
+    def output_text(response) -> str:
         if isinstance(response, dict):
             return "\n".join(part for part in (response.get("stdout", ""), response.get("stderr", "")) if part) or str({k: v for k, v in response.items() if k not in ("stdout", "stderr")})
         return response if isinstance(response, str) else str(response)
@@ -81,9 +92,13 @@ class Hook:
         return self.body.get("source", "")
 
     @property
-    def stop_held_before(self) -> bool:
+    def stop_refused_earlier(self) -> bool:
         return bool(self.body.get("stop_hook_active"))
 
     @property
     def subagent(self) -> str:
         return self.body.get("agent_id", "") or self.body.get("subagent_id", "")
+
+    @property
+    def subagent_report(self) -> str:
+        return self.body.get("last_assistant_message", "")

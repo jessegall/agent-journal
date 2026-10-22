@@ -1,7 +1,7 @@
 import {describe, expect, test, vi} from "vitest";
 import {effectScope} from "vue";
 
-const whole = {table: "plugins", id: 4, name: "standup", manifest: {title: "Standup"}, settings: {}, schema: [{key: "mode", kind: "text"}], status: "on", enabled: true, source: "", commit_sha: "", last_fault: "", failing_since: null};
+const whole = {table: "plugins", id: 4, name: "standup", manifest: {title: "Standup"}, settings: {}, schema: [{key: "mode", kind: "text"}], status: "on", enabled: true, source: "", commit_sha: "", last_fault: "", failed_at: null};
 const list = vi.hoisted(() => vi.fn());
 
 vi.mock("../src/api/client.js", () => ({api: {list}}));

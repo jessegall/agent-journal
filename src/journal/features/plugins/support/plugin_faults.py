@@ -1,16 +1,15 @@
 from datetime import datetime, timezone
 
-from journal.support.cards import Cards
+from journal.chat.cards import Cards
 from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
 from journal.repositories.entries import Entries
 from journal.repositories.plugins import Plugins
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
 FAULT = "plugin_fault"
-FAILING_AFTER = 5
-"""Faults in a row before a plugin is marked failing and a card says so."""
+FAILURE_COUNT = 5
 
 
 class PluginFaults:
@@ -19,18 +18,18 @@ class PluginFaults:
     def __init__(self, plugins: Plugins, entries: Entries, cards: Cards) -> None:
         self.plugins, self.entries, self.cards = plugins, entries, cards
 
-    def failed(self, plugin: Plugin, environment_id: int, event: str, words: str) -> None:
-        self.entries.save(Entry(environment_id=environment_id, kind=FAULT, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event, "fault": words}), Actor.system())
-        row = self.plugins.named(plugin.name)
-        failing = row.faults_in_a_row + 1 >= FAILING_AFTER and row.failing_since is None
-        self.plugins.save(row.with_(last_fault=words, faults_in_a_row=row.faults_in_a_row + 1, failing_since=datetime.now(timezone.utc) if failing else row.failing_since), Actor.system())
+    def failed(self, plugin: Plugin, environment_id: int, event: str, text: str) -> None:
+        self.entries.save(Entry(environment_id=environment_id, kind=FAULT, actor=Actor.plugin(plugin.name), data={"plugin": plugin.name, "event": event, "fault": text}), Actor.system())
+        row = self.plugins.lookup(plugin.name)
+        failing = row.fault_streak + 1 >= FAILURE_COUNT and row.failed_at is None
+        self.plugins.save(row.with_(last_fault=text, fault_streak=row.fault_streak + 1, failed_at=datetime.now(timezone.utc) if failing else row.failed_at), Actor.system())
         if failing:
-            self.cards.show(environment_id, "", f"Plugin {plugin.name} is failing: it faulted {FAILING_AFTER} times in a row, and events go through without it", "bolt", tone="bad", detail=words, shows=ChatMark.PLUGINS)
+            self.cards.show(environment_id, "", f"Plugin {plugin.name} is failing: it faulted {FAILURE_COUNT} times in a row, and events go through without it", "bolt", tone="bad", detail=text, shows=CardKind.PLUGINS)
 
     def answered(self, plugin: Plugin, environment_id: int) -> None:
-        row = self.plugins.named(plugin.name)
-        if not row.faults_in_a_row:
+        row = self.plugins.lookup(plugin.name)
+        if not row.fault_streak:
             return
-        self.plugins.save(row.with_(faults_in_a_row=0, failing_since=None), Actor.system())
-        if row.failing_since is not None:
-            self.cards.show(environment_id, "", f"Plugin {plugin.name} answers again", "check", tone="good", shows=ChatMark.PLUGINS)
+        self.plugins.save(row.with_(fault_streak=0, failed_at=None), Actor.system())
+        if row.failed_at is not None:
+            self.cards.show(environment_id, "", f"Plugin {plugin.name} answers again", "check", tone="good", shows=CardKind.PLUGINS)

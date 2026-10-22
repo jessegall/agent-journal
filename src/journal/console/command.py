@@ -1,23 +1,35 @@
 from argparse import ArgumentParser, Namespace
 from typing import ClassVar
+from journal.console.support.chained_line import ChainedLine
 
-from journal.support.where import Where
+from journal.support.caller import Caller
+from journal.support.caller_kind import CallerKind
+
+PRINCIPAL_KINDS = frozenset({CallerKind.MAIN_AGENT, CallerKind.USER, CallerKind.PLUGIN})
+HELPER_KINDS = frozenset({CallerKind.WORKER, CallerKind.SUBAGENT})
+WORKER_KINDS = frozenset({CallerKind.WORKER})
+SUBAGENT_KINDS = frozenset({CallerKind.SUBAGENT})
 
 
 class Command:
-    """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs."""
+    """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs. The main agent, the user and a plugin run every verb; a worker or a subagent runs only the verbs whose callers name its kind."""
 
     noun: ClassVar[str]
     default_verb: ClassVar[str] = ""
-    """The verb taken when the line names none, so journal stuck "<why>" needs no verb; empty for a noun whose verbs must be named."""
+    callers: ClassVar[dict[str, frozenset[CallerKind]]] = {}
+
+    def admits(self, verb: str, kind: CallerKind) -> bool:
+        return kind in PRINCIPAL_KINDS or kind in self.callers.get(verb, frozenset())
 
     def arguments(self, verbs) -> None:
-        """Adds a parser per verb to the noun's subparsers."""
         ...
 
-    def perform(self, args: Namespace, where: Where) -> int:
-        """Runs the verb's method; a verb that is a Python keyword, such as await, has its method named with a trailing underscore."""
-        return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, where)
+    def perform(self, args: Namespace, caller: Caller) -> int:
+        return (getattr(self, f"{args.verb}_", None) or getattr(self, args.verb))(args, caller)
+
+    def chained(self, args: Namespace, caller: Caller) -> list[ChainedLine]:
+        chain = getattr(self, f"{args.verb}_chain", None)
+        return chain(args, caller) if chain else []
 
     @staticmethod
     def verb(verbs, name: str, help: str) -> ArgumentParser:

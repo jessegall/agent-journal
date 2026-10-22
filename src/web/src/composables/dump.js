@@ -58,6 +58,7 @@ export function useDump(every, selected, rowsOf) {
                       note: item.failed || item.outcome || item.insight || "",
                       refs: item.refs || [],
                       added: item.added || [],
+                      url: dump.value.files.includes(name) ? api.fileUrl("dumps", dump.value.id, name) : "",
                   };
               })
             : []
@@ -157,7 +158,7 @@ export function useDump(every, selected, rowsOf) {
     const summary = computed(() => dump.value?.summary || "");
     const options = computed(() => dump.value?.options || []);
     const suggestions = computed(() => {
-        const taken = dump.value?.taken || {};
+        const taken = dump.value?.claimed || {};
         const left = dump.value?.declined || [];
         return options.value.map((o, pick) => ({
             pick,
@@ -174,15 +175,15 @@ export function useDump(every, selected, rowsOf) {
     const timeline = computed(() => {
         const d = dump.value;
         if (!d) return [];
-        const directions = d.said.map((s, i) => ({key: `said:${i}`, at: s.at, mine: true, text: s.label}));
-        const answers = d.answers.map((a, i) => ({key: `answer:${i}`, at: a.at, mine: true, text: a.answer}));
-        const taken = Object.entries(d.taken).map(([k, c]) => ({key: `taken:${k}`, at: c.at, mine: true, text: c.label}));
-        const agent = log.value.map((e, i) => ({key: `log:${i}`, at: e.at, mine: false, text: e.text, detail: e.detail}));
-        return [...agent, ...directions, ...answers, ...taken].sort((a, b) => a.at - b.at);
+        const directions = d.summary_text.map((s, i) => ({key: `said:${i}`, time: s.time, mine: true, text: s.label}));
+        const answers = d.answers.map((a, i) => ({key: `answer:${i}`, time: a.time, mine: true, text: a.answer}));
+        const taken = Object.entries(d.claimed).map(([k, c]) => ({key: `taken:${k}`, time: c.time, mine: true, text: c.label}));
+        const agent = log.value.map((e, i) => ({key: `log:${i}`, time: e.time, mine: false, text: e.text, detail: e.detail}));
+        return [...agent, ...directions, ...answers, ...taken].sort((a, b) => a.time - b.time);
     });
     const current = computed(() => (phase.value === "filing" ? [...timeline.value].reverse().find((line) => !line.mine) || null : null));
     const step = computed(() => {
-        const run = dump.value && rowsOf("agents").find((agent) => agent.sequence?.about === `dumps:${dump.value.id}`)?.sequence;
+        const run = dump.value && rowsOf("agents").find((agent) => agent.sequence?.subject === `dumps:${dump.value.id}`)?.sequence;
         return run ? `Step ${run.step} of ${run.steps}: ${run.text}` : "";
     });
     const thinking = computed(() => {

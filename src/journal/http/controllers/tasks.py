@@ -1,28 +1,33 @@
 from datetime import datetime, timezone
 
-from journal.engine.clock import Clock
-from journal.engine.machine import Machine
-from journal.features.tasks.states.working import Working
+from journal.features.tasks.active_task import ActiveTask
+from journal.features.tasks.support.task_holders import TaskHolders
+from journal.features.tasks.support.waits import Waits
 from journal.http.controllers.controller import Controller
 from journal.http.counts import Counts
 from journal.http.support.model_fields import ModelFields
 from journal.http.support.request import Request
+from journal.support.caller import Caller
 from journal.support.response import Response
 from journal.models.task import Task
 from journal.models.task_log import TaskLog
 from journal.models.task_state import TaskState
-from journal.repositories.agents import Agents
-from journal.repositories.plans import IN_PLAN
+from journal.repositories.plans import PLAN_LINK
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
+from journal.features.workers.support.worker_task_view import WorkerTaskView
+from journal.repositories.proofs import Proofs
+from journal.repositories.worker_todos import WorkerTodos
 from journal.repositories.workers import Workers
 
 
 class TaskController(Controller[Task]):
-    """Tasks with the plan each is in and the worker that holds it; started from the viewer, a task is taken up by the live agent."""
+    """Tasks with the plan each is in, the worker it is assigned to, the agent that holds it in hand and what it waits on; started from the viewer, a task is taken up by the current agent."""
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, agents: Agents, machine: Machine, clock: Clock) -> None:
-        self.repository, self.task_logs, self.workers, self.agents, self.machine, self.clock = tasks, logs, workers, agents, machine, clock
+    repository: Tasks
+
+    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits, taking: ActiveTask, task_holders: TaskHolders, todos: WorkerTodos, proofs: Proofs) -> None:
+        self.repository, self.task_logs, self.workers, self.waits, self.taking, self.task_holders, self.todos, self.proofs = tasks, logs, workers, waits, taking, task_holders, todos, proofs
 
     def rows(self) -> list[Task]:
         return self.repository.shown()
@@ -31,35 +36,57 @@ class TaskController(Controller[Task]):
         return not row.is_closed()
 
     def counts(self, rows: list[Task]) -> Counts:
-        return Counts(all=self.repository.counted_in(), open=self.repository.unfinished_count(), unread=self.repository.unseen_by_user())
+        return Counts(all=self.repository.count(), open=self.repository.unfinished_count(), unread=self.repository.unviewed())
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
-        """Each task with the plan it is in and the worker that holds it."""
-        plans, holders = self.repository.linked(IN_PLAN), self.workers.holding({t.id for t in rows})
-        return [{**ModelFields.of(t), "plan_id": plans[t.id][0].id if t.id in plans else None, "worker_id": holders[t.id].id if t.id in holders else None} for t in rows]
+        plans, holders, waits = self.repository.linked(PLAN_LINK), self.workers.containing({t.row_id for t in rows}), self.repository.open_wait_refs(rows)
+        task_holders, todos, proofs = self.repository.holders(), self.todos.task_lists({t.row_id for t in rows}), self.proofs.grouped({t.row_id for t in rows})
+        return [{**ModelFields.build(t), "plan_id": plans[t.row_id][0].id if t.row_id in plans else None, "worker_id": holders[t.row_id].id if t.row_id in holders else None,
+                 "waits": [str(ref) for ref in waits.get(t.row_id, [])], "held_by": self.task_holders.name(task_holders[t.row_id]) if t.row_id in task_holders else "",
+                 "work": WorkerTaskView.built(t, todos.get(t.row_id, []), proofs.get(t.row_id, []))} for t in rows]
+
+    def update(self, request: Request) -> Response:
+        row = self.repository.find(request.number("id"))
+        changed = row.with_(**{name: value for name, value in self.fields(request.body).items() if name != "brief"})
+        rewritten = changed.briefed(request.body["brief"], self.time().timestamp()) if "brief" in request.body else changed
+        return Response.json(self.shown(self.repository.save(rewritten, request.actor)))
 
     def start(self, request: Request) -> Response:
-        task = self.repository.save(self.repository.find(request.number("id")).started(self.now()), request.actor)
-        live = self.agents.live()
-        if live:
-            self.machine.move(live.session, task.environment_id, Working(task_id=task.id, logged_at=self.clock.now()))
+        if self.repository.find(request.number("id")).row_id in self.repository.worker_holdings():
+            return Response.json(self.shown(self.repository.find(request.number("id"))))
+        task = self.repository.holder_started(self.repository.find(request.number("id")).started(self.time()), self.taking.holder(Caller.user(request.environment)), request.actor)
         return Response.json(self.shown(task))
 
     def finish(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.shown(self.repository.save(task.finished(self.now(), request.body.get("how", "")), request.actor)))
+        return Response.json(self.shown(self.repository.save(task.finished(self.time(), request.body.get("how", "")), request.actor)))
 
     def reopen(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
         return Response.json(self.shown(self.repository.save(task.with_(state=TaskState.OPEN, finished_at=None, outcome=""), request.actor)))
 
+    def suspend(self, request: Request) -> Response:
+        task = self.repository.find(request.number("id"))
+        return Response.json(self.shown(self.repository.save(task.suspended(request.body.get("why", ""), self.time()), request.actor)))
+
+    def block(self, request: Request) -> Response:
+        reason, enabled, deadline = request.body.get("why", ""), request.body.get("on", []), request.body.get("until", "")
+        self.waits.refuse_unnamed(reason, enabled, deadline)
+        task = self.repository.save(self.repository.find(request.number("id")).blocked(reason, self.time()), request.actor)
+        self.waits.linked(task, enabled, deadline, request.body.get("every", 2), request.actor)
+        return Response.json(self.shown(task))
+
+    def unblock(self, request: Request) -> Response:
+        task = self.repository.find(request.number("id"))
+        return Response.json(self.shown(self.repository.save(task.unblocked("the user unblocked it", self.time().timestamp()), request.actor)))
+
     def logs(self, request: Request) -> Response:
-        return Response.json(self.task_logs.of(self.repository.find(request.number("id"))))
+        return Response.json(self.task_logs.logs(self.repository.find(request.number("id"))))
 
     def log(self, request: Request) -> Response:
         task = self.repository.find(request.number("id"))
-        return Response.json(self.task_logs.save(TaskLog(environment_id=task.environment_id, task_id=task.id, line=request.body.get("line", "")), request.actor), 201)
+        return Response.json(self.task_logs.save(TaskLog.build(task, request.body.get("line", ""), self.time().timestamp()), request.actor), 201)
 
     @staticmethod
-    def now() -> datetime:
+    def time() -> datetime:
         return datetime.now(timezone.utc)

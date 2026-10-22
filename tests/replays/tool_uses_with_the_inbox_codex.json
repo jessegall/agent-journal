@@ -6,19 +6,16 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "message 1 arrives",
@@ -27,65 +24,45 @@
         "[journal] new message 1"
       ],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "read 1",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 1,
-        "charts:43:tools_used": 1,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 1,
-          "284": 0,
-          "296": 1
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 3"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.writes_held_soon_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 2",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 2,
-        "charts:43:tools_used": 2,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 2,
-          "284": 0,
-          "296": 2
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 2"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.writes_held_soon_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -93,78 +70,50 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "tool uses left before your writes wait for message 1: 1"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.writes_held_soon_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:42:times_named": 1,
-        "charts:42:tools_used": 3,
-        "charts:43:tools_used": 3,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 3,
-          "284": 1,
-          "296": 3
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 4",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:42:times_named": 1,
-        "charts:42:tools_used": 4,
-        "charts:43:tools_used": 4,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 4,
-          "284": 1,
-          "296": 4
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 5",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:42:times_named": 1,
-        "charts:42:tools_used": 5,
-        "charts:43:tools_used": 5,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 5,
-          "284": 1,
-          "296": 5
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -172,78 +121,50 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.next_write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 2,
-        "charts:42:tools_used": 6,
-        "charts:43:tools_used": 6,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 6,
-          "284": 2,
-          "296": 6
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 7",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 2,
-        "charts:42:tools_used": 7,
-        "charts:43:tools_used": 7,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 7,
-          "284": 2,
-          "296": 7
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 8",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 8,
-        "charts:42:times_named": 2,
-        "charts:42:tools_used": 8,
-        "charts:43:tools_used": 8,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 8,
-          "284": 2,
-          "296": 8
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -251,78 +172,50 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.next_write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 9,
-        "charts:42:times_named": 3,
-        "charts:42:tools_used": 9,
-        "charts:43:tools_used": 9,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 9,
-          "284": 3,
-          "296": 9
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 10",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 9,
-        "charts:42:times_named": 3,
-        "charts:42:tools_used": 10,
-        "charts:43:tools_used": 10,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 10,
-          "284": 3,
-          "296": 10
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 11",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 9,
-        "charts:42:times_named": 3,
-        "charts:42:tools_used": 11,
-        "charts:43:tools_used": 11,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 11,
-          "284": 3,
-          "296": 11
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -330,78 +223,50 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.next_write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 10,
-        "charts:42:times_named": 4,
-        "charts:42:tools_used": 12,
-        "charts:43:tools_used": 12,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 12,
-          "284": 4,
-          "296": 12
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 13",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 10,
-        "charts:42:times_named": 4,
-        "charts:42:tools_used": 13,
-        "charts:43:tools_used": 13,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 13,
-          "284": 4,
-          "296": 13
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 14",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 10,
-        "charts:42:times_named": 4,
-        "charts:42:tools_used": 14,
-        "charts:43:tools_used": 14,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 14,
-          "284": 4,
-          "296": 14
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -409,54 +274,33 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.next_write_held_until_read"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:42:times_named": 5,
-        "charts:42:tools_used": 15,
-        "charts:43:tools_used": 15,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 15,
-          "284": 5,
-          "296": 15
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "read 16",
-      "answer": {},
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:42:times_named": 5,
-        "charts:42:tools_used": 16,
-        "charts:43:tools_used": 16,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 16,
-          "284": 5,
-          "296": 16
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
+      },
+      "typed": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -465,27 +309,12 @@
         "error": "you have 1 unread messages. `journal message unread` before any other write"
       },
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:42:times_named": 5,
-        "charts:42:tools_used": 17,
-        "charts:43:tools_used": 17,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "282": 17,
-          "284": 5,
-          "296": 17,
-          "67": 0,
-          "80": 0,
-          "93": 0
-        }
+      "nudges": [
+        "messages.write_held_until_read"
+      ],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -493,44 +322,19 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:42:times_named": 5,
-        "charts:42:tools_used": 17,
-        "charts:43:tools_used": 17,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a read while owed",
-      "answer": {
-        "error": "answer or react to message 1 first. your tool calls wait until you do"
-      },
+      "answer": {},
       "typed": [],
-      "nudges": [
-        "messages.answer"
-      ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 1,
-        "charts:45:uses_unanswered": 1,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "310": 1,
-          "317": 1
-        }
+      "nudges": [],
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -538,21 +342,9 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 2,
-        "charts:45:uses_unanswered": 2,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "317": 2
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -560,21 +352,9 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 3,
-        "charts:45:uses_unanswered": 3,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "317": 3
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -582,36 +362,20 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 3,
-        "charts:45:uses_unanswered": 3,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a read after the reply",
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 12,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     }
   ]
 }

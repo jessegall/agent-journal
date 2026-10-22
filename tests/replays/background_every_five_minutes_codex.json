@@ -6,26 +6,24 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "four minutes",
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 5
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "five minutes and some",
@@ -34,31 +32,23 @@
         "[journal] output 1 still running. look at it; hung or stuck: stop it and say why"
       ],
       "nudges": [
-        "shell.check_background"
+        "shell.check_the_background"
       ],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": [
-        {
-          "254": 310,
-          "56": 310
-        }
+      "stack": [
+        "idle"
       ]
     },
     {
       "name": "ten minutes and some",
       "answer": null,
-      "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": [
-        {
-          "254": 610,
-          "56": 610
-        }
+      "typed": [
+        "[journal] output 1 still running. look at it; hung or stuck: stop it and say why"
+      ],
+      "nudges": [
+        "shell.check_the_background"
+      ],
+      "stack": [
+        "idle"
       ]
     },
     {
@@ -66,24 +56,22 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "fifteen minutes, nothing running",
       "answer": null,
       "typed": [
-        "[journal] output 1 finished. `journal output read 1 --summary` says how; --tail 20 or --grep reads the part you need"
+        "[journal] output 1 finished. `journal output read 1 --summary` says how"
       ],
       "nudges": [
-        "shell.ended"
+        "shell.outputs_ended"
       ],
-      "counts": {
-        "charts:31:said": 7
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

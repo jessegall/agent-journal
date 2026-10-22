@@ -6,29 +6,15 @@
       "answer": {},
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 1,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 1,
-        "charts:9:writes": 1
-      },
-      "read": [
-        {
-          "67": 0,
-          "80": 0,
-          "93": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -36,75 +22,36 @@
       "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 5,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": [
-        {
-          "67": 1,
-          "80": 1,
-          "93": 1
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
       "name": "a message read and owed",
       "answer": null,
-      "typed": [
-        "[journal] new message 1"
-      ],
+      "typed": [],
       "nudges": [
-        "messages.new"
+        "messages.new_message_to_answer"
       ],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 6,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 0,
-        "charts:45:uses_unanswered": 0,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a write held twice over",
       "answer": {
-        "error": "answer or react to message 1 first. your tool calls wait until you do"
+        "error": "2 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write\nanswer or react to message 1 first. your tool calls wait until you do\nnew message 1"
       },
       "typed": [],
       "nudges": [
-        "messages.answer"
+        "tasks.write_held_until_logged",
+        "messages.tools_held_until_answered"
       ],
-      "counts": {
-        "charts:10:writes": 2,
-        "charts:31:said": 7,
-        "charts:42:times_named": 0,
-        "charts:42:tools_used": 0,
-        "charts:43:tools_used": 0,
-        "charts:44:uses_unanswered": 1,
-        "charts:45:uses_unanswered": 1,
-        "charts:8:writes": 2,
-        "charts:9:writes": 2
-      },
-      "read": [
-        {
-          "310": 1,
-          "317": 1,
-          "67": 2,
-          "80": 2,
-          "93": 2
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

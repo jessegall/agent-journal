@@ -1,15 +1,15 @@
 import os
+import re
 import subprocess
 import tempfile
 from pathlib import Path
 from urllib.request import urlopen
 
 from journal.config import Config
-from journal.features.updates.support.release import Release
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
-INSTALL_SCRIPT = "https://raw.githubusercontent.com/jessegall/agent-journal/{tag}/install.sh"
-FETCH_SECONDS = 30
+GITHUB = re.compile(r"^(?:https://github\.com/|git@github\.com:)(?P<owner>[^/]+)/(?P<repo>[^/]+?)(?:\.git)?/?$")
+DOWNLOAD_SECONDS = 30
 INSTALL_SECONDS = 600
 
 
@@ -20,20 +20,26 @@ class ReleaseInstaller:
         self.config = config
         self.log = config.home / "runtime" / "update.log"
 
-    def run(self, release: Release) -> None:
-        """What the install prints is written to the update log, kept until the next update, so an update that did not take can be read back after the restart."""
+    def run(self, ref: str, repository: str) -> None:
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(prefix="journal-install-") as folder, self.log.open("w") as log:
             script = Path(folder) / "install.sh"
-            log.write(f"installing {release.version}\n")
+            log.write(f"installing {ref} of {repository}\n")
             log.flush()
             try:
-                with urlopen(INSTALL_SCRIPT.format(tag=release.tag), timeout=FETCH_SECONDS) as answer:
+                with urlopen(self.script_path(repository, ref), timeout=DOWNLOAD_SECONDS) as answer:
                     script.write_bytes(answer.read())
-                ran = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REF": release.tag, "AGENT_JOURNAL_YES": "1"},
+                completed = subprocess.run(["sh", str(script)], cwd=self.config.root, env={**os.environ, "AGENT_JOURNAL_REPO": repository, "AGENT_JOURNAL_REF": ref, "AGENT_JOURNAL_YES": "1"},
                                      stdout=log, stderr=subprocess.STDOUT, timeout=INSTALL_SECONDS)
             except (OSError, subprocess.TimeoutExpired) as error:
                 log.write(f"the install could not run: {error}\n")
-                raise Refused(f"the install of {release.version} could not run: {error}") from error
-        if ran.returncode != 0:
-            raise Refused(f"the install of {release.version} failed: {self.log.read_text(errors='replace').strip()[-300:]}")
+                raise Rejection(f"the install of {ref} could not run: {error}") from error
+        if completed.returncode != 0:
+            raise Rejection(f"the install of {ref} failed: {self.log.read_text(errors='replace').strip()[-300:]}")
+
+    @staticmethod
+    def script_path(repository: str, ref: str) -> str:
+        rows = GITHUB.match(repository)
+        if rows is None:
+            raise Rejection(f"the journal installs from GitHub only: {repository} is no GitHub address")
+        return f"https://raw.githubusercontent.com/{rows['owner']}/{rows['repo']}/{ref}/install.sh"

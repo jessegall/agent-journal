@@ -1,23 +1,23 @@
 from dataclasses import dataclass, field
 
 from journal.events.agent.agent_event import AgentEvent
+from journal.support.shell_line import ShellLine
+from journal.support.tool_call import ToolCall
 
 
 @dataclass(frozen=True)
 class ToolFinished(AgentEvent):
-    """A tool ran and returned."""
+    """A tool ran and returned: the same reading of the call as when it started, with what it printed and its answer as it came, a shell's output in parts or an edit's patch."""
 
-    tool: str
-    input: dict
+    is_work = True
+
+    call: ToolCall
     output: str
     response: dict = field(default_factory=dict)
-    """The tool's answer as it came, when it came as a structure: a shell's output in parts, an edit's patch."""
-    read_paths: tuple[str, ...] = ()
-    """The files this call read, by the read tool or a shell line that prints them."""
-    skill_loaded: str = ""
-    """The skill folder this call loaded, when it was the skill tool."""
 
     @property
-    def printed(self) -> str:
-        """What the shell line printed; nothing for any other tool, whose answer may carry a whole file."""
-        return self.output if self.tool == "Bash" else ""
+    def output_text(self) -> str:
+        return self.output if isinstance(self.call.operation, ShellLine) else ""
+
+    def recorded(self) -> dict:
+        return {"call": self.call.as_data()}

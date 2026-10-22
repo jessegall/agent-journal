@@ -1,5 +1,4 @@
 <script setup>
-import Chip from "./Chip.vue";
 import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
 import {oneLine} from "../format/command.js";
@@ -22,12 +21,7 @@ const emit = defineEmits(["close"]);
                 <li :class="['waiting-item', {back: item.reported}]">
                     <TextDisplay class="waiting-label" inline :text="oneLine(item.label, store.summary?.project)" />
                     <span class="waiting-report">{{ item.status }}</span>
-                    <span class="waiting-meta">
-                        <template v-if="item.kind">
-                            <Chip>{{ item.kind }}</Chip>
-                        </template>
-                        {{ [item.where, item.out].filter(Boolean).join(" · ") }}
-                    </span>
+                    <span class="waiting-meta">{{ [item.where, item.out].filter(Boolean).join(" · ") }}</span>
                 </li>
             </template>
         </ul>

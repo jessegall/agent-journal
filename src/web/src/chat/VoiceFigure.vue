@@ -462,7 +462,7 @@ function look() {
         ...testResultsAfter(lead.value, testStates),
         ...facesAfter(rows("reactions"), seenAt),
     ];
-    if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.at));
+    if (happened.length) seenAt = Math.max(seenAt, ...happened.map((fire) => fire.time));
     const stroll = walkingMoment(body.trip, walkBegan, now.value);
     walkBegan = stroll.began;
     if (stroll.moment && !beats.value.some((beat) => beat.clip === "stumble")) react(stroll.moment);

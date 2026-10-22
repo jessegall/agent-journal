@@ -8,9 +8,9 @@ class PluginTokens:
     def __init__(self) -> None:
         self._issued: dict[str, str] = {}
 
-    def of(self, name: str) -> str:
+    def build(self, name: str) -> str:
         return self._issued.setdefault(name, secrets.token_hex(24))
 
-    def holds(self, name: str, token: str) -> bool:
-        issued = self._issued.get(name, "")
-        return bool(issued) and hmac.compare_digest(issued, token)
+    def matches(self, name: str, token: str | None) -> bool:
+        issued = self._issued.get(name)
+        return issued is not None and token is not None and hmac.compare_digest(issued, token)

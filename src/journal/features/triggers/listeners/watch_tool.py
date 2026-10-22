@@ -1,10 +1,7 @@
 from journal.events.agent.tool_starting import ToolStarting
-from journal.features.triggers.listeners.watching import Watching
+from journal.features.triggers.listeners.trigger_watch import TriggerWatch
 
 
-class WatchTool(Watching[ToolStarting]):
-    def text_of(self, event: ToolStarting) -> str:
-        return event.input_text
-
-    def can_deny(self) -> bool:
-        return True
+class WatchTool(TriggerWatch[ToolStarting]):
+    def text(self, event: ToolStarting) -> str:
+        return event.call.input_text

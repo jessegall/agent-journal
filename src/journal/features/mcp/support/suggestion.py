@@ -9,7 +9,7 @@ class Suggestion:
 
     name: str
     title: str
-    about: str
+    subject: str
     transport: str = "stdio"
     command: str = ""
     args: tuple[str, ...] = ()
@@ -18,8 +18,7 @@ class Suggestion:
     auth: str = "none"
 
     @property
-    def let_in(self) -> str:
-        """How the server is let in, as the catalogue lists it."""
+    def admit(self) -> str:
         if self.auth == "key":
             return f" (key: {self.key_var})"
         return " (signs in on its own)" if self.auth == "oauth" else ""

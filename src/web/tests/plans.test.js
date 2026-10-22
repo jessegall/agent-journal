@@ -13,7 +13,7 @@ const states = () => rows("plans").map((p) => p.state);
 
 beforeEach(() => {
     api.act.mockReset().mockResolvedValue({});
-    api.list.mockReset().mockResolvedValue({counts: {}, rows: [plan(1, "started"), plan(2, "approved")], more: false});
+    api.list.mockReset().mockResolvedValue({counts: {}, rows: [plan(1, "started"), plan(2, "approved")], is_last_page: true});
     store.booted = true;
     store.rows.plans = [plan(1, "started"), plan(2, "started", {held: true}), plan(3, "ready")];
     store.paging = {size: {}, more: {}};

@@ -1,34 +1,37 @@
 export function withWhispers(turns, nudges, session) {
     if (!turns.length) return turns;
-    const from = turns[0].at;
+    const from = turns[0].time;
     const whispers = nudges
         .filter((n) => n.data.session === session && n.created >= from)
         .map((n) => ({
             line: `reminder ${n.n}`,
             kind: "whisper",
-            at: n.created,
+            time: n.created,
             text: n.brief ? `${n.title} — ${n.brief}` : n.title,
             tools: [],
         }));
-    return whispers.length ? [...turns, ...whispers].sort((a, b) => a.at - b.at) : turns;
+    return whispers.length ? [...turns, ...whispers].sort((a, b) => a.time - b.time) : turns;
 }
 
 const SPEAKERS = {agent: "agent", human: "user", injected: "user"};
 const hasText = (t) => SPEAKERS[t.kind] && t.text;
 
+// a spoken turn drawn as a message bubble, and a run of tool calls as a card: `kind` is what the chat's Turn switches on
 const line = (t) => ({
     type: "line",
+    kind: "message",
     ref: `line:${t.line}`,
     n: t.line,
     who: SPEAKERS[t.kind],
     title: "",
+    text: t.said || t.text,
     brief: t.said || t.text,
     abstract: "",
     refs: [],
     sections: [],
     seen: ["user", "agent"],
     data: {},
-    created: t.at,
+    created: t.time,
     completed: 0,
 });
 
@@ -46,7 +49,7 @@ export function chatTurns(entries) {
             out.push(line(t));
         } else if (t.tools && t.tools.length) {
             if (!run) {
-                run = {type: "card", ref: `tools:${t.line}`, n: t.line, created: t.at, tools: [], data: {icon: "terminal", label: ""}};
+                run = {type: "card", kind: "card", ref: `tools:${t.line}`, n: t.line, created: t.time, tools: [], data: {icon: "terminal", label: ""}};
                 out.push(run);
             }
             run.tools.push(...t.tools);
@@ -62,11 +65,11 @@ export function fromMainAgent(turns) {
         if (t.type !== "line" || t.who !== "user") return t;
         const opening = first;
         first = false;
-        return {...t, data: {...t.data, from_main: true, opening}};
+        return {...t, who: "agent", data: {...t.data, from_main: true, opening}};
     });
 }
 
 export const briefOf = (entries) => {
     const first = entries.find((t) => hasText(t) && SPEAKERS[t.kind] === "user");
-    return first ? {text: first.text, at: first.at} : null;
+    return first ? {text: first.text, time: first.time} : null;
 };

@@ -4,6 +4,7 @@ import {computed, nextTick, provide, ref, watch} from "vue";
 import {route} from "../route.js";
 import {useScope} from "../composables/scope.js";
 import ResourceBody from "./ResourceBody.vue";
+import DocRevisions from "./DocRevisions.vue";
 import Comments from "./Comments.vue";
 import PlanTimelinePanel from "./PlanTimelinePanel.vue";
 import SequenceRuns from "./SequenceRuns.vue";
@@ -85,6 +86,8 @@ const LIT_FOR = 2500;
 
 function sectionAt(part) {
     const sections = [...(body.value?.querySelectorAll(".section") || [])];
+    const numbered = part.match(/^section (\d+)$/i);
+    if (numbered) return sections[Number(numbered[1]) - 1];
     const lines = part.match(/^(\d+)(?:-\d+)?$/);
     if (!lines) return sections.find((el) => el.querySelector("h3")?.textContent.trim().toLowerCase() === part.toLowerCase());
     let at = 0;
@@ -115,7 +118,12 @@ watch(
         <div ref="body" class="document-body">
             <Highlight :off="readOnly" @quote="quote = $event">
                 <slot>
-                    <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
+                    <template v-if="resource.table === 'docs'">
+                        <DocRevisions :resource="resource" :read-only="readOnly" @close="emit('close')" />
+                    </template>
+                    <template v-else>
+                        <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
+                    </template>
                 </slot>
                 <template v-if="!readOnly">
                     <div class="document-links">
@@ -140,7 +148,13 @@ watch(
                         <PlanTimelinePanel class="timeline-aside" :plan="resource" />
                     </template>
                     <template #default>
-                        <Comments :resource="resource" :quote="quote" :focus="props.focus" @sent="quote = ''" />
+                        <Comments
+                            :resource="resource"
+                            :quote="quote"
+                            :focus="props.focus"
+                            hint="Select text in the document to comment on that passage."
+                            @sent="quote = ''"
+                        />
                     </template>
                 </SwitchCase>
             </aside>
@@ -153,13 +167,16 @@ watch(
     --comments-width: clamp(280px, 34%, 400px);
     container-type: inline-size;
     position: relative;
+    display: flex;
+    flex-direction: column;
     height: 100%;
     overflow: hidden;
 }
 
 .document-body {
     position: relative;
-    height: 100%;
+    flex: 1;
+    min-height: 0;
     min-width: 0;
     overflow-x: hidden;
     overflow-y: auto;
@@ -185,16 +202,13 @@ watch(
 }
 
 .document-quick {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    flex: none;
 }
 
 .document.quick .document-body::after {
     content: "";
     display: block;
-    height: 120px;
+    height: 28px;
 }
 
 .document-links {

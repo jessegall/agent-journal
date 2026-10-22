@@ -1,5 +1,8 @@
 from journal.config import Config
-from journal.features.search.support.found import Found
+from journal.features.search.support.search_hit import SearchHit
+from journal.models.agent_role import AgentRole
+from journal.models.message import Message
+from journal.models.model import Model
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
@@ -23,10 +26,8 @@ from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 
-CONVERSATIONS = 5
-"""The latest agents of the environment whose conversations are searched, when conversations are asked for."""
+CONVERSATION_COUNT = 5
 CONVERSATION = "conversation"
-"""The name that adds the agents' conversations to a search; no other search reads them."""
 
 
 class Search:
@@ -37,31 +38,38 @@ class Search:
                  triggers: Triggers, notices: Notices, secrets: Secrets, agents: Agents, providers: Providers, config: Config) -> None:
         self.kinds: tuple[Repository, ...] = (tasks, plans, phases, task_logs, messages, questions, facts, rules, reminders, reports, docs, checks, sequences,
                                               workers, templates, dumps, triggers, notices, secrets)
-        self.agents, self.providers, self.config = agents, providers, config
+        self.agents, self.providers, self.config, self.workers = agents, providers, config, workers
 
     def models(self) -> list[str]:
-        return [self.named(kind) for kind in self.kinds]
+        return [self.lookup(kind) for kind in self.kinds]
 
-    def found(self, words: list[str]) -> list[Found]:
-        return self.rows(words, self.kinds)
+    def hits(self, terms: list[str]) -> list[SearchHit]:
+        return self.rows(terms, self.kinds)
 
-    def found_in(self, words: list[str], names: list[str]) -> list[Found]:
-        wanted = [kind for kind in self.kinds if self.named(kind) in names]
-        return self.rows(words, wanted) + (self.said(words) if CONVERSATION in names else [])
+    def kind_hits(self, terms: list[str], names: list[str]) -> list[SearchHit]:
+        wanted = [kind for kind in self.kinds if self.lookup(kind) in names]
+        return self.rows(terms, wanted) + (self.conversation_hits(terms) if CONVERSATION in names else [])
 
-    def rows(self, words: list[str], kinds) -> list[Found]:
-        return [Found.of(row, words) for kind in kinds for row in kind.search(words)]
+    def rows(self, terms: list[str], kinds) -> list[SearchHit]:
+        return [self.hit(row, terms) for kind in kinds for row in kind.search(terms)]
+
+    def hit(self, row: Model, terms: list[str]) -> SearchHit:
+        if not isinstance(row, Message) or row.agent_role == AgentRole.MAIN or row.session is None:
+            return SearchHit.build(row, terms)
+        workers = self.workers.session_worker(row.session)
+        chat = f"worker {workers[0].id}, {workers[0].name}" if workers else f"subagent {row.session[:8]}"
+        return SearchHit(f"message {row.id} in the chat of {chat}", SearchHit.excerpt(row.mentioning_text(), terms))
 
     @staticmethod
-    def named(kind: Repository) -> str:
+    def lookup(kind: Repository) -> str:
         return kind.model.table().removesuffix("s")
 
-    def said(self, words: list[str]) -> list[Found]:
-        found = []
-        for agent in reversed([agent for agent in self.agents.in_() if agent.has_program()][-CONVERSATIONS:]):
-            path = self.providers.named(agent.provider).transcript(self.config.root, agent.session)
+    def conversation_hits(self, terms: list[str]) -> list[SearchHit]:
+        rows = []
+        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program() and agent.role == AgentRole.MAIN][-CONVERSATION_COUNT:]):
+            path = self.providers.lookup(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue
-            turns = [turn for turn in self.providers.named(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in words)]
-            found += [Found(f"conversation {agent.session[:8]}, line {turn.line}", Found.around(turn.text, words)) for turn in reversed(turns)]
-        return found
+            turns = [turn for turn in self.providers.lookup(agent.provider).turns(path) if all(word.lower() in turn.text.lower() for word in terms)]
+            rows += [SearchHit(f"conversation {agent.session[:8]}, line {turn.line}", SearchHit.excerpt(turn.text, terms)) for turn in reversed(turns)]
+        return rows

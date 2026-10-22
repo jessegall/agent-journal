@@ -1,5 +1,5 @@
 import {describe, expect, test} from "vitest";
-import {threadTurns} from "../src/domain/thread.js";
+import {mainChat, threadTurns} from "../src/domain/thread.js";
 
 const at = (seconds) => new Date(seconds * 1000).toISOString();
 const message = (id, seconds, fields = {}) => ({table: "messages", id, created_at: at(seconds), author: "user", text: "", files: [], data: {}, comments_on: [], idempotency: "", ...fields});
@@ -131,5 +131,13 @@ describe("the Show in chat switches", () => {
         expect(shown(["commands"])).toEqual([2, 3]);
         expect(shown(["rules"])).toEqual([1, 2, 3]);
         expect(shown(["facts", "sequence_steps"])).toEqual([1]);
+    });
+});
+
+describe("the two chats", () => {
+    test("the main chat leaves out a worker's and a subagent's messages, which its own chat keeps", () => {
+        const rows = [message(1, 1, {agent_role: "main", text: "Fix the footer"}), message(2, 2, {author: "agent", agent_role: "worker", session: "w1", text: "On it"}), message(3, 3, {author: "agent", agent_role: "subagent", session: "s9", text: "Found it"}), message(4, 4, {author: "agent", agent_role: "main", text: "Done"})];
+        expect(keys(turns(mainChat(rows)))).toEqual(["messages:1", "messages:4"]);
+        expect(keys(turns(rows.filter((m) => m.session === "w1")))).toEqual(["messages:2"]);
     });
 });

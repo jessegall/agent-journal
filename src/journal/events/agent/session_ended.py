@@ -7,3 +7,5 @@ from journal.events.agent.agent_event import AgentEvent
 class SessionEnded(AgentEvent):
     """The conversation ended."""
 
+    is_turn_end = True
+

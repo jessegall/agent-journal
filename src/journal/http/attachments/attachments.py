@@ -4,7 +4,6 @@ from pathlib import Path
 from journal.config import Config
 
 FOLDERS = {"messages": "message", "dumps": "dump"}
-"""The tables whose rows take files, each with the folder its files are kept in under .journal/files/."""
 
 
 class Attachments:
@@ -21,11 +20,9 @@ class Attachments:
         return safe
 
     def path(self, table: str, id: int, name: str) -> Path:
-        """Where a row's attached file is kept; a name is never more than a file's own name."""
         return self.home / FOLDERS[table] / str(id) / Path(name).name
 
     def read(self, table: str, id: int, name: str) -> tuple[str, bytes] | None:
-        """The file's media type and bytes; none for a table that takes no files or a file not there."""
         if table not in FOLDERS:
             return None
         path = self.path(table, id, name)

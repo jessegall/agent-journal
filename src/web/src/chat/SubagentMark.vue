@@ -10,22 +10,28 @@ const props = defineProps({
     model: {type: String, default: ""},
     finished: {type: Boolean, default: false},
     stopped: {type: Boolean, default: false},
+    failed: {type: Boolean, default: false},
+    reason: {type: String, default: ""},
     refusal: {type: String, default: ""},
     report: {type: Number, default: 0},
     agent: {type: Number, default: 0},
     session: {type: String, default: ""},
-    at: {type: Number, required: true},
+    time: {type: Number, required: true},
 });
 
 const open = () => peek("agents", props.agent, 0, props.session);
 const label = computed(() => {
     if (props.refusal) return "Dispatch stopped";
+    if (props.failed) return "Dispatch failed";
     if (!props.finished) return "Dispatched";
     return props.stopped ? "Subagent stopped" : "Subagent finished";
 });
-const tone = computed(() => (props.refusal ? "danger" : props.stopped ? "warn" : ""));
+const tone = computed(() => (props.refusal || props.failed ? "danger" : props.stopped ? "warn" : ""));
 const color = computed(() => (tone.value ? "" : SUBAGENT_COLOR));
-const detail = computed(() => (props.refusal ? `${props.task}: ${props.refusal}` : props.task));
+const detail = computed(() => {
+    if (props.refusal) return `${props.task}: ${props.refusal}`;
+    return props.failed ? `${props.task}: ${props.reason || "the tool gave no reason"}` : props.task;
+});
 const card = computed(() => (props.report ? `report ${props.report}` : ""));
 const name = computed(() => [props.kind || "subagent", props.model].filter(Boolean).join(" · "));
 const mark = computed(() => ({
@@ -34,7 +40,7 @@ const mark = computed(() => ({
     tone: tone.value,
     label: label.value,
     name: name.value,
-    at: props.at,
+    time: props.time,
     detail: detail.value,
 }));
 const openable = computed(() => ({...mark.value, title: "Open the subagent"}));

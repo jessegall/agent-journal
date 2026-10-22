@@ -3,17 +3,19 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class CheckFinding:
-    """One thing a check's report found: its name, the file and line it is in, where in them, what it says, and the group it belongs under."""
+    """One thing a check's report found: its name, the file and line it is in, the place in them (the report's where), what it says, and the group it belongs under."""
 
     name: str
     file: str = ""
     line: int = 0
-    where: str = ""
+    place: str = ""
     text: str = ""
     group: str = ""
 
     @classmethod
-    def from_json(cls, data: dict) -> "CheckFinding":
-        words = {name: str(data[name]) for name in ("name", "file", "where", "text", "group") if data.get(name) is not None}
-        numbers = {name: int(data[name]) for name in ("line",) if data.get(name)}
-        return cls(**words, **numbers)
+    def parsed(cls, data: dict) -> "CheckFinding":
+        return cls(cls.text_value(data, "name"), cls.text_value(data, "file"), int(data["line"]) if data.get("line") else 0, cls.text_value(data, "where"), cls.text_value(data, "text"), cls.text_value(data, "group"))
+
+    @staticmethod
+    def text_value(data: dict, name: str) -> str:
+        return "" if data.get(name) is None else str(data[name])

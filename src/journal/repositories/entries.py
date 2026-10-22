@@ -1,87 +1,130 @@
 from datetime import datetime
 
+from journal.db.query import Query
 from journal.models.entry import Entry
 from journal.support.actor import Actor
 from journal.repositories.scoped_repository import ScopedRepository
+from journal.support.agent_message import AgentMessage
+from journal.support.subagent_dispatch import SubagentDispatch
 
 
-DISPATCHES = "(kind IN ('SubagentEnded', 'Idle', 'SessionStarted', 'SessionEnded') OR (kind IN ('ToolStarting', 'ToolFinished') AND json_extract(data, '$.tool_name') IN ('Agent', 'Task')))"
-"""The entries that start, answer or close a subagent's dispatch."""
+ENTRIES = Query.build(Entry)
+DISPATCHES = ENTRIES.filter_alternatives(
+    ENTRIES.filter_listed("kind", ("SubagentStarted", "SubagentEnded", "Stop", "SessionStarted", "SessionEnded")),
+    ENTRIES.filter_listed("kind", ("ToolStarting", "ToolFinished", "ToolFailed")).filter_listed("data->call->operation->kind", (SubagentDispatch.kind, AgentMessage.kind)),
+).inlined()
+NUDGE = "nudge"
 
 
 class Entries(ScopedRepository[Entry]):
     model = Entry
 
-    def trim(self, newest: int, kept: int) -> int:
-        """The record cut to the newest so many entries by number, across every environment; how many went."""
-        return self.connection.execute("DELETE FROM entries WHERE id <= ?", (newest - kept,)).rowcount
+    def trim(self, newest: int, stored: int) -> None:
+        self.purged(self.query().filter_less_equal("id", newest - stored).filter_unequal("kind", NUDGE))
 
-    def last_prompt_of(self, session: str) -> datetime | None:
-        """When the session's newest turn began: its last prompt."""
-        rows = self.selected("kind = 'PromptSubmitted' AND actor = ? ORDER BY id DESC LIMIT 1", (Actor.agent(session).stamp,))
+    def trim_lines(self, stored: int) -> None:
+        for boundary in self.selected_globally(self.query().filter(kind=NUDGE).order_descending("id").limit(1).offset(stored)):
+            self.purged(self.query().filter(kind=NUDGE).filter_less_equal("id", boundary.row_id))
+
+    def last_prompt(self, session: str) -> datetime | None:
+        rows = self.selected(self.query().filter(kind="PromptSubmitted", actor=Actor.agent(session)).order_descending("id").limit(1))
         return rows[0].created_at if rows else None
 
-    def said_to(self, session: str) -> int:
-        """How many lines the journal has said to this session, counted whole: the nudge entries carrying it."""
-        return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ?", (session,))
+    def agent_lines(self, session: str) -> int:
+        return self.counted(self.lines(session))
 
-    def last_said(self, session: str, key: str, line: str) -> float:
-        """When these words were last said to this session under this key, as the nudge entry recorded it; 0 when never."""
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ? AND json_extract(data, '$.line') = ?", (session, key, line))
-        return float(row["at"])
+    def last_line(self, session: str, key: str, line: str) -> float:
+        return float(self.maximum(self.lines(session).filter_json("data->key", key).filter_json("data->line", line), "data->time", 0))
 
-    def last_said_of(self, session: str, key: str) -> float:
-        """When this session was last told the line under this key, whatever its words; 0 when never."""
-        row = self.aggregate("COALESCE(MAX(json_extract(data, '$.at')), 0) AS at", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return float(row["at"])
+    def last_lines(self, session: str, key: str) -> float:
+        return float(self.maximum(self.lines(session).filter_json("data->key", key), "data->time", 0))
 
     def tool_starts(self, session: str, last: int = 500) -> list[Entry]:
-        """The newest tool uses of this session, newest first, as the hooks recorded them."""
-        return self.selected("kind = 'ToolStarting' AND actor = ? ORDER BY id DESC LIMIT ?", (f"agent:{session}", last))
+        return self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
-    def said_since(self, session: str, key: str) -> int:
-        """How many lines the journal said to this session since it last said the one with this key, or ever when it never did."""
-        newest = self.aggregate("COALESCE(MAX(id), 0) AS id", "kind = 'nudge' AND json_extract(data, '$.session') = ? AND json_extract(data, '$.key') = ?", (session, key))
-        return self.counted_in("kind = 'nudge' AND json_extract(data, '$.session') = ? AND id > ?", (session, int(newest["id"])))
+    def output_tool_starts(self, session: str, last: int = 500) -> list[Entry]:
+        mentions = self.query().filter_alternatives(self.query().filter_containing("data", "outputs/"), self.query().filter_containing("data", "journal output read "))
+        return self.selected(mentions.filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
-    def of_kind(self, kind: str, last: int = 50) -> list[Entry]:
-        return self.selected("kind = ? ORDER BY id DESC LIMIT ?", (kind, last))
+    def shape_commands(self, session: str, shape: str, last: int = 200) -> set[str]:
+        rows = self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_json("data->call->shape", shape).order_descending("id").limit(last))
+        return {row.recorded_call().command for row in rows}
 
-    def of_kind_in(self, last: int = 400) -> list[Entry]:
-        """The newest entries here of every kind, newest first."""
-        return self.selected("1 ORDER BY id DESC LIMIT ?", (last,))
+    def shape_count(self, session: str, shape: str, last: int = 200) -> int:
+        return len(self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_json("data->call->shape", shape).order_descending("id").limit(last)))
 
-    def of_actor(self, stamp: str, last: int = 200) -> list[Entry]:
-        """The newest entries an actor left, in every environment, newest first."""
-        return self.selected_everywhere("actor = ? ORDER BY id DESC LIMIT ?", (stamp, last))
+    def newer_shell_starts(self, session: str, earliest: datetime, last: int = 500) -> list[Entry]:
+        shell = self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_present("data->call->command").filter_unequal("data->call->command", "")
+        return self.selected(shell.filter_greater("created_at", earliest).order_descending("id").limit(last))
 
-    def last_of_session(self, session: str) -> Entry | None:
-        """The latest hook entry this session sent, which says what the agent is doing right now."""
-        rows = self.selected("actor = ? AND kind != 'nudge' ORDER BY id DESC LIMIT 1", (f"agent:{session}",))
+    def newer_tool_ends(self, session: str, earliest: datetime, last: int = 500) -> list[Entry]:
+        return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).filter_greater("created_at", earliest).order_descending("id").limit(last))
+
+    def newer_kind_entries(self, kind: str, earliest: datetime, last: int = 50) -> list[Entry]:
+        return self.selected(self.query().filter(kind=kind).filter_greater("created_at", earliest).order_descending("id").limit(last))
+
+    def tool_ends(self, session: str, last: int = 500) -> list[Entry]:
+        return self.selected(self.query().filter_listed("kind", ("ToolFinished", "ToolFailed")).filter(actor=Actor.agent(session)).order_descending("id").limit(last))
+
+    def last_line_entry(self, session: str, keys: tuple[str, ...]) -> Entry | None:
+        rows = self.selected(self.lines(session).filter_listed("data->key", keys).order_descending("id").limit(1))
+        return rows[0] if rows else None
+
+    def line_entries(self, session: str, keys: tuple[str, ...], last: int = 100) -> list[Entry]:
+        return self.selected(self.lines(session).filter_listed("data->key", keys).order_descending("id").limit(last))
+
+    def recent_lines(self, session: str, key: str, entry_id: int) -> list[str]:
+        return [e.data["line"] for e in self.selected(self.lines(session).filter_json("data->key", key).filter_greater("id", entry_id).order("id"))]
+
+    def use_lines(self, session: str, key: str, tool_use: int) -> list[str]:
+        return [e.data["line"] for e in self.selected(self.lines(session).filter_json("data->key", key).filter_greater("data->tool_use", tool_use).order("id"))]
+
+    def nudge_count(self, session: str, keys: tuple[str, ...], tool_use: int) -> int:
+        return self.counted(self.lines(session).filter_listed("data->key", keys).filter_greater_equal("data->tool_use", tool_use))
+
+    def last_kind_id(self, session: str, kind: str) -> int:
+        return self.maximum(self.query().filter(kind=kind, actor=Actor.agent(session)), "id", 0)
+
+    def recent_line_entries(self, session: str, key: str) -> int:
+        newest = self.maximum(self.lines(session).filter_json("data->key", key), "id", 0)
+        return self.counted(self.lines(session).filter_greater("id", newest))
+
+    def kind_entries(self, kind: str, last: int = 50) -> list[Entry]:
+        return self.selected(self.query().filter(kind=kind).order_descending("id").limit(last))
+
+    def kind_entries_scoped(self, last: int = 400) -> list[Entry]:
+        return self.selected(self.query().order_descending("id").limit(last))
+
+    def actor_entries(self, stamp: str, last: int = 200) -> list[Entry]:
+        return self.selected_globally(self.query().filter(actor=stamp).order_descending("id").limit(last))
+
+    def last_session_entry(self, session: str) -> Entry | None:
+        rows = self.selected(self.query().filter(actor=Actor.agent(session)).filter_unequal("kind", NUDGE).order_descending("id").limit(1))
         return rows[0] if rows else None
 
     def last_id(self) -> int:
-        return self.aggregate("MAX(id) AS id")["id"] or 0
+        return self.maximum(self.query(), "id", 0)
 
     def dispatches(self, session: str) -> list[Entry]:
-        """Every dispatch of a subagent in a session, however long ago: the Agent tool's starts and finishes, the subagents' own stops and the turn and session ends that close what never answered, oldest first."""
-        return self.selected(f"json_extract(data, '$.session_id') = ? AND {DISPATCHES} ORDER BY id", (session,))
+        return self.selected(DISPATCHES.filter_json("data->session_id", session).order("id"))
+
+    def global_dispatches(self) -> list[Entry]:
+        return self.selected_globally(DISPATCHES.order("id"))
 
     def agent_calls(self, last: int = 500) -> list[Entry]:
-        """The newest dispatches of a subagent here, across every session: the Agent tool's starts, newest first, read through the index of the dispatches."""
-        return self.selected(f"{DISPATCHES} AND kind = 'ToolStarting' ORDER BY id DESC LIMIT ?", (last,))
+        return self.selected(DISPATCHES.filter(kind="ToolStarting").order_descending("id").limit(last))
 
-    def shown_since(self, id: int) -> list[Entry]:
-        """What the viewer is told of after an id: this environment's entries and the project's, such as a check run or a plugin changed."""
-        return self.with_project("id > ? ORDER BY id", (id,))
+    def recent_shown(self, id: int) -> list[Entry]:
+        return self.with_project(self.query().filter_greater("id", id).order("id"))
 
     def shown_recent(self, last: int) -> list[Entry]:
-        """The newest entries the viewer is told of, this environment's and the project's, newest first."""
-        return self.with_project("1 ORDER BY id DESC LIMIT ?", (last,))
+        return self.with_project(self.query().order_descending("id").limit(last))
 
-    def since(self, id: int) -> list[Entry]:
-        return self.selected("id > ? ORDER BY id", (id,))
+    def recent(self, id: int) -> list[Entry]:
+        return self.selected(self.query().filter_greater("id", id).order("id"))
+
+    def lines(self, session: str) -> Query:
+        return self.query().filter(kind=NUDGE).filter_json("data->session", session)
 
     def _placed(self, row: Entry) -> Entry:
-        """An entry names its own environment: 0 is the project's, for what happened in none."""
         return row

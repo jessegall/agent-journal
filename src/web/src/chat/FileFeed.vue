@@ -106,7 +106,7 @@ function onScroll(e) {
                         :kind="c.kind"
                         :added="c.added"
                         :removed="c.removed"
-                        :ago="fresh(c.at, now)"
+                        :ago="fresh(c.time, now)"
                         :rows="c.rows"
                         :half="view.columns || c.half"
                         :picture="c.image ? scope.api.editedImageUrl(props.agent, c.latest) : ''"

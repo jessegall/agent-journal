@@ -1,5 +1,5 @@
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 
 
 class TurnGatherer:
@@ -10,7 +10,7 @@ class TurnGatherer:
         self._last: dict[str, int] = {}
 
     def fold(self, event: AgentEvent) -> AgentEvent:
-        if not isinstance(event, TurnWritten):
+        if not isinstance(event, TurnDisplayed):
             return event
         key = f"{event.session}:{event.turn_id}"
         parts = self._parts.setdefault(key, {})
@@ -20,7 +20,7 @@ class TurnGatherer:
         last = self._last.get(key)
         if last is None or any(i not in parts for i in range(last + 1)):
             return event.with_text("").with_final(False)
-        whole = "".join(parts[i] for i in range(last + 1))
+        full = "".join(parts[i] for i in range(last + 1))
         self._parts.pop(key, None)
         self._last.pop(key, None)
-        return event.with_text(whole).with_final(True)
+        return event.with_text(full).with_final(True)

@@ -8,7 +8,7 @@ these, the change is wrong, not the rule.
 
 **One concept, one place.** A thing is defined in one file and nowhere else. A model is its
 file in `models/`; its SQL is its repository; the journal's conduct toward the agent in a state
-is that state's workflow, and the engine keeps only what no workflow may change. If you are
+is that state's listeners, and the engine keeps only what no state may change. If you are
 about to write the same idea in a second place, you have found the one place it belongs and
 should move it there.
 
@@ -33,56 +33,64 @@ a repository, which stamps the actor and fires the model events. Lines reach the
 through the `Nudger`. The supervisor is reached only through `SupervisorLink`. Caching,
 checks and logging live in the funnel, never at a call site.
 
-**Every write names its actor.** `save(row, by)` and `delete(row, by)` take the actor; a
+**Every write names its actor.** `save(row, actor)` and `delete(row, actor)` take the actor; a
 request and a command know theirs. Nothing is written anonymously, so a shared journal with
 many users needs no change to the base.
 
-**The state is the truth.** What an agent is doing is its row's state column, one flat state
-at a time, no substates; what it owes the journal, a skill to read, the look at what is in
-flight, a decision at a context mark, is a fact beside it on the same row, never a state over
-it. A state is a class with a method per event, named after the event. No `if state ==`, no
-`if event.kind ==`: dispatch is by class and by method name. What two states share is
-inherited, one level. Going back from a pause is data (`resume`), not a stack: the pauses are
-the waits, on a worker, on a question, on something outside, on being stuck, and a sequence.
+**The state is the truth.** What an agent is doing is a stack of states on its row, `Idle` at the
+floor and the state in hand on top. A pause is a state pushed over the work and popped when what
+it waits for comes, so going back is a pop, never a value that says where to go. What the agent
+owes the journal, a skill to read, the look at what is in flight, a decision at a context mark, is
+a fact beside the stack on the same row, never a state over it. A state is a class with a listener
+per moment: a method named `on_<moment>`, bound by the event type it annotates,
+`on_question_answered(self, event: QuestionAnswered, settings)`. Only `on_` methods are listeners.
+Every listener whose type matches the event runs, the state's own first, and their answers merge:
+nudges in order, the first refusal wins, one push or pop per event and a second refused. A listener
+answers `none`, `swap`, `push`, `pop`, `forward` or `refuse`, and nothing else moves the agent. No
+`if state ==`, no `if event.kind ==`: dispatch is by class and by type. One `BaseState` is the
+parent of every state and every feature's state extends it directly. Only the top of the stack
+hears an event; a state beneath catches up in `on_resume(data, settings)`, which may pop it.
+The lifecycle hooks `on_push`, `on_suspend`, `on_resume` and `on_pop` answer nudges, and `on_push`
+may refuse the push. Every push and pop is an entry in the trail, shown under the
+figure on the Home page. Counts and times a state keeps are its fields and go with it when it is
+popped.
 
 **Features bring their states; the engine knows no feature.** A feature owns its states, its
-nudges, its state-free listeners, its commands, and the checks and actions a workflow may name;
-the chart's catalogue gathers them from the features and defines none itself. The engine holds the machine, the base
-state, `Paused`, the nudger, the clock and the runtime, and imports nothing from `features/`.
-A state names a feature's nudge as data; a feature moves the agent through `machine.move`.
-A trigger's workflows run in the order the user sets, the locked ones first; a workflow bound
-to a state runs while the agent is in it, one bound to none always.
+nudges, its options, its recording listeners and its commands. Its conduct toward the agent in
+every state is a mixin extending `Conduct`: `on_` methods named for their event alone,
+`on_tool_starting`, and nothing else, folded into the base state at boot. The engine holds
+the state machine, the base state, `Wait`, `Compacting`, `Ended`, the nudger, the clock and the
+runtime, and imports nothing from `features/`. The state machine is reached by the engine alone
+and by `journal panic`, which pushes, pops or resets the stack from outside and is always allowed;
+the custom rule `StateMachineOutsideEngineDetector` flags any other use.
 
-**One line has one decider.** A line is said by a workflow or by the engine, never both; the
-first hold of an event wins and a later one is recorded unanswered; one move per event, a
-second refused. Every line and every move has one decider, and the record names it.
+**Only a state moves the agent.** A command writes rows. A model names the event its change
+means, `task.started(at)` carries `TaskStarted` through `Model.with_event`, and refuses a change
+it cannot make before anything is written. The repository dispatches the event on save to every
+live agent of the row's environment, and the top of each stack answers it. No state hears
+`Updated` or reads a row as it was before. The facts a state needs about the environment's rows
+travel on the event as its `data`, a `FeatureData` of one frozen part per feature read by `data.of(Tasks)`,
+built by the state machine for the agent it asks; the options travel as `Settings`, a frozen
+value of what the user set. A state never asks a repository or a clock: every event carries `at`.
 
-**Workflows drive the agent; the engine keeps it safe.** The engine does what the journal cannot
-work without: delivering the user's messages, running commands, moving the agent when a task starts
-or a session ends, keeping a tally. A workflow is the journal's conduct toward the agent, the part
-a user would want to shape: when it reminds, what it says, what it holds, when it blocks a stop. The
-test is not "does this touch the agent" but "would a user ever want it different, or want to watch
-it happen". Delivering a message fails that test, so it is the engine's; the reminder every third
-tool use passes it, so it is a workflow. A workflow is also where a user sees how the journal
-drives the agent: the canvas shows what it does and why, a run lights the path it took, and Recent
-runs says what was said. Engine behaviour lives in the engine and never appears on the canvas, not as a node
-and not as a note; a workflow is drawn on the canvas, in the user's order, and can be edited.
+**One line has one decider.** Nothing speaks to the agent from outside a state. A line is said
+by the state or the conduct whose listener answered the event; the first hold of an event wins
+and a later one is recorded unanswered. A nudge is one class, `Nudge.create(**values)`, and its
+name says what the line does. Every line and every move has one decider, and the record names it.
 
-**One subject per workflow.** A workflow is about one thing: the inbox, the voice, a
-task's log, a plan's next step. Never a chain of subjects drawn as one workflow because they happen
-at the same event; each is its own workflow in the event's run order. A workflow is self-contained: it checks
-every condition it acts on itself, auto mode among them, so it reads whole on its own. Stop the later workflows is
-a side effect a workflow may opt into, never what another workflow counts on to keep from acting. A workflow is
-made only of parts on the canvas: whatever it remembers, it keeps in values it names and sets itself, counts and
-times kept per environment, and it never reads another workflow's value; no check keeps a clock or works out a
-count out of sight. What the agent owes the journal before it may write or stop,
-the journal skill, the look at what is in flight, a decision at a context mark, is the engine's:
-each feature sets its own debt and holds a write and a stop on it through listeners, and no node on the canvas carries it.
+**Conduct is a state's; safety is the engine's.** The engine does what the journal cannot work
+without: delivering the user's messages, running commands, holding every tool while the context
+compacts, ending the session. Everything else the journal says to the agent or holds it for, when
+it reminds, what it says, when it blocks a stop, is a listener on a state or on a feature's
+conduct, and the numbers it reads are the Settings page's. What the agent owes the journal before
+it may write or stop is set as a fact on its row by a feature's recording listener and held by the
+feature's conduct; the events `SkillRead`, `OverviewRead` and `MarkDecided` pay the debt.
 
 **Hooks decide nothing; listeners are deferred unless they say otherwise.** The hook script
-posts and prints. The server records the entry, runs the blocking listeners, replies, then
-runs the rest on one worker thread. A listener that must answer before the agent goes on
-declares `blocking = True`; a deferred one can never refuse, by construction.
+posts and prints. The server records the entry, asks the state machine, which answers with the
+hold or the lines, replies, then runs the recording listeners on one worker thread. A listener
+that must answer before the agent goes on declares `blocking = True`; a deferred one can never
+refuse, by construction.
 
 **Dependencies are declared in constructors.** A class names what it needs by type in
 `__init__`, and the container builds it once. No globals, no module-level state, no service
@@ -123,7 +131,7 @@ Run the whole suite after every change; it is cheap.
 ## Layout
 
 `src/journal/` is the package: `models/` (data only), `repositories/` (the SQL), `db/`,
-`events/` (`models/` and `agent/`), `engine/` (the state machine), `features/` (states,
+`events/` (`models/` and `agent/`), `engine/` (the stack of states), `features/` (states, conduct,
 nudges, listeners, commands per subject), `hooks/`, `http/`, `console/`, `providers/`, `launcher/` (the
 picker and the launch file a supervisor starts from). `src/supervisor/` is a separate stdlib-only package that
 knows no journal concept: it runs the processes it is handed and answers its protocol. NOTES.md holds the decisions and what is still open.

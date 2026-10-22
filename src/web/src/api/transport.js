@@ -84,6 +84,13 @@ class Transport {
         });
     }
 
+    // a file's bytes, which are not JSON, at an address that names its environment itself
+    async bytes(url) {
+        const res = await fetch(url, {headers: VIEWER, signal: AbortSignal.timeout(WAIT_MS)});
+        if (!res.ok) throw failure(res.status, `The file could not be read: ${res.status} ${res.statusText}`);
+        return res.arrayBuffer();
+    }
+
     request(method, url, body, wait = 0, headers = {}) {
         if (method !== "GET") return this.send(method, url, body, wait, RELOAD_TRIES, headers).then((got) => (this.written(url), got));
         if (covered() && !asksUpdateStatus(url))

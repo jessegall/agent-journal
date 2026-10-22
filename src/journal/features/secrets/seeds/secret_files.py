@@ -17,26 +17,25 @@ class SecretFiles(Seed):
         self.config, self.secrets = config, secrets
 
     def run(self) -> None:
-        known = {s.title.lower() for s in self.secrets.all()}
+        existing = {s.title.lower() for s in self.secrets.all()}
         for path in sorted((self.config.home / "project" / "secret").glob("*.md")):
             secret = self.read(path)
-            if secret is not None and secret.title.lower() not in known:
+            if secret is not None and secret.title.lower() not in existing:
                 self.secrets.save(secret, Actor.system())
-                known.add(secret.title.lower())
+                existing.add(secret.title.lower())
 
     def read(self, path: Path) -> Secret | None:
-        """The row a secret file holds: a JSON head between two --- lines, how it is used after them; a file not shaped so is none."""
         parts = path.read_text().split("---\n", 2)
         if len(parts) < 3:
             return None
         head, brief = json.loads(parts[1]), parts[2].strip()
         data = head.get("data", {})
-        return Secret(title=head.get("title", path.stem), brief=brief, kind=SecretKind.named(data.get("kind") or SecretKind.CUSTOM.value),
+        return Secret(title=head.get("title", path.stem), brief=brief, kind=SecretKind.lookup(data.get("kind") or SecretKind.CUSTOM.value),
                       fields=tuple(data.get("secret_fields", ())), filled=tuple(data.get("filled", {})), programs=tuple(data.get("programs", ())),
                       proposed=tuple(data.get("proposed", ())), helpers=bool(data.get("helpers")), url=data.get("url", ""), auto_login=bool(data.get("auto_login")),
-                      used_at=self.at(data.get("used")), session_at=self.at(data.get("session")), session_expires=self.at(data.get("session_expires")),
-                      deleted_at=self.at(head.get("deleted")))
+                      used_at=self.time(data.get("used")), session_at=self.time(data.get("session")), session_expires=self.time(data.get("session_expires")),
+                      deleted_at=self.time(head.get("deleted")))
 
     @staticmethod
-    def at(stamp) -> datetime | None:
+    def time(stamp) -> datetime | None:
         return datetime.fromtimestamp(stamp, timezone.utc) if stamp else None

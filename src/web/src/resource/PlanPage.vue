@@ -85,8 +85,8 @@ async function run(act) {
             </template>
         </header>
         <h2 class="title">{{ resource.title }}</h2>
-        <template v-if="resource.blocked_why">
-            <p class="note">Blocked: {{ resource.blocked_why }}</p>
+        <template v-if="resource.block_reason">
+            <p class="note">Blocked: {{ resource.block_reason }}</p>
         </template>
         <template v-if="planned.length">
             <div :class="['overall', {pinned: pinProgress}]">
@@ -102,7 +102,7 @@ async function run(act) {
         </template>
         <template v-if="resource.brief">
             <div class="brief">
-                <Folded :at="220" :keep="160">
+                <Folded :name="`plans:${resource.id}:brief`" :at="220" :keep="160">
                     <TextDisplay :text="resource.brief" />
                 </Folded>
             </div>

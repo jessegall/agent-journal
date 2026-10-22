@@ -3,99 +3,89 @@ import os
 import signal
 import subprocess
 import threading
-import time
+import time as timing
 from datetime import datetime, timezone
 from pathlib import Path
+from journal.models.support.ref import Ref
 
 from journal.config import Config
-from journal.support.cards import Cards
-from journal.engine.nudger import Nudger
-from journal.engine.states.ended import Ended
+from journal.chat.cards import Cards
 from journal.features.checks.support.check_output import CheckOutput
 from journal.features.checks.support.finished_run import FinishedRun
 from journal.support.actor import Actor
 from journal.models.check import Check
 from journal.support.check_report import CheckReport
+from journal.engine.states.ended import Ended
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
-from journal.supervisor_link import SupervisorLink
-from journal.support.chat_mark import ChatMark
+from journal.support.card_kind import CardKind
 
-TIMEOUT = 600
-TAIL = 20
+TIMEOUT_SECONDS = 600
+TAIL_LINES = 20
 FAULTS = {126: "the command cannot be run", 127: "the command is not there"}
-"""Exit codes the shell gives when it could not run the command at all."""
-KEPT = 4000
-"""How much of the end of a run's output its row keeps."""
-EVERY = 1.0
-"""Seconds between two saves of a run's progress."""
+OUTPUT_CHARACTERS = 4000
+INTERVAL_SECONDS = 1.0
 
 
 class CheckRunner:
-    """Runs one check in the project root, its progress on its row while it runs, keeps its result and report, and tells every live agent when it fails."""
+    """Runs one check in the project root, its progress on its row while it runs, and keeps its result and report; the run is a row event the check carries, and what the agent is told of a failure is the checks conduct's."""
 
-    def __init__(self, config: Config, checks: Checks, agents: Agents, nudger: Nudger, supervisor: SupervisorLink, cards: Cards) -> None:
-        self.config, self.checks, self.agents, self.nudger, self.supervisor, self.cards = config, checks, agents, nudger, supervisor, cards
+    def __init__(self, config: Config, checks: Checks, agents: Agents, cards: Cards) -> None:
+        self.config, self.checks, self.agents, self.cards = config, checks, agents, cards
 
-    def run(self, check: Check, by: Actor) -> Check:
-        """The check run now, waited for."""
-        return self.finished(self.checks.save(check.started(time.time()), by), by)
+    def run(self, check: Check, actor: Actor) -> Check:
+        started = timing.time()
+        return self.finished(self.checks.save(check.started(started), actor), started, actor)
 
-    def start(self, check: Check, by: Actor) -> Check:
-        """The check run on a thread of its own, answered at once; one already running is left to finish."""
-        if check.running is not None:
+    def start(self, check: Check, actor: Actor) -> Check:
+        if check.progress is not None:
             return check
-        begun = self.checks.save(check.started(time.time()), by)
-        threading.Thread(target=self.finished, args=(begun, by), name=f"check-{begun.id}", daemon=True).start()
-        return begun
+        started = timing.time()
+        commenced = self.checks.save(check.started(started), actor)
+        threading.Thread(target=self.finished, args=(commenced, started, actor), name=f"check-{commenced.id}", daemon=True).start()
+        return commenced
 
-    def finished(self, check: Check, by: Actor) -> Check:
-        from journal.features.checks.feature import Checks as ChecksFeature
+    def finished(self, check: Check, started: float, actor: Actor) -> Check:
         report = self.config.home / "runtime" / "check-reports" / f"{check.id}.json"
         report.parent.mkdir(parents=True, exist_ok=True)
         report.unlink(missing_ok=True)
-        ended = self.executed(check, report, by)
-        was_failing = check.last_passed is False
-        took = time.time() - check.running.at
-        ran = self.checks.save(self.checks.find(check.id).ran(ended.passed, ended.output[-KEPT:], datetime.now(timezone.utc), took, self.report_of(report), ended.fault), by)
-        if ran.waited_on:
-            return ran
-        tail = "\n".join(ended.output.strip().splitlines()[-TAIL:])
-        for agent in self.agents.everywhere():
+        ended = self.executed(check, report, started, actor)
+        prior_failure = check.last_passed is False
+        elapsed = timing.time() - started
+        check_row = self.checks.save(self.checks.find(check.row_id).completed(ended.passed, ended.output[-OUTPUT_CHARACTERS:], datetime.now(timezone.utc), elapsed, self.report(report), ended.fault), actor)
+        if check_row.wait_target:
+            return check_row
+        tail = "\n".join(ended.output.strip().splitlines()[-TAIL_LINES:])
+        for agent in self.agents.main_agents():
             if agent.state != Ended.name:
-                self.cards.show(agent.environment_id, agent.session, f"Check {ran.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, f"checks:{ran.id}", shows=ChatMark.CHECKS)
-        if not ended.passed:
-            said = ChecksFeature.FAILING if was_failing else ChecksFeature.FAILED
-            for agent in self.agents.everywhere():
-                if agent.state != Ended.name and (line := self.nudger.say(agent, said.about(n=ran.id, title=ran.title, tail=CheckOutput.told(ended.output)))):
-                    self.supervisor.type(agent.environment_id, line)
-        return ran
+                self.cards.show(agent.environment_id, agent.session, f"Check {check_row.title} {'passed' if ended.passed else 'failed'}", "check", "good" if ended.passed else "bad", tail, Ref.build(check_row), shows=CardKind.CHECKS)
+        return check_row
 
-    def executed(self, check: Check, report: Path, by: Actor) -> FinishedRun:
-        """The command run with its output read as it comes, its progress saved on the row now and then, cut off past the time-out."""
+    def executed(self, check: Check, report: Path, started: float, actor: Actor) -> FinishedRun:
         process = subprocess.Popen(check.command, shell=True, cwd=self.config.root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace",
                                    env={**os.environ, "JOURNAL_REPORT": str(report)}, start_new_session=True)
-        late = threading.Timer(TIMEOUT, os.killpg, (process.pid, signal.SIGKILL))
+        if process.stdout is None:
+            raise OSError(f"check {check.row_id} started without its output pipe")
+        late = threading.Timer(TIMEOUT_SECONDS, os.killpg, (process.pid, signal.SIGKILL))
         late.start()
-        printed, saved = [], time.time()
+        output_text, saved = [], timing.time()
         for line in process.stdout:
-            printed.append(line)
-            if time.time() - saved >= EVERY:
-                self.checks.touch(check, by, running=CheckOutput.progress("".join(printed), check.running.at))
-                saved = time.time()
+            output_text.append(line)
+            if timing.time() - saved >= INTERVAL_SECONDS:
+                self.checks.touch(check, actor, progress=CheckOutput.progress("".join(output_text), started))
+                saved = timing.time()
         code = process.wait()
         late.cancel()
-        output = "".join(printed)
+        output = "".join(output_text)
         if code == -signal.SIGKILL:
-            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT}s", f"it timed out after {TIMEOUT}s")
+            return FinishedRun(False, f"{output}\ntimed out after {TIMEOUT_SECONDS}s", f"it timed out after {TIMEOUT_SECONDS}s")
         return FinishedRun(code == 0, output, FAULTS.get(code, ""))
 
     @staticmethod
-    def report_of(path: Path) -> CheckReport | None:
-        """What the run wrote to its report file; none when it wrote none or wrote no JSON."""
+    def report(path: Path) -> CheckReport | None:
         if not path.is_file():
             return None
         try:
-            return CheckReport.from_json(json.loads(path.read_text()))
+            return CheckReport.parsed(json.loads(path.read_text()))
         except ValueError:
             return None

@@ -12,8 +12,8 @@ from journal.config import Config
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.repositories.entries import Entries
-from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.scope import Scope
+from journal.repositories.setting_rows import SettingRows
 
 SRC = Path(__file__).resolve().parent.parent / "src"
 
@@ -28,50 +28,50 @@ def test_the_runner_runs_a_chain_part_by_part_and_moves_a_long_one_to_the_backgr
     (tmp_path / ".journal").mkdir()
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
-    settings = app.container.get(Settings)
+    settings = app.container.get(SettingRows)
     settings.save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     app.runtime().start()
     try:
         port = app.server().port
         (tmp_path / ".journal" / "port").write_text(str(port))
         urlopen(Request(f"http://127.0.0.1:{port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        env = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
+        place = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
         runner, cwd = str(tmp_path / ".journal" / "src" / "journal" / "hooks" / "run.sh"), tmp_path / "cwd"
-        run = subprocess.run([runner, wrapped(f"cd {tmp_path} && echo one && false && echo three", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped(f"cd {tmp_path} && echo one && false && echo three", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.strip() == "one" and run.returncode == 1 and not cwd.exists(), run.stderr
-        run = subprocess.run([runner, wrapped("echo before; [ -f /nonexistent ] || exit 3; echo after", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped("echo before; [ -f /nonexistent ] || exit 3; echo after", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.strip() == "before" and run.returncode == 3 and not cwd.exists(), run.stderr
-        run = subprocess.run([runner, wrapped("false; echo still && false && echo skipped; echo last", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped("false; echo still && false && echo skipped; echo last", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.split() == ["still", "last"] and run.returncode == 0 and cwd.exists(), run.stderr
         cwd.unlink()
-        run = subprocess.run([runner, wrapped("echo first && exec echo replaced; echo never", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped("echo first && exec echo replaced; echo never", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert run.stdout.split() == ["first", "replaced"] and run.returncode == 0 and "No such file" not in run.stderr, run.stderr
         settings.save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
-        run = subprocess.run([runner, wrapped("seq 1 1000", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
+        run = subprocess.run([runner, wrapped("seq 1 1000", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=60)
         shown = run.stdout.splitlines()
         assert len(shown) == 1 and re.fullmatch(r"\[journal\] output (\d+)(: 3893 characters, kept\. read the part you need: journal output read \1 --grep .*| kept: journal output read \1 --tail 20)", shown[0]), "past the cap a command's output is not shown, only named"
         (cwd.parent / "numbers").write_text("\n".join(str(i) for i in range(1, 3001)) + "\n")
-        run = subprocess.run([runner, wrapped(f"cat {cwd.parent / 'numbers'}", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=60)
+        run = subprocess.run([runner, wrapped(f"cat {cwd.parent / 'numbers'}", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=60)
         assert run.stdout.startswith("1\n2\n") and run.stdout.rstrip().endswith("3000") and "cut from the middle" in run.stdout, "a read is cut to its two ends"
-        run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped("echo fast && sleep 3 && echo slow", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "fast" in run.stdout and "moved to the background as output" in run.stdout and "sleep 3" not in run.stdout and run.returncode == 0, run.stderr
-        with app.container.get(Scope).of(1):
+        with app.container.get(Scope).environment(1):
             entries = app.container.get(Entries)
             for _ in range(100):
-                if entries.of_kind("ended", 5):
+                if entries.kind_entries("ended", 5):
                     break
                 time.sleep(0.1)
-            ended = entries.of_kind("ended", 5)[0]
+            ended = entries.kind_entries("ended", 5)[0]
             assert ended.data["status"] == 0 and "slow" in ended.data["last"], ended.data
-            assert [e.data["part"] for e in reversed(entries.of_kind("ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
-            run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            changed = [e.data["changed"] for e in reversed(entries.of_kind("ran", 20))][-2:]
+            assert [e.data["part"] for e in reversed(entries.kind_entries("ran", 20))][-3:] == ["echo fast", "sleep 3", "echo slow"]
+            run = subprocess.run([runner, wrapped("printf 'a\\nb\\n' > made.txt && echo untouched", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            changed = [e.data["changed"] for e in reversed(entries.kind_entries("ran", 20))][-2:]
             assert changed == [[{"added": 2, "removed": 0, "path": "made.txt"}], []], changed
         assert cwd.read_text().strip() == str(tmp_path.resolve())
-        run = subprocess.run([runner, wrapped("sleep 0.7 && sleep 0.7 && sleep 0.7", cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, wrapped("sleep 0.7 && sleep 0.7 && sleep 0.7", cwd)], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "moved to the background" in run.stdout, "parts each under the limit move when the chain as a whole passes it"
         heredoc = wrapped("cat <<EOF\nheld\nEOF\nsleep 3", cwd).replace(" < /dev/null", "")
-        run = subprocess.run([runner, heredoc], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+        run = subprocess.run([runner, heredoc], env=place, cwd=tmp_path, capture_output=True, text=True, timeout=20)
         assert "moved to the background" in run.stdout, "a command with a heredoc, which Claude Code wraps without < /dev/null, goes through the runner too"
     finally:
         app.runtime().stop()
@@ -110,7 +110,7 @@ CORPUS = [
     "echo a;echo b&&echo c",
     "cd /nonexistent 2>/dev/null || echo nocd; pwd",
     "printf 'x'; printf 'y\\n'",
-    "echo \; && echo \\&\\&",
+    "echo \\; && echo \\&\\&",
     "a=(1 2); echo ${a[2]}; echo ${#a}",
     "false || { echo h1; echo h2; }",
     "if [ 1 -eq 1 ] && [ 2 -eq 2 ]; then echo both; fi",
@@ -138,7 +138,7 @@ CORPUS = [
     "x='1;2'; [[ $x == *\";\"* ]] && echo m",
     "echo a |& cat; echo b &> /dev/null; echo c",
     "(echo in-sub; exit 4); echo $?",
-    "echo \"\$(echo a; echo b)\" && printf '%s\\n' \"$(echo c; echo d)\"",
+    "echo \"\\$(echo a; echo b)\" && printf '%s\\n' \"$(echo c; echo d)\"",
 ]
 
 
@@ -147,22 +147,22 @@ def test_the_runner_agrees_with_the_shell_on_every_line_of_the_corpus(tmp_path: 
     (tmp_path / ".journal").mkdir()
     (tmp_path / ".journal" / "src").symlink_to(SRC)
     app = App(Config(tmp_path, port=0))
-    app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
     for key in ("shell.command_characters", "shell.read_characters"):
-        app.container.get(Settings).save(Setting(environment_id=0, key=key, value=10 ** 9), Actor.system())
+        app.container.get(SettingRows).save(Setting(environment_id=0, key=key, value=10 ** 9), Actor.system())
     app.runtime().start()
     try:
         port = app.server().port
         (tmp_path / ".journal" / "port").write_text(str(port))
         urlopen(Request(f"http://127.0.0.1:{port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "s1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-        env = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
+        environment = {**os.environ, "JOURNAL_ROOT": str(tmp_path), "JOURNAL_ENV": "main", "CLAUDECODE": "1", "SHELL": "/bin/zsh"}
         runner, cwd = str(tmp_path / ".journal" / "src" / "journal" / "hooks" / "run.sh"), tmp_path / "cwd"
         differences = []
         for line in CORPUS:
-            whole = subprocess.run(["/bin/zsh", "-c", line], cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            parts = subprocess.run([runner, wrapped(line, cwd)], env=env, cwd=tmp_path, capture_output=True, text=True, timeout=20)
-            if (whole.stdout, whole.returncode) != (parts.stdout, parts.returncode):
-                differences.append((line, whole.stdout, whole.returncode, parts.stdout, parts.returncode, parts.stderr[-200:]))
+            full = subprocess.run(["/bin/zsh", "-c", line], cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            parts = subprocess.run([runner, wrapped(line, cwd)], env=environment, cwd=tmp_path, capture_output=True, text=True, timeout=20)
+            if (full.stdout, full.returncode) != (parts.stdout, parts.returncode):
+                differences.append((line, full.stdout, full.returncode, parts.stdout, parts.returncode, parts.stderr[-200:]))
         assert not differences, "\n".join(repr(d) for d in differences)
     finally:
         app.runtime().stop()

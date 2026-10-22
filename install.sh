@@ -77,7 +77,7 @@ restore() {
   mv .journal/version-3 .journal-version-3 && rm -rf .journal && mv .journal-version-3 .journal
   echo "the install failed: the version 3 journal is back where it was" >&2
 }
-trap 'code=$?; [ "$code" -eq 0 ] || restore' EXIT
+trap 'code=$?; rm -f .journal/runtime/journal.starting; [ "$code" -eq 0 ] || restore' EXIT
 # Whether the journal listening on a port runs from this project, by its command line or its working folder; with no
 # lsof to ask, it is taken as this project's, as the port file says.
 this_projects() {
@@ -132,6 +132,10 @@ if [ -n "$installed" ] && [ -n "$bringing" ] && "$PY" -c 'import sys; v = lambda
 fi
 mkdir -p .journal/src
 printf '%s\n' "$PY" > .journal/python
+# While the code is copied and set up, the running journal is told it is starting, so it does not take the copying
+# for a slow request of its own; the exit trap above takes the mark away.
+mkdir -p .journal/runtime
+touch .journal/runtime/journal.starting
 # Each part is copied beside the one in use and renamed into place, so the running hooks and shell runner never find it gone.
 swap() {
   rm -rf "$2.new" "$2.old"
@@ -145,5 +149,7 @@ for name in journal supervisor journal.py journal.sh; do
   swap "$SRC/$name" ".journal/src/$name"
 done
 mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist
+# The commit installed, so a journal that follows a branch knows whether the branch has moved on.
+git -C "$SRC/.." rev-parse HEAD > .journal/src/commit 2>/dev/null || printf '' > .journal/src/commit
 [ -z "$TMP" ] || rm -rf "$TMP"
 JOURNAL_ROOT="$PWD" "$PY" .journal/src/journal.py setup

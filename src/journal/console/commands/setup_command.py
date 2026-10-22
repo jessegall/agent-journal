@@ -1,15 +1,15 @@
 import os
-import shlex
 import shutil
+from journal.providers.provider import HOOK_SCRIPT
 from argparse import Namespace
 from pathlib import Path
 
 from journal.config import Config
 from journal.console.command import Command
-from journal.support.where import Where
+from journal.support.caller import Caller
 from journal.support.law_text import LawText
-from journal.support.profile_files import ProfileFiles
-from journal.support.skill_files import SkillFiles
+from journal.features.profiles.support.profile_files import ProfileFiles
+from journal.features.skills.support.skill_files import SkillFiles
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
 from journal.supervisor_link import SupervisorLink
@@ -32,9 +32,9 @@ class SetupCommand(Command):
         self.verb(verbs, "hooks", "wire the hooks only")
         self.verb(verbs, "restart", "restart the running journals on the installed code; the agents keep running")
 
-    def project(self, args: Namespace, where: Where) -> int:
+    def project(self, args: Namespace, caller: Caller) -> int:
         self.config.home.mkdir(parents=True, exist_ok=True)
-        self.hooks(args, where)
+        self.hooks(args, caller)
         for path in self.files.write_all():
             print(f"skill   {path.relative_to(self.config.root)}")
         for path in self.profiles.write_all():
@@ -49,7 +49,7 @@ class SetupCommand(Command):
             print(f"restart {name}: the journal of that environment runs the new code")
         return 0
 
-    def restart(self, args: Namespace, where: Where) -> int:
+    def restart(self, args: Namespace, caller: Caller) -> int:
         names = self.restarted()
         for name in names:
             print(f"restart {name}: the journal of that environment runs the new code")
@@ -58,48 +58,43 @@ class SetupCommand(Command):
         return 0
 
     def restarted(self) -> list[str]:
-        """Every environment with an agent running is told to restart its journal, so an install is live at once."""
-        names = [e.name for e in self.environments.all() if self.supervisor.runs(e.id)]
+        names = [e.name for e in self.environments.all() if self.supervisor.runs(e.row_id)]
         for environment in self.environments.all():
             if environment.name in names:
-                self.supervisor.restart_journal(environment.id)
+                self.supervisor.restart_journal(environment.row_id)
         return names
 
-    def hooks(self, args: Namespace, where: Where) -> int:
-        """The hooks of every agent present: Claude always, another where the project has its folder or its program is installed. Each hook first tests that its script is still there, so a package moved away fails silent instead of in the chat."""
-        script = self.package / "hooks" / "hook.sh"
+    def hooks(self, args: Namespace, caller: Caller) -> int:
         for provider in self.providers.all():
-            if provider.name != "claude" and not (self.config.root / provider.home).is_dir() and not shutil.which(provider.name):
+            if not provider.default and not (self.config.root / provider.home).is_dir() and not shutil.which(provider.name):
                 continue
-            command = f"test -f {shlex.quote(str(script))} && exec {shlex.join(['sh', str(script), provider.name, str(self.config.root)])}; exit 0"
-            print(f"hooks   {provider.wire_hooks(self.config.root, script, command).relative_to(self.config.root)}")
+            command = provider.hook_command(self.config.root)
+            print(f"hooks   {provider.wire_hooks(self.config.root, HOOK_SCRIPT, command).relative_to(self.config.root)}")
         return 0
 
     def law(self) -> Path:
         path = self.config.root / "AGENTS.md"
-        had = path.read_text() if path.is_file() else "# " + self.config.root.name + "\n"
-        written = LawText.written_into(had)
-        if written != had:
-            path.write_text(written)
+        prior = path.read_text() if path.is_file() else "# " + self.config.root.name + "\n"
+        saved = LawText.installed(prior)
+        if saved != prior:
+            path.write_text(saved)
         return path
 
     def claude_md(self) -> Path:
         path = self.config.root / "CLAUDE.md"
-        had = path.read_text() if path.is_file() else ""
-        if "@AGENTS.md" not in had:
-            path.write_text((had.rstrip("\n") + "\n\n" if had.strip() else "") + "@AGENTS.md\n")
+        prior = path.read_text() if path.is_file() else ""
+        if "@AGENTS.md" not in prior:
+            path.write_text((prior.rstrip("\n") + "\n\n" if prior.strip() else "") + "@AGENTS.md\n")
         return path
 
     def ignored(self) -> Path:
-        """The project's .gitignore keeps the journal's own folder out of the repository."""
         path = self.config.root / ".gitignore"
-        had = path.read_text() if path.is_file() else ""
-        if "/.journal" not in had.splitlines() and ".journal" not in had.splitlines() and ".journal/" not in had.splitlines():
-            path.write_text((had.rstrip("\n") + "\n" if had.strip() else "") + "/.journal\n")
+        prior = path.read_text() if path.is_file() else ""
+        if "/.journal" not in prior.splitlines() and ".journal" not in prior.splitlines() and ".journal/" not in prior.splitlines():
+            path.write_text((prior.rstrip("\n") + "\n" if prior.strip() else "") + "/.journal\n")
         return path
 
     def shim(self) -> Path:
-        """The command, written inside the project at .journal/bin/journal and nowhere else."""
         return ProjectCommand(self.config.root, self.package.parent / "journal.sh").write()
 
     @property

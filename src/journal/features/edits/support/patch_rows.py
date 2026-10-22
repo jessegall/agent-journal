@@ -4,48 +4,43 @@ from dataclasses import dataclass
 
 from journal.features.edits.support.patch_row import PatchRow
 
-HUNK = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
-"""The head of a hunk of a unified diff: where it starts in the old file and in the new."""
-AROUND = 2
-"""How many unchanged lines a change made by a shell command is drawn with, above and below."""
+DIFF_HEAD = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
+CONTEXT_LINES = 2
 
 
 @dataclass(frozen=True)
 class PatchRows:
-    """The changed lines of a tool's edit, numbered, from the provider's structured patch; a whole write, or an edit with no patch, is its new lines, all added."""
+    """The changed lines of a tool's edit, numbered: from the provider's structured patch, or from one version of a file to the next as a shell command's change is told, each section of the diff read from its head line, the old and new start, with two unchanged lines kept on each side of a change."""
 
     rows: tuple[PatchRow, ...]
 
     @classmethod
-    def of(cls, response: dict, input_: dict, tool: str) -> "PatchRows":
-        hunks = response.get("structuredPatch", [])
-        if not hunks:
-            added = (input_.get("new_string", "") if tool == "Edit" else input_.get("content", "")).splitlines()
-            return cls(tuple(PatchRow("add", n, line) for n, line in enumerate(added, 1)))
-        return cls(tuple(row for hunk in hunks for row in cls.hunk(hunk.get("oldStart", 1), hunk.get("newStart", 1), hunk.get("lines", []))))
+    def build(cls, response: dict) -> "PatchRows":
+        return cls(tuple(row for section in response.get("structuredPatch", []) for row in cls.section(section.get("oldStart", 1), section.get("newStart", 1), section.get("lines", []))))
 
     @classmethod
-    def between(cls, before: str, after: str) -> "PatchRows":
-        """The changed lines from one version of a file to the next, as a shell command's change is told; the diff's two lines naming the files are left out."""
-        rows, hunk, old, new = [], [], 1, 1
-        for line in list(difflib.unified_diff(before.splitlines(), after.splitlines(), lineterm="", n=AROUND))[2:]:
-            head = HUNK.match(line)
+    def version_rows(cls, old_text: str, new_text: str) -> "PatchRows":
+        rows: list[PatchRow] = []
+        section: list[str] = []
+        old, new = 1, 1
+        for line in list(difflib.unified_diff(old_text.splitlines(), new_text.splitlines(), lineterm="", n=CONTEXT_LINES))[2:]:
+            head = DIFF_HEAD.match(line)
             if head:
-                rows += cls.hunk(old, new, hunk)
-                hunk, old, new = [], int(head[1]), int(head[2])
+                rows += cls.section(old, new, section)
+                section, old, new = [], int(head[1]), int(head[2])
                 continue
-            hunk.append(line)
-        return cls(tuple(rows + cls.hunk(old, new, hunk)))
+            section.append(line)
+        return cls(tuple(rows + cls.section(old, new, section)))
 
     @staticmethod
-    def hunk(old: int, new: int, lines: list[str]) -> list[PatchRow]:
+    def section(old: int, new: int, lines: list[str]) -> list[PatchRow]:
         rows = []
         for text in lines:
-            mark, body = text[:1], text[1:]
-            if mark == "+":
+            threshold, body = text[:1], text[1:]
+            if threshold == "+":
                 rows.append(PatchRow("add", new, body))
                 new += 1
-            elif mark == "-":
+            elif threshold == "-":
                 rows.append(PatchRow("del", old, body))
                 old += 1
             else:

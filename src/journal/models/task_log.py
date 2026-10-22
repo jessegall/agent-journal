@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
+from journal.events.rows.task_logged import TaskLogged
 from journal.models.scoped import Scoped
+from journal.models.task import Task
 
 
 @dataclass(frozen=True)
@@ -10,4 +12,8 @@ class TaskLog(Scoped):
 
     task_id: int = 0
     line: str = ""
+
+    @classmethod
+    def build(cls, task: Task, line: str, time: float) -> "TaskLog":
+        return cls(environment_id=task.environment_id, task_id=task.row_id, line=line).with_event(TaskLogged(environment_id=task.environment_id, time=time, task_id=task.row_id))
 

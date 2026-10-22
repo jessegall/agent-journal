@@ -1,7 +1,7 @@
 from journal.http.attachments.attached_files import AttachedFiles
 from journal.http.attachments.attachments import Attachments
-from journal.http.attachments.files_asked import FilesAsked
-from journal.http.support.file_response import FileResponse
+from journal.http.attachments.file_request import FileRequest
+from journal.http.support.sandboxed_file_response import SandboxedFileResponse
 from journal.http.support.request import Request
 from journal.repositories.dumps import Dumps
 from journal.repositories.messages import Messages
@@ -13,14 +13,14 @@ class AttachmentController:
 
     def __init__(self, files: AttachedFiles, attachments: Attachments, messages: Messages, dumps: Dumps) -> None:
         self.files, self.attachments = files, attachments
-        self.rows = {"messages": messages, "dumps": dumps}
+        self.rows: dict[str, Messages | Dumps] = {"messages": messages, "dumps": dumps}
 
     def index(self, request: Request) -> Response:
-        return Response.json(self.files.page(FilesAsked.from_query(request.query)))
+        return Response.json(self.files.page(FileRequest.query_request(request.query)))
 
     def file(self, request: Request):
         table, id = request.params["table"], request.number("id")
-        if table not in self.rows or not self.rows[table].where(id=id):
-            return Response.not_found("no such file")
-        found = self.attachments.read(table, id, request.params["name"])
-        return FileResponse(*found) if found else Response.not_found("no such file")
+        if table not in self.rows or not self.rows[table].matching(id=id):
+            return Response.absent("no such file")
+        rows = self.attachments.read(table, id, request.params["name"])
+        return SandboxedFileResponse(*rows) if rows else Response.absent("no such file")

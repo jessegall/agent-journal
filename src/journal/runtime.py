@@ -1,87 +1,105 @@
+import gc
 import os
 import time
 from journal.engine.clock import Clock
+from journal.engine.job_runner import JobRunner
 from journal.engine.menu_watcher import MenuWatcher
-from journal.support.service_start import ServiceStart
-from journal.engine.machine import Machine
+from journal.features.plugins.support.service_start import ServiceStart
+from journal.engine.state_machine import StateMachine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
 from journal.features.listeners.unlink_deleted import UnlinkDeleted
 from journal.events.models.model_event import ModelEvent
 from journal.events.agent.agent_event import AgentEvent
+from journal.events.rows.row_event import RowEvent
+from journal.engine.row_event_delivery import RowEventDelivery
+from journal.engine.nudge_registry import NudgeRegistry
 from journal.events.models.created import Created
 from journal.events.models.deleted import Deleted
 from journal.events.bus import Bus
 from journal.features.registry import Registry
-from journal.features.switched import Switched
-from journal.support.deferred import Deferred
+from journal.features.switches import Switches
+from journal.support.listener_queue import ListenerQueue
 from journal.config import Config
 from journal.container import Container
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 from journal.http.server import Server
-from journal.support.standby import Standby
+from journal.support.instance_guard import InstanceGuard
 from journal.http.share_server import ShareServer
 
 
-STANDBY_EVERY = 2.0
-"""Seconds between two looks at whether the other journal of the project still answers."""
+INSTANCE_CHECK_SECONDS = 2.0
 
 
 class Runtime:
-    """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker, the clock and the menu watcher, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
+    """What the server process keeps alive: the HTTP server and the share server beside it, the deferred worker and the job runner with the clock, the menu watcher and every feature's jobs, with the machine on the bus. State itself is in the database, so a restart loses nothing."""
 
-    def __init__(self, container: Container, server: Server, deferred: Deferred, clock: Clock, machine: Machine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, standby: Standby) -> None:
+    def __init__(self, container: Container, server: Server, deferred: ListenerQueue, clock: Clock, machine: StateMachine, bus: Bus, registry: Registry, scope: Scope, watcher: MenuWatcher, share_server: ShareServer, reserve: InstanceGuard, jobs: JobRunner) -> None:
         self.container, self.server, self.deferred, self.clock, self.machine, self.bus, self.registry, self.scope = container, server, deferred, clock, machine, bus, registry, scope
-        self.watcher, self.share_server, self.standby = watcher, share_server, standby
+        self.watcher, self.share_server, self.standby, self.jobs = watcher, share_server, reserve, jobs
+
+    def register_nudges(self) -> None:
+        nudges = self.container.get(NudgeRegistry)
+        for feature in self.registry.features:
+            for nudge in feature.nudges:
+                nudges.register(nudge)
 
     def boot(self) -> None:
-        """Resolves everything once: the machine and every feature's listeners go on the bus, so the first request pays nothing."""
+        self.register_nudges()
         self.bus.listen(AgentEvent, self.machine)
+        self.bus.listen(RowEvent, self.container.get(RowEventDelivery))
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:
-                self.bus.listen(listener.kind(), Switched(feature, self.container.get(listener), self.registry, self.scope))
+                self.bus.listen(listener.kind(), Switches(feature, self.container.get(listener), self.registry, self.scope))
             for seed in feature.seeds:
                 self.container.get(seed).run()
+        self.machine.compactions_ended()
         from journal.repositories.environments import Environments
         if not self.container.get(Environments).all():
-            self.container.get(Environments).named("main")
+            self.container.get(Environments).lookup("main")
 
     def start(self) -> None:
-        """Everything up, with the starting mark kept until it is, so the slow-request reports measure nothing meanwhile."""
-        from journal.support.slow_requests import STARTING
+        from journal.features.faults.support.slow_requests import STARTING
         starting = self.container.get(Config).home / "runtime" / STARTING
         starting.parent.mkdir(parents=True, exist_ok=True)
         starting.touch()
         try:
-            self.started_up()
+            self.startup()
         finally:
             starting.unlink(missing_ok=True)
 
-    def started_up(self) -> None:
+    def startup(self) -> None:
         self.share_server.start()
         self.boot()
-        from journal.support.skill_files import SkillFiles
-        from journal.support.profile_files import ProfileFiles
+        from journal.features.skills.support.skill_files import SkillFiles
+        from journal.features.profiles.support.profile_files import ProfileFiles
         self.container.get(SkillFiles).write_all()
         self.container.get(ProfileFiles).write_all()
         self.deferred.start()
-        self.clock.start()
-        self.watcher.start()
+        self.register_jobs()
+        self.jobs.start()
         self.server.start()
         self.container.get(ServiceStart).run()
+        gc.freeze()
+
+    def register_jobs(self) -> None:
+        self.jobs.register(self.clock)
+        self.jobs.register(self.watcher)
+        for feature in self.registry.features:
+            for job in feature.jobs:
+                self.jobs.register(self.container.get(job))
 
     def run(self) -> None:
-        """Blocks until stop(), or until the process that started it is gone, so a journal never outlives its supervisor. While another journal of this project answers, it stands by and takes over the moment that one is gone."""
         parent = os.getppid()
-        other = self.standby.another()
-        if other:
-            print(f"a journal of this project answers at {other}: standing by until it is gone", flush=True)
-        while other and os.getppid() == parent:
-            time.sleep(STANDBY_EVERY)
-            other = self.standby.another()
+        counterpart = self.standby.other_address()
+        if counterpart:
+            print(f"a journal of this project answers at {counterpart}: waiting until it is gone", flush=True)
+        while counterpart and os.getppid() == parent:
+            time.sleep(INSTANCE_CHECK_SECONDS)
+            counterpart = self.standby.other_address()
         if os.getppid() != parent:
             return
         self.start()
@@ -92,6 +110,6 @@ class Runtime:
     def stop(self) -> None:
         self.server.stop()
         self.share_server.stop()
-        self.clock.stop()
-        self.watcher.stop()
+        self.jobs.stop()
         self.deferred.stop()
+        gc.unfreeze()

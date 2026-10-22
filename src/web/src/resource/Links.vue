@@ -18,10 +18,12 @@ const bar = (ref, direction) => {
     return {key: `${direction}${ref}`, ref, direction, icon: meta(table).icon, title: r ? titleOf(r) : `${meta(table).title} ${id}`, age: r ? age(updatedAt(r)) : ""};
 };
 const rows = computed(() => {
-    const listed = [...linksOf(props.resource).filter(shown).map((r) => bar(r, "to")), ...linkedTo(refOf(props.resource)).filter(commentless).map(refOf).filter(shown).map((r) => bar(r, "from"))];
+    const members = (props.resource.members || []).filter(shown).map((r) => bar(r, "member"));
+    const listed = [...members, ...linksOf(props.resource).filter(shown).map((r) => bar(r, "to")), ...linkedTo(refOf(props.resource)).filter(commentless).map(refOf).filter(shown).map((r) => bar(r, "from"))];
     return listed.filter((row, i) => listed.findIndex((other) => other.ref === row.ref) === i);
 });
 const DIRECTIONS = [
+    {key: "member", title: "In this collection"},
     {key: "to", title: "Links to"},
     {key: "from", title: "Linked by"},
 ];

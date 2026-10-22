@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
 
-from journal.support.where import LOCAL_USER
+from journal.support.caller import LOCAL_USER
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent_listener import AgentListener
 from journal.support.actor import Actor
 from journal.models.author import Author
-from journal.models.message import TYPED, Message
+from journal.models.message import TERMINAL_LINE, Message
 from journal.repositories.messages import Messages
 from journal.support.typed_lines import TypedLines
 
@@ -17,6 +17,6 @@ class RecordTypedPrompt(AgentListener[PromptSubmitted]):
         self.messages, self.lines = messages, lines
 
     def handle(self, event: PromptSubmitted) -> None:
-        if not event.by_user or not event.prompt.strip() or self.lines.carries(event.environment_id, event.prompt):
+        if not event.is_users or not event.prompt.strip() or self.lines.contains(event.environment_id, event.prompt):
             return
-        self.messages.save(Message(author=Author.USER, text=event.prompt.strip(), read_at=datetime.now(timezone.utc), data={"kind": TYPED}), Actor.user(LOCAL_USER))
+        self.messages.save(Message(author=Author.USER, text=event.prompt.strip(), read_at=datetime.now(timezone.utc), data={"kind": TERMINAL_LINE}), Actor.user(LOCAL_USER))

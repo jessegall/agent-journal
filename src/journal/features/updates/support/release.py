@@ -11,13 +11,15 @@ class Release:
     tag: str
 
     @classmethod
-    def named(cls, tags: list[str]) -> list["Release"]:
-        """The tags that are plain releases, oldest first; a pre-release or any other tag is left out."""
+    def lookup(cls, tags: list[str]) -> list["Release"]:
         return sorted((cls(tag) for tag in tags if TAG.match(tag)), key=lambda release: release.numbers)
 
     @property
     def numbers(self) -> tuple[int, ...]:
-        return tuple(int(number) for number in TAG.match(self.tag).groups())
+        matched = TAG.match(self.tag)
+        if matched is None:
+            raise ValueError(f"{self.tag} names no release")
+        return tuple(int(number) for number in matched.groups())
 
     @property
     def version(self) -> str:
@@ -28,8 +30,7 @@ class Release:
         return self.numbers[0]
 
     def upgrades(self, installed: "Release") -> bool:
-        """Newer than the installed release and of the same major version: an update never crosses a major."""
-        return self.major == installed.major and self.is_newer_than(installed)
+        return self.major == installed.major and self.is_newer(installed)
 
-    def is_newer_than(self, other: "Release") -> bool:
-        return self.numbers > other.numbers
+    def is_newer(self, counterpart: "Release") -> bool:
+        return self.numbers > counterpart.numbers

@@ -2,32 +2,56 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from journal.support.refused import Refused
+from journal.features.shell.support.progress import Progress
+from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
+from journal.support.rejection import Rejection
+
+PROGRESS_PREFIX = "progress: "
+LABEL_PREFIX = "label: "
+STEP_PREFIX = "step: "
+TOPIC_PREFIX = "topic: "
 
 
 @dataclass(frozen=True)
 class Reader:
-    """A named way to read outputs of one shape: the lines a pattern picks, with their numbers."""
+    """A named way to read outputs of one shape: the lines a pattern picks, with their numbers, how far the command has come by the last match of a progress pattern, the commands whose output it reads, and what a run is about, picked from its command line by a topic pattern."""
 
     name: str
-    about: str
+    subject: str
     pattern: str
+    progress_pattern: str = ""
+    label: str = ""
+    commands: ReaderCommands = ReaderCommands()
+    step_pattern: str = ""
+    topic_pattern: str = ""
 
     @classmethod
-    def from_file(cls, path: Path) -> "Reader":
-        """A pattern reader's file: its first line says what it picks, after a #, and its second is the pattern."""
+    def loaded(cls, path: Path) -> "Reader":
         lines = path.read_text().splitlines()
         if len(lines) < 2:
-            raise Refused(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
-        return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1])
+            raise Rejection(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
+        settings = {prefix: line.removeprefix(prefix) for line in lines[2:] for prefix in (PROGRESS_PREFIX, LABEL_PREFIX, COMMANDS_PREFIX, STEP_PREFIX, TOPIC_PREFIX) if line.startswith(prefix)}
+        return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1], settings.get(PROGRESS_PREFIX, ""), settings.get(LABEL_PREFIX, ""), ReaderCommands.parsed(settings.get(COMMANDS_PREFIX, "")), settings.get(STEP_PREFIX, ""), settings.get(TOPIC_PREFIX, ""))
 
     def text(self) -> str:
-        return f"# {self.about}\n{self.pattern}\n"
+        extra = [f"{prefix}{value}" for prefix, value in ((PROGRESS_PREFIX, self.progress_pattern), (LABEL_PREFIX, self.label), (COMMANDS_PREFIX, self.commands.text()), (STEP_PREFIX, self.step_pattern), (TOPIC_PREFIX, self.topic_pattern)) if value]
+        return "\n".join([f"# {self.subject}", self.pattern, *extra]) + "\n"
+
+    def topic(self, line: str) -> str:
+        if not self.topic_pattern:
+            return ""
+        topics = [next((group for group in match.groups() if group), match.group(0)) if match.groups() else match.group(0) for match in re.finditer(self.topic_pattern, line)]
+        return ", ".join(dict.fromkeys(Path(item.strip("'\"")).name if "/" in item else item.strip("'\"") for item in topics))
 
     def matches(self, command: str) -> bool:
-        """The command does this reader's work by hand: it searches for the same pattern."""
         return self.pattern in command
 
     def read(self, lines: list[str]) -> list[str]:
-        found = re.compile(self.pattern)
-        return [f"{i}: {line}" for i, line in enumerate(lines, 1) if found.search(line)]
+        return [f"{i}: {line}" for i, line in self.picked_lines(lines)]
+
+    def picked_lines(self, lines: list[str]) -> list[tuple[int, str]]:
+        rows = re.compile(self.pattern)
+        return [(i, line) for i, line in enumerate(lines, 1) if rows.search(line)]
+
+    def progress(self, lines: list[str]) -> Progress:
+        return Progress.found(self.progress_pattern, self.label, lines, self.step_pattern)

@@ -1,39 +1,53 @@
 from datetime import datetime, timedelta
 
 from journal.models.agent import Agent
-from journal.support.not_found import NotFound
+from journal.models.agent_role import AgentRole
+from journal.support.missing_row import MissingRow
 from journal.repositories.scoped_repository import ScopedRepository
 
 
 class Agents(ScopedRepository[Agent]):
     model = Agent
 
-    def live(self) -> Agent | None:
-        """The latest agent here whose session has not ended."""
-        alive = [a for a in self.in_() if a.state != "ended"]
-        return alive[-1] if alive else None
+    def current(self) -> Agent | None:
+        responsive = [item for item in self.scoped() if item.state != "ended" and item.role == AgentRole.MAIN]
+        return responsive[-1] if responsive else None
 
-    def everywhere(self) -> list[Agent]:
-        return self.across_environments()
+    def all_agents(self) -> list[Agent]:
+        return self.global_matching()
 
-    def others_running(self, session: str, environment_id: int, provider: str) -> list[Agent]:
-        """The sessions of the provider in the environment, other than this one, that have not ended."""
-        return [a for a in self.across_environments(environment_id=environment_id) if a.session != session and (a.provider or "claude") == (provider or "claude") and a.state != "ended"]
+    def main_agents(self) -> list[Agent]:
+        return self.global_matching(role=AgentRole.MAIN)
 
-    def live_anywhere(self) -> Agent | None:
-        """The agent most lately at work in any environment whose session has not ended."""
-        alive = sorted((a for a in self.everywhere() if a.state != "ended"), key=lambda a: a.updated_at)
-        return alive[-1] if alive else None
+    def main_scoped(self, environment_id: int) -> list[Agent]:
+        return [item for item in self.global_matching(environment_id=environment_id, role=AgentRole.MAIN) if item.state != "ended"]
 
-    def in_state(self, name: str) -> list[Agent]:
-        return self.where(state=name)
+    def unended(self) -> list[Agent]:
+        return [item for item in self.global_matching() if item.state != "ended"]
 
-    def for_session(self, session: str) -> Agent:
-        found = self.across_environments(session=session)
-        if not found:
-            raise NotFound(self.table, session)
-        return found[0]
+    def unended_scoped(self, environment_id: int) -> list[Agent]:
+        return [item for item in self.global_matching(environment_id=environment_id) if item.state != "ended"]
 
-    def others_lately(self, session: str, since: datetime) -> list[Agent]:
-        """The other sessions that worked here since: a launch that ended within a minute of starting did no work and is not one."""
-        return [a for a in self.in_() if a.session != session and a.updated_at >= since and not (a.state == "ended" and a.updated_at - a.created_at < timedelta(minutes=1))]
+    def running_peers(self, agent: Agent) -> list[Agent]:
+        if agent.role != AgentRole.MAIN:
+            return []
+        return [item for item in self.main_scoped(agent.environment_id) if item.session != agent.session and item.provider == agent.provider]
+
+    def all_current(self) -> Agent | None:
+        responsive = sorted((item for item in self.main_agents() if item.state != "ended"), key=lambda item: item.update_time)
+        return responsive[-1] if responsive else None
+
+    def with_state(self, name: str) -> list[Agent]:
+        return self.matching(state=name)
+
+    def global_state(self, name: str) -> list[Agent]:
+        return self.global_matching(state=name)
+
+    def session_agent(self, session: str) -> Agent:
+        rows = self.global_matching(session=session)
+        if not rows:
+            raise MissingRow(self.table, session)
+        return rows[0]
+
+    def recent_peers(self, session: str | None, start: datetime) -> list[Agent]:
+        return [item for item in self.scoped() if item.session != session and item.update_time >= start and not (item.state == "ended" and item.update_time - item.creation_time < timedelta(minutes=1))]

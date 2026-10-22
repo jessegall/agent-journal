@@ -1,0 +1,31 @@
+from journal.events.event import Event
+from journal.features.feature import Feature
+from journal.events.listener import Listener
+from journal.features.registry import Registry
+from journal.models.scoped import Scoped
+from journal.repositories.scope import Scope
+from journal.repositories.scope import PROJECT
+
+
+class Switches(Listener[Event]):
+    """A feature's listener on the bus, which runs only where its feature is on, and in the environment its event happened in; so a feature switched off has no listener running, by construction."""
+
+    def __init__(self, feature: type[Feature], inner: Listener, registry: Registry, scope: Scope) -> None:
+        self.feature, self.inner, self.registry, self.scope = feature, inner, registry, scope
+        self.blocking = getattr(inner, "blocking", False)
+        self.asked_while_free = getattr(inner, "asked_while_free", False)
+        self.is_worker_listener = inner.is_worker_listener
+
+    def handle(self, event: Event) -> object:
+        with self.scope.environment(self.event_environment(event)):
+            if not self.registry.is_enabled(self.feature):
+                return None
+            return self.inner.handle(event)
+
+    def event_environment(self, event: Event) -> int:
+        model = getattr(event, "model", None)
+        if isinstance(model, Scoped):
+            return model.environment_id
+        if hasattr(event, "environment_id"):
+            return event.environment_id
+        return self.scope.id_default(PROJECT)

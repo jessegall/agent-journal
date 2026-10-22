@@ -10,7 +10,7 @@ const props = defineProps({mark: {type: Object, required: true}});
 const attrs = useAttrs();
 const tag = computed(() => (attrs.onClick ? "button" : "span"));
 const shade = computed(() => props.mark.color || (props.mark.tone ? `var(--tone-${props.mark.tone})` : ""));
-const hover = computed(() => [props.mark.title, props.mark.at ? clock(props.mark.at) : ""].filter(Boolean).join(" · "));
+const hover = computed(() => [props.mark.title, props.mark.time ? clock(props.mark.time) : ""].filter(Boolean).join(" · "));
 const tint = computed(() => ({
     ...(shade.value ? {"--mark": shade.value} : {}),
     ...(props.mark.depth ? {"--depth": props.mark.depth} : {}),
@@ -35,7 +35,13 @@ const tint = computed(() => ({
             <template v-if="mark.state || mark.started">
                 <ChatMarkStatus :mark="mark" />
             </template>
+            <template v-if="mark.figure">
+                <span class="figure">{{ mark.figure }}</span>
+            </template>
         </span>
+        <template v-if="mark.figure">
+            <span class="progress" :style="{width: `${Math.round((mark.fraction || 0) * 100)}%`}"></span>
+        </template>
         <template v-if="mark.settled">
             <span class="settled">{{ mark.settled }}</span>
         </template>
@@ -48,6 +54,7 @@ const tint = computed(() => ({
         <template v-if="mark.card">
             <TextDisplay class="card" :text="mark.card" />
         </template>
+        <slot />
     </component>
 </template>
 
@@ -109,6 +116,28 @@ button.mark:hover {
 
 .mark.tinted .ico {
     color: var(--mark);
+}
+
+.mark:has(.progress) {
+    position: relative;
+    overflow: hidden;
+}
+
+.figure {
+    margin-left: auto;
+    padding-left: 8px;
+    color: var(--text-3);
+    font-variant-numeric: tabular-nums;
+}
+
+.progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.8;
+    transition: width 0.4s ease;
 }
 
 .head {

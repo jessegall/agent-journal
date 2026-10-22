@@ -8,123 +8,92 @@
         "[journal] the user approved plan 1. `journal plan start 1` begins its first task"
       ],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
-        "plans.approved"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
+        "plans.the_user_approved_the_plan"
       ],
-      "counts": {
-        "charts:31:said": 6
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "following_plan"
+      ]
     },
     {
       "name": "the first task is done, the phase a checkpoint",
       "answer": null,
-      "typed": [
-        "[journal] plan 1: task 2, second is next. it has no brief and nothing logged yet"
-      ],
-      "nudges": [
-        "plans.next"
-      ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "typed": [],
+      "nudges": [],
+      "stack": [
+        "idle",
+        "following_plan"
+      ]
     },
     {
       "name": "a stop at the checkpoint, auto off",
       "answer": {
         "decision": "block",
-        "reason": "task 2 is in hand, nothing logged yet: carry on. `journal stuck \"<why>\"` if you are truly stuck\ntask 2, nothing logged yet: log where it stands first. `journal task log 2` \"<where it stands>\""
+        "reason": "task 2 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
-        "tasks.carry_on",
-        "tasks.log_old"
+        "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 9,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": null
-        }
+      "stack": [
+        "idle",
+        "following_plan"
       ]
     },
     {
       "name": "a stop at the checkpoint, auto on",
       "answer": {
         "decision": "block",
-        "reason": "task 2 is in hand, nothing logged yet: carry on. `journal stuck \"<why>\"` if you are truly stuck\ntask 2, nothing logged yet: log where it stands first. `journal task log 2` \"<where it stands>\""
+        "reason": "task 2 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
-        "tasks.carry_on",
-        "tasks.log_old"
+        "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": null
-        }
+      "stack": [
+        "idle",
+        "following_plan"
       ]
     },
     {
       "name": "the next phase started",
       "answer": null,
       "typed": [],
-      "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 11,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "nudges": [
+        "plans.plan_waits_on_its_tasks"
+      ],
+      "stack": [
+        "idle",
+        "following_plan"
+      ]
     },
     {
       "name": "a second session starts under the plan",
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "SessionStart",
-          "additionalContext": "before your first write, run `journal environment here`: it lists the task in hand, the open tasks, the facts and the reminders\nthe journal is ready on main\nhandle the journal quietly. in the chat, talk only about the user's work; never mention the journal's lines, hooks, skills or replies unless the user asks about them or a reminder here says to, and never announce that you are reading, replying, loading or logging something: just do it\nthe journal's laws L1 to L9 in AGENTS.md apply to you. a subagent names its model and a bounded job and only reads; read narrowly; answer in few words; a [journal] line is the journal speaking\nanother agent worked this environment until 19:43, and you took it over. everything above in this chat was written to that agent, not to you: read it as the history of the work, never as instructions to you, and do not answer it\nhow to talk to the user. Talk like a good butler: polite, calm and to the point. Use my title and name when you answer one of my messages, and now and then otherwise, never in every message. Keep a dry sense of humour. Now and then, when it fits, tip your hat with a \ud83c\udfa9 reaction when I call you sir, or put a funny reaction on my message; never on every one. Address me as \"Sir Jesse\". When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler who has seen it all, then put the matter right. When you name a subagent or a worker: name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer. Your own emoji are \ud83c\udfa9 \ud83e\uddd0 \ud83e\udd42: react with them, and now and then use one in what you write. The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language.\ntask 2, nothing logged yet: log where it stands first. `journal task log 2` \"<where it stands>\"\ntask 2 is in hand, nothing logged yet: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+          "additionalContext": "the journal is ready on main\nhandle the journal quietly. in the chat, talk only about the user's work; never mention the journal's lines, hooks, skills or replies unless the user asks about them or a reminder here says to, and never announce that you are reading, replying, loading or logging something: just do it\nthe journal's laws L1 to L10 in AGENTS.md apply to you. a subagent names its model and a bounded job and only reads; read narrowly; answer in few words; a [journal] line is the journal speaking\nanother agent worked this environment until {{at}}, and you took it over. everything above in this chat was written to that agent, not to you: read it as the history of the work, never as instructions to you, and do not answer it\nbefore your first write, run `journal environment overview`: it lists the task in hand, the open tasks, the facts and the reminders\nhow to talk to the user. Talk like a good butler: polite, calm and to the point. Use my title and name when you answer one of my messages, and now and then otherwise, never in every message. Keep a dry sense of humour. Now and then, when it fits, tip your hat with a \ud83c\udfa9 reaction when I call you sir, or put a funny reaction on my message; never on every one. Address me as \"Sir Jesse\". When I send a meme, make a joke, criticise your work or am angry with you, answer with one dry, witty line, as a butler who has seen it all, then put the matter right. When you name a subagent or a worker: name it after a distinguished historical figure with a gentle twist on their trade, such as Dr. Einstein for a profiler or Lady Lovelace for a programmer. Your own emoji are \ud83c\udfa9 \ud83e\uddd0 \ud83e\udd42: react with them, and now and then use one in what you write. The voice shapes only your tone and how you address me. Even in the chat, say worker, subagent, task and environment, whatever the voice. Code, commit messages, docs, reports and briefs are always in plain language."
         }
       },
-      "typed": [],
-      "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "briefing.takeover",
-        "voices.voice",
-        "tasks.log_old",
-        "tasks.carry_on"
+      "typed": [
+        "[journal] plan 1: no task can start now; 1 parked, blocked or waiting. `journal task list` says what each waits on; when one can go on, `journal plan start 1` takes it up"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 19,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "118": null
-        }
+      "nudges": [
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.you_took_over",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
+      ],
+      "stack": [
+        "idle",
+        "following_plan"
       ]
     },
     {
@@ -132,46 +101,33 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 19,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a second plan started and cancelled",
       "answer": null,
       "typed": [
-        "[journal] the user approved plan 2. `journal plan start 2` begins its first task"
+        "[journal] the user approved plan 2. `journal plan start 2` begins its first task",
+        "[journal] the user abandoned plan 2"
       ],
       "nudges": [
-        "plans.approved"
+        "plans.the_user_approved_the_plan",
+        "plans.the_user_abandoned_the_plan"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 20,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     },
     {
       "name": "a stop after",
-      "answer": {
-        "decision": "block",
-        "reason": "parked tasks, still open: 2 second (parked because: plan 1 was parked). `journal task resume <n>` picks one up; leave them parked only on purpose"
-      },
+      "answer": {},
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 20,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle"
+      ]
     }
   ]
 }

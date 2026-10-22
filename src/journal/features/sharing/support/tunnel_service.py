@@ -7,5 +7,5 @@ class TunnelService:
 
     id: str
     state: str
-    why: str
+    reason: str
     url: str

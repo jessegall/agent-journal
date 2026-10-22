@@ -1,16 +1,16 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
-from journal.features.dumps.support.filing import Filing
+from journal.support.caller import Caller
+from journal.features.dumps.support.dump_filer import DumpFiler
 from journal.repositories.dumps import Dumps
 
 
 class DumpCommand(Command):
     noun = "dump"
 
-    def __init__(self, filing: Filing, dumps: Dumps) -> None:
-        self.filing, self.dumps = filing, dumps
+    def __init__(self, sorting: DumpFiler, dumps: Dumps) -> None:
+        self.filing, self.dumps = sorting, dumps
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "create", "drop pasted text as a dump to be sorted and filed").add_argument("brief")
@@ -31,13 +31,13 @@ class DumpCommand(Command):
         log.add_argument("--on", default="", help="the row being worked on, as doc:2")
         log.add_argument("--making", default="", help="what is being made")
         log.add_argument("--detail", default="", help="the sentence behind the status")
-        self.numbered(self.verb(verbs, "say", "answer what the user wrote in the dump, at most 600 characters"), "text")
-        ask = self.verb(verbs, "ask", "ask the user in the dump window")
-        self.numbered(ask, "question")
-        ask.add_argument("--guesses", default="", help="up to four likely answers, apart by |")
-        offer = self.verb(verbs, "offer", "sum up what was filed and offer next steps as buttons")
-        self.numbered(offer, "options")
-        offer.add_argument("--summary", default="", help="what was filed and where")
+        self.numbered(self.verb(verbs, "reply", "answer what the user wrote in the dump, at most 600 characters"), "text")
+        inquiry = self.verb(verbs, "ask", "ask the user in the dump window")
+        self.numbered(inquiry, "question")
+        inquiry.add_argument("--guesses", default="", help="up to four likely answers, apart by |")
+        proposal = self.verb(verbs, "propose", "sum up what was filed and offer next steps as buttons")
+        self.numbered(proposal, "options")
+        proposal.add_argument("--summary", default="", help="what was filed and where")
         self.numbered(self.verb(verbs, "split", "split the pasted text into named parts, one item each"), "parts")
         self.numbered(self.verb(verbs, "answer", "the user's answer to a question"), "text")
         choose = self.verb(verbs, "choose", "the user picks an offered step")
@@ -47,86 +47,86 @@ class DumpCommand(Command):
             self.verb(verbs, verb, help).add_argument("n", type=int)
 
     @staticmethod
-    def numbered(parser, *words: str) -> None:
+    def numbered(parser, *text: str) -> None:
         parser.add_argument("n", type=int)
-        for word in words:
+        for word in text:
             parser.add_argument(word)
 
-    def create(self, args: Namespace, where: Where) -> int:
-        dump = self.filing.create(args.brief, where.actor)
+    def create(self, args: Namespace, caller: Caller) -> int:
+        dump = self.filing.create(args.brief, caller.actor)
         print(f"dump {dump.id}: {dump.title}")
         return 0
 
-    def list(self, args: Namespace, where: Where) -> int:
-        for dump in self.dumps.in_():
+    def list(self, args: Namespace, caller: Caller) -> int:
+        for dump in self.dumps.scoped():
             print(f"{dump.id:>4}  {dump.title}  {dump.outcome or 'open'}")
         return 0
 
-    def items(self, args: Namespace, where: Where) -> int:
+    def items(self, args: Namespace, caller: Caller) -> int:
         print("\n".join(self.filing.items(args.n)))
         return 0
 
-    def note(self, args: Namespace, where: Where) -> int:
-        self.filing.note(args.n, args.item, args.insight, where.actor)
+    def note(self, args: Namespace, caller: Caller) -> int:
+        self.filing.note(args.n, args.item, args.insight, caller.actor)
         print(f"dump {args.n}: {args.item} noted")
         return 0
 
-    def filed(self, args: Namespace, where: Where) -> int:
-        dump = self.filing.filed(args.n, args.item, args.how, args.refs, args.added, where.actor)
+    def filed(self, args: Namespace, caller: Caller) -> int:
+        dump = self.filing.filed(args.n, args.item, args.how, args.refs, args.added, caller.actor)
         print(f"dump {dump.id}: {args.item} filed" + (f", dump {dump.id} closed: {dump.outcome}" if dump.is_completed else ""))
         return 0
 
-    def failed(self, args: Namespace, where: Where) -> int:
-        dump = self.filing.failed(args.n, args.item, args.why, where.actor)
+    def failed(self, args: Namespace, caller: Caller) -> int:
+        dump = self.filing.failed(args.n, args.item, args.why, caller.actor)
         print(f"dump {dump.id}: {args.item} failed" + (f", dump {dump.id} closed: {dump.outcome}" if dump.is_completed else ""))
         return 0
 
-    def name(self, args: Namespace, where: Where) -> int:
-        self.filing.name(args.n, args.title, where.actor)
+    def name(self, args: Namespace, caller: Caller) -> int:
+        self.filing.name(args.n, args.title, caller.actor)
         print(f"dump {args.n} named {args.title}")
         return 0
 
-    def log(self, args: Namespace, where: Where) -> int:
-        self.filing.log(args.n, args.status, args.on, args.making, args.detail, where.actor)
+    def log(self, args: Namespace, caller: Caller) -> int:
+        self.filing.log(args.n, args.status, args.on, args.making, args.detail, caller.actor)
         return 0
 
-    def say(self, args: Namespace, where: Where) -> int:
-        self.filing.say(args.n, args.text, where.actor)
+    def reply(self, args: Namespace, caller: Caller) -> int:
+        self.filing.reply(args.n, args.text, caller.actor)
         return 0
 
-    def ask(self, args: Namespace, where: Where) -> int:
-        self.filing.ask(args.n, args.question, args.guesses, where.actor)
+    def ask(self, args: Namespace, caller: Caller) -> int:
+        self.filing.ask(args.n, args.question, args.guesses, caller.actor)
         print(f"dump {args.n}: asked, the user answers in the dump window")
         return 0
 
-    def offer(self, args: Namespace, where: Where) -> int:
-        self.filing.offer(args.n, args.options, args.summary, where.actor)
+    def propose(self, args: Namespace, caller: Caller) -> int:
+        self.filing.propose(args.n, args.options, args.summary, caller.actor)
         return 0
 
-    def split(self, args: Namespace, where: Where) -> int:
-        self.filing.split(args.n, args.parts, where.actor)
+    def split(self, args: Namespace, caller: Caller) -> int:
+        self.filing.split(args.n, args.parts, caller.actor)
         return 0
 
-    def answer(self, args: Namespace, where: Where) -> int:
-        self.filing.answer(args.n, args.text, where.actor)
+    def answer(self, args: Namespace, caller: Caller) -> int:
+        self.filing.answer(args.n, args.text, caller.actor)
         return 0
 
-    def choose(self, args: Namespace, where: Where) -> int:
-        self.filing.choose(args.n, args.pick, where.actor)
+    def choose(self, args: Namespace, caller: Caller) -> int:
+        self.filing.choose(args.n, args.pick, caller.actor)
         return 0
 
-    def stop(self, args: Namespace, where: Where) -> int:
-        print(f"dump {args.n}: {self.filing.stop(args.n, where.actor).outcome}")
+    def stop(self, args: Namespace, caller: Caller) -> int:
+        print(f"dump {args.n}: {self.filing.stop(args.n, caller.actor).outcome}")
         return 0
 
-    def remove(self, args: Namespace, where: Where) -> int:
-        self.filing.remove(args.n, where.actor)
+    def remove(self, args: Namespace, caller: Caller) -> int:
+        self.filing.remove(args.n, caller.actor)
         return 0
 
-    def reopen(self, args: Namespace, where: Where) -> int:
-        self.filing.reopen(args.n, where.actor)
+    def reopen(self, args: Namespace, caller: Caller) -> int:
+        self.filing.reopen(args.n, caller.actor)
         return 0
 
-    def dismiss(self, args: Namespace, where: Where) -> int:
-        self.filing.dismiss(args.n, where.actor)
+    def dismiss(self, args: Namespace, caller: Caller) -> int:
+        self.filing.dismiss(args.n, caller.actor)
         return 0

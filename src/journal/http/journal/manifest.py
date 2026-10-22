@@ -5,62 +5,42 @@ from journal.config import Config
 from journal.features.feature import Feature
 from journal.features.registry import Registry
 from journal.http.journal.journal_facts import JournalFacts
-from journal.models.node_kind import NodeKind
-from journal.repositories.charts import Charts
 from journal.version import VERSION
 
 DIST = Path(__file__).resolve().parents[3] / "web" / "dist" / "index.html"
-PLACED = {"sharing": ("Sharing", "sharing"), "updates": ("Project", "system"), "record": ("Project", "system")}
-"""Features the settings page shows in a tab of their own, by name: the section and the tab."""
+PLACED = {"sharing": ("Sharing", "sharing"), "updates": ("Project", "system"), "record": ("Project", "system"), "faults": ("Developer", "developer")}
 SYSTEM_GROUPS = [{"key": "project", "title": "Project", "line": "Settings for the whole project, in every environment", "section": "Project", "tab": "system", "lead": ""}]
-"""The System tab's groups, filled by the viewer's own settings: the project's colour and what the viewer shows."""
 
 
 class Manifest:
     """What the viewer boots from: the journal's project, version and build, and every feature that means something in this project, with its switch, its words and its options, in the groups the settings page shows."""
 
-    def __init__(self, config: Config, registry: Registry, charts: Charts) -> None:
-        self.config, self.registry, self.charts = config, registry, charts
+    def __init__(self, config: Config, registry: Registry) -> None:
+        self.config, self.registry = config, registry
 
-    def of(self, environment: str) -> JournalFacts:
+    def assembled(self, environment: str) -> JournalFacts:
         return JournalFacts(self.config.root.name, environment, VERSION, self.build(), self.features(), self.groups())
 
     def features(self) -> list[dict]:
-        """Every feature as the settings page reads one: its switch, its words and its options, each option with the workflow nodes that read it."""
-        readers = self.read_by()
         return [{"name": f.name, "title": f.title, "help": f.help, "default": f.default, "fixed": f.fixed,
                  "options": [{"key": o.key, "name": o.name, "title": o.title, "abstract": o.abstract, "kind": o.kind, "default": o.default, "unit": o.unit, "choices": list(o.choices),
-                              "provider": o.provider, "read_by": readers.get(o.key, [])} for o in f.options]}
+                              "provider": o.provider} for o in f.options]}
                 for f in self.applying()]
 
-    def read_by(self) -> dict[str, list[dict]]:
-        """The workflows that read each setting, once each: those with a check node whose text ends with the setting's key, alone or after a count's name."""
-        readers: dict[str, list[dict]] = {}
-        for chart in self.charts.all():
-            for node in self.charts.nodes_of(chart):
-                words = node.text.split()
-                if node.kind != NodeKind.CHECK or not words or "." not in words[-1]:
-                    continue
-                reader = {"workflow": chart.title, "id": chart.id}
-                if reader not in readers.setdefault(words[-1], []):
-                    readers[words[-1]].append(reader)
-        return readers
 
     def applying(self) -> list[type[Feature]]:
-        return [f for f in self.registry.features if f.applies_in(self.config.root)]
+        return [f for f in self.registry.features if f.applies(self.config.root)]
 
     def groups(self) -> list[dict]:
-        """One group per feature, led by it: those that speak to the agent in the Agent tab, sharing in its own, the rest under Features; then the System tab's."""
         return [{"key": f.name, "title": f.title, "line": f.help, "section": self.placed(f)[0], "tab": self.placed(f)[1], "lead": f.name} for f in self.applying()] + SYSTEM_GROUPS
 
     @staticmethod
-    def placed(feature: Feature) -> tuple[str, str]:
+    def placed(feature: type[Feature]) -> tuple[str, str]:
         if feature.name in PLACED:
             return PLACED[feature.name]
         return ("Agent", "agent") if feature.states or feature.nudges else ("Features", "features")
 
     @staticmethod
     def build() -> str:
-        """The viewer's own script file, which the page compares with the one it loaded to know whether a newer viewer is being served."""
-        found = re.search(r'src="[^"]*?([^"/]+\.js)"', DIST.read_text()) if DIST.is_file() else None
-        return found.group(1) if found else "journal-4"
+        rows = re.search(r'src="[^"]*?([^"/]+\.js)"', DIST.read_text()) if DIST.is_file() else None
+        return rows.group(1) if rows else "journal-4"

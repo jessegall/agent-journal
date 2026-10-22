@@ -8,13 +8,12 @@ from journal.support.response import Response
 from journal.http.support.stream_response import StreamResponse
 from journal.models.entry import Entry
 from journal.repositories.entries import Entries
-from journal.support.scope import Scope
+from journal.repositories.scope import Scope
 
-TOLD = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "Compacting", "Idle", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnWritten",
+AGENT_EVENT_KINDS = frozenset({"SessionStarted", "PromptSubmitted", "ToolStarting", "ToolFinished", "ToolFailed", "Compacting", "Stop", "SessionEnded", "SubagentStarted", "SubagentEnded", "TurnDisplayed",
                   "nudge", "created", "updated", "deleted"})
-"""The entries the viewer is told of: the agents' hooks, the lines typed to them, and every row made, changed or deleted."""
-RECENT = 100
-BEAT = 15.0
+RECENT_ENTRIES = 100
+HEARTBEAT_SECONDS = 15.0
 
 
 class EntryController:
@@ -24,36 +23,34 @@ class EntryController:
         self.entries, self.scope = entries, scope
 
     def index(self, request: Request) -> Response:
-        """The entries after ?since=<id>; one ahead of the record remembers a journal that was reset, and is given the newest page so it falls back in step."""
-        since = int(request.queried("since"))
-        if since > self.entries.last_id():
-            since = 0
-        found = self.entries.shown_since(since) if since else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT)))))
-        return Response.json([entry for entry in found if entry.kind in TOLD])
+        start = int(request.queried("since"))
+        if start > self.entries.last_id():
+            start = 0
+        rows = self.entries.recent_shown(start) if start else list(reversed(self.entries.shown_recent(int(request.queried("last", RECENT_ENTRIES)))))
+        return Response.json([entry for entry in rows if entry.kind in AGENT_EVENT_KINDS])
 
     def stream(self, request: Request) -> StreamResponse:
         environment = self.scope.id
 
         def read(entries):
-            """The stream is read after the request has left its scope: each read names the environment again."""
-            with self.scope.of(environment):
+            with self.scope.environment(environment):
                 return entries()
 
-        def chunks() -> Iterator[bytes]:
+        def events() -> Iterator[bytes]:
             yield b": open\n\n"
-            last, quiet = read(self.entries.last_id), 0.0
+            last, silent = read(self.entries.last_id), 0.0
             while True:
                 time.sleep(0.5)
-                quiet += 0.5
-                for entry in read(lambda: self.entries.shown_since(last)):
+                silent += 0.5
+                for entry in read(lambda: self.entries.recent_shown(last)):
                     last = entry.id
-                    if entry.kind in TOLD:
-                        quiet = 0.0
+                    if entry.kind in AGENT_EVENT_KINDS:
+                        silent = 0.0
                         yield self.event(entry)
-                if quiet >= BEAT:
-                    quiet = 0.0
+                if silent >= HEARTBEAT_SECONDS:
+                    silent = 0.0
                     yield b"event: beat\ndata: keep\n\n"
-        return StreamResponse("text/event-stream", chunks())
+        return StreamResponse("text/event-stream", events())
 
     @staticmethod
     def event(entry: Entry) -> bytes:

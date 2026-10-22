@@ -8,6 +8,7 @@ import FileSource from "./FileSource.vue";
 import {age} from "../format/time.js";
 
 const props = defineProps({file: Object});
+const emit = defineEmits(["view"]);
 const KB = 1024;
 const MB = KB * KB;
 const size = computed(() => {
@@ -22,11 +23,11 @@ const extension = computed(() => {
 
 <template>
     <div class="file-row">
-        <a class="file-row-thumb" :href="file.url" target="_blank" :title="`Open ${file.name}`">
+        <a class="file-row-thumb" :href="file.url" :title="`View ${file.name}`" @click.prevent="emit('view')">
             <PageThumb :lines="4" :label="extension" />
         </a>
         <span class="file-row-main">
-            <a class="file-row-name" :href="file.url" target="_blank">
+            <a class="file-row-name" :href="file.url" @click.prevent="emit('view')">
                 <FileName :name="file.name" />
             </a>
             <FileTags class="file-row-about" :file="file" />
@@ -37,10 +38,7 @@ const extension = computed(() => {
             </span>
         </span>
         <span class="file-row-end">
-            <span class="file-row-age">{{ age(file.at) }}</span>
-            <a class="file-row-act" :href="file.url" target="_blank" :title="`Open ${file.name} in a new tab`">
-                <Icon name="open" :size="13" />
-            </a>
+            <span class="file-row-age">{{ age(file.time) }}</span>
             <a class="file-row-act" :href="file.url" :download="file.name" :title="`Download ${file.name}`">
                 <Icon name="download" :size="13" />
             </a>

@@ -1,22 +1,26 @@
 import time
+from pathlib import Path
 
-from journal.support.secret_values import AT, RETIRED, SecretValues
+from journal.support.secret_values import EMAIL_SIGN_TOKEN, RETIRED, SecretValues
 
-SHORTEST = 8
-"""A value shorter than this is too likely to stand in ordinary text to be masked."""
+SHORTEST_CHARACTERS = 8
 
 
 class Masks:
-    """The secret values no write may carry: each one found in text about to be written becomes [secret VARIABLE], and the leak is noted for the alarm. The values are read again when their file changes."""
+    """The secret values no write may carry: each one found in text about to be written becomes [secret VARIABLE], and the leak is noted for the alarm. A field shown while typing is no secret and never masks. The values are read again when the values file or the list of shown fields changes, by time and size, looked at once per statement, so two writes in one clock tick are both seen."""
 
     def __init__(self, values: SecretValues) -> None:
         self.values = values
-        self._read_at = -1.0
+        self._stamp: tuple = ()
         self._masks: dict[str, str] = {}
         self.leaks: list[tuple[str, float]] = []
 
-    def masked(self, text: str) -> str:
-        for value, variable in self.current().items():
+    def masked(self, params: tuple) -> tuple:
+        masks = self.current()
+        return tuple(self.replaced(param, masks) if isinstance(param, str) and masks else param for param in params)
+
+    def replaced(self, text: str, masks: dict[str, str]) -> str:
+        for value, variable in masks.items():
             if value not in text:
                 continue
             text = text.replace(value, f"[secret {variable}]")
@@ -24,10 +28,17 @@ class Masks:
         return text
 
     def current(self) -> dict[str, str]:
-        """Each value long enough to mask, by its text, with its variable; read again only when the file changed."""
-        path = self.values.path
-        changed = path.stat().st_mtime if path.is_file() else 0.0
-        if changed != self._read_at:
-            self._read_at = changed
-            self._masks = {value: variable.removeprefix(RETIRED).rsplit(AT, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST}
+        stamp = (self.stamp(self.values.path), self.stamp(self.values.shown_path))
+        if stamp != self._stamp:
+            self._stamp = stamp
+            plain = self.values.shown()
+            self._masks = {value: variable.removeprefix(RETIRED).rsplit(EMAIL_SIGN_TOKEN, 1)[0] for variable, value in self.values.values().items() if len(value) >= SHORTEST_CHARACTERS and variable not in plain}
         return self._masks
+
+    @staticmethod
+    def stamp(path: Path) -> tuple:
+        try:
+            status = path.stat()
+        except FileNotFoundError:
+            return ()
+        return status.st_mtime_ns, status.st_size

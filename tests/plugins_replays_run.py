@@ -7,56 +7,50 @@ import pytest
 
 from journal.app import App
 from journal.config import Config
+from journal.features.plugins.feature import PluginsFeature
 from journal.features.workers.support.worker_runner import WorkerRunner
-from journal.support.deferred import Deferred
+from journal.support.listener_queue import ListenerQueue
 from journal.support.actor import Actor
 from journal.models.setting import Setting
 from journal.models.task import Task
-from journal.support.scope import Scope
-from journal.repositories.settings import Settings
+from journal.repositories.scope import Scope
+from journal.repositories.setting_rows import SettingRows
 from journal.repositories.tasks import Tasks
-from tests.replay import Replay, differences, hook_as, recorded
+from tests.replay import Replay, hook_as, played
 from tests.test_features import AGENT, MAIN, USER
 
 ECHO = Path(__file__).parent / "plugins" / "echo"
 
 
 @pytest.fixture
-def journals(tmp_path: Path, monkeypatch):
-    """Two fresh journals with the echo plugin installed, one for the record and one run anew."""
+def journal(tmp_path: Path, monkeypatch):
+    """A fresh journal the echo plugin is installed in, its steps compared to the record; the plugin is given two seconds to answer, since a program started fresh on a busy machine misses the shipped window."""
     monkeypatch.setattr(Config, "status_home", property(lambda self: self.root / "status"))
-    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, by: None)
-    apps = []
-    for name in ("recorded", "anew"):
-        app = App(Config(tmp_path / name, port=0))
-        app.container.get(Settings).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
-        apps.append(app)
-    with apps[0].container.get(Scope).of(MAIN):
-        yield apps
-    for app in apps:
-        app.runtime().stop()
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    app = App(Config(tmp_path / "anew", port=0))
+    app.container.get(SettingRows).save(Setting(environment_id=0, key="features.skills", value=False), Actor.system())
+    app.container.get(SettingRows).set(PluginsFeature.PLUGIN_ANSWER_WINDOW.key, 2000, Actor.user(1))
+    with app.container.get(Scope).environment(MAIN):
+        yield app
+    app.runtime().stop()
 
 
 def with_echo(app, replay: Replay, provider: str) -> None:
     """The steps: echo is installed, a session starts, a forbidden read is held, a prompt is told a line, and a task made is heard after the reply."""
     app.console().run(["plugin", "install", str(ECHO), "--yes"], USER)
     hook_as(app, provider, "SessionStart")
-    app.console().run(["environment", "here"], AGENT)
+    app.console().run(["environment", "overview"], AGENT)
     replay.step("session starts")
     replay.step("a forbidden read", hook_as(app, provider, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})[1])
     replay.step("a prompt", hook_as(app, provider, "UserPromptSubmit", prompt="hello")[1])
     app.container.get(Tasks).save(Task(environment_id=1, title="echo me"), Actor.user(1))
-    app.container.get(Deferred).drain()
-    app.container.get(Deferred).drain()
+    app.container.get(ListenerQueue).drain()
+    app.container.get(ListenerQueue).drain()
     replay.step("a task is made")
 
 
-def test_a_session_with_the_echo_plugin_matches_its_record(journals, monkeypatch):
-    recorded_app, anew = journals
-    left = recorded("echo_plugin_claude", recorded_app, monkeypatch, with_echo, "claude")
-    anew.runtime().start()
-    right = Replay(anew, monkeypatch)
-    with_echo(anew, right, "claude")
+def test_a_session_with_the_echo_plugin_matches_its_record(journal, monkeypatch):
+    right, differing = played("echo_plugin_claude", journal, monkeypatch, with_echo, "claude")
     answers = [str(s["answer"]) for s in right.record() if s["answer"] is not None]
     assert "[plugin echo] echo refuses a forbidden tool" in answers[0] and "[plugin echo] echo heard your prompt" in answers[1], "the plugin held the tool and told the prompt"
-    assert differences(left.record(), right.record()) == [], "the agent would have seen the same as the record says"
+    assert differing == [], "the agent would have seen the same as the record says"

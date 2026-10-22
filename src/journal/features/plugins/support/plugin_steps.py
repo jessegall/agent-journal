@@ -8,10 +8,10 @@ _steps: ContextVar[int] = ContextVar("plugin_steps", default=0)
 class PluginSteps:
     """How many plugin commands led to the work in hand: a plugin's command runs a step deeper, and a row written past one step is heard by no plugin, so two plugins never answer each other forever."""
 
-    MOST = 1
+    NESTED_STEPS = 1
 
-    def too_deep(self) -> bool:
-        return _steps.get() > self.MOST
+    def is_nested_deep(self) -> bool:
+        return _steps.get() > self.NESTED_STEPS
 
     @contextmanager
     def deeper(self) -> Iterator[None]:

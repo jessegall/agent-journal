@@ -1,5 +1,5 @@
+from journal.features.aliases.feature import AliasesFeature
 from journal.features.briefing.feature import Briefing
-from journal.features.chart.feature import ChartFeature
 from journal.features.checks.feature import Checks
 from journal.features.edits.feature import EditsFeature
 from journal.features.etiquette.feature import Etiquette
@@ -18,6 +18,7 @@ from journal.features.pausing.feature import PausingFeature
 from journal.features.pins.feature import Pins
 from journal.features.docs.feature import DocsFeature
 from journal.features.reports.feature import ReportsFeature
+from journal.features.collections.feature import CollectionsFeature
 from journal.features.dumps.feature import DumpsFeature
 from journal.features.templates.feature import TemplatesFeature
 from journal.features.memory.feature import Memory
@@ -42,6 +43,5 @@ from journal.features.voices.feature import Voices
 class Standard:
     """The features the journal ships with, in the order they register."""
 
-    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, PausingFeature, Workers, Laws, Triggers, Checks, Shell, Thinking, Mcp, Secrets, Sharing, Delivery, TemplatesFeature, ReportsFeature, DocsFeature, DumpsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, ChartFeature, PluginsFeature, Faults, PhoneFeature, MigrationFeature, MentionsFeature, SearchFeature, Updates, SuggestionsFeature, Record)
-    """The engine's own listeners first, the skill, the look and the mark each owed and held by its feature, the workflows' walk after them, so a workflow reads the facts the engine set at this very event, and the plugins last, so the journal's own holds answer first."""
+    FEATURES = (Skills, Briefing, Memory, Tasks, Messages, Questions, Plans, Sequences, PausingFeature, Workers, Laws, Triggers, Checks, Shell, AliasesFeature, Thinking, Mcp, Secrets, Sharing, Delivery, TemplatesFeature, ReportsFeature, DocsFeature, CollectionsFeature, DumpsFeature, Pins, Etiquette, Voices, Profiles, Git, EditsFeature, PluginsFeature, Faults, PhoneFeature, MigrationFeature, MentionsFeature, SearchFeature, Updates, SuggestionsFeature, Record)
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 
-from journal.db.migrations.unwrapped import Unwrapped
+from journal.db.migrations.unwrap_outcome import UnwrapOutcome
 
 
 @dataclass(frozen=True)
@@ -12,21 +12,19 @@ class StoredState:
     resume: "StoredState | None" = None
 
     @classmethod
-    def from_json(cls, name: str, data: dict) -> "StoredState":
+    def parsed(cls, name: str, data: dict) -> "StoredState":
         resume = data.get("resume")
-        own = {key: value for key, value in data.items() if key != "resume"}
-        return cls(name, own, cls.from_json(resume.get("state", "idle"), resume.get("data") or {}) if resume else None)
+        owned = {key: value for key, value in data.items() if key != "resume"}
+        return cls(name, owned, cls.parsed(resume.get("state", "idle"), resume.get("data") or {}) if resume else None)
 
-    def to_json(self) -> dict:
-        return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.to_json()}} if self.resume else self.data
+    def serialized(self) -> dict:
+        return {**self.data, "resume": {"state": self.resume.name, "data": self.resume.serialized()}} if self.resume else self.data
 
     def resumed(self) -> "StoredState":
-        """The state this one went back to; idle when it named none."""
         return self.resume or StoredState("idle", {})
 
-    def without(self, name: str) -> Unwrapped:
-        """This state with every layer of the named state taken out of its chain, and those layers, the innermost first."""
-        inner = self.resume.without(name) if self.resume else Unwrapped(StoredState("idle", {}), ())
+    def without(self, name: str) -> UnwrapOutcome:
+        inner = self.resume.without(name) if self.resume else UnwrapOutcome(StoredState("idle", {}), ())
         if self.name == name:
-            return Unwrapped(inner.state, (*inner.taken, self))
-        return Unwrapped(replace(self, resume=inner.state) if self.resume else self, inner.taken)
+            return UnwrapOutcome(inner.state, (*inner.claimed, self))
+        return UnwrapOutcome(replace(self, resume=inner.state) if self.resume else self, inner.claimed)

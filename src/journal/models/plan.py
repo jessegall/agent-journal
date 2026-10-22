@@ -2,20 +2,32 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from journal.models.plan_state import PlanState
+from journal.events.rows.plan_abandoned import PlanAbandoned
+from journal.events.rows.plan_approved import PlanApproved
+from journal.events.rows.plan_blocked import PlanBlocked
+from journal.events.rows.plan_postponed import PlanPostponed
+from journal.events.rows.plan_reopened import PlanReopened
+from journal.events.rows.plan_finished import PlanFinished
+from journal.events.rows.plan_started import PlanStarted
 from journal.models.scoped import Scoped
-from journal.support.refused import Refused
+from journal.models.task import Task
+from journal.models.task_state import TaskState
+from journal.models.phase_tasks import PhaseTasks
+from journal.models.support.dock_button import DockButton
+from journal.models.support.dock_card import DockCard
+from journal.support.rejection import Rejection
 
 
 @dataclass(frozen=True)
 class Plan(Scoped):
-    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, counting those still out, approved by the user, then followed: finishing one task starts the next."""
+    """Ordered work: its phases and tasks are linked to it. Built as draft, made ready by the agent, held in review while reviewers read it, counting those still out, approved by the user, then followed: finishing one task starts the next. A start is refused while it is blocked or unapproved; a done plan given work again is reopened without that check. Its questions about its tasks are answered over the rows its repository hands it: finished when every task is closed, all left blocked, the tasks in order phase by phase then the loose ones, the next open task that can start, the task to resume (its postponed one first), the current phase (the first with open work, else the last) and the checkpoint it stands at (a checkpoint phase done, the next phase's work not begun)."""
 
     text_fields: ClassVar[tuple[str, ...]] = ("title", "brief")
 
     title: str = ""
     brief: str = ""
     state: PlanState = PlanState.DRAFT
-    blocked_why: str = ""
+    block_reason: str = ""
     reviewers: int = 0
 
     def ready(self) -> "Plan":
@@ -24,32 +36,80 @@ class Plan(Scoped):
     def reviewing(self) -> "Plan":
         return self.moved(PlanState.REVIEWING)
 
-    def approved(self) -> "Plan":
-        return self.moved(PlanState.APPROVED)
+    def approved(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
-    def started(self) -> "Plan":
-        return self.moved(PlanState.STARTED)
+    def startable(self) -> "Plan":
+        if self.is_blocked():
+            raise Rejection(f"plan {self.id} is blocked, waiting on: {self.block_reason or 'what it was blocked on'}; `journal plan unblock {self.id}` when it may go on")
+        if not self.state.is_startable():
+            raise Rejection(f"plan {self.id} is {self.state}, not approved: the user approves it first")
+        return self
 
-    def parked(self) -> "Plan":
-        return self.moved(PlanState.PARKED)
+    def started(self, first: Task, time: float) -> "Plan":
+        return self.startable().moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.row_id, task_id=first.row_id))
 
-    def blocked(self, why: str) -> "Plan":
-        return self.moved(PlanState.BLOCKED).with_(blocked_why=why)
+    def started_without_task(self, time: float) -> "Plan":
+        return self.startable().reopened(time)
 
-    def unblocked(self) -> "Plan":
-        return self.moved(PlanState.STARTED).with_(blocked_why="")
+    def reopened(self, time: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_event(PlanStarted(environment_id=self.environment_id, time=time, plan_id=self.row_id, task_id=0))
+
+    def postponed(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.SUSPENDED).with_event(PlanPostponed(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
+
+    def blocked(self, reason: str, time: float) -> "Plan":
+        return self.moved(PlanState.BLOCKED).with_(block_reason=reason).with_event(PlanBlocked(environment_id=self.environment_id, time=time, plan_id=self.row_id, reason=reason))
+
+    def unblocked(self, reason: str, time: float) -> "Plan":
+        return self.moved(PlanState.STARTED).with_(block_reason="").with_event(PlanReopened(environment_id=self.environment_id, time=time, plan_id=self.row_id, reason=reason))
 
     def is_blocked(self) -> bool:
         return self.state == PlanState.BLOCKED
 
-    def done(self) -> "Plan":
-        return self.moved(PlanState.DONE)
+    def finished(self, time: float) -> "Plan":
+        return self.moved(PlanState.FINISHED).with_event(PlanFinished(environment_id=self.environment_id, time=time, plan_id=self.row_id))
 
-    def cancelled(self) -> "Plan":
-        return self.moved(PlanState.CANCELLED)
+    def cancelled(self, time: float, user_origin: bool) -> "Plan":
+        return self.moved(PlanState.CANCELLED).with_event(PlanAbandoned(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))
 
     def moved(self, state: PlanState) -> "Plan":
         if not self.state.can_become(state):
-            raise Refused(f"plan {self.id} is {self.state} and cannot become {state}")
+            raise Rejection(f"plan {self.id} is {self.state} and cannot become {state}")
         return self.with_(state=state)
 
+    def is_finished(self, tasks: list[Task]) -> bool:
+        return bool(tasks) and all(task.is_closed() for task in tasks)
+
+    def is_stalled(self, tasks: list[Task]) -> bool:
+        remaining = [task for task in tasks if not task.is_closed()]
+        return bool(remaining) and all(task.state == TaskState.BLOCKED for task in remaining)
+
+    def ordered(self, phases: list[PhaseTasks], tasks: list[Task]) -> list[Task]:
+        phased = [task for phase in phases for task in phase.tasks]
+        ids = {task.id for task in phased}
+        return phased + [task for task in tasks if task.id not in ids]
+
+    def next_open_task(self, ordered: list[Task], cannot_start: set[int]) -> Task | None:
+        return next((task for task in ordered if task.state == TaskState.OPEN and task.id not in cannot_start), None)
+
+    def resumable_task(self, ordered: list[Task], cannot_start: set[int]) -> Task | None:
+        return next((task for task in ordered if task.state == TaskState.SUSPENDED), None) or self.next_open_task(ordered, cannot_start)
+
+    def current_phase(self, phases: list[PhaseTasks]) -> int:
+        return next((phase.number for phase in phases if phase.has_open_work()), len(phases) or 1)
+
+    def checkpoint_phase(self, phases: list[PhaseTasks]) -> PhaseTasks | None:
+        for previous, following in zip(phases, phases[1:]):
+            if previous.phase.checkpoint and previous.is_finished() and following.tasks and not following.has_work_started():
+                return previous
+        return None
+
+    def title_words(self) -> str:
+        return self.title
+
+    def summary_line(self) -> str:
+        return self.opening_line(self.brief)
+
+    def docked(self) -> DockCard:
+        return DockCard((DockButton("Open plan", "open"), DockButton("Approve", "approve"), DockButton("Close", "close")))

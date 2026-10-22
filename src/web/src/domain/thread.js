@@ -1,12 +1,13 @@
 import {withoutChips} from "../text/words.js";
 import {visibleIn} from "./chatVisibility.js";
 import {refOf, seconds} from "./row.js";
+import {meta} from "./tables.js";
 
 const PROMISED_WITHIN = 5;
 
 // A turn of the chat: a message's own fields, with its kind, who said it, a key that stays while a placeholder becomes the
 // real message, and when, in seconds. A card of the journal's carries what it draws in its data.
-const turnOf = (m, kind, who, extra = {}) => ({...m, kind, who, key: m.key || refOf(m), at: seconds(m.created_at), ...extra});
+const turnOf = (m, kind, who, extra = {}) => ({...m, kind, who, key: m.key || refOf(m), time: seconds(m.created_at), ...extra});
 
 const spoken = (m) => {
     if (m.data?.kind === "thought") return turnOf(m, "thought", "agent");
@@ -20,54 +21,120 @@ const SYSTEM_TURNS = {
     compacted: () => ({kind: "compacted", data: {}}),
     question: (card, label, m) => ({
         kind: "question",
-        question: {id: Number(card.row.split(":")[1]), options: card.options, answer: card.answer ?? null, closedAt: card.answer == null ? 0 : seconds(m.updated_at)},
+        question: {
+            id: Number(card.row.split(":")[1]),
+            options: card.options,
+            answer: card.answer ?? null,
+            closedAt: card.answer == null ? 0 : seconds(m.updated_at),
+        },
         data: {},
     }),
-    made: (card, label) => ({kind: "made", made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.abstract}, data: {}}),
+    made: (card, label) => ({
+        kind: "made",
+        made: {table: card.made_type, id: Number(String(card.row).split(":")[1]), title: label, line: card.summary},
+        data: {},
+    }),
+    docked: (card) => ({
+        kind: "card",
+        data: {
+            icon: meta(String(card.row).split(":")[0])?.icon || "pin",
+            label: card.docked ? "Docked above the chat" : "Was docked above the chat",
+            detail: card.heading,
+            title: card.heading,
+            row: card.row,
+        },
+    }),
     subagent: (card) => ({
         kind: "subagent",
         title: card.detail,
-        data: {kind: card.agent_type, model: card.model, agent: card.agent, session: card.subagent, finished: card.state !== "running", stopped: card.state === "stopped"},
+        data: {
+            kind: card.agent_type,
+            model: card.model,
+            agent: card.agent,
+            session: card.subagent,
+            finished: card.state !== "running",
+            stopped: card.state === "stopped",
+            failed: card.state === "failed",
+            reason: card.reason || "",
+        },
     }),
     card: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon, tone: card.tone, label, detail: card.detail, command: card.command, title: card.detail || card.command, row: card.row, visitor: card.visitor},
+        data: {
+            icon: card.icon,
+            tone: card.tone,
+            color: card.shows === "workers" && !card.tone ? SUBAGENT_COLOR : "",
+            label,
+            detail: card.detail,
+            lines: card.lines || [],
+            figure: (card.output ? card.count : card.figure) || "",
+            fraction: card.fraction || 0,
+            output: card.output || 0,
+            line: card.line || "",
+            ending: card.ending || "",
+            docked: Boolean(card.docked),
+            command: card.command,
+            title: card.detail || card.command,
+            row: card.row,
+            visitor: card.visitor,
+        },
     }),
-    peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to}}),
+    peer: (card) => ({kind: "message", data: {peer: card.peer, sent_to: card.sent_to, failure: card.failure || ""}}),
     suggestion: (card, label) => ({
         kind: "suggestion",
-        suggestion: {id: Number(String(card.row).split(":")[1]), title: label, detail: card.detail, accept: card.accept, answer: card.answer},
+        suggestion: {
+            id: Number(String(card.row).split(":")[1]),
+            title: label,
+            detail: card.detail,
+            accept: card.accept,
+            answer: card.answer,
+        },
         data: {},
     }),
     plugin: (card, label) => ({
         kind: "card",
-        data: {icon: card.icon || "plug", tone: card.tone, label, name: card.plugin, detail: card.collapsed ? "" : card.detail, title: card.detail, row: card.row},
+        data: {
+            icon: card.icon || "plug",
+            tone: card.tone,
+            label,
+            name: card.plugin,
+            detail: card.detail,
+            lines: card.lines || [],
+            collapsed: Boolean(card.collapsed && card.detail),
+            title: card.detail,
+            row: card.row,
+        },
     }),
 };
 
-const pluginOf = (m) => ((m.created_by || "").startsWith("plugin:") ? m.created_by.slice("plugin:".length) : "");
+const pluginOf = (m) => ((m.creator || "").startsWith("plugin:") ? m.creator.slice("plugin:".length) : "");
 
 const plainTurn = (m, label) => ({kind: "card", data: {icon: pluginOf(m) ? "plug" : "dot", label, name: pluginOf(m)}});
 
 const fromSystem = (m) => m.author === "system";
 
-const byUser = (m) => (m.created_by || "").startsWith("user");
+const byUser = (m) => (m.creator || "").startsWith("user");
 
 const systemTurn = (m) => {
     const card = m.data || {};
     const turn = (SYSTEM_TURNS[card.kind] || ((_, label) => plainTurn(m, label)))(card, m.text, m);
-    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {...turn, data: {...turn.data, shows: card.shows || "", side: byUser(m) ? "user" : ""}});
+    return turnOf(m, turn.kind, byUser(m) ? "user" : "agent", {
+        ...turn,
+        data: {...turn.data, shows: card.shows || "", side: byUser(m) ? "user" : ""},
+    });
 };
 
 const promisedFor = (p, m) =>
-    p.idempotency && m.idempotency ? p.idempotency === m.idempotency : withoutChips(m.text) === p.text && seconds(m.created_at) >= seconds(p.created_at) - PROMISED_WITHIN;
+    p.idempotency && m.idempotency
+        ? p.idempotency === m.idempotency
+        : withoutChips(m.text) === p.text && seconds(m.created_at) >= seconds(p.created_at) - PROMISED_WITHIN;
 
 const delivered = (p, m) => m.files.length >= p.files.length;
 
 export const EARLIER = "An earlier message";
 
 // What a message answers: the message it is a reply to, as messages:12.
-export const answered = (m) => (m.reply_to ? `messages:${m.reply_to}` : "");
+export const answered = (m) => (m.reply_target ? `messages:${m.reply_target}` : "");
 
 export function threadTurns(messages, pending, older = false, hidden = []) {
     const keys = new Map();
@@ -79,9 +146,9 @@ export function threadTurns(messages, pending, older = false, hidden = []) {
         ...messages.filter(fromSystem).map(systemTurn),
         ...pending.filter((p) => !messages.some((m) => promisedFor(p, m) && delivered(p, m))).map((p) => turnOf(p, "message", "user")),
     ]
-        .filter((t) => t.kind === "message" || t.at >= floor)
+        .filter((t) => t.kind === "message" || t.time >= floor)
         .filter(visibleIn(hidden))
-        .sort((a, b) => a.at - b.at);
+        .sort((a, b) => a.time - b.time);
     return {turns: grouped(turns), keys};
 }
 
@@ -111,7 +178,7 @@ function folded(run) {
         key: `group:${run[0].key}`,
         kind: "group",
         who: "agent",
-        at: last.at,
+        time: last.time,
         data: {tone: run.every((t) => t.data.settled) ? "good" : group.tone || "", color: group.color || ""},
         title: group.label(run.length, run),
         text: "",
@@ -136,3 +203,6 @@ function grouped(turns) {
     close();
     return out;
 }
+
+// The main chat: the user's and the main agent's own rows; a worker's and a subagent's messages live in their own chats.
+export const mainChat = (messages) => messages.filter((m) => m.agent_role === "main");

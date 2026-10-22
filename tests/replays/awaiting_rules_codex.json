@@ -6,81 +6,66 @@
       "answer": {},
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice"
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 5,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "the first reports",
       "answer": {
         "decision": "block",
-        "reason": "worker 1 (Lady Lovelace) reported and you have not acted on it yet. read its report, then give it its next job (`journal worker say <n> \"<job>\"`), stop it, or `journal worker done <n>` once its work is merged or used"
+        "reason": "worker 1 (Lady Lovelace) reported and you have not acted on it yet. read its report, then give it its next job, stop it, or mark it done once its work is merged or used"
       },
       "typed": [
         "[journal] worker 1, Lady Lovelace, reported in the chat"
       ],
       "nudges": [
-        "workers.reported",
-        "workers.reports_waiting"
+        "workers.worker_reported",
+        "workers.act_on_the_reports"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working",
+        "awaiting"
+      ]
     },
     {
       "name": "the last one back",
       "answer": null,
       "typed": [
-        "[journal] worker 2, Dr. Einstein, reported in the chat",
-        "[journal] what you waited on came back: carry on"
+        "[journal] the wait for worker 1, worker 2 is over: worker 1, Lady Lovelace, reported; worker 2, Dr. Einstein, reported",
+        "[journal] worker 2, Dr. Einstein, reported in the chat"
       ],
       "nudges": [
-        "workers.reported",
-        "workers.returned"
+        "tasks.wait_over",
+        "workers.worker_reported"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 9,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "a stop after",
       "answer": {
         "decision": "block",
-        "reason": "task 1 is in hand, last logged just now: carry on. `journal stuck \"<why>\"` if you are truly stuck"
+        "reason": "task 1 is in hand, last logged just now: carry on"
       },
       "typed": [],
       "nudges": [
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 10,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

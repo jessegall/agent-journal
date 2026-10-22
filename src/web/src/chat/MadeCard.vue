@@ -7,33 +7,43 @@ defineProps({made: {type: Object, required: true}});
 </script>
 
 <template>
-    <button type="button" class="thread-made" @click="peek(made.table, made.id)">
-        <span class="thread-made-kind">{{ meta(made.table).title }} created</span>
-        <span class="thread-made-title">{{ made.title }}</span>
-        <template v-if="made.line">
-            <TextDisplay inline class="thread-made-line" :text="made.line" />
-        </template>
-    </button>
+    <div class="thread-made">
+        <button type="button" class="thread-made-open" @click="peek(made.table, made.id)">
+            <span class="thread-made-kind">{{ meta(made.table).title }} created</span>
+            <span class="thread-made-title">{{ made.title }}</span>
+            <template v-if="made.line">
+                <TextDisplay inline class="thread-made-line" :text="made.line" />
+            </template>
+        </button>
+    </div>
 </template>
 
 <style scoped>
 .thread-made {
     display: flex;
     flex-direction: column;
-    gap: 3px;
     max-width: 420px;
-    padding: 10px 12px;
     border: 1px solid var(--border-2);
     border-radius: 9px;
     background: var(--raised);
     color: var(--text);
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
 }
 
 .thread-made:hover {
     border-color: var(--accent);
+}
+
+.thread-made-open {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
 }
 
 .thread-made-kind {

@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "nameMatches": "^journal\\.engine\\.(state_machine|machine)$"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/journal/engine/**"
+            },
+            {
+                "file": "src/journal/runtime.py"
+            },
+            {
+                "file": "**/panic_command.py"
+            },
+            {
+                "file": "tests/**"
+            },
+            {
+                "file": ".commandments/custom/samples/engine/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "state-machine-outside-engine",
+        "description": "A file outside the engine imports the state machine: a command or a feature listener reaches for it, where only the engine may.",
+        "rule": "Only the engine and journal panic touch the state machine. A command writes rows; the model names the event; the state answers it. Take the state machine out of the constructor and let the rows' events do the moving.",
+        "skill": "plain-code-words"
+    }
+}

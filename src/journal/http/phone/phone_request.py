@@ -14,10 +14,9 @@ class PhoneRequest:
     body: bytes = b""
 
     @classmethod
-    def of(cls, method: str, path: str, headers, body: bytes = b"") -> "PhoneRequest":
+    def build(cls, method: str, path: str, headers, body: bytes = b"") -> "PhoneRequest":
         return cls(method, path, headers.get("Cookie", ""), headers.get("Origin", ""), headers.get("X-Phone", ""), headers.get("Content-Type", ""), body)
 
     @property
     def rest(self) -> list[str]:
-        """The path's parts after /p/."""
         return [part for part in self.path.split("?", 1)[0].split("/")[2:] if part]

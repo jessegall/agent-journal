@@ -11,17 +11,19 @@ from journal.repositories.notices import Notices
 class NoticeController(Controller[Notice]):
     """Notices pinned for the user, open until closed."""
 
+    repository: Notices
+
     def __init__(self, notices: Notices) -> None:
         self.repository = notices
 
     def rows(self) -> list[Notice]:
-        return self.repository.in_()
+        return self.repository.scoped()
 
     def is_open(self, row: Notice) -> bool:
         return row.closed_at is None
 
     def counts(self, rows: list[Notice]) -> Counts:
-        return Counts(all=self.repository.counted_in(), open=self.repository.open_count(), unread=self.repository.unseen_by_user())
+        return Counts(all=self.repository.count(), open=self.repository.open_count(), unread=self.repository.unviewed())
 
     def close(self, request: Request) -> Response:
         notice = self.repository.find(request.number("id"))

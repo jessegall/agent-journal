@@ -1,5 +1,5 @@
 [
-  {"key": "mode", "title": "Mode", "kind": "choice", "choices": ["", "slow", "broken"], "default": "", "help": "how echo misbehaves, for the tests"},
+  {"key": "mode", "title": "Mode", "kind": "choice", "choices": ["", "slow", "late", "broken"], "default": "", "help": "how echo misbehaves, for the tests"},
   {"key": "repeat", "title": "Repeat", "kind": "number", "default": 1},
   {"key": "token", "title": "Token", "kind": "secret", "help": "a token echo is given"}
 ]

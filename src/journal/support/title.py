@@ -1,6 +1,6 @@
-from journal.support.refused import Refused
+from journal.support.rejection import Rejection
 
-LONGEST = 80
+LONGEST_CHARACTERS = 80
 
 
 class Title:
@@ -8,14 +8,13 @@ class Title:
 
     @staticmethod
     def check(text: str) -> None:
-        if len(text) > LONGEST:
-            raise Refused(f"a title is at most {LONGEST} characters, this one is {len(text)}: put the rest in the brief")
+        if len(text) > LONGEST_CHARACTERS:
+            raise Rejection(f"a title is at most {LONGEST_CHARACTERS} characters, this one is {len(text)}: put the rest in the brief")
         if ":" in text:
-            raise Refused("a title holds no colon: say it in one line and put the rest in the brief")
+            raise Rejection("a title holds no colon: say it in one line and put the rest in the brief")
 
     @classmethod
-    def check_on(cls, row, was=None) -> None:
-        """A new or changed title is checked; a row saved again with the title it had is left alone."""
+    def check_target(cls, row, prior_row=None) -> None:
         title = getattr(row, "title", None)
-        if isinstance(title, str) and (was is None or title != getattr(was, "title", None)):
+        if isinstance(title, str) and (prior_row is None or title != getattr(prior_row, "title", None)):
             cls.check(title)

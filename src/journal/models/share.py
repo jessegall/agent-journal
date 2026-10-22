@@ -10,11 +10,8 @@ class Share(Scoped):
 
     token: str = ""
     expires_at: datetime | None = None
-    """When the link stops opening; none for a link that never ends."""
     approved: bool = False
-    """Opened by the user; a link the agent made waits for their Accept."""
     password: str = ""
-    """The password's salted hash; empty for a link that asks for none."""
     comments: bool = False
     views: int = 0
     stopped_at: datetime | None = None
@@ -22,15 +19,14 @@ class Share(Scoped):
     def opened(self) -> "Share":
         return self.with_(approved=True)
 
-    def stopped(self, at: datetime) -> "Share":
-        return self.with_(stopped_at=at)
+    def stopped(self, time: datetime) -> "Share":
+        return self.with_(stopped_at=time)
 
     def viewed(self) -> "Share":
         return self.with_(views=self.views + 1)
 
-    def is_live(self, now: datetime) -> bool:
-        """Not stopped and not past its end: it opens once it is approved."""
-        return self.stopped_at is None and (self.expires_at is None or self.expires_at > now)
+    def is_active(self, time: datetime) -> bool:
+        return self.stopped_at is None and (self.expires_at is None or self.expires_at > time)
 
-    def opens(self, now: datetime) -> bool:
-        return self.approved and self.is_live(now)
+    def opens(self, time: datetime) -> bool:
+        return self.approved and self.is_active(time)

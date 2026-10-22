@@ -1,0 +1,18 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMatches": "(^|[a-z0-9])(${poetic}|AfterAClose|Alone|Awaitables|Calling|CarryRunsToTheNextSession|ChatMark|Chosen|CommitMade|Crossed|Debt|Declared|Deferred|Drawing|DrawnLine|DrawnNode|EndSettledWaits|Ending|Expired|Filed|Filing|Firing|Floor|Found|Hooked|Idle|InHand|Just|KeptAnswer|KeptPlace|Known|LetGoOfClosedTask|Listed|LookTaken|Lost|MarkCompacted|MarkDecided|MarkFiled|MarkLoaded|MarkMade|MarkMemoryRowMade|MarkMemoryRowStruck|MarkQuestion|MarkSubagents|MarkWhispered|Marks|Mentioned|NotMade|Nothing|Once|OneTaskInHand|Other|OweSkills|OweTheLookAtStart|Pairing|PluginHearing|PluginsHearAgents|PluginsHearRows|Quietly|Refused|Requiring|RowEventsToTheTop|RowSettled|RuleMade|Running|Seen|Sent|SequenceInHand|SettleTheTunnel|Shipped|Shown|Soon|SpotCommit|Standby|Suggesting|SweepTranscripts|Switched|TakeTheMark|TellAPluginItsSettings|TellAnswer|TellArrival|TellChoice|TellFiled|TellInbox|TellThePhone|Trail|TypedNudges|Unheard|Unoriented|Unscoped|Unwrapped|UpdateMark|Utterance|Watching|Whatever|Where|Words|WorkerBack)([A-Z0-9]|$)"
+            }
+        ]
+    },
+    "sin": {
+        "name": "poetic-type-name",
+        "description": "A class is named by a word that does not say what it is, alone or as a part of its name: Said, Worded, ReportMadeCard, HeldLine, Watching.",
+        "rule": "Name a class for what it holds or does, in an ordinary word: a line with its values is a Nudge, a snapshot of the options is Settings.",
+        "skill": "plain-code-words"
+    }
+}

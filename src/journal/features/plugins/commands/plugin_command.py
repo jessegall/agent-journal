@@ -1,24 +1,24 @@
 from argparse import Namespace
 
 from journal.console.command import Command
-from journal.support.where import Where
-from journal.support.cards import Cards
+from journal.support.caller import Caller
+from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_preview import PluginPreview
-from journal.support.plugin_installing import PluginInstalling
+from journal.features.plugins.support.plugin_aliases import PluginAliases
+from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.features.plugins.support.plugin_settings import PluginSettings
 from journal.repositories.plugins import Plugins
-from journal.support.scope import Scope
-from journal.support.chat_mark import ChatMark
+from journal.repositories.scope import Scope
+from journal.support.card_kind import CardKind
 
-SAID = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill"}
-"""Each kind of preview row as the command line says it."""
+STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": "runs at install, its answer filling the settings", "program": "runs", "service": "runs the service", "hears": "hears", "holds": "holds", "skill": "brings the skill", "alias": "brings the alias"}
 
 
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings) -> None:
-        self.plugins, self.installing, self.cards, self.scope, self.schemas = plugins, installing, cards, scope, settings
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings, aliases: PluginAliases) -> None:
+        self.plugins, self.installing, self.cards, self.scope, self.schemas, self.aliases = plugins, installing, cards, scope, settings, aliases
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "list", "the plugins installed here, each on or off and how it last failed")
@@ -39,70 +39,72 @@ class PluginCommand(Command):
         configure.add_argument("key")
         configure.add_argument("value")
         self.verb(verbs, "settings", "a plugin's settings, what each is and how it is set").add_argument("name")
-        remove = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
-        remove.add_argument("name")
-        remove.add_argument("--purge", action="store_true", help="delete its data folder too")
+        removal = self.verb(verbs, "remove", "take a plugin out; its data folder stays unless --purge")
+        removal.add_argument("name")
+        removal.add_argument("--purge", action="store_true", help="delete its data folder too")
 
-    def list(self, args: Namespace, where: Where) -> int:
+    def list(self, args: Namespace, caller: Caller) -> int:
         for p in self.plugins.all():
             print(f"{p.name:<20} {'on' if p.enabled else 'off':<4} {p.manifest.version}" + (f"  last fault: {p.last_fault}" if p.last_fault else ""))
         return 0
 
-    def install(self, args: Namespace, where: Where) -> int:
-        print(self.said(self.installing.preview(args.source)))
+    def install(self, args: Namespace, caller: Caller) -> int:
+        print(self.description(self.installing.preview(args.source)))
         if not args.yes:
             print(f"nothing installed yet: journal plugin install {args.source} --yes")
             return 0
-        plugin = self.installing.install(args.source, where.environment, where.actor)
+        plugin = self.installing.install(args.source, caller.environment, caller.actor)
         print(f"installed {plugin.name}, on")
+        for name in sorted(self.aliases.skipped(plugin)):
+            print(f"skipped its alias {name}: the name is taken")
         return 0
 
-    def propose(self, args: Namespace, where: Where) -> int:
+    def propose(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.preview(args.source)
-        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=f"{self.said(preview)}\n\nTo install it: journal plugin install {args.source} --yes", by=where.actor, shows=ChatMark.PLUGINS)
+        self.cards.show(self.scope.id, "", f"The agent proposes the plugin {preview.name}" + (f": {args.why}" if args.why else ""), "plug", detail=self.description(preview), command=f"journal plugin install {args.source} --yes", actor=caller.actor, shows=CardKind.PLUGINS)
         print(f"proposed {preview.name}: the user installs it if they want it")
         return 0
 
-    def upgrade(self, args: Namespace, where: Where) -> int:
+    def upgrade(self, args: Namespace, caller: Caller) -> int:
         preview = self.installing.upgrade_preview(args.name, args.ref)
-        print("\n".join([f"{args.name} from {preview.was[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
-        if preview.code and where.session:
+        print("\n".join([f"{args.name} from {preview.previous[:12] or preview.source} to {preview.commit[:12] or 'the folder as it is now'}", *(preview.changes or ["nothing it runs, hears or holds changes"])]))
+        if preview.code and caller.session is not None:
             print("\nthe files it changes, the whole diff for the user on the Plugins page:\n" + "\n".join(preview.files_changed()))
         elif preview.code:
             print("\nthe code:\n" + "\n".join(preview.code))
         if not args.yes:
             print(f"nothing upgraded yet: journal plugin upgrade {args.name}{' --ref ' + args.ref if args.ref is not None else ''} --yes")
             return 0
-        self.installing.upgrade(args.name, args.ref, where.environment, where.actor)
+        self.installing.upgrade(args.name, args.ref, caller.environment, caller.actor)
         print(f"upgraded {args.name}")
         return 0
 
-    def enable(self, args: Namespace, where: Where) -> int:
-        self.installing.enable(args.name, where.actor)
+    def enable(self, args: Namespace, caller: Caller) -> int:
+        self.installing.enable(args.name, caller.actor)
         print(f"{args.name} on")
         return 0
 
-    def disable(self, args: Namespace, where: Where) -> int:
-        self.installing.disable(args.name, where.actor)
+    def disable(self, args: Namespace, caller: Caller) -> int:
+        self.installing.disable(args.name, caller.actor)
         print(f"{args.name} off")
         return 0
 
-    def remove(self, args: Namespace, where: Where) -> int:
+    def remove(self, args: Namespace, caller: Caller) -> int:
         if args.purge:
-            self.installing.purge(args.name, where.actor)
+            self.installing.purge(args.name, caller.actor)
             print(f"removed {args.name} and its data")
             return 0
-        self.installing.remove(args.name, where.actor)
+        self.installing.remove(args.name, caller.actor)
         print(f"removed {args.name}; its data folder stays in .journal/plugin-data/{args.name}")
         return 0
 
-    def configure(self, args: Namespace, where: Where) -> int:
-        plugin = self.schemas.configure(args.name, args.key, args.value, where.actor)
+    def configure(self, args: Namespace, caller: Caller) -> int:
+        plugin = self.schemas.configure(args.name, args.key, args.value, caller.actor)
         print(f"{args.name} {args.key} = {plugin.settings[args.key]}")
         return 0
 
-    def settings(self, args: Namespace, where: Where) -> int:
-        plugin = self.plugins.named(args.name)
+    def settings(self, args: Namespace, caller: Caller) -> int:
+        plugin = self.plugins.lookup(args.name)
         for setting in self.schemas.schema(plugin):
             value = plugin.settings.get(setting.key)
             shown = f"secret {value['secret']}, filled on the Secrets page" if isinstance(value, dict) else value
@@ -110,6 +112,6 @@ class PluginCommand(Command):
         return 0
 
     @staticmethod
-    def said(preview: PluginPreview) -> str:
+    def description(preview: PluginPreview) -> str:
         head = [f"{preview.name} {preview.version}" + (f": {preview.title}" if preview.title != preview.name else ""), f"from {preview.source}" + (f" at {preview.commit[:12]}" if preview.commit else " (linked: read where it lies)")]
-        return "\n".join(head + [f"{SAID[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])
+        return "\n".join(head + [f"{STEP_DESCRIPTIONS[r.kind]} {r.label}: {r.command}".rstrip(": ") for r in preview.rows])

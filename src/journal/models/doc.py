@@ -14,3 +14,8 @@ class Doc(Model):
     abstract: str = ""
     body: str = ""
 
+    def title_words(self) -> str:
+        return self.title
+
+    def summary_line(self) -> str:
+        return self.abstract or self.opening_line(self.body)

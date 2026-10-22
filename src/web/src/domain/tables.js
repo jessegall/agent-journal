@@ -25,6 +25,7 @@ const kind = (title, icon, abstract, more = {}) => ({
     listed_as_cards: false,
     typed_as_title: false,
     start_as_count: false,
+    exports: false,
     labels: {},
     filters: [],
     ...more,
@@ -61,6 +62,16 @@ export const TABLES = {
         needs_attention: true,
         takes_comments: true,
         closed_first: true,
+        exports: true,
+    }),
+    collections: kind("Collection", "folder", "Rows that belong together, gathered under a name", {
+        in_sidebar: true,
+        listed_under: "environment",
+        listed_as_cards: true,
+        takes_comments: true,
+        created_in_viewer: true,
+        typed_as_title: true,
+        labels: {abstract: "What belongs in it"},
     }),
     docs: kind("Document", "file", "What stays true about the project, catalogued for every session", {
         view: "document",
@@ -70,6 +81,7 @@ export const TABLES = {
         needs_attention: true,
         takes_comments: true,
         created_in_viewer: true,
+        exports: true,
         start_as_count: true,
     }),
     facts: kind("Fact", "pin", "Something true about this environment that a later session would get wrong without", {
@@ -99,6 +111,7 @@ export const TABLES = {
     agents: kind("Agent", "bot", "A session of Claude or Codex, and what it is doing right now"),
     nudges: kind("Agent instruction", "arrow", "A short instruction the journal sends the agent by itself; you never see it in the chat.", {nested: true, typed_as_title: true}),
     workers: kind("Worker", "bot", "An agent sent to write one bounded job, in a working copy of its own"),
+    subagents: kind("Subagent", "bot", "A helper the agent started inside its own session for one job", {nested: true}),
     sequences: kind("Sequence", "list", "Steps the agent follows in order, one at a time, started by hand or by a moment", {
         view: "document",
         scope: "project",

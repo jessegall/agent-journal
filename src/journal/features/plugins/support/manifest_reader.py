@@ -4,22 +4,20 @@ from pathlib import Path
 
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
-from journal.support.plugin_manifest import PluginManifest
-from journal.support.refused import Refused
+from journal.models.support.plugin_manifest import PUBLISHED, PluginManifest
+from journal.features.updates.support.release import Release
+from journal.support.rejection import Rejection
+from journal.version import VERSION
 from journal.repositories.plugins import Plugins
 
 MANIFEST = "journal-plugin.json"
-"""The file in a plugin's folder that says what it is."""
 NAME = re.compile(r"^[a-z0-9][a-z0-9-]{1,31}$")
 PROTOCOLS = (1,)
-"""The protocol versions this journal speaks; a later one adds fields and never changes one."""
-AGENT_EVENTS = ("tool_starting", "tool_finished", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
-HOLDABLE = ("tool_starting", "idle", "prompt_submitted", "session_started")
-"""The events a plugin may answer before the agent goes on; at a prompt and a start it may only tell, never refuse."""
+AGENT_EVENTS = ("tool_starting", "command_starting", "tool_finished", "file_edited", "idle", "prompt_submitted", "session_started", "session_ended", "compacting", "subagent_started", "subagent_ended", "ticked", "plugin.updated")
+HOLDABLE = ("tool_starting", "command_starting", "file_edited", "idle", "prompt_submitted", "session_started")
 ROW_EVENT = re.compile(r"^(?P<table>[a-z_]+)\.(created|updated|deleted)$")
-NEVER_TABLES = ("secrets", "mcp_servers", "users")
-"""Rows no plugin is sent, whatever it asks."""
-KEYS = {f for f in PluginManifest.__dataclass_fields__}
+PRIVATE_TABLES = ("secrets", "mcp_servers", "users")
+KEYS = {f for f in PluginManifest.__dataclass_fields__} - set(PUBLISHED.values()) | set(PUBLISHED)
 PATHS = ("program", "settings", "skills")
 
 
@@ -30,70 +28,86 @@ class ManifestReader:
         self.registry, self.plugins, self.folders = registry, plugins, folders
 
     def read(self, folder: Path) -> PluginManifest:
-        file = folder / MANIFEST
-        if not file.is_file():
-            raise Refused(f"{folder} holds no {MANIFEST}")
-        raw = json.loads(file.read_text())
+        raw = json.loads(self.manifest_file(folder).read_text())
+        least = str(raw.get("journal", ""))
+        if not self.is_fitting(least):
+            raise Rejection(f"{raw.get('name', folder.name)} needs journal {least} or newer; this journal is {VERSION}")
         unknown = sorted(set(raw) - KEYS)
         if unknown:
-            raise Refused(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
-        manifest = PluginManifest.from_json(raw)
-        self.named(manifest)
-        self.spoken(manifest)
-        self.heard(manifest)
-        self.inside(folder, manifest)
+            raise Rejection(f"{MANIFEST} has keys the journal does not know: {', '.join(unknown)}")
+        manifest = PluginManifest.parsed(raw)
+        self.name_check(manifest)
+        self.protocol_check(manifest)
+        self.event_check(manifest)
+        self.folder_check(folder, manifest)
         self.skills_free(folder, manifest)
         return manifest
 
+    def least_journal(self, folder: Path) -> str:
+        return str(json.loads(self.manifest_file(folder).read_text()).get("journal", ""))
+
+    @staticmethod
+    def is_fitting(least: str) -> bool:
+        return not least or not Release(least).is_newer(Release(VERSION))
+
+    @staticmethod
+    def manifest_file(folder: Path) -> Path:
+        file = folder / MANIFEST
+        if not file.is_file():
+            raise Rejection(f"{folder} holds no {MANIFEST}")
+        return file
+
     @staticmethod
     def skill_names(folder: Path, manifest: PluginManifest) -> list[str]:
-        """The skills it brings: each folder under its skills folder with a SKILL.md, published under that folder's name."""
         skills = folder / manifest.skills
         return sorted(d.name for d in skills.iterdir() if (d / "SKILL.md").is_file()) if manifest.skills and skills.is_dir() else []
 
     def skills_free(self, folder: Path, manifest: PluginManifest) -> None:
-        taken = {skill.folder: "the journal" for skill in self.registry.skills()}
+        claimed = {skill.folder: "the journal" for skill in self.registry.skills()}
         for plugin in self.plugins.all():
             if plugin.name != manifest.name:
-                taken |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.of(plugin), plugin.manifest)}
+                claimed |= {name: f"plugin {plugin.name}" for name in self.skill_names(self.folders.folder(plugin), plugin.manifest)}
         for name in self.skill_names(folder, manifest):
-            if name in taken:
-                raise Refused(f"{manifest.name}'s skill {name} has the name of a skill of {taken[name]}")
+            if name in claimed:
+                raise Rejection(f"{manifest.name}'s skill {name} has the name of a skill of {claimed[name]}")
 
-    def named(self, manifest: PluginManifest) -> None:
+    def name_check(self, manifest: PluginManifest) -> None:
         if not NAME.match(manifest.name):
-            raise Refused(f"a plugin's name is 2 to 32 lowercase letters, digits and dashes: {manifest.name!r} is not")
+            raise Rejection(f"a plugin's name is 2 to 32 lowercase letters, digits and dashes: {manifest.name!r} is not")
         if self.registry.has_feature(manifest.name):
-            raise Refused(f"{manifest.name} is the name of one of the journal's own features")
+            raise Rejection(f"{manifest.name} is the name of one of the journal's own features")
 
     @staticmethod
-    def spoken(manifest: PluginManifest) -> None:
+    def protocol_check(manifest: PluginManifest) -> None:
         if manifest.protocol not in PROTOCOLS:
-            raise Refused(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
+            raise Rejection(f"{manifest.name} speaks protocol {manifest.protocol}; this journal speaks {', '.join(map(str, PROTOCOLS))}")
 
     @staticmethod
-    def heard(manifest: PluginManifest) -> None:
-        for event in manifest.hears:
+    def event_check(manifest: PluginManifest) -> None:
+        for event in manifest.events:
             row = ROW_EVENT.match(event)
             if event not in AGENT_EVENTS and not row:
-                raise Refused(f"{manifest.name} hears {event}, which is no event")
-            if row and row["table"] in NEVER_TABLES:
-                raise Refused(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
-        for event in manifest.holds:
-            if event not in manifest.hears:
-                raise Refused(f"{manifest.name} holds {event} but does not hear it")
-            if event not in HOLDABLE:
-                raise Refused(f"{manifest.name} holds {event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
+                raise Rejection(f"{manifest.name} hears {event}, which is no event")
+            if row and row["table"] in PRIVATE_TABLES:
+                raise Rejection(f"{manifest.name} hears {event}: the {row['table']} rows are never sent to a plugin")
+        for window in manifest.blocks:
+            if window.event not in manifest.events:
+                raise Rejection(f"{manifest.name} holds {window.event} but does not hear it")
+            if window.event not in HOLDABLE:
+                raise Rejection(f"{manifest.name} holds {window.event}, which no plugin may hold; it may hold {', '.join(HOLDABLE)}")
+            if window.window_ms < 0:
+                raise Rejection(f"{manifest.name} holds {window.event} within {window.window_ms} ms: a window is 0 or more milliseconds")
 
     @staticmethod
-    def inside(folder: Path, manifest: PluginManifest) -> None:
+    def folder_check(folder: Path, manifest: PluginManifest) -> None:
         root = folder.resolve()
-        named = [(key, getattr(manifest, key)) for key in PATHS if getattr(manifest, key)]
-        named += [(f"service {s.name}", s.program) for s in manifest.services if s.is_in_its_folder]
-        named += [(f"setup step {step.name}", word) for step in manifest.setup for word in step.run.split()[:2] if "/" in word]
-        named += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
-        for key, path in named:
+        matched = [(key, getattr(manifest, key)) for key in PATHS if getattr(manifest, key)]
+        matched += [(f"service {s.name}", s.program) for s in manifest.services if s.is_local]
+        matched += [(f"setup step {step.name}", word) for step in manifest.setup for word in step.run.split()[:2] if "/" in word]
+        matched += [("installed command", word) for word in manifest.installed.split()[:1] if "/" in word]
+        matched += [(f"alias {alias.name}", alias.program) for alias in manifest.aliases]
+        for key, path in matched:
             if Path(path).is_absolute() or not (root / path).resolve().is_relative_to(root):
-                raise Refused(f"{manifest.name}'s {key} {path} leads outside its folder")
+                raise Rejection(f"{manifest.name}'s {key} {path} leads outside its folder")
         if not (root / manifest.program).is_file():
-            raise Refused(f"{manifest.name}'s program {manifest.program} is not in its folder")
+            raise Rejection(f"{manifest.name}'s program {manifest.program} is not in its folder")

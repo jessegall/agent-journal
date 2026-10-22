@@ -1,11 +1,12 @@
 import shutil
+from pathlib import Path
 
 from journal.config import Config
 from journal.features.plugins.support.manifest_reader import ManifestReader
 from journal.features.plugins.support.plugin_folders import PluginFolders
-from journal.support.skill_files import HOMES
+from journal.features.skills.support.skill_files import HOMES
 from journal.models.plugin import Plugin
-from journal.support.plugin_manifest import PluginManifest
+from journal.models.support.plugin_manifest import PluginManifest
 
 STAMP = "plugin: "
 
@@ -17,7 +18,7 @@ class PluginSkills:
         self.config, self.folders = config, folders
 
     def publish(self, plugin: Plugin) -> None:
-        folder = self.folders.of(plugin)
+        folder = self.folders.folder(plugin)
         manifest = plugin.manifest
         for name in ManifestReader.skill_names(folder, manifest):
             text = self.stamped((folder / manifest.skills / name / "SKILL.md").read_text(), plugin.name)
@@ -31,11 +32,17 @@ class PluginSkills:
         for home in HOMES:
             for skill in (self.config.root / home).glob("*/SKILL.md"):
                 if f"\n{STAMP}{plugin.name}\n" in skill.read_text():
-                    shutil.rmtree(skill.parent)
+                    self.remove(skill.parent)
+
+    @staticmethod
+    def remove(folder: Path) -> None:
+        if folder.is_symlink():
+            folder.unlink()
+        else:
+            shutil.rmtree(folder)
 
     @staticmethod
     def stamped(text: str, name: str) -> str:
-        """The skill with the plugin named in its front matter, which is made when it has none."""
         if text.startswith("---\n"):
             return f"---\n{STAMP}{name}\n" + text[4:]
         return f"---\n{STAMP}{name}\n---\n\n{text}"

@@ -6,24 +6,16 @@
       "answer": null,
       "typed": [],
       "nudges": [
-        "briefing.orient",
-        "briefing.ready",
-        "briefing.quiet",
-        "briefing.laws",
-        "voices.voice",
+        "briefing.journal_ready",
+        "briefing.handle_the_journal_quietly",
+        "briefing.the_laws_apply",
+        "briefing.look_before_the_first_write",
+        "voices.how_to_talk_to_the_user",
         "tasks.carry_on"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "113": 0,
-          "114": 0
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -31,13 +23,10 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 6,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": []
+      "stack": [
+        "idle",
+        "working"
+      ]
     },
     {
       "name": "sixteen quiet minutes",
@@ -46,18 +35,11 @@
         "[journal] task 1 is still open: log where it stands or finish it"
       ],
       "nudges": [
-        "tasks.open"
+        "tasks.task_still_open"
       ],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "139": 960
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     },
     {
@@ -65,16 +47,9 @@
       "answer": null,
       "typed": [],
       "nudges": [],
-      "counts": {
-        "charts:10:writes": 0,
-        "charts:31:said": 7,
-        "charts:8:writes": 0,
-        "charts:9:writes": 0
-      },
-      "read": [
-        {
-          "139": 1200
-        }
+      "stack": [
+        "idle",
+        "working"
       ]
     }
   ]

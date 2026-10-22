@@ -15,15 +15,12 @@ class PluginPreview:
     commit: str
     rows: tuple[PreviewRow, ...]
     linked: bool = False
-    was: str = ""
-    """The commit an upgrade starts from."""
+    previous: str = ""
     changes: tuple[str, ...] = ()
     code: tuple[str, ...] = ()
     current: bool = False
-    """True for an upgrade that changes nothing."""
 
     def files_changed(self) -> list[str]:
-        """Each file the code changes, with its lines added and taken out, read from the diff."""
         counts: dict[str, list[int]] = {}
         name = ""
         for line in self.code:
@@ -34,4 +31,4 @@ class PluginPreview:
                 counts[name][0] += 1
             elif name and line.startswith("-") and not line.startswith("---"):
                 counts[name][1] += 1
-        return [f"{name} +{added} -{taken}" for name, (added, taken) in counts.items()]
+        return [f"{name} +{added} -{claimed}" for name, (added, claimed) in counts.items()]

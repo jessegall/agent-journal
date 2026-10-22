@@ -1,7 +1,6 @@
 from journal.container import Container
 from journal.http.controllers.agents import AgentController
 from journal.http.controllers.attachments import AttachmentController
-from journal.http.controllers.chart import ChartController
 from journal.http.controllers.checks import CheckController
 from journal.http.controllers.cli import CliController
 from journal.http.controllers.comments import CommentController
@@ -28,11 +27,13 @@ from journal.http.controllers.questions import QuestionController
 from journal.http.controllers.reactions import ReactionController
 from journal.http.controllers.reminders import ReminderController
 from journal.http.controllers.reports import ReportController
+from journal.http.controllers.collections import CollectionController
 from journal.http.controllers.rules import RuleController
 from journal.http.controllers.search import SearchController
 from journal.http.controllers.secrets import SecretController
 from journal.http.controllers.sequences import SequenceController
 from journal.http.controllers.settings import SettingController
+from journal.http.controllers.shell import ShellController
 from journal.http.controllers.shares import ShareController
 from journal.http.controllers.skills import SkillController
 from journal.http.controllers.tasks import TaskController
@@ -44,11 +45,11 @@ from journal.http.controllers.phones import PhoneController
 from journal.http.controllers.updates import UpdateController
 from journal.http.controllers.viewer import ViewerController
 from journal.http.controllers.voices import VoiceController
+from journal.http.controllers.subagents import SubagentController
 from journal.http.controllers.workers import WorkerController
 from journal.http.router import Router
 
 API = "/journal"
-"""The journal's API: the viewer, the phone's page and a plugin's program all speak it; the hook and the shim post to the root."""
 
 
 class Routes:
@@ -60,7 +61,9 @@ class Routes:
     def mount(self, router: Router) -> Router:
         get = self.container.get
         router.post("/hooks/{agent}", get(HookController).receive)
+        router.post("/shell/run", get(ShellController).run)
         router.post("/cli", get(CliController).run)
+        router.post("/cli/run", get(CliController).run_posted)
         self.journal(router)
         self.work(router)
         self.chat(router)
@@ -69,29 +72,30 @@ class Routes:
         self.agents(router)
         self.sharing(router)
         self.extending(router)
-        self.workflows(router)
         return router
 
     def journal(self, router: Router) -> None:
         get = self.container.get
         journal, settings, migration, entries = get(JournalController), get(SettingController), get(MigrationController), get(EntryController)
         router.get(f"{API}/viewer", get(ViewerController).show)
-        for path, handler in (("manifest", journal.manifest), ("identity", journal.identity), ("health", journal.health), ("journals", journal.journals), ("summary", journal.summary), ("bar", journal.bar)):
+        for path, handler in (("manifest", journal.manifest), ("identity", journal.identity), ("health", journal.health), ("journals", journal.journals), ("summary", journal.summary), ("bar", journal.bar), ("developer", journal.developer)):
             router.get(f"{API}/{path}", handler)
+        router.post(f"{API}/developer/reset", journal.developer_reset)
         router.get(f"{API}/settings", settings.index)
         router.post(f"{API}/settings", settings.store)
         router.get(f"{API}/updates", get(UpdateController).index)
         router.get(f"{API}/updates/changelog", get(UpdateController).changes)
-        router.get_outward(f"{API}/updates/fresh", get(UpdateController).fresh)
+        router.get_outward(f"{API}/updates/fresh", get(UpdateController).is_recent)
         router.post(f"{API}/updates", get(UpdateController).update)
         mode = get(ModeController)
         router.get(f"{API}/mode", mode.show)
         router.post(f"{API}/mode", mode.choose)
         router.get(f"{API}/migration", migration.show)
-        router.post(f"{API}/migration/later", migration.later)
+        router.post(f"{API}/migration/later", migration.postpone)
         router.post(f"{API}/migration/start", migration.start)
         router.get(f"{API}/entries", entries.index)
         router.get(f"{API}/entries/stream", entries.stream)
+        router.get(f"{API}/outputs/views", get(OutputController).progress)
         router.get(f"{API}/outputs/{{id}}", get(OutputController).show)
         router.get(f"{API}/voices", get(VoiceController).index)
         router.post(f"{API}/voices/choose", get(VoiceController).choose)
@@ -99,6 +103,7 @@ class Routes:
         router.get(f"{API}/project-files", files.index)
         router.get(f"{API}/project-files/find", files.find)
         router.get(f"{API}/project-files/file", files.show)
+        router.get(f"{API}/project-files/raw", files.raw)
         router.get(f"{API}/project-files/diff", files.diff)
         router.get(f"{API}/search", get(SearchController).index)
         router.get(f"{API}/attachments", get(AttachmentController).index)
@@ -112,13 +117,13 @@ class Routes:
         get = self.container.get
         tasks, plans, questions = get(TaskController), get(PlanController), get(QuestionController)
         self.resource(router, "tasks", tasks)
-        self.acts(router, "tasks", tasks, "start", "finish", "reopen", "delete", "log")
+        self.acts(router, "tasks", tasks, "start", "finish", "reopen", "suspend", "block", "unblock", "delete", "log")
         router.get(f"{API}/tasks/{{id}}/logs", tasks.logs)
         self.resource(router, "plans", plans)
-        router.get(f"{API}/plans/{{id}}/tasks", plans.tasks_of)
-        router.get(f"{API}/plans/{{id}}/timeline", plans.timeline_of)
+        router.get(f"{API}/plans/{{id}}/tasks", plans.plan_tasks)
+        router.get(f"{API}/plans/{{id}}/timeline", plans.timeline)
         router.post(f"{API}/plans/{{id}}/tasks", plans.add_task)
-        self.acts(router, "plans", plans, "approve", "start", "park", "finish", "abandon")
+        self.acts(router, "plans", plans, "approve", "start", "suspend", "finish", "abandon")
         self.listed(router, "questions", questions)
         router.post(f"{API}/questions", questions.store)
         self.acts(router, "questions", questions, "answer")
@@ -130,7 +135,9 @@ class Routes:
         self.resource(router, "triggers", triggers)
         self.listed(router, "templates", get(TemplateController))
         self.listed(router, "workers", get(WorkerController))
-        router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).of_worker)
+        self.listed(router, "subagents", get(SubagentController))
+        self.acts(router, "workers", get(WorkerController), "send", "message", "stop", "complete", "check", "short_check", "merge", "release")
+        router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).worker_transcript)
 
     def chat(self, router: Router) -> None:
         get = self.container.get
@@ -139,8 +146,9 @@ class Routes:
         self.listed(router, "messages", messages)
         router.post(f"{API}/messages", messages.store)
         router.post(f"{API}/messages/{{id}}", messages.update)
-        self.acts(router, "messages", messages, "read", "reply", "delete", "react", "press")
+        self.acts(router, "messages", messages, "read", "reply", "delete", "react", "press", "dock", "undock")
         router.post(f"{API}/messages/{{id}}/files", messages.attach)
+        router.get(f"{API}/chats/{{session}}", messages.agent_chat)
         router.get(f"{API}/comments", comments.index)
         router.post(f"{API}/comments", comments.store)
         router.post(f"{API}/comments/{{id}}", comments.update)
@@ -158,8 +166,13 @@ class Routes:
         router.get(f"{API}/docs/search", docs.located)
         self.resource(router, "docs", docs)
         self.acts(router, "docs", docs, "section")
+        router.get(f"{API}/docs/{{id}}/revisions", docs.revision_list)
+        router.post(f"{API}/docs/{{id}}/keep", docs.revision_close)
+        router.get(f"{API}/docs/{{id}}/export", docs.export)
         self.resource(router, "reports", reports)
         self.acts(router, "reports", reports, "section")
+        self.resource(router, "collections", get(CollectionController))
+        router.get(f"{API}/reports/{{id}}/export", reports.export)
         self.listed(router, "dumps", dumps)
         router.post(f"{API}/dumps", dumps.store)
         router.post(f"{API}/dumps/{{id}}/files", dumps.attach)
@@ -174,14 +187,14 @@ class Routes:
     def agents(self, router: Router) -> None:
         get = self.container.get
         agents, transcripts, skills = get(AgentController), get(TranscriptController), get(SkillController)
-        router.get(f"{API}/agents/live", agents.live)
+        router.get(f"{API}/agents/live", agents.current)
         router.get(f"{API}/agents/controls/{{provider}}", agents.controls)
         self.listed(router, "agents", agents)
         router.get(f"{API}/agents/{{id}}/edits", agents.edits)
         router.get(f"{API}/agents/{{id}}/edits/file", agents.edited_file)
         router.get(f"{API}/agents/{{id}}/terminal", agents.terminal)
-        router.get(f"{API}/agents/{{id}}/transcript", transcripts.of_agent)
-        router.get(f"{API}/agents/{{id}}/subagents/{{session}}/transcript", transcripts.of_subagent)
+        router.get(f"{API}/agents/{{id}}/transcript", transcripts.agent_transcript)
+        router.get(f"{API}/agents/{{id}}/subagents/{{session}}/transcript", transcripts.subagent_transcript)
         self.acts(router, "agents", agents, "shell", "control", "pause", "resume")
         router.post(f"{API}/agents/{{id}}/skip-step", agents.skip_step)
         router.post(f"{API}/agents/{{id}}/end-sequence", agents.end_sequence)
@@ -206,15 +219,15 @@ class Routes:
         self.acts(router, "shares", shares, "approve", "stop")
         for path, handler in (("", tunnel.show), ("/services", tunnel.services)):
             router.get(f"{API}/tunnel{path}", handler)
-        for path, handler in (("/cause", tunnel.cause), ("/answering", tunnel.answering), ("/version", tunnel.version), ("/domains", tunnel.domains)):
+        for path, handler in (("/cause", tunnel.cause), ("/answering", tunnel.status), ("/version", tunnel.version), ("/domains", tunnel.domains)):
             router.get_outward(f"{API}/tunnel{path}", handler)
         for path, handler in (("/check", tunnel.check), ("/restart", tunnel.restart), ("/login", tunnel.login), ("/logout", tunnel.logout), ("/install", tunnel.install),
                               ("/update", tunnel.update), ("/release", tunnel.release), ("/readdress", tunnel.readdress)):
             router.post(f"{API}/tunnel{path}", handler)
-        router.get(f"{API}/secrets/where", secrets.where)
+        router.get(f"{API}/secrets/where", secrets.location)
         self.resource(router, "secrets", secrets)
         self.acts(router, "secrets", secrets, "fill", "delete", "restore", "login")
-        for act, handler in (("allow-login", secrets.allow_login), ("revoke-login", secrets.revoke_login), ("forget-login", secrets.forget_login)):
+        for act, handler in (("allow-login", secrets.allow_login), ("revoke-login", secrets.revoke_login), ("forget-login", secrets.drop_login)):
             router.post(f"{API}/secrets/{{id}}/{act}", handler)
 
     def extending(self, router: Router) -> None:
@@ -231,21 +244,8 @@ class Routes:
         router.get(f"{API}/mcp", mcp.index)
         router.post(f"{API}/mcp/install", mcp.install)
         router.post(f"{API}/mcp/check", mcp.check)
-        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.sign_in)):
+        for act, handler in (("key", mcp.key), ("remove", mcp.remove), ("sign-in", mcp.login)):
             router.post(f"{API}/mcp/{{name}}/{act}", handler)
-
-    def workflows(self, router: Router) -> None:
-        chart = self.container.get(ChartController)
-        router.get(f"{API}/chart", chart.index)
-        router.post(f"{API}/chart", chart.create)
-        router.post(f"{API}/chart/try", chart.try_)
-        router.get(f"{API}/chart/runs", chart.runs)
-        router.post(f"{API}/chart/order", chart.order)
-        router.get(f"{API}/chart/{{id}}", chart.one)
-        router.get(f"{API}/chart/{{id}}/standing", chart.stands)
-        router.post(f"{API}/chart/{{id}}", chart.save)
-        for act, handler in (("reset", chart.reset), ("remove", chart.remove), ("off", chart.off), ("on", chart.on)):
-            router.post(f"{API}/chart/{{id}}/{act}", handler)
 
     @staticmethod
     def listed(router: Router, name: str, controller) -> None:
@@ -260,6 +260,5 @@ class Routes:
 
     @staticmethod
     def acts(router: Router, name: str, controller, *acts: str) -> None:
-        """Each act on a row, a POST to its own path named as the controller's method."""
         for act in acts:
             router.post(f"{API}/{name}/{{id}}/{act}", getattr(controller, act))

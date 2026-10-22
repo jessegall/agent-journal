@@ -1,7 +1,7 @@
 import re
 import threading
 
-from journal.events.agent.turn_written import TurnWritten
+from journal.events.agent.turn_displayed import TurnDisplayed
 from journal.events.agent_listener import AgentListener
 from journal.features.messages.support.faces import Faces
 from journal.features.messages.support.tags import Tags
@@ -12,143 +12,135 @@ from journal.models.author import Author
 from journal.models.entry import Entry
 from journal.models.link import Link
 from journal.models.message import Message
-from journal.support.ref import Ref
+from journal.models.support.ref import Ref
 from journal.providers.providers import Providers
+from journal.repositories.agents import Agents
 from journal.repositories.entries import Entries
 from journal.repositories.links import Links
 from journal.repositories.messages import Messages
-from journal.support.not_found import NotFound
+from journal.support.missing_row import MissingRow
 from journal.supervisor_link import SupervisorLink
 
 REPLY_TAG = re.compile(r"^[ \t]*(?:>\s?)?(?:\*\*)?\[!reply:(\d+(?:,\d+)*)\](?:\*\*)?[ \t]*", re.MULTILINE)
-"""The reply tag opens a line of the turn, as every tag does; one anywhere else is text."""
 STRAY_TAG = re.compile(r"\[!reply:(\d+)\]")
 JOURNAL_LINE = "[journal] "
-SHORT = 240
-"""An acknowledgement is a few words; a turn longer than this says something."""
-REPEATS = 0.6
-"""The share of closing words a reply sent in the same turn already holds, past which they say it again."""
+SHORT_CHARACTERS = 240
+REPEAT_OVERLAP_RATIO = 0.6
 
 
-class RecordTurn(AgentListener[TurnWritten]):
+class RecordTurn(AgentListener[TurnDisplayed]):
     """Every whole turn the agent writes for the user becomes a message in the chat, its tags taken out. A [!reply:N] tag opening a line makes it the answer to message N (N,M answers both) and marks them read; a tag elsewhere is text, and the agent is told so. A [!log:N] turn belongs to the task's log alone. A turn that is only a face is not posted: the agent is told to react. A turn that only answered a journal line and changed nothing is kept as an acknowledgement, out of the chat."""
 
-    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links) -> None:
-        self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links = messages, entries, providers, registry, supervisor, links
+    def __init__(self, messages: Messages, entries: Entries, providers: Providers, registry: Registry, supervisor: SupervisorLink, links: Links, agents: Agents) -> None:
+        self.messages, self.entries, self.providers, self.registry, self.supervisor, self.links, self.agents = messages, entries, providers, registry, supervisor, links, agents
         self.recording = threading.Lock()  # the same block arrives at once from the transcript and from the display hook
 
-    def handle(self, event: TurnWritten) -> None:
+    def handle(self, event: TurnDisplayed) -> None:
         from journal.features.messages.feature import Messages as MessagesFeature
         if not event.final or not event.text.strip():
             return
-        if Faces.only_face(event.text):
-            self.supervisor.type(event.environment_id, MessagesFeature.ONLY_A_FACE.about(face=event.text.strip()).rendered())
+        if Faces.is_face(event.text):
+            self.supervisor.type(event.environment_id, MessagesFeature.FACE_REPLY.create(face=event.text.strip()).rendered())
             return
         with self.recording:
             self._record(event)
 
-    def _record(self, event: TurnWritten) -> None:
-        by, whole = Actor.agent(event.session), event.text
-        for tagged, part in self.sections(whole):
-            if self.already_recorded(part):
+    def _record(self, event: TurnDisplayed) -> None:
+        actor, full = Actor.agent(event.session), event.text
+        for tagged, part in self.sections(full):
+            if self.is_recorded(part):
                 continue
             text = Tags.visible(part)
-            answered = self.unanswered_of(tagged, event)
-            quiet = (Tags.kept_out(part) and not answered) or self.repeats_a_reply(text, tagged, event)
-            acknowledgement = not answered and len(text) <= SHORT and "?" not in text and self._answers_a_journal_line(event)
-            if text and not quiet:
-                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_to=answered[0] if answered else None, acknowledgement=acknowledgement), by)
+            answered = self.unanswered(tagged, event)
+            silent = (Tags.hidden(part) and not answered) or self.is_repeat_reply(text, tagged, event)
+            acknowledgement = not answered and len(text) <= SHORT_CHARACTERS and "?" not in text and self._journal_answer(event)
+            if text and not silent:
+                reply = self.messages.save(Message(author=Author.AGENT, text=text, reply_target=answered[0] if answered else None, acknowledgement=acknowledgement), actor)
                 for n in answered[1:]:
-                    self._also_answers(reply, n, by)
+                    self._other_answers(reply, n, actor)
             for n in answered:
-                self._mark_read(n, by)
-        for n in self.stray_owed(whole)[:1]:
+                self._read_receipt(n, actor)
+        for n in self.orphan_obligation(full)[:1]:
             self.supervisor.type(event.environment_id, f"the [!reply:{n}] tag must open a line of your turn; message {n} is still unanswered")
 
-    def unanswered_of(self, tagged: list[int], event: TurnWritten) -> list[int]:
-        """The tagged messages the agent has not replied to yet; a tag on one already answered is refused once, so a reply goes out once."""
+    def unanswered(self, tagged: list[int], event: TurnDisplayed) -> list[int]:
         from journal.features.messages.feature import Messages as MessagesFeature
-        fresh = [n for n in tagged if self.earlier_reply(n) is None]
-        if tagged and not fresh:
-            said = MessagesFeature.REPLIED_ALREADY.about(n=tagged[0], reply=self.earlier_reply(tagged[0]).id)
-            self.supervisor.type(event.environment_id, said.rendered())
-        return fresh
+        replied = [(n, reply) for n in tagged if (reply := self.earlier_reply(n)) is not None]
+        recent = [n for n in tagged if n not in {m for m, _ in replied}]
+        if replied and not recent:
+            line_text = MessagesFeature.DUPLICATE_REPLY.create(n=replied[0][0], reply=replied[0][1].id)
+            self.supervisor.type(event.environment_id, line_text.rendered())
+        return recent
 
     def earlier_reply(self, n: int) -> Message | None:
         try:
             return self.messages.first_reply(self.messages.find(n))
-        except NotFound:
+        except MissingRow:
             return None
 
-    def repeats_a_reply(self, text: str, tagged: list[int], event: TurnWritten) -> bool:
-        """Untagged closing words that say again what a reply sent in this same turn said: kept out, and the agent told."""
+    def is_repeat_reply(self, text: str, tagged: list[int], event: TurnDisplayed) -> bool:
         from journal.features.messages.feature import Messages as MessagesFeature
         prompt = self.turn_prompt(event)
         if tagged or not text or prompt is None:
             return False
-        repeated = [r for r in self.messages.replies_since(prompt.created_at) if WordOverlap.share(text, r.text) >= REPEATS]
+        repeated = [r for r in self.messages.recent_replies(prompt.creation_time) if WordOverlap.share(text, r.text) >= REPEAT_OVERLAP_RATIO]
         if repeated:
-            self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_REPLY.about(reply=repeated[0].id, n=repeated[0].reply_to).rendered())
+            self.supervisor.type(event.environment_id, MessagesFeature.REPEATED_CLOSING_TEXT.create(reply=repeated[0].id, n=repeated[0].reply_target).rendered())
         return bool(repeated)
 
-    def turn_prompt(self, event: TurnWritten) -> Entry | None:
-        """The prompt that started the session's turn: its newest."""
-        prompts = [e for e in self.entries.of_kind("PromptSubmitted") if e.actor and e.actor.id == event.session]
+    def turn_prompt(self, event: TurnDisplayed) -> Entry | None:
+        prompts = [e for e in self.entries.kind_entries("PromptSubmitted") if e.actor and e.actor.id == event.session]
         return prompts[0] if prompts else None
 
-    def stray_owed(self, whole: str) -> list[int]:
-        """The messages a tag inside a line names that are still owed an answer; a tag quoted about another message, or one already answered, is only text."""
-        strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(whole))]
+    def orphan_obligation(self, full: str) -> list[int]:
+        strays = [int(n) for n in STRAY_TAG.findall(Tags.visible(full))]
         if not strays:
             return []
-        owed = {m.id for m in self.messages.unread() + self.messages.unanswered()}
-        return [n for n in strays if n in owed]
+        obligations = {m.id for m in self.messages.unread() + self.messages.unanswered()}
+        return [n for n in strays if n in obligations]
 
-    def already_recorded(self, part: str) -> bool:
-        """A block reaches the journal twice when it is the turn's last, once from the transcript and once from the display hook: the second is the same words and is not a second message."""
+    def is_recorded(self, part: str) -> bool:
         text = Tags.visible(part)
-        return any(m.author == Author.AGENT and m.text == text for m in self.messages.recent(30))
+        return any(m.text == text for m in self.messages.recent_voice(30))
 
     @staticmethod
-    def sections(whole: str) -> list[tuple[list[int], str]]:
-        """One part per reply tag, the text after the tag up to the next one; what comes before the first tag belongs to the first part. A turn with one tag or none is one part."""
-        tags = list(REPLY_TAG.finditer(whole))
+    def sections(full: str) -> list[tuple[list[int], str]]:
+        tags = list(REPLY_TAG.finditer(full))
         numbers = lambda tag: [int(n) for n in tag.group(1).split(",")]
         if len(tags) <= 1:
-            return [([n for tag in tags for n in numbers(tag)], whole)]
+            return [([n for tag in tags for n in numbers(tag)], full)]
         parts = []
         for i, tag in enumerate(tags):
-            end = tags[i + 1].start() if i + 1 < len(tags) else len(whole)
-            lead = whole[: tag.start()].strip() if i == 0 else ""
-            rest = whole[tag.end():end].strip()
-            parts.append((numbers(tag), f"{lead}\n\n{rest}" if lead else rest))
+            end = tags[i + 1].start() if i + 1 < len(tags) else len(full)
+            lead = full[: tag.start()].strip() if i == 0 else ""
+            remainder = full[tag.end():end].strip()
+            parts.append((numbers(tag), f"{lead}\n\n{remainder}" if lead else remainder))
         return parts
 
-    def _answers_a_journal_line(self, event: TurnWritten) -> bool:
-        """The turn's prompt was a line the journal typed whose answer is not for the user, and no file changed since: nothing in it is news."""
+    def _journal_answer(self, event: TurnDisplayed) -> bool:
         entry = self.turn_prompt(event)
-        prompt = entry.data.get("prompt", "") if entry else ""
-        if not prompt.startswith(JOURNAL_LINE) or self._answered_in_chat(event, prompt[len(JOURNAL_LINE):]):
+        if entry is None:
             return False
-        provider = self.providers.named(event.provider)
-        since = self.entries.since(entry.id)
-        return not any(e.kind == "ToolStarting" and provider.writes(e.data.get("tool_name", ""), e.data.get("tool_input", {})) for e in since)
+        prompt = entry.data.get("prompt", "")
+        if not prompt.startswith(JOURNAL_LINE) or self._chat_answer(event, prompt[len(JOURNAL_LINE):]):
+            return False
+        provider = self.providers.lookup(event.provider)
+        start = self.entries.recent(entry.row_id)
+        return not any(e.kind == "ToolStarting" and e.is_write() for e in start)
 
-    def _answered_in_chat(self, event: TurnWritten, line: str) -> bool:
-        """The nudge the typed line came from, when it is one whose answer belongs in the chat."""
-        said = [e for e in self.entries.of_kind("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
-        nudge = self.registry.nudge_keyed(said[-1].data["key"]) if said else None
-        return bool(nudge and nudge.answered_in_chat)
+    def _chat_answer(self, event: TurnDisplayed, line: str) -> bool:
+        line_text = [e for e in self.entries.kind_entries("nudge") if e.data.get("session") == event.session and e.data.get("line") == line]
+        nudge = self.registry.nudge_keyed(line_text[-1].data["key"]) if line_text else None
+        return bool(nudge and nudge.chat_answerable)
 
-    def _also_answers(self, reply: Message, n: int, by: Actor) -> None:
-        """A reply naming several messages answers each: the first is what it replies to, the rest are linked."""
+    def _other_answers(self, reply: Message, n: int, actor: Actor) -> None:
         try:
-            self.links.save(Link(source=Ref.to(reply), target=Ref.to(self.messages.find(n)), kind=Messages.ANSWERS), by)
-        except NotFound:
+            self.links.save(Link(source=Ref.build(reply), target=Ref.build(self.messages.find(n)), kind=Messages.ANSWERS), actor)
+        except MissingRow:
             return
 
-    def _mark_read(self, n: int, by: Actor) -> None:
+    def _read_receipt(self, n: int, actor: Actor) -> None:
         try:
-            self.messages.mark_read(self.messages.find(n), by)
-        except NotFound:
+            self.messages.read(self.messages.find(n), actor, self.agents.session_agent(actor.id).tool_uses)
+        except MissingRow:
             return

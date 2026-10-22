@@ -7,9 +7,9 @@ class DashboardRows(Repository[DashboardRow]):
 
     model = DashboardRow
 
-    def of(self, plugin: str) -> list[DashboardRow]:
-        return self.where(plugin=plugin)
+    def plugin_rows(self, plugin: str) -> list[DashboardRow]:
+        return self.matching(plugin=plugin)
 
     def keyed(self, plugin: str, key: str) -> DashboardRow | None:
-        found = self.where(plugin=plugin, key=key)
-        return found[0] if found else None
+        rows = self.matching(plugin=plugin, key=key)
+        return rows[0] if rows else None

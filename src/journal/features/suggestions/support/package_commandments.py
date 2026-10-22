@@ -23,7 +23,7 @@ class PackageCommandments(Suggester):
         self.config, self.plugins = config, plugins
 
     def applies(self) -> bool:
-        return (self.version() is not None or self.wires_hooks()) and not self.plugins.where(name=PLUGIN)
+        return (self.version() is not None or self.wires_hooks()) and not self.plugins.matching(name=PLUGIN)
 
     def title(self) -> str:
         return "Code Commandments runs here as a package. Run it as a journal plugin instead?"
@@ -36,20 +36,18 @@ class PackageCommandments(Suggester):
             f"and it is upgraded with the journal. After installing the plugin, update the package (composer update {PACKAGE}) so its own hooks step aside, or remove it."
         )
 
-    def goes_to(self) -> str:
+    def target(self) -> str:
         return f"plugins?install={quote(SOURCE, safe='')}"
 
     def version(self) -> str | None:
-        """The package's version as the project's composer.lock pins it; none when composer does not install it."""
         lock = self.config.root / "composer.lock"
         if not lock.is_file():
             return None
         data = json.loads(lock.read_text())
-        found = [p.get("version", "") for p in (*data.get("packages", []), *data.get("packages-dev", [])) if p.get("name") == PACKAGE]
-        return found[0] if found else None
+        rows = [p.get("version", "") for p in (*data.get("packages", []), *data.get("packages-dev", [])) if p.get("name") == PACKAGE]
+        return rows[0] if rows else None
 
     def wires_hooks(self) -> bool:
-        """Whether the agent's settings hold a hook the package wired, stamped as its own."""
         return any(STAMP in self.read(self.config.root / name) for name in SETTINGS)
 
     @staticmethod

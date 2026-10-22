@@ -1,20 +1,18 @@
 import re
 
-from journal.features.shell.support.part import Part
+from journal.support.part import Part
 
 WRAPPED = re.compile(r"^eval '(.*)'(?: < /dev/null)?$", re.S)
-"""Claude Code runs the agent's command as eval '<command>' < /dev/null between its own set-up and a pwd, without the < /dev/null when the command has a heredoc: the command inside is what the agent wrote."""
 QUOTE = "'\"'\"'"
 OPENS = {"for": "done", "while": "done", "until": "done", "select": "done", "repeat": "done", "if": "fi", "case": "esac", "foreach": "end"}
-"""A compound command runs from its opening word to its closing one, whatever separators lie between."""
 BODIES = {"do", "then", "{"}
-"""The word that opens a compound command's body in the long form; without it zsh takes the next command, with its && chain, as the body."""
 SHORT = {"for", "select", "repeat"}
-"""The openers zsh allows in that short form; an if, a while or an until reads on to its then or do."""
 BODY = {"for": "do", "while": "do", "until": "do", "select": "do", "repeat": "do", "if": "then", "case": "in"}
-"""The word each opener's body follows; its closer after that word closes it on the same line."""
-LEADS = {"do", "then", "else", "time", "!"}
-"""Words that may stand before a command's own first word, so a loop opened right after do or then, or timed, is still seen opening."""
+CONTROL_KEYWORDS = {"do", "then", "else", "time", "!"}
+
+
+COMPOUND = {"if", "elif", "else", "then", "for", "while", "until", "do", "case", "select", "{", "("}
+HEREDOC_WORD = re.compile(r"<<-?\s*(['\"]?)(\w+)\1")
 
 
 class Chain:
@@ -22,52 +20,56 @@ class Chain:
 
     @classmethod
     def parts(cls, line: str) -> list[Part]:
-        """The chain's commands in order: the agent's own recorded, the shell's wrapping around them silent."""
         chained = [(s, p, True) for s, p in cls.chained(line)]
         if any(WRAPPED.match(p) for _, p, _ in chained):
-            chained = [inner for s, p, _ in chained for inner in cls.of(s, p)]
+            chained = [inner for s, p, _ in chained for inner in cls.build(s, p)]
         following = [s for s, _, _ in chained[1:]] + [""]
-        return [Part(p, recorded=r, always=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
+        return [Part(p, recorded=r, unconditional=s != "&&", guarded=f == "&&") for (s, p, r), f in zip(chained, following)]
+
+    @classmethod
+    def replaced(cls, line: str, part: str, text: str) -> str:
+        if any(WRAPPED.match(p) for p in cls.split(line)):
+            part, text = part.replace("'", QUOTE), text.replace("'", QUOTE)
+        return line.replace(part, text, 1)
 
     @classmethod
     def journal_parts(cls, line: str) -> tuple[int, int]:
-        """How many of the agent's own parts are journal commands, and how many parts there are."""
-        own = [p for p in cls.parts(line) if p.recorded]
-        return len([p for p in own if cls.is_journal(p.text)]), len(own)
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return len([p for p in owned if cls.is_journal(p.text)]), len(owned)
 
     @classmethod
-    def own(cls, line: str) -> list[str]:
-        """The agent's own commands of the line, the shell's wrapping left out: the same for the line the runner is handed as for the one the tool was called with."""
+    def self_parts(cls, line: str) -> list[str]:
         return [part.text for part in cls.parts(line) if part.recorded]
 
     @classmethod
-    def work_of(cls, line: str) -> str:
-        """What a shell line does, as the figure shows it: searching when all its own commands read and one searches, reading when they all read, else running."""
-        own = [part for part in cls.parts(line) if part.recorded]
-        if not own or not all(part.is_read() for part in own):
+    def work(cls, line: str) -> str:
+        owned = [part for part in cls.parts(line) if part.recorded]
+        if not owned or not all(part.is_read() for part in owned):
             return "running"
-        return "searching" if any(part.is_search() for part in own) else "reading"
+        return "searching" if any(part.is_search() for part in owned) else "reading"
 
     @classmethod
     def is_journal_line(cls, line: str) -> bool:
-        """A line of journal commands alone: its answer reaches the agent whole, at once, and is no output of its own."""
         journal, parts = cls.journal_parts(line)
         return parts > 0 and journal == parts
 
     @classmethod
     def is_read_line(cls, line: str) -> bool:
-        """A line whose own commands all read on purpose."""
-        own = [p for p in cls.parts(line) if p.recorded]
-        return bool(own) and all(p.is_read() for p in own)
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return bool(owned) and all(p.is_read() for p in owned)
+
+    @classmethod
+    def is_reading_code_line(cls, line: str) -> bool:
+        owned = [p for p in cls.parts(line) if p.recorded]
+        return any(p.is_reading_code() for p in owned) and all(p.is_reading_code() or p.is_harmless() or p.is_project_cd() for p in owned)
 
     @staticmethod
     def is_journal(part: str) -> bool:
-        words = part.split()
-        return bool(words) and words[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
+        text = part.split()
+        return bool(text) and text[0].rsplit("/", 1)[-1] in ("journal", "journal.sh", "journal.py")
 
     @classmethod
-    def of(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
-        """A wrapped part becomes the agent's own commands inside it; any other stays the shell's, in silence."""
+    def build(cls, separator: str, part: str) -> list[tuple[str, str, bool]]:
         wrapped = WRAPPED.match(part)
         if not wrapped:
             return [(separator, part, False)]
@@ -80,13 +82,17 @@ class Chain:
 
     @classmethod
     def chained(cls, line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it: nothing for the first, && or ; after that."""
-        return cls.compound(cls.simple(line))
+        return cls.compound(cls.spans(line), line)
 
     @staticmethod
     def simple(line: str) -> list[tuple[str, str]]:
-        """Each command with the separator before it, split only at the top level: quotes, substitutions, subshells, groups, brackets and comments nest on a stack, and a heredoc takes the rest of the line whole."""
-        parts, current, stack, separator, i = [], "", [], "", 0
+        return [(separator, part) for separator, part, _, _ in Chain.spans(line)]
+
+    @staticmethod
+    def spans(line: str) -> list[tuple[str, str, int, int]]:
+        parts: list[tuple[str, str, int, int]] = []
+        stack: list[str] = []
+        current, separator, i, start = "", "", 0, 0
         while i < len(line):
             c, inner = line[i], stack[-1] if stack else ""
             if c == "\\" and inner != "'" and i + 1 < len(line):
@@ -117,9 +123,11 @@ class Chain:
                 stack.pop()
                 current, i = current + "]]", i + 2
                 continue
-            elif c == "(" or (c == "{" and (line[i + 1:i + 2] in (" ", "\t", "\n") or line[i - 1:i] == "$")):
+            elif c == "(" or (c == "{" and line[i + 1:i + 2] in (" ", "\t", "\n")):
                 stack.append(c)
-            elif c == ")" and inner == "(" or c == "}" and inner == "{":
+            elif c == "{" and line[i - 1:i] == "$":
+                stack.append("${")
+            elif c == ")" and inner == "(" or c == "}" and inner == "${" or c == "}" and inner == "{" and line[i - 1:i] in (" ", "\t", "\n", ";", "&", "|"):
                 stack.pop()
             elif not stack:
                 if c == "#" and (i == 0 or line[i - 1] in " \t\n;&|"):
@@ -128,106 +136,123 @@ class Chain:
                     current, i = current + line[i:end], end
                     continue
                 if line.startswith("<<", i) and not line.startswith("<<<", i) and line[i - 1:i] != "<":
-                    parts.append((separator, (current + line[i:]).strip()))
-                    return [(s, p) for s, p in parts if p]
-                found = "&&" if line.startswith("&&", i) else Chain.semicolon_at(line, i) or Chain.newline_at(line, i, current)
-                if found:
-                    parts.append((separator, Chain.continued(current)))
-                    current, separator, i = "", found, i + len(found)
+                    end = Chain.heredoc_end(line, i, current)
+                    parts.append((separator, (current + line[i:end]).strip(), start, end))
+                    current, separator, i, start = "", "", end, end
+                    continue
+                if Chain.ampersand_index(line, i):
+                    parts.append((separator, f"{current.strip()} &", start, i + 1))
+                    current, separator, i = "", "&", i + 1
+                    start = i
+                    continue
+                next_separator = "&&" if line.startswith("&&", i) else Chain.semicolon_index(line, i) or Chain.newline_index(line, i, current)
+                if next_separator:
+                    parts.append((separator, Chain.continued(current), start, i))
+                    current, separator, i = "", next_separator, i + len(next_separator)
+                    start = i
                     continue
             current, i = current + c, i + 1
-        parts.append((separator, Chain.continued(current)))
-        return [(s, p) for s, p in parts if p]
+        parts.append((separator, Chain.continued(current), start, len(line)))
+        return [(s, p, item, b) for s, p, item, b in parts if p]
+
+    @staticmethod
+    def heredoc_end(line: str, start: int, current: str) -> int:
+        opening = HEREDOC_WORD.match(line, start)
+        body_start = line.find("\n", start)
+        compound = current.split()[:1] and current.split()[0] in COMPOUND
+        if not opening or body_start < 0 or compound or "<<" in line[opening.end():body_start]:
+            return len(line)
+        word, position = opening.group(2), body_start + 1
+        while position <= len(line):
+            line_end = line.find("\n", position)
+            line_end = len(line) if line_end < 0 else line_end
+            if line[position:line_end].strip() == word:
+                return line_end
+            position = line_end + 1
+        return len(line)
 
     @staticmethod
     def continued(part: str) -> str:
-        """The part without a trailing backslash that only carried it onto the next line, before the separator."""
         part = part.strip()
         trailing = len(part) - len(part.rstrip("\\"))
         return part[:-1].rstrip() if trailing % 2 else part
 
     @staticmethod
-    def semicolon_at(line: str, i: int) -> str:
-        """A lone ; at the position, which ends a command; ;; ;& and ;| belong to a case."""
-        alone = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
-        return ";" if alone else ""
+    def ampersand_index(line: str, i: int) -> bool:
+        return line[i:i + 1] == "&" and line[i + 1:i + 2] not in ("&", ">") and line[i - 1:i] not in ("&", "|", ">", "<", ";", "")
 
     @staticmethod
-    def newline_at(line: str, i: int, current: str) -> str:
-        """A newline that ends a command: not one after a pipe or an ||, which carries the command on, nor one that ends a comment line, kept with the command below it."""
-        held = current.strip()
-        ends = line[i:i + 1] == "\n" and held and not held.endswith(("|", "||", "|&")) and not held.startswith("#")
+    def semicolon_index(line: str, i: int) -> str:
+        solitary = line[i:i + 1] == ";" and line[i + 1:i + 2] not in (";", "&", "|") and line[i - 1:i] != ";"
+        return ";" if solitary else ""
+
+    @staticmethod
+    def newline_index(line: str, i: int, current: str) -> str:
+        if line[i:i + 1] != "\n":
+            return ""
+        blocked = current.strip()
+        ends = blocked and not blocked.endswith(("|", "||", "|&")) and not blocked.startswith("#")
         return "\n" if ends else ""
 
     @staticmethod
     def segments(part: str) -> list[list[str]]:
-        """The part's commands as words, split where a pipe, an || or a lone & starts the next, each from its own first word."""
-        found: list[list[str]] = [[]]
+        rows: list[list[str]] = [[]]
         for word in Chain.uncommented(part).split():
             if word in ("|", "||", "|&", "&"):
-                found.append([])
+                rows.append([])
                 continue
-            found[-1].append(word)
-        return [Chain.led(words) for words in found]
+            rows[-1].append(word)
+        return [Chain.leads(text) for text in rows]
 
     @staticmethod
     def uncommented(part: str) -> str:
-        """The part from its first line that is not a comment."""
-        lines = part.split("\n")
-        return "\n".join(lines[next((i for i, line in enumerate(lines) if not line.lstrip().startswith("#")), len(lines)):])
+        return Part(part).command_text()
 
     @staticmethod
-    def is_opening(words: list[str]) -> bool:
-        """The command opens a loop, an if or a case that it does not also close."""
-        if not words or words[0] not in OPENS:
+    def is_opening(text: list[str]) -> bool:
+        if not text or text[0] not in OPENS:
             return False
-        closer, body = OPENS[words[0]], BODY.get(words[0])
+        closer, body = OPENS[text[0]], BODY.get(text[0])
         if body is None:
-            return closer not in words[1:]
-        return not (body in words and closer in [w.rstrip(");`") for w in words[words.index(body) + 1:]])
+            return closer not in text[1:]
+        return not (body in text and closer in [w.rstrip(");`") for w in text[text.index(body) + 1:]])
 
     @staticmethod
     def openings(segments: list[list[str]]) -> list[list[str]]:
-        """The part's first and last commands that open a loop, an if or a case: one before an ||, or one after a pipe."""
         ends = [segments[0]] if len(segments) == 1 else [segments[0], segments[-1]]
-        return [words for words in ends if Chain.is_opening(words)]
+        return [text for text in ends if Chain.is_opening(text)]
 
     @staticmethod
     def closes(part: str, segments: list[list[str]], closer: str) -> bool:
-        """The part ends what is open: its first or last command is the closing word, or an esac follows a case arm's ;;."""
-        words = part.split()
-        after_arm = closer == "esac" and any(w == "esac" and words[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(words) if i)
-        return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or after_arm
+        text = part.split()
+        arm_tail = closer == "esac" and any(w == "esac" and text[i - 1].endswith((";;", ";&", ";|")) for i, w in enumerate(text) if i)
+        return segments[0][:1] == [closer] or segments[-1][:1] == [closer] or arm_tail
 
     @staticmethod
-    def rejoined(joined: str, separator: str, part: str) -> str:
-        return {";": f"{joined}; {part}", "\n": f"{joined}\n{part}"}.get(separator, f"{joined} {separator} {part}")
+    def leads(text: list[str]) -> list[str]:
+        start = next((i for i, w in enumerate(text) if w not in CONTROL_KEYWORDS), len(text))
+        return text[start:]
 
     @staticmethod
-    def led(words: list[str]) -> list[str]:
-        """The words from the command's own first word, past a do, then, else, time or ! before it."""
-        start = next((i for i, w in enumerate(words) if w not in LEADS), len(words))
-        return words[start:]
-
-    @staticmethod
-    def compound(parts: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        """A loop, an if or a case is one command from its opening word to its closing one, or in zsh's short form to the end of the next command's && chain; the separators inside are put back."""
-        joined, closers, short = [], [], False
-        for separator, part in parts:
-            segments, words = Chain.segments(part), part.split()
+    def compound(parts: list[tuple[str, str, int, int]], line: str) -> list[tuple[str, str]]:
+        joined: list[tuple[str, str, int]] = []
+        closers: list[str] = []
+        short = False
+        for separator, part, start, end in parts:
+            segments, text = Chain.segments(part), part.split()
             if short and separator != "&&":
                 closers.pop()
                 short = False
             if closers:
                 opener = joined[-1][1].split()[0]
-                joined[-1] = (joined[-1][0], Chain.rejoined(joined[-1][1], separator, part))
-                if len(closers) == 1 and not short and separator == ";" and opener in SHORT and words and words[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
+                joined[-1] = (joined[-1][0], line[joined[-1][2]:end].strip(), joined[-1][2])
+                if len(closers) == 1 and not short and separator == ";" and opener in SHORT and text and text[0] not in BODIES | {closers[-1]} and not any(w in BODIES for w in joined[-1][1].split()):
                     short = True
             else:
-                joined.append((separator, part))
+                joined.append((separator, part, start))
             if closers and not short and Chain.closes(part, segments, closers[-1]):
                 closers.pop()
             for opening in [] if short else Chain.openings(segments):
                 closers.append(OPENS[opening[0]])
                 short = opening[0] == "repeat" and len(opening) > 2 and opening[2] != "do"
-        return joined
+        return [(separator, part) for separator, part, _ in joined]

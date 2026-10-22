@@ -22,7 +22,7 @@ const sorted = (value) =>
 
 export const same = (a, b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 
-// an option's words, with the workflow node that reads it, or the plain fact that none does
+// an option's words
 
 const hasTiming = (when) => Boolean(when && (when.unit || when.on));
 
@@ -62,13 +62,12 @@ export function settingChanges(target, value, settings) {
     const base = target.defaults
         ? Object.fromEntries(
               Object.keys(target.defaults)
-                  .filter((k) => k in saved && !same(saved[k], target.defaults[k]))
-                  .map((k) => [k, saved[k]])
+                  .filter((k) => k in saved)
+                  .map((k) => [k, same(saved[k], target.defaults[k]) ? null : saved[k]])
           )
         : {...saved};
     const stored = target.provider ? {...target.saved, [target.provider]: value} : target.invert ? !value : value;
-    if (target.sparse && same(stored, target.shipped)) delete base[key];
-    else base[key] = stored;
+    base[key] = target.sparse && same(stored, target.shipped) ? null : stored;
     return {[top]: base};
 }
 
@@ -77,7 +76,7 @@ const capital = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 const choiceOptions = (setting) => setting.choices.map((key) => ({key, label: (setting.labels || {})[key] || capital(key)}));
 
 function row(fields) {
-    const complete = {indent: false, hint: "", words: "", example: "", prefix: "", readers: [], ...fields};
+    const complete = {indent: false, hint: "", words: "", example: "", prefix: "", ...fields};
     const changed = fields.changed ?? (fields.shipped !== undefined && !same(fields.value, fields.shipped));
     const timed = Boolean(complete.timing && complete.timing.changed);
     return {
@@ -157,7 +156,6 @@ function settingRow(f, setting, settings) {
         kind: setting.kind,
         label: setting.title,
         hint: `${setting.abstract}.`,
-        readers: setting.read_by,
         unit: setting.unit,
         provider: setting.provider,
         indent: Boolean(setting.under),
@@ -357,6 +355,7 @@ export const TABS = [
     {key: "sharing", title: "Share links", line: "Share links reach this journal through the tunler account below."},
     {key: "plugins", title: "Plugins", line: "The settings of each installed plugin."},
     {key: "environments", title: "Environments", line: "The environments of this project. Each has its own to-dos, agent and history."},
+    {key: "developer", title: "Developer", line: "How fast the journal answers, and the settings for working on the journal itself."},
 ];
 
 export const tabLine = (key) => TABS.find((t) => t.key === key).line;
