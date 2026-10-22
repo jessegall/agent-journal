@@ -3,6 +3,7 @@ from journal.models.link import Link
 from journal.models.message import Message
 from journal.models.model import Model
 from journal.models.user import User
+from journal.repositories.environments import Environments
 from journal.repositories.links import Links
 from journal.repositories.users import Users
 from journal.support.actor import Actor
@@ -14,12 +15,18 @@ OWNER = "owner"
 class EnvironmentOwners:
     """Who owns each environment, by the owner link from a user to it, whether a person is a colleague there, a user who is not its owner in an environment that has one, and so what that person may not write there: any shared row but a message and the links it brings; this machine's own records, such as the hook log, are no colleague's."""
 
-    def __init__(self, links: Links, users: Users) -> None:
-        self.links, self.users = links, users
+    def __init__(self, links: Links, users: Users, environments: Environments) -> None:
+        self.links, self.users, self.environments = links, users, environments
 
     def owner_number(self, environment_id: int) -> int:
         owners = self.links.typed_sources(Environment(id=environment_id), OWNER, User.table())
         return owners[0].id if owners else 0
+
+    def is_team_chat(self, environment_id: int) -> bool:
+        return any(environment.is_team_chat for environment in self.environments.matching(id=environment_id))
+
+    def is_teammate(self, actor: Actor, environment_id: int) -> bool:
+        return actor.kind == ActorKind.USER and self.is_team_chat(environment_id)
 
     def owner_name(self, environment_id: int) -> str:
         number = self.owner_number(environment_id)

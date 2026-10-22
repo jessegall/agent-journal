@@ -22,6 +22,7 @@ class Message(Scoped):
     COLLEAGUE_NAME = "colleague"
     COLLEAGUE_USER = "colleague_user"
     VIEWED = "viewed"
+    TEAMMATE = "teammate"
     RECIPIENT_KEY = "sent_to"
     ASKS_KEY = "asks"
 
@@ -79,6 +80,8 @@ class Message(Scoped):
     def sender(self) -> str:
         if self.author == Author.COLLEAGUE:
             return f"{self.data[self.COLLEAGUE_NAME]}, a colleague of your user (not your user's words)"
+        if self.TEAMMATE in self.data:
+            return f"{self.data[self.TEAMMATE]}, one of the people you work for in the Team chat"
         return self.data[self.PEER] if self.PEER in self.data else f"the {self.author}"
 
     @property

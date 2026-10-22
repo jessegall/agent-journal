@@ -9745,6 +9745,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         attached(a, f"dumps/{dump['id']}/files", "notes.txt", b"dumped notes")
         assert eventually(lambda: file_on(b, f"messages/{picture_message['id']}/files/pic.png") == b"\x89PNG picture"), "a picture attached on Ada's machine opens on Bob's"
         assert eventually(lambda: file_on(b, f"dumps/{dump['id']}/files/notes.txt") == b"dumped notes"), "and so does a file dropped in a dump"
+        assert journal_call(b, "messages", json.dumps({"text": "from Bob's viewer"}).encode())["author"] == "colleague", "a message posted from a colleague's viewer is a colleague's comment too"
         assert file_on(b, f"messages/{early.id}/files/before.txt") == b"attached before the team", "a file attached before the journal became shared opens on a journal that joined"
         with b.container.get(Scope).environment(bob_main.row_id):
             comment_with_picture = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="look at this"), Actor.user(2))
@@ -9775,6 +9776,14 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         rows_b = {row["name"]: row for row in json.loads(b.console().run(["environment", "json"], replace(USER, person=2)).text)}
         rows_a = {row["name"]: row for row in json.loads(a.console().run(["environment", "json"], USER).text)}
         assert "claim it first" in rows_b["team"]["refusal"] and rows_a["team"]["refusal"] == "", "only the holder's machine may start an agent in the Team chat"
+        typed = []
+        monkeypatch.setattr(SupervisorLink, "type", lambda self, environment_id, line, following=0.0: typed.append(line))
+        session_start = HttpRequest(f"http://127.0.0.1:{a.server().port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "chat1"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "team"})
+        urlopen(session_start, timeout=5).read()
+        bob_ask = team_post(b, "please run the tests")
+        assert eventually(lambda: any(f"new message {bob_ask['id']}" in line for line in typed)), "a message posted on Bob's machine is typed into the agent Ada's machine runs for the Team chat"
+        read_line = a.console().run(["message", "read", str(bob_ask["id"])], Caller.agent("team", "chat1", "claude")).text
+        assert "Bob, one of the people you work for in the Team chat" in read_line, "and it reads as Bob's"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

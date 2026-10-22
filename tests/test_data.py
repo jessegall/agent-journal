@@ -172,7 +172,7 @@ def test_a_row_older_than_a_column_loads_with_the_fields_default(tmp_path):
     Schema(old, AllModels.MODELS).create()
     bus = Bus()
     scope = Scope(Environments(old, bus))
-    message = Messages(old, bus, scope, Reactions(old, bus, scope, Links(old, bus)), Links(old, bus), EnvironmentOwners(Links(old, bus), Users(old, bus))).find(1)
+    message = Messages(old, bus, scope, Reactions(old, bus, scope, Links(old, bus)), Links(old, bus), EnvironmentOwners(Links(old, bus), Users(old, bus), Environments(old, bus))).find(1)
     assert message.files == () and message.acknowledgement is False and message.idempotency == "" and message.read_at is None
 
 
@@ -662,6 +662,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.sync.team_server_link import TeamServerLink
     from sync_server.account import ADMIN
     from sync_server.team_server import TeamServer
+    from journal.repositories.environments import Environments
     from sync_server.login_request import LoginRequest
     from journal.chat.cards import Cards
     from journal.repositories.messages import Messages
@@ -686,7 +687,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         account = TeamAccount(Config(tmp_path / name))
         account.write({"address": f"http://127.0.0.1:{port}", "token": answer.token, "device": answer.device_id})
         links = Links(tasks.connection, tasks.bus)
-        messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus)))
+        messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus), Environments(tasks.connection, tasks.bus)))
         rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
         uploads = PendingUploads(tasks.connection, tasks.bus)
         client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account)), TeamChat(account, TeamServerLink(account), AgentLauncher(Config(tmp_path / name))))
