@@ -119,7 +119,9 @@ class Provider(ABC):
         return self.edited_files(rows, time)
 
     def authored_texts(self, project: Path, session: str, read: int) -> FileWrites:
-        path = self.transcript(project, session)
+        return self.path_texts(self.transcript(project, session), read)
+
+    def path_texts(self, path: Path | None, read: int) -> FileWrites:
         if path is None:
             return FileWrites([], [], read)
         size = path.stat().st_size

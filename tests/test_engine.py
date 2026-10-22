@@ -1689,3 +1689,30 @@ def test_a_workers_turns_and_its_brief_are_messages_of_its_own_chat_with_their_t
         app.runtime().deferred.drain()
         app.container.get(WorkerChat).read(workers.find(worker.id))
         assert chat()[-1] == ("user", "check the header too") and len(chat()) == 5, "a note is written once, where it is sent, never again from the transcript"
+
+
+def test_a_subagents_prompt_the_message_sent_to_it_and_its_turns_are_messages_of_its_own_chat(app: App, tmp_path, monkeypatch):
+    """A subagent's prompt opens its chat once its transcript has words, each block it writes follows once, read after its hooks, and a message the agent sends it later is a message to it; none of it is in the main chat."""
+    from journal.models.agent_role import AgentRole
+    from journal.providers.claude import Claude
+    from journal.repositories.messages import Messages
+    home = tmp_path / "home"
+    monkeypatch.setattr(Path, "home", staticmethod(lambda: home))
+    transcript = home / ".claude" / "projects" / Claude.folder_name(app.config.root) / "s1" / "subagents" / "agent-a9.jsonl"
+    transcript.parent.mkdir(parents=True)
+    said = lambda text: json.dumps({"type": "assistant", "message": {"role": "assistant", "content": [{"type": "text", "text": text}]}}) + "\n"
+    hook(app, "SessionStart")
+    agent = {"subagent_type": "journal-researcher", "description": "map the hooks", "prompt": "read the hooks", "model": "sonnet"}
+    hook(app, "PreToolUse", tool_name="Agent", tool_input=agent, tool_use_id="t-1")
+    hook(app, "PostToolUse", tool_name="Agent", tool_input=agent, tool_response={"isAsync": True, "agentId": "a9"}, tool_use_id="t-1")
+    transcript.write_text(said("the hooks are in hooks/"))
+    hook(app, "PostToolUse", tool_name="Read", tool_input={"file_path": "a.py"}, tool_response="", agent_id="a9")
+    hook(app, "PreToolUse", tool_name="SendMessage", tool_input={"to": "a9", "message": "and the receiver?"}, tool_use_id="t-2")
+    transcript.write_text(transcript.read_text() + said("the receiver is hooks/receiver.py"))
+    hook(app, "SubagentStop", agent_id="a9")
+    app.runtime().deferred.drain()
+    messages = app.container.get(Messages)
+    with app.container.get(Scope).environment(1):
+        chat = [(m.author, m.text) for m in messages.all() if m.agent_role == AgentRole.SUBAGENT and m.session == "a9"]
+        assert chat == [("user", "map the hooks read the hooks"), ("agent", "the hooks are in hooks/"), ("user", "and the receiver?"), ("agent", "the receiver is hooks/receiver.py")]
+        assert not [m for m in messages.selected(messages.main_chat()) if m.session == "a9"], "none of it is in the main chat"

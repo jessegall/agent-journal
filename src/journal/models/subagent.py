@@ -24,6 +24,7 @@ class Subagent(Scoped):
     ended_at: float = 0.0
     resumed_at: float = 0.0
     reason: str = ""
+    transcript_bytes: int = 0
 
     def title_words(self) -> str:
         return self.task

@@ -20,6 +20,8 @@ from journal.features.workers.commands.subagent_command import SubagentCommand
 from journal.features.workers.commands.worker_command import WorkerCommand
 from journal.features.workers.listeners.subagent_cards import SubagentCards
 from journal.features.workers.listeners.subagent_record import SubagentRecord
+from journal.features.workers.listeners.subagent_message_record import SubagentMessageRecord
+from journal.features.workers.listeners.subagent_turn_record import SubagentTurnRecord
 from journal.features.workers.listeners.worker_brief_record import WorkerBriefRecord
 from journal.features.workers.listeners.worker_note_record import WorkerNoteRecord
 from journal.features.workers.listeners.worker_turn_record import WorkerTurnRecord
@@ -52,7 +54,7 @@ class Workers(Feature[WorkersData]):
     commands = (WorkerCommand, SubagentCommand, ArrivalCommand, TodoCommand, ProofCommand, DepartureCommand)
     seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
-    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord, WorkerTaskChanges, ShortfallReturn, TaskTouch, WorkerBriefRecord, WorkerNoteRecord, WorkerTurnRecord)
+    listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord, WorkerTaskChanges, ShortfallReturn, TaskTouch, WorkerBriefRecord, WorkerNoteRecord, WorkerTurnRecord, SubagentTurnRecord, SubagentMessageRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)
     worker_conduct = (ClockConduct,)
