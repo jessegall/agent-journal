@@ -2,6 +2,13 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.7.0
+
+- A task of a plan the user has not approved is never started or handed to a worker. It is not counted as open work either, so no agent is nudged or held for it. The tasks repository's `open_tasks()` and `blocked_tasks()` are the one place open and blocked tasks are read.
+- Plugins hear a worker's merge:
+  - `worker_merging` comes just before the branch is merged, and a plugin that holds it refuses the merge with its reason.
+  - `worker_merge_result` comes once the merge landed.
+
 ## 4.6.0
 
 - A worker's worktree can be set up the project's way:
