@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.4
+
+- A journal command of the main agent is no longer refused as a subagent's while a subagent runs. A subagent's shell line was matched to the command by its words alone, so a read that mentioned `resume` and a task number claimed the main agent's `journal task resume`; now only a part that runs that exact journal command does.
+
 ## 4.8.3
 
 - The avatar's body moves smoothly on every frame. Its clips were drawn at 6 to 20 frames a second while its movement across the screen ran at the full rate, so anything it did in place stuttered. The eyes keep their stepped blink.

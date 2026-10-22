@@ -385,3 +385,13 @@ def dispatch_entries(provider: str, kept, bodies: list[dict] | None = None) -> l
         call = {"call": program.call(body["tool_name"], body["tool_input"], frozenset()).as_data()} if "tool_name" in body else {}
         entries.append(Entry(id=n + 1, environment_id=1, kind=EVENTS[body["hook_event_name"]], data={**body, **call}, created_at=datetime(2026, 10, 21, 12, 0, n, tzinfo=timezone.utc)))
     return entries
+
+
+def test_a_main_agents_journal_command_is_never_taken_for_a_subagents_whose_shell_line_shares_its_words():
+    from journal.support.announced_commands import AnnouncedCommands
+    announced = AnnouncedCommands()
+    announced.note("main", "s1", ("grep -n 'def resume' src/journal/features/workers/support/worker_actions.py", "journal task show 1397"))
+    assert announced.claim("main", "s1", ["task", "resume", "1397"]) is False, "a subagent's read that mentions resume and 1397 is no run of journal task resume 1397"
+    assert announced.claim("main", "s1", ["task", "show", "1397"]) is True, "while its own journal command is claimed as the subagent's"
+    announced.note("main", "s1", ('journal message send "a reply, with words" --reply-to 4',))
+    assert announced.claim("main", "s1", ["message", "send", "a reply, with words", "--reply-to", "4"]) is True, "quoted words count as one, as the shim's argv has them"
