@@ -31,6 +31,7 @@ from journal.sync.block_numbers import BlockNumbers
 from journal.events.models.number_request import NumberRequest
 from journal.events.models.synced import Synced
 from journal.sync.pulled_settings import PulledSettings
+from journal.sync.pulled_files import PulledFiles
 from journal.sync.record_purge import RecordPurge
 from journal.sync.sync_client import SyncClient
 from journal.sync.team_account import TeamAccount
@@ -62,6 +63,7 @@ class Runtime:
         self.bus.listen(ModelEvent, self.container.get(RecordOutgoingChange))
         self.bus.listen(NumberRequest, self.container.get(BlockNumbers))
         self.bus.listen(Synced, self.container.get(PulledSettings))
+        self.bus.listen(Synced, self.container.get(PulledFiles))
         self.bus.listen(Purged, self.container.get(RecordPurge))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:

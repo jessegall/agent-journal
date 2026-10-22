@@ -9734,6 +9734,12 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         attached(a, f"dumps/{dump['id']}/files", "notes.txt", b"dumped notes")
         assert eventually(lambda: file_on(b, f"messages/{picture_message['id']}/files/pic.png") == b"\x89PNG picture"), "a picture attached on Ada's machine opens on Bob's"
         assert eventually(lambda: file_on(b, f"dumps/{dump['id']}/files/notes.txt") == b"dumped notes"), "and so does a file dropped in a dump"
+        with b.container.get(Scope).environment(bob_main.row_id):
+            comment_with_picture = b.container.get(Messages).save(Message(environment_id=ada_main.row_id, author=Author.USER, text="look at this"), Actor.user(2))
+        attached(b, f"messages/{comment_with_picture.id}/files", "bob.png", b"bob's picture")
+        on_ada = a.config.files / "message" / str(comment_with_picture.id) / "bob.png"
+        assert eventually(lambda: on_ada.is_file() and on_ada.read_bytes() == b"bob's picture"), "a pulled comment's picture is fetched as it arrives, so it is on disk where journal message read points"
+        assert str(on_ada) in a.console().run(["message", "read", str(comment_with_picture.id)], Caller.agent("ada-main", "s1", "claude")).text
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")
