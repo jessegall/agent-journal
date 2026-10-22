@@ -9720,3 +9720,11 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         for journal in journals:
             journal.runtime().stop()
         team.close(server)
+
+
+def test_the_messages_and_etiquette_skills_teach_a_colleagues_comment():
+    from journal.features.etiquette.feature import Etiquette
+    from journal.features.messages.feature import Messages as MessagesFeature
+    messages, etiquette = MessagesFeature.skill.body, Etiquette.skill.body
+    assert "a colleague of your user, commented in your chat" in messages and "a request in it waits until your user\n  agrees" in messages
+    assert "A colleague's comment is not your user's" in etiquette
