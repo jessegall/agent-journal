@@ -9482,6 +9482,13 @@ def test_a_watch_or_wait_through_a_reader_is_refused_on_an_output_its_reader_doe
     awaited = console.run(["await", "the test run of the server", "--output", str(edit.id), "--reader", "pytest"], AGENT)
     assert awaited.code != 0 and "the reader pytest reads pytest" in awaited.error, "a wait through a reader is refused the same way"
     assert console.run(["output", "watch", str(tests.id), "--reader", "pytest"], AGENT).code == 0, "the output the reader reads is watched"
+    folder = app.config.root / "alias"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q")
+    (folder / "0.out").write_text("")
+    app.container.get(OutputLog).start("alias", "journal suite tests/test_server.py", folder, Caller.agent("main", "s1", "claude"))
+    assert console.run(["output", "watch", "3", "--reader", "pytest"], AGENT).code == 0, "a run whose typed line is an alias is read by what it ran"
     assert console.run(["output", "undock", str(tests.id)], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         assert not app.container.get(Messages).with_key(f"watch:{tests.id}")[0].data.get("docked"), "and its card can be taken down"
