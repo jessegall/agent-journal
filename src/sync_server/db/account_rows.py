@@ -13,10 +13,13 @@ class AccountRows:
         return self.store.execute("INSERT INTO accounts (email, name, role, password_hash, created_at) VALUES (?, ?, ?, ?, ?)", (email, name, role, password_hash, created_at)).lastrowid
 
     def numbered(self, id: int) -> Row | None:
-        return self.store.one("SELECT id, email, name, role FROM accounts WHERE id = ?", (id,))
+        return self.store.one("SELECT id, email, name, role, removed_at FROM accounts WHERE id = ?", (id,))
 
     def with_email(self, email: str) -> Row | None:
-        return self.store.one("SELECT id, password_hash FROM accounts WHERE email = ?", (email,))
+        return self.store.one("SELECT id, password_hash, removed_at FROM accounts WHERE email = ?", (email,))
 
     def count(self) -> int:
         return self.store.one("SELECT COUNT(*) AS count FROM accounts")["count"]
+
+    def remove(self, id: int, removed_at: float) -> None:
+        self.store.execute("UPDATE accounts SET removed_at = ? WHERE id = ?", (removed_at, id))

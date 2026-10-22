@@ -15,3 +15,6 @@ class SharedTables:
 
     def rows(self, table: str) -> TableRows:
         return self.tables[table]
+
+    def names(self) -> list[str]:
+        return list(self.tables)

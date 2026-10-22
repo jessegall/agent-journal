@@ -37,7 +37,7 @@ class Devices:
         if row is None:
             raise Refusal("this device is not known to the team: log in again with journal team login")
         device = self.find(row["id"])
-        if device.is_revoked():
+        if device.is_revoked() or self.accounts.is_removed(device.account_id):
             raise Refusal("this device was revoked: log in again with journal team login")
         return device
 
@@ -64,3 +64,12 @@ class Devices:
 
     def pulled_sequence(self, device: Device) -> int:
         return self.rows.pulled_sequence(device.id)
+
+    def revoke_person(self, account_id: int, revoked_at: float) -> None:
+        self.rows.revoke_account(account_id, revoked_at)
+
+    def admin(self, token: str) -> Account:
+        person = self.person(token)
+        if not person.is_admin():
+            raise Refusal(f"{person.name} is no admin of the team: only an admin invites, removes people or revokes devices")
+        return person

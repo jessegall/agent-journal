@@ -205,3 +205,47 @@ def test_a_push_sent_again_after_a_lost_answer_is_kept_once_and_answered_as_the_
     bob_again = push.answer(bob, request(1, "user:2", "bob's", 20.0), 24.0)
     assert bob_again.sequences == (1,) and bob_again.rejected == () and log.head() == 1, "a change sent twice is kept once and never rejected by itself"
     assert push.answer(ada, request(6, "user:1", "ada's newest", 30.0), 31.0).sequences == (2,), "a new local number is a new change"
+
+
+def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_and_takes_the_first_full_copy(tmp_path):
+    import json
+    import urllib.error
+    import urllib.request
+
+    from sync_server.team_server import TeamServer
+
+    team = TeamServer(tmp_path)
+    team.accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    server = team.started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+
+    def call(path, body=None, token=""):
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={"Authorization": f"Bearer {token}"} if token else {})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as answer:
+                return answer.status, json.loads(answer.read())
+        except urllib.error.HTTPError as refused:
+            return refused.code, json.loads(refused.read())
+
+    try:
+        for path in ("/invite", "/blocks", "/devices/revoke", "/people/remove", "/upload"):
+            assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
+        ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
+        upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}}
+        assert call("/upload", upload, ada) == (200, {"rows": 1, "head": 1})
+        assert call("/upload", upload, ada)[1]["error"].startswith("the team's journal already holds rows"), "a full copy is taken once"
+        assert call("/blocks", {"tables": ["tasks", "messages"]}, ada)[1]["blocks"] == [{"row_table": "tasks", "first": 1451, "last": 1950}, {"row_table": "messages", "first": 1, "last": 5000}], "blocks start above the copy's numbers and messages get a bigger one"
+        invitation = call("/invite", {"email": "Bob@Example.com"}, ada)[1]
+        assert invitation["email"] == "bob@example.com" and invitation["code"]
+        assert call("/accept", {"code": invitation["code"], "name": "Bob", "password": PASSWORD, "password_repeat": "another password", "device_name": "desktop"})[1]["error"].startswith("the two passwords differ")
+        bob = call("/accept", {"code": invitation["code"], "name": "Bob", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "desktop"})[1]
+        assert bob["name"] == "Bob" and bob["account_id"] == 2
+        assert call("/accept", {"code": invitation["code"], "name": "Eve", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "x"})[1]["error"].startswith("this invitation code is not known or was used"), "a code is used once"
+        assert call("/invite", {"email": "eve@example.com"}, bob["token"])[1]["error"].startswith("Bob is no admin"), "only an admin invites"
+        assert [device["name"] for device in call("/devices", token=ada)[1]["devices"]] == ["laptop", "desktop"]
+        _, laptop = call("/login", {"email": "bob@example.com", "password": PASSWORD, "device_name": "bob's laptop"})
+        assert call("/devices/revoke", {"device_id": laptop["device_id"]}, ada)[0] == 200 and call("/copy", token=laptop["token"])[0] == 403, "a revoked device is refused"
+        assert call("/people/remove", {"account_id": 2}, ada)[0] == 200
+        assert call("/copy", token=bob["token"])[0] == 403 and call("/login", {"email": "bob@example.com", "password": PASSWORD, "device_name": "again"})[0] == 403, "a removed person's devices are refused and they cannot log in"
+    finally:
+        team.close(server)

@@ -27,9 +27,18 @@ class Accounts:
 
     def verified(self, email: str, password: str) -> Account:
         row = self.rows.with_email(email.lower())
-        if row is None or not Password.matches(password, row["password_hash"]):
+        if row is None or row["removed_at"] or not Password.matches(password, row["password_hash"]):
             raise Refusal("the email or the password is wrong")
         return self.find(row["id"])
 
     def is_empty(self) -> bool:
         return self.rows.count() == 0
+
+    def remove(self, id: int, removed_at: float) -> Account:
+        account = self.find(id)
+        self.rows.remove(id, removed_at)
+        return account
+
+    def is_removed(self, id: int) -> bool:
+        row = self.rows.numbered(id)
+        return row is None or bool(row["removed_at"])

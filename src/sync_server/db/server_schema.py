@@ -18,6 +18,10 @@ MIGRATIONS = (
     """
     CREATE TABLE push_results (device_id INTEGER NOT NULL, local_number INTEGER NOT NULL, sequence INTEGER NOT NULL, rejected TEXT NOT NULL, PRIMARY KEY (device_id, local_number));
     """,
+    """
+    ALTER TABLE accounts ADD COLUMN removed_at REAL NOT NULL DEFAULT 0;
+    CREATE TABLE invitations (id INTEGER PRIMARY KEY AUTOINCREMENT, code_hash TEXT NOT NULL UNIQUE, email TEXT NOT NULL, created_at REAL NOT NULL, expires_at REAL NOT NULL, used_at REAL NOT NULL DEFAULT 0);
+    """,
 )
 
 

@@ -662,6 +662,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.repositories.reactions import Reactions
     from journal.repositories.shared_tables import SharedTables
     from journal.sync.rejected_edits import RejectedEdits
+    from journal.repositories.id_blocks import IdBlocks
 
     team = TeamServer(tmp_path)
     team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
@@ -677,7 +678,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         links = Links(tasks.connection, tasks.bus)
         messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links)
         rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
-        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing))
+        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus))
         client.start()
         return scope, tasks, client, messages
 

@@ -29,3 +29,6 @@ class DeviceRows:
 
     def pulled_sequence(self, id: int) -> int:
         return self.store.one("SELECT pulled_sequence FROM devices WHERE id = ?", (id,))["pulled_sequence"]
+
+    def revoke_account(self, account_id: int, revoked_at: float) -> None:
+        self.store.execute("UPDATE devices SET revoked_at = ? WHERE account_id = ? AND revoked_at = 0", (revoked_at, account_id))
