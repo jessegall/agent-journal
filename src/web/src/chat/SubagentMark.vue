@@ -26,7 +26,11 @@ const label = computed(() => {
     if (!props.finished) return "Dispatched";
     return props.stopped ? "Subagent stopped" : "Subagent finished";
 });
-const tone = computed(() => (props.refusal || props.failed ? "danger" : props.stopped ? "warn" : ""));
+const tone = computed(() => {
+    if (props.refusal || props.failed) return "danger";
+    if (props.stopped) return "warn";
+    return props.finished ? "good" : "";
+});
 const color = computed(() => (tone.value ? "" : SUBAGENT_COLOR));
 const detail = computed(() => {
     if (props.refusal) return `${props.task}: ${props.refusal}`;

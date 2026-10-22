@@ -153,7 +153,7 @@ export function threadTurns(messages, pending, older = false, hidden = []) {
 }
 
 const GROUP_FROM = 4;
-export const SUBAGENT_COLOR = "#e2c55c";
+export const SUBAGENT_COLOR = "var(--tone-work)";
 const GROUPS = {
     skill: () => ({key: "skill", icon: "book", tone: "good", label: (n) => `${n} skills loaded`}),
     whisper: () => ({key: "whisper", icon: "rules", label: (n) => `${n} rules and facts recalled`}),
