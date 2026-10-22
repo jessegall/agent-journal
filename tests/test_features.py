@@ -9601,6 +9601,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     journals = [booted(copied(template_journal, tmp_path / name), monkeypatch) for name in "abc"]
     a, b, c = journals
 
+    def urlopen_refusal(url: str) -> str:
+        try:
+            urlopen(HttpRequest(url, data=b"{}", method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "ada-main"}), timeout=5)
+            return ""
+        except HTTPError as refused:
+            return refused.read().decode()
+
     def eventually(check) -> bool:
         deadline = timing.monotonic() + 3
         while timing.monotonic() < deadline:
@@ -9635,6 +9642,10 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert owners_a.owner_name(ada_main) == "Ada", "the first journal's environments are its person's, named for them"
         assert eventually(lambda: [environment.name for environment in a.container.get(Environments).rows() if environment.name == "bob-main"] == ["bob-main"] and owners_a.owner_name(a.container.get(Environments).existing("bob-main")) == "Bob"), "a colleague's environment arrives with its owner"
         assert b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), ada_main) and not b.container.get(EnvironmentOwners).is_colleague(Actor.user(2), bob_main)
+        refused = urlopen_refusal(f"http://127.0.0.1:{a.server().port}/journal/environments/{a.container.get(Environments).existing('bob-main').row_id}/launch")
+        assert "is Bob's: an agent starts only in your own environment" in refused, "the viewer's Start button refuses a colleague's environment"
+        rows = {row["name"]: row for row in json.loads(a.console().run(["environment", "json"], USER).text)}
+        assert rows["bob-main"]["refusal"].startswith("environment bob-main is Bob's") and rows["ada-main"]["refusal"] == "", "the launcher's rows carry the same refusal"
         shell = subprocess.run(["sh", "-c", f". {Path(__file__).resolve().parent.parent}/src/journal/hooks/environment.sh; journal_environment"], capture_output=True, text=True, timeout=10, cwd=tmp_path, env={"PATH": "/usr/bin:/bin", "JOURNAL_ROOT": str(tmp_path / "b")})
         assert shell.stdout == "bob-main", "a shell on the joined machine works the person's own environment"
         request = HttpRequest(f"http://127.0.0.1:{b.server().port}/journal/tasks", data=json.dumps({"title": "made in bob's viewer"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})

@@ -30,6 +30,8 @@ from journal.repositories.rules import Rules
 from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
+from journal.features.team.support.environment_owners import EnvironmentOwners
+from journal.sync.team_account import TeamAccount
 
 TAKEOVER_WINDOW = timedelta(hours=12)
 
@@ -37,7 +39,8 @@ TAKEOVER_WINDOW = timedelta(hours=12)
 class EnvironmentCommand(Command):
     noun = "environment"
 
-    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext, overview_commands: OverviewCommands, taking: ActiveTask) -> None:
+    def __init__(self, environments: Environments, agents: Agents, tasks: Tasks, messages: Messages, questions: Questions, workers: Workers, entries: Entries, rules: Rules, facts: Facts, reminders: Reminders, providers: Providers, config: Config, scope: Scope, memory: MemoryContext, overview_commands: OverviewCommands, taking: ActiveTask, owners: EnvironmentOwners, account: TeamAccount) -> None:
+        self.owners, self.account = owners, account
         self.environments, self.agents, self.tasks, self.messages, self.questions, self.workers, self.entries = environments, agents, tasks, messages, questions, workers, entries
         self.rules, self.facts, self.reminders, self.providers, self.config, self.scope = rules, facts, reminders, providers, config, scope
         self.memory, self.overview_commands, self.taking = memory, overview_commands, taking
@@ -59,7 +62,7 @@ class EnvironmentCommand(Command):
                 agents = self.agents.scoped()
             last = max(agents, key=lambda item: item.update_time) if agents else None
             resumable = [item for item in agents if item.session and self.providers.lookup(item.provider).transcript(self.config.root, item.session)]
-            rows.append(EnvironmentRow(environment.name, last is not None and last.state != "ended", self.age(last.update_time) if last else "", {item.provider: item.session for item in resumable}))
+            rows.append(EnvironmentRow(environment.name, last is not None and last.state != "ended", self.age(last.update_time) if last else "", {item.provider: item.session for item in resumable}, self.owners.start_refusal(environment, self.account.user_number())))
         return rows
 
     def overview(self, args: Namespace, caller: Caller) -> int:

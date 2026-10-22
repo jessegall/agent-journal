@@ -25,3 +25,9 @@ class EnvironmentOwners:
     def is_colleague(self, actor: Actor, environment: Environment) -> bool:
         owner = self.owner_number(environment)
         return actor.is_user() and owner != 0 and actor.stamp != Actor.user(owner).stamp
+
+    def start_refusal(self, environment: Environment, person: int) -> str:
+        owner = self.owner_number(environment)
+        if not owner or owner == person:
+            return ""
+        return f"environment {environment.name} is {self.owner_name(environment) or f'user {owner}'}'s: an agent starts only in your own environment, so one session per environment holds across the team's machines"

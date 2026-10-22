@@ -20,6 +20,7 @@ from journal.support.worktree import Worktree
 from journal.launcher.support.update_prompt import UpdatePrompt
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.config import Config
+from journal.sync.team_account import PREFIX_FILE
 from journal.providers.provider import Provider
 from journal.providers.providers import Providers
 from journal.support.private_folder import PrivateFolder
@@ -86,13 +87,20 @@ class Launch:
         menu = Menu(self.root, self.package / "journal.py")
         matched = self.environment or self.worktree or self.resume_folder(menu)
         if not sys.stdin.isatty():
-            menu.environment_rows(matched or "main", menu.environments())
-            return Choice(matched or "main", "", self.stashed, self.is_skipping())
+            menu.environment_rows(matched or self.default_environment(), menu.environments())
+            return Choice(matched or self.default_environment(), "", self.stashed, self.is_skipping())
         subprocess.run(["stty", "sane"], stdin=sys.stdin, check=False)
         if not self.confirmed and UpdatePrompt(Config(self.root), menu.screen, ReleaseSource()).installed_newer():
             self.log("updated before the launch: starting again on the new version")
             os.execv(sys.executable, [sys.executable, *sys.argv])
         return menu.choose(self.agent, matched, self.new, self.stashed, self.is_skipping(), self.confirmed)
+
+    def default_environment(self) -> str:
+        prefix_file = self.root / ".journal" / PREFIX_FILE
+        return f"{prefix_file.read_text().strip()}-main" if prefix_file.is_file() else "main"
+
+    def start_refusal(self, choice: Choice) -> str:
+        return next((row.refusal for row in Menu(self.root, self.package / "journal.py").environments() if row.name == choice.environment), "")
 
     def is_skipping(self) -> bool:
         return self.bypass or any(flag in self.args for flag in self.provider.prompt_flags)
@@ -125,6 +133,11 @@ class Launch:
             peers = ForeignHooks(self.root, self.provider)
             peers.restore()
             choice = self.choice()
+            refusal = self.start_refusal(choice)
+            if refusal:
+                self.log(f"refused: {refusal}")
+                print(refusal, file=sys.stderr)
+                return 1
             self.log(f"chosen: environment {choice.environment}, session {choice.resume or 'new'}, hooks aside {choice.stashed_hooks}")
             if choice.stashed_hooks:
                 peers.stash()
