@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.37
+
+- The waiting avatar holds its watch up for over five seconds at a time, a bigger watch that reads as one, then puts it away and whistles idly, swaying, before it looks again; it took the watch out and put it back in a quick loop.
+
 ## 4.5.36
 
 - The orchestrator's blocked lines name only the task numbers and send it to read each one, instead of writing every blocked task out in full at each stop.

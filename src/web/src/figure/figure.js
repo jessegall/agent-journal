@@ -1017,7 +1017,6 @@ export const ACTING = {
     sipWrist: [0.7, -0.63, 2.17], shieldWrist: [0.22, -0.64, 2.13],
     wipeWrist: [0.1, -0.7, 1.9], saluteWrist: [1.28, -0.32, 2.59],
     gestureIn: 0.2, gestureOut: 0.8,
-    watchOut: [0.18, 0.36], watchBack: [0.7, 0.9],
     yawnEyes: 0.94, yawnSpan: [0.08, 0.92],
     pastimeSpan: [0.3, 0.7], whistleEyes: 0.65, sipEyes: 0.5, sipTip: 12,
     headphoneEyes: 0.4, beats: 4, sways: 2, wipes: 3, wipeLift: 0.035,
@@ -1026,6 +1025,10 @@ export const ACTING = {
 };
 export const WRITING = {butler: "writing_stylus", coach: "writing_pencil", colleague: "writing_pen", homie: "writing_marker", squire: "writing_quill"};
 const HELD_FRAMES = ACTING.intro + ACTING.hold + ACTING.outro;
+// The wait, one long round: the watch taken out and held up for over five seconds, put back, and a while of whistling idly before the
+// next look, so the watch is never taken out and put away again in a quick loop. Spans are shares of the held part.
+export const WAIT = {intro: 8, hold: 144, outro: 8, watchOut: [0.04, 0.12], watchBack: [0.6, 0.68], whistleSpan: [0.7, 0.98], beats: 12, sways: 3};
+const WAIT_FRAMES = WAIT.intro + WAIT.hold + WAIT.outro;
 const READ_GAZE = {across: 0.04, top: 0.52, bottom: 0.44, forward: [0, -1, 0]};
 
 function heldTime(t) {
@@ -1033,6 +1036,13 @@ function heldTime(t) {
     const held = frame >= ACTING.intro && frame < ACTING.intro + ACTING.hold;
     const draw = frame < ACTING.intro ? frame : HELD_FRAMES - 1 - frame;
     return {frame, held, ready: held ? 1 : rise(draw, 0, ACTING.intro - 1), phase: held ? (frame - ACTING.intro) / ACTING.hold : 0};
+}
+
+function waitTime(t) {
+    const frame = Math.round(t * WAIT_FRAMES);
+    const held = frame >= WAIT.intro && frame < WAIT.intro + WAIT.hold;
+    const draw = frame < WAIT.intro ? frame : WAIT_FRAMES - 1 - frame;
+    return {ready: held ? 1 : rise(draw, 0, WAIT.intro - 1), phase: held ? (frame - WAIT.intro) / WAIT.hold : 0};
 }
 
 function gestureTime(t, frames) {
@@ -1128,14 +1138,16 @@ function polish(pose, stance, t) {
     eyesAs(pose, rub > 0.5 ? "amused" : "reading");
 }
 
-// The watch is checked during the middle of a wait, not on every foot tap.
+// The watch is looked at long in the wait, then put away while the figure whistles idly, swaying, before it looks again.
 function waiting(pose, stance, t) {
-    const {ready, phase} = heldTime(t);
-    const watch = stance.voice === "butler" ? rise(phase, ...ACTING.watchOut) * (1 - rise(phase, ...ACTING.watchBack)) * ready : 0;
+    const {ready, phase} = waitTime(t);
+    const butler = stance.voice === "butler";
+    const watch = butler ? rise(phase, ...WAIT.watchOut) * (1 - rise(phase, ...WAIT.watchBack)) * ready : 0;
+    const tune = swell(phase, ...WAIT.whistleSpan) * ready;
     breathe(pose, 0);
-    trunk(pose, {turn: ACTING.turn * ready * (1 - watch), nod: ACTING.nod * watch, lean: stance.voice === "butler" ? 0 : ACTING.rock * waveOf(phase) * ready});
+    trunk(pose, {turn: ACTING.turn * ready * (1 - watch), nod: ACTING.nod * (watch - tune / 2), lean: ACTING.rock * waveOf(phase, WAIT.sways) * (butler ? tune : ready)});
     armsAtRest(pose, stance);
-    pose.tap = ACTING.tap * Math.max(waveOf(phase, ACTING.beats), 0) * ready;
+    pose.tap = ACTING.tap * Math.max(waveOf(phase, WAIT.beats), 0) * ready;
     if (pose.posture === "stand") pose.turn("foot_r", {x: pose.tap});
     if (watch) {
         const target = ACTING.pocket.map((value, axis) => mix(value, ACTING.watch[axis], watch));
@@ -1143,6 +1155,7 @@ function waiting(pose, stance, t) {
         pose.putAway(...IN_HAND);
         if (watch > 0.5) pose.holdProp("pocket_watch", "r", [0, 0, ACTING.watchLift], {z: -90});
     }
+    if (tune) pose.shutEyes(1 - ACTING.whistleEyes * tune);
 }
 
 function yawn(pose, stance, t) {
@@ -1513,7 +1526,7 @@ export const CLIPS = [
     {name: "search", frames: 80, fps: 10, loops: true, postures: GESTURE, pose: search},
     {name: "read", frames: READ_FRAMES, fps: READING.fps, loops: true, intro: READING.intro, outro: READING.outro, leaves: READING.pageEvery, postures: GESTURE, pose: read},
     {name: "write", frames: HELD_FRAMES, intro: ACTING.intro, outro: ACTING.outro, leaves: ACTING.hold, fps: ACTING.fps, loops: true, postures: GESTURE, pose: writing},
-    {name: "waiting", frames: HELD_FRAMES, intro: ACTING.intro, outro: ACTING.outro, leaves: ACTING.hold, fps: ACTING.fps, loops: true, postures: ["stand", "sit"], pose: waiting},
+    {name: "waiting", frames: WAIT_FRAMES, intro: WAIT.intro, outro: WAIT.outro, leaves: WAIT.hold, fps: ACTING.fps, loops: true, postures: ["stand", "sit"], pose: waiting},
     {name: "compacting", frames: HELD_FRAMES, intro: ACTING.intro, outro: ACTING.outro, leaves: ACTING.hold, fps: ACTING.compactFps, loops: true, postures: GESTURE, pose: compacting},
     {name: "yawn", frames: ACTING.yawnFrames, fps: ACTING.fps, loops: false, postures: GESTURE, pose: yawn},
     {name: "whistle", frames: ACTING.pastimeFrames, fps: ACTING.fps, loops: false, postures: GESTURE, voices: ["coach"], pose: whistle},
@@ -1870,7 +1883,7 @@ export const TOOLS = {
     pen: {radius: 0.027, length: 0.58, tip: 0.08, sides: 12, markerScale: 1.8, pencilSides: 6, bandScale: 1.05, bandAt: 1 / 3},
     feather: {at: 1 / 4, points: [[0, 0], [-0.12, 0.18], [-0.08, 0.42], [0.03, 0.6], [0.14, 0.34], [0.1, 0.12]]},
     paper: {width: 1.58, depth: 0.54, thickness: 0.012, count: 4, spread: 0.04, tabletLayers: 3, screenWidth: 0.91, screenDepth: 0.85, screenLift: 2},
-    watch: {radius: 0.26, depth: 0.07, ring: 0.06, sides: 24, faceScale: 0.85, faceGap: 0.002, handDepth: 0.014,
+    watch: {radius: 0.38, depth: 0.09, ring: 0.08, sides: 24, faceScale: 0.85, faceGap: 0.002, handDepth: 0.014,
         minuteWidth: 0.024, minuteLength: 0.72, minuteAt: 0.25, minuteGap: 0.014,
         hourWidth: 0.02, hourLength: 0.5, hourAt: 0.13, hourGap: 0.016, hourTurn: -Math.PI / 3,
         ringTube: 0.02, ringRadialSegments: 8, ringTubularSegments: 16},
