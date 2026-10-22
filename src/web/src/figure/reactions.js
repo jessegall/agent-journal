@@ -42,6 +42,14 @@ export const REACTIONS = [
     {moment: "reacted:\ud83c\udfa9", look: "amused", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83e\uddd0", look: "reading", odds: 1, cooldown: 0},
     {moment: "reacted:\ud83e\udd42", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:🤙", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:😎", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:🔥", look: "startled", odds: 1, cooldown: 0},
+    {moment: "reacted:💪", look: "amused", odds: 1, cooldown: 0},
+    {moment: "reacted:🏆", look: "hearts", odds: 1, cooldown: 0},
+    {moment: "reacted:⚔️", look: "angry", odds: 1, cooldown: 0},
+    {moment: "reacted:🛡️", look: "worried", odds: 1, cooldown: 0},
+    {moment: "reacted:🏰", look: "amused", odds: 1, cooldown: 0},
     // a face the agent puts on a message in its own voice is played out by the figure, every time
     ...Object.entries(VOICE_FACES).flatMap(([voice, faces]) =>
         Object.entries(faces).map(([face, clip]) => ({moment: `agent_reacted:${face}`, voice, clip, odds: 1, cooldown: 0}))

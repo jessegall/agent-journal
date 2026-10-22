@@ -1526,6 +1526,19 @@ def test_a_reply_written_before_tool_calls_answers_its_message_at_once(app: App)
     assert hook(app, "Stop")[1] == {}, "nothing unread is left"
 
 
+def test_every_built_in_voice_can_put_each_of_its_own_faces_on_a_message(app: App):
+    from journal.features.voices.support.builtin_catalogue import BuiltinCatalogue
+    from journal.repositories.messages import Messages
+    from journal.repositories.reactions import Reactions
+    console = app.console()
+    console.run(["message", "send", "onwards"], USER)
+    faces = [face for voice in BuiltinCatalogue.ALL for face in voice.emoji.split()]
+    assert len(faces) == 15
+    for face in faces:
+        assert console.run(["message", "react", "1", face], AGENT).text.startswith(f"{face} on message 1"), face
+    assert sorted(r.face for r in app.container.get(Reactions).reactions(app.container.get(Messages).find(1))) == sorted(faces)
+
+
 def test_reactions_go_both_ways_and_a_face_alone_is_not_posted(app: App, monkeypatch):
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions

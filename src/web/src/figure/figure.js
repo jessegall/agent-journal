@@ -1506,7 +1506,7 @@ function pointed(pose, stance, t) {
 // and ending at rest. The hand that gestures is the free one; what the other carries stays in it.
 export const REACTING = {
     frames: 36, fps: 12,
-    hatOn: 1.101, hatLift: 0.15, hatTip: 12, hatGrip: 35, hatReach: 0.85, hatBow: 22, hatNod: 14,
+    hatOn: 1.101, hatWrist: [1.05, -0.2, 2.85], hatRaised: [0.95, -0.5, 2.85], hatTip: 25, hatFingers: 0.25, hatBow: 22, hatNod: 14,
     monocleWrist: [0.55, -0.8, 2.62], monocleWorn: [0.354, -0.95, 0.66], monoclePeer: 8, monocleTilt: 9,
     toastWrist: [0.78, -0.72, 2.55], toastClink: 0.12, sipWrist: [0.42, -0.78, 2.38], sipTip: 20,
     shakaWrist: [1.22, -0.25, 2.72], shakaWaggle: 28, shakaWaggles: 3,
@@ -1534,33 +1534,35 @@ function handUp(pose, side, k, target, turn = {}) {
     propHand(pose, side, k, target, {x: -60 * k, ...turn});
 }
 
-// the butler lifts his hat off by the brim, bows a little with it held up, and puts it back on
+// straight up, at rest
+const UP = new THREE.Vector3(0, 0, 1);
+
+// the butler raises his hand beside his hat, the hat comes off into it by the brim, he lifts it and bows a little, and puts it back on
 function hat_tip(pose, stance, t) {
     const {u, ready} = reacting(t);
     const side = freeSide(stance);
-    const sign = SIDES[side];
-    const lifted = rise(u, 0.22, 0.34) * (1 - rise(u, 0.68, 0.8));
+    const held = rise(u, 0.2, 0.3) * (1 - rise(u, 0.7, 0.8));
+    const raised = rise(u, 0.3, 0.4) * (1 - rise(u, 0.6, 0.7));
     const bow = swell(u, 0.32, 0.72);
     breathe(pose, 0);
     trunk(pose, {lean: REACTING.hatBow * bow, nod: REACTING.hatNod * bow});
     armsAtRest(pose, stance, ready ? [side] : []);
-    const offset = [0, 0, REACTING.hatOn + REACTING.hatLift * lifted];
-    const turn = {x: 0.6 * REACTING.hatTip * lifted, y: sign * REACTING.hatTip * lifted};
-    const head = pose.matrix("head");
-    const hat = euler(turn.x, turn.y, 0);
-    const grip = radians(REACTING.hatGrip);
-    const brim = new THREE.Vector3(sign * REACTION_PROPS.hat.brim * Math.cos(grip), -REACTION_PROPS.hat.brim * Math.sin(grip), 0).applyMatrix4(hat).add(pose.rig.heads.get("head")).add(new THREE.Vector3(...offset));
-    const up = new THREE.Vector3(0, 0, 1).applyMatrix4(hat).transformDirection(head);
-    const target = brim.applyMatrix4(head).addScaledVector(up, -REACTING.hatReach);
-    if (ready) {
-        handTo(pose, side, ready, target, new THREE.Vector3(...ACTING.elbow));
-        pose.aim(`hand_${side}`, pose.rig.along.get(`hand_${side}`).clone().transformDirection(pose.matrix(`hand_${side}`)).lerp(up, ready));
-    }
-    if (u > 0.22 && u < 0.8) {
+    handUp(pose, side, ready, REACTING.hatWrist.map((value, axis) => mix(value, REACTING.hatRaised[axis], raised)));
+    if (ready) pose.aim(`hand_${side}`, pose.rig.along.get(`hand_${side}`).clone().transformDirection(pose.matrix(`hand_${side}`)).lerp(UP, ready));
+    if (held) {
+        const turn = {y: SIDES[side] * REACTING.hatTip * held};
         pose.putAway("butler_bowler_hat");
-        pose.wearProp("bowler_hat", offset, turn);
+        pose.wearProp("bowler_hat", hatHeld(pose, side, held, turn).toArray(), turn);
     }
     eyesAs(pose, "amused", bow);
+}
+
+// where the hat sits against the head at rest, `held` of the way from on the head to in the hand on `side`, its brim's edge at the fingers
+function hatHeld(pose, side, held, turn) {
+    const edge = new THREE.Vector3(SIDES[side] * REACTION_PROPS.hat.brim, 0, 0).applyMatrix4(euler(0, turn.y, 0));
+    const grip = handGrip(pose, side, [REACTING.hatFingers, 0, 0]).applyMatrix4(pose.matrix("head").clone().invert());
+    const inHand = grip.sub(edge).sub(pose.rig.heads.get("head"));
+    return new THREE.Vector3(0, 0, REACTING.hatOn).lerp(inHand, held);
 }
 
 // the butler brings up a monocle, screws it into his eye, peers through it a moment, and lets it drop
