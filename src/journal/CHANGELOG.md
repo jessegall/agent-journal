@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.3
+
+- The avatar's body moves smoothly on every frame. Its clips were drawn at 6 to 20 frames a second while its movement across the screen ran at the full rate, so anything it did in place stuttered. The eyes keep their stepped blink.
+
 ## 4.8.2
 
 - The status line above the chat leaves out a cd or an export at the start of a line, so it shows the command doing the work rather than the project's path.
