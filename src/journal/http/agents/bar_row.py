@@ -1,5 +1,6 @@
 from dataclasses import dataclass, replace
 
+from journal.support.command_shape import SETUP_COMMANDS
 from journal.features.shell.support.shell_record import PART_END, PART_START
 from journal.models.entry import Entry
 
@@ -32,7 +33,9 @@ class BarRow:
 
     @staticmethod
     def is_shown(entry: Entry) -> bool:
-        return entry.kind in (PART_START, PART_END) or (entry.kind in TOOLS and not entry.recorded_call().command)
+        if entry.kind in (PART_START, PART_END):
+            return entry.data["part"].split(" ", 1)[0] not in SETUP_COMMANDS
+        return entry.kind in TOOLS and not entry.recorded_call().command
 
     @classmethod
     def build(cls, entry: Entry) -> "BarRow":

@@ -2398,6 +2398,8 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     ShellVerbs(app).ran("git commit -m done", "c1", 0, output="[main 1a2b3c4] done", seconds=2)
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m done"}, tool_response={"stdout": "[main 1a2b3c4] done"}, tool_use_id="t-1")
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True
+    ShellVerbs(app).started(f"cd {app.config.root}", "c1")
+    assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True, "a cd into the project is no work the status line shows"
     line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/agents/1/terminal?env=main"), timeout=5))[-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
     (folder / "0.status").write_text("0")
