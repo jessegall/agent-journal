@@ -1,5 +1,8 @@
 from journal.config import Config
 from journal.features.search.support.search_hit import SearchHit
+from journal.models.agent_role import AgentRole
+from journal.models.message import Message
+from journal.models.model import Model
 from journal.providers.providers import Providers
 from journal.repositories.agents import Agents
 from journal.repositories.checks import Checks
@@ -35,7 +38,7 @@ class Search:
                  triggers: Triggers, notices: Notices, secrets: Secrets, agents: Agents, providers: Providers, config: Config) -> None:
         self.kinds: tuple[Repository, ...] = (tasks, plans, phases, task_logs, messages, questions, facts, rules, reminders, reports, docs, checks, sequences,
                                               workers, templates, dumps, triggers, notices, secrets)
-        self.agents, self.providers, self.config = agents, providers, config
+        self.agents, self.providers, self.config, self.workers = agents, providers, config, workers
 
     def models(self) -> list[str]:
         return [self.lookup(kind) for kind in self.kinds]
@@ -48,7 +51,14 @@ class Search:
         return self.rows(terms, wanted) + (self.conversation_hits(terms) if CONVERSATION in names else [])
 
     def rows(self, terms: list[str], kinds) -> list[SearchHit]:
-        return [SearchHit.build(row, terms) for kind in kinds for row in kind.search(terms)]
+        return [self.hit(row, terms) for kind in kinds for row in kind.search(terms)]
+
+    def hit(self, row: Model, terms: list[str]) -> SearchHit:
+        if not isinstance(row, Message) or row.agent_role == AgentRole.MAIN or row.session is None:
+            return SearchHit.build(row, terms)
+        workers = self.workers.session_worker(row.session)
+        chat = f"worker {workers[0].id}, {workers[0].name}" if workers else f"subagent {row.session[:8]}"
+        return SearchHit(f"message {row.id} in the chat of {chat}", SearchHit.excerpt(row.mentioning_text(), terms))
 
     @staticmethod
     def lookup(kind: Repository) -> str:
@@ -56,7 +66,7 @@ class Search:
 
     def conversation_hits(self, terms: list[str]) -> list[SearchHit]:
         rows = []
-        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program()][-CONVERSATION_COUNT:]):
+        for agent in reversed([agent for agent in self.agents.scoped() if agent.has_program() and agent.role == AgentRole.MAIN][-CONVERSATION_COUNT:]):
             path = self.providers.lookup(agent.provider).transcript(self.config.root, agent.session)
             if path is None:
                 continue

@@ -36,6 +36,9 @@ class Messages(ScopedRepository[Message]):
     def main_voice(self) -> Query:
         return self.main_chat().filter(author=Author.AGENT).filter_present("session")
 
+    def search(self, terms: list[str]) -> list[Message]:
+        return [*self.search_rows(self.main_chat(), terms), *self.search_rows(self.query().filter_unlisted("agent_role", (AgentRole.MAIN,)), terms)]
+
     def unread(self) -> list[Message]:
         return self.selected(self.main_chat().filter(author=Author.USER).filter_null("read_at").order("id"))
 

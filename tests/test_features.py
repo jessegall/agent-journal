@@ -1585,6 +1585,26 @@ def test_a_workers_words_never_answer_the_users_message_nor_count_as_the_main_ag
         assert (reply.agent_role, reply.session, reply.reply_target) == (AgentRole.WORKER, "w1", worker_turn.id) and reply not in messages.recent(30), "the main agent's reply to a worker's message shows in that worker's chat, not the main one"
 
 
+def test_search_finds_the_main_chats_message_among_a_workers_many_and_names_the_worker_of_its_hits(app: App):
+    """Fifty of a worker's messages holding a word never crowd out the main chat's one, and a hit in the worker's chat names that worker."""
+    from journal.features.search.support.search import Search
+    from journal.models.agent_role import AgentRole
+    from journal.models.message import Message
+    from journal.models.worker import Worker
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    hook(app, "SessionStart")
+    messages = app.container.get(Messages)
+    with app.container.get(Scope).environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", session="w1"), Actor.system())
+        main = messages.save(Message(environment_id=1, author="user", text="the gearbox rattles"), Actor.user(1))
+        for i in range(50):
+            messages.save(Message(environment_id=1, author="agent", text=f"gearbox step {i}", session="w1", agent_role=AgentRole.WORKER), Actor.agent("w1"))
+        hits = app.container.get(Search).kind_hits(["gearbox"], ["message"])
+    assert f"message {main.id}" in [hit.ref for hit in hits], "the main chat's message is found"
+    assert any(hit.ref.endswith(f"in the chat of worker {worker.id}, Mr. Babbage") for hit in hits), "a worker's hit names its worker"
+
+
 def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, tmp_path):
     text = tmp_path / "doc.md"
     hook(app, "SessionStart")

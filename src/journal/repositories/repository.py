@@ -101,7 +101,9 @@ class Repository(Generic[M]):
         return [rows[n] for n in ids if n in rows]
 
     def search(self, terms: list[str]) -> list[M]:
-        query = self.query()
+        return self.search_rows(self.query(), terms)
+
+    def search_rows(self, query: Query, terms: list[str]) -> list[M]:
         for word in terms:
             query = query.filter_alternatives(*(self.query().filter_containing(name, word) for name in self.model.text_fields))
         return self.selected(query.order_descending("id").limit(MATCH_ROWS))
