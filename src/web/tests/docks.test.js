@@ -50,3 +50,12 @@ test("a docked message leaves the chat's stream until it is undocked", async () 
     const rows = [{id: 1, data: {docked: true}}, {id: 2, data: {}}, {id: 3, data: {docked: false}}];
     expect(undockedRows(rows).map((m) => m.id)).toEqual([2, 3]);
 });
+
+test("a card that docked itself stays docked until its undock time, then goes back to the chat", async () => {
+    const {dockedRows, undockedRows} = await import("../src/domain/docks.js");
+    const card = {id: 9, updated_at: new Date(0).toISOString(), data: {docked: true, auto_docked: true, undock_at: 100}};
+    expect(dockedRows([card], 99).map((m) => m.id)).toEqual([9]);
+    expect(undockedRows([card], 99)).toEqual([]);
+    expect(dockedRows([card], 100)).toEqual([]);
+    expect(undockedRows([card], 100).map((m) => m.id)).toEqual([9]);
+});

@@ -7710,7 +7710,8 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
     auto = run("auto")
     assert card(auto).data["docked"] is True, "a live card docks itself"
     end(auto)
-    assert card(auto).data["docked"] is False, "and comes down once its run ends"
+    ended = card(auto).data
+    assert ended["docked"] is True and ended["auto_docked"] is True and 4 <= ended["undock_at"] - timing.time() <= 5, "and stays five seconds after its run ends, then comes down"
     kept = run("kept")
     with app.container.get(Scope).environment(MAIN):
         app.container.get(Docking).pin_message(card(kept), Actor.user(1))

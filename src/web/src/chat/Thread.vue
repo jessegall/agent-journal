@@ -26,6 +26,7 @@ import {laidOut} from "../platform/view.js";
 import {mainChat, threadTurns} from "../domain/thread.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
 import {useLiveOutputs} from "../composables/liveOutputs.js";
+import {useSharedNow} from "../composables/now.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -110,7 +111,8 @@ const busy = computed(() => !!owner.value && ["working", "compacting"].includes(
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner);
 const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
-const rowDocks = computed(() => dockedRows(chat.value));
+const dockNow = useSharedNow();
+const rowDocks = computed(() => dockedRows(chat.value, dockNow.value));
 const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
 const helping = computed(() =>
     subagentsOf(owner.value)
@@ -151,7 +153,7 @@ let frame = 0;
 
 const revoke = (p) => Object.values(p.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
-const thread = computed(() => threadTurns(undockedRows(chat.value), pending.value, here && !!store.paging.more.messages, props.hidden));
+const thread = computed(() => threadTurns(undockedRows(chat.value, dockNow.value), pending.value, here && !!store.paging.more.messages, props.hidden));
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 const turnsLoaded = computed(() => scope.loaded("messages"));

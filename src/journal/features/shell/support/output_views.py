@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
@@ -16,6 +17,8 @@ from journal.support.card_kind import CardKind
 TAIL_LINES = 10
 VIEW_LINES = 20
 HEADLINE_CHARACTERS = 60
+ENDED_DOCK_SECONDS = 5
+UNDOCK_AT = "undock_at"
 
 
 class OutputViews:
@@ -81,7 +84,9 @@ class OutputViews:
         cards = self.messages.keyed(OutputView.key(output.row_id), Actor.system())
         if not cards:
             return {DOCKED: True, AUTO_DOCKED: True} if not output.ended and self.settings.option(Shell.OUTPUT_DOCK) else {}
-        return {DOCKED: False, AUTO_DOCKED: False} if output.ended and cards[0].data.get(AUTO_DOCKED) else {}
+        if not output.ended or not cards[0].data.get(AUTO_DOCKED):
+            return {}
+        return {UNDOCK_AT: cards[0].data.get(UNDOCK_AT) or time.time() + ENDED_DOCK_SECONDS}
 
     @staticmethod
     def tone(output: CommandOutput) -> str:
