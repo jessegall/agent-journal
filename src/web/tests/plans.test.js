@@ -69,7 +69,7 @@ test("a delegated plan names the workers that hold the open tasks of the phase i
         {id: 4, name: "Benny", brief: "Test it", worktree: false},
     ];
     const seen = delegationOf(delegated, {tasks, workers});
-    expect(seen.line).toBe("Workers: Hedy, Benny");
+    expect(seen.line).toBe("Delegated");
     expect(seen.workers[0]).toMatchObject({name: "Hedy", job: "Fix the tunnel"});
     expect(delegationOf({...delegated, delegated: false}, {tasks, workers})).toBe(null);
 });

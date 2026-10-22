@@ -88,13 +88,14 @@ export function othersLine(others) {
 // The phase in hand, counted from 1.
 const phaseAt = (p) => (p.phases || [])[(p.current_phase || 1) - 1] || null;
 
-// Who works on the phase in hand when the plan is delegated: the workers that hold its open tasks.
+// Who works on the phase in hand when the plan is delegated: the workers that hold its open tasks, named on the bar when there is
+// one and said as Delegated when there are more, the list kept for the bar's popover.
 export function delegationOf(p, {tasks, workers}) {
     const phase = phaseAt(p);
     if (!p.delegated || !phase) return null;
     const held = new Set(tasks.filter((t) => phase.task_ids.includes(t.id) && !isClosed(t) && t.worker_id).map((t) => t.worker_id));
     const found = workers.filter((w) => held.has(w.id)).map((w) => ({id: w.id, name: w.name, job: w.brief, branch: w.worktree}));
-    return {workers: found, line: found.length ? `${found.length === 1 ? "Worker" : "Workers"}: ${found.map((w) => w.name).join(", ")}` : "Delegated"};
+    return {workers: found, line: found.length === 1 ? `Worker: ${found[0].name}` : "Delegated"};
 }
 
 export function sizeOf(p) {

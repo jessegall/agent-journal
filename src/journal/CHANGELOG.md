@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.13
+
+- The plan bar names the worker on a delegated phase when there is one, and says Delegated when there are more; the list stays in the bar's popover.
+
 ## 4.5.12
 
 - Switching the work mode tells the agent once, at its next step, which mode it now works in and what that asks: the orchestrator plans and hands the work to workers, the builder builds and sends a worker when better, solo does everything itself.
