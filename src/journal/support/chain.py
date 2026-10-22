@@ -188,8 +188,10 @@ class Chain:
 
     @staticmethod
     def newline_index(line: str, i: int, current: str) -> str:
+        if line[i:i + 1] != "\n":
+            return ""
         blocked = current.strip()
-        ends = line[i:i + 1] == "\n" and blocked and not blocked.endswith(("|", "||", "|&")) and not blocked.startswith("#")
+        ends = blocked and not blocked.endswith(("|", "||", "|&")) and not blocked.startswith("#")
         return "\n" if ends else ""
 
     @staticmethod
