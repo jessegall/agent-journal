@@ -2,7 +2,17 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
-## Unreleased, on the development branch
+## 4.5.0
+
+- A worker's and a subagent's messages are rows of their own chats: the main chat shows the user and the main agent alone, the inspector's chat of a worker or a subagent is the same chat over its own rows, a reply shows in the chat of the message it answers, and search finds every agent's words.
+- A line for a working agent waits for its next tool use and rides on that hook, shown to the user in the terminal too; it is typed only to an idle agent or after the seconds a command runs in the foreground. A stop the journal holds keeps the turn, a remark is never typed to an idle agent, a line already queued is not queued again, and a journal line typed as a prompt gets no repeat of itself. The shell runner's own lines reach the agent the same way, never inside a command's output.
+- Before a hold, the agent is counted down by tool uses: tool uses left before your writes wait for an unread message, or before your tools wait for an answer. A finished output left unread is named again every five tool uses or thirty seconds, whichever comes first, by a timeout that holds spans in two units.
+- A command is known by its shape, its values left out: a reader's command goes to the background at once and is watched through it, an alias is suggested once per shape run three times, a line is pointed at an alias of the same shape, and variables and time-limit wrappers before a command are looked through. A reader names what a run is about after its card's title (Running tests: test_a.py, shell or alias), picks short summary lines, and a reader asked three times to read better pushes Fixing a reader, which holds every tool but a journal command until it is written anew.
+- A watched run's card shows the line the shell ran, docks itself above the chat while it runs (Dock live outputs, on by default), stays five seconds after its end and leaves; a docked card stays faded in its place in the chat; every live card's view is fetched in one request a second; a failed card is red.
+- The top bar names the work, never a command: the task in hand, or with none a wording for the kind of work running, ten or more per kind as version 2 had. The bottom line rolls through every file a command changed, with the lines added and removed adding up, and names paths from the project's folder.
+- Every repeated line says only what changed: the watch view, the waits, the countdowns and the slow request line drop the how-to the skills teach.
+- `journal plan show current` and `journal task show current` show the started plan and the task in hand; the overview's commands use them.
+- The phone app opened at the viewer's own address says what it is instead of a blank page.
 
 - A menu in the agent's terminal is answered within a second: the watcher looks twice a second and answers at the next look that finds the same menu, where before it waited for the whole screen to stand still, which a running spinner never let it, and took three or four seconds.
 - A subagent dispatch that Claude Code could not run, a model not found, a refusal, a quota, settles its own chat mark as a red Dispatch failed with the tool's error, where before the mark stayed Dispatched; the journal now hears Claude Code's PostToolUseFailure hook as a tool-failed event.
