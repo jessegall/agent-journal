@@ -21,6 +21,7 @@ from journal.repositories.questions import Questions
 from journal.repositories.scope import Scope
 from journal.repositories.tasks import Tasks
 from journal.version import VERSION
+from journal.features.team.support.environment_owners import EnvironmentOwners
 
 COLOR = "#5e64c9"
 STARTED = timing.time()
@@ -32,8 +33,8 @@ class JournalController:
     """The journal as a whole: what the viewer boots from, who and where it is, how each environment stands, and what the current agent is doing this moment."""
 
     def __init__(self, config: Config, manifest: Manifest, environments: Environments, agents: Agents, activity: AgentActivity, current: CurrentWork,
-                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, threshold: UpdateCard, numbers: DeveloperNumbers) -> None:
-        self.numbers = numbers
+                 entries: Entries, messages: Messages, questions: Questions, tasks: Tasks, scope: Scope, threshold: UpdateCard, numbers: DeveloperNumbers, owners: EnvironmentOwners) -> None:
+        self.numbers, self.owners = numbers, owners
         self.config, self.boot, self.environments, self.agents, self.activity, self.current = config, manifest, environments, agents, activity, current
         self.entries, self.messages, self.questions, self.tasks, self.scope, self.mark = entries, messages, questions, tasks, scope, threshold
 
@@ -75,7 +76,7 @@ class JournalController:
             work = self.current.work(agent) if agent else None
             task = TaskBlock(work.task.row_id, work.task.title, work.wait_text) if work else None
             silent = activity is not None and activity["status"] in ("busy", "working") and timing.time() - activity["heard_at"].timestamp() > SILENCE_LIMIT_SECONDS
-            return EnvironmentData(environment, activity, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent)
+            return EnvironmentData(environment, activity, task, len(self.questions.open()), len(self.messages.unread()), self.tasks.unfinished_count(), silent, self.owners.owner_name(environment))
 
     def bar(self, request: Request) -> Response:
         agent = self.agents.current()

@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import socket
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from journal.support.caller import LOCAL_USER
 
 TEAM_FILE = "team.json"
 ROOT_FILE = "team-root.crt"
+PREFIX_FILE = "team-prefix"
 
 
 class TeamAccount:
@@ -59,3 +61,8 @@ class TeamAccount:
 
     def phone_actor(self, phone_id: int) -> Actor:
         return Actor.user(self.user_number()) if self.is_joined() else Actor.phone(phone_id)
+
+    def write_prefix(self, name: str) -> str:
+        prefix = re.sub(r"[^a-z0-9]+", "-", name.split()[0].lower() if name.split() else "").strip("-") or f"user{self.user_number()}"
+        (self.config.home / PREFIX_FILE).write_text(prefix)
+        return prefix

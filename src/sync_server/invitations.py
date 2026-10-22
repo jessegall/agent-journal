@@ -17,7 +17,7 @@ class Invitations:
         self.store, self.rows, self.accounts = store, rows, accounts
 
     def issue(self, email: str, created_at: float) -> tuple[str, float]:
-        code = secrets.token_urlsafe(12)
+        code = secrets.token_hex(8)
         self.rows.insert(self.code_hash(code), email.lower(), created_at, created_at + VALID_SECONDS)
         return code, created_at + VALID_SECONDS
 
