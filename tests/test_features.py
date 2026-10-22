@@ -9771,3 +9771,45 @@ def test_the_messages_and_etiquette_skills_teach_a_colleagues_comment():
     messages, etiquette = MessagesFeature.skill.body, Etiquette.skill.body
     assert "a colleague of your user, commented in your chat" in messages and "a request in it waits until your user\n  agrees" in messages
     assert "A colleague's comment is not your user's" in etiquette
+
+
+def test_on_a_shared_journal_a_worker_branches_from_and_merges_into_its_environments_worktree_and_main_is_untouched(app: App):
+    import subprocess
+    from journal.features.workers.support.worker_branch import WorkerBranch
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.worker import Worker
+    from journal.repositories.environments import Environments
+    from journal.repositories.workers import Workers
+    from journal.support.worktree import Worktree
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    root = app.config.root
+
+    def git(*arguments, cwd=root):
+        return subprocess.run(["git", *arguments], cwd=cwd, capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+
+    git("init", "-q")
+    git("-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "--allow-empty", "-m", "first")
+    main_before = git("rev-parse", "HEAD")
+    environment = app.container.get(Environments).find(MAIN)
+    own = Worktree(root, environment.name).created()
+    (own / "env.txt").write_text("the environment's own work\n")
+    git("add", "env.txt", cwd=own)
+    git("-c", "user.name=Ada", "-c", "user.email=ada@example.com", "commit", "-q", "-m", "environment work", cwd=own)
+    try:
+        app.container.get(TeamAccount).write({"account_id": 1, "device": "d1"})
+        worker = Worker(environment_id=MAIN, name="Mr Faraday", worktree=True, id=9001)
+        branch = app.container.get(WorkerBranch)
+        assert branch.checkout(worker) == own, "on a shared journal a worker's checkout is its environment's worktree"
+        app.container.get(WorkerRunner).workplace(worker)
+        folder = branch.folder(worker)
+        assert (folder / "env.txt").is_file(), "the worker's branch is cut from the environment's branch, with its unmerged work"
+        (folder / "worker.txt").write_text("the worker's work\n")
+        git("add", "worker.txt", cwd=folder)
+        git("-c", "user.name=Worker", "-c", "user.email=w@example.com", "commit", "-q", "-m", "worker work", cwd=folder)
+        repository = branch.repositories(worker)[0]
+        branch.merged(repository, worker)
+        assert (own / "worker.txt").is_file(), "the worker's work is merged into the environment's worktree"
+        assert git("rev-parse", "main" if git("branch", "--list", "main") else "master") == main_before, "and main is untouched"
+    finally:
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)

@@ -9,16 +9,19 @@ from journal.models.worker import Worker
 from journal.support.listener_queue import ListenerQueue
 from journal.support.rejection import Rejection
 from journal.support.worktree_refs import TIPS_REF
+from journal.support.worktree import Worktree
+from journal.repositories.environments import Environments
+from journal.sync.team_account import TeamAccount
 
 GIT_TIMEOUT_SECONDS = 30
 CHECKOUT_TIMEOUT_SECONDS = 600
 
 
 class WorkerBranch:
-    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none."""
+    """A worker's worktree and the branch it commits on: what it left there when it ended, and its commits taken into the branch the project is on, which on a shared journal is the branch of the worker's environment's own worktree, never the main checkout's. A project that holds repositories of its own inside it, ignored by its own, gives the worker a worktree of each one recorded on its row, inside its worktree and on the worker's branch; its commits are taken in from every repository or from none."""
 
-    def __init__(self, config: Config, deferred: ListenerQueue) -> None:
-        self.config, self.deferred = config, deferred
+    def __init__(self, config: Config, deferred: ListenerQueue, account: TeamAccount, environments: Environments) -> None:
+        self.config, self.deferred, self.account, self.environments = config, deferred, account, environments
         self.removed_root = config.home / "removed-worktrees"
 
     def name(self, worker: Worker) -> str:
@@ -28,7 +31,13 @@ class WorkerBranch:
         return self.config.home / "worktrees" / f"{worker.id}-{worker.name}".replace(" ", "-")
 
     def place(self, worker: Worker) -> Path:
-        return self.folder(worker) if worker.worktree else self.config.root
+        return self.folder(worker) if worker.worktree else self.checkout(worker)
+
+    def checkout(self, worker: Worker) -> Path:
+        if not self.account.is_joined():
+            return self.config.root
+        environment_worktree = Worktree(self.config.root, self.environments.find(worker.environment_id).name).path
+        return environment_worktree if environment_worktree.is_dir() else self.config.root
 
     def git(self, *argv: str, cwd: Path | None = None) -> subprocess.CompletedProcess:
         return subprocess.run(["git", *argv], cwd=cwd or self.config.root, capture_output=True, text=True, timeout=GIT_TIMEOUT_SECONDS)
@@ -53,7 +62,7 @@ class WorkerBranch:
     def repositories(self, worker: Worker) -> list[WorkerRepository]:
         folder = self.folder(worker)
         inner = [WorkerRepository(self.config.root / name, folder / name, Path(name)) for name in worker.repositories]
-        return [WorkerRepository(self.config.root, folder, PROJECT_FOLDER), *inner]
+        return [WorkerRepository(self.checkout(worker), folder, PROJECT_FOLDER), *inner]
 
     def tip(self, repository: WorkerRepository, worker: Worker) -> str:
         head = self.git("rev-parse", "HEAD", cwd=repository.worktree) if repository.is_present else None
@@ -218,7 +227,7 @@ class WorkerBranch:
         folder = self.folder(worker)
         if folder.is_dir():
             shutil.rmtree(folder)
-        self.pruned(self.name(worker), [self.config.root / name for name in names] + [self.config.root])
+        self.pruned(self.name(worker), [self.config.root / name for name in names] + [self.checkout(worker)])
 
     def summary(self, worker: Worker) -> str:
         if not worker.worktree:
