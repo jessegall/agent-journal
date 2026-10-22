@@ -7,7 +7,7 @@ from journal.repositories.tasks import Tasks
 
 
 class ClearWaits(Listener[Updated]):
-    """A question answered, a task closed or a check waited until passing unblocks the tasks that wait on it by a link, once nothing else holds them, and the live agent is told."""
+    """A question answered, a task closed or a check waited until passing unblocks the blocked tasks that wait on it by a link, once nothing else holds them, and says so of the parked ones; the live agent is told."""
 
     def __init__(self, tasks: Tasks) -> None:
         self.tasks = tasks
@@ -17,4 +17,4 @@ class ClearWaits(Listener[Updated]):
             return
         for task in self.tasks.waiting_refs(event.model):
             if not self.tasks.open_waits(task):
-                self.tasks.save(task.unblocked(f"the {event.model.noun()} {event.model.id} it waited on is done", datetime.now(timezone.utc).timestamp()), Actor.system())
+                self.tasks.save(task.wait_ended(f"the {event.model.noun()} {event.model.id} it waited on is done", datetime.now(timezone.utc).timestamp()), Actor.system())

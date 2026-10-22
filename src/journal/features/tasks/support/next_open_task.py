@@ -23,6 +23,9 @@ class NextOpenTask:
         free = self.plans.free()
         return OpenTask(free[0].row_id, free[0].title, free[0].brief, 0) if free else None
 
+    def is_planned(self, closed: Task) -> bool:
+        return any(plan.state == PlanState.STARTED for plan in self.plans.containing(closed))
+
     def plan_next(self, plan: Plan, closed: Task) -> OpenTask | None:
         current = self.plans.started_task(plan)
         if current is not None and current.started_at is not None and closed.finished_at is not None and current.started_at < closed.finished_at:

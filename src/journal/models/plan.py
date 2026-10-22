@@ -30,6 +30,9 @@ class Plan(Scoped):
     block_reason: str = ""
     reviewers: int = 0
 
+    def waiting_reason(self) -> str:
+        return self.block_reason
+
     def ready(self) -> "Plan":
         return self.moved(PlanState.READY)
 

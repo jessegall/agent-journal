@@ -286,10 +286,10 @@ def test_a_blocked_task_waits_on_something_outside_and_is_neither_offered_nor_nu
     hook(app, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    console.run(["task", "create", "the tree", "--start"], AGENT)
+    console.run(["task", "create", "the tree"], AGENT)
     assert "waiting on: a talk with the user" in console.run(["task", "block", "1", "a talk with the user"], AGENT).text
     assert app.container.get(Tasks).find(1).state == TaskState.BLOCKED and app.container.get(SessionAgents).top("s1").name == "idle"
-    assert hook(app, "Stop")[1].get("decision") != "block", "a blocked task is not offered, in auto mode or not"
+    assert "tasks 1 are blocked: check each is still truly blocked" in hook(app, "Stop")[1].get("reason", ""), "a blocked task is not offered: the stop asks the agent to check it is still truly blocked"
     assert "blocked tasks: 1 the tree (waiting on: a talk with the user)" in console.run(["environment", "overview"], AGENT).text
     assert "open again" in console.run(["task", "unblock", "1"], AGENT).text and app.container.get(Tasks).find(1).state == TaskState.OPEN
 
@@ -415,7 +415,7 @@ def test_the_stack_keeps_its_bottom_changes_only_its_top_and_comes_back_from_its
     stack = Stack((Ready(), Working(task_id=3)))
     assert stack.top() == Working(task_id=3)
     assert stack.pushed(Ended()).serialized()[-1] == {"state": "ended", "data": {}}
-    assert stack.popped().serialized() == [{"state": "idle", "data": {"silenced_at": 0.0, "suspension_reported": False}}]
+    assert stack.popped().serialized() == [{"state": "idle", "data": {"silenced_at": 0.0, "suspension_reported": False, "stop_round": 0}}]
     assert stack.popped().popped() == stack.popped()
     assert stack.with_top(Working(task_id=4)).top().task_id == 4
     catalogue = StatesCatalogue(ServerCatalogue())
@@ -1204,9 +1204,16 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     assert stop(of(open_next, approved=(9,))).refusal.rendered().startswith("plan 9 is approved and not started")
     assert stop(of(open_next)).refusal.rendered().startswith("tasks are open, and auto mode is on: task 4 next: the footer")
     assert stop(of(open_next), manual).refusal is None, "off auto mode an open task is no reason to go on"
-    assert stop(of(open_next), auto, prior_refusal=True).refusal is None, "a stop held once this turn passes"
-    assert stop(of(parked), auto, prior_refusal=True).refusal is not None, "a parked task is named at every stop: parked is still open"
     assert stop(of(nothing)).refusal is None
+    left = of(replace(parked, blocked=(5,), open_ids=(4,)))
+    answers = [stop(left)]
+    for _ in range(3):
+        answers.append(answers[-1].target.respond(Stop(prior_refusal=True).with_data(left), auto))
+    said = [answer.refusal.rendered() for answer in answers]
+    assert said[0].startswith("parked tasks, still open: task 2") and said[1].startswith("tasks 5 are blocked") and said[2].startswith("tasks are open, and auto mode is on: task 4"), said
+    assert said[3].startswith("tasks are left, so you do not stop: parked task 2 (the parser); open 4; blocked 5"), "a round asks parked, then blocked, then open, and after that only journal stuck lets the agent stop"
+    worked = answers[3].target.respond(ToolStarting(call=ToolCall(tool="Read", input={}, operation=Claude().operation("Read", {})), time=200.0).with_data(left), auto)
+    assert worked.target.stop_round == 0 and stop(left).refusal.rendered().startswith("parked tasks"), "work starts the round over"
     idle = PlansReady(silenced_at=0.0)
     active = idle.respond(ToolStarting(call=ToolCall(tool="Read", input={}, operation=Claude().operation("Read", {})), time=50.0).with_data(of(nothing)), auto)
     assert active.target == PlansReady(silenced_at=50.0, suspension_reported=False)
@@ -1540,10 +1547,12 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     all_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, open_ids=(), open_summary="", blocked=(5, 8))})
     held = Orchestrating().respond(Stop().with_data(all_blocked), settings("orchestrator"))
     told = held.refusal.rendered()
-    assert "tasks 5, 8" in told and "journal task show" in told and "still truly blocked" in told and "you are the orchestrator" in told and "journal stuck" in told, "an orchestrator whose every task is blocked may not stop: it checks them, decides what it can, waits on its workers or says it is stuck"
+    assert "tasks 5, 8" in told and "journal task show" in told and "still truly blocked" in told and "decide for yourself" in told and "journal stuck" in told, "an orchestrator whose every task is blocked may not stop: it checks them, decides what it can, waits on its workers or says it is stuck"
     some_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, blocked=(5,))})
     busy = Orchestrating().respond(Stop().with_data(some_blocked), settings("orchestrator"))
-    assert "dispatch a worker" in busy.refusal.rendered() and any("tasks 5" in nudge.rendered() for nudge in busy.nudges), "a blocked task is named for checking whatever else is open"
+    assert busy.refusal.rendered().startswith("tasks 5 are blocked"), "a stop round asks about the blocked tasks before the open ones"
+    again = busy.target.respond(Stop().with_data(some_blocked), settings("orchestrator"))
+    assert "dispatch a worker" in again.refusal.rendered(), "and then holds the stop with the tasks to dispatch"
     assert Workers.BLOCKED_CHECK.repeat_interval == 300, "and the check comes again every five minutes while it holds"
     assert "task 3" in PlansReady().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered() and "dispatch" not in PlansReady().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered(), "the builder's stop names the next task to do"
     assert isinstance(Orchestrating().respond(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_data(of(None)), settings("orchestrator")).pushed, Delegating), "a task started in the orchestrator's mode is delegating, not working"

@@ -1,3 +1,4 @@
+from journal.events.rows.task_wait_ended import TaskWaitEnded
 from journal.features.tasks.support.task_succession import TaskSuccession
 from journal.engine.conduct import Conduct
 from journal.engine.base_state import BaseState
@@ -29,6 +30,10 @@ class TasksConduct(Conduct):
     def on_task_reopened(self, event: TaskReopened, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks
         return self.none(Tasks.TASK_REOPENED.create(n=event.task_id, reason=event.reason))
+
+    def on_task_wait_ended(self, event: TaskWaitEnded, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        return self.none(Tasks.SUSPENSION_WAIT_END.create(n=event.task_id, reason=event.reason))
 
     def on_task_closed(self, event: TaskClosed, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks

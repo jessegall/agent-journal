@@ -42,7 +42,7 @@
     {
       "name": "a write held twice over",
       "answer": {
-        "error": "2 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write\nanswer or react to message 1 first. your tool calls wait until you do\nnew message 1"
+        "error": "2 edits since you logged task 1. journal task log 1 \"<what was decided or done, and why>\" before any other write\nanswer or react to message 2 first. your tool calls wait until you do\nnew message 2"
       },
       "typed": [],
       "nudges": [

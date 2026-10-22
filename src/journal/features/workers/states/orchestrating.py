@@ -28,12 +28,10 @@ class Orchestrating(PlansReady):
         from journal.features.workers.states.delegating import Delegating
         return Delegating(**fields)
 
-    def stop_answer(self, tasks: TasksData, settings: Settings) -> Transition:
-        if tasks.open_ids:
-            return Transition.merged(self, [self.refuse(orchestrate(tasks)), self.none(*blocked_check(tasks))])
-        if tasks.blocked:
-            return self.refuse(all_blocked(tasks))
-        return self.none()
+    def open_lines(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...]:
+        from journal.features.tasks.feature import Tasks
+        tasks = data.part(Tasks)
+        return (orchestrate(tasks),) if settings.value(Tasks.AUTO) and tasks.open_ids else ()
 
     def silent_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         return (*open_lines(tasks), *blocked_check(tasks))
@@ -50,12 +48,8 @@ def orchestrate(tasks: TasksData) -> Nudge:
 
 def blocked_check(tasks: TasksData) -> tuple[Nudge, ...]:
     from journal.features.workers.feature import Workers
-    return (Workers.BLOCKED_CHECK.create(count=len(tasks.blocked), tasks=numbers(tasks.blocked)),) if tasks.blocked else ()
-
-
-def all_blocked(tasks: TasksData) -> Nudge:
-    from journal.features.workers.feature import Workers
-    return Workers.ALL_BLOCKED.create(tasks=numbers(tasks.blocked))
+    queue = (*tasks.suspended, *tasks.blocked)
+    return (Workers.BLOCKED_CHECK.create(count=len(queue), tasks=numbers(queue)),) if queue else ()
 
 
 def open_lines(tasks: TasksData) -> tuple[Nudge, ...]:

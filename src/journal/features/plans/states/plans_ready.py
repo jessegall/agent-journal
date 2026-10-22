@@ -49,9 +49,9 @@ class PlansReady(Ready):
             return self.none()
         return self.push(self.plan_state(plan_id=event.plan_id, task_id=event.task_id, approved=True, logged_at=event.time))
 
-    def open_work_answer(self, data: FeatureData, settings: Settings) -> Transition:
+    def open_lines(self, data: FeatureData, settings: Settings) -> tuple[Nudge, ...]:
         from journal.features.plans.feature import Plans
         approved = data.part(Plans).approved
         if approved:
-            return self.refuse(Plans.APPROVED_UNSTARTED.create(n=approved[0]))
-        return super().open_work_answer(data, settings)
+            return (Plans.APPROVED_UNSTARTED.create(n=approved[0]),)
+        return super().open_lines(data, settings)

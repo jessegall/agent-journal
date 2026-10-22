@@ -2,10 +2,10 @@
   "nudges": true,
   "steps": [
     {
-      "name": "message 1 read",
+      "name": "message 2 read",
       "answer": null,
       "typed": [
-        "[journal] new message 1"
+        "[journal] new message 2"
       ],
       "nudges": [
         "briefing.journal_ready",
@@ -35,7 +35,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "tool uses left before your tools wait for your answer to message 1: 1"
+          "additionalContext": "tool uses left before your tools wait for your answer to message 2: 1"
         }
       },
       "typed": [],
@@ -52,7 +52,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "your next tool call waits for your answer to message 1. answer or react to it now"
+          "additionalContext": "your next tool call waits for your answer to message 2. answer or react to it now"
         }
       },
       "typed": [],
@@ -67,7 +67,7 @@
     {
       "name": "read 4 while owed",
       "answer": {
-        "error": "answer or react to message 1 first. your tool calls wait until you do"
+        "error": "answer or react to message 2 first. your tool calls wait until you do"
       },
       "typed": [],
       "nudges": [
@@ -81,7 +81,7 @@
     {
       "name": "read 5 while owed",
       "answer": {
-        "error": "answer or react to message 1 first. your tool calls wait until you do"
+        "error": "answer or react to message 2 first. your tool calls wait until you do"
       },
       "typed": [],
       "nudges": [

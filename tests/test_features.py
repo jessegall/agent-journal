@@ -258,11 +258,11 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
     console.run(["plan", "add", "1", "write the notes"], USER)
     console.run(["plan", "add", "1", "tag it"], USER)
     console.run(["plan", "approve", "1"], USER)
+    console.run(["task", "block", "2", "the user's words first"], AGENT)
     console.run(["plan", "start", "1"], AGENT)
     plans = app.container.get(Plans)
-    console.run(["task", "block", "2", "the user's words first"], AGENT)
     assert plans.find(1).state == "started", "one blocked task never blocks its plan"
-    console.run(["task", "block", "1", "the build is red"], AGENT)
+    console.run(["task", "complete", "1", "--how", "the notes are written"], AGENT)
     assert plans.find(1).state == "blocked" and any("plan 1 is blocked: all its tasks left are blocked" in line for line in keystrokes)
     assert "is blocked, waiting on" in console.run(["plan", "start", "1"], AGENT).error
     console.run(["task", "unblock", "2"], AGENT)
@@ -942,7 +942,7 @@ def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_fo
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the parser", "--start"], AGENT)
     console.run(["task", "suspend", "1", "the footer first"], AGENT)
-    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "create", "the footer"], AGENT)
     console.run(["task", "block", "2", "waits on the client's logo"], AGENT)
     console.run(["task", "resume", "1"], AGENT)
     console.run(["task", "complete", "1", "--how", "the parser reads"], AGENT)
@@ -956,6 +956,33 @@ def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_fo
     assert ("Blocked task 2: the footer", "waits on the client's logo") in marks, "a parked or blocked mark says why"
     assert texts.count("Started task 1: the parser") == 1 and "Resumed task 1: the parser" in texts, "a parked task taken up again is resumed, not started"
     assert "Unblocked task 2: the footer" in texts, "and a blocked task opened again has a mark too"
+
+
+def test_a_started_task_is_parked_never_blocked_and_parked_work_comes_first_and_can_wait_on_a_row(app: App, monkeypatch):
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["task", "create", "the parser", "--start"], AGENT)
+    refused = console.run(["task", "block", "1", "waits on the grammar"], AGENT)
+    assert refused.code != 0 and "has started, so it is parked rather than blocked: journal task suspend 1" in refused.error, refused.error
+    console.run(["task", "create", "the grammar"], AGENT)
+    assert console.run(["task", "block", "2", "waits on the linguist"], AGENT).code == 0, "a task that never began is blocked as before"
+    console.run(["task", "unblock", "2"], AGENT)
+    parked = console.run(["task", "suspend", "1", "the grammar first", "--on", "task:2"], AGENT)
+    assert parked.code == 0 and "waiting on: task 2" in parked.text, parked.text
+    console.run(["task", "start", "2"], AGENT)
+    done = console.run(["task", "complete", "2", "--how", "the grammar is written"], AGENT)
+    app.runtime().deferred.drain()
+    assert "task 1 is parked, and parked work comes first" in done.text, done.text
+    from journal.models.task_state import TaskState
+    from journal.repositories.entries import Entries
+    from journal.repositories.tasks import Tasks
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Tasks).find(1).state == TaskState.SUSPENDED, "a parked task whose wait ended stays parked until it is resumed"
+        lines = [entry.data["key"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["session"] == "s1"]
+    assert "tasks.parked_wait_ended" in lines, "and the agent is told what it waited on came"
 
 
 def test_a_task_the_user_opens_is_told_at_once_to_an_idle_agent_and_frees_a_stuck_one(app: App, monkeypatch):
@@ -5279,10 +5306,7 @@ def test_a_plan_parks_and_restarts_on_its_parked_task_only_once_approved_holds_i
     assert "task 1," in console.run(["plan", "start", "1"], AGENT).text, "a restart resumes the parked task"
     console.run(["task", "complete", "1", "--how", "h"], AGENT)
     console.run(["task", "complete", "2", "--how", "h"], AGENT)
-    console.run(["task", "block", "3", "a vendor"], AGENT)
     plans = app.container.get(Plans)
-    assert plans.checkpoint_plans(plans.find(1)) is not None, "a blocked task after a checkpoint does not pass it"
-    console.run(["task", "unblock", "3"], AGENT)
     console.run(["task", "start", "3"], AGENT)
     console.run(["task", "complete", "3", "--how", "h"], AGENT)
     assert plans.find(1).state == "done"

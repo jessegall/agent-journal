@@ -5,6 +5,8 @@
       "name": "the plan is started",
       "answer": null,
       "typed": [
+        "[journal] task 1 is open: first. `journal task start 1` takes it up",
+        "[journal] task 2 is open: second. `journal task start 2` takes it up",
         "[journal] the user approved plan 1. `journal plan start 1` begins its first task"
       ],
       "nudges": [
@@ -13,6 +15,8 @@
         "briefing.the_laws_apply",
         "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user",
+        "tasks.task_opened",
+        "tasks.task_opened",
         "plans.the_user_approved_the_plan"
       ],
       "stack": [
@@ -109,10 +113,12 @@
       "name": "a second plan started and cancelled",
       "answer": null,
       "typed": [
+        "[journal] task 3 is open: third. `journal task start 3` takes it up",
         "[journal] the user approved plan 2. `journal plan start 2` begins its first task",
         "[journal] the user abandoned plan 2"
       ],
       "nudges": [
+        "tasks.task_opened",
         "plans.the_user_approved_the_plan",
         "plans.the_user_abandoned_the_plan"
       ],

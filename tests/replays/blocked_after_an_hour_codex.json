@@ -10,7 +10,8 @@
         "briefing.handle_the_journal_quietly",
         "briefing.the_laws_apply",
         "briefing.look_before_the_first_write",
-        "voices.how_to_talk_to_the_user"
+        "voices.how_to_talk_to_the_user",
+        "tasks.check_the_blocked_tasks"
       ],
       "stack": [
         "idle"

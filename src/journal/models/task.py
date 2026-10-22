@@ -8,6 +8,7 @@ from journal.events.rows.task_briefed import TaskBriefed
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_opened import TaskOpened
 from journal.events.rows.task_reopened import TaskReopened
+from journal.events.rows.task_wait_ended import TaskWaitEnded
 from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
@@ -41,6 +42,9 @@ class Task(Scoped):
     def is_resolved(self) -> bool:
         return self.is_closed()
 
+    def waiting_reason(self) -> str:
+        return self.block_reason or self.suspension_reason
+
     def points(self) -> tuple[str, ...]:
         bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
         return bullets or (self.brief.strip(),)
@@ -68,7 +72,14 @@ class Task(Scoped):
         return task.with_event(TaskClosed(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, outcome=manner)).with_event(RowResolved(environment_id=self.environment_id, time=time.timestamp(), ref=f"tasks:{self.id}"))
 
     def blocked(self, reason: str, time: datetime) -> "Task":
+        if self.started_at is not None:
+            raise Rejection(f"task {self.id} has started, so it is parked rather than blocked: journal task suspend {self.id} \"<why>\", with --on or --until when it waits on something")
         return self.closed(self.with_(state=TaskState.BLOCKED, block_reason=reason), time, "blocked")
+
+    def wait_ended(self, reason: str, time: float) -> "Task":
+        if self.state == TaskState.SUSPENDED:
+            return self.with_event(TaskWaitEnded(environment_id=self.environment_id, time=time, task_id=self.row_id, reason=reason))
+        return self.unblocked(reason, time)
 
     def unblocked(self, reason: str, time: float) -> "Task":
         return self.with_(state=TaskState.OPEN, block_reason="").with_event(TaskReopened(environment_id=self.environment_id, time=time, task_id=self.row_id, reason=reason))

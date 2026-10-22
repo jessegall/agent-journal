@@ -69,11 +69,11 @@ class Tasks(ScopedRepository[Task]):
         return [(task, check) for check in self.checks.broken_waits() for task in self.waiting_refs(check)]
 
     def waiting_refs(self, model) -> list[Task]:
-        return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state == TaskState.BLOCKED]
+        return [task for ref in self.links.sources(model, WAIT_LINK) if ref.type == Task.table() and (task := self.find(ref.id)).state in (TaskState.BLOCKED, TaskState.SUSPENDED)]
 
     def reason(self, row: Task | Plan) -> str:
         matched = [f"{ref.type[:-1]} {ref.id}" for ref in self.links.targets(row, WAIT_LINK)]
-        return ", ".join(part for part in (*matched, row.block_reason) if part)
+        return ", ".join(part for part in (*matched, row.waiting_reason()) if part)
 
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)

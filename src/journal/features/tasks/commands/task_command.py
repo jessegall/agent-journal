@@ -61,6 +61,7 @@ class TaskCommand(Command):
         suspension = self.verb(verbs, "suspend", "set a task aside for something else first, by choice; it stays open and stops being nudged")
         suspension.add_argument("n", type=int)
         suspension.add_argument("why")
+        Waits.arguments(suspension, "parked task's wait")
         self.verb(verbs, "resume", "pick a parked task up again").add_argument("n", type=int)
         self.verb(verbs, "show", "a task whole: its title, state, plan and phase, brief and every log line in order").add_argument("n", help="the task's number, or current for the task in hand")
         self.verb(verbs, "list", "every task here not closed, and how many are done or cancelled").add_argument("--all", action="store_true", help="every task, the closed ones too")
@@ -95,7 +96,9 @@ class TaskCommand(Command):
 
     def suspend(self, args: Namespace, caller: Caller) -> int:
         task = self.tasks.save(self.tasks.find(args.n).suspended(args.why, self._time()), caller.actor)
-        print(f"task {task.id} parked")
+        self.waits.linked(task, args.on, args.until, args.every, caller.actor)
+        waits = f", waiting on: {self.tasks.reason(task)}; you are told when that is over" if args.on or args.until else ""
+        print(f"task {task.id} parked{waits}")
         return 0
 
     def resume(self, args: Namespace, caller: Caller) -> int:
@@ -163,6 +166,10 @@ state: {task.state}
         return 0
 
     def _name_next(self, closed: Task) -> None:
+        suspended_tasks = self.tasks.with_state(TaskState.SUSPENDED)
+        if suspended_tasks and not self.next_task.is_planned(closed):
+            print(f"task {suspended_tasks[0].id} is parked, and parked work comes first: can you go on with it now? journal task resume {suspended_tasks[0].id}")
+            return
         next_open = self.next_task.following(closed)
         if next_open:
             print(next_open.line())

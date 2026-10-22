@@ -70,16 +70,16 @@ def tool_uses_with_the_inbox(app, replay: Replay, provider: str) -> None:
     console.run(["task", "create", "the footer", "--start"], AGENT)
     replay.step("a task in hand")
     console.run(["message", "send", "one"], USER)
-    replay.step("message 1 arrives")
+    replay.step("message 2 arrives")
     for i in range(1, 17):
         replay.step(f"read {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
     replay.step("a write at 17", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
-    console.run(["message", "read", "1"], AGENT)
-    replay.step("message 1 read")
+    console.run(["message", "read", "2"], AGENT)
+    replay.step("message 2 read")
     replay.step("a read while owed", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
     replay.step("a journal command while owed", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].shell, tool_input={"command": "journal task list"})[1])
-    replay.step("a look at its files", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": str(app.config.home / "files" / "message" / "1" / "a.png")})[1])
-    console.run(["message", "send", "[!reply:1] here", "--reply-to", "1"], AGENT)
+    replay.step("a look at its files", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": str(app.config.home / "files" / "message" / "2" / "a.png")})[1])
+    console.run(["message", "send", "[!reply:2] here", "--reply-to", "2"], AGENT)
     replay.step("the reply")
     replay.step("a read after the reply", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
 
@@ -260,11 +260,11 @@ def tool_uses_with_changed_settings(app, replay: Replay, provider: str) -> None:
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
     console.run(["message", "send", "one"], USER)
-    console.run(["message", "read", "1"], AGENT)
-    replay.step("message 1 read")
+    console.run(["message", "read", "2"], AGENT)
+    replay.step("message 2 read")
     for i in range(1, 6):
         replay.step(f"read {i} while owed", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].read, tool_input={"file_path": "a.py", "limit": 1})[1])
-    console.run(["message", "send", "[!reply:1] here", "--reply-to", "1"], AGENT)
+    console.run(["message", "send", "[!reply:2] here", "--reply-to", "2"], AGENT)
     replay.step("the reply")
     for i in range(1, 8):
         replay.step(f"write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
@@ -274,7 +274,7 @@ def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journal, monke
     app, provider = journal
     replay, rows = played(f"tool_uses_with_changed_settings_{provider}", app, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert name_index["read 1 while owed"]["answer"] == {} and "wait for your answer to message 1: 1" in str(name_index["read 2 while owed"]["answer"]) and "your next tool call waits for your answer to message 1" in str(name_index["read 3 while owed"]["answer"]), "with the setting changed, the countdown starts later and still ends on the last use"
+    assert name_index["read 1 while owed"]["answer"] == {} and "wait for your answer to message 2: 1" in str(name_index["read 2 while owed"]["answer"]) and "your next tool call waits for your answer to message 2" in str(name_index["read 3 while owed"]["answer"]), "with the setting changed, the countdown starts later and still ends on the last use"
     assert "error" in name_index["read 4 while owed"]["answer"] and "error" in name_index["read 5 while owed"]["answer"], "and holds after four"
     assert "in hand, 2 edits" in str(name_index["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(name_index["write 4"]["answer"]) and "in hand, 4 edits" in str(name_index["write 5"]["answer"]) and name_index["write 6"]["answer"] == {} and "error" in name_index["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
     assert rows == [], "the agent would have seen the same, and the record says the same"
@@ -284,7 +284,7 @@ def test_tool_about_to_run_matches_its_record_on_the_inbox(journal, monkeypatch)
     app, provider = journal
     replay, rows = played(f"tool_uses_with_the_inbox_{provider}", app, monkeypatch, tool_uses_with_the_inbox, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert "wait for message 1: 3" in str(name_index["read 1"]["answer"]) and "wait for message 1: 1" in str(name_index["read 3"]["answer"]) and "your next write waits for message 1" in str(name_index["read 4"]["answer"]), "each tool use counts down the uses left before the writes wait, then names the hold"
+    assert "wait for message 2: 3" in str(name_index["read 1"]["answer"]) and "wait for message 2: 1" in str(name_index["read 3"]["answer"]) and "your next write waits for message 2" in str(name_index["read 4"]["answer"]), "each tool use counts down the uses left before the writes wait, then names the hold"
     assert "you have 1 unread messages" in str(name_index["a write at 17"]["answer"]), "and holds the write after five namings"
     assert name_index["a read while owed"]["answer"] == {} and name_index["a journal command while owed"]["answer"] == {} and name_index["a look at its files"]["answer"] == {} and name_index["a read after the reply"]["answer"] == {}, "a read message has its grace of five uses before a word is asked for"
     assert rows == [], "the agent would have seen the same, and the record says the same"
@@ -691,7 +691,7 @@ def blocked_after_an_hour(app, replay: Replay, provider: str) -> None:
     hook_as(app, provider, "SessionStart")
     console = app.console()
     console.run(["environment", "overview"], AGENT)
-    console.run(["task", "create", "the footer", "--start"], AGENT)
+    console.run(["task", "create", "the footer"], AGENT)
     console.run(["task", "block", "1", "the designer's answer"], AGENT)
     hook_as(app, provider, "Stop")
     replay.step("a task blocked, the agent idle")
@@ -832,7 +832,7 @@ def two_lines_on_one_write(app, replay: Replay, provider: str) -> None:
     for i in (1, 2):
         replay.step(f"write {i}", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
     console.run(["message", "send", "how is it going?"], USER)
-    console.run(["message", "read", "1"], AGENT)
+    console.run(["message", "read", "2"], AGENT)
     replay.step("a message read and owed")
     replay.step("a write held twice over", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": "a.py"})[1])
 
@@ -841,7 +841,7 @@ def test_a_second_session_in_one_environment_takes_the_first_ones_place_and_a_li
     app, provider = journal
     replay, rows = played(f"two_agents_{provider}", app, monkeypatch, two_agents, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert name_index["a message arrives"]["typed"] == ["[journal] new message 3"], "named once for the environment; message 1 is the worker's card and 2 the job in the worker's own chat"
+    assert name_index["a message arrives"]["typed"] == ["[journal] new message 4"], "named once for the environment; messages 1 to 3 are the task's mark, the worker's card and the job in the worker's own chat"
     reported = name_index["the worker reports"]["typed"]
     assert reported[0].startswith("[journal] the wait for worker 1 is over: worker 1, Lady Lovelace, reported") and reported[1] == "[journal] worker 1, Lady Lovelace, reported in the chat" and len(reported) == 2, "the awaiting agent is told and released, once"
     assert app.container.get(SessionAgents).top("s2").task_id == 1 and app.container.get(SessionAgents).top("s1").name == "ended", "an environment keeps one session: the second took the first one's place"
@@ -852,7 +852,7 @@ def test_two_lines_on_one_write_the_first_hold_wins(journal, monkeypatch):
     app, provider = journal
     replay, rows = played(f"two_lines_on_one_write_{provider}", app, monkeypatch, two_lines_on_one_write, provider, nudges=True)
     blocked = replay.record()[-1]["answer"]["error"]
-    assert "answer or react to message 1 first" in blocked, "the hold over the unanswered message runs first in the order and wins the write"
+    assert "answer or react to message 2 first" in blocked, "the hold over the unanswered message runs first in the order and wins the write"
     assert rows == [], "the agent would have seen the same, in the same order"
 
 
