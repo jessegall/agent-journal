@@ -26,8 +26,4 @@ class WorkerTodos(ScopedRepository[WorkerTodo], LinkedRows):
         return sorted(self.children(task), key=lambda item: item.position)
 
     def task_lists(self, task_ids: set[int]) -> dict[int, list[WorkerTodo]]:
-        owners = {link.source.id: link.target.id for link in self.links.all_matching(kind=TODO_LINK) if link.target.id in task_ids}
-        lists: dict[int, list[WorkerTodo]] = {}
-        for item in sorted(self.numbered(owners), key=lambda item: item.position):
-            lists.setdefault(owners[item.row_id], []).append(item)
-        return lists
+        return {task: sorted(items, key=lambda item: item.position) for task, items in self.grouped(task_ids).items()}

@@ -656,7 +656,7 @@ def test_a_worker_keeps_its_own_to_do_list_inside_its_task(app: App):
     assert "only a worker on a task keeps one" in console.run(["todo", "list"], AGENT).error
     with scope.environment(1):
         shown = app.container.get(TaskController).shown_page([tasks.find(task.id)])[0]
-    assert shown["todos"] == [{"text": "write the grammar", "complete": False}, {"text": "write the test", "complete": True}, {"text": "run it", "complete": False}], "the task's payload carries the items with their flags"
+    assert [(item.text, item.complete) for item in shown["work"].todos] == [("write the grammar", False), ("write the test", True), ("run it", False)], "the task's payload carries the items with their flags"
     data = json.dumps({"hook_event_name": "Stop", "session_id": "w1"}).encode()
     request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Worker": str(worker.id), "X-Journal-Worker-Token": "tok"})
     with urlopen(request, timeout=5) as reply:

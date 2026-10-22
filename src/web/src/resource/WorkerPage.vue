@@ -1,6 +1,7 @@
 <script setup>
 import {computed} from "vue";
 import AgentInspector from "../agents/AgentInspector.vue";
+import WorkerShift from "./WorkerShift.vue";
 import {useScope} from "../composables/scope.js";
 import {ending} from "../domain/agentState.js";
 import {isWorking, stateAt, WORKER_WORDS, workerActions, workerEnding, workerLine, workerName, workerReport, workerReuses, workerState} from "../domain/workers.js";
@@ -17,11 +18,15 @@ const ACTIONS = {
     send: (id, brief) => api.act("workers", id, "send", {brief}),
     stop: (id) => api.act("workers", id, "stop"),
     complete: (id) => api.act("workers", id, "complete"),
+    merge: (id) => api.act("workers", id, "merge"),
+    release: (id) => api.act("workers", id, "release"),
 };
+
+const WAITING = new Set(["ready", "unfinished", "reported"]);
 
 function standing(row) {
     if (isWorking(row)) return {key: "working", word: WORKER_WORDS.running, dot: "running"};
-    if (workerState(row) === "reported") return {key: "idle", word: WORKER_WORDS.reported, dot: "reported"};
+    if (WAITING.has(workerState(row))) return {key: "idle", word: WORKER_WORDS[workerState(row)], dot: "reported"};
     return {key: "idle", ...ending("stopped", stateAt(row)), word: `${workerEnding(row)} ${ago(stateAt(row))}`};
 }
 
@@ -51,5 +56,9 @@ const info = computed(() => {
         :transcripts="transcripts"
         :run="(key, answer) => ACTIONS[key](resource.id, answer)"
         @close="emit('close')"
-    />
+    >
+        <template #bands>
+            <WorkerShift :worker="resource" :api="api" />
+        </template>
+    </AgentInspector>
 </template>

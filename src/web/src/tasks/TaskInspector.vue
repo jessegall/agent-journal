@@ -6,6 +6,7 @@ import Comments from "../resource/Comments.vue";
 import CommentWrite from "../resource/CommentWrite.vue";
 import Links from "../resource/Links.vue";
 import TaskLogs from "../resource/TaskLogs.vue";
+import TaskWork from "../resource/TaskWork.vue";
 import {planOf} from "../domain/records.js";
 import {updatedAt} from "../domain/row.js";
 import {nextAct, otherActs, STATUS_WORDS, statusOf, waitOf} from "../domain/taskBoard.js";
@@ -117,6 +118,7 @@ watch(
                         </template>
                     </section>
                 </template>
+                <TaskWork :task="task" />
                 <TaskLogs :task="task" />
                 <Links :resource="task" />
                 <Comments :resource="task" :compose="false" />

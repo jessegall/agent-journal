@@ -6987,6 +6987,45 @@ def test_saving_a_proof_a_check_or_a_to_do_item_moves_its_tasks_updated_at(app: 
         assert moved(), "and a to-do item"
 
 
+def test_the_user_checks_sends_back_and_merges_a_workers_work_from_the_viewer(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.http.controllers.workers import WorkerController
+    from journal.models.proof_state import ProofState
+    from journal.models.task_state import TaskState
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    console.run(["proof", "1", "parser.py:12"], lovelace)
+    console.run(["proof", "2", "parser.py:30"], lovelace)
+    console.run(["clock-out", "the parser reads"], lovelace)
+    controller = app.container.get(WorkerController)
+    posted = lambda body: type("Posted", (), {"number": lambda self, key: 1, "environment": "main", "actor": Actor.user(1), "body": body})()
+    with app.container.get(Scope).environment(MAIN):
+        shown = controller.check(posted({"point": 1})).body
+        assert [proof.state for proof in shown["task"].proofs] == [ProofState.CHECKED, ProofState.SHOWN], "the viewer's check acts as the command does, and the payload shows it"
+        controller.short_check(posted({"point": 2, "shortfall": "the aliases are missing"}))
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        proofs, tasks = app.container.get(Proofs), app.container.get(Tasks)
+        assert proofs.task_proofs(tasks.find(1))[-1].updater == Actor.user(1) and workers.find(1).is_running(), "so does sending one back, stamped as the user's"
+        workers.save(workers.find(1).delivered(2.0), Actor.system())
+    console.run(["proof", "2", "parser.py:41"], lovelace)
+    with app.container.get(Scope).environment(MAIN):
+        controller.check(posted({"point": 2}))
+        controller.merge(posted({}))
+        assert tasks.find(1).state == TaskState.FINISHED and workers.find(1).state == WorkerState.MERGED, "and the viewer's merge closes the task"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

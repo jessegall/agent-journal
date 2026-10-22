@@ -20,3 +20,10 @@ class LinkedRows:
 
     def children(self, parent: Model) -> list:
         return self.numbered(ref.id for ref in self.links.sources(parent, self.link_kind))
+
+    def grouped(self, parent_ids: set[int]) -> dict[int, list]:
+        owners = {link.source.id: link.target.id for link in self.links.all_matching(kind=self.link_kind) if link.target.id in parent_ids}
+        groups: dict[int, list] = {}
+        for row in self.numbered(owners):
+            groups.setdefault(owners[row.row_id], []).append(row)
+        return groups

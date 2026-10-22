@@ -15,6 +15,8 @@ from journal.models.task_state import TaskState
 from journal.repositories.plans import PLAN_LINK
 from journal.repositories.task_logs import TaskLogs
 from journal.repositories.tasks import Tasks
+from journal.features.workers.support.worker_task_view import WorkerTaskView
+from journal.repositories.proofs import Proofs
 from journal.repositories.worker_todos import WorkerTodos
 from journal.repositories.workers import Workers
 
@@ -24,8 +26,8 @@ class TaskController(Controller[Task]):
 
     repository: Tasks
 
-    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits, taking: ActiveTask, task_holders: TaskHolders, todos: WorkerTodos) -> None:
-        self.repository, self.task_logs, self.workers, self.waits, self.taking, self.task_holders, self.todos = tasks, logs, workers, waits, taking, task_holders, todos
+    def __init__(self, tasks: Tasks, logs: TaskLogs, workers: Workers, waits: Waits, taking: ActiveTask, task_holders: TaskHolders, todos: WorkerTodos, proofs: Proofs) -> None:
+        self.repository, self.task_logs, self.workers, self.waits, self.taking, self.task_holders, self.todos, self.proofs = tasks, logs, workers, waits, taking, task_holders, todos, proofs
 
     def rows(self) -> list[Task]:
         return self.repository.shown()
@@ -38,10 +40,10 @@ class TaskController(Controller[Task]):
 
     def shown_page(self, rows: list[Task]) -> list[dict]:
         plans, holders, waits = self.repository.linked(PLAN_LINK), self.workers.containing({t.row_id for t in rows}), self.repository.open_wait_refs(rows)
-        task_holders, todos = self.repository.holders(), self.todos.task_lists({t.row_id for t in rows})
+        task_holders, todos, proofs = self.repository.holders(), self.todos.task_lists({t.row_id for t in rows}), self.proofs.grouped({t.row_id for t in rows})
         return [{**ModelFields.build(t), "plan_id": plans[t.row_id][0].id if t.row_id in plans else None, "worker_id": holders[t.row_id].id if t.row_id in holders else None,
                  "waits": [str(ref) for ref in waits.get(t.row_id, [])], "held_by": self.task_holders.name(task_holders[t.row_id]) if t.row_id in task_holders else "",
-                 "todos": [{"text": item.text, "complete": item.complete} for item in todos.get(t.row_id, [])]} for t in rows]
+                 "work": WorkerTaskView.built(t, todos.get(t.row_id, []), proofs.get(t.row_id, []))} for t in rows]
 
     def update(self, request: Request) -> Response:
         row = self.repository.find(request.number("id"))

@@ -26,6 +26,7 @@ import ResourceMadeFor from "./ResourceMadeFor.vue";
 import ResourceOutcome from "./ResourceOutcome.vue";
 import ResourceWaits from "./ResourceWaits.vue";
 import TaskLogs from "./TaskLogs.vue";
+import TaskWork from "./TaskWork.vue";
 
 const props = defineProps({
     resource: Object,
@@ -132,6 +133,7 @@ async function follow() {
             </ResourceBlock>
         </template>
         <template v-if="table === 'tasks'">
+            <TaskWork :task="resource" />
             <TaskLogs :task="resource" />
         </template>
         <template v-if="resource.outcome && isClosed(resource)">

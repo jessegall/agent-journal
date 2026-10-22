@@ -233,6 +233,7 @@ const openSkills = () => go("skills");
             @skip-step="onSequence('skip')"
             @end-sequence="onSequence('end')"
         />
+        <slot name="bands" />
         <AgentPanes ref="panes" :views="VIEWS" :available="available" :flushable="['feed']">
             <template #view="{view, pane, tune}">
                 <SwitchCase :value="view">
