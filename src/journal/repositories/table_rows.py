@@ -10,3 +10,6 @@ class TableRows(Repository):
     def __init__(self, connection: Connection, bus: Bus, model: type[Model]) -> None:
         self.model = model
         super().__init__(connection, bus)
+
+    def clear(self) -> None:
+        self._purged(self.query())

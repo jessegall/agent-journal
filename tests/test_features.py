@@ -9576,6 +9576,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     from journal.repositories.users import Users
     from journal.models.task import Task
     from journal.sync.team_account import TeamAccount
+    from journal.repositories.environments import Environments
     from journal.repositories.workers import Workers
     from sync_server.account import ADMIN
     from sync_server.team_server import TeamServer
@@ -9617,9 +9618,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         invitation = a.console().run(["team", "invite", "bob@example.com"], USER).text
         bob_code = re.search(r"--code (\S+)", invitation).group(1)
         assert c.console().run(["team", "join", address, "--code", bob_code, "--password", "correct horse battery"], USER).error.startswith("the team's journal belongs to the repository"), "a checkout of another repository is refused"
+        with b.container.get(Scope).environment(MAIN):
+            b.container.get(Tasks).save(Task(environment_id=MAIN, title="b's own, before joining"), Actor.user(1))
         joined_b = b.console().run(["team", "join", address, "--code", bob_code, "--name", "Bob", "--password", "correct horse battery"], USER)
         assert joined_b.code == 0 and "joined the team" in joined_b.text, joined_b.error
-        assert b.container.get(Tasks).find(task.id).title == "made before the team", "the joining journal holds the team's tasks"
+        assert [row.title for row in b.container.get(Tasks).global_matching()] == [row.title for row in a.container.get(Tasks).global_matching()], "the joining journal holds exactly the team's tasks, its own replaced"
+        assert [row.name for row in b.container.get(Environments).rows()] == [row.name for row in a.container.get(Environments).rows()]
+        assert list((tmp_path / "b" / ".journal").glob("journal-before-team-*.db")), "the journal as it was is kept in a backup"
         assert eventually(lambda: {user.id: user.name for user in a.container.get(Users).rows()}.get(2) == "Bob"), "every machine knows the new person"
         assert "person: user 2" in b.console().run(["team", "status"], USER).text
     finally:

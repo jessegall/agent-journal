@@ -72,6 +72,11 @@ class Connection:
             return
         work()
 
+    def backup(self, target: Path) -> None:
+        copy = sqlite3.connect(target)
+        self._local().backup(copy)
+        copy.close()
+
     def close(self) -> None:
         for open_ in self._open:
             open_.close()

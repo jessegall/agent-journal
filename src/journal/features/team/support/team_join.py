@@ -1,6 +1,13 @@
 import hashlib
 import socket
 import ssl
+import time
+
+from journal.config import Config
+from journal.repositories.agents import Agents
+from journal.repositories.entries import Entries
+from journal.repositories.environments import Environments
+from journal.repositories.journal_backup import JournalBackup
 
 from journal.db.schema import Schema
 from journal.features.team.support.repository_identity import RepositoryIdentity
@@ -16,12 +23,16 @@ from journal.sync.team_account import TeamAccount
 from journal.sync.team_server_link import TeamServerLink
 from sync_server.copied_row import CopiedRow
 
+BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
+MAIN = "main"
+
 
 class TeamJoin:
-    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, and a team with one gives this machine its copy and this person's user row. The sync client starts once it is done."""
+    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the team's environment of the same name, and adds this person's user row. The sync client starts once it is done."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
+        self.backups, self.config, self.environments, self.agents, self.entries = backups, config, environments, agents, entries
 
     def join(self, address: str, code: str, password: str, fingerprint: str, name: str) -> str:
         if self.account.is_joined():
@@ -54,12 +65,24 @@ class TeamJoin:
 
     def downloaded(self, account_id: int, name: str) -> str:
         copy = self.link.full_copy()
+        backup = self.config.home / time.strftime(BACKUP_NAME)
+        self.backups.write(backup)
+        environment_names = {environment.row_id: environment.name for environment in self.environments.rows()}
+        for table in self.tables.names():
+            self.tables.rows(table).clear()
+        self.outgoing.clear()
+        self.entries.clear()
         for row in copy.rows:
             if self.tables.has(row.row_table):
                 self.tables.rows(row.row_table).pulled_creation(row.row, row.fields, Actor.system())
         self.account.record_sequence(copy.head)
         self.add_user(account_id, name)
-        return f"joined the team: {len(copy.rows)} rows downloaded"
+        self.move_agents(environment_names)
+        return f"joined the team: {len(copy.rows)} rows downloaded, and this journal as it was kept in {backup.name}"
+
+    def move_agents(self, environment_names: dict[int, str]) -> None:
+        for agent in self.agents.all_agents():
+            self.agents.save(agent.with_(environment_id=self.environments.lookup(environment_names.get(agent.environment_id, MAIN)).row_id), Actor.system())
 
     def add_user(self, account_id: int, name: str) -> None:
         users = self.tables.rows(User.table())

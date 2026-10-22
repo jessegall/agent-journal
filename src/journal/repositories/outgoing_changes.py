@@ -40,3 +40,6 @@ class OutgoingChanges(Repository[OutgoingChange]):
 
     def commit_callback(self, work) -> None:
         self.connection.commit_callback(work)
+
+    def clear(self) -> None:
+        self._purged(self.query())

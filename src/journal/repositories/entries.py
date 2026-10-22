@@ -154,3 +154,6 @@ class Entries(ScopedRepository[Entry]):
 
     def _placed(self, row: Entry) -> Entry:
         return row
+
+    def clear(self) -> None:
+        self._purged(self.query())

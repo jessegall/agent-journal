@@ -33,6 +33,7 @@ from journal.events.models.synced import Synced
 from journal.sync.pulled_settings import PulledSettings
 from journal.sync.record_purge import RecordPurge
 from journal.sync.sync_client import SyncClient
+from journal.sync.team_account import TeamAccount
 from journal.events.models.purged import Purged
 
 
@@ -70,7 +71,7 @@ class Runtime:
                 self.container.get(seed).run()
         self.machine.compactions_ended()
         from journal.repositories.environments import Environments
-        if not self.container.get(Environments).all():
+        if not self.container.get(Environments).all() and not self.container.get(TeamAccount).is_joined():
             self.container.get(Environments).lookup("main")
 
     def start(self) -> None:
