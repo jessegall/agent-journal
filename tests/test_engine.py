@@ -582,8 +582,9 @@ def test_a_worker_has_a_stack_of_its_own_from_clock_in_to_clock_out_and_none_of_
         except HTTPError as error:
             return error.code, json.loads(error.read())
     app.console().run(["panic", "paused"], AGENT)
+    posted = lambda: len([m for m in app.container.get(Messages).all() if m.data.get("shows") != "workers"])
     with scope.environment(1):
-        messages = len(app.container.get(Messages).all())
+        messages = posted()
     assert write(app)[0] == 409, "the main agent's pause holds its own write"
     assert worker_hook("SessionStart", source="startup") == (200, {}), "a worker owes no overview"
     status, body = worker_hook("PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})
@@ -596,7 +597,7 @@ def test_a_worker_has_a_stack_of_its_own_from_clock_in_to_clock_out_and_none_of_
         workers.save(workers.find(worker.id).delivered(2.0), Actor.worker(worker.id))
     assert agents.session_agent("w1").stack[-1]["state"] != "working" and "decision" not in worker_hook("Stop")[1], "clocked out, it may stop"
     with scope.environment(1):
-        assert len(app.container.get(Messages).all()) == messages, "none of its hooks is posted in the chat"
+        assert posted() == messages, "none of its hooks is posted in the chat, only its marks"
         assert {"SessionStart", "PreToolUse", "Stop"} <= {entry.data["hook_event_name"] for entry in app.container.get(Entries).all() if entry.data.get("session_id") == "w1"}, "its hooks are recorded"
     app.console().run(["panic", "pop"], AGENT)
     stack = agents.session_agent("w1").stack

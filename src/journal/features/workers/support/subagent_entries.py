@@ -7,6 +7,7 @@ from journal.models.subagent_state import SubagentState
 from journal.repositories.entries import Entries
 from journal.support.agent_message import AgentMessage
 from journal.support.subagent_dispatch import SubagentDispatch
+from journal.support.task_notification import TaskNotification
 
 ENDS = frozenset({"Stop", "SessionStarted", "SessionEnded"})
 SUBAGENT_KINDS = ENDS | {"SubagentStarted", "SubagentEnded"}
@@ -61,6 +62,9 @@ class SubagentEntries:
                 if i is not None:
                     rows[i] = rows[i].finished(SubagentState.FINISHED, time)
                 continue
+            if e.kind == "PromptSubmitted":
+                SubagentEntries.notified(rows, background, str(e.data.get("prompt", "")), time)
+                continue
             operation = e.recorded_call().operation
             if isinstance(operation, AgentMessage):
                 SubagentEntries.resumed(rows, background, operation.receiver, e.kind, time)
@@ -100,6 +104,16 @@ class SubagentEntries:
         if entry.kind == "SessionEnded" or (entry.kind == "SessionStarted" and entry.data.get("source") != "compact"):
             return row.finished(SubagentState.STOPPED, time)
         return row
+
+    @staticmethod
+    def notified(rows: list[Subagent], background: dict[str, int], prompt: str, time: float) -> None:
+        for notification in TaskNotification.parsed(prompt):
+            i = background.pop(notification.task_id, None)
+            if i is None:
+                i = next((n for n, row in enumerate(rows) if row.session == notification.task_id and row.state in (SubagentState.ACTIVE, SubagentState.FINISHED)), None)
+            finished = i is not None and rows[i].state == SubagentState.FINISHED
+            if i is not None and notification.is_change(finished):
+                rows[i] = rows[i].notified(notification, rows[i].ended_at if finished else time)
 
     @staticmethod
     def started(rows: list[Subagent], background: dict[str, int], unstarted: dict[str, int], agent_id: str) -> None:

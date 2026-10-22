@@ -1,3 +1,5 @@
+from journal.events.agent.prompt_submitted import PromptSubmitted
+from journal.support.task_notification import TaskNotification
 import time
 
 from journal.chat.cards import Cards
@@ -33,7 +35,7 @@ class SubagentCards(AgentListener[AgentEvent]):
 
     @staticmethod
     def moves(event: AgentEvent) -> bool:
-        return type(event).__name__ in SUBAGENT_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and isinstance(event.call.operation, SubagentDispatch))
+        return type(event).__name__ in SUBAGENT_KINDS or (isinstance(event, (ToolStarting, ToolFinished, ToolFailed)) and isinstance(event.call.operation, SubagentDispatch)) or (isinstance(event, PromptSubmitted) and bool(TaskNotification.parsed(event.prompt)))
 
     def carded(self, event: AgentEvent, row: Subagent, agent: int, actor: Actor) -> None:
         self.dispatch_card(event, row, agent, actor)
@@ -51,7 +53,8 @@ class SubagentCards(AgentListener[AgentEvent]):
     def end_card(self, event: AgentEvent, row: Subagent, agent: int, actor: Actor) -> None:
         key = f"subagent:{row.dispatch}:ended:{int(row.ended_at)}"
         report = event.report if isinstance(event, SubagentEnded) and event.subagent == row.session else ""
-        if self.messages.keyed(key, actor) and not report:
+        older = self.messages.keyed(key, actor)
+        if older and older[0].data.get("state") == row.state.value and not report:
             return
         data = SubagentCard.built(event.session, agent, row, row.state, row.reason).as_data()
         self.cards.keyed(event.environment_id, key, f"Subagent {row.agent_type} ended: {row.task}", data, actor, CardKind.SUBAGENTS, report or row.task)

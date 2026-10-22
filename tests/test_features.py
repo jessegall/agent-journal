@@ -1086,6 +1086,31 @@ def test_a_dispatch_that_failed_ends_with_a_mark_carrying_the_tools_error(app: A
     assert marks == [("look", "running", ""), ("look", "failed", "Model 'haiku-9' not found")], "the dispatch's mark stays, and its end says it failed with the tool's error"
 
 
+def test_a_background_subagent_that_ends_on_an_error_or_gives_up_is_told_by_the_programs_notification(app: App):
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    marks = lambda: [(m.data["detail"], m.data["state"], m.data["reason"]) for m in app.container.get(Messages).all() if m.data.get("kind") == "subagent"]
+    for use, agent, title in (("t-r", "ag-r", "trace the loop"), ("t-g", "ag-g", "fix the server")):
+        call = {"subagent_type": "journal-researcher", "description": title, "prompt": "read", "model": "opus", "run_in_background": True}
+        hook(app, "PreToolUse", tool_name="Agent", tool_input=call, tool_use_id=use)
+        hook(app, "PostToolUse", tool_name="Agent", tool_input=call, tool_response={"agentId": agent, "isAsync": True}, tool_use_id=use)
+    failed = "<task-notification>\n<task-id>ag-r</task-id>\n<status>failed</status>\n<summary>Agent \"trace the loop\" failed: You've reached your Fable limit</summary>\n</task-notification>"
+    hook(app, "UserPromptSubmit", prompt=failed)
+    app.runtime().deferred.drain()
+    assert ("trace the loop", "failed", 'Agent "trace the loop" failed: You\'ve reached your Fable limit') in marks(), "a subagent ended by an API error turns red with why, though no SubagentStop came"
+    gave_up = "<task-notification>\n<task-id>ag-g</task-id>\n<status>completed</status>\n<summary>done</summary>\n<result>I can't reach the server from here.\nIt refuses the connection.</result>\n</task-notification>"
+    hook(app, "UserPromptSubmit", prompt=gave_up)
+    app.runtime().deferred.drain()
+    assert ("fix the server", "unfinished", "I can't reach the server from here.") in marks(), "one that says it could not do the job is marked so, with its own first line"
+
+
+def test_a_subagent_dispatch_without_a_model_is_held_before_it_starts(app: App):
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    status, body = hook(app, "PreToolUse", tool_name="Agent", tool_input={"subagent_type": "journal-researcher", "description": "look", "prompt": "read"}, tool_use_id="t-m")
+    assert status == 409 and "model" in body.get("error", ""), body
+
+
 def test_a_document_the_agent_writes_is_a_message_in_its_chat(app: App, tmp_path):
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")

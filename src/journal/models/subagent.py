@@ -1,4 +1,5 @@
 from typing import ClassVar
+from journal.support.task_notification import TaskNotification
 from dataclasses import dataclass
 
 from journal.models.scoped import Scoped
@@ -43,6 +44,13 @@ class Subagent(Scoped):
 
     def finished(self, state: SubagentState, time: float) -> "Subagent":
         return self.with_(state=state, ended_at=time)
+
+    def notified(self, notification: TaskNotification, time: float) -> "Subagent":
+        if notification.is_failed():
+            return self.failed(notification.summary, time)
+        if notification.is_refusal():
+            return self.with_(state=SubagentState.UNFINISHED, ended_at=time, reason=notification.first_line())
+        return self.finished(SubagentState.FINISHED, time)
 
     def failed(self, reason: str, time: float) -> "Subagent":
         return self.with_(state=SubagentState.FAILED, ended_at=time, reason=reason)

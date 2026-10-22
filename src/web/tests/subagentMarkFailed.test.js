@@ -51,3 +51,19 @@ test("a subagent's mark is light blue while it works, green once it finished, or
     expect(await style({task: "look", finished: true, stopped: true, time: 10})).toContain("--tone-warn");
     expect(await style({task: "look", time: 10})).not.toContain("e2c55c");
 });
+
+test("a subagent that said it could not do the job is an orange mark with its own words", async () => {
+    const host = document.createElement("div");
+    document.body.append(host);
+    const app = createApp({
+        render: () => h(SubagentMark, {task: "look", finished: true, unfinished: true, reason: "I can't reach the server", time: 10}),
+    });
+    app.directive("tip", {});
+    app.mount(host);
+    await nextTick();
+    expect(host.textContent).toContain("Subagent could not do it");
+    expect(host.textContent).toContain("look: I can't reach the server");
+    expect(host.innerHTML).toContain("--tone-warn");
+    app.unmount();
+    host.remove();
+});

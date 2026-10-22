@@ -55,6 +55,7 @@ const SYSTEM_TURNS = {
             finished: card.state !== "running",
             stopped: card.state === "stopped",
             failed: card.state === "failed",
+            unfinished: card.state === "unfinished",
             reason: card.reason || "",
         },
     }),
