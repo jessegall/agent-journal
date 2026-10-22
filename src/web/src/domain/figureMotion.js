@@ -89,7 +89,11 @@ export function aimedAt(trip, leg, from, landed) {
     const end = (trip.legs.at(-1) ?? leg).y;
     const carried = (each) => (each.y === end ? {...each, x: each.x + dx, y: each.y + dy} : each);
     const under = leg.y === end;
-    return {trip: {...trip, to: landed, legs: trip.legs.map(carried)}, leg: under ? carried(leg) : leg, from: under ? {...from, x: from.x + dx} : from};
+    return {
+        trip: {...trip, to: landed, legs: trip.legs.map(carried)},
+        leg: under ? carried(leg) : leg,
+        from: under ? {...from, x: from.x + dx} : from,
+    };
 }
 
 // How far the squire's chase may run, out to its right and back: as far as `most` pixels along the floor under its feet, never past that
@@ -127,5 +131,11 @@ const SLIDE_EASING = "cubic-bezier(0.42, 0, 0.58, 1)";
 export function slideAt(slide, now, ms) {
     const share = Math.min(1, Math.max(0, (now - slide.began) / ms));
     const along = eased(SLIDE_EASING, share);
-    return {at: {x: slide.from.x + (slide.to.x - slide.from.x) * along, y: slide.from.y + (slide.to.y - slide.from.y) * along}, done: share >= 1};
+    return {
+        at: {x: slide.from.x + (slide.to.x - slide.from.x) * along, y: slide.from.y + (slide.to.y - slide.from.y) * along},
+        done: share >= 1,
+    };
 }
+
+// The legs of a trip, or any points of one, moved by dx and dy, as the floor the figure waits on to set off moves under it
+export const liftedLegs = (legs, dx, dy) => legs.map((each) => ({...each, x: each.x + dx, y: each.y + dy}));

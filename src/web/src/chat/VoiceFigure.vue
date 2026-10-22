@@ -14,6 +14,7 @@ import {
     floorAt,
     legAt,
     legEnded,
+    liftedLegs,
     slideAt,
     underWalker,
 } from "../domain/figureMotion.js";
@@ -289,11 +290,11 @@ function setOff() {
     const trip = tripTo(body.place, there, figureSize(), {straight, pace});
     body.way = Math.sign(there.x - body.place.x);
     stopSwinging();
-    body.footing = null;
     if (trip) {
         body.trip = {...body.trip, ...trip};
         return nextLeg();
     }
+    body.footing = null;
     body.trip = null;
     settle(there, held);
     step();
@@ -330,6 +331,7 @@ function depart() {
         return void slideWaits.push(() => body.trip === rising && depart());
     }
     body.trip = {...body.trip, moves: true, departed: true, legs};
+    body.footing = null;
     const feet = feetOf(from);
     body.walk = {
         from,
@@ -379,6 +381,7 @@ function watchFooting() {
     const spot = ground.spot;
     if (Math.hypot(spot.x - body.place.x, spot.y - body.place.y) <= 0.3) return;
     if (ground.motion === "launched" && !body.arriving) groundMoved("launched");
+    if (body.trip) body.trip = {...body.trip, legs: liftedLegs(body.trip.legs, spot.x - body.place.x, spot.y - body.place.y)};
     body.place = spot;
     rest();
 }
@@ -398,10 +401,10 @@ function walkOn() {
 }
 
 function carryWalk(dx, dy) {
-    const lifted = (each) => ({...each, x: each.x + dx, y: each.y + dy});
-    body.walk = {...body.walk, from: lifted(body.walk.from)};
-    body.leg = lifted(body.leg);
-    body.trip = {...body.trip, legs: body.trip.legs.map(lifted)};
+    const [from, leg] = liftedLegs([body.walk.from, body.leg], dx, dy);
+    body.walk = {...body.walk, from};
+    body.leg = leg;
+    body.trip = {...body.trip, legs: liftedLegs(body.trip.legs, dx, dy)};
 }
 
 // The figure falls from the line it rests on at `spot`, in its posture there, never from below the ground at home, and goes on to `to`
