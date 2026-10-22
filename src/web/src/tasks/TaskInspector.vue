@@ -9,11 +9,11 @@ import TaskLogs from "../resource/TaskLogs.vue";
 import TaskWork from "../resource/TaskWork.vue";
 import {planOf} from "../domain/records.js";
 import {updatedAt} from "../domain/row.js";
-import {nextAct, otherActs, STATUS_WORDS, statusOf, waitOf} from "../domain/taskBoard.js";
+import {nextAct, otherActs, statusOf} from "../domain/taskBoard.js";
 import {ago} from "../format/time.js";
 import TaskChain from "./TaskChain.vue";
 import TaskFact from "./TaskFact.vue";
-import TaskStatusIcon from "./TaskStatusIcon.vue";
+import TaskState from "./TaskState.vue";
 
 const props = defineProps({
     task: {type: Object, required: true},
@@ -34,7 +34,6 @@ const crumb = computed(() => {
         ? `Plan ${plan.value.id} › Phase ${phase.value}: ${phases.value[phase.value - 1].title}`
         : `Plan ${plan.value.id}: ${plan.value.title}`;
 });
-const reasonOnly = computed(() => waitOf(props.task)?.kind === "reason");
 const briefWhole = ref(false);
 const LONG_BRIEF = 180;
 watch(
@@ -66,43 +65,25 @@ watch(
             <div :key="task.id" class="body">
                 <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
                 <h3 class="title">{{ task.title }}</h3>
+                <TaskState
+                    :task="task"
+                    :tasks="tasks"
+                    @status="emit('status', $event)"
+                    @select="emit('select', $event)"
+                    @answer="emit('answer', $event)"
+                />
                 <div class="facts">
-                    <TaskFact label="Status">
-                        <button type="button" class="status" title="Change the status (S)" @click="emit('status', $event.currentTarget)">
-                            <TaskStatusIcon :status="status" />
-                            {{ STATUS_WORDS[status] }}
-                        </button>
-                    </TaskFact>
-                    <TaskFact label="Plan">{{ plan ? `Plan ${plan.id}: ${plan.title}` : "Not in a plan" }}</TaskFact>
-                    <template v-if="task.state === 'started' && task.held_by">
-                        <TaskFact label="Held by">{{ task.held_by }}</TaskFact>
-                    </template>
+                    <TaskFact class="wide" label="Plan">{{ plan ? `Plan ${plan.id}: ${plan.title}` : "Not in a plan" }}</TaskFact>
                     <template v-if="phases.length > 1 && phase">
                         <TaskFact label="Phase">{{ phase }} of {{ phases.length }}: {{ phases[phase - 1].title }}</TaskFact>
                     </template>
-                </div>
-                <div class="acts">
-                    <Btn kind="primary" @click="emit('act', next.name)">{{ next.label }}</Btn>
-                    <template v-for="o in others" :key="o.name">
-                        <Btn @click="emit('act', o.name)">{{ o.label }}</Btn>
+                    <template v-if="task.state === 'started' && task.held_by">
+                        <TaskFact label="Held by">{{ task.held_by }}</TaskFact>
                     </template>
-                    <Btn title="More (.)" @click="emit('more', $event.currentTarget)">More</Btn>
                 </div>
-                <template v-if="status === 'parked'">
-                    <section class="part">
-                        <h4>Why it is paused</h4>
-                        <p class="text">{{ task.suspension_reason }}</p>
-                        <p class="note">The journal stops reminding the agent about it until it is resumed.</p>
-                    </section>
+                <template v-if="status !== 'blocked'">
+                    <TaskChain :task="task" :tasks="tasks" @select="emit('select', $event)" @answer="emit('answer', $event)" />
                 </template>
-                <template v-if="reasonOnly">
-                    <section class="part">
-                        <h4>Why it is blocked</h4>
-                        <p class="text">{{ task.block_reason }}</p>
-                        <p class="note">Nothing opens it by itself. Unblock it when that is done.</p>
-                    </section>
-                </template>
-                <TaskChain :task="task" :tasks="tasks" @select="emit('select', $event)" @answer="emit('answer', $event)" />
                 <template v-if="status === 'done' && task.outcome">
                     <section class="part">
                         <h4>How it was done</h4>
@@ -111,7 +92,7 @@ watch(
                 </template>
                 <template v-if="task.brief">
                     <section class="part">
-                        <h4>Brief</h4>
+                        <h4>The brief</h4>
                         <p :class="['text', {clamped: !briefWhole}]">{{ task.brief }}</p>
                         <template v-if="task.brief.length > LONG_BRIEF && !briefWhole">
                             <button type="button" class="more" @click="briefWhole = true">Show the whole brief</button>
@@ -124,6 +105,13 @@ watch(
                 <Comments :resource="task" :compose="false" />
             </div>
         </Transition>
+        <div class="dock">
+            <Btn kind="primary" @click="emit('act', next.name)">{{ next.label }}</Btn>
+            <template v-for="o in others" :key="o.name">
+                <Btn @click="emit('act', o.name)">{{ o.label }}</Btn>
+            </template>
+            <Btn title="More (.)" @click="emit('more', $event.currentTarget)">More</Btn>
+        </div>
         <div class="write">
             <CommentWrite :key="task.id" :resource="task" />
         </div>
@@ -203,38 +191,25 @@ watch(
 }
 
 .facts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 20px;
+    margin-bottom: 18px;
+}
+
+.facts .wide {
+    grid-column: 1 / -1;
+}
+
+.dock {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px 28px;
-    margin-bottom: 16px;
-}
-
-.status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 24px;
-    margin: -1px 0 -1px -7px;
-    padding: 0 7px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text);
-    font: 12.5px var(--font);
-    cursor: pointer;
-    transition: background-color 0.12s ease;
-}
-
-.status:hover {
-    background: var(--hover);
-}
-
-.acts {
-    display: flex;
+    flex: none;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px;
-    margin-bottom: 20px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--raised);
 }
 
 .part {

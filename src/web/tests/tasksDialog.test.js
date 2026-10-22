@@ -116,7 +116,7 @@ describe("the tasks dialog", () => {
         await opened();
         inDialog('.task-row[data-task="2"]').click();
         await flush();
-        const step = inDialog(".task-inspector .acts button");
+        const step = inDialog(".task-inspector .dock button");
         expect(step.textContent.trim()).toBe("Go to task 1");
         step.click();
         await flush();
@@ -124,12 +124,25 @@ describe("the tasks dialog", () => {
         expect(inDialog(".task-row.selected").dataset.task).toBe("1");
     });
 
+    test("a blocked task's inspector says it is blocked, what it waits on and why, with its moves docked at the bottom", async () => {
+        store.rows.tasks = [blocked(5, "the release notes", [], {block_reason: "the user's word on the wording"}), task(4, "fourth")];
+        await opened();
+        inDialog('.task-row[data-task="5"]').click();
+        await flush();
+        expect(inDialog(".task-inspector .state-line.blocked .state").textContent).toContain("Blocked");
+        expect(inDialog(".task-inspector .reason .label").textContent).toBe("Blocked, waiting on");
+        expect(inDialog(".task-inspector .reason .text").textContent).toBe("the user's word on the wording");
+        expect([...document.body.querySelectorAll(".task-inspector > .dock button")].map((b) => b.textContent.trim())).toContain("Unblock");
+    });
+
     test("a started task names the agent that holds it in hand, and an open one names none", async () => {
         store.rows.tasks = [task(1, "first", {plan_id: 31, state: "started", held_by: "worker 2, Lady Lovelace"}), task(4, "fourth")];
         await opened();
         inDialog('.task-row[data-task="1"]').click();
         await flush();
-        const held = [...document.body.querySelectorAll(".task-inspector .fact")].find((f) => f.querySelector(".label").textContent === "Held by");
+        const held = [...document.body.querySelectorAll(".task-inspector .fact")].find(
+            (f) => f.querySelector(".label").textContent === "Held by"
+        );
         expect(held.querySelector(".value").textContent).toBe("worker 2, Lady Lovelace");
         app.unmount();
         store.rows.tasks = [task(4, "fourth")];
@@ -153,7 +166,7 @@ describe("the tasks dialog", () => {
         await opened();
         inDialog('.task-row[data-task="1"]').click();
         await flush();
-        [...document.body.querySelectorAll(".task-inspector .acts button")].find((b) => b.textContent.trim() === "Block").click();
+        [...document.body.querySelectorAll(".task-inspector .dock button")].find((b) => b.textContent.trim() === "Block").click();
         await flush();
         const offered = [...document.body.querySelectorAll(".task-block-form .pick button")];
         expect(offered.map((b) => b.querySelector(".title").textContent)).toEqual(["fourth"]);
