@@ -67,9 +67,12 @@ class Console:
         verb = getattr(command, "default_verb", "")
         return [argv[0], verb, *argv[1:]] if verb and not (argv[1:] and argv[1] in {*self.verbs(command), *HELP_FLAGS}) else argv
 
-    @staticmethod
-    def switched(argv: list[str]) -> list[str]:
-        return [argv[0], argv[2], argv[1], *argv[3:]] if len(argv) > 2 and argv[1].isdigit() else argv
+    def switched(self, argv: list[str]) -> list[str]:
+        return [argv[0], argv[2], argv[1], *argv[3:]] if self.is_number_first(argv) else argv
+
+    def is_number_first(self, argv: list[str]) -> bool:
+        command = self.commands.get(argv[0]) if argv else None
+        return command is not None and len(argv) > 2 and argv[1].isdigit() and argv[2] in self.verbs(command)
 
     def verbs(self, command) -> set[str]:
         verbs = argparse.ArgumentParser().add_subparsers()

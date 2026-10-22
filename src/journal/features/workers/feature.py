@@ -2,6 +2,8 @@ from journal.features.feature import Feature
 from journal.features.workers.clock_conduct import ClockConduct
 from journal.features.workers.commands.arrival_command import ArrivalCommand
 from journal.features.workers.commands.todo_command import TodoCommand
+from journal.features.workers.commands.proof_command import ProofCommand
+from journal.features.workers.commands.departure_command import DepartureCommand
 from journal.features.workers.workers_conduct import WorkersConduct
 from journal.features.workers.support.workers_data_reader import WorkersDataReader
 from journal.features.workers.support.workers_data import WorkersData
@@ -41,7 +43,7 @@ class Workers(Feature[WorkersData]):
     modes = Modes(MODE, {"builder": PlansReady, "orchestrator": Orchestrating, "solo": Soloing})
     options = (TIMEOUT, MODE, WORKER_LIMIT, SUBAGENT_LIMIT, PROFILE_LIMIT)
     states = (Orchestrating, Soloing, OrchestratingPlan, Delegating)
-    commands = (WorkerCommand, SubagentCommand, ArrivalCommand, TodoCommand)
+    commands = (WorkerCommand, SubagentCommand, ArrivalCommand, TodoCommand, ProofCommand, DepartureCommand)
     seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
     listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord)

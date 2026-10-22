@@ -6671,6 +6671,45 @@ def test_a_brief_reads_as_its_points_and_proofs_and_to_do_items_are_rows_of_thei
     assert all(isinstance(moved.events[-1], kind) and moved.state == state for moved, kind, state in moves), "each state change of a worker carries its event"
 
 
+def test_a_worker_clocks_out_with_its_report_once_each_point_has_a_proof_that_stands(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.proof import Proof
+    from journal.models.proof_state import ProofState
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "The parser:\n- reads the grammar\n- names each rule"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        worker = workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    clock_out = lambda: console.run(["clock-out", "the parser is done"], lovelace)
+    assert "point 1, 2 of task 1 has no proof" in clock_out().error, "refused while a point has no proof"
+    assert console.run(["proof", "1", "parser.py:12, test_reads passes"], lovelace).code == 0
+    assert console.run(["proof", "2", "the names need a table first", "--not-done"], lovelace).code == 0, "a point not met is proved as not done, with why"
+    with app.container.get(Scope).environment(MAIN):
+        tasks, proofs = app.container.get(Tasks), app.container.get(Proofs)
+        proofs.added(Proof(environment_id=1, point=1, text="it reads only half", state=ProofState.SHORT), tasks.find(1), Actor.agent("s1"))
+    assert "point 1 of task 1 has no proof that stands" in clock_out().error, "refused while a point checked short is not proved again"
+    console.run(["proof", "1", "parser.py:30, test_reads_all passes"], lovelace)
+    folder = app.container.get(WorkerRunner).place(worker)
+    (folder / "parser.py").write_text("x = 1\n")
+    assert "uncommitted files" in clock_out().error and "parser.py" in clock_out().error, "refused while files are uncommitted, naming them"
+    subprocess.run(["git", "add", "parser.py"], cwd=folder, capture_output=True, timeout=30)
+    subprocess.run(["git", "-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "parser"], cwd=folder, capture_output=True, timeout=30)
+    assert clock_out().code == 0, "with each point proved and nothing uncommitted, the worker clocks out"
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Workers).find(1).state == WorkerState.DELIVERED
+    assert "a worker reports by clocking out" in console.run(["worker", "report", "1", "done"], lovelace).error, "journal worker report is refused to a worker, naming clock out"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

@@ -116,6 +116,8 @@ class WorkerCommand(Command):
         if caller.worker_number is not None and caller.worker_number != args.n:
             raise Rejection(f"worker {args.n} is not you: a worker reports for itself, worker {caller.worker_number}")
         worker = self.workers.find(args.n)
+        if caller.worker_number is not None and worker.token_hash:
+            raise Rejection("a worker reports by clocking out: journal clock-out \"<report>\", once each point of its brief has a proof")
         message = self.reports.file(worker.with_(session=worker.session if caller.session is None else caller.session, touched_paths=self.branch.touched(worker)), args.text, caller.actor)
         print(f"worker {worker.id} reported in message {message.id}")
         return 0
