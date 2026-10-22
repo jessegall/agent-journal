@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.35
+
+- A worker whose work is all journal rows, a document, a report or read-only checks, is merged by closing its task once its proofs are checked; since 4.5.16 a worktree with no commit was refused, so such a task could not be closed without releasing the worker.
+- The orchestrator's list of blocked tasks names what each waits on: the task, the question or the reason.
+
 ## 4.5.34
 
 - When a worker's work is merged, or it is retired or stopped, an orchestrator with tasks open is told at once that a worker place is free, with the open tasks: send that worker its next job, or dispatch another.

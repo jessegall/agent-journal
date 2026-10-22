@@ -68,7 +68,7 @@ class WorkerBranch:
 
     def merge_commit(self, worker: Worker) -> str:
         if not self.commit_count(worker):
-            raise Rejection(f"worker {worker.id}'s worktree holds no commit this branch lacks: nothing was merged, and its task stays open; have it commit its work, or journal worker release {worker.id}")
+            return ""
         refusal = self.refusal(worker)
         if refusal:
             raise Rejection(f"worker {worker.id}'s work was not merged, since {refusal}; its proofs, its task and its worktree are as they were")

@@ -7342,9 +7342,6 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     console.run(["worker", "check", "1", "1"], AGENT)
     assert "point 2 of task 1 is not checked" in console.run(["worker", "merge", "1"], AGENT).error, "a merge waits for every proof to be checked"
     console.run(["worker", "check", "1", "2"], AGENT)
-    assert "holds no commit this branch lacks: nothing was merged" in console.run(["worker", "merge", "1"], AGENT).error, "a merge with nothing to take in is refused, never reported done"
-    with app.container.get(Scope).environment(MAIN):
-        assert tasks.find(1).state != TaskState.FINISHED
     git("checkout", "-qb", "worker/1-task-1", cwd=folder)
     (folder / "parser.py").write_text("x = 1\n")
     git("add", "parser.py", cwd=folder)
@@ -7375,6 +7372,17 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     assert console.run(["worker", "merge", "2"], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         assert tasks.find(2).state == TaskState.FINISHED, "a worker with no worktree has its task closed by its merge alone"
+    console.run(["task", "create", "the guide", "--brief", "the guide is written"], AGENT)
+    console.run(["worker", "dispatch", "Mrs. Beeton", "--task", "4", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers.save(workers.find(3).with_(token_hash="h", session="w-3").ready(1.0), Actor.system())
+    beeton = Caller.worker("main", 3, "w-3", "claude")
+    console.run(["proof", "1", "doc 1, the guide"], beeton)
+    console.run(["clock-out", "the guide is a document"], beeton)
+    console.run(["worker", "check", "3", "1"], AGENT)
+    taken = console.run(["worker", "merge", "3"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        assert taken.code == 0 and tasks.find(4).state == TaskState.FINISHED and "no commit to merge" in tasks.find(4).outcome, "a worker whose work is journal rows, with no commit, has its task closed by its merge"
 
 
 def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_the_main_agent(app: App, monkeypatch):
