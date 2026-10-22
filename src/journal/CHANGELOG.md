@@ -2,6 +2,17 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.6.0
+
+- A worker's worktree can be set up the project's way:
+  - `workers.preparation_commands` run in the project just before the worktree is made.
+  - `workers.completion_commands` run inside it once it is made.
+  - Switching `workers.worktree_step` off leaves the making to those commands.
+
+  Each command is told the worktree, its branch, the project, the inner repositories and the library folders. A failing command refuses the dispatch and leaves nothing behind.
+- `journal settings list`, `show` and `set` read and change settings from the command line. An agent may set only the settings left to it, such as the worktree commands.
+- A release can carry a message for the agent, told once after the journal is updated to it. This one tells the agent about the worktree commands and asks it to set up the project's own, such as `make env`.
+
 ## 4.5.42
 
 - A task that has started can only be parked, never blocked; parking takes `--on` and `--until` as a block does, and the agent is told when what a parked task waits on comes.
