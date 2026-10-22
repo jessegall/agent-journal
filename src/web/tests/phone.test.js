@@ -44,3 +44,12 @@ test("the phone refuses a file at once, and the desk's Project menu keeps its or
     await expect(api.upload("messages", 1, new File(["x"], "x.txt"))).rejects.toMatchObject({status: 403, message: PHONE_SENDS_TEXT});
     document.documentElement.classList.remove("phone");
 });
+
+test("the phone app opened at the viewer's own address, which serves no phone state, says what it is instead of a blank page", async () => {
+    document.body.innerHTML = '<div id="app"></div><div id="phone-notify"></div>';
+    vi.stubGlobal("fetch", async () => new Response("<!doctype html>", {status: 200, headers: {"content-type": "text/html"}}));
+    const {ELSEWHERE} = await import("../src/phone/main.js");
+    await vi.waitFor(() => expect(document.getElementById("app").textContent).toBe(ELSEWHERE));
+    expect(ELSEWHERE).toContain("phone app");
+    vi.unstubAllGlobals();
+});
