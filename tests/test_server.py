@@ -1423,8 +1423,8 @@ def test_a_comment_on_a_documents_passage_names_the_section_and_lines_it_sits_on
     server.start()
     try:
         call(server, "POST", "/journal/docs", {"title": "Launch notes", "body": "# Launch notes\n\n## Why\nBecause it is time.\n\n## How\nFirst the tag.\nThen the push.\nThen the notes."})
-        call(server, "POST", "/journal/comments", {"on": "docs:1", "text": "> Then the push.\n> Then the notes.\n\nThe push comes before the tag here."})
-        shown = app.console().run(["message", "read", "1"], Caller.agent("main", "s1", "claude")).text
+        comment = call(server, "POST", "/journal/comments", {"on": "docs:1", "text": "> Then the push.\n> Then the notes.\n\nThe push comes before the tag here."})[1]
+        shown = app.console().run(["message", "read", str(comment["id"])], Caller.agent("main", "s1", "claude")).text
         assert "comments_on docs:1" in shown and "the passage sits in doc 1 at section 2, How, lines 8-9: `journal doc show 1 --section 2` or `--grep`" in shown, shown
     finally:
         server.stop()

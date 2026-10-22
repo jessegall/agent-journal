@@ -9411,3 +9411,24 @@ def test_the_skills_toggled_for_a_session_start_and_for_after_a_compaction_hold_
     hook(app, "PreCompact")
     compacted = context(hook(app, "SessionStart", source="compact"))
     assert "read the journal skill" in compacted and "etiquette skill" not in compacted, "after a compaction only the skills toggled for it are owed again"
+
+
+def test_a_new_document_and_a_new_report_dock_themselves_at_the_bottom_of_the_chat(app: App, tmp_path):
+    from journal.chat.cards import DOCKED, Cards
+    from journal.chat.docking import Docking
+    from journal.repositories.docs import Docs
+    from journal.repositories.messages import Messages
+    from journal.repositories.reports import Reports
+    page = tmp_path / "page.md"
+    page.write_text("## What\\n\\nThe words.\\n")
+    hook(app, "SessionStart")
+    console = app.console()
+    created = [console.run(["doc", "create", "The design", "--file", str(page), "--abstract", "what it is"], AGENT), console.run(["report", "create", "The review", "--body", "what was found"], AGENT)]
+    assert [outcome.code for outcome in created] == [0, 0], [outcome.error for outcome in created]
+    app.runtime().deferred.drain()
+    docking = app.container.get(Docking)
+    with app.container.get(Scope).environment(MAIN):
+        for row in (app.container.get(Docs).all()[0], app.container.get(Reports).all()[0]):
+            card = docking.card(row)
+            assert card is not None and card.data.get(DOCKED), f"{row.heading()} is docked"
+            assert len(app.container.get(Messages).with_key(app.container.get(Cards).creation_key(row))) == 1, "one card each"
