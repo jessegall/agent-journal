@@ -6354,12 +6354,14 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     from journal.features.shell.support.output_log import OutputLog
     from journal.repositories.command_outputs import CommandOutputs
     assert ActivityLabel.build("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q") == "testing" and ActivityLabel.build("timeout 60 npm test") == "testing"
+    from journal.features.shell.support.card_line import CardLine
+    assert CardLine.is_poor("x" * 81) and not CardLine.is_poor("2 failed, 563 passed in 31.2s"), "a line longer than the card's line reads poorly, a short summary does not"
     hook(app, "SessionStart")
     folder = app.config.root / "w"
     folder.mkdir()
     (folder / "parts").write_text("R-\n")
     (folder / "0.part").write_text("pytest -q")
-    (folder / "0.out").write_text('FAILED tests/t.py::t - "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"),))\n')
+    (folder / "0.out").write_text('2 failed: assert ShellData(background=(12,)) == EndedOutput(3, "finished")\n')
     app.container.get(OutputLog).start("w", "pytest -q", folder, Caller.agent("main", "s1", "claude"))
     outputs = app.container.get(CommandOutputs)
     outputs.save(outputs.find(1).backgrounded(), Actor.system())

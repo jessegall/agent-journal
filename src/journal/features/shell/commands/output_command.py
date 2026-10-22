@@ -41,7 +41,7 @@ class OutputCommand(Command):
         watch = self.verb(verbs, "watch", "bind a running output to you: after every tool use you see its reader's lines, or its last lines, and a card in the chat shows them, until its command ends")
         watch.add_argument("n", type=int)
         watch.add_argument("--reader", default="", help="the reader whose lines are shown, by its name")
-        watch.add_argument("--title", default="", help="what the card in the chat says the run is doing, such as Running the tests; never a bare name such as Tests")
+        watch.add_argument("--title", default="", help="what the card in the chat says the run is doing, such as Running tests; never a bare name such as Tests")
         self.verb(verbs, "unwatch", "end the watch on your output")
 
     def owned(self, n: int, caller: Caller) -> CommandOutput:
