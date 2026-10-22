@@ -7,15 +7,18 @@ from journal.models.trigger import Trigger
 from journal.models.trigger_action import TriggerAction
 from journal.repositories.sequences import Sequences
 from journal.repositories.triggers import Triggers
+from journal.sync.team_account import TeamAccount
 
 
 class BuiltinSequences(Seed):
-    """The shipped sequences, written by title and kept up to date while only the journal has changed them, and the trigger whose words start the update sequence."""
+    """The shipped sequences, written by title and kept up to date while only the journal has changed them, and the trigger whose words start the update sequence; in a team only by the machine that holds the team's upgrade, so no two machines write the same one."""
 
-    def __init__(self, sequences: Sequences, triggers: Triggers) -> None:
-        self.sequences, self.triggers = sequences, triggers
+    def __init__(self, sequences: Sequences, triggers: Triggers, account: TeamAccount) -> None:
+        self.sequences, self.triggers, self.account = sequences, triggers, account
 
     def run(self) -> None:
+        if not self.account.is_seed_writer():
+            return
         present = {sequence.title: sequence for sequence in self.sequences.all()}
         for sequence in SHIPPED:
             data = present.get(sequence.title)

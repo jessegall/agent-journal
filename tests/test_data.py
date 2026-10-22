@@ -587,3 +587,23 @@ def test_a_wiped_environment_and_a_deleted_rows_links_reach_the_other_journal(tm
     incoming_b.apply(team_changes(outgoing_a))
     assert [task.title for task in tasks_b.global_matching(environment_id=1)] == ["other"] and tasks_b.global_matching(environment_id=second.id) == [] and links_b.rows() == [], "the deleted task's links and the wiped environment's rows are gone on the other journal too"
     assert [environment.name for environment in Environments(tasks_b.connection, tasks_b.bus).rows()] == [environment.name for environment in environments_a.rows()]
+
+
+def test_a_shipped_template_is_written_once_for_the_team_by_the_machine_that_holds_the_upgrade(tmp_path):
+    import json
+    from journal.config import Config
+    from journal.features.templates.seeds.builtin_templates import BuiltinTemplates
+    from journal.features.templates.shipped import SHIPPED
+    from journal.repositories.templates import Templates
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    _, _, tasks_a, outgoing_a, _ = team_journal(tmp_path, "a")
+    _, _, tasks_b, _, incoming_b = team_journal(tmp_path, "b")
+    (tmp_path / "a" / ".journal" / TEAM_FILE).write_text(json.dumps({"device": "a", "upgrade": True}))
+    templates_a, templates_b = Templates(tasks_a.connection, tasks_a.bus), Templates(tasks_b.connection, tasks_b.bus)
+    BuiltinTemplates(templates_a, TeamAccount(Config(tmp_path / "a"))).run()
+    BuiltinTemplates(templates_b, TeamAccount(Config(tmp_path / "b"))).run()
+    assert templates_b.rows() == [], "a machine without the upgrade writes no shipped row of its own"
+    incoming_b.apply(team_changes(outgoing_a))
+    BuiltinTemplates(templates_b, TeamAccount(Config(tmp_path / "b"))).run()
+    assert sorted(template.title for template in templates_b.rows()) == sorted(template.title for template in SHIPPED), "each shipped template once, as the machine with the upgrade wrote it"
