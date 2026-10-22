@@ -50,6 +50,19 @@ describe("the chat's status line", () => {
         expect(line({...running, done: true, for: 1}, 9).clock).toBe("");
     });
 
+    test("counts a file change's added lines up in green and its removed lines in red", async () => {
+        store.bar = [{id: 1, key: "Edit src/app.py", time: Date.now() / 1000, done: true, for: 0.2, clock: true, hold: 0, lingers: 10, parts: [{value: "editing", color: "gray"}, {value: "src/app.py", color: "muted"}, {value: 2, prefix: "+", color: "green", increments: true}, {value: 1, prefix: "-", color: "red", increments: true}]}];
+        const host = document.createElement("div");
+        document.body.append(host);
+        app = createApp({render: () => h(RunningCommand, {idle: "thinking"})});
+        app.mount(host);
+        await new Promise((r) => setTimeout(r, 500));
+        await flush();
+        const tokens = [...host.querySelectorAll(".running-token")];
+        expect(tokens.map((t) => t.textContent.trim())).toEqual(["editing", "src/app.py", "+2", "-1"]);
+        expect(tokens[2].classList.contains("green") && tokens[3].classList.contains("red")).toBe(true);
+    });
+
     test("rolls through the running parts of a chain, holding a shared command still while only its argument rolls", async () => {
         const row = (time, verb, command, argument, done = false) => ({id: time, key: `c1 ${command} ${argument}`, time, done, for: 0, clock: false, hold: 0, lingers: 10, parts: [{value: verb, color: "gray"}, {value: command, color: "muted"}, {value: argument, color: "muted"}]});
         const now = Date.now() / 1000;

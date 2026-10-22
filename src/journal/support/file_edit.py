@@ -9,6 +9,14 @@ class FileEdit(Operation):
 
     kind = "file edit"
     paths: tuple[str, ...]
+    added: int = 0
+    removed: int = 0
+
+    def activity(self) -> str:
+        return "editing"
+
+    def changed_lines(self) -> tuple[int, int]:
+        return (self.added, self.removed)
 
     def writes(self) -> bool:
         return True

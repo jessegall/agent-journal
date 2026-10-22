@@ -3,6 +3,7 @@ import os
 import re
 import shlex
 import tomllib
+from journal.providers.support.line_count import LineCount
 from journal.providers.support.profile_kind import ProfileKind
 from datetime import date, timedelta
 from pathlib import Path
@@ -43,8 +44,8 @@ class Codex(Provider):
     settings_file = "hooks.json"
     decoders = {
         "Bash": lambda input: ShellLine(Codex.shell_line(input.get("command", ""))),
-        "apply_patch": lambda input: FileEdit(PatchPaths.build(input)),
-        "write_file": lambda input: FileWrite(str(input.get("path", "") or input.get("file_path", ""))),
+        "apply_patch": lambda input: FileEdit(PatchPaths.build(input), *LineCount.patch(input)),
+        "write_file": lambda input: FileWrite(str(input.get("path", "") or input.get("file_path", "")), LineCount.lines(input.get("content"))),
         "read_file": lambda input: FileRead(str(input.get("path", "") or input.get("file_path", "")), bool(input.get("offset") or input.get("limit"))),
         "collaborationspawn_agent": lambda input: SubagentDispatch(None, None, str(input.get("task_name", "")), None, True),
         "request_user_input": lambda input: UserQuestion(),

@@ -88,7 +88,7 @@ class JournalController:
                 open_[row.key] = row.item()
                 queue.append(open_[row.key])
             elif row.key in open_:
-                open_[row.key].update(done=True, **{"for": max(0.0, row.time - open_[row.key]["time"])})
+                open_[row.key].update(done=True, parts=[*open_[row.key]["parts"], *row.counts()], **{"for": max(0.0, row.time - open_[row.key]["time"])})
         return Response.json(queue[-ACTIVITY_ENTRIES:])
 
     def first(self) -> Environment:

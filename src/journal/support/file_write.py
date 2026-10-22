@@ -9,6 +9,14 @@ class FileWrite(Operation):
 
     kind = "file write"
     path: str
+    added: int = 0
+    removed: int = 0
+
+    def activity(self) -> str:
+        return "writing"
+
+    def changed_lines(self) -> tuple[int, int]:
+        return (self.added, self.removed)
 
     def writes(self) -> bool:
         return True

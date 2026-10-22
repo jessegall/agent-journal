@@ -16,6 +16,8 @@ class BarRow:
     detail: str
     time: float
     ended: bool
+    added: int = 0
+    removed: int = 0
 
     @staticmethod
     def is_shown(entry: Entry) -> bool:
@@ -27,14 +29,18 @@ class BarRow:
 
     @classmethod
     def part_row(cls, entry: Entry) -> "BarRow":
-        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == PART_END)
+        changed = entry.data.get("changed", [])
+        return cls(f"{entry.data['chain']} {entry.data['part']}", entry.data["doing"], entry.data["part"], entry.data["time"], entry.kind == PART_END, sum(c["added"] for c in changed), sum(c["removed"] for c in changed))
 
     @classmethod
     def tool_row(cls, entry: Entry) -> "BarRow":
         call = entry.recorded_call()
         tool, paths = entry.data.get("tool_name", ""), call.edited_paths or call.read_paths or ("",)
-        path = paths[0]
-        return cls(f"{tool} {path}".strip(), tool.lower() or "working", path, entry.creation_time.timestamp(), entry.kind == "ToolFinished")
+        path, (added, removed) = paths[0], call.operation.changed_lines()
+        return cls(f"{tool} {path}".strip(), call.operation.activity() or tool.lower() or "working", path, entry.creation_time.timestamp(), entry.kind == "ToolFinished", added, removed)
+
+    def counts(self) -> list[dict]:
+        return [{"value": n, "prefix": sign, "color": color, "increments": True} for n, sign, color in ((self.added, "+", "green"), (self.removed, "-", "red")) if n]
 
     def item(self) -> dict:
         command, _, argument = self.detail[:80].partition(" ")

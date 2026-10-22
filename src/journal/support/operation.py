@@ -23,6 +23,12 @@ class Operation:
     def file_lines(self) -> int:
         return 0
 
+    def changed_lines(self) -> tuple[int, int]:
+        return (0, 0)
+
+    def activity(self) -> str:
+        return ""
+
     def loaded_skill(self) -> str:
         return ""
 
@@ -31,4 +37,4 @@ class Operation:
 
     @classmethod
     def parsed(cls, data: dict) -> "Operation":
-        return cls(**{field.name: tuple(data[field.name]) if isinstance(data.get(field.name), list) else data.get(field.name) for field in fields(cls)})
+        return cls(**{field.name: tuple(data[field.name]) if isinstance(data.get(field.name), list) else data.get(field.name, field.default) for field in fields(cls)})

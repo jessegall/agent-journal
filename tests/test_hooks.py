@@ -327,10 +327,13 @@ def test_each_providers_tool_calls_decode_into_the_operations_the_features_read(
     ready = ShellLine("printf ready > ready.txt")
     assert claude.operation("Bash", calls["Bash"][0]) == ready and codex.operation("Bash", codex_calls["Bash"][0]) == ready, "both programs' shell hooks are the same operation"
     assert codex.operation("Bash", {"command": ["bash", "-lc", "printf ready > ready.txt"]}) == ready and codex.operation("Bash", {"command": ["git", "status", "--short"]}) == ShellLine("git status --short"), "a Codex command given as a list is one line"
-    assert [codex.operation("apply_patch", value) for value in codex_calls["apply_patch"]] == [FileEdit(("/project/note2.txt",))] * 3, "a patch adding, changing or deleting a file is an edit of its path"
+    patches = [codex.operation("apply_patch", value) for value in codex_calls["apply_patch"]]
+    assert all(isinstance(op, FileEdit) for op in patches) and [op.target_paths() for op in patches] == [("/project/note2.txt",)] * 3, "a patch adding, changing or deleting a file is an edit of its path"
     patch = "*** Begin Patch\n*** Add File: new.txt\n+hi\n*** Update File: notes.txt\n@@\n-first\n+second\n*** Delete File: old.txt\n*** End Patch\n"
-    assert codex.operation("apply_patch", {"command": patch}) == FileEdit(("new.txt", "notes.txt", "old.txt")), "and one patch of several files an edit of each"
-    assert claude.operation("Edit", calls["Edit"][0]) == FileEdit(("/project/notes.txt",)) and claude.operation("Write", calls["Write"][0]) == FileWrite("/project/new.txt")
+    assert codex.operation("apply_patch", {"command": patch}) == FileEdit(("new.txt", "notes.txt", "old.txt"), 2, 1), "and one patch of several files an edit of each, with the lines it adds and removes"
+    edit, write = claude.operation("Edit", calls["Edit"][0]), claude.operation("Write", calls["Write"][0])
+    assert (type(edit), edit.target_paths(), type(write), write.target_paths()) == (FileEdit, ("/project/notes.txt",), FileWrite, ("/project/new.txt",))
+    assert edit.changed_lines() == (1, 1), "an edit counts the lines of its new and old text"
     assert claude.operation("Read", calls["Read"][0]) == FileRead("/project/notes.txt", False) and claude.operation("Skill", calls["Skill"][0]) == SkillLoad("greeting")
     assert claude.operation("Agent", calls["Agent"][0]) == SubagentDispatch("general-purpose", "", "Reply with one word", "reply with the word amber", False)
     assert codex.operation("collaborationspawn_agent", codex_calls["collaborationspawn_agent"][0]) == SubagentDispatch(None, None, "say_teal", None, True), "Codex's spawn names its task, carries no profile, model or readable brief, and runs in the background"

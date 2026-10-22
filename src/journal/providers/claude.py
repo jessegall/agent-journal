@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 from typing import Iterator
 
+from journal.providers.support.line_count import LineCount
 from journal.events.agent.peer_message import PeerMessage
 from journal.providers.support.claude_row import ClaudeRow
 from journal.providers.support.profile_view import ProfileView
@@ -57,10 +58,10 @@ class Claude(Provider):
     }
     decoders = {
         "Bash": lambda input: ShellLine(str(input.get("command", ""))),
-        "Edit": lambda input: FileEdit(Provider.file_paths(input)),
-        "MultiEdit": lambda input: FileEdit(Provider.file_paths(input)),
-        "NotebookEdit": lambda input: FileEdit(Provider.file_paths(input)),
-        "Write": lambda input: FileWrite(str(input.get("file_path", ""))),
+        "Edit": lambda input: FileEdit(Provider.file_paths(input), LineCount.lines(input.get("new_string")), LineCount.lines(input.get("old_string"))),
+        "MultiEdit": lambda input: FileEdit(Provider.file_paths(input), *LineCount.edits(input.get("edits"))),
+        "NotebookEdit": lambda input: FileEdit(Provider.file_paths(input), LineCount.lines(input.get("new_source"))),
+        "Write": lambda input: FileWrite(str(input.get("file_path", "")), LineCount.lines(input.get("content"))),
         "Read": lambda input: FileRead(str(input.get("file_path", "")), bool(input.get("limit") or input.get("offset"))),
         "Skill": lambda input: SkillLoad(str(input.get("skill", ""))),
         "Agent": lambda input: Claude.subagent(input),

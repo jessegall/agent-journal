@@ -2154,6 +2154,16 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     assert (card.text, card.data["tone"]) == ("Testing", "good"), "a run that finished turns its card green"
 
 
+def test_a_file_edit_in_the_bar_says_editing_and_counts_the_lines_it_added_and_removed(app: App):
+    """The bar row of an edit says editing and the file, and once the edit ends it carries the lines added in green and removed in red, as counts the viewer counts up."""
+    hook(app, "SessionStart")
+    edit = {"file_path": "src/app.py", "old_string": "a = 1\n", "new_string": "a = 2\nb = 3\n"}
+    hook(app, "PreToolUse", tool_name="Edit", tool_input=edit, tool_use_id="e-1")
+    hook(app, "PostToolUse", tool_name="Edit", tool_input=edit, tool_response={}, tool_use_id="e-1")
+    row = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/bar?env=main"), timeout=5))[-1]
+    assert [(p["value"], p["color"], p.get("prefix", ""), p.get("increments", False)) for p in row["parts"]] == [("editing", "gray", "", False), ("src/app.py", "muted", "", False), (2, "green", "+", True), (1, "red", "-", True)]
+
+
 def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app: App, monkeypatch, tmp_path):
     import json as j
     from urllib.request import urlopen
