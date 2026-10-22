@@ -37,8 +37,11 @@ export function frames(message, elapsed) {
     });
 }
 
-export function queueClock(message) {
-    return message && message.clock ? span(message.for, true) : "";
+export const CLOCK_AFTER = 3;
+
+export function queueClock(message, elapsed = 0) {
+    const seconds = message && message.done ? message.for : elapsed;
+    return message && message.clock && seconds >= CLOCK_AFTER ? span(seconds, true) : "";
 }
 
 export function line(message, elapsed) {
@@ -49,7 +52,7 @@ export function line(message, elapsed) {
         key: still.map((p) => p.value).join(" "),
         parts,
         text: parts.map((p) => `${p.prefix}${p.value}`).join(" "),
-        clock: queueClock(message),
+        clock: queueClock(message, elapsed),
         done: !!message.done,
     };
 }

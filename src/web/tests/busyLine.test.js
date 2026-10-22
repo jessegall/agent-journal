@@ -6,6 +6,7 @@ window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListen
 
 const {store} = await import("../src/state/store.js");
 const {busyLine} = await import("../src/domain/agentState.js");
+const {line} = await import("../src/domain/statusQueue.js");
 const {default: RunningCommand} = await import("../src/chat/RunningCommand.vue");
 
 const agent = (more = {}) => ({status: "working", tool_running: false, doing: "", thinking: "", ...more});
@@ -40,6 +41,13 @@ describe("the chat's status line", () => {
         app.mount(host);
         await flush();
         expect(host.querySelector(".running-idle").textContent).toBe("git status");
+    });
+
+    test("shows a running command's time only once it has run past three seconds", () => {
+        const running = {key: "c1 pytest -q", time: 1, done: false, for: 0, clock: true, parts: [{value: "testing"}, {value: "pytest"}, {value: "-q"}]};
+        expect(line(running, 2).clock).toBe("");
+        expect(line(running, 4).clock).toBe("4s");
+        expect(line({...running, done: true, for: 1}, 9).clock).toBe("");
     });
 
     test("rolls through the running parts of a chain, holding a shared command still while only its argument rolls", async () => {

@@ -2130,6 +2130,7 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     assert json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/bar?env=main"), timeout=5))[-1]["done"] is True
     line = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{port}/journal/agents/1/terminal?env=main"), timeout=5))[-1]
     assert line["command"] == "git commit -m done" and line["output"] == "[main 1a2b3c4] done" and line["seconds"] == 2
+    (folder / "0.status").write_text("0")
     moved = ShellVerbs(app).moved("c1", "pytest -q", "/tmp/out/c1")
     assert "moved to the background as output 1" in moved and "pytest" not in moved, "a background command is named by its number"
     ShellVerbs(app).ended("c1", 1, "/tmp/out/c1", "2 failed")
@@ -2143,14 +2144,14 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=12.0))
     assert len(keystrokes) == notified + 1, "an end is named once"
     cards = [m for m in app.container.get(Messages).scoped() if m.author == "system"]
-    assert len(cards) == 1 and cards[-1].text == "Failed with code 1 in the background: testing" and cards[-1].data["command"] == "" and cards[-1].data["detail"] == "2 failed", "the one mark of the moved command is settled in place: it names what the command did and how it ended, never the command line"
+    assert len(cards) == 1 and (cards[-1].text, cards[-1].data["tone"], cards[-1].data["ending"], cards[-1].data["line"]) == ("Testing", "bad", "failed with code 1", "pytest -q"), "the moved command has one card, settled in place: titled by what it does, red as it failed, its command kept for the opened card"
     assert cards[-1].data["shows"] == "commands", "a card names the Show in chat switch that hides it"
     (app.config.root / "c2").mkdir()
     ShellVerbs(app).split("pytest -q", str(app.config.root / "c2"))
     ShellVerbs(app).moved("c2", "pytest -q", "/tmp/out/c2")
     ShellVerbs(app).ended("c2", 0, "/tmp/out/c2", "........ [ 76%]\n....... [100%]")
     card = [m for m in app.container.get(Messages).scoped() if m.author == "system"][-1]
-    assert card.text == "Finished in the background: testing" and card.data["detail"] == "", "a last line of progress dots says nothing and is left out"
+    assert (card.text, card.data["tone"]) == ("Testing", "good"), "a run that finished turns its card green"
 
 
 def test_each_thought_is_a_message_the_latest_stands_in_the_working_bubble_and_a_reply_in_thinking_is_posted(app: App, monkeypatch, tmp_path):
