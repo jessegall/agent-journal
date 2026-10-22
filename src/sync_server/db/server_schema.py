@@ -9,6 +9,9 @@ MIGRATIONS = (
     CREATE TABLE id_blocks (id INTEGER PRIMARY KEY AUTOINCREMENT, device_id INTEGER NOT NULL, row_table TEXT NOT NULL, first_number INTEGER NOT NULL, last_number INTEGER NOT NULL);
     CREATE TABLE id_floors (row_table TEXT PRIMARY KEY, highest INTEGER NOT NULL);
     """,
+    """
+    ALTER TABLE devices ADD COLUMN pulled_sequence INTEGER NOT NULL DEFAULT 0;
+    """,
 )
 
 

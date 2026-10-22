@@ -58,3 +58,9 @@ class Devices:
     @staticmethod
     def token_hash(token: str) -> str:
         return hashlib.sha256(token.encode()).hexdigest()
+
+    def record_pull(self, device: Device, sequence: int) -> None:
+        self.rows.record_pull(device.id, sequence)
+
+    def pulled_sequence(self, device: Device) -> int:
+        return self.rows.pulled_sequence(device.id)

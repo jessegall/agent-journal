@@ -119,3 +119,60 @@ def test_a_push_keeps_the_later_edit_of_a_field_puts_times_on_the_servers_clock_
     with pytest.raises(Refusal, match="a person sends only their own writes"):
         push.answer(ada, request("updated", "user:2", {"title": "as bob"}, 50.0), 51.0)
     assert log.head() == 4, "a refused push keeps nothing"
+
+
+def test_over_http_a_pull_waits_and_wakes_on_a_push_while_other_requests_go_on_and_a_joiner_downloads_a_full_copy(tmp_path):
+    import json
+    import threading
+    import time
+    import urllib.error
+    import urllib.request
+
+    from sync_server.team_server import TeamServer
+
+    team = TeamServer(tmp_path)
+    team.accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    team.accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    server = team.started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+
+    def call(path, body=None, token=""):
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={"Authorization": f"Bearer {token}"} if token else {})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as answer:
+                return answer.status, json.loads(answer.read())
+        except urllib.error.HTTPError as refused:
+            return refused.code, json.loads(refused.read())
+
+    try:
+        assert call("/login", {"email": "ada@example.com", "password": "wrong", "device_name": "laptop"}) == (403, {"error": "the email or the password is wrong"})
+        ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
+        bob = call("/login", {"email": "bob@example.com", "password": PASSWORD, "device_name": "desktop"})[1]["token"]
+        assert call("/pull?after=0", token="made up")[0] == 403 and call("/nothing")[0] == 404
+        task = {"row_table": "tasks", "row": 7, "action": "created", "actor": "user:1", "fields": {"title": "first"}, "changed_at": {"title": 1.0}}
+        assert call("/push", {"changes": [task]}, ada)[1]["sequences"] == [1]
+        first = call("/pull?after=0", token=bob)[1]
+        assert [change["row"] for change in first["changes"]] == [7] and first["head"] == 1 and first["server_time"] > 0
+        assert call("/pull?after=0", token=ada)[1]["changes"] == [], "a device never pulls its own changes"
+        waited = {}
+
+        def held_pull():
+            began = time.monotonic()
+            waited["answer"] = call("/pull?after=1&wait=8", token=bob)[1]
+            waited["seconds"] = time.monotonic() - began
+
+        puller = threading.Thread(target=held_pull)
+        puller.start()
+        time.sleep(0.3)
+        began = time.monotonic()
+        copy = call("/copy", token=ada)[1]
+        assert time.monotonic() - began < 2, "another request is answered while a pull is held"
+        assert copy["rows"] == [{"row_table": "tasks", "row": 7, "fields": {"title": "first"}, "changed_at": {"title": 1.0}}] and copy["head"] == 1
+        call("/push", {"changes": [{**task, "action": "updated", "fields": {"title": "second"}, "changed_at": {"title": 2.0}}]}, ada)
+        puller.join(10)
+        assert [change["fields"] for change in waited["answer"]["changes"]] == [{"title": "second"}] and waited["seconds"] < 4, "the held pull answers the moment a change arrives"
+        assert team.devices.pulled_sequence(team.devices.device(bob)) == 1, "the sequence a device holds is recorded"
+    finally:
+        server.shutdown()
+        server.server_close()
+        team.store.close()
