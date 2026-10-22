@@ -1,3 +1,4 @@
+import {busyWording} from "./busyWording.js";
 import {ago, elapsed} from "../format/time.js";
 import {seconds} from "./row.js";
 import {WORKER_WORDS, workerName, workerState} from "./workers.js";
@@ -83,18 +84,15 @@ export function wordOf(state) {
     return WORDS[state] || "Idle";
 }
 
-export function lineOf(agent, task, auto = false, workers = [], step = 0) {
+export function lineOf(agent, task, auto = false, workers = []) {
     const state = stateOf(agent);
     if (state === "stopped") return "no agent is on this environment";
     if (state === "compacting") return "compacting the conversation, then it carries on";
     if (state === "waiting") return waitingOn(agent, workers)?.line || "something it has not named";
     if (task) return named(task);
     if (state === "idle") return phrase(auto ? "auto" : "idle");
-    return ["working", "busy"].includes(state) ? BUSY_LINES[step % BUSY_LINES.length] : phrase("bearings");
+    return ["working", "busy"].includes(state) ? busyWording(agent) : phrase("bearings");
 }
-
-// What the top bar says, in turn, while the agent works with no task in hand: never the command it runs, which the chat shows.
-export const BUSY_LINES = ["working on your request", "working, with no task in hand", "reading and changing the project", "working through the next step"];
 
 // What the chat's status line says while the agent works: the part or tool running now, its thought only when nothing runs.
 export function busyLine(agent, helping = null) {

@@ -5,7 +5,8 @@ import {flush} from "./flush.js";
 window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
 
 const {store} = await import("../src/state/store.js");
-const {busyLine, lineOf, BUSY_LINES} = await import("../src/domain/agentState.js");
+const {busyLine, lineOf} = await import("../src/domain/agentState.js");
+const {wordingsOf} = await import("../src/domain/busyWording.js");
 const {line} = await import("../src/domain/statusQueue.js");
 const {default: RunningCommand} = await import("../src/chat/RunningCommand.vue");
 
@@ -68,9 +69,11 @@ describe("the chat's status line", () => {
         const task = {id: 7, title: "the footer"};
         expect(lineOf(running, task)).not.toContain("journal setup restart");
         expect(lineOf(running, task)).toContain("the footer");
-        expect(lineOf(running, null, false, [], 0)).toBe(BUSY_LINES[0]);
-        expect(lineOf(running, null, false, [], 1)).toBe(BUSY_LINES[1]);
-        expect(BUSY_LINES).not.toContain("journal setup restart");
+        const testing = agent({tool_running: true, tool: "Bash", doing: "python3 -m pytest -q", heard_at: "2026-10-22T12:00:07Z"});
+        expect(wordingsOf("tests")).toContain(lineOf(testing, null));
+        expect(lineOf({...testing}, null)).toBe(lineOf(testing, null));
+        expect(lineOf(running, null)).not.toContain("journal setup restart");
+        expect(wordingsOf("bearings")).toContain(lineOf(agent({heard_at: "2026-10-22T12:00:03Z"}), null));
     });
 
     test("rolls through the running parts of a chain, holding a shared command still while only its argument rolls", async () => {
