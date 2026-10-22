@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from journal.engine.base_state import BaseState
+from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.session_started import SessionStarted
@@ -13,6 +14,10 @@ from journal.features.tasks.states.ready import Ready
 @dataclass(frozen=True)
 class PlansReady(Ready):
     """Idle with plans on: a task of the plan this agent holds started here, the plan's start with a task this agent holds and a session that finds one started push the plan's state, and a stop is held while an approved plan waits to start; every other moment is Idle's."""
+
+    def mode_lines(self) -> tuple[Nudge, ...]:
+        from journal.features.plans.feature import Plans
+        return (Plans.BUILDER_MODE.create(),)
 
     def plan_state(self, **fields) -> BaseState:
         from journal.features.plans.states.following_plan import FollowingPlan

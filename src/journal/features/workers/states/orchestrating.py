@@ -16,6 +16,10 @@ class Orchestrating(PlansReady):
     name = "orchestrating"
     title = "Orchestrating"
 
+    def mode_lines(self) -> tuple[Nudge, ...]:
+        from journal.features.workers.feature import Workers
+        return (Workers.ORCHESTRATOR_MODE.create(),)
+
     def plan_state(self, **fields) -> BaseState:
         from journal.features.workers.states.orchestrating_plan import OrchestratingPlan
         return OrchestratingPlan(**fields)

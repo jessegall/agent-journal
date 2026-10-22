@@ -110,16 +110,22 @@ class StateMachine(AgentListener[AgentEvent]):
             return
         self.type_lines(agent.environment_id, lines, 0.0)
 
+    def mode_change(self, stored_stack: Stack, stack: Stack) -> tuple[Nudge, ...]:
+        bottom, previous_bottom = stack.states[0], stored_stack.states[0]
+        return bottom.mode_lines() if type(bottom) is not type(previous_bottom) and self.states.is_mode_floor(previous_bottom) else ()
+
     def answer(self, agent: Agent, event: AgentEvent | RowEvent) -> Decision:
         settings = self.top_state()
-        stack = self.states.apply_mode(self.states.stack(agent), settings)
+        stored_stack = self.states.stack(agent)
+        stack = self.states.apply_mode(stored_stack, settings)
+        mode_change = self.mode_change(stored_stack, stack)
         event = event.with_data(self.readers.agent_data(agent))
         transition = stack.top().respond(event, settings, self.features.conducts(agent.role))
         machine_answer = self.hook_machine(stack, self.moved(self.placed(stack, transition.target), transition), settings, event.data)
         if transition.dropped:
             self.entries.save(StackHistory.entry(agent, list(agent.stack), event.key, Actor.system(), dropped=list(transition.dropped)), Actor.system())
         agent = self._store(agent, machine_answer, event.key, Actor.system())
-        nudge_lines = [(nudge, line) for nudge in (*transition.nudges, *machine_answer.nudges) if (line := self.nudger.deliver(agent, nudge))]
+        nudge_lines = [(nudge, line) for nudge in (*mode_change, *transition.nudges, *machine_answer.nudges) if (line := self.nudger.deliver(agent, nudge))]
         remark_lines = [line for nudge, line in nudge_lines if self.is_queued_remark(agent, nudge, event)]
         for remark in remark_lines:
             self.supervisor.remark(agent.environment_id, remark)

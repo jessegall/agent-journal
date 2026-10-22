@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from journal.engine.nudge import Nudge
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_starting import ToolStarting
@@ -14,6 +15,10 @@ class Soloing(PlansReady):
 
     name = "soloing"
     title = "Working alone"
+
+    def mode_lines(self) -> tuple[Nudge, ...]:
+        from journal.features.workers.feature import Workers
+        return (Workers.SOLO_MODE.create(),)
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         from journal.features.workers.feature import Workers

@@ -31,6 +31,7 @@ class Plans(Feature[PlansData]):
     data = (PlansDataReader, TaskSuccessionReader)
     seeds = (ClosedPlans,)
 
+    BUILDER_MODE = Nudge(name, "now_building", "you now work as the builder", "build the work yourself, and send a worker when a job is better done beside you", repeat_interval=0)
     NEXT_PLAN_TASK = Nudge(name, "next_task_of_the_plan", "plan {{n}}: task {{task}}, {{title}} is next. {{briefing}}", repeat_interval=0)
     PLAN_FINISHED = Nudge(name, "plan_done", "plan {{n}} is done: its last task closed", repeat_interval=0)
     PLAN_STALLED = Nudge(name, "plan_waits_on_its_tasks", "plan {{n}}: no task can start now; {{left}} parked, blocked or waiting", "`journal task list` says what each waits on; when one can go on, `journal plan start {{n}}` takes it up", repeat_interval=0)
@@ -43,7 +44,7 @@ class Plans(Feature[PlansData]):
     PLAN_REOPENED = Nudge(name, "plan_reopened", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_interval=0)
     UNAPPROVED_PLAN = Nudge(name, "plan_not_approved", "plan {{n}} is not approved, so it cannot be followed", "only the user approves a plan, on the plan page or with `journal plan approve {{n}}`", repeat_interval=0)
     APPROVED_UNSTARTED = Nudge(name, "approved_unstarted", "plan {{n}} is approved and not started", "`journal plan start {{n}}` begins its first task", repeat_interval=0)
-    nudges = (UNAPPROVED_PLAN, APPROVED_UNSTARTED, NEXT_PLAN_TASK, PLAN_FINISHED, PLAN_STALLED, PLAN_POSTPONED, PLAN_ABANDONED, PLAN_APPROVED, CHECKPOINT_PHASE_END, PHASE_END, PLAN_BLOCKED, PLAN_REOPENED)
+    nudges = (UNAPPROVED_PLAN, APPROVED_UNSTARTED, NEXT_PLAN_TASK, PLAN_FINISHED, PLAN_STALLED, PLAN_POSTPONED, PLAN_ABANDONED, PLAN_APPROVED, CHECKPOINT_PHASE_END, PHASE_END, PLAN_BLOCKED, PLAN_REOPENED, BUILDER_MODE)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans

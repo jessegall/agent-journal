@@ -62,6 +62,9 @@ class StatesCatalogue:
         picks = [modes.states.get(str(settings.value(modes.option))) for modes in self.modes]
         return next((state for state in picks if state), type(self.first()))
 
+    def is_mode_floor(self, state: BaseState) -> bool:
+        return any(type(state) in modes.states.values() for modes in self.modes)
+
     def apply_mode(self, stack: Stack, settings: Settings) -> Stack:
         state = self.mode_state(settings)
         if type(stack.states[0]) is state or isinstance(stack.states[0], Duty):

@@ -106,6 +106,9 @@ class BaseState:
     def blocks_tools(self) -> bool:
         return False
 
+    def mode_lines(self) -> tuple[Nudge, ...]:
+        return ()
+
     def on_enter(self, typist: Typist) -> None:
         return None
 

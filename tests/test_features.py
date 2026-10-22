@@ -1318,6 +1318,21 @@ def test_a_remark_waits_for_the_next_hook_and_a_line_queued_twice_goes_once(app:
     assert link.pending_lines(1) == "output 4 finished", "a line already queued is not queued again"
 
 
+def test_switching_the_work_mode_tells_the_agent_once_which_mode_it_now_works_in(app: App):
+    """The mode is the floor of the agent's stack; when the user switches it, the next step says once what the new mode asks."""
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    use = lambda name: hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": name})[1].get("hookSpecificOutput", {}).get("additionalContext", "")
+    assert "you now work" not in use("a.py"), "nothing is said while the mode stays"
+    app.container.get(SettingRows).set("workers.mode", "orchestrator", Actor.user(1))
+    assert "you now work as the orchestrator" in use("b.py"), "the switch is told at the next step"
+    assert "you now work" not in use("c.py"), "and only once"
+    app.container.get(SettingRows).set("workers.mode", "solo", Actor.user(1))
+    assert "you now work solo" in use("d.py")
+    app.container.get(SettingRows).set("workers.mode", "builder", Actor.user(1))
+    assert "you now work as the builder" in use("e.py")
+
+
 def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
     """A prompt that is a journal line already says its words, so its hook adds no line it carries."""
     hook(app, "SessionStart")

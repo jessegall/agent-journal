@@ -6,7 +6,7 @@ import {workerName, workerState} from "./workers.js";
 // The agents grid: each environment's live agent, each worker, and the subagents of the agent here, as one kind of entry.
 const STATES = {
     working: {word: "Working", dot: "running"},
-    waiting: {word: "Needs you", dot: "you"},
+    waiting: {word: "Waits for input", dot: "you"},
     stuck: {word: "Stuck", dot: "failed"},
     stopped: {word: "Stopped", dot: ""},
     idle: {word: "Idle", dot: "queued"},
@@ -146,14 +146,18 @@ const byNumber = (a, b) => a.n - b.n || a.kind.localeCompare(b.kind) || a.key.lo
 
 export const slotsFor = (slots, entries) => [...slots, ...entries.filter((e) => !slots.includes(e.key)).sort(byNumber).map((e) => e.key)];
 
-const RANK = {waiting: 0, working: 1, idle: 2, stopped: 3};
+// Working agents always come first, then those waiting for input, then the idle and the stopped; the order picked sorts within each.
+const RANK = {working: 0, waiting: 1, idle: 2, stopped: 3};
+const byRank = (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)];
 const BY = {
-    state: (a, b) => RANK[stateGroup(a)] - RANK[stateGroup(b)] || b.time - a.time,
+    state: (a, b) => b.time - a.time,
     active: (a, b) => b.time - a.time,
 };
 
 export const ordered = (entries, order, slots = []) =>
-    order === "number" ? [...entries].sort((a, b) => slots.indexOf(a.key) - slots.indexOf(b.key) || byNumber(a, b)) : [...entries].sort(BY[order] || BY.state);
+    order === "number"
+        ? [...entries].sort((a, b) => byRank(a, b) || slots.indexOf(a.key) - slots.indexOf(b.key) || byNumber(a, b))
+        : [...entries].sort((a, b) => byRank(a, b) || (BY[order] || BY.state)(a, b));
 
 const WORDS = Object.fromEntries([...STATE_SWITCHES, ...KIND_SWITCHES].map((s) => [s.key, s.hidden]));
 

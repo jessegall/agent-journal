@@ -4,7 +4,7 @@ import JobTimer from "../src/kit/JobTimer.vue";
 import {orchestraOf, ordered, slotsFor} from "../src/domain/orchestra.js";
 import {store} from "../src/state/store.js";
 
-const cell = (kind, n) => ({key: `${kind}:${n}`, kind, n});
+const cell = (kind, n) => ({key: `${kind}:${n}`, kind, n, card: {state: "working"}});
 const at = (seconds) => new Date(seconds * 1000).toISOString();
 
 test("agents take their cells by number, and a new agent joins at the end whatever its number", () => {
@@ -16,7 +16,7 @@ test("agents take their cells by number, and a new agent joins at the end whatev
     expect(ordered(joined, "number", kept).map((e) => e.key)).toEqual(["worker:3", "environment:5", "worker:7", "worker:1"]);
 });
 
-test("a state change moves no cell, and a hidden agent keeps its place for when it shows again", () => {
+test("among agents of one standing a newer activity moves no cell, and a hidden agent keeps its place for when it shows again", () => {
     const all = [cell("worker", 2), cell("worker", 4), cell("worker", 6)];
     const slots = slotsFor([], all);
     const changed = all.map((e) => ({...e, time: e.n === 6 ? 999 : 1}));
@@ -99,4 +99,12 @@ test("a cell shows what the agent said and the plain line of what it does, never
         "Reading orchestra.js",
         expect.not.stringContaining("Bash"),
     ]);
+});
+
+test("working agents are drawn first whatever the order, then those waiting, then the idle and the stopped", async () => {
+    const {ordered} = await import("../src/domain/orchestra.js");
+    const entry = (key, n, state, time = 0) => ({key, n, kind: "worker", time, card: {state}});
+    const grid = [entry("worker:1", 1, "stopped"), entry("worker:2", 2, "idle"), entry("worker:3", 3, "working"), entry("worker:4", 4, "waiting")];
+    expect(ordered(grid, "number", grid.map((e) => e.key)).map((e) => e.n)).toEqual([3, 4, 2, 1]);
+    expect(ordered(grid, "active").map((e) => e.n)).toEqual([3, 4, 2, 1]);
 });

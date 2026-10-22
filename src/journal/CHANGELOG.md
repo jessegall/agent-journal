@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.12
+
+- Switching the work mode tells the agent once, at its next step, which mode it now works in and what that asks: the orchestrator plans and hands the work to workers, the builder builds and sends a worker when better, solo does everything itself.
+- A waiting agent's or worker's badge reads Waits for input, since it waits on the orchestrator as often as on you.
+- The agents grid draws the working agents first, then those waiting for input, then the idle and the stopped, whichever order is picked.
+
 ## 4.5.11
 
 - A page open on an address that another journal takes over starts afresh: journals take free ports in turn, so a tab left open could go on showing the rows of the journal that held the port before, its tasks done and struck through on another journal's plan. When the stream comes back the page asks which journal answers, and reloads when it is another; what it keeps in the browser is kept per journal.
