@@ -2,7 +2,10 @@ from journal.config import Config
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_worktree import WorkerWorktree
 from journal.features.workers.support.workers_data import WorkersData
+from journal.features.workers.support.ready_work import ReadyWork
 from journal.models.agent import Agent
+from journal.models.support.ref import Ref
+from journal.models.worker_state import WorkerState
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.tasks import Tasks
 from journal.support.actor import Actor
@@ -27,6 +30,7 @@ class WorkersDataReader:
             worktrees_root=(self.config.home / "worktrees").resolve(),
             worktrees=tuple(WorkerWorktree(self.branch.folder(w).name, w.row_id, w.name) for w in rows),
             session_workers=tuple(self.workers.session_worker(agent.session)),
+            ready_work=tuple(ReadyWork(w.id, w.name, task) for w in rows if w.state == WorkerState.DELIVERED for task in self.tasks.holder_task_ids(Ref.build(w))[:1]),
             unfinished_outputs=tuple(output.row_id for worker in self.workers.session_worker(agent.session) for output in self.outputs.unfinished(Actor.worker(worker.id))),
             todos=tuple(item for task_id in self.tasks.holder_task_ids(self.workers.agent_holder(agent)) for item in self.todos.task_items(self.tasks.find(task_id))),
         )

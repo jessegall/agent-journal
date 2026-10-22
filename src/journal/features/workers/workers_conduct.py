@@ -9,6 +9,7 @@ from journal.engine.support.transition import Transition
 from journal.events.agent.stop import Stop
 from journal.events.agent.ticked import Ticked
 from journal.events.agent.tool_starting import ToolStarting
+from journal.events.rows.worker_delivered import WorkerDelivered
 from journal.events.rows.worker_ready import WorkerReady
 from journal.events.rows.worker_unfinished import WorkerUnfinished
 from journal.events.rows.worker_reported import WorkerReported
@@ -49,6 +50,12 @@ class WorkersConduct(Conduct):
             return self.none()
         return self.none(workers_feature().RUN_UNFINISHED.create(n=event.worker.id, name=event.worker.name))
 
+    def on_worker_delivered(self, event: WorkerDelivered, settings: Settings) -> Transition:
+        if event.worker.is_other_dispatcher(event.session):
+            return self.none()
+        ready = [work for work in event.data.part(workers_feature()).ready_work if work.worker == event.worker.id]
+        return self.none(*(workers_feature().WORK_READY.create(n=work.worker, name=work.name, task=work.task) for work in ready))
+
     def on_worker_ready(self, event: WorkerReady, settings: Settings) -> Transition:
         if event.worker.is_other_dispatcher(event.session):
             return self.none()
@@ -66,8 +73,12 @@ class WorkersConduct(Conduct):
 
 
 def report_mentions(data: FeatureData) -> list[Nudge]:
-    summary = ", ".join(f"worker {w.id} ({w.name})" for w in data.part(workers_feature()).idle_workers)
-    return [workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary)] if summary else []
+    workers = data.part(workers_feature())
+    summary = ", ".join(f"worker {w.id} ({w.name})" for w in workers.idle_workers)
+    mentions = [workers_feature().WORK_READY.create(n=work.worker, name=work.name, task=work.task) for work in workers.ready_work]
+    if summary:
+        mentions.append(workers_feature().UNREAD_WORKER_REPORTS.create(reports_waiting=summary))
+    return mentions
 
 
 def worker_lines(event: ToolStarting, *verbs: str) -> list[WorkerLine]:

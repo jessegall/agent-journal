@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
+from journal.events.rows.proof_short import ProofShort
 from journal.models.proof_state import ProofState
 from journal.models.scoped import Scoped
 
@@ -14,3 +15,10 @@ class Proof(Scoped):
     point: int = 0
     text: str = ""
     state: ProofState = ProofState.SHOWN
+    shortfall: str = ""
+
+    def checked(self) -> "Proof":
+        return self.with_(state=ProofState.CHECKED)
+
+    def short(self, shortfall: str, time: float, task_id: int, worker_id: int) -> "Proof":
+        return self.with_(state=ProofState.SHORT, shortfall=shortfall).with_event(ProofShort(environment_id=self.environment_id, time=time, task_id=task_id, worker_id=worker_id, point=self.point, shortfall=shortfall))

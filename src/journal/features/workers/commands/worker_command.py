@@ -21,6 +21,9 @@ from journal.models.support.ref import Ref
 from journal.models.task import Task
 from journal.models.task_state import TaskState
 from journal.repositories.agents import Agents
+from journal.models.proof_state import ProofState
+from journal.models.worker_state import WorkerState
+from journal.repositories.proofs import Proofs
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
@@ -38,8 +41,8 @@ class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents) -> None:
-        self.tasks, self.agents = tasks, agents
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents, proofs: Proofs) -> None:
+        self.tasks, self.agents, self.proofs = tasks, agents, proofs
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -55,6 +58,10 @@ class WorkerCommand(Command):
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         dispatch.add_argument("--task", type=int, required=True, help="the task it works on: an open one with a brief, or the one you hold; it is the worker's alone until merged or released")
         self.verb(verbs, "release", "let a worker go whose run ended without clocking out, which frees its task").add_argument("n", type=int)
+        check = self.verb(verbs, "check", "check one proof of a clocked-out worker, or send it back short")
+        check.add_argument("n", type=int)
+        check.add_argument("point", type=int)
+        check.add_argument("--short", help="what is missing; the worker is sent it in its last session")
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
@@ -132,6 +139,27 @@ class WorkerCommand(Command):
             self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
         return 0
+
+    def check(self, args: Namespace, caller: Caller) -> int:
+        worker = self.workers.find(args.n)
+        if worker.state != WorkerState.DELIVERED:
+            raise Rejection(f"worker {worker.id} is {worker.state}: only a worker that clocked out has proofs to check")
+        task = self.tasks.find(self.tasks.holder_task_ids(Ref.build(worker))[0])
+        proofs = sorted((proof for proof in self.proofs.task_proofs(task) if proof.point == args.point), key=lambda proof: proof.row_id)
+        if not proofs or proofs[-1].state == ProofState.CHECKED:
+            raise Rejection(f"point {args.point} of task {task.id} has no proof to check: only a point proved, or proved again, is checked")
+        if args.short:
+            self.actions.resumable(worker)
+            self.proofs.save(proofs[-1].short(args.short, self.clock_time(), task.id, worker.id), caller.actor)
+            print(f"point {args.point} of task {task.id} sent back short to worker {worker.id}")
+            return 0
+        self.proofs.save(proofs[-1].checked(), caller.actor)
+        print(f"point {args.point} of task {task.id} checked")
+        return 0
+
+    @staticmethod
+    def clock_time() -> float:
+        return datetime.now(timezone.utc).timestamp()
 
     def release(self, args: Namespace, caller: Caller) -> int:
         worker = self.actions.release(args.n, caller.actor)

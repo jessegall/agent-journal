@@ -6762,6 +6762,48 @@ def test_the_worker_profiles_teach_the_shift_and_a_custom_one_starts_with_it(app
     assert files.worker_instructions("journal-medior") == files.read("journal-medior")["body"], "a shipped one says it once"
 
 
+def test_the_main_agent_is_told_a_workers_work_is_ready_and_checks_each_proof(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.proof_state import ProofState
+    from journal.models.support.ref import Ref
+    from journal.models.worker import Worker
+    from journal.repositories.entries import Entries
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    kept_conversation(app, monkeypatch)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "- reads the grammar\n- names each rule"], AGENT)
+    console.run(["task", "create", "the lexer", "--brief", "the lexer splits the words"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1", resume="w-1").ready(1.0), Actor.system())
+        workers.save(workers.find(2).with_(token_hash="h", session="w-2").ready(1.0), Actor.system())
+    lovelace = Caller.worker("main", 1, "w-1", "claude")
+    console.run(["proof", "1", "parser.py:12, test_reads passes"], lovelace)
+    console.run(["proof", "2", "parser.py:30, test_names passes"], lovelace)
+    assert "worker 2 is clocked in: only a worker that clocked out has proofs to check" in console.run(["worker", "check", "2", "1"], AGENT).error, "a check before clock-out is refused, saying so"
+    assert console.run(["clock-out", "the parser is done"], lovelace).code == 0
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        lines = [entry.data["key"] for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["session"] == "s1"]
+    assert lines.count("workers.work_ready") == 1, "the ready line is said once"
+    assert "workers.worker_reported" not in lines and "workers.unread_worker_reports" not in lines, "and the old report lines stay silent for a new worker"
+    assert console.run(["worker", "check", "1", "1"], AGENT).code == 0 and "has no proof to check" in console.run(["worker", "check", "1", "1"], AGENT).error, "a checked point is not checked again"
+    assert console.run(["worker", "check", "1", "2", "--short", "the alias names are missing"], AGENT).code == 0
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        proofs, tasks = app.container.get(Proofs), app.container.get(Tasks)
+        assert [p.state for p in proofs.task_proofs(tasks.find(1))] == [ProofState.CHECKED, ProofState.SHORT]
+        sent = workers.find(1)
+        assert sent.is_running() and "Point 2 of task 1 came back short: the alias names are missing" in sent.brief and sent.resume == "w-1", "the shortfall reaches the same worker in its last session"
+        assert tasks.holder(tasks.find(1)) == Ref(Worker.table(), 1), "with the task still held"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
