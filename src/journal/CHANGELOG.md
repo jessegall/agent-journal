@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.16
+
+- A worker's merge takes what its worktree has checked out, so work committed on a branch the worker made itself is merged too. A merge with no commit to take in is refused and the task stays open; it was reported done with the hash of the merge before it.
+
 ## 4.5.15
 
 - A shell line the journal cannot start, as in a folder that is gone, answers with the fault instead of hanging or answering empty: a fault in the chain's thread reaches the answer, and a fault while an answer streams is logged and shown rather than dropped. Only a closed connection is passed over in silence.

@@ -7247,9 +7247,6 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
         for n in (1, 2):
             workers.save(workers.find(n).with_(token_hash="h", session=f"w-{n}").ready(1.0), Actor.system())
         folder = app.container.get(WorkerBranch).place(workers.find(1))
-    (folder / "parser.py").write_text("x = 1\n")
-    git("add", "parser.py", cwd=folder)
-    git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "the parser", cwd=folder)
     lovelace, babbage = Caller.worker("main", 1, "w-1", "claude"), Caller.worker("main", 2, "w-2", "claude")
     console.run(["proof", "1", "parser.py:1, test_reads passes"], lovelace)
     console.run(["proof", "2", "names need a table first", "--not-done"], lovelace)
@@ -7257,6 +7254,13 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     console.run(["worker", "check", "1", "1"], AGENT)
     assert "point 2 of task 1 is not checked" in console.run(["worker", "merge", "1"], AGENT).error, "a merge waits for every proof to be checked"
     console.run(["worker", "check", "1", "2"], AGENT)
+    assert "holds no commit this branch lacks: nothing was merged" in console.run(["worker", "merge", "1"], AGENT).error, "a merge with nothing to take in is refused, never reported done"
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.find(1).state != TaskState.FINISHED
+    git("checkout", "-qb", "worker/1-task-1", cwd=folder)
+    (folder / "parser.py").write_text("x = 1\n")
+    git("add", "parser.py", cwd=folder)
+    git("-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-qm", "the parser", cwd=folder)
     (root / "parser.py").write_text("my own draft\n")
     refused = console.run(["worker", "merge", "1"], AGENT)
     assert "you have uncommitted changes to files they change: parser.py" in refused.error and "as they were" in refused.error, "a merge over the main agent's own uncommitted change is refused, naming why"
@@ -7268,7 +7272,7 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
     assert merged.code == 0 and (root / "parser.py").exists(), merged.error
     with app.container.get(Scope).environment(MAIN):
         done = tasks.find(1)
-        assert done.state == TaskState.FINISHED and tip[:9] in done.outcome and "not done: point 2 (names need a table first)" in done.outcome, "the merge closes the task with the branch tip, naming the point checked as not done"
+        assert done.state == TaskState.FINISHED and tip[:9] in done.outcome and "not done: point 2 (names need a table first)" in done.outcome, "the merge takes what the worktree has checked out, on a branch of the worker's own making too, and closes the task with the branch tip, naming the point checked as not done"
         assert workers.find(1).state == WorkerState.MERGED and tasks.holder(done) is None and not folder.exists(), "the hold is released and the worktree retired"
     console.run(["proof", "1", "notes.md:1, written"], babbage)
     console.run(["clock-out", "the notes are written"], babbage)
