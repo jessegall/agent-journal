@@ -6,6 +6,10 @@ from journal.events.rows.worker_mention import WorkerMention
 from journal.events.rows.worker_reported import WorkerReported
 from journal.events.rows.worker_dispatched import WorkerDispatched
 from journal.events.rows.worker_stopped import WorkerStopped
+from journal.events.rows.worker_ready import WorkerReady
+from journal.events.rows.worker_delivered import WorkerDelivered
+from journal.events.rows.worker_merged import WorkerMerged
+from journal.events.rows.worker_released import WorkerReleased
 from journal.events.rows.worker_notified import WorkerNotified
 from journal.events.rows.worker_retired import WorkerRetired
 from journal.events.rows.worker_reused import WorkerReused
@@ -54,6 +58,18 @@ class Worker(Scoped):
 
     def reported(self, time: float, report: int) -> "Worker":
         return self.contacted(time).with_(state=WorkerState.REPORTED, adopted=False, pid=0).with_event(WorkerReported(environment_id=self.environment_id, time=time, worker=self.mention(), report=report, ref=self.mention().ref(), outcome=f"{self.mention().title()}, reported"))
+
+    def ready(self, time: float) -> "Worker":
+        return self.contacted(time).with_(state=WorkerState.READY).with_event(WorkerReady(environment_id=self.environment_id, time=time, worker=self.mention()))
+
+    def delivered(self, time: float) -> "Worker":
+        return self.contacted(time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention()))
+
+    def merged(self, time: float) -> "Worker":
+        return self.with_(state=WorkerState.MERGED, token_hash="").with_event(WorkerMerged(environment_id=self.environment_id, time=time, worker=self.mention()))
+
+    def released(self, time: float) -> "Worker":
+        return self.with_(state=WorkerState.RELEASED, token_hash="").with_event(WorkerReleased(environment_id=self.environment_id, time=time, worker=self.mention()))
 
     def running_as(self, pid: int, began: float) -> "Worker":
         return self.with_(pid=pid, began=began, recovered_session="")

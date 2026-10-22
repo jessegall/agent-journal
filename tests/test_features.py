@@ -6643,6 +6643,34 @@ def test_a_worker_is_started_only_on_a_task_whose_brief_is_its_job(app: App, mon
     assert "task 4 is done" in send("--task", "4").error, "a closed task is refused, naming why"
 
 
+def test_a_brief_reads_as_its_points_and_proofs_and_to_do_items_are_rows_of_their_task(app: App):
+    from journal.events.rows.worker_delivered import WorkerDelivered
+    from journal.events.rows.worker_merged import WorkerMerged
+    from journal.events.rows.worker_ready import WorkerReady
+    from journal.events.rows.worker_released import WorkerReleased
+    from journal.models.proof import Proof
+    from journal.models.proof_state import ProofState
+    from journal.models.task import Task
+    from journal.models.worker import Worker
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.worker_todos import WorkerTodos
+    assert Task(brief="The parser:\n- reads the grammar\n- names each rule\n2. passes its test").points() == ("reads the grammar", "names each rule", "passes its test"), "a brief's bullets are its points"
+    assert Task(brief="the parser reads the grammar").points() == ("the parser reads the grammar",), "a brief with no bullets is one point"
+    with app.container.get(Scope).environment(MAIN):
+        task = app.container.get(Tasks).save(Task(environment_id=1, title="the parser", brief="- reads\n- names"), Actor.system())
+        proofs, todos = app.container.get(Proofs), app.container.get(WorkerTodos)
+        proofs.added(Proof(environment_id=1, point=2, text="test_names passes"), task, Actor.worker(1))
+        proofs.added(Proof(environment_id=1, point=1, text="it reads the sample", state=ProofState.UNFINISHED), task, Actor.worker(1))
+        assert [(p.point, p.text, p.state) for p in proofs.task_proofs(task)] == [(1, "it reads the sample", ProofState.UNFINISHED), (2, "test_names passes", ProofState.SHOWN)], "a proof is saved and read back with its task, by point"
+        for text in ("write the grammar", "write the test", "run it"):
+            todos.appended(task, text, Actor.worker(1))
+        assert [(item.position, item.text) for item in todos.task_items(task)] == [(1, "write the grammar"), (2, "write the test"), (3, "run it")], "the to-do items are kept in order"
+    worker = Worker(id=7, environment_id=1, name="Lady Lovelace")
+    moves = [(worker.ready(1.0), WorkerReady, "clocked in"), (worker.delivered(2.0), WorkerDelivered, "clocked out"), (worker.merged(3.0), WorkerMerged, "merged"), (worker.released(4.0), WorkerReleased, "released")]
+    assert all(isinstance(moved.events[-1], kind) and moved.state == state for moved, kind, state in moves), "each state change of a worker carries its event"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner

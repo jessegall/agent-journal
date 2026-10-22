@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 from datetime import datetime
 from typing import ClassVar
@@ -10,6 +11,8 @@ from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
 from journal.support.rejection import Rejection
 
+
+BULLET = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.+)$", re.MULTILINE)
 
 @dataclass(frozen=True)
 class Task(Scoped):
@@ -32,6 +35,10 @@ class Task(Scoped):
 
     def is_resolved(self) -> bool:
         return self.is_closed()
+
+    def points(self) -> tuple[str, ...]:
+        bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
+        return bullets or (self.brief.strip(),)
 
     def started(self, time: datetime) -> "Task":
         return self.plan_started(time, 0)
