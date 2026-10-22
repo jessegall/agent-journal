@@ -11,9 +11,9 @@ test("a subagent's first user line is the brief from the main agent and later on
     expect(briefOf(entries)).toEqual({text: "Read the router and report", time: 100});
     const turns = fromMainAgent(chatTurns(entries));
     expect(turns.map((t) => [t.who, t.data.from_main || false, t.data.opening || false])).toEqual([
-        ["user", true, true],
+        ["agent", true, true],
         ["agent", false, false],
-        ["user", true, false],
+        ["agent", true, false],
     ]);
 });
 

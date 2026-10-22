@@ -65,7 +65,7 @@ export function fromMainAgent(turns) {
         if (t.type !== "line" || t.who !== "user") return t;
         const opening = first;
         first = false;
-        return {...t, data: {...t.data, from_main: true, opening}};
+        return {...t, who: "agent", data: {...t.data, from_main: true, opening}};
     });
 }
 

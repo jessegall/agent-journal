@@ -40,7 +40,7 @@ const sent = computed(() => Boolean(props.turn.data?.sent_to));
 const received = computed(() => Boolean(props.turn.data?.peer || props.turn.data?.from_main));
 const fromMain = computed(() => sent.value || received.value);
 const opening = computed(() => Boolean(props.turn.data?.opening));
-const mine = computed(() => props.turn.who === "user" || received.value);
+const mine = computed(() => props.turn.who === "user");
 const faces = computed(() => {
     const seen = {};
     for (const r of rowsOf("reactions").filter((r) => r.message_id === props.turn.id)) (seen[r.face] ||= []).push(r.author);

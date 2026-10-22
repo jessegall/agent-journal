@@ -28,7 +28,7 @@
       "name": "a message arrives",
       "answer": null,
       "typed": [
-        "[journal] new message 2"
+        "[journal] new message 3"
       ],
       "nudges": [
         "messages.new_message_to_answer"

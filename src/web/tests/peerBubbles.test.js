@@ -61,13 +61,13 @@ test("a send that failed says so in red with the tool's reason, never as sent", 
     expect((await drawn(sent)).red).toBe(false);
 });
 
-test("what the agent receives from another agent or from the main agent sits on the incoming side and names who sent it", async () => {
+test("what the agent receives from another agent sits on the agents' side, left, and names who sent it; the right side is the user's alone", async () => {
     const [received] = threadTurns(messages, []).turns;
     const [fromMain] = fromMainAgent([{type: "line", who: "agent", data: {}, kind: "message", text: "hi", key: "line:1", time: 1}, {type: "line", who: "user", data: {}, kind: "message", text: "brief", key: "line:2", time: 2}]).slice(1);
     const [peer, main] = [await drawn(received), await drawn(fromMain)];
-    expect(peer.mine).toBe(true);
+    expect(peer.mine).toBe(false);
     expect(peer.head).toContain("Message from Coco");
-    expect(main.mine).toBe(true);
+    expect(main.mine).toBe(false);
     expect(main.head).toContain("Message from the main agent");
 });
 

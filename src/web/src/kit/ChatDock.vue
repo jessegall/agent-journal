@@ -42,6 +42,7 @@ defineExpose({card});
     border: 1px solid var(--border-2);
     border-radius: 10px;
     background: var(--raised);
+    overflow: hidden;
 }
 
 .chat-dock-head {
