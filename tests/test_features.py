@@ -3781,6 +3781,25 @@ def test_an_updated_journal_upgrades_each_plugin_to_its_newest_release_that_runs
     assert plugins.lookup("echo").release == "v1.0.5", "a start on the same version upgrades nothing"
 
 
+def test_a_journal_with_agents_and_no_version_kept_was_updated_from_4_4_and_pins_the_restart_notice(app: App):
+    """4.4 kept no version, so a first boot finding agents is an update from it and pins the notice; a fresh journal pins nothing."""
+    from journal.features.updates.seeds.version_change import VersionChange
+    from journal.features.updates.support.session_restart import NOTICE_TITLE
+    from journal.repositories.journal_versions import JournalVersions
+    from journal.repositories.notices import Notices
+    versions, notices = app.container.get(JournalVersions), app.container.get(Notices)
+    open_notices = lambda: [n.title for n in notices.open_scoped() if n.title == NOTICE_TITLE]
+    versions.delete(versions.current(), Actor.system())
+    app.container.get(VersionChange).run()
+    with app.container.get(Scope).environment(1):
+        assert open_notices() == [], "a fresh journal, with no agent yet, pins nothing"
+    hook(app, "SessionStart")
+    versions.delete(versions.current(), Actor.system())
+    app.container.get(VersionChange).run()
+    with app.container.get(Scope).environment(1):
+        assert open_notices() == [NOTICE_TITLE], "a journal that has had agents and kept no version was updated from 4.4"
+
+
 def test_an_update_across_the_shell_runner_pins_a_notice_to_start_the_session_again_until_one_starts(app: App):
     """Updating from before 4.5.0 to it or later pins a notice in every environment asking for the agent's session to start again, once; a start on the same version pins nothing, and the next session start closes it."""
     from journal.features.updates.seeds.version_change import VersionChange
