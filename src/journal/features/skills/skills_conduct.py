@@ -15,13 +15,13 @@ if TYPE_CHECKING:
 
 
 class SkillsConduct(Conduct):
-    """The skills feature's conduct in every state: a session starts owing the skills its setting names, those of skills.session_start at a fresh start and of skills.after_compaction after a compaction, and the state's own; a prompt that names a skill's keyword owes that skill; while a skill is owed, every tool but a read of it and a journal command is held, and so is a stop."""
+    """The skills feature's conduct in every state: a session starts owing the skills its setting names, those of skills.session_start at a fresh start and of skills.after_compaction after a compaction, and the state's own; a prompt of the user's that names a skill's keyword owes that skill, never a journal line, a plugin's or a subagent's notice; while a skill is owed, every tool but a read of it and a journal command is held, and so is a stop."""
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         return self.none(*read_first(event.data.part(skills_feature()).start_debts(settings.texts(start_option(event)), self.name)))
 
     def on_prompt_submitted(self, event: PromptSubmitted, settings: Settings) -> Transition:
-        return self.none(*read_first(event.data.part(skills_feature()).mentioned(event.prompt)))
+        return self.none(*read_first(event.data.part(skills_feature()).mentioned(event.users_words())))
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         obligations = event.data.part(skills_feature()).debt_cards()

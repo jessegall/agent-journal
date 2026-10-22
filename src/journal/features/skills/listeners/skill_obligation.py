@@ -22,7 +22,7 @@ class SkillObligation(AgentListener[AgentEvent]):
             return
         agent = self.agents.session_agent(event.session)
         data = self.reader.read(agent)
-        due = data.mentioned(event.prompt) if isinstance(event, PromptSubmitted) else data.start_debts(self.settings.texts(start_option(event)), agent.state)
+        due = data.mentioned(event.users_words()) if isinstance(event, PromptSubmitted) else data.start_debts(self.settings.texts(start_option(event)), agent.state)
         names = tuple(card.name for card in due)
         if set(names) - set(agent.skills_due):
             self.agents.touched(agent, Actor.system(), lambda time: {"skills_due": tuple(dict.fromkeys((*time.skills_due, *names)))})

@@ -16,5 +16,8 @@ class PromptSubmitted(AgentEvent):
     def is_users(self) -> bool:
         return not self.prompt.lstrip().startswith(("[journal]", "[plugin ", "<", "[Cross-session "))
 
+    def users_words(self) -> str:
+        return self.prompt if self.is_users else ""
+
     def journal_text(self) -> str:
         return self.prompt if self.prompt.startswith(JOURNAL_PREFIX) else ""
