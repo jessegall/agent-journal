@@ -314,7 +314,7 @@ export function reload() {
 }
 
 const KEPT_ENTRIES = 50;
-const entriesKey = () => `entries:${location.host}:${api.env()}`;
+const entriesKey = () => `entries:${store.identity?.root || location.host}:${api.env()}`;
 
 function keepEntries(entries) {
     const byEntryId = new Map(entries.map((e) => [e.id, e]));

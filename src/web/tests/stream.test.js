@@ -21,7 +21,7 @@ vi.stubGlobal("EventSource", FakeSource);
 const reload = vi.fn();
 const takeEntries = vi.fn();
 const wakePolls = vi.fn();
-vi.mock("../src/api/client.js", () => ({api: {stream: () => new FakeSource()}}));
+vi.mock("../src/api/client.js", () => ({api: {stream: () => new FakeSource(), identity: async () => ({root: "/journal"})}}));
 vi.mock("../src/chat/outbox.js", () => ({startOutbox: vi.fn()}));
 vi.mock("../src/composables/poll.js", () => ({wakePolls: () => wakePolls()}));
 vi.mock("../src/sync/rows.js", () => ({reload: () => reload(), takeEntries: (e) => takeEntries(e)}));

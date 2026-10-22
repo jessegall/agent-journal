@@ -13,7 +13,7 @@ import PlanReviewRounds from "./PlanReviewRounds.vue";
 import SideToggle from "./SideToggle.vue";
 import {useWorkersHolding} from "../composables/workers.js";
 import ProgressBar from "../kit/ProgressBar.vue";
-import {PLAN_STATES, reviewersLine, statusOf} from "../domain/plans.js";
+import {PLANNED, PLAN_STATES, reviewersLine, statusOf} from "../domain/plans.js";
 import {peek} from "../route.js";
 
 const props = defineProps({resource: Object, readOnly: Boolean, pinProgress: Boolean, holding: Boolean, closable: {type: Boolean, default: true}});
@@ -46,7 +46,9 @@ watchEffect(() => {
         .catch((e) => (error.value = e.message))
         .finally(() => (fetching.value = false));
 });
-const finished = computed(() => planned.value.filter((t) => t.state === "done").length);
+// A plan not started yet has finished nothing and strikes nothing out, whatever its tasks were before
+const running = computed(() => !PLANNED.includes(status.value));
+const finished = computed(() => (running.value ? planned.value.filter((t) => t.state === "done").length : 0));
 
 async function run(act) {
     error.value = "";
@@ -114,6 +116,7 @@ async function run(act) {
                     :current="p.i === current && ['started', 'waiting'].includes(status)"
                     :workers="workers"
                     :workers-loaded="workersLoaded"
+                    :running="running"
                     @inspect="(worker) => peek('workers', worker.id)"
                 />
             </template>

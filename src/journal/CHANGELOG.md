@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.11
+
+- A page open on an address that another journal takes over starts afresh: journals take free ports in turn, so a tab left open could go on showing the rows of the journal that held the port before, its tasks done and struck through on another journal's plan. When the stream comes back the page asks which journal answers, and reloads when it is another; what it keeps in the browser is kept per journal.
+- A plan that has not started counts no task finished and strikes none out.
+
 ## 4.5.10
 
 - The chat stays live again: 4.5.8 started the change stream after the newest change the page remembered, and a page that once held a busier journal on the same address remembered a number past this journal's newest change, so nothing came through. The stream never starts past the journal's own newest change.

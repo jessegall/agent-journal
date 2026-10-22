@@ -14,14 +14,15 @@ const props = defineProps({
     current: {type: Boolean, default: false},
     workers: {type: Array, default: () => []},
     workersLoaded: {type: Boolean, default: true},
+    running: {type: Boolean, default: true},
 });
 const emit = defineEmits(["inspect"]);
 const talk = inject("talk", null);
 const scope = useScope();
 const open = (row) => (scope.env ? peekThere(scope.env, "tasks", row.id) : peek("tasks", row.id));
 const rows = computed(() => props.phase.rows);
-const done = computed(() => rows.value.length > 0 && rows.value.every(isClosed));
-const closed = computed(() => rows.value.filter(isClosed).length);
+const done = computed(() => props.running && rows.value.length > 0 && rows.value.every(isClosed));
+const closed = computed(() => (props.running ? rows.value.filter(isClosed).length : 0));
 const holders = computed(() => workersHolding(rows.value, props.workers));
 const runs = computed(() => holdingRuns(rows.value, props.workers));
 const closedHolder = (worker) => FINISHED_STATES.has(workerState(worker));
@@ -64,7 +65,7 @@ const HOLDER_BARS = [{width: "64px", height: 14}];
             <div :class="['held', {group: grouped(run), closed: run.holder && closedHolder(run.holder)}]">
                 <div class="held-rows">
                     <template v-for="t in run.rows" :key="t.id">
-                        <PlanRowLine :task="t" @open="open" />
+                        <PlanRowLine :task="t" :running="running" @open="open" />
                     </template>
                 </div>
                 <span :class="{bracket: grouped(run)}" aria-hidden="true" />

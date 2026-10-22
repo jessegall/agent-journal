@@ -5,14 +5,14 @@ import Icon from "../kit/Icon.vue";
 import {state} from "../domain/records.js";
 import {isClosed} from "../domain/row.js";
 
-defineProps({task: {type: Object, required: true}});
+defineProps({task: {type: Object, required: true}, running: {type: Boolean, default: true}});
 const emit = defineEmits(["open"]);
 const talk = inject("talk", null);
 </script>
 
 <template>
     <div class="line">
-        <button type="button" :class="['row', {completed: isClosed(task)}]" @click="emit('open', task)">
+        <button type="button" :class="['row', {completed: running && isClosed(task)}]" @click="emit('open', task)">
             <Dot :kind="state(task)" />
             <span class="rn">#{{ task.id }}</span>
             <span class="rt">{{ task.title }}</span>

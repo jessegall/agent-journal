@@ -36,10 +36,19 @@ function watchSilence() {
     }, WATCH_EVERY);
 }
 
-// A stream opened after a failing one may have missed entries in between, however short the break, so the rows are read again.
+// A stream opened after a failing one may have missed entries in between, however short the break, so the rows are read again;
+// and the journal behind this address may be another one now, since journals take free ports in turn, so the page starts afresh.
+async function sameJournal() {
+    const now = await api.identity();
+    if (store.identity && now.root !== store.identity.root) window.location.reload();
+}
+
 function opened() {
     heard();
-    if (failing) reload();
+    if (failing) {
+        reload();
+        sameJournal();
+    }
     failing = 0;
     store.streamOpen = true;
     store.offline = false;

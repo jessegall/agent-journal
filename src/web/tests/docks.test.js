@@ -59,3 +59,10 @@ test("a card that docked itself stays docked until its undock time, then goes ba
     expect(dockedRows([card], 100)).toEqual([]);
     expect(streamRows([card], 100)[0].data.docked).toBe(false);
 });
+
+test("a plan not started counts nothing finished and strikes nothing out", async () => {
+    const {PLANNED} = await import("../src/domain/plans.js");
+    expect(PLANNED).toContain("reviewing");
+    expect(PLANNED).toContain("ready");
+    expect(PLANNED).not.toContain("started");
+});
