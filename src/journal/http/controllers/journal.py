@@ -83,7 +83,7 @@ class JournalController:
             return Response.json([])
         recent = [e for e in reversed(self.entries.kind_entries_scoped(60)) if e.actor and e.actor.id == agent.session and BarRow.is_shown(e)]
         queue, open_ = [], {}
-        for row in map(BarRow.build, recent):
+        for row in (BarRow.build(entry).relative(str(self.config.root)) for entry in recent):
             if not row.ended:
                 open_[row.key] = row.item()
                 queue.append(open_[row.key])

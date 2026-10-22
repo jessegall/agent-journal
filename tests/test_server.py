@@ -1426,3 +1426,9 @@ def test_a_part_that_changed_files_rolls_through_each_file_with_its_counts_addin
     assert [item["hold"] for item in items] == [0.5, 1.5], "half a second each, the last a second more"
     many = BarRow("c2 sed", "running", "sed", 100.0, True, 10, 0, tuple((f"f{i}.py", 1, 0) for i in range(10))).file_items()
     assert [item["hold"] for item in many[:2]] == [0.25, 0.25] and many[-1]["hold"] == 1.25, "ten files share two and a half seconds"
+
+
+def test_the_bottom_line_names_every_path_from_the_projects_folder():
+    from journal.http.agents.bar_row import BarRow
+    row = BarRow("c1 run", "running", "/home/me/project/.journal/plugins/x/bin/judge --changes", 1.0, True, 0, 0, (("/home/me/project/src/a.py", 1, 0),)).relative("/home/me/project")
+    assert row.detail == ".journal/plugins/x/bin/judge --changes" and row.files[0][0] == "src/a.py", "the project's folder is taken off the command and the files"
