@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.13.0
+
+- Release messages are kept until an agent reads them. Every message an update crosses is kept for the project, however the update came and however many updates came before an agent opened. The first agent is pointed at them and reads them with `journal update messages`; once read they never come up again, in any environment.
+- This release carries the worktree settings message again, so every project's agent sets them up.
+
 ## 4.12.0
 
 - An agent that hits its usage limit is held: the journal types nothing into its terminal while the limit holds, your messages are typed at once, and every 15 minutes (setting usage.check_minutes) one turn is tried to see whether the limit is over. The top bar shows it waiting, with the reset time Claude Code gave.
