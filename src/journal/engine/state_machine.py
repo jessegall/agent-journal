@@ -57,7 +57,18 @@ class StateMachine(AgentListener[AgentEvent]):
             return self.worker_decision(agent.row_id, decision, event)
         if decision.context and not event.has_hook_lines():
             self.type_lines(event.environment_id, decision.context, event.typing_delay)
-        return decision
+        return self.main_decision(event, decision)
+
+    def main_decision(self, event: AgentEvent, decision: Decision) -> Decision:
+        if event.is_turn_end:
+            self.supervisor.resting(event.environment_id)
+        if not event.is_work:
+            return decision
+        self.supervisor.working(event.environment_id)
+        pending = self.supervisor.pending_lines(event.environment_id)
+        if not pending:
+            return decision
+        return Decision.allowed_with(pending).merged(decision) if decision.allowed else Decision.refuse("\n".join((decision.reason, pending)))
 
     def worker_decision(self, agent_id: int, decision: Decision, event: AgentEvent) -> Decision:
         agent = self.agents.find(agent_id)

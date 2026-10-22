@@ -70,7 +70,7 @@ function markClick(data) {
                             </ul>
                         </template>
                     </ChatMark>
-                    <template v-if="data.output && !data.docked">
+                    <template v-if="data.output && !data.docked && !data.ending">
                         <button type="button" class="mark-dock" title="Dock the live view above the chat" @click="dock">Dock</button>
                     </template>
                 </span>

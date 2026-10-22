@@ -7,6 +7,8 @@ from journal.events.agent.agent_event import AgentEvent
 class PromptSubmitted(AgentEvent):
     """A prompt reached the agent: the user's words, a line the journal typed, or a notice the agent's tool sent in."""
 
+    is_work = True
+
     prompt: str
 
     @property

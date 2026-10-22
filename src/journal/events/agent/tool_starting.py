@@ -8,6 +8,8 @@ from journal.support.tool_call import ToolCall
 class ToolStarting(AgentEvent):
     """The agent is about to run a tool; the one moment a blocking listener can refuse. The call is read once and carried whole."""
 
+    is_work = True
+
     call: ToolCall
 
     @property

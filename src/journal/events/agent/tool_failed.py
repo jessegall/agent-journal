@@ -8,6 +8,8 @@ from journal.support.tool_call import ToolCall
 class ToolFailed(AgentEvent):
     """A tool that started ran into an error and gave no result: the same reading of the call as when it started, with the error as the tool said it."""
 
+    is_work = True
+
     call: ToolCall
     error: str
 

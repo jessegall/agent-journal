@@ -50,6 +50,7 @@ class Provider(ABC):
     settings_file: ClassVar[str]
     prompt_flags: ClassVar[tuple[str, ...]]
     session_variable: ClassVar[str]
+    user_line_key: ClassVar[str] = ""
     inherited_markers: ClassVar[tuple[str, ...]]
     question_model: ClassVar[str]
     settings_files: ClassVar[tuple[str, ...]]
@@ -196,7 +197,8 @@ class Provider(ABC):
         if not decision.context:
             return Response(200, {})
         if kind in CONTEXT_HOOKS:
-            return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}})
+            shown = {self.user_line_key: decision.context} if self.user_line_key else {}
+            return Response(200, {"hookSpecificOutput": {"hookEventName": kind.value, "additionalContext": decision.context}, **shown})
         return Response(200, {})
 
     def hook_command(self, root: Path) -> str:

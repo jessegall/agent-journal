@@ -12,6 +12,8 @@ class AgentEvent(Event):
     answers_hook: ClassVar[bool] = True
     has_lines: ClassVar[bool] = True
     typing_delay: ClassVar[float] = 0.0
+    is_work: ClassVar[bool] = False
+    is_turn_end: ClassVar[bool] = False
 
     session: str = ""
     environment_id: int = 0

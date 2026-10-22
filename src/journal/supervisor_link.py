@@ -5,6 +5,7 @@ import time
 from pathlib import Path
 
 from journal.config import Config
+from journal.support.foreground_option import FOREGROUND_OPTION
 from journal.support.typed_line import TypedLine
 from journal.support.queued_line import QueuedLine
 from journal.support.typed_lines import BATCH_OPTION, TypedLines
@@ -46,7 +47,21 @@ class SupervisorLink:
             self.typed.queue(QueuedLine(environment_id, remainder, following))
 
     def is_busy(self, environment_id: int) -> bool:
-        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds())
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds()) or self.is_queue_open(environment_id)
+
+    def is_queue_open(self, environment_id: int) -> bool:
+        oldest = self.typed.queue_start(environment_id)
+        return self.typed.is_working(environment_id) and (oldest is None or time.time() - oldest < self.settings.integer(FOREGROUND_OPTION))
+
+    def working(self, environment_id: int) -> None:
+        self.typed.work(environment_id)
+
+    def resting(self, environment_id: int) -> None:
+        self.typed.rest(environment_id)
+        self.release(environment_id)
+
+    def pending_lines(self, environment_id: int) -> str:
+        return "\n".join(self.typed.pending_lines(environment_id))
 
     def disable(self, environment_id: int) -> None:
         self.typed.disable(environment_id)

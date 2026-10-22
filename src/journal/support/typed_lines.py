@@ -20,6 +20,7 @@ class TypedLines:
         self._sent_at: dict[int, float] = {}
         self._disabled_ids: set[int] = set()
         self._paused_ids: set[int] = set()
+        self._working_ids: set[int] = set()
 
     def disable(self, environment_id: int) -> None:
         self._disabled_ids.add(environment_id)
@@ -38,6 +39,23 @@ class TypedLines:
 
     def is_paused(self, environment_id: int) -> bool:
         return environment_id in self._paused_ids
+
+    def work(self, environment_id: int) -> None:
+        self._working_ids.add(environment_id)
+
+    def rest(self, environment_id: int) -> None:
+        self._working_ids.discard(environment_id)
+
+    def is_working(self, environment_id: int) -> bool:
+        return environment_id in self._working_ids
+
+    def queue_start(self, environment_id: int) -> float | None:
+        return min((h.line_at for h in self._held if h.environment_id == environment_id), default=None)
+
+    def pending_lines(self, environment_id: int) -> list[str]:
+        lines = [h.line.removeprefix(JOURNAL_PREFIX).strip() for h in self._held if h.environment_id == environment_id]
+        self._held = [h for h in self._held if h.environment_id != environment_id]
+        return lines
 
     def clear(self, environment_id: int) -> None:
         self._held = [h for h in self._held if h.environment_id != environment_id]

@@ -71,6 +71,7 @@ const SYSTEM_TURNS = {
             fraction: card.fraction || 0,
             output: card.output || 0,
             line: card.line || "",
+            ending: card.ending || "",
             docked: Boolean(card.docked),
             command: card.command,
             title: card.detail || card.command,

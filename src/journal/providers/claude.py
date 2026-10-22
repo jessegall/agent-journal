@@ -34,6 +34,7 @@ SENDER_NAME_PATTERN, SENDER_ADDRESS_PATTERN = re.compile(r'\bfrom-name="([^"]*)"
 
 
 class Claude(Provider):
+    user_line_key = "systemMessage"
     name = "claude"
     prompt_flags = ("--dangerously-skip-permissions",)
     home = ".claude"

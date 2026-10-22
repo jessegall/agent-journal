@@ -52,6 +52,7 @@ test("a watched output's card carries its count and its bar inside it while it r
     const finished = mounted(Turn, {turn: threadTurns([{...watch, data: {...watch.data, count: "", ending: "finished"}}], []).turns[0]}, act);
     await nextTick();
     expect(finished.host.querySelector(".mark .progress")).toBeNull();
+    expect(finished.host.querySelector(".mark-dock")).toBeNull();
     finished.done();
 });
 

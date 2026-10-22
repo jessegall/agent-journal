@@ -1,3 +1,4 @@
+from journal.support.foreground_option import FOREGROUND_OPTION
 from journal.features.feature import Feature
 from journal.features.shell.listeners.output_notice import OutputNotice
 from journal.features.shell.listeners.watch_update import WatchUpdate
@@ -15,7 +16,7 @@ from journal.features.shell.seeds.default_readers import DefaultReaders
 
 
 class Shell(Feature[ShellData]):
-    FOREGROUND = Option("shell.foreground", "Run a command in the foreground for", "Seconds a part of a command may run before the rest of the chain moves to the background", 30, unit="seconds")
+    FOREGROUND = FOREGROUND_OPTION
     MESSAGE_FOREGROUND_LIMIT = Option("shell.foreground_while_waiting", "In the foreground while a message waits", "The same limit while the user has an unread or unanswered message, so they are not kept waiting", 10, unit="seconds")
     SHOWN = Option("shell.shown_lines", "Show of an output or a file", "The first and last so many lines of a command's output or a file; a file longer than twice this is not read whole", 200, unit="lines")
     READ_SHOWN = Option("shell.read_characters", "Show of a command that reads", "The characters of a reading command's output shown, half from each end, such as cat, grep or git diff; past it the agent reads the rest by the output's number", 8000, unit="characters")

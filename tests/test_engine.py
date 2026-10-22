@@ -1466,6 +1466,7 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     write(app)
     agents, link = app.container.get(Agents), app.container.get(SupervisorLink)
     assert agents.session_agent("s1").tool_uses == 2
+    link.resting(1)
     link.type(1, "first")
     link.type(1, "held behind the first")
     assert transmitted == ["[journal] first"] and len(link.typed._held) == 1, "a line within the batch window queues"

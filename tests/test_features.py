@@ -1226,6 +1226,7 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app: App, monkeypat
     assert "* squire" in console.run(["voice", "list"], USER).text
     for segment in segments:
         hook(app, "UserPromptSubmit", prompt=segment)
+    hook(app, "Stop")
     app.runtime().deferred.drain()
     line_text = len(keystrokes)
     app.container.get(SettingRows).set("voices.avatar_shown", "never", Actor.user(1))
@@ -1233,6 +1234,24 @@ def test_the_voice_is_said_at_start_and_a_change_is_typed_in(app: App, monkeypat
     assert len(keystrokes) == line_text, "a change to the figure's look is no change of voice: nothing is typed"
     app.container.get(SettingRows).set("voices.title", "Captain", Actor.user(1))
     assert "changed how you talk" in keystrokes[line_text] and sum("changed how you talk" in line for line in keystrokes[line_text:]) == 1, "a change to the words is typed once, in its pieces"
+
+
+def test_a_message_reaches_a_working_agent_on_its_next_tool_use_and_an_idle_one_typed_at_once(app: App, monkeypatch):
+    """A message that comes while the agent is at work waits for its next tool use, shown to the user too, and nothing is typed; one that comes while it sits at its prompt is typed at once."""
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    hook(app, "SessionStart")
+    app.console().run(["environment", "overview"], AGENT)
+    hook(app, "UserPromptSubmit", prompt="go on")
+    hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})
+    app.console().run(["message", "send", "look at the footer too"], USER)
+    assert keystrokes == [], "the agent is at work: nothing is typed"
+    reply = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "b.py"})[1]
+    assert "new message " in reply["hookSpecificOutput"]["additionalContext"] and "new message " in reply["systemMessage"], "its next tool use carries the line, and the user sees it in the terminal"
+    app.console().run(["message", "unread"], AGENT)
+    hook(app, "Stop")
+    app.console().run(["message", "send", "and the header"], USER)
+    assert any("new message " in line for line in keystrokes), "at its prompt, the line is typed at once"
 
 
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: App, monkeypatch):
@@ -1248,7 +1267,7 @@ def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: A
     assert keystrokes == ["[journal] new message 2"], "a second line waits while the first is on its way, or it would pile up in the prompt box"
     notified = hook(app, "UserPromptSubmit", prompt="[journal] new message 2")[1]["hookSpecificOutput"]["additionalContext"]
     app.runtime().deferred.drain()
-    assert keystrokes == ["[journal] new message 2", "[journal] new message 3"], "the first seen back, the next goes in"
+    assert keystrokes == ["[journal] new message 2"], "the first seen back, the agent is at work, so the next waits for its next tool use instead of being typed"
     assert "new messages 2, 3" in notified, "message 1 was shown by the overview, which reads the unread"
     app.console().run(["message", "send", "four"], USER)
     app.console().run(["message", "send", "five"], USER)
@@ -2169,9 +2188,11 @@ def test_a_chains_parts_are_recorded_and_a_moved_chain_reports_when_it_ends(app:
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=1.0))
     assert len(keystrokes) == notified, "while the agent is busy, the end waits"
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=6.0))
-    assert "output 1 failed with code 1" in keystrokes[-1] and "pytest" not in keystrokes[-1] and "2 failed" not in keystrokes[-1], "once it is quiet, its end names the number and how it ended, never the command or its lines"
+    assert len(keystrokes) == notified, "the agent is still at work, so the end waits for its next tool use instead of being typed"
+    carried = json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1])
+    assert "output 1 failed with code 1" in carried and "2 failed" not in carried, "once it is quiet, its end names the number and how it ended on the next tool use, never the command or its lines"
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=12.0))
-    assert len(keystrokes) == notified + 1, "an end is named once"
+    assert "output 1 failed" not in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1]) and len(keystrokes) == notified, "an end is named once"
     cards = [m for m in app.container.get(Messages).scoped() if m.author == "system"]
     assert len(cards) == 1 and (cards[-1].text, cards[-1].data["tone"], cards[-1].data["ending"], cards[-1].data["line"]) == ("Testing", "bad", "failed with code 1", "pytest -q"), "the moved command has one card, settled in place: titled by what it does, red as it failed, its command kept for the opened card"
     assert cards[-1].data["shows"] == "commands", "a card names the Show in chat switch that hides it"
@@ -2411,15 +2432,14 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "x", "limit": 1})
     link.type(1, "while at work")
     tick(90)
-    assert len(transmitted) == 3, "a line typed to an agent at work waits for its turn to end"
+    assert len(transmitted) == 2, "a line for an agent at work waits for its next tool use or its turn's end, and is not typed"
     link.type(1, "after it")
     assert "[journal] after it" not in [s["line"] for s in transmitted], "a line waits while an earlier one is on its way"
     hook(app, "Stop")
     for later in (120, 150, 200, 300, 500, 900):
         tick(later)
     lines = [s["line"] for s in transmitted]
-    assert len([line for line in lines if line.startswith("[journal] while at work")]) == 6, "six tries, each after twice the wait, then the chat is told"
-    assert lines[3:] == ["[journal] while at work | after it"] * 5, "a line typed again carries the one held behind it"
+    assert lines[2:] and set(lines[2:]) == {"[journal] while at work | after it"}, "at the turn's end the waiting lines are typed as one, and typed again until seen back"
 
 
 def test_commands_run_at_the_same_moment_keep_their_own_output(app: App):
@@ -3174,7 +3194,7 @@ def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: A
     assert transmitted == [], "a step just said is not said again"
     app.container.get(SettingRows).set("sequences.say_every", 0, Actor.user(1))
     tick()
-    assert any("step 1: bump" in line for line in transmitted), "a step unheard for the set minutes is typed again to a quiet agent"
+    assert "step 1: bump" in json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1]), "a step unheard for the set minutes is said again, carried by the agent's next tool use while it is at work"
     console.run(["sequence", "suspend", "--why", "docs first"], AGENT)
     transmitted.clear()
     tick()
@@ -5816,10 +5836,12 @@ def test_a_message_gets_one_reply_unless_the_agent_confirms_a_second(app: App, m
     assert repeat.code == 1 and "already has your reply 2" in repeat.text, "a second reply by command is refused, naming the first"
     hook(app, "MessageDisplay", message="An agent with work is told the next task at each stop, and an agent at rest is checked in on after thirty quiet minutes.")
     app.runtime().deferred.drain()
+    hook(app, "Stop")
     assert len([m for m in app.container.get(Messages).scoped() if m.author == "agent"]) == 1, "closing words saying the reply again stay out of the chat"
     assert any("said again what your reply 2 to message 1 said" in line for line in keystrokes), "and the agent is told why"
     hook(app, "MessageDisplay", message="[!reply:1] One more thing about the wait.")
     app.runtime().deferred.drain()
+    hook(app, "Stop")
     assert len([m for m in app.container.get(Messages).scoped() if m.author == "agent"]) == 1, "a typed tag on a message already answered is kept out too"
     assert any("message 1 already has your reply 2" in line for line in keystrokes)
     assert console.run(["message", "send", "Something new after all.", "--reply-to", "1", "--confirm"], AGENT).code == 0, "confirmed, a second reply goes out"
@@ -5974,7 +5996,8 @@ def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app: App, monkeyp
     reply = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
     notified = reply["hookSpecificOutput"]["additionalContext"]
     app.runtime().deferred.drain()
-    assert "closed task 2" in notified and any("task 1 is still parked" in line and "the footer comes first" in line for line in keystrokes), f"the close names the parked task at once, not a quarter of an hour later: {notified} {keystrokes}"
+    carried = json.dumps(hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "a.py"})[1])
+    assert "closed task 2" in notified and "task 1 is still parked" in carried and "the footer comes first" in carried, f"the close names the parked task at once, on the next tool use, not a quarter of an hour later: {notified} {carried}"
 
 
 def test_the_database_gives_deleted_rows_space_back_by_itself(app: App):
@@ -6432,6 +6455,7 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     link.type(1, "new message 2")
     hook(app, "UserPromptSubmit", prompt="[journal] new message 2")
     app.runtime().deferred.drain()
+    link.resting(1)
     link.type(1, "new message 3")
     link.type(1, "the user put 👍 on message 2")
     app.container.get(Clock).tick(app.container.get(Clock).time())
