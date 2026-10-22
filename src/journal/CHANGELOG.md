@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.2
+
+- The restart an update needs is a dialog over the viewer that cannot be dismissed: this journal needs a restart after the latest install, quit the agent in its terminal, or stop its process, and start it again. It closes by itself once the agent's session starts, and is never among the pinned notices.
+
 ## 4.5.1
 
 - An update from 4.4 asks for the agent's session to start again: 4.4 kept no record of its version, so the first boot on 4.5.0 took an updated journal for a fresh one and pinned no notice. A journal that has had agents and kept no version is now told it was updated, and pins the notice to start the session again.

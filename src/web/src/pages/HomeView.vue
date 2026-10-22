@@ -1,4 +1,5 @@
 <script setup>
+import {pinnedNotices} from "../domain/notices.js";
 import {agent} from "../composables/leadAgent.js";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import AgentGrid from "../agents/AgentGrid.vue";
@@ -25,7 +26,7 @@ defineProps({
     floating: Boolean,
 });
 const emit = defineEmits(["feed"]);
-const notices = computed(() => open("notices"));
+const notices = computed(() => pinnedNotices(open("notices")));
 const feedKey = computed(() => (agent.value ? `${agent.value.id}:${agent.value.session}` : ""));
 </script>
 

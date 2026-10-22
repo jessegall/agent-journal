@@ -1,4 +1,5 @@
 <script setup>
+import {pinnedNotices} from "../domain/notices.js";
 import {DEFAULT_HIDDEN} from "../domain/chatVisibility.js";
 import {computed, ref} from "vue";
 import FloatWindow from "../kit/FloatWindow.vue";
@@ -15,7 +16,7 @@ import {levelChoices, levelOf} from "../domain/verbosity.js";
 import {usePaneLayout} from "../composables/paneLayout.js";
 
 const {views} = useHomeViews();
-const notices = computed(() => open("notices"));
+const notices = computed(() => pinnedNotices(open("notices")));
 const {drawn, landing, move, size, tune, front, close, dock, sendAway, bringBack} = useDetached();
 const menu = ref(null);
 const toast = ref(null);

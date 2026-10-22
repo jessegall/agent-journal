@@ -3,6 +3,7 @@ import {reloadWhenFree} from "./platform/busyField.js";
 import {useWindowEvent} from "./composables/windowEvent.js";
 import {chatOnly, narrow, soloView} from "./platform/view.js";
 import WindowBar from "./layout/WindowBar.vue";
+import RestartDialog from "./layout/RestartDialog.vue";
 import {activityVisible, closeOverlays} from "./actions/panels.js";
 
 import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
@@ -195,6 +196,7 @@ watch(
                     <QuickMenu v-if="quick" ref="quickMenu" :opening="quickOpening" @close="quick = false" />
                 </Transition>
                 <AppOverlays :home="page === 'home'" />
+                <RestartDialog />
             </div>
         </div>
     </template>
