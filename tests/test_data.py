@@ -3,6 +3,7 @@ from journal.support.masks import Masks
 from journal.support.secret_values import SecretValues
 """Phase one: a task is created, linked, updated and deleted in a real database, and every model event is heard with its actor."""
 
+import json
 import threading
 
 import pytest
@@ -206,7 +207,6 @@ def test_a_row_answers_its_heading_its_summary_and_its_dock_card():
 
 def test_the_time_keys_migration_renames_at_in_the_column_and_the_stored_json(connection):
     """Migration 20: the edits column at becomes time, and the at key inside an entry's data, a check's progress and a dump's question and answers becomes time; a record without them is left as it is."""
-    import json
     from journal.db.migrations.time_keys import TimeKeys
     connection.execute("ALTER TABLE edits RENAME COLUMN time TO at")
     for table, now, then in (("checks", "progress", "running"), ("dumps", "choice", "chosen"), ("dumps", "claimed", "taken")):
@@ -293,7 +293,6 @@ def test_the_chart_drop_keeps_only_workflows_a_user_or_an_agent_wrote_as_documen
 
 def test_the_timestamp_renames_migration_moves_the_phone_codes_and_the_wait_times_to_their_at_names(connection):
     """Migration 26: the pairing codes table becomes phone_codes with expires_at, and a wait stored on an agent's row keeps its started and reminded times under their _at names."""
-    import json
     from journal.db.migrations.timestamp_renames import TimestampRenames
     connection.execute("ALTER TABLE phone_codes RENAME COLUMN expires_at TO expiry_time")
     connection.execute("ALTER TABLE phone_codes RENAME TO pairing_codes")
@@ -317,6 +316,17 @@ def test_the_worker_reuse_counts_migration_reads_each_reuse_from_the_reports_bef
     WorkerReuseCounts().apply(connection)
     counts = [(row["name"], row["reuse_count"]) for row in connection.all("SELECT name, reuse_count FROM workers ORDER BY id")]
     assert counts == [("w1", 2), ("w2", 2), ("w3", 0)], "three reports and back is two sends; two reports and out again is two; out on its first job is none"
+
+
+def test_the_message_agents_migration_moves_the_session_into_its_column_and_puts_every_message_in_the_main_chat(connection):
+    """Migration 34: a peer message's session leaves its data for the session column, an agent's own message takes its writer's session, a user's has none, and all of them are the main agent's."""
+    from journal.db.migrations.message_agents import MessageAgents
+    for creator, data in (("system", {"kind": "peer", "session": "s1", "peer": "other"}), ("agent:s2", {}), ("user:1", {}), ("system", {"session": ""})):
+        connection.execute("INSERT INTO messages (environment_id, author, text, data, created_at, creator) VALUES (1, 'agent', 'x', ?, '2026-10-22', ?)", (json.dumps(data), creator))
+    connection.execute("UPDATE messages SET session = NULL, agent_role = NULL")
+    MessageAgents().apply(connection)
+    rows = [(row["session"], row["agent_role"], json.loads(row["data"])) for row in connection.all("SELECT session, agent_role, data FROM messages ORDER BY id")]
+    assert rows == [("s1", "main", {"kind": "peer", "peer": "other"}), ("s2", "main", {}), (None, "main", {}), (None, "main", {})]
 
 
 def test_a_query_renders_every_read_shape_with_its_values_bound():

@@ -50,6 +50,9 @@ class Actor:
     def is_user(self) -> bool:
         return self.kind in (ActorKind.USER, ActorKind.PHONE)
 
+    def agent_session(self) -> str | None:
+        return self.id if self.kind == ActorKind.AGENT else None
+
     @property
     def stamp(self) -> str:
         return f"{self.kind.value}:{self.id}" if self.id else self.kind.value

@@ -22,6 +22,9 @@ class Messages(ScopedRepository[Message]):
         super().__init__(connection, bus, scope)
         self.reactions, self.links = reactions, links
 
+    def save(self, row: Message, actor: Actor) -> Message:
+        return super().save(row.authored(actor.agent_session()), actor)
+
     def unread(self) -> list[Message]:
         return self.selected(self.query().filter(author=Author.USER).filter_null("read_at").order("id"))
 

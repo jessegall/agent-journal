@@ -153,7 +153,7 @@ export const withSystemCards = (agent, messages) =>
             cards: [
                 ...(agent.data?.cards || []),
                 ...messages
-                    .filter((m) => m.author === "system" && [undefined, "", agent.session].includes(m.data?.session))
+                    .filter((m) => m.author === "system" && [undefined, null, "", agent.session].includes(m.session))
                     .map((m) => ({
                         key: refOf(m),
                         time: createdAt(m),

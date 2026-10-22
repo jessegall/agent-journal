@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import ClassVar
 
 from journal.events.rows.message_arrived import MessageArrived
+from journal.models.agent_role import AgentRole
 from journal.models.author import Author
 from journal.models.scoped import Scoped
 TERMINAL_LINE = "typed"
@@ -10,6 +11,8 @@ TERMINAL_LINE = "typed"
 
 @dataclass(frozen=True)
 class Message(Scoped):
+    """A bubble of a chat: who wrote it, its words and files, and the session and kind of the agent whose chat it is in."""
+
     text_fields: ClassVar[tuple[str, ...]] = ("text",)
 
     THOUGHT = "thought"
@@ -19,6 +22,8 @@ class Message(Scoped):
     ASKS_KEY = "asks"
 
     author: Author = Author.USER
+    session: str | None = None
+    agent_role: AgentRole = AgentRole.MAIN
     text: str = ""
     reply_target: int | None = None
     read_at: datetime | None = None
@@ -31,15 +36,18 @@ class Message(Scoped):
 
     @classmethod
     def agent_message(cls, sender: str, text: str, session: str, time: datetime, asks: bool) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, read_at=time, data={"kind": cls.PEER, cls.PEER: sender, "session": session, cls.ASKS_KEY: asks})
+        return cls(author=Author.SYSTEM, text=text, read_at=time, session=session, data={"kind": cls.PEER, cls.PEER: sender, cls.ASKS_KEY: asks})
 
     @classmethod
     def outgoing(cls, receiver: str, text: str, session: str, address: str = "") -> "Message":
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "session": session, "address": address or receiver})
+        return cls(author=Author.SYSTEM, text=text, session=session, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "address": address or receiver})
 
     @classmethod
     def send_failed(cls, receiver: str, text: str, session: str, address: str, reason: str) -> "Message":
-        return cls(author=Author.SYSTEM, text=text, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "session": session, "address": address or receiver, "failure": reason})
+        return cls(author=Author.SYSTEM, text=text, session=session, data={"kind": cls.PEER, cls.RECIPIENT_KEY: receiver, "address": address or receiver, "failure": reason})
+
+    def authored(self, session: str | None) -> "Message":
+        return self.with_(session=session) if self.is_new and self.session is None else self
 
     def arrived(self) -> "Message":
         return self.with_event(MessageArrived(text=self.text))
