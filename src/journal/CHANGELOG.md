@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.1
+
+- The avatar falls the moment the ground under it moves: every frame its feet are measured against the ground, and more than five pixels down it falls from where it stood, more than five up it is launched; within five it is carried.
+- A falling avatar is drawn falling again, instead of standing in the air and then appearing on the ground below.
+
 ## 4.16.0
 
 - Each emoji the agent puts on your message plays the avatar's own animation for it, once: the butler tips his hat for 🎩, peers through a monocle for 🧐 and raises a glass for 🥂, and every voice's three faces have theirs. Every voice can now put all of its own faces on a message.
