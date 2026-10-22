@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.10.0
+
+- A reader may pick other lines once a run finished or failed: `journal reader add <name> --pattern ... --finished '<its summary>' --failed '<its failures>'`. The card, the watch lines and a read through the reader show those lines once the run ended. A script reader finds the stage in `JOURNAL_OUTPUT_STAGE`. The shipped pytest, dotnet test and phpunit readers carry both.
+- A test run that no counting reader reads is offered one, as a suggestion, on its first run and every fiftieth after.
+
 ## 4.9.0
 
 - The overview's commands are written in full, `journal task list`, and any other command may stand there: a line that is not a journal command runs in the project's folder, its output under its heading. Lines saved in the short form are written in full once.
