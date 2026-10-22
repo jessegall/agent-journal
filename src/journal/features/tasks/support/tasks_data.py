@@ -22,4 +22,5 @@ class TasksData:
     open_ids: tuple[int, ...] = ()
     open_summary: str = ""
     blocked_summary: str = ""
+    started_ids: tuple[int, ...] = ()
     agent_tasks: tuple[int, ...] = ()

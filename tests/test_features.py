@@ -920,6 +920,24 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_an_agent_is_stuck_only_when_every_task_is_blocked_and_freed_when_one_reopens(app: App):
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["task", "create", "the parser"], AGENT)
+    stuck = lambda: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": 'journal stuck "the key is missing"'})
+    status, refused = stuck()
+    assert status == 409 and "you are not stuck" in json.dumps(refused), "stuck is refused while a task is open"
+    console.run(["task", "block", "1", "waits on the client's key"], AGENT)
+    assert stuck()[0] == 200, "with every task blocked it may say so"
+    console.run(["stuck", "the key is missing"], AGENT)
+    app.runtime().deferred.drain()
+    assert app.container.get(SessionAgents).top("s1").name == "stuck"
+    console.run(["task", "unblock", "1"], USER)
+    app.runtime().deferred.drain()
+    assert app.container.get(SessionAgents).top("s1").name != "stuck", "a task opened again frees the stuck agent"
+
+
 def test_a_supervisor_found_outdated_at_boot_is_restarted_once_at_the_end_of_its_agents_turn_and_none_is_asked_at_a_stop(app: App, monkeypatch):
     from journal.features.updates.seeds.supervisor_check import SupervisorCheck
     from journal.support.supervisor_announcement import SupervisorAnnouncement
