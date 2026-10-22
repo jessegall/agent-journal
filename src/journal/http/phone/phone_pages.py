@@ -29,6 +29,7 @@ from journal.repositories.phones import Phones
 from journal.features.sharing.support.share_place import SharePlace
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
+from journal.sync.team_account import TeamAccount
 
 PAGE = "phone.html"
 WORKER = "phone-sw.js"
@@ -45,7 +46,8 @@ PHONE_REFUSAL = "a phone reaches only the pages its app uses, in its own environ
 class PhonePages:
     """What the tunnel's listener answers under /p/, as version 3 did: the phone page, its files, its service worker, its manifest and its icons, so the page installs on a phone as an app; the pairing, which sets the phone's cookie; and the phone's own data, read by that cookie alone."""
 
-    def __init__(self, config: Config, pairing: PhoneConnector, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, stacked: WebPush, waits: PhoneWaits, place: SharePlace) -> None:
+    def __init__(self, config: Config, pairing: PhoneConnector, phones: Phones, tunnel: Tunnel, router: Router, environments: Environments, allow: PhoneAllowList, stacked: WebPush, waits: PhoneWaits, place: SharePlace, account: TeamAccount) -> None:
+        self.account = account
         self.config, self.pairing, self.phones, self.tunnel, self.place = config, pairing, phones, tunnel, place
         self.router, self.environments, self.allow, self.push, self.waits = router, environments, allow, stacked, waits
 
@@ -166,7 +168,7 @@ class PhonePages:
         url = urlsplit(request.path.removeprefix("/p"))
         query = {name: values[-1] for name, values in parse_qs(url.query).items()}
         environment = self.environments.find(phone.environment_id).name
-        requested = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, Actor.phone(phone.row_id))
+        requested = Request(request.method, url.path, query, body, {}, {ENVIRONMENT_HEADER.lower(): environment}, self.account.phone_actor(phone.row_id))
         route = self.router.matched(requested)
         if route is None or not self.allow.allows(route) or query.get("env", environment) != environment:
             return self.json(403, {"error": PHONE_REFUSAL})

@@ -4,6 +4,7 @@ import socket
 from pathlib import Path
 
 from journal.config import Config
+from journal.support.actor import Actor
 from journal.support.caller import LOCAL_USER
 
 TEAM_FILE = "team.json"
@@ -55,3 +56,6 @@ class TeamAccount:
 
     def device_name(self) -> str:
         return socket.gethostname()
+
+    def phone_actor(self, phone_id: int) -> Actor:
+        return Actor.user(self.user_number()) if self.is_joined() else Actor.phone(phone_id)
