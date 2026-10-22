@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.15.4
+
+- The File edits view no longer flickers to No edits yet while a worker works: it follows the main agent alone and shows only its edits.
+
 ## 4.15.3
 
 - The avatar snaps onto a floor only at the top of a jump, within 5 pixels, after waiting three frames to see the floor is still there; it no longer catches edges it is passing.
