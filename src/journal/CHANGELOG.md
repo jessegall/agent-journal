@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.0
+
+- `journal worker dispatch` requires `--changes`, naming what the worker changes. A dispatch that changes nothing is refused: a job that only reads goes to a subagent.
+- A suggestion's description is shown whole, never cut to a line.
+
 ## 4.7.3
 
 - A background subagent that ends on an API error, such as a usage limit, turns its mark red with the error. One whose report says it could not do the job turns it orange with its own words.
