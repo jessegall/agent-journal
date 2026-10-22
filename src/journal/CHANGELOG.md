@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.7.2
+
+- The avatar is carried with its card while it waits for its clip to end before setting off, so it no longer sinks into a live card and jumps back up.
+- A worker's dispatch mark stays as it went out, turning red only when the dispatch could not start; each later standing of the worker is a new mark at the bottom of the chat.
+
 ## 4.7.1
 
 - Rows are chosen in their repositories: about fifty places that filtered rows after fetching them now ask a repository method named for the rows they want. Two detectors in the project's code-commandments rules catch it from now on.
