@@ -17,6 +17,7 @@ import AgentUsage from "./AgentUsage.vue";
 import CrewList from "./CrewList.vue";
 import "./drop.css";
 import {go, peek, route} from "../route.js";
+import {useColleague} from "../composables/colleague.js";
 
 const open = ref("");
 const schemesOpen = ref(false);
@@ -56,54 +57,64 @@ function openSkills() {
     open.value = "";
     go("skills");
 }
+const {colleague} = useColleague();
 </script>
 
 <template>
-    <div class="agent-bar">
-        <AgentFacts :data="data" :open="open" @toggle="toggle" />
-        <template v-if="data">
-            <div class="agent-actions">
-                <AgentBarViews :open="open" @toggle="toggle" />
-            </div>
-        </template>
-        <template v-if="open && anchor && data">
-            <MenuPanel
-                :anchor="anchor"
-                :min-width="open === 'presets' ? 360 : 320"
-                :max-width="open === 'presets' ? 360 : 380"
-                :max-height="dropHeight"
-                @click.stop
-                @close="open = ''"
-            >
-                <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
-                    <template #agent>
-                        <AgentMenu :agent="agent" @done="open = ''" />
-                    </template>
-                    <template #skills>
-                        <AgentSkills :skills="skills" @read="readSkill" @browse="openSkills" />
-                    </template>
-                    <template #model>
-                        <AgentControls :control="open" :agent="agent" @done="open = ''" />
-                    </template>
-                    <template #presets>
-                        <AgentPresets v-model:schemes-open="schemesOpen" @preset="pickPreset" @scheme="pickScheme" />
-                    </template>
-                    <template #states>
-                        <AgentStack :agent="agent" />
-                    </template>
-                    <template #usage>
-                        <AgentUsage :usage="usage" />
-                    </template>
-                    <template #default>
-                        <CrewList heading="Subagents" :rows="subagentsOf(agent)" started="dispatched" @open="openSession" />
-                    </template>
-                </SwitchCase>
-            </MenuPanel>
-        </template>
-    </div>
+    <template v-if="colleague">
+        <div class="agent-bar agent-bar-colleague">{{ colleague }}'s environment: the agent's status there is not known on this machine</div>
+    </template>
+    <template v-else>
+        <div class="agent-bar">
+            <AgentFacts :data="data" :open="open" @toggle="toggle" />
+            <template v-if="data">
+                <div class="agent-actions">
+                    <AgentBarViews :open="open" @toggle="toggle" />
+                </div>
+            </template>
+            <template v-if="open && anchor && data">
+                <MenuPanel
+                    :anchor="anchor"
+                    :min-width="open === 'presets' ? 360 : 320"
+                    :max-width="open === 'presets' ? 360 : 380"
+                    :max-height="dropHeight"
+                    @click.stop
+                    @close="open = ''"
+                >
+                    <SwitchCase :value="CONTROLS.includes(open) ? 'model' : open">
+                        <template #agent>
+                            <AgentMenu :agent="agent" @done="open = ''" />
+                        </template>
+                        <template #skills>
+                            <AgentSkills :skills="skills" @read="readSkill" @browse="openSkills" />
+                        </template>
+                        <template #model>
+                            <AgentControls :control="open" :agent="agent" @done="open = ''" />
+                        </template>
+                        <template #presets>
+                            <AgentPresets v-model:schemes-open="schemesOpen" @preset="pickPreset" @scheme="pickScheme" />
+                        </template>
+                        <template #states>
+                            <AgentStack :agent="agent" />
+                        </template>
+                        <template #usage>
+                            <AgentUsage :usage="usage" />
+                        </template>
+                        <template #default>
+                            <CrewList heading="Subagents" :rows="subagentsOf(agent)" started="dispatched" @open="openSession" />
+                        </template>
+                    </SwitchCase>
+                </MenuPanel>
+            </template>
+        </div>
+    </template>
 </template>
 
 <style scoped>
+.agent-bar-colleague {
+    color: var(--text-3);
+}
+
 .agent-bar {
     position: relative;
     flex: none;

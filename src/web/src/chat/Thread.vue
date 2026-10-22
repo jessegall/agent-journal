@@ -42,6 +42,7 @@ import Turn from "./Turn.vue";
 import PlanCard from "./PlanCard.vue";
 import {seconds} from "../domain/row.js";
 import {ui} from "../state/ui.js";
+import {useColleague} from "../composables/colleague.js";
 
 const scroller = ref(null);
 const props = defineProps({view: {type: String, default: ""}, hidden: {type: Array, default: () => DEFAULT_HIDDEN}});
@@ -374,6 +375,7 @@ watch(
     },
     {immediate: true}
 );
+const {colleague, me} = useColleague();
 </script>
 
 <template>
@@ -414,6 +416,8 @@ watch(
                 </template>
                 <template v-if="!scope.chat || scope.chat.send">
                     <Compose
+                        :placeholder="colleague ? `Comment as ${me}` : 'Message the agent'"
+                        :submit="colleague ? 'Comment' : 'Send'"
                         :send="post"
                         :waiting="waitingNow"
                         @waiting-list="toggleWaiting"

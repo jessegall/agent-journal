@@ -1,5 +1,7 @@
 import {expect, test} from "vitest";
-import {actorName, agentName, isMe} from "../src/domain/people.js";
+import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
+import {actorName, agentName, colleagueOwner, isMe, personName} from "../src/domain/people.js";
 import {workerActions} from "../src/domain/workers.js";
 
 const team = (me) => ({me, device: me === 3 ? "d3" : "d7", people: [{id: 3, name: "Jesse Gall"}, {id: 7, name: "Anna de Vries"}], owners: {12: 7, 13: 3}});
@@ -21,4 +23,14 @@ test("another machine's worker offers no action here", () => {
     expect(workerActions(worker, "d3")).toEqual([]);
     expect(workerActions(worker, "d7").length).toBeGreaterThan(0);
     expect(workerActions({...worker, device: ""}).length).toBeGreaterThan(0);
+});
+
+test("a colleague's environment opens with a box to comment as yourself and no controls of its agent", () => {
+    expect(colleagueOwner(12, team(3))).toBe(7);
+    expect(colleagueOwner(13, team(3))).toBe(0);
+    expect(personName(3, team(3))).toBe("Jesse Gall");
+    const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
+    expect(thread).toMatch(/:placeholder="colleague \? `Comment as \$\{me\}` : 'Message the agent'"/);
+    const bar = readFileSync(resolve(__dirname, "../src/chat/AgentBar.vue"), "utf8");
+    expect(bar).toMatch(/<template v-if="colleague">\s*<div class="agent-bar agent-bar-colleague">\{\{ colleague \}\}'s environment: the agent's status there is not known on this machine<\/div>/);
 });

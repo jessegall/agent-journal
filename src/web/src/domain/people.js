@@ -3,7 +3,7 @@
 
 export const NOBODY = {me: 1, device: "", people: [], owners: {}};
 
-const personName = (number, people) => (people.people.find((person) => person.id === number) || {}).name || `user ${number}`;
+export const personName = (number, people) => (people.people.find((person) => person.id === number) || {}).name || `user ${number}`;
 
 export const isMe = (stamp, people = NOBODY) => stamp === `user:${people.me}`;
 
@@ -19,4 +19,10 @@ export function actorName(stamp, people = NOBODY, environmentId = 0) {
     if (kind === "worker") return `worker ${id}`;
     if (kind === "phone") return "you, from your phone";
     return kind === "system" ? "the journal" : id || kind;
+}
+
+// The owner of an environment when that is not the viewer, else 0.
+export function colleagueOwner(environmentId, people = NOBODY) {
+    const owner = people.owners[String(environmentId)] || 0;
+    return owner && owner !== people.me ? owner : 0;
 }
