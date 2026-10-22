@@ -44,7 +44,6 @@ class TasksDataReader:
             open_ids=tuple(t.row_id for t in open_tasks),
             open_summary=self.summary(open_tasks),
             started_ids=tuple(t.row_id for t in self.tasks.with_state(TaskState.STARTED)),
-            blocked_summary="; ".join(f"task {task.id} ({task.title}): waits on {self.tasks.reason(task) or 'nothing named'}" for task in self.tasks.with_state(TaskState.BLOCKED)),
             agent_tasks=self.tasks.holder_task_ids(self.workers.agent_holder(agent)),
         )
 

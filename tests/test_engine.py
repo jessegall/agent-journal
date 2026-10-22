@@ -1537,13 +1537,13 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     stop = Orchestrating().respond(Stop().with_data(of(None)), settings("orchestrator"))
     assert stop.refusal is not None and "task 3 (the footer), task 4 (the margin)" in stop.refusal.rendered() and "dispatch a worker" in stop.refusal.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
     from dataclasses import replace as replaced
-    all_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, open_ids=(), open_summary="", blocked=(5,), blocked_summary="task 5 (the key): waits on the client's login")})
+    all_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, open_ids=(), open_summary="", blocked=(5, 8))})
     held = Orchestrating().respond(Stop().with_data(all_blocked), settings("orchestrator"))
     told = held.refusal.rendered()
-    assert "task 5 (the key): waits on the client's login" in told and "still truly blocked" in told and "you are the orchestrator" in told and "journal stuck" in told, "an orchestrator whose every task is blocked may not stop: it checks them, decides what it can, waits on its workers or says it is stuck"
-    some_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, blocked=(5,), blocked_summary="task 5 (the key): waits on the client's login")})
+    assert "tasks 5, 8" in told and "journal task show" in told and "still truly blocked" in told and "you are the orchestrator" in told and "journal stuck" in told, "an orchestrator whose every task is blocked may not stop: it checks them, decides what it can, waits on its workers or says it is stuck"
+    some_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, blocked=(5,))})
     busy = Orchestrating().respond(Stop().with_data(some_blocked), settings("orchestrator"))
-    assert "dispatch a worker" in busy.refusal.rendered() and any("task 5 (the key)" in nudge.rendered() for nudge in busy.nudges), "a blocked task is named for checking whatever else is open"
+    assert "dispatch a worker" in busy.refusal.rendered() and any("tasks 5" in nudge.rendered() for nudge in busy.nudges), "a blocked task is named for checking whatever else is open"
     assert Workers.BLOCKED_CHECK.repeat_interval == 300, "and the check comes again every five minutes while it holds"
     assert "task 3" in PlansReady().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered() and "dispatch" not in PlansReady().respond(Stop().with_data(of(None)), settings("builder")).refusal.rendered(), "the builder's stop names the next task to do"
     assert isinstance(Orchestrating().respond(TaskStarted(environment_id=1, time=2.0, task_id=7, title="x", plan_id=0).with_data(of(None)), settings("orchestrator")).pushed, Delegating), "a task started in the orchestrator's mode is delegating, not working"

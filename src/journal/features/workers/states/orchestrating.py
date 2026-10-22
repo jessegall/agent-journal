@@ -50,13 +50,17 @@ def orchestrate(tasks: TasksData) -> Nudge:
 
 def blocked_check(tasks: TasksData) -> tuple[Nudge, ...]:
     from journal.features.workers.feature import Workers
-    return (Workers.BLOCKED_CHECK.create(count=len(tasks.blocked), tasks=tasks.blocked_summary),) if tasks.blocked else ()
+    return (Workers.BLOCKED_CHECK.create(count=len(tasks.blocked), tasks=numbers(tasks.blocked)),) if tasks.blocked else ()
 
 
 def all_blocked(tasks: TasksData) -> Nudge:
     from journal.features.workers.feature import Workers
-    return Workers.ALL_BLOCKED.create(tasks=tasks.blocked_summary)
+    return Workers.ALL_BLOCKED.create(tasks=numbers(tasks.blocked))
 
 
 def open_lines(tasks: TasksData) -> tuple[Nudge, ...]:
     return (orchestrate(tasks),) if tasks.open_ids else ()
+
+
+def numbers(ids: tuple[int, ...]) -> str:
+    return ", ".join(str(n) for n in ids)
