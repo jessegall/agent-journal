@@ -2166,7 +2166,7 @@ def test_a_file_edit_in_the_bar_says_editing_and_counts_the_lines_it_added_and_r
     hook(app, "PreToolUse", tool_name="Edit", tool_input=edit, tool_use_id="e-1")
     hook(app, "PostToolUse", tool_name="Edit", tool_input=edit, tool_response={}, tool_use_id="e-1")
     row = json.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/bar?env=main"), timeout=5))[-1]
-    assert [(p["value"], p["color"], p.get("prefix", ""), p.get("increments", False)) for p in row["parts"]] == [("editing", "gray", "", False), ("src/app.py", "muted", "", False), (2, "green", "+", True), (1, "red", "-", True)]
+    assert [(p["value"], p["color"], p.get("prefix", ""), p.get("increments", False)) for p in row["parts"]] == [("editing", "gray", "", False), ("src/app.py", "command", "", False), (2, "green", "+", True), (1, "red", "-", True)]
     assert row["hold"] == 1.0, "a change to files stays on the line for at least a second"
 
 

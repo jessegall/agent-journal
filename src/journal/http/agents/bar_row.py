@@ -46,7 +46,7 @@ class BarRow:
 
     def item(self) -> dict:
         command, _, argument = self.detail[:80].partition(" ")
-        detail = [{"value": word, "color": "muted"} for word in (command, argument) if word]
+        detail = [{"value": word, "color": color} for word, color in ((command, "command"), (argument, "muted")) if word]
         return {"id": self.time, "key": self.key, "parts": [{"value": self.verb, "color": "gray"}, *detail], "time": self.time, "done": False, "for": 0, "clock": True, "hold": self.display_seconds(), "lingers": ACTIVITY_ROW_SECONDS}
 
     def display_seconds(self) -> float:

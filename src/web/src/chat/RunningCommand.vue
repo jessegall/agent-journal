@@ -129,6 +129,11 @@ watch(runningLine, (now) => {
     font-weight: 500;
 }
 
+.running-token.command {
+    color: color-mix(in srgb, var(--text-3) 76%, transparent);
+    font-size: 0.88em;
+}
+
 .running-token.muted {
     flex: 0 1 auto;
     min-width: 0;
