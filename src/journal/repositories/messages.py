@@ -62,16 +62,16 @@ class Messages(ScopedRepository[Message]):
         return self.selected(self.query().filter(idempotency=key).order("id").limit(1))
 
     def window(self, last: int, previous: int = 0, following: int = 0) -> list[Message]:
-        query = self.query().filter_greater("id", following)
+        query = self.main_chat().filter_greater("id", following)
         if previous:
             query = query.filter_less("id", previous)
         return list(reversed(self.selected(query.order_descending("id").limit(last))))
 
     def changes(self, time: datetime) -> list[Message]:
-        return self.selected(self.query().filter_greater("updated_at", time).order("id").limit(500))
+        return self.selected(self.main_chat().filter_greater("updated_at", time).order("id").limit(500))
 
     def unviewed(self) -> int:
-        return self.counted(self.query().filter(author=Author.AGENT).filter_null("read_at"))
+        return self.counted(self.main_chat().filter(author=Author.AGENT).filter_null("read_at"))
 
     def visitor_messages(self, share_id: int) -> list[Message]:
         return self.selected(self.query().filter_json("data->share", share_id).order("id"))

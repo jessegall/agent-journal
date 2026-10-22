@@ -68,7 +68,7 @@ class MessageCommand(Command):
         return 0
 
     def list(self, args: Namespace, caller: Caller) -> int:
-        for message in self.messages.scoped():
+        for message in self.messages.selected(self.messages.main_chat().order("id")):
             threshold = " " if message.read_at else "*"
             print(f"{threshold}{message.id:>4}  {message.author:<5} {message.text_body}")
         return 0

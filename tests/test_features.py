@@ -1577,6 +1577,7 @@ def test_a_workers_words_never_answer_the_users_message_nor_count_as_the_main_ag
         assert [m.id for m in messages.unanswered()] == [1], "neither the worker's turn nor its report answers the user"
         assert [m.text for m in messages.unread()] == [], "a message in a worker's chat is not the main agent's to read"
         assert [m.text for m in messages.recent_voice(30)] == [], "nothing here was the main agent's own words"
+        assert [m.text for m in messages.recent(30) if m.text in ("Done.", "and the header?")] == [] and messages.unviewed() == 1, "the main chat lists neither, and counts only the report as unseen"
 
 
 def test_a_document_is_read_by_its_outline_and_one_section_at_a_time(app: App, tmp_path):

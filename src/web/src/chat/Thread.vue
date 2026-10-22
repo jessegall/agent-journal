@@ -94,7 +94,8 @@ const dumpOffer = {
     },
 };
 
-const mine = computed(() => rows("messages").filter((m) => m.author === "user" && !m.read_at));
+const chat = computed(() => rows("messages").filter((m) => m.agent_role === "main"));
+const mine = computed(() => chat.value.filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {
     const last = mine.value[mine.value.length - 1];
@@ -108,7 +109,7 @@ const busy = computed(() => !!owner.value && ["working", "compacting"].includes(
 const {waiting: waitingNow, open: waitingOpen, anchor: waitingAnchor, toggle: toggleWaiting} = useWaiting(undefined, owner);
 const planCard = computed(() => cardPlan(rows("plans")));
 const dumpDock = computed(() => (store.dumping ? null : dockedDump(rows("dumps"))));
-const rowDocks = computed(() => dockedRows(rows("messages")));
+const rowDocks = computed(() => dockedRows(chat.value));
 const dockCount = computed(() => rowDocks.value.length + [dumpDock.value, planCard.value].filter(Boolean).length);
 const helping = computed(() =>
     subagentsOf(owner.value)
@@ -133,7 +134,7 @@ const {away, missed, showNewest, follow: atTheFoot, toBottom: glideTo, left: rea
 const settledOnce = ref(false);
 const ready = ref(false);
 const unseen = computed(() =>
-    rows("messages")
+    chat.value
         .filter((m) => m.author === "agent" && !m.read_at)
         .map((m) => m.id)
 );
@@ -149,7 +150,7 @@ let frame = 0;
 
 const revoke = (p) => Object.values(p.previews || {}).forEach(URL.revokeObjectURL);
 const {pending, promise, drop, change, keep, link, keyOf} = usePromised(revoke);
-const thread = computed(() => threadTurns(rows("messages"), pending.value, here && !!store.paging.more.messages, props.hidden));
+const thread = computed(() => threadTurns(chat.value, pending.value, here && !!store.paging.more.messages, props.hidden));
 watch(thread, (made) => made.keys.forEach((placeholder, ref) => link(ref, placeholder)), {immediate: true});
 const turns = computed(() => thread.value.turns);
 const turnsLoaded = computed(() => scope.loaded("messages"));
