@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.32
+
+- The Slow requests tools, which are for developing the journal itself, start switched off in every project; a project that switched them on keeps them.
+
 ## 4.5.31
 
 - The stats bar names the agent's state with the top bar's word, Busy while it is busy and Idle only when it is idle; it showed the name of the state at the bottom of the agent's stack, Idle even while it worked.

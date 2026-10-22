@@ -920,6 +920,12 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_the_slow_request_tools_start_switched_off_in_a_project(app: App):
+    from journal.features.faults.feature import Faults
+    from journal.features.registry import Registry
+    assert app.container.get(Registry).is_enabled(Faults) is False, "the journal's own developer tools are off until a project switches them on"
+
+
 def test_a_task_started_parked_blocked_and_finished_leaves_a_mark_in_the_chat_for_each(app: App):
     console = app.console()
     hook(app, "SessionStart")
@@ -1103,6 +1109,7 @@ def test_a_request_over_its_budget_is_one_mark_per_route_told_the_first_time_and
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     hook(app, "SessionStart")
+    app.container.get(SettingRows).set("features.faults", True, Actor.user(1))
     app.container.get(SettingRows).set("faults.report", True, Actor.user(1))
     slow = app.container.get(SlowRequests)
     monkeypatch.setattr("os.getloadavg", lambda: (0.0, 0.0, 0.0))
