@@ -18,24 +18,32 @@ const empty = {table: "messages", id: 7, created_at: at(10), author: "user", cre
 const reaction = {table: "reactions", id: 1, message_id: 7, face: "🎩", author: "agent"};
 const scope = {env: "", api: {}, rows: (table) => (table === "reactions" ? [reaction] : [empty]), loaded: () => true, holding: () => {}, earlier: () => {}};
 
-test("a face on an empty message is drawn inside that message's bubble, never as a bubble of its own", async () => {
+async function drawn(message) {
     window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
     const {default: TurnMessage} = await import("../src/chat/TurnMessage.vue");
-    const [turn] = threadTurns([empty], []).turns;
+    const [turn] = threadTurns([message], []).turns;
     const host = document.createElement("div");
     document.body.append(host);
     const app = createApp({render: () => h(TurnMessage, {turn})});
-    app.provide("scope", scope);
+    app.provide("scope", {...scope, rows: (table) => (table === "reactions" ? [reaction] : [message])});
     app.directive("tip", {});
     app.mount(host);
     await nextTick();
     await new Promise((r) => requestAnimationFrame(r));
     await nextTick();
-    const bubble = host.querySelector(".thread-bubble");
-    expect(bubble.style.display).not.toBe("none");
-    expect(bubble.querySelector(".thread-faces")).not.toBeNull();
+    return {host, done: () => (app.unmount(), host.remove())};
+}
+
+test("a face on a message is drawn under its bubble, never inside it", async () => {
+    const {host, done} = await drawn({...empty, text: "the footer is fixed"});
+    expect(host.querySelector(".thread-bubble .thread-faces")).toBeNull();
+    expect(host.querySelector(".thread-turn > .thread-faces")).not.toBeNull();
+    done();
+});
+
+test("a face on an empty message shows no empty bubble, only the face", async () => {
+    const {host, done} = await drawn(empty);
+    expect(host.querySelector(".thread-bubble").style.display).toBe("none");
     expect(host.querySelectorAll(".thread-faces").length).toBe(1);
-    expect(host.querySelector(".thread-turn > .thread-faces")).toBeNull();
-    app.unmount();
-    host.remove();
+    done();
 });

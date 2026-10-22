@@ -47,7 +47,7 @@ const faces = computed(() => {
     return Object.entries(seen).map(([face, who]) => ({face, n: who.length, mine: who.includes("user"), title: who.join(", ")}));
 });
 
-const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || faces.value.length || props.turn.kind !== "message"));
+const bubbled = computed(() => Boolean(words.value.text || quoteText.value || files.value.length || filed.value.length || resourceComment.value || props.turn.kind !== "message"));
 const LONG_TEXT = 600;
 const long = computed(() => props.turn.who === "agent" && words.value.text.length > LONG_TEXT);
 const answers = computed(() => answered(props.turn));
@@ -136,9 +136,6 @@ async function drop() {
             <template v-if="files.length">
                 <Attachments :message="turn" @grew="emit('grew')" />
             </template>
-            <template v-if="faces.length">
-                <TurnReactions :faces="faces" @react="react" />
-            </template>
         </div>
         <TurnActions
             :turn="turn"
@@ -149,6 +146,9 @@ async function drop() {
             @delete="drop"
             @react="react"
         />
+        <template v-if="faces.length">
+            <TurnReactions :faces="faces" @react="react" />
+        </template>
         <TurnHeader :turn="turn" />
     </div>
 </template>
