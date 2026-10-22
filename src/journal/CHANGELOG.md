@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.1
+
+- The task inspector shows the task's state in a line under its title. A blocked task says beneath it what it waits on and why, a parked one why it is parked, and the moves sit docked at the bottom.
+
 ## 4.8.0
 
 - `journal worker dispatch` requires `--changes`, naming what the worker changes. A dispatch that changes nothing is refused: a job that only reads goes to a subagent.
