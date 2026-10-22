@@ -32,7 +32,7 @@ UNBOUND_SESSION = "unbound_session"
 
 
 class Receiver:
-    """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply. A hook that does not carry its environment's launch id is recorded and reported, and reaches no listener."""
+    """Translates a hook into its agent event, records it as an entry, runs the blocking listeners now and folds their decisions into the answer, and hands the rest to the deferred worker after the reply. A hook that does not carry its environment's launch id is recorded and reported, and reaches no listener; a proven worker's hook is recorded and reaches none either, so none of the main agent's conduct holds a worker and nothing of it is posted as the main agent's."""
 
     def __init__(self, environments: Environments, entries: Entries, translation: Translation, bus: Bus, deferred: ListenerQueue, scope: Scope, transcript: TranscriptTurns, cards: Cards, agents: Agents, slow: SlowRequests, launches: LaunchFiles, worker_hooks: WorkerHooks) -> None:
         self.environments, self.entries, self.translation, self.bus, self.deferred, self.scope = environments, entries, translation, bus, deferred, scope
@@ -47,16 +47,25 @@ class Receiver:
             if not self.launches.is_launch(environment.name, hook.launch) and not self.worker_hooks.is_proven(hook):
                 return self.unbound(hook, environment)
             self.worker_hooks.bind(hook, environment)
+            if hook.worker is not None:
+                return self.worker_recorded(hook, environment)
             for saved in self.transcript.events(hook, environment):
                 self._immediate(saved)
             event = self.translation.event(hook, environment)
-            entry = self.entries.save(Entry(environment_id=environment.row_id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
+            entry = self.recorded(hook, environment, event)
             if self.is_unknown_session_end(event):
                 return Decision()
             decision = self._blocking(event)
             self.entries.save(entry.with_(data={**entry.data, **self.recorded_outcome(hook, decision, timer)}), Actor.agent(hook.session))
             self._defer(event)
         return decision
+
+    def worker_recorded(self, hook: Hook, environment: Environment) -> Decision:
+        self.recorded(hook, environment, self.translation.event(hook, environment))
+        return Decision()
+
+    def recorded(self, hook: Hook, environment: Environment, event: AgentEvent) -> Entry:
+        return self.entries.save(Entry(environment_id=environment.row_id, kind=type(event).__name__, actor=Actor.agent(hook.session), data={**hook.stored(), **event.recorded()}), Actor.agent(hook.session))
 
     def unbound(self, hook: Hook, environment: Environment) -> Decision:
         self.entries.save(Entry(environment_id=environment.row_id, kind=UNBOUND_SESSION, actor=Actor.agent(hook.session), data={**hook.stored(), "launch": hook.launch}), Actor.agent(hook.session))

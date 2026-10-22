@@ -30,7 +30,8 @@ TIMEOUT_STATUS = -1
 END_UNWATCHED = -2
 ERROR_STATUS = -3
 ENDINGS = {TIMEOUT_STATUS: "stopped after {minutes:g} minutes without ending: {report}", END_UNWATCHED: "{report}", ERROR_STATUS: "failed: {report}"}
-EXCLUDED_VARIABLES = ("AGENT_JOURNAL_ACTIVE", "JOURNAL_SESSION", "JOURNAL_LAUNCH")
+JOURNAL_ACTIVE = "AGENT_JOURNAL_ACTIVE"
+EXCLUDED_VARIABLES = ("JOURNAL_SESSION", "JOURNAL_LAUNCH")
 
 
 class WorkerRunner:
@@ -85,7 +86,7 @@ class WorkerRunner:
 
     def environment_variables(self, environment: str) -> dict[str, str]:
         excluded = (*EXCLUDED_VARIABLES, *self.providers.inherited_markers(), *self.providers.session_variables())
-        return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", ACTOR: WORKER_ACTOR, "JOURNAL_ENV": environment, "JOURNAL_ROOT": str(self.config.root)}
+        return {**{k: v for k, v in os.environ.items() if k not in excluded}, AGENT_SHELL: "1", JOURNAL_ACTIVE: "1", ACTOR: WORKER_ACTOR, "JOURNAL_ENV": environment, "JOURNAL_ROOT": str(self.config.root)}
     def waited(self, worker: Worker, process: subprocess.Popen, actor: Actor) -> int:
         while True:
             try:

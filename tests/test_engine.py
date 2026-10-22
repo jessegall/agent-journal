@@ -558,6 +558,34 @@ def test_a_push_and_a_pop_write_the_trail_and_the_agents_page_shows_the_stack_to
     assert app.container.get(Agents).session_agent("s1").data != before and len(moves) == len(trail), "a state whose counts change in place moves nothing, so the trail keeps only pushes and pops"
 
 
+def test_a_workers_hooks_are_recorded_and_reach_none_of_the_main_agents_conduct(app: App):
+    from journal.models.worker import Worker
+    from journal.repositories.messages import Messages
+    from journal.repositories.workers import Workers
+    from journal.support.worker_token import WorkerToken
+    hook(app, "SessionStart")
+    with app.container.get(Scope).environment(1):
+        worker = app.container.get(Workers).save(Worker(environment_id=1, name="Mr. Babbage", brief="b", token_hash=WorkerToken.hashed("tok")), Actor.system())
+    def worker_hook(kind: str, **body):
+        data = json.dumps({"hook_event_name": kind, "session_id": "w1", **body}).encode()
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/hooks/claude", data=data, method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main", "X-Journal-Worker": str(worker.id), "X-Journal-Worker-Token": "tok"})
+        with urlopen(request, timeout=5) as reply:
+            return reply.status, json.loads(reply.read())
+    app.console().run(["panic", "paused"], AGENT)
+    with app.container.get(Scope).environment(1):
+        messages = len(app.container.get(Messages).all())
+    assert write(app)[0] == 409, "the main agent's pause holds its own write"
+    assert worker_hook("SessionStart", source="startup") == (200, {}) and worker_hook("PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"}) == (200, {}) and worker_hook("Stop") == (200, {}), "a worker owes no overview, is held by nothing of the main agent's and says nothing to it"
+    agents = app.container.get(Agents)
+    with app.container.get(Scope).environment(1):
+        assert agents.session_agent("w1").stack == () and len(app.container.get(Messages).all()) == messages, "a worker's stack is never moved by the main agent's conduct, and none of its hooks is posted in the chat"
+    with app.container.get(Scope).environment(1):
+        assert {entry.data["hook_event_name"] for entry in app.container.get(Entries).all() if entry.data.get("session_id") == "w1"} == {"SessionStart", "PreToolUse", "Stop"}, "its hooks are recorded"
+    app.console().run(["panic", "pop"], AGENT)
+    app.container.get(Bus).dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))
+    assert agents.session_agent("w1").stack == () and agents.session_agent("s1").stack[-1]["state"] == "following_plan", "a row event reaches the main agent alone"
+
+
 def test_journal_panic_passes_every_hold_and_a_compaction_ends_at_the_journals_start(app: App):
     hook(app, "SessionStart")
     console, agents = app.console(), app.container.get(Agents)
@@ -624,7 +652,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     hook(app, "SessionEnd")
     hook(app, "SessionStart", session_id="s2")
     agents, bus = app.container.get(Agents), app.container.get(Bus)
-    assert [item.session for item in agents.current_scoped(1)] == ["s2"]
+    assert [item.session for item in agents.main_scoped(1)] == ["s2"]
     assert any(isinstance(listener, RowEventDelivery) for listener in bus.listeners(RowEvent))
     assert not any(isinstance(listener, (RowEventDelivery, StateMachine)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))

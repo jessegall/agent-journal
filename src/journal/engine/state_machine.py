@@ -59,7 +59,7 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.type(environment_id, line, following=following)
 
     def row_event(self, event: RowEvent) -> None:
-        for agent in self.agents.current_scoped(event.environment_id) if event.environment_id else self.agents.environment_agents():
+        for agent in self.agents.main_scoped(event.environment_id) if event.environment_id else self.agents.main_unended():
             with self.scope.environment(agent.environment_id):
                 answered = self.answer(agent, event.reaching(agent.session))
             if answered.context:
