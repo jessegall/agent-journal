@@ -9518,3 +9518,31 @@ def test_a_watch_or_wait_through_a_reader_is_refused_on_an_output_its_reader_doe
     assert console.run(["output", "undock", str(tests.id)], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         assert not app.container.get(Messages).with_key(f"watch:{tests.id}")[0].data.get("docked"), "and its card can be taken down"
+
+
+def test_a_worker_from_another_machine_is_never_watched_signalled_stopped_or_merged_here(app: App, monkeypatch):
+    from journal.features.workers.jobs.worker_watch import WorkerWatch
+    from journal.features.workers.seeds.workers_seed import WorkersSeed
+    from journal.features.workers.support.worker_actions import WorkerActions
+    from journal.repositories.workers import Workers
+    from journal.support.rejection import Rejection
+    from journal.sync.incoming_changes import IncomingChanges
+    from journal.sync.team_account import TEAM_FILE
+    from journal.sync.team_change import TeamChange
+
+    (app.config.home / TEAM_FILE).write_text(json.dumps({"device": "here"}))
+    signals = []
+    monkeypatch.setattr(os, "killpg", lambda *values: signals.append(values))
+    monkeypatch.setattr(os, "kill", lambda *values: signals.append(values))
+    app.container.get(IncomingChanges).apply([TeamChange(row_table="workers", row=7, action="created", writer="user:1", fields={"environment_id": 1, "name": "Mr. Faraday", "state": "dispatched", "pid": 424242, "device": "there"})])
+    workers, watch = app.container.get(Workers), app.container.get(WorkerWatch)
+    pulled = workers.find(7)
+    app.container.get(WorkersSeed).run()
+    watch.tick(timing.time())
+    assert 7 not in [worker.id for worker in watch.watched] and workers.find(7) == pulled and signals == [], "another machine's worker is never watched or signalled here"
+    actions = app.container.get(WorkerActions)
+    with pytest.raises(Rejection, match="runs on another machine of the team"):
+        actions.stop(7, "stop", Actor.user(1))
+    with pytest.raises(Rejection, match="runs on another machine of the team"):
+        actions.merge(7, Actor.user(1))
+    assert workers.find(7) == pulled

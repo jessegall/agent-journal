@@ -22,6 +22,7 @@ from journal.repositories.workers import Workers
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.support.worktree_failure import WorktreeFailure
+from journal.sync.team_account import TeamAccount
 
 NOTIFY_REFUSALS = {
     WorkerState.REPORTED: "worker {n}, {name}, has reported and runs no more: give it the job with `journal worker send {n} \"<job>\"`",
@@ -37,12 +38,13 @@ CHECKED_STATES = (ProofState.CHECKED, ProofState.CHECKED_UNFINISHED)
 class WorkerActions:
     """What is done to a worker after its dispatch, by its command and from the viewer alike, each under the worker's lock: its next job sent, a word told while it runs, a stop, a retire."""
 
-    def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch, tasks: Tasks, proofs: Proofs, events: CommandEvents) -> None:
+    def __init__(self, workers: Workers, runner: WorkerRunner, providers: Providers, inbox: SessionInbox, branch: WorkerBranch, tasks: Tasks, proofs: Proofs, events: CommandEvents, account: TeamAccount) -> None:
         self.workers, self.runner, self.providers, self.inbox, self.branch, self.tasks, self.proofs, self.events = workers, runner, providers, inbox, branch, tasks, proofs, events
+        self.account = account
 
     def send(self, n: int, brief: str, dispatcher: str | None, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            return self.sent(self.workers.find(n), brief, dispatcher, actor)
+            return self.sent(self.local(n), brief, dispatcher, actor)
 
     def peer_send(self, n: int, brief: str, sender: int, actor: Actor) -> Worker:
         with self.runner.lock(n):
@@ -57,7 +59,7 @@ class WorkerActions:
             return self.notified(worker, text, f"worker {writer.id}, {writer.name}", actor)
 
     def peer(self, n: int, sender: int) -> Worker:
-        worker, writer = self.workers.find(n), self.workers.find(sender)
+        worker, writer = self.local(n), self.workers.find(sender)
         if worker.id == writer.id:
             raise Rejection(f"worker {n} is you: a job of your own you do yourself")
         if worker.adopted or worker.state == WorkerState.STOPPED:
@@ -112,9 +114,15 @@ class WorkerActions:
             raise Rejection(f"worker {event.worker}'s work was not merged, since a plugin held it: {'; '.join(refusals)}; its proofs and its task are as they were")
 
     def delivered(self, n: int, purpose: str) -> Worker:
-        worker = self.workers.find(n)
+        worker = self.local(n)
         if worker.state != WorkerState.DELIVERED:
             raise Rejection(f"worker {worker.id} is {worker.state}: only a worker that clocked out has {purpose}")
+        return worker
+
+    def local(self, n: int) -> Worker:
+        worker = self.workers.find(n)
+        if not worker.is_device(self.account.device()):
+            raise Rejection(f"worker {worker.id}, {worker.name}, runs on another machine of the team ({worker.device}): only that machine starts, stops, messages, checks or merges it")
         return worker
 
     def worker_task(self, worker: Worker) -> Task:
@@ -122,7 +130,7 @@ class WorkerActions:
 
     def release(self, n: int, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            worker = self.workers.find(n)
+            worker = self.local(n)
             if worker.is_running():
                 raise Rejection(f"worker {worker.id}, {worker.name}, is still out: stop it first with journal worker stop {worker.id}")
             self.tasks.release(Ref.build(worker), actor)
@@ -155,14 +163,14 @@ class WorkerActions:
 
     def user_message(self, n: int, text: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            worker = self.workers.find(n)
+            worker = self.local(n)
             if worker.is_running():
                 return self.notified(worker, text, "the user", actor)
             return self.sent(worker, text, None, actor)
 
     def notify(self, n: int, text: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            return self.notified(self.workers.find(n), text, "the agent that dispatched you", actor)
+            return self.notified(self.local(n), text, "the agent that dispatched you", actor)
 
     def notified(self, worker: Worker, text: str, sender: str, actor: Actor) -> Worker:
         refusal = self.notify_refusal(worker)
@@ -182,13 +190,13 @@ class WorkerActions:
 
     def stop(self, n: int, reason: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
-            worker = self.workers.save(self.workers.find(n).stopped(datetime.now(timezone.utc).timestamp(), reason), actor)
+            worker = self.workers.save(self.local(n).stopped(datetime.now(timezone.utc).timestamp(), reason), actor)
             self.runner.stop(worker)
             return worker
 
     def complete(self, n: int, reason: str, actor: Actor) -> tuple[Worker, str]:
         with self.runner.lock(n):
-            worker = self.workers.save(self.workers.find(n).finished(datetime.now(timezone.utc).timestamp(), reason), actor)
+            worker = self.workers.save(self.local(n).finished(datetime.now(timezone.utc).timestamp(), reason), actor)
             self.runner.stop(worker)
             self.tasks.release(Ref.build(worker), actor)
         return worker, self.branch.dropped(worker)

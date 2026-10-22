@@ -43,6 +43,7 @@ class Worker(Scoped):
     resume: str = ""
     adopted: bool = False
     pid: int = 0
+    device: str = ""
     began: float = 0.0
     recovered_session: str = ""
     touched_paths: tuple[str, ...] | None = None
@@ -108,6 +109,9 @@ class Worker(Scoped):
     def finished(self, time: float, reason: str) -> "Worker":
         retired = self.with_(adopted=True, retire_reason=reason).with_event(WorkerRetired(environment_id=self.environment_id, time=time, worker=self.mention()))
         return retired.stopped(time, reason) if self.is_running() else retired
+
+    def is_device(self, device: str) -> bool:
+        return self.device == device
 
     def is_running(self) -> bool:
         return self.state in (WorkerState.DISPATCHED, WorkerState.READY)
