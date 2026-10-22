@@ -6,6 +6,7 @@ from typing import ClassVar
 from journal.events.rows.row_resolved import RowResolved
 from journal.events.rows.task_briefed import TaskBriefed
 from journal.events.rows.task_closed import TaskClosed
+from journal.events.rows.task_opened import TaskOpened
 from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
@@ -27,6 +28,9 @@ class Task(Scoped):
     outcome: str = ""
     suspension_reason: str = ""
     block_reason: str = ""
+
+    def creation_events(self) -> tuple[TaskOpened, ...]:
+        return (TaskOpened(environment_id=self.environment_id, title=self.title),) if self.state == TaskState.OPEN else ()
 
     def is_closed(self) -> bool:
         return self.state.is_closed()

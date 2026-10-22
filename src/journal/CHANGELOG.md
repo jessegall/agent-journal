@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.27
+
+- An agent may say it is stuck only when every task left is blocked: journal stuck is refused while a task is open, in progress or parked.
+- A stuck agent is freed the moment a task is opened again or the user opens a new one, and is told of it at once.
+- A task the user opens is typed at once to an idle agent, not left for its next idle check.
+
 ## 4.5.26
 
 - The agents grid slides its cells to their new places when the order changes, so a cell that moves is seen moving rather than gone.

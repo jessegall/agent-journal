@@ -920,6 +920,21 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
     assert not any("check 2" in line for line in keystrokes)
 
 
+def test_a_task_the_user_opens_is_told_at_once_to_an_idle_agent_and_frees_a_stuck_one(app: App, monkeypatch):
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    hook(app, "Stop")
+    console.run(["task", "create", "the footer"], USER)
+    app.runtime().deferred.drain()
+    assert any("task 1 is open: the footer" in line for line in keystrokes), "a task the user opens is typed at once to the idle agent"
+    console.run(["task", "create", "my own note"], AGENT)
+    app.runtime().deferred.drain()
+    assert not any("my own note" in line for line in keystrokes), "the agent is not told of a task it made itself"
+
+
 def test_an_agent_is_stuck_only_when_every_task_is_blocked_and_freed_when_one_reopens(app: App):
     console = app.console()
     hook(app, "SessionStart")
@@ -2041,7 +2056,7 @@ def test_a_whisper_is_said_once_though_the_record_is_trimmed_past_it_and_a_struc
     console.run(["fact", "create", "billing runs on the first of the month", "--keywords", "billing"], USER)
     hook(app, "MessageDisplay", message="I will look at the login next.")
     for n in range(40):
-        console.run(["task", "create", f"filler {n}"], USER)
+        console.run(["task", "create", f"filler {n}"], AGENT)
     hook(app, "MessageDisplay", message="Still on the login.")
     app.runtime().deferred.drain()
     assert len([line for line in keystrokes if "fact 1 is about this" in line]) == 1, "the line said is remembered though forty row changes trimmed the record past it"

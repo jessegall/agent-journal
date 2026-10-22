@@ -5,6 +5,7 @@ from journal.engine.base_state import BaseState
 from journal.support.permission import Permission
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
+from journal.events.rows.task_opened import TaskOpened
 from journal.events.agent.stop import Stop
 from journal.events.agent.prompt_submitted import PromptSubmitted
 from journal.events.agent.session_started import SessionStarted
@@ -76,6 +77,10 @@ class Ready(BaseState):
     def silent_nudges(self, tasks: TasksData) -> tuple[Nudge, ...]:
         from journal.features.tasks.feature import Tasks
         return (Tasks.IDLE_CHECK.create(),)
+
+    def on_task_opened(self, event: TaskOpened, settings: Settings) -> Transition:
+        from journal.features.tasks.feature import Tasks
+        return self.none(Tasks.TASK_OPENED.create(n=event.row_id, title=event.title)) if event.is_users() else self.none()
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
         from journal.features.tasks.feature import Tasks

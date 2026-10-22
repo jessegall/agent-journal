@@ -120,7 +120,7 @@ class Repository(Generic[M]):
     def save(self, row: M, actor: Actor) -> M:
         with self.connection.transaction():
             self.bus.dispatch(Saving(model=row, actor=actor))
-            saved = self._insert(row, actor, self._time()) if row.is_new else self._update(row, actor)
+            saved = self._insert(row.with_events((*row.events, *row.creation_events())), actor, self._time()) if row.is_new else self._update(row, actor)
             self.bus.dispatch(Saved(model=saved, actor=actor))
             return self.dispatched(saved, actor)
 

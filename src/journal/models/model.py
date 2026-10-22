@@ -88,6 +88,9 @@ class Model:
     def with_(self, **changes) -> Self:
         return replace(self, **changes)
 
+    def creation_events(self) -> tuple[Event, ...]:
+        return ()
+
     def with_event(self, event: Event) -> Self:
         return replace(self, events=(*self.events, event))
 

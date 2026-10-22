@@ -2,6 +2,7 @@ from dataclasses import dataclass, field, replace
 
 from journal.events.event import Event
 from journal.events.feature_data import FeatureData
+from journal.support.actor_kind import ActorKind
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -27,6 +28,9 @@ class RowEvent(Event):
 
     def placed(self, environment_id: int, time: float, row_id: int, actor: str) -> "RowEvent":
         return replace(self, environment_id=self.environment_id or environment_id, time=self.time or time, row_id=self.row_id or row_id, actor=actor)
+
+    def is_users(self) -> bool:
+        return self.actor.split(":", 1)[0] in (ActorKind.USER, ActorKind.PHONE)
 
     def is_agents(self, session: str) -> bool:
         return self.actor == f"agent:{session}"
