@@ -1,4 +1,8 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
+
+CREATED = "created"
+UPDATED = "updated"
+DELETED = "deleted"
 
 
 @dataclass(frozen=True)
@@ -15,3 +19,12 @@ class LoggedChange:
     changed_at: dict = field(default_factory=dict)
     sequence: int = 0
 
+
+    def without(self, names: set[str]) -> "LoggedChange":
+        return replace(self, fields={name: value for name, value in self.fields.items() if name not in names}, changed_at={name: value for name, value in self.changed_at.items() if name not in names})
+
+    def is_update(self) -> bool:
+        return self.action == UPDATED
+
+    def is_deletion(self) -> bool:
+        return self.action == DELETED

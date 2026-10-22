@@ -89,3 +89,33 @@ def test_number_blocks_never_overlap_and_start_above_a_shared_journals_numbers(s
     assert ranges.block(1, "tasks", 100) == (1451, 1550)
     assert ranges.block(2, "tasks", 100) == (1551, 1650)
     assert ranges.block(1, "messages", 1000) == (1, 1000)
+
+
+def test_a_push_keeps_the_later_edit_of_a_field_puts_times_on_the_servers_clock_and_rejects_the_older(store):
+    from sync_server.push_handler import PushHandler
+    from sync_server.push_request import PushRequest
+    from sync_server.rejected_field import RejectedField
+
+    accounts, devices = people(store)
+    accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    _, ada = devices.login("ada@example.com", PASSWORD, "ada's laptop", "10.0.0.1", 2.0)
+    _, bob = devices.login("bob@example.com", PASSWORD, "bob's laptop", "10.0.0.2", 2.0)
+    log = ChangeLog(store, ChangeRows(store), RowValues(store))
+    push = PushHandler(log, devices)
+
+    def request(action, actor, fields, seconds, clock_offset=0.0):
+        return PushRequest.parsed([{"row_table": "tasks", "row": 7, "action": action, "actor": actor, "fields": fields, "changed_at": {name: seconds for name in fields}}], clock_offset)
+
+    assert push.answer(ada, request("created", "user:1", {"title": "first", "brief": "b"}, 10.0), 11.0).sequences == (1,)
+    answer = push.answer(bob, request("updated", "agent:s", {"title": "bob's"}, 120.0, -100.0), 21.0)
+    assert (answer.sequences, answer.rejected, answer.server_time) == ((2,), (), 21.0), "bob's clock runs 100 seconds ahead; his edit was made at 20 by the server's"
+    older = push.answer(ada, request("updated", "user:1", {"title": "ada's", "brief": "c"}, 15.0), 22.0)
+    assert older.rejected == (RejectedField("tasks", 7, "title", "bob's", 20.0),), "the older edit of the title is rejected and sent back with the value that stands"
+    assert log.row("tasks", 7) == ({"title": "bob's", "brief": "c"}, {"title": 20.0, "brief": 15.0}), "the brief, which nobody edited later, is kept"
+    push.answer(bob, request("deleted", "user:2", {}, 30.0), 31.0)
+    stale = push.answer(ada, request("updated", "user:1", {"title": "too late"}, 40.0), 41.0)
+    assert stale.sequences == (0,) and stale.rejected == (RejectedField.deleted_row("tasks", 7),), "an update to a deleted row is dropped and named"
+    with pytest.raises(Refusal, match="a person sends only their own writes"):
+        push.answer(ada, request("updated", "user:2", {"title": "as bob"}, 50.0), 51.0)
+    assert log.head() == 4, "a refused push keeps nothing"

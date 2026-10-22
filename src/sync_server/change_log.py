@@ -4,8 +4,6 @@ from sync_server.db.change_rows import ChangeRows
 from sync_server.db.row_values import RowValues
 from sync_server.db.store import Store
 from sync_server.logged_change import LoggedChange
-
-DELETED = "deleted"
 PAGE_ROWS = 500
 
 
@@ -19,7 +17,7 @@ class ChangeLog:
         with self.store.transaction():
             sequence = self.changes.insert(change)
             current = self.row(change.row_table, change.row) or ({}, {})
-            self.values.write(change.row_table, change.row, {**current[0], **change.fields}, {**current[1], **change.changed_at}, change.action == DELETED, sequence)
+            self.values.write(change.row_table, change.row, {**current[0], **change.fields}, {**current[1], **change.changed_at}, change.is_deletion(), sequence)
             return LoggedChange(**{**change.__dict__, "sequence": sequence})
 
     def pull_page(self, sequence: int, device_id: int) -> list[LoggedChange]:
@@ -33,3 +31,7 @@ class ChangeLog:
         if stored is None or stored["is_deleted"]:
             return None
         return json.loads(stored["fields"]), json.loads(stored["changed_at"])
+
+    def is_deleted(self, table: str, row: int) -> bool:
+        stored = self.values.stored(table, row)
+        return stored is not None and bool(stored["is_deleted"])
