@@ -58,6 +58,14 @@ class WorkerActions:
             raise Rejection(f"worker {worker.id}, {worker.name}, holds no task: you message only a peer that works on one")
         return worker
 
+    def release(self, n: int, actor: Actor) -> Worker:
+        with self.runner.lock(n):
+            worker = self.workers.find(n)
+            if worker.is_running():
+                raise Rejection(f"worker {worker.id}, {worker.name}, is still out: stop it first with journal worker stop {worker.id}")
+            self.tasks.release(Ref.build(worker), actor)
+            return self.workers.save(worker.released(datetime.now(timezone.utc).timestamp()), actor)
+
     def sent(self, worker: Worker, brief: str, dispatcher: str | None, actor: Actor) -> Worker:
         revival = worker.state == WorkerState.STOPPED or self.runner.is_ended(worker)
         if self.runner.is_ended(worker):
@@ -69,7 +77,7 @@ class WorkerActions:
         return worker
 
     def resumable(self, worker: Worker) -> None:
-        if worker.state == WorkerState.DISPATCHED:
+        if worker.is_running():
             raise Rejection(f"worker {worker.id}, {worker.name}, is still out: tell it with `journal worker notify {worker.id} \"<text>\"`, or wait for its report and send it the job then")
         if not worker.resume:
             raise Rejection(f"worker {worker.id}, {worker.name}, left no session to resume: dispatch the job again")

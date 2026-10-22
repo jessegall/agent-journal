@@ -141,6 +141,9 @@ class WorkerRunner:
         outcome = ENDINGS.get(code, f"failed with code {code}: {{report}}").format(report=report, minutes=self.minutes()) if code else report
         current = self.workers.find(worker.row_id)
         current = current.with_(resume=resume or current.resume)
+        if current.token_hash and current.is_running():
+            self.workers.save(current.unfinished(time.time(), outcome), actor)
+            return
         if current.state != WorkerState.DISPATCHED:
             self.workers.save(current, actor)
             return

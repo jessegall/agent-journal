@@ -9,3 +9,4 @@ class WorkerState(StrEnum):
     DELIVERED = "clocked out"
     MERGED = "merged"
     RELEASED = "released"
+    UNFINISHED = "ended without clocking out"

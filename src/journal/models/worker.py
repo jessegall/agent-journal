@@ -10,6 +10,7 @@ from journal.events.rows.worker_ready import WorkerReady
 from journal.events.rows.worker_delivered import WorkerDelivered
 from journal.events.rows.worker_merged import WorkerMerged
 from journal.events.rows.worker_released import WorkerReleased
+from journal.events.rows.worker_unfinished import WorkerUnfinished
 from journal.events.rows.worker_notified import WorkerNotified
 from journal.events.rows.worker_retired import WorkerRetired
 from journal.events.rows.worker_reused import WorkerReused
@@ -45,6 +46,7 @@ class Worker(Scoped):
     reuse_count: int = 0
     retire_reason: str = ""
     token_hash: str = ""
+    run_end: str = ""
     silence: WorkerSilence = WorkerSilence(SILENCE)
 
     def mention(self) -> WorkerMention:
@@ -63,7 +65,10 @@ class Worker(Scoped):
         return self.contacted(time).with_(state=WorkerState.READY).with_event(WorkerReady(environment_id=self.environment_id, time=time, worker=self.mention()))
 
     def delivered(self, time: float) -> "Worker":
-        return self.contacted(time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention()))
+        return self.contacted(time).with_(state=WorkerState.DELIVERED).with_event(WorkerDelivered(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, clocked out"))
+
+    def unfinished(self, time: float, text: str) -> "Worker":
+        return self.with_(state=WorkerState.UNFINISHED, pid=0, token_hash="", run_end=text).with_event(WorkerUnfinished(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, ended without clocking out"))
 
     def merged(self, time: float) -> "Worker":
         return self.with_(state=WorkerState.MERGED, token_hash="").with_event(WorkerMerged(environment_id=self.environment_id, time=time, worker=self.mention()))
@@ -98,7 +103,7 @@ class Worker(Scoped):
         return retired.stopped(time, reason) if self.is_running() else retired
 
     def is_running(self) -> bool:
-        return self.state == WorkerState.DISPATCHED
+        return self.state in (WorkerState.DISPATCHED, WorkerState.READY)
 
     def is_idle(self) -> bool:
         return self.state == WorkerState.REPORTED and not self.adopted

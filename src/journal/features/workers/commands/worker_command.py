@@ -54,6 +54,7 @@ class WorkerCommand(Command):
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
         dispatch.add_argument("--task", type=int, required=True, help="the task it works on: an open one with a brief, or the one you hold; it is the worker's alone until merged or released")
+        self.verb(verbs, "release", "let a worker go whose run ended without clocking out, which frees its task").add_argument("n", type=int)
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
@@ -130,6 +131,11 @@ class WorkerCommand(Command):
         if args.task:
             self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
         print(f"worker {worker.id} {worker.name} told; it reports in the chat when it ends")
+        return 0
+
+    def release(self, args: Namespace, caller: Caller) -> int:
+        worker = self.actions.release(args.n, caller.actor)
+        print(f"worker {worker.id} {worker.name} released; its task is free again")
         return 0
 
     def notify(self, args: Namespace, caller: Caller) -> int:

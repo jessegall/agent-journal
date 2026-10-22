@@ -58,6 +58,7 @@ class Workers(Feature[WorkersData]):
     USER_CLOSURE = Nudge(name, "task_closed_by_user", "the user closed your task {{task}}: your work on it ends here", "stop now; the agent that sent you takes it from here", repeat_interval=0)
     BRIEF_CHANGED = Nudge(name, "brief_changed", "the user rewrote point {{points}} of your task {{task}}'s brief", "read it again with journal task show {{task}} and prove those points again", repeat_interval=0)
     OPEN_TODOS = Nudge(name, "open_todos", "your to-do list has {{count}} open items: {{items}}", "finish them, or say why with journal clock-out", repeat_interval=0)
+    RUN_UNFINISHED = Nudge(name, "run_unfinished", "worker {{n}}, {{name}}, ended its run without clocking out, and still holds its task", "send it again with journal worker send {{n}} \"<job>\", or let the task go with journal worker release {{n}}", repeat_interval=0)
     WORKER_ARRIVAL = Nudge(name, "worker_clocked_in", "worker {{n}}, {{name}}, clocked in and is at work on its task", repeat_interval=0)
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_interval=0)
     ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch \"<Name>\" --task <n>; keep the reviews for yourself", repeat_interval=0)
@@ -73,7 +74,7 @@ class Workers(Feature[WorkersData]):
     REUSE_QUESTION = Nudge(name, "could_it_be_reused", "Are you sure worker {{n}}, {{name}}, cannot be reused?", "if it can, give it its next job with `journal worker send {{n}} \"<job>\"`; if not, repeat the command with --why \"<why it cannot>\"", repeat_interval=0)
     SILENT_WORKER = Nudge(name, "worker_quiet", "worker {{n}}, {{name}}, has been quiet for {{minutes}} minutes", "look at its transcript on its worker page, tell it something with `journal worker notify {{n}} \"<text>\"`, or stop it", repeat_interval=0)
     SUBAGENT_REUSE = Nudge(name, "send_the_job_to_the_subagent", "{{count}} idle subagents already worked on files this job names:\n{{subagents}}", "send the job to one of them with its SendMessage line, so it goes on with what it knows, or retire it with `journal subagent retire <n>` if the job needs a fresh one", repeat_interval=0)
-    nudges = (READINESS, USER_CLOSURE, BRIEF_CHANGED, OUTPUT_UNFINISHED, OUTPUT_END, OPEN_TODOS, WORKER_ARRIVAL, WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
+    nudges = (READINESS, RUN_UNFINISHED, USER_CLOSURE, BRIEF_CHANGED, OUTPUT_UNFINISHED, OUTPUT_END, OPEN_TODOS, WORKER_ARRIVAL, WORKER_REPORTED, WORKER_STOPPED_UNREPORTED, UNREAD_WORKER_REPORTS, SUBAGENT_OVERFLOW, WORKER_OVERFLOW, WORKER_FILE, SUBAGENT_REUSE, WORKER_KNOWS_FILES, IDLE_CAP, REUSE_QUESTION, SILENT_WORKER, ORCHESTRATE, TASK_DELEGATION, SOLO_DISPATCH)
 
     skill = Skill("workers", 'Send a worker to write a bounded job and wait for its report; load it before dispatching one', """
 # Workers

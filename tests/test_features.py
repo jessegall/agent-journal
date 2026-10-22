@@ -12,7 +12,7 @@ from urllib.request import Request as HttpRequest, urlopen
 import pytest
 
 from shell_verbs import ShellVerbs
-from worker_dispatch import dispatched
+from worker_dispatch import dispatched, tokenless_run
 
 from journal.providers.claude import Claude
 from journal.providers.support.worker_outcome import WorkerOutcome
@@ -1899,16 +1899,20 @@ def test_the_providers_own_question_tool_is_refused_and_every_fiftieth_line_remi
     assert status == 409 and "`journal question ask \"<one line>\" --options \"a\" \"b\"`" in body["error"]
 
 
-def test_a_dispatched_worker_runs_and_its_output_is_its_report(app: App):
+def test_a_worker_from_before_tokens_has_its_output_filed_as_its_report(app: App):
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
     from journal.repositories.messages import Messages
     from journal.repositories.workers import Workers
     hook(app, "SessionStart")
     dispatched(app.console(), ["Lady Lovelace", "say hello", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
-    worker = app.container.get(Workers).find(1)
-    app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo the footer is fixed"], A.agent("s1"))
-    assert app.container.get(Workers).find(1).state == "reported"
+    worker, runner = app.container.get(Workers).find(1), app.container.get(WorkerRunner)
+    output, err = runner.outputs(worker)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("the footer is fixed\n")
+    err.write_text("")
+    runner.finish(worker, 0, A.agent("s1"))
+    assert app.container.get(Workers).find(1).state == "reported", "a run that carries no token ends the way it did before tokens"
     assert any("Lady Lovelace reports: the footer is fixed" in m.text for m in app.container.get(Messages).scoped())
 
 
@@ -3973,7 +3977,7 @@ def test_a_cancelled_task_is_finished_and_never_counted_open(app: App):
         assert app.container.get(Tasks).unfinished_count() == 1, "only the task still open is counted"
 
 
-def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app: App):
+def test_a_worker_from_before_tokens_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
@@ -3992,7 +3996,7 @@ def test_a_worker_that_ends_has_its_commits_taken_in_and_its_leftovers_named(app
     dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
     with app.container.get(Scope).environment(1):
         worker = app.container.get(Workers).find(1)
-        app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
+        tokenless_run(app.container.get(WorkerRunner), worker, ["sh", "-c", "echo parsed > parser.txt && git add parser.txt && git commit -qm 'the parser' && echo half > notes.txt && echo the parser is written"], A.agent("s1"))
         report = next(m.text for m in app.container.get(Messages).scoped() if "Lady Lovelace reports" in m.text)
     assert "the parser is written" in report and "its 1 commits were taken into this branch" in report and "the parser" in report.split("taken into this branch:")[1], "its commit is merged and named"
     assert "(files: parser.txt)" in report, "the files its commits wrote are named in its report, as its own feed of edits"
@@ -4318,7 +4322,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_
     assert any(t.startswith("Mr. Brunel reports: ") for t in texts) and not workers.find(dropped.id).is_running(), "a worker whose process ended while the journal was down is not left out"
 
 
-def test_a_worker_past_its_time_limit_is_stopped_and_reported(app: App):
+def test_a_worker_past_its_time_limit_is_stopped_and_the_end_of_its_run_kept(app: App):
     from journal.features.workers.feature import Workers as WorkersFeature
     from journal.features.workers.support.worker_runner import WorkerRunner
     from journal.support.actor import Actor as A
@@ -4330,7 +4334,8 @@ def test_a_worker_past_its_time_limit_is_stopped_and_reported(app: App):
     app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.005, USER.actor)
     worker = app.container.get(Workers).find(1)
     app.container.get(WorkerRunner).run(worker, ["sh", "-c", "echo half done; sleep 30"], A.agent("s1"))
-    assert any("stopped after" in m.text and "half done" in m.text for m in app.container.get(Messages).scoped())
+    ended = app.container.get(Workers).find(1)
+    assert ended.state == WorkerState.UNFINISHED and "stopped after" in ended.run_end and "half done" in ended.run_end, "stopped at its limit, it keeps what it printed as the end of its run, its task still held"
 
 
 def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app: App, monkeypatch):
@@ -6552,14 +6557,14 @@ def test_a_worker_is_one_card_in_the_chat_settled_in_place_as_it_is_dispatched_r
     first_hash = workers.find(1).token_hash
     runner.run(workers.find(2), ["sh", "-c", "echo broken >&2; exit 3"], Actor.agent("s1"))
     runner.run(workers.find(3), ["sh", "-c", "true"], Actor.agent("s1"))
-    assert len(first_hash) == 64 and workers.find(3).token_hash not in ("", first_hash), "each run carries a token of its own, kept on its row as a hash"
+    assert first_hash == "" and workers.find(3).token_hash == "", "a run carries its token in its process, the first one's command checking it, and the token is cleared when the run ends without clocking out"
     console.run(["worker", "stop", "3"], AGENT)
     assert workers.find(3).token_hash == "", "a stopped worker's token is cleared"
-    assert card(1).text == "Worker 1, Lady Lovelace: reported" and card(1).data["tone"] == "good" and card(1).data["detail"] == "the footer is fixed"
-    assert card(2).text == "Worker 2, Dr. Einstein: failed" and card(2).data["tone"] == "bad" and card(2).data["detail"].startswith("failed with code 3")
+    assert card(1).text == "Worker 1, Lady Lovelace: ended without clocking out" and card(1).data["tone"] == "bad" and card(1).data["detail"] == "the footer is fixed", "a run that ends without clocking out settles its card with what it printed"
+    assert card(2).text == "Worker 2, Dr. Einstein: ended without clocking out" and card(2).data["detail"].startswith("failed with code 3")
     assert card(3).text == "Worker 3, Mr. Babbage: stopped"
-    console.run(["worker", "complete", "1"], AGENT)
-    assert messages.scoped()[-1].text == "Worker 1, Lady Lovelace: retired, its report acted on" and messages.scoped()[-1].data["tone"] == "good", "retiring is a mark of its own"
+    console.run(["worker", "release", "1"], AGENT)
+    assert card(1).text == "Worker 1, Lady Lovelace: released", "and a release settles it again"
     assert len([m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")]) == 3, "one card per worker, settled in place"
 
 
@@ -6708,6 +6713,38 @@ def test_a_worker_clocks_out_with_its_report_once_each_point_has_a_proof_that_st
     with app.container.get(Scope).environment(MAIN):
         assert app.container.get(Workers).find(1).state == WorkerState.DELIVERED
     assert "a worker reports by clocking out" in console.run(["worker", "report", "1", "done"], lovelace).error, "journal worker report is refused to a worker, naming clock out"
+
+
+def test_a_worker_whose_run_ends_without_clocking_out_keeps_its_task_held_until_released(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import TIMEOUT_STATUS, WorkerRunner
+    from journal.models.support.ref import Ref
+    from journal.models.worker import Worker
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    from journal.repositories.entries import Entries
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    for title in ("the parser", "the lexer"):
+        console.run(["task", "create", title, "--brief", f"{title} is written"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    console.run(["worker", "dispatch", "Mr. Babbage", "--task", "2", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    runner, tasks = app.container.get(WorkerRunner), app.container.get(Tasks)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        runner.run(workers.find(1), ["sh", "-c", "echo I gave up early"], Actor.agent("s1"))
+        lovelace = workers.find(1)
+        assert lovelace.state == WorkerState.UNFINISHED and "I gave up early" in lovelace.run_end, "a run that ends before clock in keeps what it printed as the end of its run"
+        assert tasks.holder(tasks.find(1)) == Ref(Worker.table(), 1), "and its task stays held"
+        babbage = workers.save(workers.find(2).with_(token_hash="h"), Actor.system())
+        runner.finish(babbage, TIMEOUT_STATUS, Actor.agent("s1"))
+        assert workers.find(2).state == WorkerState.UNFINISHED and tasks.holder(tasks.find(2)) == Ref(Worker.table(), 2), "a run past its time keeps its task held too"
+    with app.container.get(Scope).environment(MAIN):
+        told = [entry for entry in app.container.get(Entries).kind_entries("nudge") if entry.data["key"] == "workers.run_unfinished"]
+    assert [entry.data["session"] for entry in told] == ["s1", "s1"], "the main agent is told each time"
+    assert console.run(["worker", "release", "1"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.holder(tasks.find(1)) is None and app.container.get(Workers).find(1).state == WorkerState.RELEASED, "a release frees the task"
 
 
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
@@ -7068,7 +7105,7 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     assert workers.find(1).resume == "worker-session" and workers.find(1).is_running(), "the session is kept the moment the worker prints it, while it still works"
     said.write_text("\n")
     running.join(10)
-    assert workers.find(1).state == WorkerState.REPORTED and workers.find(1).resume == "worker-session"
+    assert workers.find(1).state == WorkerState.UNFINISHED and workers.find(1).resume == "worker-session", "its session is kept when its run ends"
     dispatched(console, ["Mr. Babbage", "say nothing", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
     runner.run(workers.find(2), ["sh", "-c", f"echo '{{}}' >> '{dispatcher}'; echo plain words"], Actor.agent("s1"))
     assert workers.find(2).resume == "" and dispatcher.is_file(), "a worker in the project's own folder never takes the newest transcript there, which is the dispatcher's"
@@ -7306,8 +7343,7 @@ def test_a_stopped_worker_is_revived_by_send_in_its_last_session_and_its_own_wor
     command = Claude().worker_command(runner.instructed(revived), revived.model, revived.resume, revived.session)
     assert revived.is_running() and command[2] == "the boiler" and command[-2:] == ["--resume", "sess-1"], "the new job is the first turn of its last session"
     runner.run(revived, ["sh", "-c", "pwd -P"], Actor.agent("s1"))
-    report = next(m.text for m in reversed(app.container.get(Messages).scoped()) if m.text.startswith("Mr. Watt reports: "))
-    assert str(runner.place(revived).resolve()) in report, "it runs again in the same worktree"
+    assert str(runner.place(revived).resolve()) in workers.find(1).run_end, "it runs again in the same worktree"
 
 
 def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: App, monkeypatch):
@@ -7332,7 +7368,7 @@ def test_a_resumed_run_starts_its_clock_again_and_is_given_the_job_alone(app: Ap
     assert (resumed.began, resumed.pid) == (0.0, 0) and runner.instructed(resumed) == "the escapement", "the old run's clock and process go with it, and the resumed prompt is the job alone"
     app.container.get(SettingRows).set(WorkersFeature.TIMEOUT.key, 0.05, USER.actor)
     runner.run(resumed, ["sh", "-c", "echo the escapement ticks"], Actor.agent("s1"))
-    assert any(m.text == "Mr. Harrison reports: the escapement ticks" for m in app.container.get(Messages).scoped()), "the time limit counts from the new run, not the first"
+    assert workers.find(1).run_end == "the escapement ticks", "the time limit counts from the new run, not the first"
 
 
 def test_a_reused_worker_keeps_every_report_and_is_out_again_until_it_reports(app: App, monkeypatch):
