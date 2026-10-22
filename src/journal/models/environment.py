@@ -7,3 +7,4 @@ from journal.models.model import Model
 class Environment(Model):
     name: str = ""
     branch: str = ""
+    is_team_chat: bool = False

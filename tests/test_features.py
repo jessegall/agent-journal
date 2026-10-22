@@ -9709,7 +9709,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         for journal in (a, b):
             names = [environment.name for environment in journal.container.get(Environments).rows()]
             assert len(names) == len(set(names)), f"no two environments share a name: {names}"
-        assert eventually(lambda: all(a.container.get(EnvironmentOwners).owner_number(environment.row_id) for environment in a.container.get(Environments).rows())), "every environment has an owner"
+        assert eventually(lambda: all(a.container.get(EnvironmentOwners).owner_number(environment.row_id) for environment in a.container.get(Environments).rows() if not environment.is_team_chat)), "every environment but the Team chat has an owner"
         assert not any(c.container.get(EnvironmentOwners).is_colleague(Actor.user(1), environment.row_id) for environment in c.container.get(Environments).rows()), "a journal in no team has no colleagues"
         def side(journal, method, body=None):
             request = HttpRequest(f"http://127.0.0.1:{journal.server().port}/journal/side-thread", data=None if body is None else json.dumps(body).encode(), method=method, headers={"Content-Type": "application/json", "X-Journal-Env": "ada-main"})
@@ -9751,6 +9751,19 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         on_ada = a.config.files / "message" / str(comment_with_picture.id) / "bob.png"
         assert eventually(lambda: on_ada.is_file() and on_ada.read_bytes() == b"bob's picture"), "a pulled comment's picture is fetched as it arrives, so it is on disk where journal message read points"
         assert str(on_ada) in a.console().run(["message", "read", str(comment_with_picture.id)], Caller.agent("ada-main", "s1", "claude")).text
+        def team_post(journal, text):
+            request = HttpRequest(f"http://127.0.0.1:{journal.server().port}/journal/messages", data=json.dumps({"text": text}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "team"})
+            return json.load(urlopen(request, timeout=5))
+
+        assert eventually(lambda: [row.name for row in b.container.get(Environments).rows() if row.is_team_chat] == ["team"]), "the Team chat is an environment every machine has"
+        team_env = b.container.get(Environments).existing("team")
+        assert b.container.get(EnvironmentOwners).owner_number(team_env.row_id) == 0, "owned by no one"
+        ada_word, bob_word = team_post(a, "morning, team"), team_post(b, "morning, Ada")
+        assert ada_word["author"] == "user" and bob_word["author"] == "user", "in the Team chat everyone's words are users' words, never a colleague's comment"
+        assert eventually(lambda: sorted(row.text for row in b.container.get(Messages).global_matching(environment_id=team_env.row_id)) == ["morning, Ada", "morning, team"]), "both people's words are in the Team chat on each machine"
+        assert not [row for row in b.container.get(Messages).global_matching(environment_id=bob_main.row_id) if row.text.startswith("morning")], "and stay out of their own chats"
+        rows = {row["name"]: row for row in json.loads(b.console().run(["environment", "json"], USER).text)}
+        assert rows["team"]["refusal"] == "", "the launcher may start an agent in the Team chat"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

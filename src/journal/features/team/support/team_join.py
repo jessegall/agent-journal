@@ -13,6 +13,7 @@ from journal.repositories.journal_backup import JournalBackup
 from journal.db.schema import Schema
 from journal.repositories.environment_owners import OWNER, EnvironmentOwners
 from journal.features.team.support.repository_identity import RepositoryIdentity
+from journal.models.environment import Environment
 from journal.models.link import Link
 from journal.models.support.ref import Ref
 from journal.repositories.links import Links
@@ -33,11 +34,12 @@ from journal.support.worktree import Worktree
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
+TEAM_CHAT = "team"
 TABLES = {folder: table for table, folder in FOLDERS.items()}
 
 
 class TeamJoin:
-    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
+    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it and a new environment named team, owned by no one, which is the Team chat, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
 
     def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
@@ -58,6 +60,7 @@ class TeamJoin:
         if not summary.has_rows:
             self.claim_environments(prefix, login.account_id)
             self.name_user(login.account_id, login.name)
+            self.environments.save(Environment(name=TEAM_CHAT, is_team_chat=True), Actor.system())
         self.account.write({"address": address, "token": login.token, "device": login.device_id, "account_id": login.account_id, "sequence": 0})
         outcome = self.downloaded(login.account_id, login.name) if summary.has_rows else self.uploaded(repository)
         self.client.start()
