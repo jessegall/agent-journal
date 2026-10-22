@@ -5,7 +5,7 @@ import shlex
 from pathlib import Path
 from dataclasses import dataclass, replace
 
-TRAILING_CUT = re.compile(r"\s*\|\s*(?:tail|head)(?:\s+(?:-[nc]\s*\+?\d+|-\d+))?\s*$")
+FILTERS = {"tail", "head", "grep", "egrep", "fgrep"}
 READERS = {"cat", "sed", "grep", "egrep", "fgrep", "rg", "ag", "head", "tail", "less", "more", "bat", "awk", "jq", "wc", "ls", "find", "tree", "diff", "stat", "file", "nl", "sqlite3"}
 SEARCHERS = {"grep", "egrep", "fgrep", "rg", "ag", "find", "ls", "tree"}
 GIT_READS = {"show", "diff", "log", "status", "blame", "grep", "ls-files"}
@@ -123,11 +123,29 @@ class Part:
         return not any(part in VENDOR_FOLDERS for part in parts) and not (parts and parts[-1] in LOCKS)
 
     def cut(self) -> str:
-        trailing = TRAILING_CUT.search(self.text)
-        if not self.recorded or trailing is None or "<<" in self.text or self.is_reading_code():
+        if not self.recorded or "<<" in self.text or self.is_reading_code() or self.tails_forever():
             return ""
-        previous = self.text[:trailing.start()]
-        return trailing.group(0).strip() if previous.count("'") % 2 == 0 and previous.count('"') % 2 == 0 else ""
+        pipes = self.pipe_positions()
+        first = len(pipes)
+        while first > 0 and self.is_filter(self.text[pipes[first - 1] + 1:pipes[first] if first < len(pipes) else len(self.text)]):
+            first -= 1
+        return self.text[pipes[first]:].strip() if first < len(pipes) else ""
+
+    @staticmethod
+    def is_filter(command: str) -> bool:
+        program = command.split()[:1]
+        return bool(program) and program[0] in FILTERS and "-f" not in command.split()
+
+    def pipe_positions(self) -> list[int]:
+        positions, quote = [], ""
+        for i, c in enumerate(self.text):
+            if quote:
+                quote = "" if c == quote else quote
+            elif c in "'\"":
+                quote = c
+            elif c == "|" and self.text[i + 1:i + 2] != "|" and self.text[i - 1:i] != "|":
+                positions.append(i)
+        return positions
 
     def cut_command(self) -> str:
         return self.cut().lstrip("| ").strip()

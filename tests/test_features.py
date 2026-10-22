@@ -6327,6 +6327,8 @@ def test_a_command_moved_to_the_background_is_told_to_watch_it_with_the_reader_t
 def test_a_command_is_known_by_its_shape_and_five_runs_of_one_long_run_bring_a_reader_suggestion(app: App):
     """The values passed to a command never change what it is: pytest -k chat and pytest tests/a.py are pytest, python3 -m pytest -q is python3 -m pytest; five runs of one build with different values are one command run five times, and a reader is suggested for it."""
     from journal.support.command_shape import CommandShape
+    from journal.support.part import Part
+    assert [Part(line).cut() for line in ('python3 -m pytest -q | grep -E "^FAILED|passed" | head -30', "pytest -q | tail -1", 'echo "a|b" | grep x', "tail -f log | grep x", "pytest -q")] == ['| grep -E "^FAILED|passed" | head -30', "| tail -1", "| grep x", "", ""], "a trailing chain of filters comes off whole, quotes respected, so the run streams to its card and the cut is applied after"
     assert [CommandShape.build(line) for line in ("pytest -k chat", "pytest tests/a.py -q", "python3 -m pytest -q", "npm run test", "git commit -m 'x'", ".journal/bin/judge --changes")] == ["pytest", "pytest", "python3 -m pytest", "npm run test", "git commit", ".journal/bin/judge"]
     hook(app, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
