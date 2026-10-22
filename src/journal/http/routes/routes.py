@@ -135,7 +135,7 @@ class Routes:
         self.listed(router, "templates", get(TemplateController))
         self.listed(router, "workers", get(WorkerController))
         self.listed(router, "subagents", get(SubagentController))
-        self.acts(router, "workers", get(WorkerController), "send", "stop", "complete", "check", "short_check", "merge", "release")
+        self.acts(router, "workers", get(WorkerController), "send", "message", "stop", "complete", "check", "short_check", "merge", "release")
         router.get(f"{API}/workers/{{id}}/transcript", get(TranscriptController).worker_transcript)
 
     def chat(self, router: Router) -> None:

@@ -96,8 +96,8 @@ class Worker(Scoped):
     def is_silent(self, time: float) -> bool:
         return self.is_running() and self.silence.is_elapsed(time)
 
-    def notified(self, text: str, time: float) -> "Worker":
-        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker=self.mention(), text=text))
+    def notified(self, text: str, time: float, sender: str) -> "Worker":
+        return self.contacted(time).with_event(WorkerNotified(environment_id=self.environment_id, time=time, worker=self.mention(), text=text, sender=sender))
 
     def stopped(self, time: float, reason: str) -> "Worker":
         return self.with_(state=WorkerState.STOPPED, adopted=True, retire_reason=reason, token_hash="").with_event(WorkerStopped(environment_id=self.environment_id, time=time, worker=self.mention(), ref=self.mention().ref(), outcome=f"{self.mention().title()}, stopped before it reported"))

@@ -31,6 +31,6 @@ class Reactions(ScopedRepository[Reaction]):
             if reaction.face == face and reaction.author == author:
                 self.delete(reaction, actor)
                 return None
-        reaction = self.save(Reaction(environment_id=message.environment_id, face=face, author=author).reacted_message(message.row_id), actor)
+        reaction = self.save(Reaction(environment_id=message.environment_id, face=face, author=author).reacted_message(message), actor)
         self.links.save(Link(source=Ref.build(reaction), target=Ref.build(message), kind=REACTS), actor)
         return reaction

@@ -7562,6 +7562,18 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
         assert console.run(["worker", "notify", "1", "the lexer too"], AGENT).code == 0
         assert arrived(received, 2)[-1]["message"]["content"] == '<cross-session-message from-name="the agent that dispatched you" from-mode="bypass">\nthe lexer too\n</cross-session-message>'
         assert sessions.top("s1") == waiting and workers.find(1).brief == row.brief, "a notify changes nothing the worker was sent and leaves the dispatcher's wait as it was"
+        from journal.models.agent_role import AgentRole
+        from journal.repositories.messages import Messages
+        messages = app.container.get(Messages)
+        unread = len(messages.unread())
+        urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/workers/1/message", data=json.dumps({"text": "and the tests"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
+        assert arrived(received, 4)[-1]["message"]["content"].startswith('<cross-session-message from-name="the user"') and "and the tests" in received[-1]["message"]["content"], "the user's message in the worker's chat goes to the worker's own session"
+        app.runtime().deferred.drain()
+        chat = [m for m in messages.all() if m.agent_role == AgentRole.WORKER and m.session == "w-1" and m.text in ("the lexer too", "and the tests")]
+        assert [(m.text, m.creator.kind.value) for m in chat] == [("the lexer too", "agent"), ("and the tests", "user")] and len(messages.unread()) == unread, "both are messages of the worker's chat, each by its sender, and neither reaches the main agent's inbox"
+        from journal.models.reaction import Reaction
+        main = messages.recent(1)[-1]
+        assert not Reaction(environment_id=1, face="👍").reacted_message(chat[0]).events and Reaction(environment_id=1, face="👍").reacted_message(main).events, "a face on a worker's message raises nothing for the main agent; one on the main chat's does"
         workers.save(workers.find(1).with_(provider="codex"), Actor.system())
         assert "runs Codex, which takes no message while it runs" in console.run(["worker", "notify", "1", "x"], AGENT).error
         workers.save(workers.find(1).with_(provider="claude"), Actor.system())
@@ -7572,7 +7584,7 @@ def test_a_notify_reaches_only_a_running_claude_worker_and_moves_no_wait(app: Ap
         assert "revives it in its last session" in console.run(["worker", "notify", "1", "x"], AGENT).error
         workers.save(workers.find(1).with_(state=WorkerState.REPORTED), Actor.system())
         assert "has reported and runs no more" in console.run(["worker", "notify", "1", "x"], AGENT).error
-        assert len(received) == 2
+        assert len(received) == 4
     finally:
         process.kill()
         process.wait(5)

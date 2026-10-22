@@ -10,3 +10,4 @@ class WorkerNotified(RowEvent):
 
     worker: WorkerMention
     text: str
+    sender: str

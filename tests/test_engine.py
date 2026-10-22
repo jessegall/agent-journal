@@ -1684,7 +1684,7 @@ def test_a_workers_turns_and_its_brief_are_messages_of_its_own_chat_with_their_t
         app.container.get(WorkerChat).read(workers.find(worker.id))
         assert chat()[-1] == ("agent", "the parser is done") and len(chat()) == 4, "its last words are read at its run's end, and a second read writes nothing again"
         assert workers.find(worker.id).transcript_bytes == transcript.stat().st_size, "where the read stopped is kept on the worker's row, so a restart reads on from there"
-        workers.save(workers.find(worker.id).notified("check the header too", 3.0), Actor.agent("s1"))
+        workers.save(workers.find(worker.id).notified("check the header too", 3.0, "agent:s1"), Actor.agent("s1"))
         transcript.write_text(transcript.read_text() + json.dumps({"type": "queue-operation", "operation": "enqueue", "content": "check the header too"}) + "\n")
         app.runtime().deferred.drain()
         app.container.get(WorkerChat).read(workers.find(worker.id))

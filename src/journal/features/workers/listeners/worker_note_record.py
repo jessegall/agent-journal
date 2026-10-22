@@ -12,5 +12,4 @@ class WorkerNoteRecord(Listener[WorkerNotified]):
         self.chat, self.workers = chat, workers
 
     def handle(self, event: WorkerNotified) -> None:
-        sender = Actor.agent(event.worker.dispatcher) if event.worker.dispatcher else Actor.system()
-        self.chat.instruction(self.workers.find(event.worker.id), event.text, sender)
+        self.chat.instruction(self.workers.find(event.worker.id), event.text, Actor.parse(event.sender))

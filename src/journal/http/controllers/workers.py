@@ -39,6 +39,9 @@ class WorkerController(Controller[Worker]):
     def send(self, request: Request) -> Response:
         return Response.json(self.shown(self.actions.send(request.number("id"), str(request.body.get("brief", "")), "", request.actor)))
 
+    def message(self, request: Request) -> Response:
+        return Response.json(self.shown(self.actions.user_message(request.number("id"), str(request.body.get("text", "")), request.actor)))
+
     def stop(self, request: Request) -> Response:
         return Response.json(self.shown(self.actions.stop(request.number("id"), str(request.body.get("why", "")), request.actor)))
 

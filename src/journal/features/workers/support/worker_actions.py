@@ -140,6 +140,13 @@ class WorkerActions:
         except WorktreeFailure as failed:
             raise Rejection(f"worker {worker.name} was not sent the job: {failed}") from failed
 
+    def user_message(self, n: int, text: str, actor: Actor) -> Worker:
+        with self.runner.lock(n):
+            worker = self.workers.find(n)
+            if worker.is_running():
+                return self.notified(worker, text, "the user", actor)
+            return self.sent(worker, text, None, actor)
+
     def notify(self, n: int, text: str, actor: Actor) -> Worker:
         with self.runner.lock(n):
             return self.notified(self.workers.find(n), text, "the agent that dispatched you", actor)
@@ -149,7 +156,7 @@ class WorkerActions:
         if refusal:
             raise Rejection(refusal.format(n=worker.id, name=worker.name, provider=worker.provider.capitalize()))
         self.inbox.deliver(worker.pid, worker.resume, sender, text)
-        return self.workers.save(worker.notified(text, datetime.now(timezone.utc).timestamp()), actor)
+        return self.workers.save(worker.notified(text, datetime.now(timezone.utc).timestamp(), actor.stamp), actor)
 
     def notify_refusal(self, worker: Worker) -> str:
         if worker.state in NOTIFY_REFUSALS:
