@@ -5,7 +5,7 @@ import {flush} from "./flush.js";
 window.matchMedia = window.matchMedia || (() => ({matches: false, addEventListener() {}, removeEventListener() {}}));
 
 const {store} = await import("../src/state/store.js");
-const {busyLine} = await import("../src/domain/agentState.js");
+const {busyLine, lineOf, BUSY_LINES} = await import("../src/domain/agentState.js");
 const {line} = await import("../src/domain/statusQueue.js");
 const {default: RunningCommand} = await import("../src/chat/RunningCommand.vue");
 
@@ -61,6 +61,16 @@ describe("the chat's status line", () => {
         const tokens = [...host.querySelectorAll(".running-token")];
         expect(tokens.map((t) => t.textContent.trim())).toEqual(["editing", "src/app.py", "+2", "-1"]);
         expect(tokens[2].classList.contains("green") && tokens[3].classList.contains("red")).toBe(true);
+    });
+
+    test("the top bar names the task in hand while a command runs, and a busy line in turn with none, never the command", () => {
+        const running = agent({tool_running: true, doing: "journal setup restart"});
+        const task = {id: 7, title: "the footer"};
+        expect(lineOf(running, task)).not.toContain("journal setup restart");
+        expect(lineOf(running, task)).toContain("the footer");
+        expect(lineOf(running, null, false, [], 0)).toBe(BUSY_LINES[0]);
+        expect(lineOf(running, null, false, [], 1)).toBe(BUSY_LINES[1]);
+        expect(BUSY_LINES).not.toContain("journal setup restart");
     });
 
     test("rolls through the running parts of a chain, holding a shared command still while only its argument rolls", async () => {

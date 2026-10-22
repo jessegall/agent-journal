@@ -28,6 +28,7 @@ import WorkerList from "../chat/WorkerList.vue";
 import {useEveryWorker, useWorkers} from "../composables/workers.js";
 import {isWorking} from "../domain/workers.js";
 import {rows} from "../sync/rows.js";
+import {useSharedNow} from "../composables/now.js";
 import {runPlan, setAuto} from "../actions/work.js";
 
 const current = computed(() => heldTask(store.summary, route.value.env));
@@ -89,11 +90,13 @@ function toggleWorkers(e) {
 }
 
 const waiting = computed(() => queued(rows("tasks"), autoOn.value));
+const BUSY_LINE_SECONDS = 8;
+const now = useSharedNow();
 const line = computed(() => {
     if (paused.value) return "held until you resume it";
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value && current.value) return named(current.value);
-    const text = lineOf(agent.value, current.value, waiting.value, workers.value);
+    const text = lineOf(agent.value, current.value, waiting.value, workers.value, Math.floor(now.value / BUSY_LINE_SECONDS));
     return text.startsWith("task ") ? text : oneLine(text, store.summary?.project);
 });
 const inspect = () => peek("tasks", current.value.id);
