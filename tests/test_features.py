@@ -6885,6 +6885,53 @@ def test_the_main_agent_merges_a_workers_checked_work_which_closes_its_task(app:
         assert tasks.find(2).state == TaskState.FINISHED, "a worker with no worktree has its task closed by its merge alone"
 
 
+def test_the_plan_moves_on_when_a_workers_task_closes_and_its_next_task_goes_to_the_main_agent(app: App, monkeypatch):
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.models.support.ref import Ref
+    from journal.models.task_state import TaskState
+    from journal.repositories.agents import Agents
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["plan", "create", "go live", "--brief", "three pieces"], USER)
+    console.run(["plan", "phase", "1", "build", "--when", "all three done"], USER)
+    for n in (1, 2, 3):
+        console.run(["plan", "add", "1", f"piece {n}", "--brief", f"piece {n} is done"], USER)
+    console.run(["plan", "todos", "1", "1", "1", "2", "3"], USER)
+    console.run(["plan", "ready", "1"], USER)
+    console.run(["plan", "approve", "1"], USER)
+    with app.container.get(Scope).environment(MAIN):
+        from journal.repositories.plans import Plans
+        plans = app.container.get(Plans)
+        plans.save(plans.find(1).with_(state="started"), Actor.system())
+    for n in (1, 2):
+        console.run(["worker", "dispatch", f"worker {n}", "--task", str(n), "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    tasks, workers = app.container.get(Tasks), app.container.get(Workers)
+    def merged(n: int) -> None:
+        with app.container.get(Scope).environment(MAIN):
+            workers.save(workers.find(n).with_(token_hash="h", session=f"w-{n}").ready(1.0), Actor.system())
+        caller = Caller.worker("main", n, f"w-{n}", "claude")
+        console.run(["proof", "1", f"piece {n} done"], caller)
+        console.run(["clock-out", f"piece {n} is done"], caller)
+        console.run(["worker", "check", str(n), "1"], AGENT)
+        assert console.run(["worker", "merge", str(n)], AGENT).code == 0
+        app.runtime().deferred.drain()
+    merged(1)
+    agent = app.container.get(Agents).session_agent("s1")
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.find(1).state == TaskState.FINISHED and tasks.find(3).state == TaskState.STARTED and tasks.holder(tasks.find(3)) == Ref.build(agent), "the merge moves the plan on, its next task to the main agent"
+    merged(2)
+    with app.container.get(Scope).environment(MAIN):
+        assert tasks.find(2).state == TaskState.FINISHED and tasks.holder(tasks.find(3)) == Ref.build(agent), "the second merge leaves the main agent on its task"
+    console.run(["task", "complete", "3", "--how", "done"], AGENT)
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        assert plans.find(1).state == "done", "and the plan is done when its last task closes"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
