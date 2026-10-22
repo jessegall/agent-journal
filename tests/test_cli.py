@@ -378,3 +378,19 @@ def test_help_shows_a_worker_only_the_verbs_its_kind_may_run(app: App):
 def test_the_help_of_a_noun_with_a_default_verb_lists_every_verb(app: App):
     shown = app.console().run(["setup", "--help"], MAIN)
     assert "restart" in shown.text + shown.error and "project" in shown.text + shown.error, "setup --help names every verb, its default among them"
+
+
+def test_a_command_the_server_fails_on_prints_the_fault_and_exits_non_zero(app: App, tmp_path):
+    import os
+    import subprocess
+    from journal.providers.claude import Claude
+    environ = {key: value for key, value in os.environ.items() if key not in ("JOURNAL_SESSION", "CODEX_SANDBOX", *Claude.inherited_markers)}
+    environ.update(JOURNAL_ROOT=str(app.config.root), JOURNAL_ENV="main", JOURNAL_PORT="0")
+    server = app.server()
+    server.start()
+    try:
+        missing = tmp_path / "gone.md"
+        outcome = subprocess.run(["sh", str(Path(__file__).resolve().parents[1] / "src" / "journal.sh"), "doc", "create", "Notes", "--file", str(missing)], env=environ, capture_output=True, text=True, timeout=10)
+        assert outcome.returncode == 1 and "gone.md" in outcome.stderr, "a fault is printed with what it names, never a silent success"
+    finally:
+        server.stop()

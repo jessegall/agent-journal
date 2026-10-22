@@ -18,10 +18,11 @@ JOURNAL_ENV=$(journal_environment)
 export JOURNAL_ENV
 port=$(cat "$root/.journal/port" 2>/dev/null)
 # An alias is answered with __journal_exec and its line: awk hands the line out on fd 3, and the shim runs it in the project.
+# A last line that is not __journal_exit is the server's fault, printed as the error with exit code 1.
 if [ -n "$port" ]; then
     { line=$({ env -0; printf '\0\0'; for word in "$@"; do printf '%s\0' "$word"; done; } \
         | curl -s --max-time 30 -X POST "http://127.0.0.1:$port/cli/run" -H "Content-Type: application/octet-stream" -H "X-Journal-Env: $JOURNAL_ENV" -H "X-Journal-Actor: ${JOURNAL_ACTOR:-agent}" -H "X-Journal-Thread: ${CODEX_THREAD_ID:-}" --data-binary @- \
-        | awk '/^__journal_exec / { print substr($0, 16) | "cat >&3"; next } { if (n++) print prev; prev = $0 } END { if (n == 0) exit 255; split(prev, exit_line, " "); exit exit_line[2] + 0 }' 3>&1 >&4); } 4>&1
+        | awk '/^__journal_exec / { print substr($0, 16) | "cat >&3"; next } { if (n++) print prev; prev = $0 } END { if (n == 0) exit 255; if (prev !~ /^__journal_exit /) { print prev > "/dev/stderr"; exit 1 } split(prev, exit_line, " "); exit exit_line[2] + 0 }' 3>&1 >&4); } 4>&1
     status=$?
     [ -n "$line" ] && cd "$root" && exec sh -c "$line"
     [ "$status" -ne 255 ] && exit "$status"
