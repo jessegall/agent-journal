@@ -7674,6 +7674,7 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
     """With Dock live outputs on, a watched run's card is docked as it goes live and taken down once it ends; a card docked by hand stays; off, nothing docks."""
     from journal.chat.docking import Docking
     from journal.features.shell.support.output_log import OutputLog
+    from journal.features.shell.support.output_views import OutputViews
     from journal.repositories.command_outputs import CommandOutputs
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
@@ -7694,6 +7695,8 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
             return app.container.get(Messages).with_key(f"watch:{n}")[0]
 
     def end(n):
+        with app.container.get(Scope).environment(MAIN):
+            app.container.get(OutputViews).card(outputs.find(n))
         outputs.save(outputs.find(n).ended_with(0, 0.0), Actor.system())
         app.runtime().deferred.drain()
         hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")

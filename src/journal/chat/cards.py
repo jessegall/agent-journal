@@ -50,7 +50,7 @@ class Cards:
 
     @staticmethod
     def docked_data(older: Message, data: dict) -> dict:
-        return {DOCKED: older.data[DOCKED], **data} if DOCKED in older.data else data
+        return {**{key: older.data[key] for key in (DOCKED, AUTO_DOCKED) if key in older.data}, **data}
 
     def detail_parts(self, detail: str) -> dict:
         lines = detail.strip().splitlines()
