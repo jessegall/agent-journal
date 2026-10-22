@@ -4360,6 +4360,31 @@ def test_a_commit_trailer_of_an_old_head_or_a_closed_task_closes_nothing(app: Ap
     assert app.container.get(Tasks).find(1).state == "done" and app.container.get(Tasks).find(2).state == "parked"
 
 
+def test_a_task_a_worker_holds_is_never_closed_by_a_hand_merge_or_a_trailer(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.tasks import Tasks
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    root = app.config.root
+    git = lambda *argv: subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", *argv], cwd=root, capture_output=True, text=True, timeout=30)
+    git("init", "-q", "-b", "main")
+    git("commit", "-q", "--allow-empty", "-m", "start")
+    hook(app, "SessionStart")
+    console = app.console()
+    console.run(["task", "create", "the parser", "--brief", "the parser reads"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--profile", "journal-medior", "--model", "sonnet"], AGENT)
+    git("commit", "-q", "--allow-empty", "-m", "the parser\n\nJournal: tasks done 1")
+    answered = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1]
+    assert app.container.get(Tasks).find(1).state != "done" and "task 1 is worker 1's, so the commit leaves it open" in json.dumps(answered), "a trailer leaves a worker's task open, naming the worker"
+    git("checkout", "-q", "-b", "side")
+    git("commit", "-q", "--allow-empty", "-m", "more of the parser\n\nJournal: tasks done 1")
+    git("checkout", "-q", "main")
+    git("merge", "-q", "--no-ff", "--no-edit", "side")
+    answered = hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git merge side"}, tool_response={"stdout": "", "stderr": ""})[1]
+    assert app.container.get(Tasks).find(1).state != "done" and "task 1 is worker 1's" in json.dumps(answered), "so does a hand merge of a branch whose commit names it"
+    assert "take its work in with journal worker merge 1" in console.run(["task", "complete", "1", "--how", "by hand"], AGENT).error, "and the agent's own completion is refused"
+
+
 def test_command_outputs_are_a_rolling_log_that_drops_the_oldest_with_its_folder(app: App):
     from journal.repositories.command_outputs import CommandOutputs
     app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.outputs_kept", value=2), Actor.system())

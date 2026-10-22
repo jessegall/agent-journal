@@ -1,3 +1,4 @@
+from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
 from journal.features.git.listeners.commit_detection import CommitDetection
 from journal.features.git.listeners.worktree_session_link import WorktreeSessionLink
@@ -15,3 +16,6 @@ class Git(Feature[GitData]):
     listeners = (CommitDetection, WorktreeSessionLink)
     data = (GitDataReader,)
     conduct = (GitConduct,)
+
+    WORKER_TASK_REFUSAL = Nudge(name, "worker_task_refusal", "task {{task}} is worker {{worker}}'s, so the commit leaves it open", "take the worker's work in with journal worker merge {{worker}} once its proofs are checked", repeat_interval=0)
+    nudges = (WORKER_TASK_REFUSAL,)

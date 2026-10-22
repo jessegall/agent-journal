@@ -118,6 +118,9 @@ class TaskCommand(Command):
         return 0
 
     def complete(self, args: Namespace, caller: Caller) -> int:
+        holdings = self.tasks.worker_holdings()
+        if args.n in holdings and not caller.actor.is_user():
+            raise Rejection(f"task {args.n} is worker {holdings[args.n]}'s: take its work in with journal worker merge {holdings[args.n]} once its proofs are checked")
         task = self.tasks.save(self.tasks.find(args.n).finished(self._time(), args.how), caller.actor)
         print(f"task {task.id} done")
         self._name_next(task)

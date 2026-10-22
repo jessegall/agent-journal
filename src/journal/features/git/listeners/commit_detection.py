@@ -1,6 +1,7 @@
 import re
 import subprocess
 import time as timing
+from journal.models.support.worker_task import WorkerTask
 from pathlib import Path
 
 from journal.config import Config
@@ -52,8 +53,7 @@ class CommitDetection(AgentListener[ToolFinished]):
             return None
         label = f"Agent committed {head.sha[:8]} on `{head.branch}`"
         self.cards.keyed(event.environment_id, f"{COMMIT}:{head.sha}", label, {"kind": "card", "session": event.session, "icon": "branch", "tone": "commit"}, actor, CardKind.COMMITS, head.subject)
-        closed = self.close_mentioned(event, head.sha, head.body) if folder == self.config.root and self.is_agents(event, head) else []
-        return self.commit(event, head.sha, closed)
+        return self.commit(event, head.sha, head.body if folder == self.config.root and self.is_agents(event, head) else "")
 
     def is_agents(self, event: ToolFinished, head: HeadCommit) -> bool:
         if timing.time() - head.committed <= COMMIT_WINDOW_SECONDS:
@@ -78,9 +78,12 @@ class CommitDetection(AgentListener[ToolFinished]):
             return Path(git.read_text().strip().removeprefix("gitdir:").strip()) / "logs" / "HEAD"
         return git / "logs" / "HEAD"
 
-    def commit(self, event: ToolFinished, sha: str, closed: list[int]) -> Decision | None:
-        next_open = self.next_task.following(self.tasks.find(closed[-1])) if closed else None
-        commit = CommitDetected(sha=sha, closed=tuple(closed), next_open=next_open).placed(event.session, event.environment_id, event.provider, event.context, event.time)
+    def commit(self, event: ToolFinished, sha: str, body: str) -> Decision | None:
+        numbers, owners = self.trailer_tasks(body), self.tasks.worker_holdings()
+        worker_tasks = tuple(WorkerTask(n, owners[n]) for n in numbers if n in owners)
+        completions = self.completions(event, sha, [n for n in numbers if n not in owners])
+        next_open = self.next_task.following(self.tasks.find(completions[-1])) if completions else None
+        commit = CommitDetected(sha=sha, closed=tuple(completions), next_open=next_open, worker_tasks=worker_tasks).placed(event.session, event.environment_id, event.provider, event.context, event.time)
         return next((answer for answer in self.events.post(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:
@@ -91,12 +94,14 @@ class CommitDetection(AgentListener[ToolFinished]):
         delivered = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)
         if delivered.returncode != 0:
             return None
-        decisions = [self.commit(event, sha, closed) for sha, _, body in (entry.strip().partition("\0") for entry in delivered.stdout.split("\x01") if entry.strip()) if (closed := self.close_mentioned(event, sha, body))]
+        decisions = [self.commit(event, sha, body) for sha, _, body in (entry.strip().partition("\0") for entry in delivered.stdout.split("\x01") if entry.strip()) if self.trailer_tasks(body)]
         return next((decision for decision in decisions if decision), None)
 
-    def close_mentioned(self, event: ToolFinished, sha: str, body: str) -> list[int]:
+    def trailer_tasks(self, body: str) -> list[int]:
         numbers = [int(n) for rows in TRAILER.finditer(body) for n in re.findall(r"\d+", rows.group(1))]
-        numbers = [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
+        return [n for n in numbers if self.tasks.matching(id=n, state=TaskState.OPEN) or self.tasks.matching(id=n, state=TaskState.STARTED)]
+
+    def completions(self, event: ToolFinished, sha: str, numbers: list[int]) -> list[int]:
         caller = Caller.agent(self.environments.find(event.environment_id).name, event.session, event.provider)
         return [n for n in numbers if self.console.run(["task", "complete", str(n), "--how", f"commit {sha[:8]}"], caller).code == 0]
 
