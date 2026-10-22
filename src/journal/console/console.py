@@ -10,6 +10,7 @@ from journal.console.support.row_verbs import RowVerbs
 from journal.support.rejection import Rejection
 from journal.support.missing_row import MissingRow
 from journal.support.caller import Caller
+from journal.support.caller_kind import CallerKind
 from journal.repositories.agents import Agents
 from journal.repositories.environments import Environments
 from journal.repositories.scope import Scope
@@ -68,6 +69,8 @@ class Console:
         return set(verbs.choices) | self.row_verbs.build(command.noun)
 
     def perform(self, args: argparse.Namespace, caller: Caller) -> int:
+        if not self.commands[args.noun].admits(args.verb, caller.kind):
+            raise Rejection(self.refusal(args, caller.kind))
         if self.row_verbs.has(args.noun, args.verb):
             return self.row_verbs.perform(args, caller)
         command = self.commands[args.noun]
@@ -75,6 +78,10 @@ class Console:
         for line in command.chained(args, caller):
             print(f"\n{line.heading()}\n{self.chained_text(line, caller)}")
         return code
+
+    def refusal(self, args: argparse.Namespace, kind: CallerKind) -> str:
+        allowed = [f"journal {noun} {verb}" for noun, command in sorted(self.commands.items()) for verb, kinds in sorted(command.callers.items()) if kind in kinds]
+        return f"a {kind} may not run journal {args.noun} {args.verb}; a {kind} may run {', '.join(allowed) or 'no journal command'}"
 
     def chained_text(self, line: ChainedLine, caller: Caller) -> str:
         if not line.argv:

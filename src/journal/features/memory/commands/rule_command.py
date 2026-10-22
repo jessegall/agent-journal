@@ -3,6 +3,7 @@ from argparse import Namespace
 from journal.support.actor_kind import ActorKind
 from journal.support.caller import Caller
 
+from journal.console.command import HELPER_KINDS
 from journal.features.memory.commands.memory_command import MemoryCommand
 from journal.features.memory.support.threshold_decisions import ThresholdDecisions
 from journal.features.memory.support.memory_context import MemoryContext
@@ -14,6 +15,7 @@ class RuleCommand(MemoryCommand):
     """A rule binds the whole project, so it has no environment."""
 
     noun = "rule"
+    callers = {"list": HELPER_KINDS, "read": HELPER_KINDS}
 
     def __init__(self, rules: Rules, decisions: ThresholdDecisions, context: MemoryContext) -> None:
         super().__init__(decisions, context)

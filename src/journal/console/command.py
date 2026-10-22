@@ -3,14 +3,21 @@ from typing import ClassVar
 from journal.console.support.chained_line import ChainedLine
 
 from journal.support.caller import Caller
+from journal.support.caller_kind import CallerKind
+
+PRINCIPAL_KINDS = frozenset({CallerKind.MAIN_AGENT, CallerKind.USER, CallerKind.PLUGIN})
+HELPER_KINDS = frozenset({CallerKind.WORKER, CallerKind.SUBAGENT})
 
 
 class Command:
-    """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs."""
+    """One noun; each verb is a method named after it, taking the parsed arguments and where and by whom it runs. The main agent, the user and a plugin run every verb; a worker or a subagent runs only the verbs whose callers name its kind."""
 
     noun: ClassVar[str]
     default_verb: ClassVar[str] = ""
-    unrestricted: ClassVar[bool] = False
+    callers: ClassVar[dict[str, frozenset[CallerKind]]] = {}
+
+    def admits(self, verb: str, kind: CallerKind) -> bool:
+        return kind in PRINCIPAL_KINDS or kind in self.callers.get(verb, frozenset())
 
     def arguments(self, verbs) -> None:
         ...
