@@ -46,8 +46,8 @@ class Workers(Feature[WorkersData]):
     conduct = (WorkersConduct,)
 
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_interval=0)
-    ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch; keep the reviews for yourself", repeat_interval=0)
-    TASK_DELEGATION = Nudge(name, "delegate_the_task", "{{name}} is in hand and you orchestrate; {{logged}}", "hand it to a worker, journal worker dispatch, and review its report; log what the worker is on", repeat_interval=0)
+    ORCHESTRATE = Nudge(name, "orchestrate", "{{count}} tasks are open across the plans: {{tasks}}", "check the plans and dispatch a worker on each task you can, journal worker dispatch \"<Name>\" --task <n>; keep the reviews for yourself", repeat_interval=0)
+    TASK_DELEGATION = Nudge(name, "delegate_the_task", "{{name}} is in hand and you orchestrate; {{logged}}", "hand it to a worker, journal worker dispatch \"<Name>\" --task <n> with this task's number, and review its report; log what the worker is on", repeat_interval=0)
     SOLO_DISPATCH = Nudge(name, "no_workers_when_solo", "you work solo: no worker is dispatched", "do the job yourself, or ask the user to switch the work mode", repeat_interval=0)
     WORKER_STOPPED_UNREPORTED = Nudge(name, "worker_stopped_unreported", "worker {{n}}, {{name}}, stopped before it reported", repeat_interval=0)
     SUBAGENT_OVERFLOW = Nudge(name, "too_many_subagents", "{{running}} subagents are running, the most at once", "wait for one to finish, or keep the work yourself", repeat_interval=0)
@@ -66,10 +66,11 @@ class Workers(Feature[WorkersData]):
 
 A subagent only reads. A worker writes: code in a worktree of its own, a document, a change.
 
-- `journal worker dispatch "<Name>" "<bounded brief>" --profile journal-senior|journal-medior [--task <n>] [--provider claude|codex] [--worktree]`: name it
-  after a distinguished figure with a twist on their trade and give it one job. The profile sets its model and what it is told:
+- `journal worker dispatch "<Name>" --task <n> --profile journal-senior|journal-medior ["<more to tell it>"] [--provider claude|codex] [--worktree]`:
+  name it after a distinguished figure with a twist on their trade. A worker is started only on a task: an open one with a
+  brief, which is its job, or the one you hold, which it then takes over. The task is the worker's from then on, never
+  offered to you as next, until its work is merged or released. The profile sets its model and what it is told:
   medior, on Sonnet, for a job whose shape is settled; senior, on Opus, only for one that needs judgement. `--model` overrides it.
-  A worker sent on a task names it with `--task <n>`: the task is the worker's from then on, and never offered to you as next.
 - The work mode is the bottom state of your stack. Builder, the default: you build it yourself and send a worker when a job
   is better done beside you. Orchestrator: you plan, hand every task you can to a worker and review what comes back;
   a stop or a long quiet with open tasks tells you to check the plans and dispatch, and a task in hand is one to hand

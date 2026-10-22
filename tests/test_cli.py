@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from worker_dispatch import dispatched
+
 from journal.app import App
 from journal.repositories.scope import Scope
 from journal.config import Config
@@ -118,7 +120,7 @@ def test_a_codex_agent_with_no_row_yet_dispatches_a_codex_worker_and_raises_its_
     from journal.repositories.workers import Workers
     monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
     codex = Caller.agent("main", "t9", "codex")
-    assert app.console().run(["worker", "dispatch", "Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], codex).code == 0
+    assert dispatched(app.console(), ["Ada Lovelace", "write storage.py", "--profile", "journal-medior", "--model", "gpt-5"], codex).code == 0
     assert app.container.get(Workers).find(1).provider == "codex", "the provider comes with the caller, not from the agent's row"
     assert app.console().run(["stuck", "the build is red"], MAIN).code == 1, "only an agent says it is stuck"
 

@@ -1412,7 +1412,7 @@ def orchestrated(app: App) -> None:
     console.run(["plan", "create", "go live", "--brief", "twenty tasks"], USER)
     console.run(["plan", "phase", "1", "release", "--when", "all twenty done"], USER)
     for n in range(1, 21):
-        console.run(["plan", "add", "1", f"piece {n}"], USER)
+        console.run(["plan", "add", "1", f"piece {n}", "--brief", f"piece {n} is done"], USER)
     console.run(["plan", "todos", "1", "1", *[str(n) for n in range(1, 21)]], USER)
     assert console.run(["plan", "ready", "1"], AGENT).code == 0 and console.run(["plan", "approve", "1"], USER).code == 0 and console.run(["plan", "start", "1"], AGENT).code == 0
     stack = lambda: [s["state"] for s in agents.session_agent("s1").stack]

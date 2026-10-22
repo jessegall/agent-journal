@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from shell_verbs import ShellVerbs
+from worker_dispatch import dispatched
 
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents
@@ -160,8 +161,8 @@ def a_worker_reports(app, replay: Replay, provider: str) -> None:
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     hook_as(app, provider, "Stop")
     replay.step("awaiting two workers")
@@ -559,8 +560,8 @@ def awaiting_rules(app, replay: Replay, provider: str) -> None:
     console = app.console()
     console.run(["environment", "overview"], AGENT)
     console.run(["task", "create", "the footer", "--start"], AGENT)
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
-    console.run(["worker", "dispatch", "Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Dr. Einstein", "profile it", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1", "2"], AGENT)
     replay.step("awaiting two workers", hook_as(app, provider, "Stop")[1])
     console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
@@ -591,7 +592,7 @@ def pause_exits(app, replay: Replay, provider: str) -> None:
     console.run(["question", "answer", "1", "red"], USER)
     app.runtime().deferred.drain()
     replay.step("the answer releases the wait", hook_as(app, provider, "Stop")[1])
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], AGENT)
     console.run(["worker", "wait", "1"], AGENT)
     replay.step("awaiting a worker", hook_as(app, provider, "Stop")[1])
     console.run(["worker", "report", "1", "parser done"], Caller.agent("main", "w1", "claude"))
@@ -808,7 +809,7 @@ def two_agents(app, replay: Replay, provider: str) -> None:
     second = Caller.agent("main", "s2", "claude")
     console.run(["environment", "overview"], second)
     console.run(["task", "create", "the parser", "--start"], second)
-    console.run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], second)
+    dispatched(console, ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "fast"], second)
     console.run(["worker", "wait", "1"], second)
     hook_as(app, provider, "Stop")
     replay.step("one idle, one awaiting")
@@ -918,7 +919,7 @@ def worker_worktree_kept_out(app, replay: Replay, provider: str) -> None:
     hook_as(app, provider, "SessionStart")
     app.console().run(["environment", "overview"], AGENT)
     app.console().run(["task", "create", "the parser", "--start"], AGENT)
-    app.console().run(["worker", "dispatch", "Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
+    dispatched(app.console(), ["Lady Lovelace", "write the parser", "--profile", "journal-medior", "--model", "sonnet", "--worktree"], AGENT)
     replay.step("the worker is out")
     contained = app.config.home / "worktrees" / "1-Lady-Lovelace" / "parser.py"
     replay.step("a write in the worker's worktree", hook_as(app, provider, "PreToolUse", tool_name=TOOLS[provider].write, tool_input={"file_path": str(contained), "content": "x"})[1])

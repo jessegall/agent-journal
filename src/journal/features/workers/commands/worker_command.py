@@ -17,16 +17,28 @@ from journal.repositories.messages import Messages
 from journal.repositories.scope import Scope
 from journal.repositories.subagents import Subagents
 from journal.models.support.ref import Ref
+from journal.models.task import Task
+from journal.models.task_state import TaskState
+from journal.repositories.agents import Agents
 from journal.repositories.tasks import Tasks
 from journal.repositories.workers import Workers
 from journal.features.workers.support.worker_actions import WorkerActions
+
+EMPTY_BRIEF_REFUSAL = "task {n} has no brief: a worker's job is its task's brief, so write it first with journal task brief {n} \"<what is done when>\""
+ASSIGNMENT_REFUSALS = {
+    TaskState.FINISHED: "task {n} is {state}: a worker is started only on an open task or one you hold",
+    TaskState.CANCELLED: "task {n} is {state}: a worker is started only on an open task or one you hold",
+    TaskState.BLOCKED: "task {n} is {state}: unblock it before a worker takes it",
+    TaskState.STARTED: "task {n} is started in another's hands: a worker is started only on an open task or one you hold",
+    TaskState.SUSPENDED: "task {n} is {state} in another's hands: a worker is started only on an open task or one you hold",
+}
 
 class WorkerCommand(Command):
     noun = "worker"
     callers = {"peers": WORKER_KINDS, "notify": WORKER_KINDS, "send": WORKER_KINDS, "report": WORKER_KINDS}
 
-    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks) -> None:
-        self.tasks = tasks
+    def __init__(self, workers: Workers, messages: Messages, runner: WorkerRunner, reports: WorkerReports, scope: Scope, profiles: ProfileFiles, providers: Providers, branch: WorkerBranch, settings: SettingRows, actions: WorkerActions, subagents: Subagents, tasks: Tasks, agents: Agents) -> None:
+        self.tasks, self.agents = tasks, agents
         self.workers, self.messages, self.providers = workers, messages, providers
         self.branch, self.settings, self.actions, self.subagents = branch, settings, actions, subagents
         self.runner, self.reports, self.scope, self.profiles = runner, reports, scope, profiles
@@ -34,13 +46,13 @@ class WorkerCommand(Command):
     def arguments(self, verbs) -> None:
         dispatch = self.verb(verbs, "dispatch", "send a worker to write one bounded job")
         dispatch.add_argument("name")
-        dispatch.add_argument("brief")
+        dispatch.add_argument("brief", nargs="?", default="", help="what the worker is told beside its task's brief")
         dispatch.add_argument("--provider", choices=("claude", "codex"), help="the program the worker runs; the dispatching agent's own when not named")
         dispatch.add_argument("--profile", required=True, help="the worker profile it works by: senior, on Opus, for a job that needs judgement; medior, on Sonnet, for one whose shape is settled")
         dispatch.add_argument("--model", help="a model other than the profile's")
         dispatch.add_argument("--worktree", action="store_true", help="in a worktree of its own, for code")
         dispatch.add_argument("--fresh", action="store_true", help="a fresh worker even though one back already worked on the same files")
-        dispatch.add_argument("--task", type=int, help="the task it works on, which its plan then leaves to it")
+        dispatch.add_argument("--task", type=int, required=True, help="the task it works on: an open one with a brief, or the one you hold; it is the worker's alone until merged or released")
         report = self.verb(verbs, "report", "the worker reports back")
         report.add_argument("n", type=int)
         report.add_argument("text")
@@ -70,21 +82,31 @@ class WorkerCommand(Command):
         maximum = self.settings.integer(Feature.WORKER_LIMIT)
         if maximum and len(output) >= maximum:
             raise Rejection(Feature.WORKER_OVERFLOW.create(out=len(output)).rendered())
+        task = self.assignment(args.task, caller)
         provider = args.provider or self.provider_default(caller)
         moment = datetime.now(timezone.utc).timestamp()
-        worker = Worker(name=args.name, brief=args.brief, provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
+        worker = Worker(name=args.name, brief="\n\n".join(part for part in (task.brief, args.brief) if part), provider=provider, model=args.model or self.model(args.profile, provider), profile=args.profile, worktree=args.worktree, dispatcher=caller.session)
         worker = self.workers.save(worker.contacted(moment), caller.actor)
         try:
             self.runner.workplace(worker)
         except WorktreeFailure as failed:
             self.workers.delete(worker, caller.actor)
             raise Rejection(f"worker {worker.name} was not dispatched: {failed}") from failed
-        if args.task:
-            self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)
+        self.tasks.handover(task, Ref.build(worker), caller.actor)
         self.runner.start(worker, caller.actor)
         self.workers.save(self.workers.find(worker.row_id).dispatched(moment), caller.actor)
         print(f"worker {worker.id} {worker.name} dispatched on {worker.provider} {worker.model}; it reports in the chat when it ends")
         return 0
+
+    def assignment(self, n: int, caller: Caller) -> Task:
+        task = self.tasks.find(n)
+        if self.is_holder(task, caller) or (task.state == TaskState.OPEN and task.brief.strip()):
+            return task
+        raise Rejection(ASSIGNMENT_REFUSALS.get(task.state, EMPTY_BRIEF_REFUSAL).format(n=n, state=task.state))
+
+    def is_holder(self, task: Task, caller: Caller) -> bool:
+        agents = [] if caller.session is None else self.agents.global_matching(session=caller.session)
+        return bool(agents) and self.tasks.holder(task) == Ref.build(agents[0])
 
     def model(self, profile: str, provider: str) -> str:
         return self.providers.lookup(provider).profile_model(self.profiles.read(profile))
@@ -98,6 +120,9 @@ class WorkerCommand(Command):
         return 0
 
     def send(self, args: Namespace, caller: Caller) -> int:
+        holdings = self.tasks.holder_task_ids(Ref(Worker.table(), args.n))
+        if args.task and holdings and args.task not in holdings:
+            raise Rejection(f"worker {args.n} holds task {holdings[0]} until its work is merged or released: send it the next job on that task, or release it first")
         worker = self.actions.peer_send(args.n, args.brief, caller.worker_number, caller.actor) if caller.worker_number is not None else self.actions.send(args.n, args.brief, caller.session, caller.actor)
         if args.task:
             self.tasks.handover(self.tasks.find(args.task), Ref.build(worker), caller.actor)

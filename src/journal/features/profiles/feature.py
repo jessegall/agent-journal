@@ -18,6 +18,6 @@ class Profiles(Feature[ProfilesData]):
     listeners = (CountProfileUse,)
     data = (ProfilesDataReader,)
     conduct = (ProfilesConduct,)
-    WORKER_PROFILE_MISUSE = Nudge(name, "worker_profile_is_not_a_subagent", "{{name}} is a worker profile: it writes", "dispatch a worker with `journal worker dispatch \"<Name>\" \"<job>\" --profile {{name}}`, not a subagent", repeat_interval=0)
+    WORKER_PROFILE_MISUSE = Nudge(name, "worker_profile_is_not_a_subagent", "{{name}} is a worker profile: it writes", "dispatch a worker with `journal worker dispatch \"<Name>\" --task <n> --profile {{name}}`, not a subagent", repeat_interval=0)
     nudges = (WORKER_PROFILE_MISUSE,)
     help = "A researcher, a planner and a debugger are written as read-only subagent profiles for Claude and Codex."
