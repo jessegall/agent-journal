@@ -26,7 +26,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal memory skip \"<why>\"`; writes wait until you do"
-        }
+        },
+        "systemMessage": "context 80% full: decide what to keep from it. `journal fact create \"<what is true here>\"`, `journal rule create \"<Always/Never ...>\"`, or `journal memory skip \"<why>\"`; writes wait until you do"
       },
       "typed": [],
       "nudges": [

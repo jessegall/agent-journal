@@ -274,7 +274,7 @@ def test_changed_settings_keep_their_meaning_in_the_tool_workflow(journal, monke
     app, provider = journal
     replay, rows = played(f"tool_uses_with_changed_settings_{provider}", app, monkeypatch, tool_uses_with_changed_settings, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert name_index["read 1 while owed"]["answer"] == {} and "you have not answered message 1 yet" in str(name_index["read 2 while owed"]["answer"]) and name_index["read 3 while owed"]["answer"] == {}, "the listener asks after two uses, once inside the window"
+    assert name_index["read 1 while owed"]["answer"] == {} and "wait for your answer to message 1: 1" in str(name_index["read 2 while owed"]["answer"]) and "your next tool call waits for your answer to message 1" in str(name_index["read 3 while owed"]["answer"]), "with the setting changed, the countdown starts later and still ends on the last use"
     assert "error" in name_index["read 4 while owed"]["answer"] and "error" in name_index["read 5 while owed"]["answer"], "and holds after four"
     assert "in hand, 2 edits" in str(name_index["write 3"]["answer"]) and "3 edits since you logged task 1: say where it stands" in str(name_index["write 4"]["answer"]) and "in hand, 4 edits" in str(name_index["write 5"]["answer"]) and name_index["write 6"]["answer"] == {} and "error" in name_index["write 7"]["answer"], "the task is named every two edits, the log asked at three and held at six"
     assert rows == [], "the agent would have seen the same, and the record says the same"
@@ -284,7 +284,7 @@ def test_tool_about_to_run_matches_its_record_on_the_inbox(journal, monkeypatch)
     app, provider = journal
     replay, rows = played(f"tool_uses_with_the_inbox_{provider}", app, monkeypatch, tool_uses_with_the_inbox, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert "new message 1" in str(name_index["read 3"]["answer"]) and name_index["read 4"]["answer"] == {}, "the listener names the inbox every third use"
+    assert "wait for message 1: 3" in str(name_index["read 1"]["answer"]) and "wait for message 1: 1" in str(name_index["read 3"]["answer"]) and "your next write waits for message 1" in str(name_index["read 4"]["answer"]), "each tool use counts down the uses left before the writes wait, then names the hold"
     assert "you have 1 unread messages" in str(name_index["a write at 17"]["answer"]), "and holds the write after five namings"
     assert name_index["a read while owed"]["answer"] == {} and name_index["a journal command while owed"]["answer"] == {} and name_index["a look at its files"]["answer"] == {} and name_index["a read after the reply"]["answer"] == {}, "a read message has its grace of five uses before a word is asked for"
     assert rows == [], "the agent would have seen the same, and the record says the same"
@@ -860,7 +860,7 @@ def test_the_inbox_is_named_on_the_third_tool_use_across_a_stop_a_prompt_and_a_s
     app, provider = journal
     replay, rows = played(f"count_survives_events_{provider}", app, monkeypatch, tool_uses_across_events, provider, nudges=True)
     name_index = {s["name"]: s for s in replay.record()}
-    assert "new message 1" in str(name_index["read 3, the third use since the message"]["answer"]) and "new message 1" in str(name_index["read 6, the sixth"]["answer"]), "the uses since the message are read from the record across the stop, the prompt and the session start: the third and the sixth name it"
+    assert "wait for message 1: 1" in str(name_index["read 3, the third use since the message"]["answer"]) and "your next write waits for message 1" in str(name_index["read 4"]["answer"]), "the uses since the message are counted across the stop, the prompt and the session start: the third is the last left, the fourth names the hold"
     assert rows == [], "the record says the same"
 
 

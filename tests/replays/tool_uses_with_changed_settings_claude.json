@@ -35,12 +35,13 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "you have not answered message 1 yet. answer or react to it before you go on; your tools wait once you have gone on long enough"
-        }
+          "additionalContext": "tool uses left before your tools wait for your answer to message 1: 1"
+        },
+        "systemMessage": "tool uses left before your tools wait for your answer to message 1: 1"
       },
       "typed": [],
       "nudges": [
-        "messages.answer_before_anything_else"
+        "messages.tools_held_soon_until_answered"
       ],
       "stack": [
         "idle",
@@ -49,9 +50,17 @@
     },
     {
       "name": "read 3 while owed",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next tool call waits for your answer to message 1. answer or react to it now"
+        },
+        "systemMessage": "your next tool call waits for your answer to message 1. answer or react to it now"
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_tool_held_until_answered"
+      ],
       "stack": [
         "idle",
         "working"
@@ -121,7 +130,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        }
+        },
+        "systemMessage": "task 1 in hand, 2 edits. if this is not what you are doing, finish it or park it and start the work you are on"
       },
       "typed": [],
       "nudges": [
@@ -138,7 +148,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
-        }
+        },
+        "systemMessage": "3 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\""
       },
       "typed": [],
       "nudges": [
@@ -155,7 +166,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        }
+        },
+        "systemMessage": "task 1 in hand, 4 edits. if this is not what you are doing, finish it or park it and start the work you are on"
       },
       "typed": [],
       "nudges": [

@@ -35,12 +35,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "tool uses left before your writes wait for message 1: 3"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.writes_held_soon_until_read"
       ],
       "stack": [
         "idle",

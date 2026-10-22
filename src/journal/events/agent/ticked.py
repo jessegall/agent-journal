@@ -11,3 +11,6 @@ class Ticked(AgentEvent):
     answers_hook: ClassVar[bool] = False
 
     silence_seconds: float
+
+    def gap_seconds(self) -> float:
+        return self.silence_seconds

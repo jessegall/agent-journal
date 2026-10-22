@@ -60,6 +60,13 @@ class SupervisorLink:
     def working(self, environment_id: int) -> None:
         self.typed.work(environment_id)
 
+    def stop_refused(self, environment_id: int) -> None:
+        self.typed.refuse_stop(environment_id)
+
+    def silence(self, environment_id: int, seconds: float) -> None:
+        if self.typed.is_stop_refused(environment_id) and seconds >= self.settings.integer(FOREGROUND_OPTION):
+            self.resting(environment_id)
+
     def resting(self, environment_id: int) -> None:
         self.typed.rest(environment_id)
         self.release(environment_id)

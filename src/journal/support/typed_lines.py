@@ -21,6 +21,7 @@ class TypedLines:
         self._disabled_ids: set[int] = set()
         self._paused_ids: set[int] = set()
         self._working_ids: set[int] = set()
+        self._refused_stop_ids: set[int] = set()
 
     def disable(self, environment_id: int) -> None:
         self._disabled_ids.add(environment_id)
@@ -42,9 +43,18 @@ class TypedLines:
 
     def work(self, environment_id: int) -> None:
         self._working_ids.add(environment_id)
+        self._refused_stop_ids.discard(environment_id)
+
+    def refuse_stop(self, environment_id: int) -> None:
+        self._working_ids.add(environment_id)
+        self._refused_stop_ids.add(environment_id)
+
+    def is_stop_refused(self, environment_id: int) -> bool:
+        return environment_id in self._refused_stop_ids
 
     def rest(self, environment_id: int) -> None:
         self._working_ids.discard(environment_id)
+        self._refused_stop_ids.discard(environment_id)
 
     def is_working(self, environment_id: int) -> bool:
         return environment_id in self._working_ids

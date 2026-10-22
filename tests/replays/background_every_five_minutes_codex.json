@@ -64,7 +64,7 @@
       "name": "fifteen minutes, nothing running",
       "answer": null,
       "typed": [
-        "[journal] output 1 finished. `journal output read 1 --summary` says how; --tail 20 or --grep reads the part you need"
+        "[journal] output 1 finished. `journal output read 1 --summary` says how"
       ],
       "nudges": [
         "shell.outputs_ended"

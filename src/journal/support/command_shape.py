@@ -6,14 +6,15 @@ WORD_PATTERN = re.compile(r"[A-Za-z][\w.-]*")
 MODULE_FLAG = "-m"
 SHAPE_TOKEN_COUNT = 3
 WRAPPER_PATTERN = re.compile(r"^\s*(?:perl -e '[^']*exec @ARGV[^']*'|timeout \d+[smh]?)\s+")
+VARIABLE_PATTERN = re.compile(r"^\s*(?:[A-Za-z_][A-Za-z0-9_]*=(?:'[^']*'|\"[^\"]*\"|\S*)\s+)+")
 
 
 class CommandShape:
-    """A command as its program and subcommands name it, the values passed to it left out: pytest -k chat and pytest tests/a.py are both pytest, python3 -m pytest -q is python3 -m pytest, npm run test stays npm run test; a wrapper that only limits its time, perl -e 'alarm N; exec @ARGV' or timeout N, is looked through."""
+    """A command as its program and subcommands name it, the values passed to it left out: pytest -k chat and pytest tests/a.py are both pytest, python3 -m pytest -q is python3 -m pytest, npm run test stays npm run test; a wrapper that only limits its time, perl -e 'alarm N; exec @ARGV' or timeout N, and variables set before the command, such as REPLAY_FREEZE=1, are looked through."""
 
     @staticmethod
     def inner(part: str) -> str:
-        return WRAPPER_PATTERN.sub("", part, count=1)
+        return WRAPPER_PATTERN.sub("", VARIABLE_PATTERN.sub("", part, count=1), count=1)
 
     @classmethod
     def build(cls, part: str) -> str:

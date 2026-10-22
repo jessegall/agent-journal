@@ -33,9 +33,16 @@
     },
     {
       "name": "read 1",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 3"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.writes_held_soon_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -43,9 +50,16 @@
     },
     {
       "name": "read 2",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 2"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.writes_held_soon_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -56,12 +70,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "tool uses left before your writes wait for message 1: 1"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.writes_held_soon_until_read"
       ],
       "stack": [
         "idle",
@@ -70,9 +84,16 @@
     },
     {
       "name": "read 4",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -80,9 +101,16 @@
     },
     {
       "name": "read 5",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -93,12 +121,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.next_write_held_until_read"
       ],
       "stack": [
         "idle",
@@ -107,9 +135,16 @@
     },
     {
       "name": "read 7",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -117,9 +152,16 @@
     },
     {
       "name": "read 8",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -130,12 +172,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.next_write_held_until_read"
       ],
       "stack": [
         "idle",
@@ -144,9 +186,16 @@
     },
     {
       "name": "read 10",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -154,9 +203,16 @@
     },
     {
       "name": "read 11",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -167,12 +223,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.next_write_held_until_read"
       ],
       "stack": [
         "idle",
@@ -181,9 +237,16 @@
     },
     {
       "name": "read 13",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -191,9 +254,16 @@
     },
     {
       "name": "read 14",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"
@@ -204,12 +274,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.new_message_to_answer"
+        "messages.next_write_held_until_read"
       ],
       "stack": [
         "idle",
@@ -218,9 +288,16 @@
     },
     {
       "name": "read 16",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_write_held_until_read"
+      ],
       "stack": [
         "idle",
         "working"

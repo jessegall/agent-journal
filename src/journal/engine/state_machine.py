@@ -53,6 +53,7 @@ class StateMachine(AgentListener[AgentEvent]):
         if isinstance(event, ToolStarting) and event.call.is_panic_line():
             return Decision()
         agent = self.sessions.agent(event.session, event.environment_id, event.provider)
+        self.supervisor.silence(event.environment_id, event.gap_seconds())
         decision = self.answer(agent, event)
         if agent.role == AgentRole.WORKER:
             return self.worker_decision(agent.row_id, decision, event)
@@ -67,7 +68,10 @@ class StateMachine(AgentListener[AgentEvent]):
             self.supervisor.resting(event.environment_id)
         if not event.is_work and not stop_refusal:
             return decision
-        self.supervisor.working(event.environment_id)
+        if stop_refusal:
+            self.supervisor.stop_refused(event.environment_id)
+        else:
+            self.supervisor.working(event.environment_id)
         pending = self.supervisor.pending_lines(event.environment_id)
         if not pending:
             return decision

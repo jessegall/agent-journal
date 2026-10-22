@@ -273,7 +273,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        }
+        },
+        "systemMessage": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
       },
       "typed": [],
       "nudges": [
@@ -561,7 +562,8 @@
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
           "additionalContext": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
-        }
+        },
+        "systemMessage": "25 edits since you logged task 1: say where it stands. journal task log 1 \"<where it stands>\"\ntask 1 in hand, 25 edits. if this is not what you are doing, finish it or park it and start the work you are on"
       },
       "typed": [],
       "nudges": [

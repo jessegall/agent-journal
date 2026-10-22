@@ -40,6 +40,9 @@ class AgentEvent(Event):
     def recorded(self) -> dict:
         return {}
 
+    def gap_seconds(self) -> float:
+        return 0.0
+
     def counted(self, tool_use: int) -> Self:
         return replace(self, tool_use=tool_use)
 

@@ -1,6 +1,7 @@
 import shlex
 from dataclasses import dataclass, field
 
+from journal.support.command_shape import CommandShape
 from journal.models.model import Model
 from journal.support.part import Part
 
@@ -28,4 +29,5 @@ class Alias(Model):
 
     def matches(self, part: str) -> bool:
         head, tokens = Part(self.line.split(ARGS)[0]).tokens(), Part(part).tokens()
-        return bool(head) and len(tokens) >= len(head) and tokens[0].rsplit("/", 1)[-1] == head[0].rsplit("/", 1)[-1] and tokens[1:len(head)] == head[1:]
+        prefix_match = bool(head) and len(tokens) >= len(head) and tokens[0].rsplit("/", 1)[-1] == head[0].rsplit("/", 1)[-1] and tokens[1:len(head)] == head[1:]
+        return prefix_match or " " in CommandShape.build(part) and CommandShape.build(part) == CommandShape.build(self.line)

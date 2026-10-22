@@ -70,9 +70,7 @@
     {
       "name": "message 1 arrives",
       "answer": null,
-      "typed": [
-        "[journal] new message 2"
-      ],
+      "typed": [],
       "nudges": [
         "messages.new_message_to_answer"
       ],
@@ -85,7 +83,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "UserPromptSubmit",
-          "additionalContext": "read the plans skill before anything else: .claude/skills/journal-plans/SKILL.md. writes wait until you have\nnew message 2"
+          "additionalContext": "new message 2\nread the plans skill before anything else: .claude/skills/journal-plans/SKILL.md. writes wait until you have\nnew message 2"
         }
       },
       "typed": [],
@@ -100,10 +98,11 @@
     {
       "name": "a write before the plans skill is read",
       "answer": {
-        "error": "read the plans skill before anything else: .claude/skills/journal-plans/SKILL.md. writes wait until you have"
+        "error": "read the plans skill before anything else: .claude/skills/journal-plans/SKILL.md. writes wait until you have\ntool uses left before your writes wait for message 2: 3"
       },
       "typed": [],
       "nudges": [
+        "messages.writes_held_soon_until_read",
         "skills.read_the_skill_first"
       ],
       "stack": [
@@ -121,9 +120,16 @@
     },
     {
       "name": "a write after",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 2: 2"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.writes_held_soon_until_read"
+      ],
       "stack": [
         "idle"
       ]

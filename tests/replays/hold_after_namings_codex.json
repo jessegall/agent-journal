@@ -6,7 +6,7 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "new message 1"
+          "additionalContext": "tool uses left before your writes wait for message 1: 3"
         }
       },
       "typed": [
@@ -19,7 +19,7 @@
         "briefing.look_before_the_first_write",
         "voices.how_to_talk_to_the_user",
         "messages.new_message_to_answer",
-        "messages.new_message_to_answer"
+        "messages.writes_held_soon_until_read"
       ],
       "stack": [
         "idle",
@@ -29,11 +29,14 @@
     {
       "name": "write 2 with the message unread",
       "answer": {
-        "error": "you have 1 unread messages. `journal message unread` before any other write"
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 2"
+        }
       },
       "typed": [],
       "nudges": [
-        "messages.write_held_until_read"
+        "messages.writes_held_soon_until_read"
       ],
       "stack": [
         "idle",
@@ -43,11 +46,14 @@
     {
       "name": "write 3 with the message unread",
       "answer": {
-        "error": "you have 1 unread messages. `journal message unread` before any other write"
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "tool uses left before your writes wait for message 1: 1"
+        }
       },
       "typed": [],
       "nudges": [
-        "messages.write_held_until_read"
+        "messages.writes_held_soon_until_read"
       ],
       "stack": [
         "idle",
@@ -57,11 +63,14 @@
     {
       "name": "write 4 with the message unread",
       "answer": {
-        "error": "you have 1 unread messages. `journal message unread` before any other write"
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next write waits for message 1. read it now with `journal message unread`"
+        }
       },
       "typed": [],
       "nudges": [
-        "messages.write_held_until_read"
+        "messages.next_write_held_until_read"
       ],
       "stack": [
         "idle",

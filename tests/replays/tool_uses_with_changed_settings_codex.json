@@ -35,12 +35,12 @@
       "answer": {
         "hookSpecificOutput": {
           "hookEventName": "PreToolUse",
-          "additionalContext": "you have not answered message 1 yet. answer or react to it before you go on; your tools wait once you have gone on long enough"
+          "additionalContext": "tool uses left before your tools wait for your answer to message 1: 1"
         }
       },
       "typed": [],
       "nudges": [
-        "messages.answer_before_anything_else"
+        "messages.tools_held_soon_until_answered"
       ],
       "stack": [
         "idle",
@@ -49,9 +49,16 @@
     },
     {
       "name": "read 3 while owed",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "your next tool call waits for your answer to message 1. answer or react to it now"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "messages.next_tool_held_until_answered"
+      ],
       "stack": [
         "idle",
         "working"

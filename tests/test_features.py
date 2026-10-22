@@ -6399,6 +6399,8 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     from journal.features.shell.support.output_log import OutputLog
     from journal.repositories.command_outputs import CommandOutputs
     assert ActivityLabel.build("perl -e 'alarm 590; exec @ARGV' python3 -m pytest -q") == "testing" and ActivityLabel.build("timeout 60 npm test") == "testing"
+    from journal.support.command_shape import CommandShape
+    assert CommandShape.build("REPLAY_FREEZE=1 perl -e 'alarm 200; exec @ARGV' python3 -m pytest -q") == "python3 -m pytest", "variables set before a command are looked through, as the time-limit wrappers are"
     from journal.features.shell.support.card_line import CardLine
     assert CardLine.is_poor("x" * 81) and not CardLine.is_poor("2 failed, 563 passed in 31.2s"), "a line longer than the card's line reads poorly, a short summary does not"
     assert CardLine.plain("====== 1 failed, 400 deselected in 0.71s ======") == "1 failed, 400 deselected in 0.71s", "the card takes pytest's frame of = signs off its summary"
@@ -7642,7 +7644,7 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--progress", r"\[ *(\d+)%\]", "--label", "Running the tests"], AGENT)
     assert console.run(["output", "watch", "1", "--reader", "failures"], AGENT).code == 0
     seen = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
-    assert "output 1, which you watch" in seen and "FAILED test_b" in seen and "Running the tests 40%" in seen and "test_a" not in seen, "the reader's lines and its progress come with the next tool use"
+    assert "output 1, which you watch" in seen and "unwatch" not in seen and "FAILED test_b" in seen and "Running the tests 40%" in seen and "test_a" not in seen, "the reader's lines and its progress come with the next tool use"
     with app.container.get(Scope).environment(MAIN):
         card = app.container.get(Messages).with_key("watch:1")[0]
     assert card.data["figure"] == "Running the tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"

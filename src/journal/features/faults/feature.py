@@ -17,7 +17,7 @@ class Faults(Feature):
     REPEAT = Option("faults.repeat_minutes", "Tell a slow request again after", "Minutes since the agent was last told of a slow request before it is told again the next time that request is slow; 0 tells it once only", 15, unit="min")
     LOADS = Option("faults.count_loads", "Count the records each request reads", "Every record a request or a hook reads from the database is counted by its kind, shown with the newest requests and as totals since the last reset; off, nothing is counted", False, kind="switch")
     JOBS = Option("faults.jobs", "Tell the agent about slow jobs", "A background job whose tick runs longer than a second is always logged; on, the agent is told to fix it too", False, kind="switch")
-    SLOW_REQUEST = Nudge(name, "slow_request_to_fix", "{{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source", "a request over its budget is a fault of the journal's own")
+    SLOW_REQUEST = Nudge(name, "slow_request_to_fix", "{{method}} {{route}} took {{ms}} ms, over its budget of {{budget}} ms: find what made it slow and fix it at its source")
     SLOW_JOB = Nudge(name, "slow_job_to_fix", "the background job {{job}} took {{seconds}} seconds for one tick", "every other job waited on it: find what made it slow and fix it at its source")
     options = (REPORT, REQUEST, EDIT_BUDGET, REPEAT, LOADS, JOBS)
     nudges = (SLOW_REQUEST, SLOW_JOB)
