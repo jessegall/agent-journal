@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.9.0
+
+- The overview's commands are written in full, `journal task list`, and any other command may stand there: a line that is not a journal command runs in the project's folder, its output under its heading. Lines saved in the short form are written in full once.
+- The avatar no longer falls off the docked bars when a row arrives in the chat: the bars and the line under them stay put together.
+- A parked task's chat mark is teal, as parked is in the task inspector.
+
 ## 4.8.5
 
 - What the agent waits on is shown in its own words. A wait longer than 80 characters was shortened as if it were a shell command, so the top bar and its list read only its first word, such as "The".
