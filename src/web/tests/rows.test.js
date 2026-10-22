@@ -107,6 +107,16 @@ describe("entries", () => {
         expect(api.list).toHaveBeenCalledWith("tasks", {limit: PAGE});
     });
 
+    test("a task touched by a new proof, check or to-do item is read again, its new fields replacing the held row", async () => {
+        store.rows.tasks = [row(1)];
+        store.paging.size.tasks = 1;
+        const touched = row(1, {updated_at: at(5), todos: [{text: "write the test", complete: false}]});
+        api.list.mockResolvedValue({rows: [touched], is_last_page: true, counts: {}});
+        await takeEntries([{id: 2, kind: "updated", data: {table: "tasks", id: 1}}]);
+        await vi.waitFor(() => expect(store.rows.tasks).toEqual([touched]));
+        expect(api.list).toHaveBeenCalledWith("tasks", {limit: PAGE, since: 1});
+    });
+
     test("an entry that deletes a row takes it away at once", () => {
         store.rows.tasks = [row(1), row(2)];
         takeEntries([{id: 1, kind: "deleted", data: {table: "tasks", id: 1}}]);

@@ -6961,6 +6961,32 @@ def test_a_new_workers_run_that_ends_never_merges_its_work(app: App, monkeypatch
         assert all(git("rev-parse", "--verify", "-q", branch.name(workers.find(n))).returncode == 0 for n in (1, 2)), "and each keeps its branch for its merge"
 
 
+def test_saving_a_proof_a_check_or_a_to_do_item_moves_its_tasks_updated_at(app: App):
+    import time as clock
+    from journal.models.proof import Proof
+    from journal.models.task import Task
+    from journal.repositories.proofs import Proofs
+    from journal.repositories.tasks import Tasks
+    from journal.repositories.worker_todos import WorkerTodos
+    with app.container.get(Scope).environment(MAIN):
+        tasks, proofs, todos = app.container.get(Tasks), app.container.get(Proofs), app.container.get(WorkerTodos)
+        task = tasks.save(Task(environment_id=1, title="the parser", brief="the parser reads"), Actor.system())
+        stamps = [tasks.find(task.id).updated_at]
+        def moved() -> bool:
+            app.runtime().deferred.drain()
+            stamps.append(tasks.find(task.id).updated_at)
+            return stamps[-1] > stamps[-2]
+        clock.sleep(0.01)
+        proof = proofs.added(Proof(environment_id=1, point=1, text="parser.py:1"), task, Actor.worker(1))
+        assert moved(), "a new proof moves the task"
+        clock.sleep(0.01)
+        proofs.save(proof.checked(), Actor.agent("s1"))
+        assert moved(), "so does its check"
+        clock.sleep(0.01)
+        todos.appended(task, "write the test", Actor.worker(1))
+        assert moved(), "and a to-do item"
+
+
 def test_a_worker_is_started_with_hook_settings_of_its_own(app: App):
     import subprocess
     from journal.features.workers.support.worker_runner import WorkerRunner
