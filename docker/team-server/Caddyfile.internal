@@ -1,0 +1,12 @@
+{
+	default_sni {$TEAM_ADDRESS}
+}
+
+{$TEAM_ADDRESS} {
+	tls internal
+	handle /root.crt {
+		root * /data/caddy/pki/authorities/local
+		file_server
+	}
+	reverse_proxy 127.0.0.1:8470
+}

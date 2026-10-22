@@ -11,7 +11,7 @@ VALID_SECONDS = 7 * 24 * 3600
 
 
 class Invitations:
-    """The codes an admin hands out to bring a person onto the team: each for one email, used once, and gone after a week; a code turns into the person's account with the password they typed twice."""
+    """The codes an admin hands out to bring a person onto the team: each for one email, used once, and gone after a week; a code turns into the person's account with the password they typed twice, or, for an email that has an account already, such as the admin's own at setup, logs that person in once their password is right."""
 
     def __init__(self, store: Store, rows: InvitationRows, accounts: Accounts) -> None:
         self.store, self.rows, self.accounts = store, rows, accounts
@@ -30,7 +30,7 @@ class Invitations:
                 raise Refusal("this invitation code is not known or was used already: ask the admin for a new one")
             if invitation["expires_at"] < accepted_at:
                 raise Refusal("this invitation code expired: ask the admin for a new one")
-            account = self.accounts.create(invitation["email"], name, password, MEMBER, accepted_at)
+            account = self.accounts.verified(invitation["email"], password) if self.accounts.has_email(invitation["email"]) else self.accounts.create(invitation["email"], name, password, MEMBER, accepted_at)
             self.rows.use(invitation["id"], accepted_at)
             return account
 

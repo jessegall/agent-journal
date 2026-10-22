@@ -46,3 +46,29 @@ def test_the_image_answers_a_login_over_https_and_keeps_its_data_across_a_restar
     finally:
         subprocess.run(["docker", "rm", "-f", NAME], capture_output=True, timeout=60)
         subprocess.run(["docker", "volume", "rm", VOLUME], capture_output=True, timeout=60)
+
+
+def test_the_host_setup_starts_a_server_on_a_fresh_volume_whose_admin_logs_in_and_whose_code_joins():
+    import hashlib
+    import re
+
+    docker("build", "-q", "-f", "docker/team-server/Dockerfile", "-t", IMAGE, str(ROOT), seconds=600)
+    environment = {"PATH": "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin", "HOME": str(Path.home()), "TEAM_IMAGE": IMAGE, "TEAM_SETUP_STDIN": "1", "TEAM_HTTPS_PORT": str(PORT), "TEAM_HTTP_PORT": "8480"}
+    answers = "\n".join(["Setup Test", "Ada", "ada@example.com", PASSWORD, PASSWORD, "127.0.0.1"]) + "\n"
+    try:
+        setup = subprocess.run(["sh", str(ROOT / "host" / "install.sh")], input=answers, capture_output=True, text=True, env=environment, timeout=300)
+        assert setup.returncode == 0, setup.stderr
+        line = re.search(r"journal team join (\S+) --code (\S+) --fingerprint (\S+)", setup.stdout)
+        assert line and line.group(1) == f"https://127.0.0.1:{PORT}", setup.stdout
+        unverified = ssl.create_default_context()
+        unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
+        with urllib.request.urlopen(f"{line.group(1)}/root.crt", timeout=10, context=unverified) as answer:
+            assert hashlib.sha256(ssl.PEM_cert_to_DER_cert(answer.read().decode())).hexdigest() == line.group(3), "the fingerprint is the authority the server serves"
+        accept = urllib.request.Request(f"{line.group(1)}/accept", data=json.dumps({"code": line.group(2), "name": "Ada", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "laptop"}).encode())
+        with urllib.request.urlopen(accept, timeout=10, context=unverified) as answer:
+            assert json.loads(answer.read())["account_id"] == 1, "the admin's code logs the admin's journal in"
+        again = subprocess.run(["sh", str(ROOT / "host" / "install.sh")], input=answers, capture_output=True, text=True, env=environment, timeout=120)
+        assert again.returncode == 1 and "set up here already" in again.stderr
+    finally:
+        subprocess.run(["docker", "rm", "-f", "agent-journal-setup-test"], capture_output=True, timeout=60)
+        subprocess.run(["docker", "volume", "rm", "agent-journal-setup-test"], capture_output=True, timeout=60)

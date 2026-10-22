@@ -42,3 +42,6 @@ class Accounts:
     def is_removed(self, id: int) -> bool:
         row = self.rows.numbered(id)
         return row is None or bool(row["removed_at"])
+
+    def has_email(self, email: str) -> bool:
+        return self.rows.with_email(email.lower()) is not None
