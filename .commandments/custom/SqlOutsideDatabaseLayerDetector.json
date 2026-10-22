@@ -13,13 +13,16 @@
                 "file": "src/journal/db/**"
             },
             {
+                "file": "src/sync_server/db/**"
+            },
+            {
                 "testCode": true
             }
         ]
     },
     "sin": {
         "name": "sql-outside-database-layer",
-        "description": "A string of SQL outside src/journal/db: a repository or a feature writes its own query text, so the column names go unchecked and the shapes of the queries spread across the code.",
+        "description": "A string of SQL outside src/journal/db, or src/sync_server/db for the team server: a repository or a feature writes its own query text, so the column names go unchecked and the shapes of the queries spread across the code.",
         "rule": "Compose the read or the write with Query in a repository: self.query().filter(state=...).order_descending(\"id\").limit(n), handed to selected, counted, maximum or purged. SQL text is rendered only by the builder in src/journal/db and run only by the Connection; a shape the builder lacks is added to Query.",
         "skill": "rows-through-their-repository"
     }

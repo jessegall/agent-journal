@@ -5,8 +5,8 @@ import secrets
 HASH_ROUNDS = 200_000
 
 
-class SharePassword:
-    """A link's password, kept only as a salted hash, and checked against what a visitor sends."""
+class Password:
+    """A password kept only as a salted PBKDF2 hash, and checked against what someone sends; the team server and the journal's share links both use it."""
 
     @staticmethod
     def hashed(password: str) -> str:

@@ -7,7 +7,7 @@ from urllib.parse import unquote
 
 from journal.features.registry import Registry
 from journal.features.sharing.feature import Sharing
-from journal.features.sharing.support.share_password import SharePassword
+from sync_server.password import Password
 from journal.features.sharing.support.tunnel import HEALTH, MARKER
 from journal.features.sharing.support.wrong_passwords import WrongPasswords
 from journal.http.support.json_out import JsonOut
@@ -98,7 +98,7 @@ class SharePages:
     def unlocks(self, share: Share, value: str) -> bool:
         if self._unlocked.get(share.row_id) == value:
             return True
-        if not SharePassword.matches(value, share.password):
+        if not Password.matches(value, share.password):
             return False
         self._unlocked[share.row_id] = value
         return True

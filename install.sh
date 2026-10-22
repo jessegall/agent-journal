@@ -145,7 +145,7 @@ swap() {
   mv "$2.new" "$2"
   rm -rf "$2.old"
 }
-for name in journal supervisor journal.py journal.sh; do
+for name in journal supervisor sync_server journal.py journal.sh; do
   swap "$SRC/$name" ".journal/src/$name"
 done
 mkdir -p .journal/src/web && swap "$SRC/web/dist" .journal/src/web/dist

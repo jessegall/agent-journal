@@ -28,6 +28,9 @@
                 "file": "src/journal/db/**"
             },
             {
+                "file": "src/sync_server/db/**"
+            },
+            {
                 "testCode": true
             }
         ]

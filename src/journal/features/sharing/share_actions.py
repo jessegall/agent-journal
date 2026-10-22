@@ -2,7 +2,7 @@ import re
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from journal.features.sharing.support.share_password import SharePassword
+from sync_server.password import Password
 from journal.features.sharing.share_targets import ShareTargets
 from journal.features.sharing.support.tunnel import Tunnel
 from journal.support.actor import Actor
@@ -27,7 +27,7 @@ class ShareActions:
     def create(self, matched: str, expires: str, password: str, comments: bool, actor: Actor) -> Share:
         target = self.targets.lookup(matched)
         share = self.shares.save(Share(token=str(uuid.uuid4()), expires_at=self.expiry(expires), approved=actor.is_user(),
-                                       password=SharePassword.hashed(password) if password else "", comments=comments), actor)
+                                       password=Password.hashed(password) if password else "", comments=comments), actor)
         self.targets.link(share, target, actor)
         if share.approved:
             self.tunnel.start()
