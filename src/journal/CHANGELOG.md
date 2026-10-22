@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.15.3
+
+- The avatar snaps onto a floor only at the top of a jump, within 5 pixels, after waiting three frames to see the floor is still there; it no longer catches edges it is passing.
+
 ## 4.15.2
 
 - Waiting on or watching an output through a reader is refused when that reader does not read the output's command, so a wrong output number fails at once instead of docking a card over the wrong command.
