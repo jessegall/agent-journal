@@ -75,7 +75,8 @@ class ChainWorker:
             run = f"if __journal_status; eval {part} < /dev/null{redirect}; then __journal_code=0; else __journal_code=$?; fi"
         else:
             run = f"__journal_status; eval {part} < /dev/null{redirect}; __journal_code=$?"
-        return f"{run}\necho \"$__journal_code\" > {str(folder.folder / f'{i}.status')!r}\n"
+        status = str(folder.folder / f"{i}.status")
+        return f"{run}\necho \"$__journal_code\" > {status + '.part'!r} && mv {status + '.part'!r} {status!r}\n"
 
     def tree(self, shell: ShellProcess, folder: OutputFiles, i: int, moment: str) -> str:
         path = folder.folder / f"{i}.{moment}"
