@@ -2,6 +2,7 @@ import re
 from argparse import Namespace
 from pathlib import Path
 
+from journal.features.shell.support.activity_title import ActivityTitle
 from journal.console.command import WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.reader import Reader
@@ -29,7 +30,7 @@ class ReaderCommand(Command):
         source.add_argument("--script", type=Path, help="a shell script given the output on its input")
         addition.add_argument("--about", required=True, help="what it picks, in a few words")
         addition.add_argument("--progress", default="", help="a pattern whose last match says how far the command has come: one group for a percentage, two for a count of a total")
-        addition.add_argument("--label", default="", help="the words shown in front of the progress")
+        addition.add_argument("--label", default="", help="what the run is doing, the card's title and the words before its progress, such as Running the tests")
         addition.add_argument("--step", default="", help="a pattern for one step, such as a test's dot, that moves the progress between two of its counts")
         addition.add_argument("--commands", default="", help="the commands whose output it reads, comma-separated, such as pytest or dotnet test: a command moved to the background that runs one is told to watch it with this reader")
         self.verb(verbs, "list", "the project's readers, each with what it picks")
@@ -42,7 +43,7 @@ class ReaderCommand(Command):
         else:
             re.compile(args.pattern)
             re.compile(args.progress)
-            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, args.label, ReaderCommands.parsed(args.commands), args.step))
+            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, ActivityTitle.checked(args.label), ReaderCommands.parsed(args.commands), args.step))
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 

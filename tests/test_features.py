@@ -6322,7 +6322,7 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     folder.mkdir()
     (folder / "parts").write_text("R-\n")
     (folder / "0.part").write_text("pytest -q")
-    (folder / "0.out").write_text('1033:  "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"),)) FAILED\n')
+    (folder / "0.out").write_text('FAILED tests/t.py::t - "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"),))\n')
     app.container.get(OutputLog).start("w", "pytest -q", folder, Caller.agent("main", "s1", "claude"))
     outputs = app.container.get(CommandOutputs)
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
@@ -7533,14 +7533,15 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     (folder / "0.out").write_text("collecting\n[ 12%] test_a\nFAILED test_b\n[ 40%] test_c\n")
     app.container.get(OutputLog).start("w", "pytest", folder, Caller.agent("main", "s1", "claude"))
     outputs.save(outputs.find(1).backgrounded(), Actor.system())
-    console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--progress", r"\[ *(\d+)%\]", "--label", "Tests"], AGENT)
+    assert "a card's title says what the run is doing" in console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--label", "Tests"], AGENT).error, "a bare name is refused as a label"
+    console.run(["reader", "add", "failures", "--pattern", "FAILED", "--about", "the failed tests", "--progress", r"\[ *(\d+)%\]", "--label", "Running the tests"], AGENT)
     assert console.run(["output", "watch", "1", "--reader", "failures"], AGENT).code == 0
     seen = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
-    assert "output 1, which you watch" in seen and "FAILED test_b" in seen and "Tests 40%" in seen and "test_a" not in seen, "the reader's lines and its progress come with the next tool use"
+    assert "output 1, which you watch" in seen and "FAILED test_b" in seen and "Running the tests 40%" in seen and "test_a" not in seen, "the reader's lines and its progress come with the next tool use"
     with app.container.get(Scope).environment(MAIN):
         card = app.container.get(Messages).with_key("watch:1")[0]
-    assert card.data["figure"] == "Tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"
-    assert (card.text, card.data["line"]) == ("Tests", "pytest -q"), "the card is titled by its reader's label, the command kept beside it for the opened card"
+    assert card.data["figure"] == "Running the tests 40%" and card.data["fraction"] == 0.4, "the chat card carries the bar"
+    assert (card.text, card.data["line"]) == ("Running the tests", "pytest -q"), "the card is titled by its reader's label, the command kept beside it for the opened card"
     assert console.run(["output", "watch", "1", "--title", "Running the tests"], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         assert app.container.get(Messages).with_key("watch:1")[0].text == "Running the tests", "a title given to the watch comes first"
@@ -7554,7 +7555,7 @@ def test_a_watched_output_shows_its_readers_lines_after_every_tool_use_and_its_e
     hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")
     deferred.drain()
     ended = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
-    assert "which you watched, finished" in ended and "Tests 100%" in ended, "the end is said once, with the last view"
+    assert "which you watched, finished" in ended and "the tests 100%" in ended, "the end is said once, with the last view"
     with app.container.get(Scope).environment(MAIN):
         assert app.container.get(Messages).with_key("watch:1")[0].data["tone"] == "good", "its card turns green once the run finished"
     deferred.drain()

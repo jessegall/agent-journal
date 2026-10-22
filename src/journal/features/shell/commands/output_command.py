@@ -1,6 +1,7 @@
 from argparse import Namespace
 from pathlib import Path
 
+from journal.features.shell.support.activity_title import ActivityTitle
 from journal.console.command import HELPER_KINDS, WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
@@ -40,7 +41,7 @@ class OutputCommand(Command):
         watch = self.verb(verbs, "watch", "bind a running output to you: after every tool use you see its reader's lines, or its last lines, and a card in the chat shows them, until its command ends")
         watch.add_argument("n", type=int)
         watch.add_argument("--reader", default="", help="the reader whose lines are shown, by its name")
-        watch.add_argument("--title", default="", help="what the card in the chat says the run is doing, in words: Running the tests")
+        watch.add_argument("--title", default="", help="what the card in the chat says the run is doing, such as Running the tests; never a bare name such as Tests")
         self.verb(verbs, "unwatch", "end the watch on your output")
 
     def owned(self, n: int, caller: Caller) -> CommandOutput:
@@ -119,7 +120,7 @@ class OutputCommand(Command):
             raise Rejection(f"output {output.id} {output.ending()}; read it with journal output read {output.id} --summary")
         if args.reader:
             self.readers.lookup(args.reader)
-        self.views.card(self.outputs.watch(output, args.reader, args.title, caller.actor))
+        self.views.card(self.outputs.watch(output, args.reader, ActivityTitle.checked(args.title), caller.actor))
         print(f"watching output {output.id}: you see its view after every tool use until its command ends")
         return 0
 

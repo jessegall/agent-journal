@@ -42,7 +42,7 @@ class WaitCommand(Command):
         if args.reader:
             self.readers.lookup(args.reader)
             for output in unended:
-                self.awaitables.outputs.watch(output, args.reader, args.what, caller.actor)
+                self.awaitables.outputs.watch(output, args.reader, "", caller.actor)
         names = [self.awaitables.ref(output) for output in unended] + ([self.awaitables.polled_check(args.until, args.what, caller.actor)] if args.until else [])
         self.events.wait_declared(args.what, ",".join(names), caller)
         print(f"waiting for {args.what}, on {', '.join(self.awaitables.title(name) for name in names)}; it ends by itself once all of it has settled, or when you work again")
