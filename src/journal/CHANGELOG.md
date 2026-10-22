@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.8.5
+
+- What the agent waits on is shown in its own words. A wait longer than 80 characters was shortened as if it were a shell command, so the top bar and its list read only its first word, such as "The".
+
 ## 4.8.4
 
 - A journal command of the main agent is no longer refused as a subagent's while a subagent runs. A subagent's shell line was matched to the command by its words alone, so a read that mentioned `resume` and a task number claimed the main agent's `journal task resume`; now only a part that runs that exact journal command does.

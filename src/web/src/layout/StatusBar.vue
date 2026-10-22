@@ -6,7 +6,7 @@ import {MODES} from "../domain/modes.js";
 import {api} from "../api/client.js";
 import Segmented from "../kit/Segmented.vue";
 import Spinner from "../kit/Spinner.vue";
-import {oneLine} from "../format/command.js";
+import {relativeText} from "../format/relativeText.js";
 import {store} from "../state/store.js";
 import {barPlans, foldedPlans} from "../domain/plans.js";
 import {heldTask, lineOf, named, queued, SILENT, silentIn, stateOf, wordOf} from "../domain/agentState.js";
@@ -95,7 +95,7 @@ const line = computed(() => {
     if (silent.value) return "started, but it never reported in";
     if (waitingNow.value && current.value) return named(current.value);
     const text = lineOf(agent.value, current.value, waiting.value, workers.value);
-    return text.startsWith("task ") ? text : oneLine(text, store.summary?.project);
+    return text.startsWith("task ") ? text : relativeText(text, store.summary?.project);
 });
 const inspect = () => peek("tasks", current.value.id);
 const roll = (event) => (waitingNow.value && !paused.value ? toggleWaiting(event) : current.value && inspect());

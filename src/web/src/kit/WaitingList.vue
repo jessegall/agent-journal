@@ -1,7 +1,7 @@
 <script setup>
 import CloseButton from "./CloseButton.vue";
 import TextDisplay from "./TextDisplay.vue";
-import {oneLine} from "../format/command.js";
+import {relativeText} from "../format/relativeText.js";
 import {store} from "../state/store.js";
 
 defineProps({waiting: {type: Object, required: true}, closable: {type: Boolean, default: true}});
@@ -19,7 +19,7 @@ const emit = defineEmits(["close"]);
         <ul class="waiting-items">
             <template v-for="item in waiting.items" :key="item.label">
                 <li :class="['waiting-item', {back: item.reported}]">
-                    <TextDisplay class="waiting-label" inline :text="oneLine(item.label, store.summary?.project)" />
+                    <TextDisplay class="waiting-label" inline :text="relativeText(item.label, store.summary?.project)" />
                     <span class="waiting-report">{{ item.status }}</span>
                     <span class="waiting-meta">{{ [item.where, item.out].filter(Boolean).join(" · ") }}</span>
                 </li>
