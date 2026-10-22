@@ -52,3 +52,15 @@ test("a side thread view sits beside the chat for people, and says no agent read
     expect(side).toMatch(/People talk here beside the chat\. No agent reads it\./);
     expect(side).toMatch(/actorName\(row\.creator, store\.people\)/);
 });
+
+test("a colleague's command card is drawn from its message, and opening it says the output stays on their machine", () => {
+    const live = readFileSync(resolve(__dirname, "../src/composables/liveOutputs.js"), "utf8");
+    expect(live).toMatch(/colleague\.value \? \[\] :/);
+    const dock = readFileSync(resolve(__dirname, "../src/chat/WatchDock.vue"), "utf8");
+    expect(dock).toMatch(/This output stays on \{\{ colleague \}\}'s machine/);
+    expect(dock).toMatch(/if \(!colleague\.value\) output\.value = await scope\.api\.readOutput/);
+    const dialog = readFileSync(resolve(__dirname, "../src/chat/OutputDialog.vue"), "utf8");
+    expect(dialog).toMatch(/This output stays on \{\{ owner \}\}'s machine/);
+    const thread = readFileSync(resolve(__dirname, "../src/chat/Thread.vue"), "utf8");
+    expect(thread).toMatch(/<OutputDialog :key="outputOpen" :n="outputOpen" :owner="colleague"/);
+});

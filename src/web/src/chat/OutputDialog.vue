@@ -3,17 +3,20 @@ import {onMounted, ref} from "vue";
 import {api} from "../api/client.js";
 import Dialog from "../kit/Dialog.vue";
 
-const props = defineProps({n: {type: Number, required: true}});
+const props = defineProps({n: {type: Number, required: true}, owner: {type: String, default: ""}});
 const emit = defineEmits(["close"]);
 const output = ref(null);
 const failed = ref("");
 
-onMounted(() => api.readOutput(props.n).then((got) => (output.value = got), (e) => (failed.value = e.message)));
+onMounted(() => !props.owner && api.readOutput(props.n).then((got) => (output.value = got), (e) => (failed.value = e.message)));
 </script>
 
 <template>
     <Dialog :title="`Output ${n}`" tall @close="emit('close')">
-        <template v-if="failed">
+        <template v-if="owner">
+            <p class="output-note">This output stays on {{ owner }}'s machine; its card in the chat shows how it goes.</p>
+        </template>
+        <template v-else-if="failed">
             <p class="output-note" role="alert">{{ failed }}</p>
         </template>
         <template v-else-if="output">

@@ -5,11 +5,13 @@ import CloseButton from "../kit/CloseButton.vue";
 import Icon from "../kit/Icon.vue";
 import {useScope} from "../composables/scope.js";
 import {undock} from "../actions/docking.js";
+import {useColleague} from "../composables/colleague.js";
 
 const SHOWN_LINES = 6;
 
 const props = defineProps({message: {type: Object, required: true}, folded: Boolean});
 const scope = useScope();
+const {colleague} = useColleague();
 const card = computed(() => props.message.data);
 const lines = computed(() => (card.value.lines?.length ? card.value.lines : [card.value.detail]).filter(Boolean).slice(-SHOWN_LINES));
 const width = computed(() => `${Math.round((card.value.fraction || 0) * 100)}%`);
@@ -20,7 +22,7 @@ const output = ref(null);
 const takeDown = () => undock(scope, props.message);
 
 async function read() {
-    output.value = await scope.api.readOutput(card.value.output);
+    if (!colleague.value) output.value = await scope.api.readOutput(card.value.output);
 }
 
 function toggle() {
@@ -50,7 +52,10 @@ watch(
         <template v-if="card.line">
             <code class="watch-dock-command">{{ card.line }}</code>
         </template>
-        <template v-if="opened && output">
+        <template v-if="opened && colleague">
+            <p class="watch-dock-elsewhere">This output stays on {{ colleague }}'s machine; its card shows how it goes.</p>
+        </template>
+        <template v-else-if="opened && output">
             <pre class="watch-dock-output">{{ output.lines.join("\n") || "It printed nothing yet." }}</pre>
         </template>
         <template v-else-if="opened">
@@ -69,6 +74,13 @@ watch(
 </template>
 
 <style scoped>
+.watch-dock-elsewhere {
+    margin: 0;
+    padding: 6px 15px 10px;
+    font-size: 11px;
+    color: var(--text-3);
+}
+
 .watch-dock-command {
     display: block;
     padding: 0 15px 4px;
