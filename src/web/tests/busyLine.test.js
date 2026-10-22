@@ -28,6 +28,7 @@ describe("the chat's status line", () => {
         expect(busyLine(agent({tool_running: true, doing: "reading a file", thinking: "Read the router"})).doing).toBe("reading a file");
         expect(busyLine(agent({thinking: "Read the router"}))).toEqual({thinking: "Read the router", doing: ""});
         expect(busyLine(agent(), {task: "map the hooks"}).doing).toBe("Waiting: map the hooks");
+        expect(busyLine(agent()).doing).toBe("thinking");
         expect(busyLine(agent({status: "compacting", tool_running: true, doing: "git status"})).doing).toBe("compacting");
     });
 

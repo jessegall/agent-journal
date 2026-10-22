@@ -98,7 +98,7 @@ export function busyLine(agent, helping = null) {
     if (agent.status === "compacting") return {thinking: "", doing: "compacting"};
     if (agent.tool_running) return {thinking: "", doing: agent.doing || "working"};
     if (agent.thinking) return {thinking: agent.thinking, doing: ""};
-    return {thinking: "", doing: helping ? `Waiting: ${helping.task}` : "working"};
+    return {thinking: "", doing: helping ? `Waiting: ${helping.task}` : "thinking"};
 }
 
 const PHRASES = {
