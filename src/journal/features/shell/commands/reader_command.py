@@ -30,6 +30,7 @@ class ReaderCommand(Command):
         source.add_argument("--script", type=Path, help="a shell script given the output on its input")
         addition.add_argument("--about", required=True, help="what it picks, in a few words")
         addition.add_argument("--progress", default="", help="a pattern whose last match says how far the command has come: one group for a percentage, two for a count of a total")
+        addition.add_argument("--topic", default="", help="a pattern read over the command line whose matches say what a run is about, after the card's title: the test files a line names, or its -k, such as '(\\S+\\.py)'")
         addition.add_argument("--label", default="", help="what the run is doing, the card's title and the words before its progress, such as Running tests")
         addition.add_argument("--step", default="", help="a pattern for one step, such as a test's dot, that moves the progress between two of its counts")
         addition.add_argument("--commands", default="", help="the commands whose output it reads, comma-separated, such as pytest or dotnet test: a command moved to the background that runs one is told to watch it with this reader")
@@ -43,7 +44,7 @@ class ReaderCommand(Command):
         else:
             re.compile(args.pattern)
             re.compile(args.progress)
-            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, ActivityTitle.checked(args.label), ReaderCommands.parsed(args.commands), args.step))
+            self.readers.add(Reader(args.name, args.about, args.pattern, args.progress, ActivityTitle.checked(args.label), ReaderCommands.parsed(args.commands), args.step, args.topic))
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 

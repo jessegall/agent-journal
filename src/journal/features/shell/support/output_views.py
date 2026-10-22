@@ -72,9 +72,11 @@ class OutputViews:
         return "good" if output.is_success() else "bad"
 
     def title(self, output: CommandOutput, part: str) -> str:
-        reader_label = self.readers.lookup(output.watch_reader).label if output.watch_reader else ""
-        heading = output.watch_title or reader_label or ActivityLabel.build(part)
-        return heading[:1].upper() + heading[1:HEADLINE_CHARACTERS]
+        reader = self.readers.lookup(output.watch_reader) if output.watch_reader else None
+        heading = output.watch_title or (reader.label if reader is not None else "") or ActivityLabel.build(part)
+        topic = reader.topic(output.command) if reader is not None else ""
+        full = f"{heading}: {topic}" if topic else heading
+        return full[:1].upper() + full[1:HEADLINE_CHARACTERS]
 
     @staticmethod
     def watched_part(output: CommandOutput) -> str:

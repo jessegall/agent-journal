@@ -5,7 +5,7 @@ from journal.features.shell.support.reader_commands import ReaderCommands
 from journal.features.shell.support.readers import Readers
 
 SHIPPED = (
-    Reader("pytest", "the failures, the errors and the summary of a pytest run", r"[0-9]+ (passed|failed|errors?)\b", r"\[ *([0-9]+)%\]", "Running tests", ReaderCommands(("pytest",)), r"[.FEsxX]"),
+    Reader("pytest", "the failures, the errors and the summary of a pytest run", r"[0-9]+ (passed|failed|errors?)\b", r"\[ *([0-9]+)%\]", "Running tests", ReaderCommands(("pytest",)), r"[.FEsxX]", r"(\S+\.py)\b|-k\s+(\"[^\"]+\"|'[^']+'|\S+)"),
     Reader("dotnet-test", "the failed tests and the totals of a dotnet test run", r"Failed |error |Passed!|Failed!|Total tests", "", "Running tests", ReaderCommands(("dotnet test",))),
     Reader("phpunit", "the failures and the totals of a phpunit or pest run", r"FAILURES!|ERRORS!|Tests: |FAIL |Failed asserting|OK \(", r"\( *([0-9]+)%\)", "Running tests", ReaderCommands(("phpunit", "pest", "artisan test")), r"[.FEWRSI]"),
 )
@@ -22,9 +22,12 @@ class DefaultReaders(Seed):
 
     def run(self) -> None:
         for reader in SHIPPED:
-            if not any((self.config.readers / f"{reader.name}{suffix}").is_file() for suffix in (".pattern", ".sh")) or self.is_retired(reader.name):
+            if not any((self.config.readers / f"{reader.name}{suffix}").is_file() for suffix in (".pattern", ".sh")) or self.is_retired(reader):
                 self.readers.add(reader)
 
-    def is_retired(self, name: str) -> bool:
-        path = self.config.readers / f"{name}.pattern"
-        return path.is_file() and self.readers.lookup(name).label in RETIRED_LABELS
+    def is_retired(self, shipped: Reader) -> bool:
+        path = self.config.readers / f"{shipped.name}.pattern"
+        if not path.is_file():
+            return False
+        existing = self.readers.lookup(shipped.name)
+        return existing.label in RETIRED_LABELS or (existing.label == shipped.label and not existing.topic_pattern and bool(shipped.topic_pattern))

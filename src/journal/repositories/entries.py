@@ -46,6 +46,10 @@ class Entries(ScopedRepository[Entry]):
         mentions = self.query().filter_alternatives(self.query().filter_containing("data", "outputs/"), self.query().filter_containing("data", "journal output read "))
         return self.selected(mentions.filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last))
 
+    def shape_commands(self, session: str, shape: str, last: int = 200) -> set[str]:
+        rows = self.selected(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).filter_json("data->call->shape", shape).order_descending("id").limit(last))
+        return {row.recorded_call().command for row in rows}
+
     def repeated_shapes(self, session: str, minimum: int, last: int = 200) -> list[str]:
         return self.repeated(self.query().filter(kind="ToolStarting", actor=Actor.agent(session)).order_descending("id").limit(last), "data->call->shape", minimum)
 

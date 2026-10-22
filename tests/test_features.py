@@ -6357,6 +6357,25 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     assert "output 2's card showed the user only its title" in told, "the agent is told to give the reader a summary and a progress pattern"
 
 
+def test_a_watched_runs_card_says_what_the_run_is_about_from_its_reader_topic(app: App):
+    """The shipped pytest reader's topic picks the files and the -k a line names, and the card's title carries them after its label."""
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    folder = app.config.root / "topic"
+    folder.mkdir()
+    line = "python3 -m pytest -q tests/test_a.py tests/test_b.py -k 'shell or alias'"
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text(line)
+    app.container.get(OutputLog).start("topic", line, folder, Caller.agent("main", "s1", "claude"))
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    assert app.console().run(["output", "watch", "1", "--reader", "pytest"], AGENT).code == 0
+    with app.container.get(Scope).environment(MAIN):
+        assert app.container.get(Messages).with_key("watch:1")[0].text == "Running tests: test_a.py, test_b.py, shell or alias"
+
+
 def test_a_wait_names_what_ends_it_and_ends_by_itself_once_that_is_done(app: App):
     from journal.engine.state_machine import StateMachine
     from journal.features.shell.support.output_log import OutputLog

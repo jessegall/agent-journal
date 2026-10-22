@@ -17,6 +17,11 @@ class ScriptReader:
     subject: str
     path: Path
     commands: ReaderCommands = ReaderCommands()
+    label: str = ""
+    topic_pattern: str = ""
+
+    def topic(self, line: str) -> str:
+        return ""
 
     @classmethod
     def loaded(cls, path: Path) -> "ScriptReader":

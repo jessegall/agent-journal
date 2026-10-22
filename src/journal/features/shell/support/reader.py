@@ -9,11 +9,12 @@ from journal.support.rejection import Rejection
 PROGRESS_PREFIX = "progress: "
 LABEL_PREFIX = "label: "
 STEP_PREFIX = "step: "
+TOPIC_PREFIX = "topic: "
 
 
 @dataclass(frozen=True)
 class Reader:
-    """A named way to read outputs of one shape: the lines a pattern picks, with their numbers, how far the command has come by the last match of a progress pattern, and the commands whose output it reads."""
+    """A named way to read outputs of one shape: the lines a pattern picks, with their numbers, how far the command has come by the last match of a progress pattern, the commands whose output it reads, and what a run is about, picked from its command line by a topic pattern."""
 
     name: str
     subject: str
@@ -22,18 +23,25 @@ class Reader:
     label: str = ""
     commands: ReaderCommands = ReaderCommands()
     step_pattern: str = ""
+    topic_pattern: str = ""
 
     @classmethod
     def loaded(cls, path: Path) -> "Reader":
         lines = path.read_text().splitlines()
         if len(lines) < 2:
             raise Rejection(f"reader {path.stem} needs two lines: '# what it picks', then its pattern")
-        settings = {prefix: line.removeprefix(prefix) for line in lines[2:] for prefix in (PROGRESS_PREFIX, LABEL_PREFIX, COMMANDS_PREFIX, STEP_PREFIX) if line.startswith(prefix)}
-        return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1], settings.get(PROGRESS_PREFIX, ""), settings.get(LABEL_PREFIX, ""), ReaderCommands.parsed(settings.get(COMMANDS_PREFIX, "")), settings.get(STEP_PREFIX, ""))
+        settings = {prefix: line.removeprefix(prefix) for line in lines[2:] for prefix in (PROGRESS_PREFIX, LABEL_PREFIX, COMMANDS_PREFIX, STEP_PREFIX, TOPIC_PREFIX) if line.startswith(prefix)}
+        return cls(path.stem, lines[0].removeprefix("#").strip(), lines[1], settings.get(PROGRESS_PREFIX, ""), settings.get(LABEL_PREFIX, ""), ReaderCommands.parsed(settings.get(COMMANDS_PREFIX, "")), settings.get(STEP_PREFIX, ""), settings.get(TOPIC_PREFIX, ""))
 
     def text(self) -> str:
-        extra = [f"{prefix}{value}" for prefix, value in ((PROGRESS_PREFIX, self.progress_pattern), (LABEL_PREFIX, self.label), (COMMANDS_PREFIX, self.commands.text()), (STEP_PREFIX, self.step_pattern)) if value]
+        extra = [f"{prefix}{value}" for prefix, value in ((PROGRESS_PREFIX, self.progress_pattern), (LABEL_PREFIX, self.label), (COMMANDS_PREFIX, self.commands.text()), (STEP_PREFIX, self.step_pattern), (TOPIC_PREFIX, self.topic_pattern)) if value]
         return "\n".join([f"# {self.subject}", self.pattern, *extra]) + "\n"
+
+    def topic(self, line: str) -> str:
+        if not self.topic_pattern:
+            return ""
+        topics = [next((group for group in match.groups() if group), match.group(0)) if match.groups() else match.group(0) for match in re.finditer(self.topic_pattern, line)]
+        return ", ".join(dict.fromkeys(Path(item.strip("'\"")).name if "/" in item else item.strip("'\"") for item in topics))
 
     def matches(self, command: str) -> bool:
         return self.pattern in command
