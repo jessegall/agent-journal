@@ -3,6 +3,7 @@ from pathlib import Path
 from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.card_line import CardLine
+from journal.features.shell.support.card_progress import CardProgress
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.readers import Readers
@@ -61,9 +62,19 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "tone": self.tone(output), "output": output.id, "figure": view.figure, "fraction": view.fraction, "ending": view.ending, "line": part, "count": self.count(output), "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view), **self.dock_state(output)}
-        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, "\n".join(self.card_lines(output, view) or self.ending_lines(output)), output.session)
+        data = {"kind": "card", "icon": "terminal", "output": output.id, "line": part, "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view), **self.progress(output, view).fields(), **self.dock_state(output)}
+        self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, self.card_text(output, view), output.session)
         return view
+
+    def progress(self, output: CommandOutput, view: OutputView) -> CardProgress:
+        return CardProgress(self.tone(output), view.figure, view.fraction, view.ending, self.count(output))
+
+    def progress_view(self, output: CommandOutput) -> dict:
+        view = self.view(output)
+        return {**self.progress(output, view).fields(), **self.cards.detail_parts(self.card_text(output, view))}
+
+    def card_text(self, output: CommandOutput, view: OutputView) -> str:
+        return "\n".join(self.card_lines(output, view) or self.ending_lines(output))
 
     def dock_state(self, output: CommandOutput) -> dict:
         from journal.features.shell.feature import Shell

@@ -1151,6 +1151,8 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
         status, read = call(server, "GET", f"/journal/outputs/{stored.id}")
         assert status == 200 and (read["id"], read["command"], read["outcome"], read["lines"]) == (stored.id, "make test", "failed with code 2", ["one", "two", "oops"])
         assert call(server, "GET", "/journal/outputs/99")[0] == 404
+        status, views = call(server, "GET", f"/journal/outputs/views?ids={stored.id}")
+        assert status == 200 and set(views[str(stored.id)]) >= {"figure", "fraction", "ending", "count", "tone", "detail"}, "the live views of several outputs come in one answer, keyed by number, with the fields their cards show"
     finally:
         app.runtime().stop()
 

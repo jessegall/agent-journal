@@ -344,6 +344,10 @@ export class ApiClient {
         return this.get(this.here(`/outputs/${id}`));
     }
 
+    outputProgress(ids) {
+        return this.get(this.here(`/outputs/views?ids=${ids.join(",")}`));
+    }
+
     // skills and voices
 
     skills(agent = 0) {

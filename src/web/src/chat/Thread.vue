@@ -25,6 +25,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {laidOut} from "../platform/view.js";
 import {mainChat, threadTurns} from "../domain/thread.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
+import {useLiveOutputs} from "../composables/liveOutputs.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
 import TerminalWindow from "./TerminalWindow.vue";
@@ -94,7 +95,7 @@ const dumpOffer = {
     },
 };
 
-const chat = computed(() => (scope.chat ? rows("messages") : mainChat(rows("messages"))));
+const chat = useLiveOutputs(computed(() => (scope.chat ? rows("messages") : mainChat(rows("messages")))));
 const mine = computed(() => chat.value.filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {

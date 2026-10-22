@@ -95,6 +95,7 @@ class Routes:
         router.post(f"{API}/migration/start", migration.start)
         router.get(f"{API}/entries", entries.index)
         router.get(f"{API}/entries/stream", entries.stream)
+        router.get(f"{API}/outputs/views", get(OutputController).progress)
         router.get(f"{API}/outputs/{{id}}", get(OutputController).show)
         router.get(f"{API}/voices", get(VoiceController).index)
         router.post(f"{API}/voices/choose", get(VoiceController).choose)
