@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.14.0
+
+- A chat etiquette skill holds the rules of the chat and of the voice in one place: say you, never the user; a journal line is an instruction; no talk of the journal's mechanics; plain words in code, documents and plans.
+- The Skills page's toggles work: Session start and After compaction choose the skills an agent must read at each, the journal and etiquette skills by default. Until it has read them, every tool but the read waits.
+
 ## 4.13.0
 
 - Release messages are kept until an agent reads them. Every message an update crosses is kept for the project, however the update came and however many updates came before an agent opened. The first agent is pointed at them and reads them with `journal update messages`; once read they never come up again, in any environment.
