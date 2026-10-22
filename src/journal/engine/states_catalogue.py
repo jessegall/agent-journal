@@ -7,6 +7,7 @@ from journal.engine.states.duty import Duty
 from journal.engine.states.ended import Ended
 from journal.engine.support.feature_registry import FeatureRegistry
 from journal.engine.support.settings import Settings
+from journal.models.agent_role import AgentRole
 
 
 class StatesCatalogue:
@@ -64,6 +65,15 @@ class StatesCatalogue:
 
     def is_mode_floor(self, state: BaseState) -> bool:
         return any(type(state) in modes.states.values() for modes in self.modes)
+
+    def floor(self, stack: Stack, settings: Settings, role: AgentRole) -> Stack:
+        return self.apply_mode(stack, settings) if role == AgentRole.MAIN else self.duty_floor(stack)
+
+    def duty_floor(self, stack: Stack) -> Stack:
+        bottom = stack.states[0]
+        if isinstance(bottom, Duty):
+            return stack
+        return Stack((self.worker_first(), *(stack.states[1:] if self.is_bottom(bottom) else stack.states)))
 
     def apply_mode(self, stack: Stack, settings: Settings) -> Stack:
         state = self.mode_state(settings)

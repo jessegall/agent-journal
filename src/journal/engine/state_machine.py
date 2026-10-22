@@ -117,7 +117,7 @@ class StateMachine(AgentListener[AgentEvent]):
     def answer(self, agent: Agent, event: AgentEvent | RowEvent) -> Decision:
         settings = self.top_state()
         stored_stack = self.states.stack(agent)
-        stack = self.states.apply_mode(stored_stack, settings)
+        stack = self.states.floor(stored_stack, settings, agent.role)
         mode_change = self.mode_change(stored_stack, stack)
         event = event.with_data(self.readers.agent_data(agent))
         transition = stack.top().respond(event, settings, self.features.conducts(agent.role))

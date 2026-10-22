@@ -1526,6 +1526,11 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
 
     catalogue = StatesCatalogue(ModeRegistry())
     assert isinstance(catalogue.apply_mode(Stack((PlansReady(),)), settings("orchestrator")).states[0], Orchestrating), "the work mode's state is the bottom of every stack"
+    from journal.engine.states.duty import Duty
+    from journal.models.agent_role import AgentRole
+    from journal.features.tasks.states.working import Working
+    worker_stacks = [catalogue.floor(Stack(layers), settings("orchestrator"), AgentRole.WORKER).states for layers in ((Orchestrating(), Working(task_id=4)), (Working(task_id=4),), (Duty(),))]
+    assert [[type(layer) for layer in layers] for layers in worker_stacks] == [[Duty, Working], [Duty, Working], [Duty]], "a worker's stack rests on Duty, never on the main agent's mode, and keeps the work above it"
     planned = Orchestrating().respond(SessionStarted(time=1.0).with_data(of(started)), settings("orchestrator"))
     assert isinstance(planned.pushed, OrchestratingPlan) and planned.pushed.plan_id == 2, "a started plan is pushed over the mode state as the orchestrator's plan state"
     assert type(catalogue.apply_mode(Stack((Orchestrating(),)), settings("builder")).states[0]) is PlansReady, "the builder's mode state is Idle with plans"

@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.24
+
+- A worker's stack always rests on the worker's own state, whatever the work mode. A worker whose base had been swapped away was given the main agent's mode beneath its work, so in orchestrator mode its stops were told to dispatch workers; a stack already wrong is put right at its next step.
+
 ## 4.5.23
 
 - The orchestrator is told to decide on its own and keep the work moving, waiting for the user only before a step that cannot be undone or reaches outside the project; a task that waits on something blocks that task alone, and every other open task goes on.
