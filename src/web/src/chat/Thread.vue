@@ -481,24 +481,24 @@ watch(
                                 <PlanCard v-if="planCard" :key="planCard.id" :plan="planCard" :folded="short || !planOpen" />
                             </Transition>
                         </div>
-                        <Transition name="status">
-                            <div
-                                v-if="busy && !waitingNow"
-                                class="thread-turn busy"
-                                :aria-label="`The agent is ${line.doing || 'thinking'}`"
-                            >
-                                <div class="thread-meta">
-                                    <Dot kind="started" solid :size="6" />
-                                    <template v-if="line.thinking">
-                                        <span>thinking</span>
-                                        <span class="thread-meta-on thought">{{ line.thinking }}</span>
-                                    </template>
-                                    <template v-else>
-                                        <RunningCommand :idle="line.doing" />
-                                    </template>
-                                </div>
+                        <div v-if="busy && !waitingNow" class="thread-turn busy" :aria-label="`The agent is ${line.doing || 'thinking'}`">
+                            <div class="thread-meta">
+                                <Dot kind="started" solid :size="6" />
+                                <template v-if="line.thinking">
+                                    <span>thinking</span>
+                                    <span class="thread-meta-on thought">{{ line.thinking }}</span>
+                                </template>
+                                <template v-else>
+                                    <RunningCommand :idle="line.doing" />
+                                </template>
                             </div>
-                        </Transition>
+                        </div>
+                        <div v-else class="thread-turn busy" :aria-label="`The agent is ${waitingNow ? 'waiting' : 'idle'}`">
+                            <div class="thread-meta">
+                                <Dot kind="queued" solid :size="6" />
+                                <span>{{ waitingNow ? "waiting" : "idle" }}</span>
+                            </div>
+                        </div>
                     </template>
                 </div>
                 <Transition name="pane">

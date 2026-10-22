@@ -2,6 +2,13 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.5.14
+
+- A journal command or shell line the journal's server fails on prints the fault and exits 1. The shims read the last line of the answer as the exit code whatever it was, so a server fault came back as an empty answer and success.
+- A worker's work ready to check is named at most every three minutes. The tick named it every five seconds, so a working agent was handed the same line again and again, and an idle one had it typed in.
+- The avatar rests on its feet at home when no corner of the compose box holds a seat, instead of sitting with its legs over the box.
+- The status line above the compose box always shows, reading idle or waiting when the agent is not working, so the chat no longer jumps as it comes and goes.
+
 ## 4.5.13
 
 - The plan bar names the worker on a delegated phase when there is one, and says Delegated when there are more; the list stays in the bar's popover.

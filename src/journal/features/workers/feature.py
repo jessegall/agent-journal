@@ -65,7 +65,7 @@ class Workers(Feature[WorkersData]):
     USER_CLOSURE = Nudge(name, "task_closed_by_user", "the user closed your task {{task}}: your work on it ends here", "stop now; the agent that sent you takes it from here", repeat_interval=0)
     BRIEF_CHANGED = Nudge(name, "brief_changed", "the user rewrote point {{points}} of your task {{task}}'s brief", "read it again with journal task show {{task}} and prove those points again", repeat_interval=0)
     OPEN_TODOS = Nudge(name, "open_todos", "your to-do list has {{count}} open items: {{items}}", "finish them, or say why with journal clock-out", repeat_interval=0)
-    WORK_READY = Nudge(name, "work_ready", "worker {{n}}, {{name}}, clocked out: task {{task}} is ready to check", "read its proofs with journal task show {{task}}, then journal worker check {{n}} <point>, or with --short \"<what is missing>\" to send it back", repeat_interval=0)
+    WORK_READY = Nudge(name, "work_ready", "worker {{n}}, {{name}}, clocked out: task {{task}} is ready to check", "read its proofs with journal task show {{task}}, then journal worker check {{n}} <point>, or with --short \"<what is missing>\" to send it back", repeat_interval=180)
     RUN_UNFINISHED = Nudge(name, "run_unfinished", "worker {{n}}, {{name}}, ended its run without clocking out, and still holds its task", "send it again with journal worker send {{n}} \"<job>\", or let the task go with journal worker release {{n}}", repeat_interval=0)
     WORKER_ARRIVAL = Nudge(name, "worker_clocked_in", "worker {{n}}, {{name}}, clocked in and is at work on its task", repeat_interval=0)
     WORKER_REPORTED = Nudge(name, "worker_reported", "worker {{n}}, {{name}}, reported in the chat", repeat_interval=0)
