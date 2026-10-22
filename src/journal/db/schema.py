@@ -45,6 +45,10 @@ class Schema:
         hints = get_type_hints(model)
         return tuple(Column.build(field.name, hints[field.name]) for field in fields(model) if field.metadata.get("column", True))
 
+    @staticmethod
+    def stored_values(model: Model, names: tuple[str, ...] | None) -> dict:
+        return {column.name: column.sql(getattr(model, column.name)) for column in Schema.columns(type(model)) if column.name != "id" and (names is None or column.name in names)}
+
     def version(self) -> int:
         row = self.connection.result("SELECT MAX(number) AS number FROM migrations")
         return row["number"] or 0

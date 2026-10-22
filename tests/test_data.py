@@ -410,5 +410,44 @@ def test_the_tasks_repository_answers_which_tasks_are_open_blocked_parked_and_un
 def test_each_model_says_whether_it_is_shared_with_the_team_or_kept_on_one_machine():
     from journal.models.all_models import AllModels
     local = sorted(model.__name__ for model in AllModels.MODELS if not model.shared)
-    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
+    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
     assert all(model.shared for model in AllModels.MODELS if model.__name__ in ("Task", "Message", "Alias", "Worker", "Setting")), "everything else is shared"
+
+
+def test_each_write_to_a_shared_row_is_queued_for_the_team_once_joined_and_waiting_writes_to_a_row_merge(connection, bus, scope, tmp_path):
+    from journal.config import Config
+    from journal.events.models.model_event import ModelEvent
+    from journal.models.release_message import ReleaseMessage
+    from journal.repositories.outgoing_changes import OutgoingChanges
+    from journal.repositories.release_messages import ReleaseMessages
+    from journal.sync.record_outgoing_change import RecordOutgoingChange
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    config = Config(tmp_path)
+    changes, tasks = OutgoingChanges(connection, bus), tasks_of(connection, bus, scope)
+    bus.listen(ModelEvent, RecordOutgoingChange(changes, TeamAccount(config)))
+    with scope.environment(1):
+        before = tasks.save(Task(environment_id=1, title="before joining"), actor=USER)
+        assert changes.waiting() == [], "a journal in no team queues nothing"
+        config.home.mkdir(parents=True, exist_ok=True)
+        (config.home / TEAM_FILE).write_text("{}")
+        task = tasks.save(Task(environment_id=1, title="first"), actor=USER)
+        task = tasks.save(task.with_(title="second"), actor=AGENT)
+        task = tasks.save(task.with_(brief="a brief"), actor=USER)
+        [created] = changes.waiting()
+        assert (created.row_table, created.row, created.action) == ("tasks", task.id, "created")
+        assert (created.fields["title"], created.fields["brief"], created.writer) == ("second", "a brief", USER.stamp), "a creation and its updates are one creation"
+        assert set(created.changed_at) == set(created.fields)
+        before = tasks.save(before.with_(title="renamed"), actor=USER)
+        before = tasks.save(before.with_(brief="a second brief"), actor=USER)
+        update = changes.waiting()[1]
+        assert update.action == "updated" and set(update.fields) == {"title", "brief", "updated_at", "updater"}, "two updates are one, with only the columns they changed"
+        tasks.delete(task, USER)
+        assert [change.row for change in changes.waiting()] == [before.id], "a row created and deleted before sending sends nothing"
+        changes.save(changes.waiting()[0].with_(is_sending=True), USER)
+        tasks.save(before.with_(title="again"), actor=USER)
+        assert [change.fields["title"] for change in changes.waiting()] == ["again"], "a change being sent is never merged into"
+        tasks.delete(before, USER)
+        assert changes.waiting()[0].action == "deleted" and changes.waiting()[0].fields == {}
+        ReleaseMessages(connection, bus).save(ReleaseMessage(version="9.9.9", text="local"), USER)
+        assert [change.row_table for change in changes.waiting()] == ["tasks"], "a model kept on one machine is never queued"

@@ -26,6 +26,7 @@ from journal.repositories.scope import Scope
 from journal.http.server import Server
 from journal.support.instance_guard import InstanceGuard
 from journal.http.share_server import ShareServer
+from journal.sync.record_outgoing_change import RecordOutgoingChange
 
 
 INSTANCE_CHECK_SECONDS = 2.0
@@ -50,6 +51,7 @@ class Runtime:
         self.bus.listen(RowEvent, self.container.get(RowEventDelivery))
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
+        self.bus.listen(ModelEvent, self.container.get(RecordOutgoingChange))
         self.bus.listen(Deleted, self.container.get(UnlinkDeleted))
         for feature in self.registry.features:
             for listener in feature.listeners:
