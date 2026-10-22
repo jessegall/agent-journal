@@ -21,6 +21,7 @@ from journal.support.tool_call import ToolCall
 from journal.app import App
 from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
+from journal.supervisor_link import SupervisorLink
 from journal.features.workers.support.worker_branch import WorkerBranch
 from journal.features.workers.support.worker_runner import WorkerRunner
 from journal.models.worker_state import WorkerState
@@ -197,7 +198,6 @@ def test_a_plan_is_followed_task_by_task_to_its_end(app: App):
 
 
 def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -225,7 +225,6 @@ def test_taking_up_a_task_tells_its_brief_and_latest_log_lines(app: App, monkeyp
 
 
 def test_the_plans_next_task_is_named_once_when_another_of_its_tasks_closes_beside_the_one_in_hand(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -248,7 +247,6 @@ def test_a_plan_blocks_itself_when_every_task_left_is_blocked_and_can_be_blocked
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.plans import Plans
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -316,7 +314,6 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
     from journal.features.checks.support.check_runner import CheckRunner
     from journal.repositories.checks import Checks
     from journal.repositories.tasks import Tasks
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -344,7 +341,6 @@ def test_a_task_blocked_until_a_command_passes_opens_by_itself_and_a_broken_one_
 def test_a_plan_with_a_blocked_task_waits_and_is_not_done(app: App, monkeypatch):
     from journal.models.plan_state import PlanState
     from journal.repositories.plans import Plans
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -567,7 +563,6 @@ def test_awaiting_workers_ends_when_the_last_one_reports(app: App, monkeypatch):
     import threading
     import traceback
     keystrokes, stacks = [], []
-    from journal.supervisor_link import SupervisorLink
 
     def sent(self, environment_id, verb, instruction):
         keystrokes.append(instruction["line"])
@@ -926,7 +921,6 @@ def test_a_failing_check_is_told_once_over_several_turns_and_not_at_all_while_st
 
 def test_a_supervisor_found_outdated_at_boot_is_restarted_once_at_the_end_of_its_agents_turn_and_none_is_asked_at_a_stop(app: App, monkeypatch):
     from journal.features.updates.seeds.supervisor_check import SupervisorCheck
-    from journal.supervisor_link import SupervisorLink
     from journal.support.supervisor_announcement import SupervisorAnnouncement
     from journal.support.supervisor_reply import SupervisorReply
     asked = []
@@ -1156,7 +1150,6 @@ def test_skills_paid_from_one_look_at_the_agent_each_stay_paid(app: App):
 def test_the_link_asks_a_supervisor_on_the_protocol_and_sends_an_old_one_its_datagrams(app: App):
     import socket
     import threading
-    from journal.supervisor_link import SupervisorLink
     link, environment = app.container.get(SupervisorLink), 1
     announced = app.config.home / "runtime" / "inboxes" / "main"
     announced.parent.mkdir(parents=True, exist_ok=True)
@@ -1199,7 +1192,6 @@ def test_the_journal_asks_its_host_to_start_every_service_the_features_declare_a
     from journal.features.plugins.support.service_start import ServiceStart
     from journal.features.registry import Registry
     from journal.features.support.service import Service
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}) or SupervisorReply(True))
@@ -1268,7 +1260,6 @@ def test_a_journal_line_typed_as_a_prompt_gets_no_repeat_of_itself(app: App):
 
 def test_a_message_left_while_the_agent_sits_at_its_prompt_is_typed_to_it(app: App, monkeypatch):
     keystrokes = []
-    from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: keystrokes.append({"verb": verb, **fields}["line"]))
     app.console().run(["message", "send", "nobody is here yet"], USER)
     assert keystrokes == [], "no live agent, nothing to type to"
@@ -1410,7 +1401,6 @@ def test_notable_moments_are_cards_in_the_chat(app: App):
 
 def test_a_fresh_conversation_opens_with_an_introduction_and_a_resumed_one_with_a_word_that_the_agent_is_back(app: App, monkeypatch):
     transmitted = []
-    from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
     hook(app, "SessionStart", source="startup")
     app.runtime().deferred.drain()
@@ -1517,7 +1507,6 @@ def test_every_session_start_reads_what_is_in_flight_before_any_other_write(app:
     assert hook(app, "PreToolUse", tool_name="Write", tool_input={"file_path": "a.py"})[0] == 200
 
 def test_a_question_answered_under_a_pause_the_agent_owes_releases_the_wait_beneath_it(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: None)
     console = app.console()
     hook(app, "SessionStart")
@@ -1542,7 +1531,6 @@ def test_a_plans_checkpoint_waits_for_the_user_and_in_auto_mode_is_no_stop(app: 
     from journal.features.plans.states.following_plan import FollowingPlan
     from journal.repositories.plans import Plans
     from journal.repositories.tasks import Tasks
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -1897,7 +1885,6 @@ def test_a_session_silent_for_an_hour_is_ended(app: App):
 def test_the_agent_a_supervisor_runs_stays_live_however_long_it_is_idle_and_is_told_a_message(app: App, monkeypatch):
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -1951,7 +1938,6 @@ def test_a_message_left_while_a_whisper_waits_unseen_is_named_when_the_whisper_i
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     from journal.support.typed_lines import TypedLines
-    from journal.supervisor_link import SupervisorLink
     typed = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: typed.append(fields.get("line", "")))
     lines = app.container.get(TypedLines)
@@ -2340,7 +2326,6 @@ def test_an_integration_is_a_suggested_mcp_server_installed_and_removed_with_the
     from urllib.request import Request as R, urlopen
     from journal.features.mcp.support.health import Health
     from journal.support.keys import Keys
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
@@ -2426,7 +2411,6 @@ def test_a_typed_line_is_confirmed_by_its_prompt_and_typed_again_when_it_was_los
     import time as timing
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields) if verb == "type" else None)
@@ -2511,7 +2495,6 @@ def test_the_sequence_page_shows_and_sets_what_starts_a_sequence(app: App):
 
 
 def test_creating_a_plan_starts_the_shipped_building_a_plan_sequence(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
@@ -2560,7 +2543,6 @@ def test_a_task_added_first_goes_before_the_plans_tasks(app: App):
 
 
 def test_a_plan_is_built_in_phases_made_ready_approved_by_the_user_and_followed_phase_by_phase(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -2723,7 +2705,6 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
     from journal.features.mcp.support.health import Health
     from journal.features.mcp.support.health_report import HealthReport
     from journal.features.mcp.support.server_catalogue import ServerCatalogue
-    from journal.supervisor_link import SupervisorLink
     transmitted, removed = [], []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
@@ -2743,7 +2724,6 @@ def test_a_server_set_up_in_claude_itself_is_removed_from_the_page_through_claud
 
 
 def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -2779,7 +2759,6 @@ def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app
 
 
 def test_a_link_given_in_the_chat_is_pinned_above_it_or_earns_one_reminder(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -3145,7 +3124,6 @@ def test_a_run_goes_with_the_agent_to_its_next_session(app: App):
 def test_a_run_a_worker_starts_is_its_own_and_its_step_waits_for_its_stop(app: App, monkeypatch):
     from journal.models.worker import Worker
     from journal.repositories.workers import Workers
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -3183,7 +3161,6 @@ def test_the_steps_hold_comes_after_the_look_the_mark_and_the_skill_and_each_is_
 def test_the_step_is_said_again_at_a_start_when_a_wait_ends_and_at_a_pace(app: App, monkeypatch):
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -3239,7 +3216,6 @@ def test_a_list_counts_a_type_in_sql_past_the_page(app: App):
 def test_a_run_is_abandoned_with_its_reason_or_ends_when_its_row_or_sequence_is_gone(app: App, monkeypatch):
     from journal.repositories.messages import Messages
     from journal.repositories.sequences import Sequences
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -3294,7 +3270,6 @@ def test_runs_nest_never_in_themselves_and_only_the_users_words_start_one(app: A
     assert active.current("s1", 1).title == "Writing an update", "the user's own words do"
 
 def test_the_agents_panel_shows_the_run_and_the_user_can_skip_a_step_or_end_it(app: App, monkeypatch):
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     catch_typed(app, monkeypatch, transmitted)
@@ -4262,7 +4237,6 @@ def test_secrets_kept_as_files_in_the_project_folder_become_rows_once(app: App):
 def test_the_agent_is_told_when_the_user_allows_a_program(app: App, monkeypatch):
     from journal.models.secret import Secret
     from journal.repositories.secrets import Secrets
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append({"verb": verb, **fields}))
     hook(app, "SessionStart")
@@ -4677,7 +4651,6 @@ def test_each_agent_holds_its_own_task_and_a_workers_task_never_moves_the_main_a
 
 def test_one_task_is_in_hand_whatever_starts_it_and_a_parked_plan_parks_its_task(app: App, monkeypatch):
     from journal.models.task_state import TaskState
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -5949,7 +5922,6 @@ def test_an_mcp_change_restarts_the_conversation_on_screen_never_an_older_sessio
     import time as timing
     from journal.models.mcp_server import McpServer
     from journal.features.mcp.support.mcp_installing import McpInstalling
-    from journal.supervisor_link import SupervisorLink
     restarted = []
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
     monkeypatch.setattr(SupervisorLink, "restart_agent", lambda self, environment_id, resume: restarted.append(resume))
@@ -5992,7 +5964,6 @@ def test_the_record_is_a_rolling_log_of_its_newest_entries_and_the_projects_rows
 
 def test_a_task_closed_by_a_commit_names_a_parked_task_at_once(app: App, monkeypatch):
     import subprocess
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     catch_typed(app, monkeypatch, keystrokes)
     monkeypatch.setattr(SupervisorLink, "runs", lambda self, environment_id: True)
@@ -6123,7 +6094,6 @@ def test_an_update_holds_its_mark_until_the_journal_runs_the_version_it_went_to(
 
 
 def test_a_long_typed_line_is_typed_one_segment_at_a_time(app: App):
-    from journal.supervisor_link import SupervisorLink
     from journal.support.typed_lines import TypedLines
     lines = app.container.get(TypedLines)
     slow = " | ".join(f"HOOK /hooks/Stop{n} took 79 ms, over its budget of 50 ms: find what made it slow and fix it at its source" for n in range(8))
@@ -6463,7 +6433,6 @@ def test_journal_update_follow_sets_the_branch_the_journal_follows_and_unfollow_
 
 def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_up(app: App, monkeypatch):
     from journal.engine.clock import Clock
-    from journal.supervisor_link import SupervisorLink
     keystrokes = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: keystrokes.append(fields["line"]))
     app.container.get(SettingRows).set("delivery.batch_seconds", 5, Actor.user(1))
@@ -6486,7 +6455,6 @@ def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_
     from journal.events.agent.ticked import Ticked
     from journal.events.bus import Bus
     from journal.repositories.messages import Messages
-    from journal.supervisor_link import SupervisorLink
     transmitted = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: transmitted.append(fields["line"] if verb == "type" else fields["keys"]))
     hook(app, "SessionStart")
@@ -7413,19 +7381,21 @@ def test_the_kept_output_line_says_the_lines_the_characters_and_the_part_of_the_
     (chain.folder / "1.out").write_text(eighty)
     display = OutputShow(chain, Cap(HINT, 400))
     number = chain.number()
-    assert display.build(0) == f"[journal] output {number} kept, 80 lines, 631 characters, part 1 of the line: make test\n", "one line names the output, its size and the part it came from"
-    assert display.build(1) == f"[journal] output {number} also holds part 2 of the line: npm run build (80 lines, 631 characters)\n", "a later part past the cap is named shorter"
+    assert display.build(0) == "" and display.notes == [f"output {number} kept, 80 lines, 631 characters, part 1 of the line: make test"], "one note for the agent's next hook names the output, its size and the part it came from, and nothing is printed"
+    assert display.build(1) == "" and display.notes[-1] == f"output {number} also holds part 2 of the line: npm run build (80 lines, 631 characters)", "a later part past the cap is named shorter"
     solitary = folder_of("alone", "make test")
     (solitary.folder / "0.out").write_text(eighty)
-    assert OutputShow(solitary, Cap(HINT, 400)).build(0) == f"[journal] output {solitary.number()} kept, 80 lines, 631 characters\n", "a line of one part names no part"
+    alone = OutputShow(solitary, Cap(HINT, 400))
+    assert alone.build(0) == "" and alone.notes == [f"output {solitary.number()} kept, 80 lines, 631 characters"], "a line of one part names no part"
     cut = folder_of("cut", "make test 2>&1 | tail -2")
     (cut.folder / "0.out").write_text(eighty)
-    assert OutputShow(cut, Cap(HINT, 400)).build(0) == f"line 79\nline 80\n[journal] output {cut.number()} kept, 80 lines, 631 characters\n", "the cut applied and shown, the whole kept and named by the one line"
+    trimmed = OutputShow(cut, Cap(HINT, 400))
+    assert trimmed.build(0) == "line 79\nline 80\n" and trimmed.notes == [f"output {cut.number()} kept, 80 lines, 631 characters"], "the cut applied and shown, the whole kept and named by the one note"
     chained = folder_of("chained", "make test 2>&1 | tail -2 && npm run build")
     (chained.folder / "0.out").write_text(eighty)
     (chained.folder / "1.out").write_text(eighty)
     both = OutputShow(chained, Cap(HINT, 400))
-    assert both.build(0) == f"line 79\nline 80\n[journal] output {chained.number()} kept, 80 lines, 631 characters, part 1 of the line: make test 2>&1\n" and both.build(1).startswith(f"[journal] output {chained.number()} also holds part 2"), "a cut part and a long part name the one output by one line each, never two wordings"
+    assert both.build(0) == "line 79\nline 80\n" and both.build(1) == "" and both.notes[0] == f"output {chained.number()} kept, 80 lines, 631 characters, part 1 of the line: make test 2>&1" and both.notes[1].startswith(f"output {chained.number()} also holds part 2"), "a cut part and a long part name the one output by one note each, never two wordings"
     read = folder_of("read", "cat /etc/hosts")
     (read.folder / "0.out").write_text("".join(f"l{i:02d}\n" for i in range(1, 51)))
     shown = OutputShow(read, Cap(ENDS, 80)).build(0)
@@ -8233,7 +8203,9 @@ def test_an_alias_runs_its_line_with_the_flags_passed_on_and_its_moved_run_is_wa
     assert "hello --loud world" in shown, shown
     assert any("GREETING=hello sh -c" in e.data.get("part", "") for e in app.container.get(Entries).kind_entries("ran", 10)), "the written-out line is what runs and is recorded"
     app.container.get(SettingRows).save(Setting(environment_id=0, key="shell.foreground", value=1), Actor.system())
-    moved = b"".join(runner.run(request("journal nap 2"), AGENT, MAIN)).decode()
+    link = app.container.get(SupervisorLink)
+    link.working(MAIN)
+    moved = b"".join(runner.run(request("journal nap 2"), AGENT, MAIN)).decode() + link.pending_lines(MAIN)
     assert re.search(r"output (\d+)", moved), repr(moved)
     number = int(re.search(r"output (\d+)", moved).group(1))
     output = app.container.get(CommandOutputs).find(number)

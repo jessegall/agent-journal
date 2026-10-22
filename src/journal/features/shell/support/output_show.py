@@ -7,11 +7,12 @@ PART_CHARACTERS = 60
 
 
 class OutputShow:
-    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied and shown, the whole kept and named by the same one line; half the characters from each end for a read past the cap, with a line naming the lines shown and the lines cut; and for any other output past the cap one line naming the output to read by its number, with its lines, its characters and the part it came from, and a shorter line for each later part the output also holds."""
+    """What the agent sees of a part's output in the foreground, as the cap says: whole for a line of journal commands or an output under the cap; a cut part's cut applied and shown, the whole kept and named by the same one line; half the characters from each end for a read past the cap, with a line naming the lines shown and the lines cut; and for any other output past the cap one line naming the output to read by its number, with its lines, its characters and the part it came from, and a shorter line for each later part the output also holds. The lines naming a kept output are notes for the agent's next hook, never part of what the command printed."""
 
     def __init__(self, folder: OutputFiles, cap: Cap) -> None:
         self.folder, self.cap = folder, cap
         self.named = False
+        self.notes: list[str] = []
 
     def build(self, i: int) -> str:
         return "".join(self.shown(i, name) for name in ("out", "err"))
@@ -34,10 +35,12 @@ class OutputShow:
 
     def naming_line(self, i: int, text: str) -> str:
         if self.named:
-            return f"[journal] output {self.folder.number()} also holds {self.part_label(i)} ({self.counts(text)})\n"
+            self.notes.append(f"output {self.folder.number()} also holds {self.part_label(i)} ({self.counts(text)})")
+            return ""
         self.named = True
         label = self.part_label(i)
-        return f"[journal] output {self.folder.number()} kept, {self.counts(text)}{', ' + label if label else ''}\n"
+        self.notes.append(f"output {self.folder.number()} kept, {self.counts(text)}{', ' + label if label else ''}")
+        return ""
 
     def ends(self, text: str) -> str:
         half = self.cap.characters // 2

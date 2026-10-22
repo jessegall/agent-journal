@@ -1326,7 +1326,9 @@ def test_the_shim_posts_a_shell_line_and_the_server_runs_it_part_by_part_and_str
         assert not list((tmp_path / ".journal" / "runtime" / "outputs").glob("*/direct")), "a direct chain's folder is removed when it ends"
         app.console().run(["reader", "add", "naps", "--commands", "sleep", "--pattern", "slept", "--about", "a nap's end"], Caller.user("main"))
         began = time.monotonic()
-        moved = run("sleep 2 --a-value; echo slept")
+        from journal.supervisor_link import SupervisorLink
+        app.container.get(SupervisorLink).working(1)
+        moved = run("sleep 2 --a-value; echo slept") + app.container.get(SupervisorLink).pending_lines(1)
         assert "went to the background at once and is watched through the reader naps" in moved and time.monotonic() - began < 1.5, "a command a reader reads, whatever its values, goes to the background at once, watched through it"
     finally:
         app.runtime().stop()

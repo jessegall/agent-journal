@@ -4,6 +4,7 @@ import time
 from dataclasses import replace
 from typing import Iterator
 
+from journal.supervisor_link import SupervisorLink
 from journal.support.command_shape import CommandShape
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
@@ -34,9 +35,9 @@ LIMIT_READ_TICKS = 10
 class ShellRunner:
     """Runs one shell line for the shim and streams back what the agent sees: the line is split into its parts, run in the user's shell by the worker, each part shown as its status lands and the cap says, the chain moved to the background past the foreground limit with a line naming its output, and an ended output kept under its number or forgotten. A read or write of the project's code streams straight through, nothing kept. The stream is read after the request has left its scope, so the environment comes along and is named again for every read and write; the exit line starts on a line of its own."""
 
-    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews, readers: Readers) -> None:
+    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews, readers: Readers, supervisor: SupervisorLink) -> None:
         self.config, self.caps, self.limits, self.worker, self.record, self.scope, self.suggestions = config, caps, limits, worker, record, scope, suggestions
-        self.aliases, self.outputs, self.views, self.readers = aliases, outputs, views, readers
+        self.aliases, self.outputs, self.views, self.readers, self.supervisor = aliases, outputs, views, readers, supervisor
 
     def run(self, posted: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
         request = replace(posted, line=self.aliases.expanded(posted.line))
@@ -52,7 +53,7 @@ class ShellRunner:
         thread.start()
         last = b"\n"
         with self.scope.environment(environment):
-            for block in (self.direct(output_text, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap)):
+            for block in (self.direct(output_text, thread) if cap.is_direct() else self.foreground(folder, request, caller, cap, environment)):
                 last = block[-1:] or last
                 yield block
         if cap.is_direct() or folder.is_finished():
@@ -73,7 +74,7 @@ class ShellRunner:
                 return
             yield block
 
-    def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> Iterator[bytes]:
+    def foreground(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap, environment: int) -> Iterator[bytes]:
         display = OutputShow(folder, cap)
         limit = self.limits.build(request.line, caller.environment, caller.session)
         reader = self.readers.reading(request.line) if limit > 0 else None
@@ -83,6 +84,7 @@ class ShellRunner:
                 yield display.build(shown).encode()
                 shown += 1
             if folder.is_finished():
+                self.send_notes(environment, display.notes)
                 return
             if limit > 0 and (reader is not None or time.monotonic() - began >= limit):
                 folder.moved()
@@ -90,13 +92,17 @@ class ShellRunner:
                 number = self.record.moved(folder.folder.name, part, folder.folder, caller)
                 alias = self.aliases.running(part)
                 from journal.features.shell.feature import Shell
-                moved = [Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.watch_lines(number, part, alias, reader, caller)]
-                yield ("\n".join(moved) + f"\n{EXIT} 0\n").encode()
+                self.send_notes(environment, [*display.notes, Shell.BACKGROUND_MOVE.create(n=number, file=str(folder.folder)).rendered(), *self.watch_lines(number, part, alias, reader, caller)])
+                yield f"{EXIT} 0\n".encode()
                 return
             time.sleep(TICK_SECONDS)
             tick += 1
             if tick % LIMIT_READ_TICKS == 0:
                 limit = self.limits.build(request.line, caller.environment, caller.session)
+
+    def send_notes(self, environment: int, notes: list[str]) -> None:
+        for note in notes:
+            self.supervisor.type(environment, note)
 
     def watch_lines(self, number: int, part: str, alias: Alias | None, reader: Reader | ScriptReader | None, caller: Caller) -> list[str]:
         if alias is not None:
