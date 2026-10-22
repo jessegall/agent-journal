@@ -1,7 +1,8 @@
 import {fallStep} from "./falls.js";
 
-// How far, in pixels, a figure's feet may be from a floor's top and still stand on it
-export const ON_FLOOR = 2;
+// How far, in pixels, a figure's feet may be from a floor's top and still stand on it: a floor that moves away under the figure must move
+// further than this before it falls, so a pixel or two of the page shifting never drops it
+export const ON_FLOOR = 5;
 
 const holds = (floor, x) => x >= floor.left && x <= floor.right;
 

@@ -105,9 +105,10 @@ describe("the floor a walker keeps to", () => {
         expect(floorAt([floor("home", 520), floor("foot", 900)], 300, 500, KEPT_WITHIN)).toBe(null);
     });
 
-    it("falls when it keeps to no floor, rather than walking on at the height it set off at", () => {
+    it("falls when it keeps to no floor, rather than walking on at the height it set off at, and keeps a floor that moved away by up to five pixels", () => {
         expect(underWalker([floor("home", 540)], null, 400, 500).falls).toBe(true);
         expect(underWalker([floor("home", 506)], "home", 400, 500).falls).toBe(true);
+        expect(underWalker([floor("home", 504)], "home", 400, 500)).toEqual({falls: false, dx: 0, dy: 4});
         expect(underWalker([floor("home", 495)], "home", 400, 500)).toEqual({falls: false, dx: 0, dy: -5});
     });
 });
