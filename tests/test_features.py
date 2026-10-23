@@ -9573,6 +9573,8 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     import subprocess
     from journal.engine.agent_launcher import AgentLauncher
     from journal.support.worktree import Worktree
+    from journal.db.connection import Connection
+    from journal.sync.journal_copy import JournalCopy
     from journal.db.schema import Schema
     from journal.sync.sync_client import SyncClient
     from journal.sync.team_server_link import TeamServerLink
@@ -9825,10 +9827,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         a.container.get(SyncClient).prepare_upgrade()
         assert a.container.get(TeamAccount).is_upgrader(), "an upgrade marks its journal the upgrader before the new version installs"
         monkeypatch.setattr(Schema, "version", lambda self: migrated)
+        b.container.get(Connection).execute("UPDATE tasks SET title = 'stamped by a migration on Bob''s machine'")
         a.container.get(TeamUpgrade).finish()
         link = a.container.get(TeamServerLink)
         assert link.summary(a.container.get(TeamAccount).address()).migration == migrated, "the upgrader's migrated copy becomes the team's"
         assert not a.container.get(TeamAccount).is_upgrader() and not link.lease_state("upgrade").holder, "and it lets the lease and the mark go"
+        tasks_of = lambda journal: sorted((row.row, row.fields["title"]) for row in journal.container.get(JournalCopy).rows() if row.row_table == "tasks")
+        assert eventually(lambda: tasks_of(b) == tasks_of(a)), "a journal behind the upgrade takes the team's migrated copy in place of its own shared rows"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

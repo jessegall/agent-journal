@@ -94,13 +94,9 @@ class TeamJoin:
         backup = self.config.home / time.strftime(BACKUP_NAME)
         self.backups.write(backup)
         environment_names = {environment.row_id: environment.name for environment in self.environments.rows()}
-        for table in self.tables.names():
-            self.tables.rows(table).clear()
         self.outgoing.clear()
         self.entries.clear()
-        for row in copy.rows:
-            if self.tables.has(row.row_table):
-                self.tables.rows(row.row_table).pulled_creation(row.row, row.fields, Actor.system())
+        self.copy.replace(copy.rows, [])
         self.account.record_sequence(copy.head)
         self.add_user(account_id, name)
         self.move_agents(environment_names)

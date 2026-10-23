@@ -10,6 +10,7 @@ from journal.repositories.outgoing_changes import OutgoingChanges
 from journal.repositories.shared_tables import SharedTables
 from journal.sync.commit_signal import CommitSignal
 from journal.sync.incoming_changes import IncomingChanges
+from journal.sync.journal_copy import JournalCopy
 from journal.sync.rejected_edits import RejectedEdits
 from journal.sync.sync_status import SyncStatus
 from journal.sync.team_account import TeamAccount
@@ -28,11 +29,11 @@ LAST_RETRY_SECONDS = 30
 
 
 class SyncClient:
-    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; once it has taken a batch it sends every file attached here that the server lacks, before the batch, so no change in it names a file the server has not got, renews the Team chat's lease while this machine holds it, and asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push. Before an upgrade it takes the team's upgrade lease, sends its whole queue and pulls to the server's head; a journal that booted as the upgrader finishes the upgrade before its loops start."""
+    """Keeps a joined journal in step with its team: a send loop pushes the queued changes oldest first in batches, woken by every commit that queues one, and a receive loop long-polls for the team's changes and applies them. On a fault both wait 1, 2, 4 seconds and so on up to 30 and try again; a change is removed from the queue only once the server answered for it, and the edits it rejected are put right here; once it has taken a batch it sends every file attached here that the server lacks, before the batch, so no change in it names a file the server has not got, renews the Team chat's lease while this machine holds it, and asks for a block of row numbers for every shared table that holds less than a block and a fifth. The clock offset is measured from the server's time in each pull answer and sent with each push. Before an upgrade it takes the team's upgrade lease, sends its whole queue and pulls to the server's head; a journal that booted as the upgrader finishes the upgrade before its loops start, and one behind another's upgrade takes the team's copy in place of its shared rows."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables, uploads: PendingUploads, attachments: Attachments, chat: TeamChat, upgrade: TeamUpgrade) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, outgoing: OutgoingChanges, incoming: IncomingChanges, rejected: RejectedEdits, signal: CommitSignal, status: SyncStatus, blocks: IdBlocks, tables: SharedTables, uploads: PendingUploads, attachments: Attachments, chat: TeamChat, upgrade: TeamUpgrade, copy: JournalCopy) -> None:
         self.account, self.link, self.outgoing, self.incoming, self.rejected, self.signal, self.status = account, link, outgoing, incoming, rejected, signal, status
-        self.blocks, self.tables, self.uploads, self.attachments, self.chat, self.upgrade = blocks, tables, uploads, attachments, chat, upgrade
+        self.blocks, self.tables, self.uploads, self.attachments, self.chat, self.upgrade, self.copy = blocks, tables, uploads, attachments, chat, upgrade, copy
         self.stopping = threading.Event()
         self.clock_offset = 0.0
         self.sender = threading.Thread()
@@ -96,10 +97,18 @@ class SyncClient:
     def pulled(self, wait_seconds: float) -> int:
         answer = self.link.fetch_changes(self.account.sequence(), wait_seconds)
         self.clock_offset = answer.server_time - time.time()
+        if answer.copy_needed:
+            self.download_copy()
+            return 0
         self.incoming.apply([TeamChange.logged(change) for change in answer.changes])
         self.account.record_pull(answer.head, answer.team_version)
         self.status.connected()
         return len(answer.changes)
+
+    def download_copy(self) -> None:
+        copy = self.link.full_copy()
+        self.copy.replace(copy.rows, self.outgoing.rows())
+        self.account.record_sequence(copy.head)
 
     def prepare_upgrade(self) -> None:
         self.upgrade.claim()
