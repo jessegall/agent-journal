@@ -746,3 +746,17 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         client_a.stop()
         client_b.stop()
         team.close(server)
+
+
+def test_a_write_queued_before_a_column_rename_is_sent_under_the_new_name(connection, bus):
+    from journal.db.migration import Migration
+    from journal.models.outgoing_change import UPDATED, OutgoingChange
+    from journal.repositories.outgoing_changes import OutgoingChanges
+
+    connection.execute("ALTER TABLE tasks ADD COLUMN headline TEXT")
+    outgoing = OutgoingChanges(connection, bus)
+    outgoing.queued(OutgoingChange(row_table="tasks", row=7, action=UPDATED, fields={"headline": {"words": "kept whole"}, "state": "open"}, changed_at={"headline": 1.0, "state": 1.0}, writer="user:2"), Actor.system())
+    with connection.transaction():
+        Migration.column_rename(connection, "tasks", "headline", "subtitle")
+    [change] = outgoing.waiting()
+    assert change.fields == {"subtitle": {"words": "kept whole"}, "state": "open"} and change.changed_at == {"subtitle": 1.0, "state": 1.0}, "a write queued offline before the rename goes out under the new name, its value intact"
