@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.17.0
+
+- A reminder can be set for a moment: `journal reminder create "<text>" --at "2026-10-24 09:30"` stays quiet until then, is told to the environment's agent once at the first moment after it (or at the next session start when no agent ran), and is struck. The list and its card in the chat show its moment; the session start lists only the standing reminders.
+- The state machine only answers events; typing into the terminal, the remarks and the queue are a part of their own, so nothing the agent sees changes.
+
 ## 4.16.6
 
 - Writing a reader anew with `journal reader add` keeps each setting the command leaves out, its commands, step, topic, label, progress and finished and failed patterns among them; an empty value takes one away. A rewrite of the pattern alone had dropped the rest.

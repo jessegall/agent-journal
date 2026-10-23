@@ -34,7 +34,7 @@ class StartLines:
         return self.numbered(f.text for f in self.facts.scoped())
 
     def reminders_numbered(self) -> str:
-        return self.numbered(r.text for r in self.reminders.scoped())
+        return self.numbered(r.text for r in self.reminders.standing())
 
     def waiting(self) -> str:
         counts = {"tasks": len(self.tasks.open_tasks()), "messages": len(self.messages.unread()), "questions": len(self.questions.open())}

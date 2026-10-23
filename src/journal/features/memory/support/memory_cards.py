@@ -24,4 +24,8 @@ class MemoryCards:
         noun, shows = MEMORY_KINDS[type(row)]
         environment = getattr(row, "environment_id", 0) or self.scope.id
         session = actor.id if actor.kind == ActorKind.AGENT else ""
-        self.cards.show(environment, session, f"{noun} {row.id} {verb}", icon, tone, "", Ref.build(row), actor=actor, shows=shows)
+        self.cards.show(environment, session, f"{noun} {row.id} {verb}{self.moment(row)}", icon, tone, "", Ref.build(row), actor=actor, shows=shows)
+
+    @staticmethod
+    def moment(row: Model) -> str:
+        return f", due {row.due_at.astimezone().strftime(Reminder.MOMENT)}" if isinstance(row, Reminder) and row.due_at else ""

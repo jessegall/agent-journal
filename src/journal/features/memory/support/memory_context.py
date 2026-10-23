@@ -21,7 +21,7 @@ class MemoryContext:
     def admit_all(self, actor: Actor) -> None:
         self.admitted(self.facts, self.facts.scoped(), actor)
         self.admitted(self.rules, self.rules.all(), actor)
-        self.admitted(self.reminders, self.reminders.scoped(), actor)
+        self.admitted(self.reminders, self.reminders.standing(), actor)
 
     @staticmethod
     def admitted(repository: Repository[R], rows: list[R], actor: Actor) -> None:

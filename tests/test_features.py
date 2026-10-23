@@ -9553,3 +9553,19 @@ def test_writing_a_reader_anew_keeps_every_setting_a_flag_leaves_out(app: App):
     assert app.console().run(["reader", "add", "unit-runs", "--pattern", "[0-9]+ passed", "--topic", ""], USER).code == 0
     assert app.container.get(Readers).lookup("unit-runs").topic_pattern == "", "an empty value takes a setting away"
     assert "a new reader says what it picks with --about" in app.console().run(["reader", "add", "fresh-one", "--pattern", "x"], USER).error, "a new reader still needs --about"
+
+
+def test_a_reminder_set_for_a_moment_is_quiet_before_it_and_told_once_after_it_then_struck(app: App):
+    from datetime import datetime, timedelta
+
+    later = (datetime.now() + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M")
+    earlier = (datetime.now() - timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M")
+    assert app.console().run(["reminder", "create", "water the plants", "--at", later], USER).code == 0
+    assert app.console().run(["reminder", "create", "call the plumber", "--at", earlier], USER).code == 0
+    assert "--at takes a local date and time" in app.console().run(["reminder", "create", "x", "--at", "tomorrow"], USER).error
+    started = json.dumps(hook(app, "SessionStart")[1])
+    assert "call the plumber" in started and "water the plants" not in started, "a reminder that fell due while no agent ran is told at the session's start, one not due yet is quiet"
+    app.runtime().deferred.drain()
+    listed = app.console().run(["reminder", "list"], USER).text
+    assert "call the plumber" not in listed and f"water the plants (at {later})" in listed, "a told reminder is struck, and the list shows a timed one with its moment"
+    assert "call the plumber" not in json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]), "and it is told once"
