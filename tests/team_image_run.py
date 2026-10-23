@@ -136,7 +136,7 @@ def test_the_hosted_address_signs_a_person_in_and_shows_the_teams_tasks():
         boundary = "journalform"
         form = "".join(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n" for name, value in (("email", "ada@example.com"), ("password", PASSWORD))).encode() + f"--{boundary}--\r\n".encode()
         print("waiting for the hosted journal to join and serve", flush=True)
-        deadline = time.monotonic() + 180
+        deadline = time.monotonic() + 20
         while True:
             try:
                 browser.open(urllib.request.Request(f"https://localhost:{PORT}/sign-in", data=form, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}), timeout=10).read()
@@ -149,6 +149,14 @@ def test_the_hosted_address_signs_a_person_in_and_shows_the_teams_tasks():
         assert people["me"] == 1, "the hosted address signs Ada in as Ada"
         tasks = browser.open(urllib.request.Request(f"https://localhost:{PORT}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=10).read().decode()
         assert "pushed by a member" in tasks, "and shows the task a member pushed"
+        browser.open(urllib.request.Request(f"https://localhost:{PORT}/journal/messages", data=json.dumps({"text": "posted from a browser"}).encode(), headers={"X-Journal-Env": "main", "Content-Type": "application/json"}), timeout=10).read()
+        copy = urllib.request.Request(f"https://localhost:{PORT}/copy", headers={**SPOKEN, MIGRATION_HEADER: str(migration), VERSION_HEADER: version, "Authorization": f"Bearer {token}"})
+        deadline = time.monotonic() + 3
+        while not any(row["row_table"] == "messages" and row["fields"].get("text") == "posted from a browser" for row in json.loads(urllib.request.urlopen(copy, timeout=10, context=unverified).read())["rows"]):
+            assert time.monotonic() < deadline, "a message posted at the hosted address reaches the team server"
+            time.sleep(1)
+        [posted] = [row for row in json.loads(urllib.request.urlopen(copy, timeout=10, context=unverified).read())["rows"] if row["row_table"] == "messages" and row["fields"].get("text") == "posted from a browser"]
+        assert posted["fields"]["creator"] == "user:1", "stamped as the person who signed in, so every other journal names them"
         assert urllib.request.urlopen(urllib.request.Request(f"https://localhost:{PORT}/team", headers=SPOKEN), timeout=10, context=unverified).status == 200, "while the team server's own paths still reach it"
     except AssertionError:
         print("\n".join(line for line in subprocess.run(["docker", "logs", NAME], capture_output=True, text=True, timeout=60).stderr.splitlines() + subprocess.run(["docker", "logs", NAME], capture_output=True, text=True, timeout=60).stdout.splitlines() if '"logger"' not in line))

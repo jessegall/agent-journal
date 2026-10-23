@@ -339,6 +339,11 @@ export class ApiClient {
         return this.get("/people");
     }
 
+    // ends the browser's session on a hosted journal
+    signOut() {
+        return transport.request("POST", `${this.base}/sign-out`, {});
+    }
+
     // how a shared journal's sync with its team stands, one line for the status bar
     syncLine() {
         return this.get("/sync");

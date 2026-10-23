@@ -404,3 +404,21 @@ def test_the_log_is_trimmed_of_what_every_device_pulled_while_deletions_stay_and
     _, joiner = team.devices.login("bob@example.com", PASSWORD, "new laptop", "127.0.0.1", 4.0)
     assert [(row.row, row.fields) for row in team.copies.answer(joiner).rows] == [(7, {"title": "c"})], "a new device still joins from the full copy"
     team.store.close()
+
+
+def test_only_the_hosted_journals_relay_account_sends_writes_in_another_persons_name(tmp_path):
+    from sync_server.account import RELAY
+    from sync_server.push_request import PushRequest
+    from sync_server.team_server import TeamServer
+
+    team = TeamServer(tmp_path)
+    team.accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    team.accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    team.accounts.create("hosted-journal@team.server", "Hosted journal", PASSWORD, RELAY, 1.0)
+    _, bob = team.devices.login("bob@example.com", PASSWORD, "laptop", "127.0.0.1", 1.0)
+    _, hosted = team.devices.login("hosted-journal@team.server", PASSWORD, "server", "127.0.0.1", 1.0)
+    as_ada = PushRequest.parsed([{"row_table": "messages", "row": 1, "action": "created", "actor": "user:1", "fields": {"text": "from a browser"}, "changed_at": {"text": 1.0}, "local_number": 1}])
+    with pytest.raises(Refusal, match="a person sends only their own writes"):
+        team.pushes.answer(bob, as_ada, 2.0)
+    assert team.pushes.answer(hosted, as_ada, 2.0).sequences == (1,), "the hosted journal sends the write of whoever signed in to it"
+    team.store.close()

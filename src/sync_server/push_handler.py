@@ -30,9 +30,13 @@ class PushHandler:
         return PushAnswer(tuple(settlement.change.sequence for settlement in settlements), tuple(field for settlement in settlements for field in settlement.rejected), received_at)
 
     def stamped(self, change: PushedChange, person: Account, device_id: int, clock_offset: float) -> LoggedChange:
-        if change.actor.startswith(USER_PREFIX) and change.actor != f"{USER_PREFIX}{person.id}":
+        if not self.may_send(change, person):
             raise Refusal(f"a change names {change.actor} as its writer, but this device is {person.name}'s: a person sends only their own writes")
         return change.logged_change(person.id, device_id, clock_offset)
+
+    @staticmethod
+    def may_send(change: PushedChange, person: Account) -> bool:
+        return person.is_relay() or not change.actor.startswith(USER_PREFIX) or change.actor == f"{USER_PREFIX}{person.id}"
 
     def outcome(self, device_id: int, local_number: int, change: LoggedChange) -> Settlement:
         with self.store.transaction():
