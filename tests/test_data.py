@@ -413,7 +413,7 @@ def test_the_tasks_repository_answers_which_tasks_are_open_blocked_parked_and_un
 def test_each_model_says_whether_it_is_shared_with_the_team_or_kept_on_one_machine():
     from journal.models.all_models import AllModels
     local = sorted(model.__name__ for model in AllModels.MODELS if not model.shared)
-    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "IdBlock", "PendingUpload", "Plugin", "McpServer"]), "the models kept on one machine are the ones NOTES.md names"
+    assert local == sorted(["Entry", "Agent", "Timing", "Statistic", "CommandOutput", "DashboardRow", "Secret", "Phone", "PhoneCode", "MigratedRow", "Version3Migration", "JournalVersion", "ReleaseMessage", "OutgoingChange", "IdBlock", "PendingUpload", "Plugin", "McpServer", "BrowserSession"]), "the models kept on one machine are the ones NOTES.md names"
     assert all(model.shared for model in AllModels.MODELS if model.__name__ in ("Task", "Message", "Alias", "Worker", "Setting")), "everything else is shared"
 
 
