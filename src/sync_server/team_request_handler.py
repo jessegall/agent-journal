@@ -11,7 +11,7 @@ from sync_server.file_answer import FileAnswer
 from sync_server.file_place import FilePlace
 from sync_server.lease_request import LeaseRequest
 from sync_server.login_request import LoginRequest
-from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
+from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
 from sync_server.upload_request import UploadRequest
@@ -22,7 +22,7 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it, and a push or pull from a journal on an older migration than the team's is refused with it."""
 
     def do_GET(self) -> None:
         if self.is_outdated_client():
@@ -33,7 +33,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             return
         query = dict(parse_qsl(url.query))
         team = self.server.team
-        routes = {"/pull": lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0"))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer(), "/leases": lambda: self.lease_state(query.get("name", ""))}
+        routes = {"/pull": lambda: self.current(lambda: team.pulls.answer(self.token(), int(query.get("after", "0")), float(query.get("wait", "0")))), "/copy": lambda: team.copies.answer(self.token()), "/devices": lambda: team.admins.listed(self.token()), "/team": lambda: team.details.answer(), "/leases": lambda: self.lease_state(query.get("name", ""))}
         self.answered(routes.get(url.path))
 
     def do_POST(self) -> None:
@@ -46,7 +46,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         routes = {
             "/login": lambda: self.login(self.login_request()),
             "/accept": lambda: team.logins.accepted(self.typed(AcceptRequest), self.address()),
-            "/push": lambda: team.pushes.answer(self.token(), self.push_request(), team.clock.time()),
+            "/push": lambda: self.current(lambda: team.pushes.answer(self.token(), self.push_request(), team.clock.time())),
             "/blocks": lambda: team.blocks.answer(self.token(), self.typed(BlocksRequest).tables),
             "/invite": lambda: team.admins.invite(self.token(), self.typed(AdminRequest).email),
             "/devices/revoke": lambda: team.admins.revoke(self.token(), self.typed(AdminRequest).device_id),
@@ -64,6 +64,10 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             return False
         self.sent(426, {"error": f"this journal speaks protocol {client_protocol} and the team server {PROTOCOL}: upgrade the journal with journal update apply"})
         return True
+
+    def current(self, route):
+        self.server.team.details.require_migration(int(self.headers.get(MIGRATION_HEADER, UNVERSIONED)))
+        return route()
 
     def end_headers(self) -> None:
         self.send_header(PROTOCOL_HEADER, str(PROTOCOL))
@@ -110,7 +114,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         return self.server.team.leases.state(name, self.server.team.clock.time())
 
     def uploaded(self, request: UploadRequest):
-        return self.server.team.uploads.answer(self.token(), request.rows, request.highest, request.repository, request.version)
+        return self.server.team.uploads.answer(self.token(), request)
 
     def login_request(self) -> LoginRequest:
         return self.typed(LoginRequest)

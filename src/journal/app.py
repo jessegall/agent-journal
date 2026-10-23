@@ -33,6 +33,7 @@ class App:
         self.container.instance(Config, config)
         self.container.instance(Bus, Bus())
         self.container.bind(Connection, self.connection)
+        self.container.bind(Schema, lambda: Schema(self.container.get(Connection), AllModels.MODELS))
         self.container.bind(Router, lambda: Routes(self.container).mount(self.container.call(Router)))
         self.container.bind(Console, self._console)
         self.container.bind(StaticFiles, lambda: StaticFiles(Path(__file__).resolve().parents[1] / "web" / "dist"))

@@ -663,6 +663,8 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from sync_server.account import ADMIN
     from sync_server.team_server import TeamServer
     from journal.repositories.environments import Environments
+    from journal.db.schema import Schema
+    from journal.models.all_models import AllModels
     from journal.repositories.setting_rows import SettingRows
     from journal.supervisor_link import SupervisorLink
     from journal.sync.team_chat_branch import TeamChatBranch
@@ -694,7 +696,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus), Environments(tasks.connection, tasks.bus)))
         rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
         uploads = PendingUploads(tasks.connection, tasks.bus)
-        client = SyncClient(account, TeamServerLink(account), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account)), TeamChat(account, TeamServerLink(account), AgentLauncher(Config(tmp_path / name)), SupervisorLink(Config(tmp_path / name), Environments(tasks.connection, tasks.bus), TypedLines(), SettingRows(tasks.connection, tasks.bus, scope)), Environments(tasks.connection, tasks.bus), TeamChatBranch(Config(tmp_path / name), account, Environments(tasks.connection, tasks.bus), Cards(messages), SyncStatus(account, outgoing)), Cards(messages)))
+        client = SyncClient(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS))), TeamChat(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), AgentLauncher(Config(tmp_path / name)), SupervisorLink(Config(tmp_path / name), Environments(tasks.connection, tasks.bus), TypedLines(), SettingRows(tasks.connection, tasks.bus, scope)), Environments(tasks.connection, tasks.bus), TeamChatBranch(Config(tmp_path / name), account, Environments(tasks.connection, tasks.bus), Cards(messages), SyncStatus(account, outgoing)), Cards(messages)))
         client.start()
         return scope, tasks, client, messages
 

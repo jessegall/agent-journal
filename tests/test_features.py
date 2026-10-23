@@ -9814,6 +9814,8 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         updater = b.container.get(Updater)
         updater.releases = Release.lookup([f"v{pinned}", f"v{beyond}"])
         assert [release.version for release in updater.newer()] == [pinned], "a shared journal is offered only the team's version, never a newer release"
+        own_start = HttpRequest(f"http://127.0.0.1:{b.server().port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "bob-own"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"})
+        assert f"this journal is behind its team: Your team is on version {pinned}" in urlopen(own_start, timeout=5).read().decode(), "the agent is told at its session start that the journal must be upgraded"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

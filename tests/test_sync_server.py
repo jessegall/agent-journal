@@ -6,7 +6,7 @@ from sync_server.change_log import ChangeLog
 from sync_server.devices import FAILURES_ALLOWED, LOCKOUT_SECONDS, Devices
 from sync_server.id_ranges import IdRanges
 from sync_server.logged_change import LoggedChange
-from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER
+from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER
 from sync_server.refusal import Refusal
 from sync_server.stored_row import StoredRow
 from sync_server.db.account_rows import AccountRows
@@ -220,8 +220,8 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
     server = team.started("127.0.0.1", 0)
     address = f"http://127.0.0.1:{server.server_address[1]}"
 
-    def call(path, body=None, token=""):
-        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), **({"Authorization": f"Bearer {token}"} if token else {})})
+    def call(path, body=None, token="", migration=3):
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), **({"Authorization": f"Bearer {token}"} if token else {})})
         try:
             with urllib.request.urlopen(request, timeout=10) as answer:
                 return answer.status, json.loads(answer.read())
@@ -232,7 +232,7 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         for path in ("/invite", "/blocks", "/devices/revoke", "/people/remove", "/upload"):
             assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
         ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
-        upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}, "repository": "", "version": "4.20.0"}
+        upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}, "repository": "", "version": "4.20.0", "migration": 3}
         assert call("/team") == (200, {"repository": "", "has_rows": False, "version": ""}), "anyone may ask what the team holds before joining"
         assert call("/upload", {**upload, "repository": "abc123"}, ada) == (200, {"rows": 1, "head": 1})
         assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0"}), "the first copy pins the team to its journal's version"
@@ -247,6 +247,9 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         assert call("/team/version", {"version": "latest"}, ada)[1]["error"].startswith("latest is not a journal version"), "a version is three numbers"
         assert call("/team/version", {"version": "4.21.0"}, ada)[1]["version"] == "4.21.0"
         assert call("/pull?after=0&wait=0", None, bob["token"])[1]["team_version"] == "4.21.0", "every pull names the version the team is pinned to"
+        behind = call("/pull?after=0&wait=0", None, bob["token"], migration=2)
+        assert behind == (403, {"error": "this journal is on migration 2 and the team on 3: upgrade it to version 4.21.0 with journal update apply; its changes wait here until then"}), "a journal one migration behind the team's rows may not pull"
+        assert call("/push", {"changes": []}, bob["token"], migration=2)[0] == 403, "nor push"
         assert call("/accept", {"code": invitation["code"], "name": "Eve", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "x"})[1]["error"].startswith("this invitation code is not known or was used"), "a code is used once"
         assert call("/invite", {"email": "eve@example.com"}, bob["token"])[1]["error"].startswith("Bob is no admin"), "only an admin invites"
         assert [device["name"] for device in call("/devices", token=ada)[1]["devices"]] == ["laptop", "desktop"]
@@ -293,10 +296,12 @@ def test_two_devices_racing_for_a_lease_leave_exactly_one_holder_and_an_unrenewe
     assert leases.release("team-chat", other, 300.0).holder == "", "its holder lets it go"
 
 
-def test_a_journal_and_a_team_server_on_different_protocols_are_refused_with_the_side_to_upgrade(tmp_path, monkeypatch):
+def test_a_journal_and_a_team_server_on_different_protocols_are_refused_with_the_side_to_upgrade(tmp_path, monkeypatch, connection):
     import json
 
     from journal.config import Config
+    from journal.db.schema import Schema
+    from journal.models.all_models import AllModels
     from journal.sync.team_account import TEAM_FILE, TeamAccount
     from journal.sync.team_refusal import TeamRefusal
     from journal.sync.team_server_link import TeamServerLink
@@ -307,7 +312,7 @@ def test_a_journal_and_a_team_server_on_different_protocols_are_refused_with_the
     config = Config(tmp_path / "journal")
     config.home.mkdir(parents=True)
     (config.home / TEAM_FILE).write_text(json.dumps({"address": address, "token": "t"}))
-    link = TeamServerLink(TeamAccount(config))
+    link = TeamServerLink(TeamAccount(config), Schema(connection, AllModels.MODELS))
     try:
         assert link.summary(address) is not None, "a journal on the server's protocol is answered"
         monkeypatch.setattr("journal.sync.team_server_link.PROTOCOL", PROTOCOL - 1)

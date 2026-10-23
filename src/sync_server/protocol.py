@@ -1,3 +1,4 @@
 PROTOCOL = 1
 PROTOCOL_HEADER = "X-Journal-Protocol"
+MIGRATION_HEADER = "X-Journal-Migration"
 UNVERSIONED = 0

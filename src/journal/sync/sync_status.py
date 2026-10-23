@@ -17,12 +17,17 @@ class SyncStatus:
     def failed(self, fault: str) -> None:
         self.fault = fault
 
+    def upgrade_line(self) -> str:
+        team_version = self.account.team_version()
+        if not team_version or not Release(team_version).is_newer(Release(VERSION)):
+            return ""
+        return f"Your team is on version {team_version}: journal update apply installs it"
+
     def line(self) -> str:
         if not self.account.is_joined():
             return ""
-        team_version = self.account.team_version()
-        if team_version and Release(team_version).is_newer(Release(VERSION)):
-            return f"Your team is on version {team_version}: journal update apply installs it"
+        if self.upgrade_line():
+            return self.upgrade_line()
         if self.fault:
             return f"Not connected: {self.fault}"
         waiting = len(self.outgoing.waiting())
