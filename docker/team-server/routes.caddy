@@ -12,3 +12,7 @@ handle {
 		flush_interval -1
 	}
 }
+# The hosted journal starts only once the first journal has joined this server; until then its paths say so.
+handle_errors 502 {
+	respond "The team's journal opens here once the first journal has joined this server: run the join line the setup printed from your own journal." 503
+}
