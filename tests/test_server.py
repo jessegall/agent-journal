@@ -1416,6 +1416,17 @@ def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: 
         server.stop()
 
 
+def test_a_document_is_docked_and_undocked_from_its_inspector_through_the_dock_endpoint(app: App, server):
+    page = app.config.root / "design.md"
+    page.write_text("## What\n\nThe words.\n")
+    assert app.console().run(["doc", "create", "The design", "--file", str(page), "--abstract", "what it is"], Caller.user("main")).code == 0
+    status, docked = call(server, "POST", "/journal/docks/docs/1")
+    assert status == 200 and docked["data"]["docked"] is True and docked["data"]["row"] == "docs:1", "the document is docked by its table and number"
+    status, undocked = call(server, "POST", "/journal/docks/docs/1/undock")
+    assert status == 200 and undocked["id"] == docked["id"] and undocked["data"]["docked"] is False, "and taken down by the same card"
+    assert call(server, "POST", "/journal/docks/environments/1")[0] == 409, "a row that cannot be docked is refused"
+
+
 def test_a_doc_or_a_report_downloads_as_a_word_file_made_from_its_html_page(server):
     from journal.support.html_page import HtmlPage
     from journal.support.export_name import ExportName

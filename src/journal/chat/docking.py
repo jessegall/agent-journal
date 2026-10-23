@@ -33,6 +33,7 @@ class Docking:
                  templates: Templates, workers: Workers, triggers: Triggers, checks: Checks, dumps: Dumps, notices: Notices, messages: Messages, row_card: RowProcessCard, scope: Scope) -> None:
         self.messages, self.row_card, self.scope = messages, row_card, scope
         self.kinds: dict[str, Repository] = {kind.model.noun(): kind for kind in (tasks, plans, docs, reports, facts, rules, reminders, questions, sequences, templates, workers, triggers, checks, dumps, notices)}
+        self.tables: dict[str, Repository] = {kind.model.table(): kind for kind in self.kinds.values()}
 
     def nouns(self) -> tuple[str, ...]:
         return tuple(self.kinds)
@@ -40,8 +41,15 @@ class Docking:
     def dock(self, noun: str, n: int, actor: Actor) -> Message:
         return self.dock_row(self.kinds[noun].find(n), actor)
 
+    def table_row(self, table: str, n: int) -> Model:
+        if table not in self.tables:
+            raise Rejection(f"a row of {table} cannot be docked")
+        return self.tables[table].find(n)
+
     def undock(self, noun: str, n: int, actor: Actor) -> Message:
-        row = self.kinds[noun].find(n)
+        return self.undock_row(self.kinds[noun].find(n), actor)
+
+    def undock_row(self, row: Model, actor: Actor) -> Message:
         card = self.card(row)
         if card is None or not card.data.get(DOCKED):
             raise Rejection(f"{row.heading()} is not docked")

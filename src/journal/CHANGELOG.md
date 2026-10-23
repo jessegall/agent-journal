@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.24.0
+
+- Every row that can be docked, a document, a report, a task, a plan and the rest, has a Dock button in its inspector, which reads Undock once the row is docked above the chat.
+
 ## 4.23.2
 
 - The shipped pytest reader picks pytest's summary when no test ran, no tests ran or N deselected, so such a run's card says how it ended.

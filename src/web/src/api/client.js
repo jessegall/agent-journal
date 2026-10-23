@@ -181,6 +181,14 @@ export class ApiClient {
         return this.post(this.here(`/${table}/${id}/${act}`), body, wait);
     }
 
+    dockRow(table, id) {
+        return this.post(this.here(`/docks/${table}/${id}`), {});
+    }
+
+    undockRow(table, id) {
+        return this.post(this.here(`/docks/${table}/${id}/undock`), {});
+    }
+
     // a button on a message's card names the path it posts to
     press(button) {
         return this.post(this.here(button.path), {}, LONG_WAIT_MS);

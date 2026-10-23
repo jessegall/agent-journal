@@ -19,6 +19,7 @@ from journal.http.controllers.notices import NoticeController
 from journal.http.controllers.suggestions import SuggestionController
 from journal.http.controllers.nudges import NudgeController
 from journal.http.controllers.outputs import OutputController
+from journal.http.controllers.docks import DockController
 from journal.http.controllers.process_cards import ProcessCardController
 from journal.http.controllers.plans import PlanController
 from journal.http.controllers.plugins import PluginController
@@ -109,6 +110,8 @@ class Routes:
         router.get(f"{API}/search", get(SearchController).index)
         router.get(f"{API}/attachments", get(AttachmentController).index)
         router.get(f"{API}/{{table}}/{{id}}/files/{{name}}", get(AttachmentController).file)
+        router.post(f"{API}/docks/{{table}}/{{id}}", get(DockController).dock)
+        router.post(f"{API}/docks/{{table}}/{{id}}/undock", get(DockController).undock)
         environments = get(EnvironmentController)
         self.listed(router, "environments", environments)
         router.post(f"{API}/environments", environments.store)
