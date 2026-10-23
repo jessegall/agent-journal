@@ -12,7 +12,7 @@ from sync_server.file_place import FilePlace
 from sync_server.lease_request import LeaseRequest
 from sync_server.leases import UPGRADE_LEASE
 from sync_server.login_request import LoginRequest
-from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
+from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED, VERSION_HEADER
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
 from sync_server.upgrade_request import UpgradeRequest
@@ -24,7 +24,7 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version, /upload and /upgrade, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it, and a push or pull from a journal on an older migration than the team's is refused with it."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version, /team/versions, /upload and /upgrade, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it, and a push or pull from a journal on an older migration than the team's, or on another version than the pinned one while the team requires it, is refused with it; the device holding the upgrade lease is let through on its old version to send and pull before it upgrades."""
 
     def do_GET(self) -> None:
         if self.is_outdated_client():
@@ -55,6 +55,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             "/devices/revoke": lambda: team.admins.revoke(self.token(), self.typed(AdminRequest).device_id),
             "/people/remove": lambda: team.admins.remove(self.token(), self.typed(AdminRequest).account_id),
             "/team/version": lambda: team.admins.pin(self.token(), self.typed(AdminRequest).version),
+            "/team/versions": lambda: team.admins.allow(self.token(), self.typed(AdminRequest).versions),
             "/upload": lambda: self.uploaded(self.typed(UploadRequest.parsed)),
             "/leases/take": lambda: team.leases.acquire(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.devices.person(self.token()), team.clock.time()),
             "/leases/release": lambda: team.leases.release(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.clock.time()),
@@ -73,7 +74,10 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         return team.pushes.answer(self.token(), self.push_request(), team.clock.time())
 
     def current(self, route):
-        self.server.team.details.require_migration(int(self.headers.get(MIGRATION_HEADER, UNVERSIONED)))
+        team = self.server.team
+        team.details.require_migration(int(self.headers.get(MIGRATION_HEADER, UNVERSIONED)))
+        if not team.leases.is_holder(UPGRADE_LEASE, team.devices.device(self.token()), team.clock.time()):
+            team.details.require_version(self.headers.get(VERSION_HEADER, ""))
         return route()
 
     def end_headers(self) -> None:

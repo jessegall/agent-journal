@@ -20,7 +20,8 @@ from sync_server.push_answer import PushAnswer
 from sync_server.team_summary import TeamSummary
 from sync_server.upload_answer import UploadAnswer
 from sync_server.lease import Lease
-from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
+from journal.version import VERSION
+from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED, VERSION_HEADER
 
 REQUEST_SECONDS = 10
 COPY_SECONDS = 120
@@ -28,7 +29,7 @@ ROOT_CERTIFICATE = "/root.crt"
 
 
 class TeamServerLink:
-    """The one way the journal reaches its team server, each request with the device's token: a push of queued changes, a pull past a sequence, a request for blocks of row numbers, the full copy, and the joining and admin requests. A server on a bare address is trusted through the certificate authority the join kept. Each request names this journal's protocol and the migration its database is at, and an answer from a server on an older one is refused with the line to upgrade the server. A network fault is raised as the OSError it is; a refusal as a TeamRefusal."""
+    """The one way the journal reaches its team server, each request with the device's token: a push of queued changes, a pull past a sequence, a request for blocks of row numbers, the full copy, and the joining and admin requests. A server on a bare address is trusted through the certificate authority the join kept. Each request names this journal's protocol, its version and the migration its database is at, and an answer from a server on an older one is refused with the line to upgrade the server. A network fault is raised as the OSError it is; a refusal as a TeamRefusal."""
 
     def __init__(self, account: TeamAccount, schema: Schema) -> None:
         self.account, self.schema = account, schema
@@ -61,6 +62,9 @@ class TeamServerLink:
 
     def pin_version(self, version: str) -> TeamSummary:
         return TeamSummary(**json.loads(self.posted("/team/version", {"version": version})))
+
+    def allow_versions(self, rule: str) -> TeamSummary:
+        return TeamSummary(**json.loads(self.posted("/team/versions", {"versions": rule})))
 
     def revoke(self, device_id: int) -> Device:
         return Device(**json.loads(self.posted("/devices/revoke", {"device_id": device_id})))
@@ -100,7 +104,7 @@ class TeamServerLink:
         return self.sent(self.account.address(), f"/files/{place.address()}", None, COPY_SECONDS)
 
     def sent(self, address: str, path: str, body: bytes | None, seconds: float) -> bytes:
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.account.token()}", PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(self.schema.version())}
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.account.token()}", PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(self.schema.version()), VERSION_HEADER: VERSION}
         request = urllib.request.Request(address + path, data=body, headers=headers)
         try:
             with urllib.request.urlopen(request, timeout=seconds, context=self.trust()) as answer:

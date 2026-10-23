@@ -9827,6 +9827,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         a.container.get(SyncClient).prepare_upgrade()
         assert a.container.get(TeamAccount).is_upgrader(), "an upgrade marks its journal the upgrader before the new version installs"
         monkeypatch.setattr(Schema, "version", lambda self: migrated)
+        monkeypatch.setattr("journal.sync.team_server_link.VERSION", pinned)
         b.container.get(Connection).execute("UPDATE tasks SET title = 'stamped by a migration on Bob''s machine'")
         a.container.get(TeamUpgrade).finish()
         link = a.container.get(TeamServerLink)

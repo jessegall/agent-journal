@@ -10,11 +10,14 @@ REPOSITORY = "repository"
 VERSION = "version"
 MIGRATION = "migration"
 LOWEST_SEQUENCE = "lowest_sequence"
+VERSIONS = "versions"
+EXACT = "exact"
+ANY = "any"
 VERSION_SHAPE = re.compile(r"\d+\.\d+\.\d+")
 
 
 class TeamDetails:
-    """What the team server knows of the journal it hosts: the first commit of its repository, which a joining checkout must share, the journal version the team is pinned to, which the first copy's journal sets and an admin moves, and the migration the team's rows are at, which the first copy sets: a journal on an older migration may neither push nor pull until it is upgraded; and the lowest sequence a pull may go on from, below which a device takes the full copy."""
+    """What the team server knows of the journal it hosts: the first commit of its repository, which a joining checkout must share, the journal version the team is pinned to, which the first copy's journal sets and an admin moves, and the migration the team's rows are at, which the first copy sets: a journal on an older migration may neither push nor pull until it is upgraded; the lowest sequence a pull may go on from, below which a device takes the full copy; and whether a journal must run exactly the pinned version to push or pull, the default, or any version will do, as the admin sets it."""
 
     def __init__(self, rows: TeamDetailRows, log: ChangeLog) -> None:
         self.rows, self.log = rows, log
@@ -45,8 +48,21 @@ class TeamDetails:
     def migration(self) -> int:
         return int(self.rows.value(MIGRATION) or UNVERSIONED)
 
+    def record_versions(self, rule: str) -> None:
+        if rule not in (EXACT, ANY):
+            raise Refusal(f"versions is {EXACT} or {ANY}, not {rule}")
+        self.rows.write(VERSIONS, rule)
+
+    def versions(self) -> str:
+        return self.rows.value(VERSIONS) or EXACT
+
+    def require_version(self, version: str) -> None:
+        pinned = self.version()
+        if pinned and self.versions() == EXACT and version != pinned:
+            raise Refusal(f"this journal runs {version or 'an unnamed version'} and the team {pinned}: install {pinned} with journal update apply; its changes wait here until then")
+
     def version(self) -> str:
         return self.rows.value(VERSION)
 
     def answer(self) -> TeamSummary:
-        return TeamSummary(self.rows.value(REPOSITORY), self.log.head() > 0, self.version(), self.migration())
+        return TeamSummary(self.rows.value(REPOSITORY), self.log.head() > 0, self.version(), self.migration(), self.versions())

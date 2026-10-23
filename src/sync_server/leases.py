@@ -24,6 +24,10 @@ class Leases:
             self.rows.write(name, device.id, person.id, request_at)
             return self.state(name, request_at)
 
+    def is_holder(self, name: str, device: Device, request_at: float) -> bool:
+        standing = self.state(name, request_at)
+        return standing.device_id == device.id and not standing.is_lapsed
+
     def require_free(self, name: str, device: Device, request_at: float) -> None:
         standing = self.state(name, request_at)
         if standing.excludes(device.id):

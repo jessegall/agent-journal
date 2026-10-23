@@ -6,7 +6,7 @@ from sync_server.change_log import ChangeLog
 from sync_server.devices import FAILURES_ALLOWED, LOCKOUT_SECONDS, Devices
 from sync_server.id_ranges import IdRanges
 from sync_server.logged_change import LoggedChange
-from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER
+from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, VERSION_HEADER
 from sync_server.refusal import Refusal
 from sync_server.stored_row import StoredRow
 from sync_server.db.account_rows import AccountRows
@@ -220,8 +220,8 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
     server = team.started("127.0.0.1", 0)
     address = f"http://127.0.0.1:{server.server_address[1]}"
 
-    def call(path, body=None, token="", migration=3):
-        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), **({"Authorization": f"Bearer {token}"} if token else {})})
+    def call(path, body=None, token="", migration=3, version="4.21.0"):
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), VERSION_HEADER: version, **({"Authorization": f"Bearer {token}"} if token else {})})
         try:
             with urllib.request.urlopen(request, timeout=10) as answer:
                 return answer.status, json.loads(answer.read())
@@ -233,9 +233,9 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
             assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
         ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
         upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}, "repository": "", "version": "4.20.0", "migration": 3}
-        assert call("/team") == (200, {"repository": "", "has_rows": False, "version": "", "migration": 0}), "anyone may ask what the team holds before joining"
+        assert call("/team") == (200, {"repository": "", "has_rows": False, "version": "", "migration": 0, "versions": "exact"}), "anyone may ask what the team holds before joining"
         assert call("/upload", {**upload, "repository": "abc123"}, ada) == (200, {"rows": 1, "head": 1})
-        assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0", "migration": 3}), "the first copy pins the team to its journal's version"
+        assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0", "migration": 3, "versions": "exact"}), "the first copy pins the team to its journal's version"
         assert call("/upload", upload, ada)[1]["error"].startswith("the team's journal already holds rows"), "a full copy is taken once"
         assert call("/blocks", {"tables": ["tasks", "messages"]}, ada)[1]["blocks"] == [{"row_table": "tasks", "first": 1451, "last": 1950}, {"row_table": "messages", "first": 1, "last": 5000}], "blocks start above the copy's numbers and messages get a bigger one"
         invitation = call("/invite", {"email": "Bob@Example.com"}, ada)[1]
@@ -250,6 +250,13 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         behind = call("/pull?after=0&wait=0", None, bob["token"], migration=2)
         assert behind == (403, {"error": "this journal is on migration 2 and the team on 3: upgrade it to version 4.21.0 with journal update apply; its changes wait here until then"}), "a journal one migration behind the team's rows may not pull"
         assert call("/push", {"changes": []}, bob["token"], migration=2)[0] == 403, "nor push"
+        for other in ("4.20.9", "4.21.1"):
+            assert call("/pull?after=0&wait=0", None, bob["token"], version=other) == (403, {"error": f"this journal runs {other} and the team 4.21.0: install 4.21.0 with journal update apply; its changes wait here until then"}), "a journal on another version than the team's, older or newer, may not sync"
+        assert call("/team/versions", {"versions": "any"}, bob["token"])[0] == 403, "only an admin allows other versions"
+        assert call("/team/versions", {"versions": "any"}, ada)[1]["versions"] == "any"
+        assert call("/pull?after=0&wait=0", None, bob["token"], version="4.20.9")[0] == 200, "once the admin allows any version, another version syncs"
+        assert call("/team/versions", {"versions": "exact"}, ada)[1]["versions"] == "exact"
+        assert call("/pull?after=0&wait=0", None, bob["token"], version="4.20.9")[0] == 403 and call("/pull?after=0&wait=0", None, bob["token"])[0] == 200, "exact again refuses it, and the matching journal syncs either way"
         assert call("/accept", {"code": invitation["code"], "name": "Eve", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "x"})[1]["error"].startswith("this invitation code is not known or was used"), "a code is used once"
         assert call("/invite", {"email": "eve@example.com"}, bob["token"])[1]["error"].startswith("Bob is no admin"), "only an admin invites"
         assert [device["name"] for device in call("/devices", token=ada)[1]["devices"]] == ["laptop", "desktop"]
@@ -341,7 +348,7 @@ def test_an_upgrade_holds_every_other_push_replaces_the_teams_rows_once_and_keep
     address = f"http://127.0.0.1:{server.server_address[1]}"
 
     def call(path, body=None, token="", migration=3):
-        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), "Authorization": f"Bearer {token}"})
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), VERSION_HEADER: "4.20.0", "Authorization": f"Bearer {token}"})
         try:
             with urllib.request.urlopen(request, timeout=10) as answer:
                 return answer.status, json.loads(answer.read())
