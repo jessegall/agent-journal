@@ -6,6 +6,7 @@ from sync_server.change_log import ChangeLog
 from sync_server.devices import FAILURES_ALLOWED, LOCKOUT_SECONDS, Devices
 from sync_server.id_ranges import IdRanges
 from sync_server.logged_change import LoggedChange
+from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER
 from sync_server.refusal import Refusal
 from sync_server.stored_row import StoredRow
 from sync_server.db.account_rows import AccountRows
@@ -140,7 +141,7 @@ def test_over_http_a_pull_waits_and_wakes_on_a_push_while_other_requests_go_on_a
     address = f"http://127.0.0.1:{server.server_address[1]}"
 
     def call(path, body=None, token=""):
-        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={"Authorization": f"Bearer {token}"} if token else {})
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), **({"Authorization": f"Bearer {token}"} if token else {})})
         try:
             with urllib.request.urlopen(request, timeout=10) as answer:
                 return answer.status, json.loads(answer.read())
@@ -220,7 +221,7 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
     address = f"http://127.0.0.1:{server.server_address[1]}"
 
     def call(path, body=None, token=""):
-        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={"Authorization": f"Bearer {token}"} if token else {})
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), **({"Authorization": f"Bearer {token}"} if token else {})})
         try:
             with urllib.request.urlopen(request, timeout=10) as answer:
                 return answer.status, json.loads(answer.read())
@@ -286,3 +287,31 @@ def test_two_devices_racing_for_a_lease_leave_exactly_one_holder_and_an_unrenewe
     assert leases.state("team-chat", 130.0 + LAPSE_SECONDS + 1).is_lapsed, "a lease nobody renews lapses"
     assert leases.acquire("team-chat", other, other_account, 130.0 + LAPSE_SECONDS + 1).holder == other_account.name, "and another device may take it"
     assert leases.release("team-chat", other, 300.0).holder == "", "its holder lets it go"
+
+
+def test_a_journal_and_a_team_server_on_different_protocols_are_refused_with_the_side_to_upgrade(tmp_path, monkeypatch):
+    import json
+
+    from journal.config import Config
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.sync.team_refusal import TeamRefusal
+    from journal.sync.team_server_link import TeamServerLink
+    from sync_server.team_server import TeamServer
+
+    server = TeamServer(tmp_path).started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+    config = Config(tmp_path / "journal")
+    config.home.mkdir(parents=True)
+    (config.home / TEAM_FILE).write_text(json.dumps({"address": address, "token": "t"}))
+    link = TeamServerLink(TeamAccount(config))
+    try:
+        assert link.summary(address) is not None, "a journal on the server's protocol is answered"
+        monkeypatch.setattr("journal.sync.team_server_link.PROTOCOL", PROTOCOL - 1)
+        with pytest.raises(TeamRefusal, match="upgrade the journal with journal update apply"):
+            link.summary(address)
+        monkeypatch.setattr("journal.sync.team_server_link.PROTOCOL", PROTOCOL + 1)
+        with pytest.raises(TeamRefusal, match="upgrade the team server's image"):
+            link.summary(address)
+    finally:
+        server.shutdown()
+        server.server_close()

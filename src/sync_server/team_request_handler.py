@@ -11,6 +11,7 @@ from sync_server.file_answer import FileAnswer
 from sync_server.file_place import FilePlace
 from sync_server.lease_request import LeaseRequest
 from sync_server.login_request import LoginRequest
+from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
 from sync_server.upload_request import UploadRequest
@@ -21,9 +22,11 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it."""
 
     def do_GET(self) -> None:
+        if self.is_outdated_client():
+            return
         url = urlsplit(self.path)
         if url.path.startswith(FILES_PATH):
             self.file_answer(lambda: self.server.team.files.get(self.file_place(url.path)))
@@ -34,6 +37,8 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         self.answered(routes.get(url.path))
 
     def do_POST(self) -> None:
+        if self.is_outdated_client():
+            return
         team = self.server.team
         if urlsplit(self.path).path.startswith(FILES_PATH):
             self.answered(lambda: FileAnswer(team.files.put(self.file_place(urlsplit(self.path).path), self.raw_body())))
@@ -51,6 +56,17 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             "/leases/release": lambda: team.leases.release(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.clock.time()),
         }
         self.answered(routes.get(urlsplit(self.path).path))
+
+    def is_outdated_client(self) -> bool:
+        client_protocol = int(self.headers.get(PROTOCOL_HEADER, UNVERSIONED))
+        if client_protocol >= PROTOCOL:
+            return False
+        self.sent(426, {"error": f"this journal speaks protocol {client_protocol} and the team server {PROTOCOL}: upgrade the journal with journal update apply"})
+        return True
+
+    def end_headers(self) -> None:
+        self.send_header(PROTOCOL_HEADER, str(PROTOCOL))
+        super().end_headers()
 
     def login(self, request: LoginRequest):
         return self.server.team.logins.answer(request, self.address())

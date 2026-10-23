@@ -1,0 +1,3 @@
+PROTOCOL = 1
+PROTOCOL_HEADER = "X-Journal-Protocol"
+UNVERSIONED = 0

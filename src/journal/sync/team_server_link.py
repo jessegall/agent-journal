@@ -19,6 +19,7 @@ from sync_server.push_answer import PushAnswer
 from sync_server.team_summary import TeamSummary
 from sync_server.upload_answer import UploadAnswer
 from sync_server.lease import Lease
+from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
 
 REQUEST_SECONDS = 10
 COPY_SECONDS = 120
@@ -26,7 +27,7 @@ ROOT_CERTIFICATE = "/root.crt"
 
 
 class TeamServerLink:
-    """The one way the journal reaches its team server, each request with the device's token: a push of queued changes, a pull past a sequence, a request for blocks of row numbers, the full copy, and the joining and admin requests. A server on a bare address is trusted through the certificate authority the join kept. A network fault is raised as the OSError it is; a refusal as a TeamRefusal."""
+    """The one way the journal reaches its team server, each request with the device's token: a push of queued changes, a pull past a sequence, a request for blocks of row numbers, the full copy, and the joining and admin requests. A server on a bare address is trusted through the certificate authority the join kept. Each request names this journal's protocol, and an answer from a server on an older one is refused with the line to upgrade the server. A network fault is raised as the OSError it is; a refusal as a TeamRefusal."""
 
     def __init__(self, account: TeamAccount) -> None:
         self.account = account
@@ -91,13 +92,20 @@ class TeamServerLink:
         return self.sent(self.account.address(), f"/files/{place.address()}", None, COPY_SECONDS)
 
     def sent(self, address: str, path: str, body: bytes | None, seconds: float) -> bytes:
-        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.account.token()}"}
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.account.token()}", PROTOCOL_HEADER: str(PROTOCOL)}
         request = urllib.request.Request(address + path, data=body, headers=headers)
         try:
             with urllib.request.urlopen(request, timeout=seconds, context=self.trust()) as answer:
+                self.checked(answer.headers)
                 return answer.read()
         except urllib.error.HTTPError as refused:
             raise TeamRefusal(json.loads(refused.read() or b"{}").get("error", f"the team server answered {refused.code}")) from refused
+
+    @staticmethod
+    def checked(headers) -> None:
+        server_protocol = int(headers.get(PROTOCOL_HEADER, UNVERSIONED))
+        if server_protocol < PROTOCOL:
+            raise TeamRefusal(f"the team server speaks protocol {server_protocol}, older than this journal's {PROTOCOL}: upgrade the team server's image")
 
     def trust(self) -> ssl.SSLContext:
         root = self.account.root_path()

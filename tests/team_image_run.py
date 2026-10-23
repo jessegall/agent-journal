@@ -6,11 +6,14 @@ import time
 import urllib.request
 from pathlib import Path
 
+from sync_server.protocol import PROTOCOL, PROTOCOL_HEADER
+
 ROOT = Path(__file__).resolve().parent.parent
 IMAGE = "agent-journal-team:test"
 NAME = "agent-journal-team-image-test"
 VOLUME = "agent-journal-team-image-test"
 PORT = 8443
+SPOKEN = {PROTOCOL_HEADER: str(PROTOCOL)}
 PASSWORD = "correct horse battery"
 
 
@@ -19,7 +22,7 @@ def docker(*arguments: str, seconds: int = 120) -> str:
 
 
 def login(device_name: str) -> dict:
-    request = urllib.request.Request(f"https://localhost:{PORT}/login", data=json.dumps({"email": "ada@example.com", "password": PASSWORD, "device_name": device_name}).encode())
+    request = urllib.request.Request(f"https://localhost:{PORT}/login", data=json.dumps({"email": "ada@example.com", "password": PASSWORD, "device_name": device_name}).encode(), headers=SPOKEN)
     unverified = ssl.create_default_context()
     unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
     deadline = time.monotonic() + 20
@@ -64,7 +67,7 @@ def test_the_host_setup_starts_a_server_on_a_fresh_volume_whose_admin_logs_in_an
         unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
         with urllib.request.urlopen(f"{line.group(1)}/root.crt", timeout=10, context=unverified) as answer:
             assert hashlib.sha256(ssl.PEM_cert_to_DER_cert(answer.read().decode())).hexdigest() == line.group(3), "the fingerprint is the authority the server serves"
-        accept = urllib.request.Request(f"{line.group(1)}/accept", data=json.dumps({"code": line.group(2), "name": "Ada", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "laptop"}).encode())
+        accept = urllib.request.Request(f"{line.group(1)}/accept", data=json.dumps({"code": line.group(2), "name": "Ada", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "laptop"}).encode(), headers=SPOKEN)
         with urllib.request.urlopen(accept, timeout=10, context=unverified) as answer:
             assert json.loads(answer.read())["account_id"] == 1, "the admin's code logs the admin's journal in"
         again = subprocess.run(["sh", str(ROOT / "host" / "install.sh")], input=answers, capture_output=True, text=True, env=environment, timeout=120)
@@ -85,7 +88,7 @@ def test_a_running_servers_backup_restores_into_a_new_container_that_answers_the
         time.sleep(2)
         docker("exec", NAME, "python", "-c", f"from pathlib import Path; from sync_server.account import ADMIN; from sync_server.team_server import TeamServer; TeamServer(Path('/data/team')).accounts.create('ada@example.com', 'Ada', '{PASSWORD}', ADMIN, 1.0)")
         token = login("before the backup")["token"]
-        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": [{"row_table": "tasks", "row": 7, "fields": {"title": "kept"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 7}}).encode(), headers={"Authorization": f"Bearer {token}"})
+        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": [{"row_table": "tasks", "row": 7, "fields": {"title": "kept"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 7}}).encode(), headers={**SPOKEN, "Authorization": f"Bearer {token}"})
         unverified = ssl.create_default_context()
         unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
         urllib.request.urlopen(upload, timeout=10, context=unverified).read()
@@ -95,7 +98,7 @@ def test_a_running_servers_backup_restores_into_a_new_container_that_answers_the
         docker("run", "--rm", "-v", f"{restored}:/data", "-v", f"{tmp_path}:/backup", IMAGE, "python", "-m", "sync_server", "restore", "--data", "/data/team", "--from", "/backup/team.db")
         docker("run", "-d", "--name", NAME, "-e", "TEAM_ADDRESS=localhost", "-p", f"{PORT}:443", "-v", f"{restored}:/data", IMAGE)
         token = login("after the restore")["token"]
-        request = urllib.request.Request(f"https://localhost:{PORT}/copy", headers={"Authorization": f"Bearer {token}"})
+        request = urllib.request.Request(f"https://localhost:{PORT}/copy", headers={**SPOKEN, "Authorization": f"Bearer {token}"})
         with urllib.request.urlopen(request, timeout=10, context=unverified) as answer:
             assert [row["fields"] for row in json.loads(answer.read())["rows"]] == [{"title": "kept"}], "the restored server answers the same rows"
     finally:
