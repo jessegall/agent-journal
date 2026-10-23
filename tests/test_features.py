@@ -6783,7 +6783,7 @@ def test_journal_update_follow_sets_the_branch_the_journal_follows_and_unfollow_
     assert console.run(["update", "unfollow"], AGENT).text == "following the releases again\n" and updating.branch() == "", "unfollow clears the branch"
 
 
-def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_up(app: App, monkeypatch):
+def test_a_stopped_agent_gets_each_line_at_once_and_a_working_one_gets_them_batched(app: App, monkeypatch):
     from journal.engine.clock import Clock
     keystrokes = []
     monkeypatch.setattr(SupervisorLink, "_send", lambda self, environment_id, verb, fields: keystrokes.append(fields["line"]))
@@ -6794,13 +6794,16 @@ def test_lines_typed_within_the_batch_window_wait_and_go_as_one_line_once_it_is_
     app.runtime().deferred.drain()
     link.resting(1)
     link.type(1, "new message 3")
+    assert keystrokes == ["[journal] new message 2", "[journal] new message 3"], "a stopped agent gets a line at once, with no batch window to wait out once the last is confirmed"
     link.type(1, "the user put 👍 on message 2")
+    assert keystrokes[-1] == "[journal] new message 3", "a line behind one not yet seen back still waits, so it never lands in the prompt box"
+    hook(app, "UserPromptSubmit", prompt="[journal] new message 3")
+    app.runtime().deferred.drain()
+    link.working(1)
+    link.type(1, "new message 4")
     app.container.get(Clock).tick(app.container.get(Clock).time())
-    assert keystrokes == ["[journal] new message 2"], "a line within five seconds of the last waits, even once the last is confirmed"
+    assert "[journal] new message 4" not in " ".join(keystrokes), "a working agent's line waits for its next tool use or the batch window"
     app.container.get(SettingRows).set("delivery.batch_seconds", 0, Actor.user(1))
-    app.container.get(Clock).tick(app.container.get(Clock).time())
-    assert keystrokes == ["[journal] new message 2", "[journal] new message 3 | the user put 👍 on message 2"], "the window up, the held lines go as one line"
-
 
 def test_a_new_message_line_is_confirmed_by_the_message_being_read_and_the_chat_hears_only_of_a_line_given_up(app: App, monkeypatch):
     import time as timing

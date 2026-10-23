@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.4
+
+- A message to an agent that has stopped is typed into its terminal at once; the window that gathers lines into one waits only while the agent works.
+
 ## 4.16.3
 
 - The chat's output dialog shows the output it was opened for; it had been asking for none and showing an error.

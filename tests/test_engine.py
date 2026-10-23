@@ -1480,7 +1480,7 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     link.resting(1)
     link.type(1, "first")
     link.type(1, "held behind the first")
-    assert transmitted == ["[journal] first"] and len(link.typed._held) == 1, "a line within the batch window queues"
+    assert transmitted == ["[journal] first"] and len(link.typed._held) == 1, "a line behind one not yet seen back queues"
     assert hook(app, "PreCompact")[0] == 200
     assert agents.session_agent("s1").stack[-1]["state"] == "compacting" and agents.session_agent("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
     link.type(1, "a dump arrived")

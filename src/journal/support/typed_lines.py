@@ -6,7 +6,7 @@ from journal.support.typed_line import TypedLine
 
 RECENT_SECONDS = 60.0
 BATCH_SECONDS = 5.0
-BATCH_OPTION = Option("delivery.batch_seconds", "Type lines at most every", "Seconds after a line is typed before the next may go; lines that come meanwhile are held and typed together as one line. 0 types each at once", BATCH_SECONDS, unit="seconds")
+BATCH_OPTION = Option("delivery.batch_seconds", "Type lines at most every", "While the agent works, seconds after a line is typed before the next may go; lines that come meanwhile are held and typed together as one line. A stopped agent gets each line at once. 0 types each at once", BATCH_SECONDS, unit="seconds")
 JOURNAL_PREFIX = "[journal]"
 
 
