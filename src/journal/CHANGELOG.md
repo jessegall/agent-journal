@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.19.1
+
+- While a command runs, the figure swings a hammer it holds, one blow at a time, so its right arm no longer pumps up and down with an empty hand.
+
 ## 4.19.0
 
 - Every card in the chat is a moment card or a process card, chosen where it is made. A moment card shows a moment as it was, such as a task moved, a skill loaded or a worker clocked out, and is never changed. A process card follows one process, such as a running command, a dispatch, an open question or a slow route, and is updated in place. While the process runs, the chat asks it once a second for what it shows now, through one endpoint for every kind of card, where only running commands were asked before.

@@ -1330,7 +1330,7 @@ function onTablet(pose, stance, side, stroke) {
     }
 }
 
-// hammers away with the free hand, the body dipping into each blow
+// hammers away with a hammer in the free hand, the body dipping into each blow
 function work(pose, stance, t) {
     const side = freeSide(stance);
     const raised = 0.5 + 0.5 * Math.cos(2 * Math.PI * t);
@@ -1340,6 +1340,7 @@ function work(pose, stance, t) {
     trunk(pose, {lean: 8 + 6 * blow, nod: 10});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: mix(75, 20, raised), z: -35, bend: mix(15, 55, raised)});
+    pose.holdProp("work_hammer", side, [0, 0, 0], {z: TOOLS.hammer.tilt * SIDES[side]});
 }
 
 // points up at what waits for the user, looking at it, the arm bobbing a little
@@ -2204,7 +2205,9 @@ export const TOOLS = {
         ringTube: 0.02, ringRadialSegments: 8, ringTubularSegments: 16},
     whistle: {body: [0.13, 0.1, 0.16], mouthpiece: [0.08, 0.04, 0.15], mouthAt: [0, 0.01, -0.12]},
     cloth: {width: 0.35, depth: 0.26, thickness: 0.02},
-    colours: {ink: 0x272936, silver: 0xa9adb8, paper: 0xf3eedf, white: 0xf4f2ed, accent: 0x6366f1, pencil: 0xd6b06b},
+    // a hammer held a little up its handle, its head across the top, tipped outward so each blow lands downward
+    hammer: {handleRadius: 0.06, handleLength: 1.05, gripFrom: 0.15, head: [0.55, 0.22, 0.22], sides: 10, tilt: 45},
+    colours: {ink: 0x272936, silver: 0xa9adb8, paper: 0xf3eedf, white: 0xf4f2ed, accent: 0x6366f1, pencil: 0xd6b06b, handle: 0x8a5a2b},
 };
 
 function propsOf() {
@@ -2276,6 +2279,10 @@ function propsOf() {
     const whistle = group("hand_whistle");
     part(whistle, "body", new THREE.BoxGeometry(...TOOLS.whistle.body), colours.accent);
     part(whistle, "mouthpiece", new THREE.BoxGeometry(...TOOLS.whistle.mouthpiece), colours.silver, TOOLS.whistle.mouthAt);
+    const {hammer} = TOOLS;
+    const mallet = group("work_hammer");
+    part(mallet, "handle", new THREE.CylinderGeometry(hammer.handleRadius, hammer.handleRadius, hammer.handleLength, hammer.sides), colours.handle, [0, hammer.handleLength / 2 - hammer.gripFrom, 0]);
+    part(mallet, "head", new THREE.BoxGeometry(...hammer.head), colours.silver, [0, hammer.handleLength - hammer.gripFrom, 0]);
     const wipe = group("polishing_cloth");
     part(wipe, "fold", new THREE.BoxGeometry(cloth.width, cloth.thickness, cloth.depth), colours.white);
     reactionPropsOf(group, part);
