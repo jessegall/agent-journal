@@ -85,6 +85,9 @@ class Messages(ScopedRepository[Message]):
     def keyed(self, key: str, actor: Actor) -> list[Message]:
         return self.selected(self.query().filter_json("data->key", key).filter(creator=actor))
 
+    def active_cards(self, ids: list[int]) -> list[Message]:
+        return self.selected(self.query().filter_listed("id", ids).filter_json("data->active", True))
+
     def with_key(self, key: str) -> list[Message]:
         return self.selected(self.query().filter_json("data->key", key))
 

@@ -12,7 +12,7 @@ from journal.features.shell.support.readers import Readers
 from journal.features.shell.support.script_reader import ScriptReader
 from journal.config import Config
 from journal.features.aliases.support.alias_lines import AliasLines
-from journal.features.shell.support.output_views import OutputViews
+from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.support.watch_suggestions import WatchSuggestions
 from journal.models.alias import Alias
 from journal.repositories.command_outputs import CommandOutputs
@@ -37,9 +37,9 @@ VARIED_RUNS = 3
 class ShellRunner:
     """Runs one shell line for the shim and streams back what the agent sees: the line is split into its parts, run in the user's shell by the worker, each part shown as its status lands and the cap says, the chain moved to the background past the foreground limit with a line naming its output, and an ended output kept under its number or forgotten. A read or write of the project's code streams straight through, nothing kept. The stream is read after the request has left its scope, so the environment comes along and is named again for every read and write; the exit line starts on a line of its own."""
 
-    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, views: OutputViews, readers: Readers, supervisor: SupervisorLink, entries: Entries) -> None:
+    def __init__(self, config: Config, caps: OutputCap, limits: ForegroundLimit, worker: ChainWorker, record: ShellRecord, scope: Scope, suggestions: WatchSuggestions, aliases: AliasLines, outputs: CommandOutputs, card: OutputProcessCard, readers: Readers, supervisor: SupervisorLink, entries: Entries) -> None:
         self.config, self.caps, self.limits, self.worker, self.record, self.scope, self.suggestions = config, caps, limits, worker, record, scope, suggestions
-        self.aliases, self.outputs, self.views, self.readers, self.supervisor, self.entries = aliases, outputs, views, readers, supervisor, entries
+        self.aliases, self.outputs, self.card, self.readers, self.supervisor, self.entries = aliases, outputs, card, readers, supervisor, entries
 
     def run(self, posted: ShellRequest, caller: Caller, environment: int) -> Iterator[bytes]:
         request = replace(posted, line=self.aliases.expanded(posted.line))
@@ -124,7 +124,7 @@ class ShellRunner:
 
     def reader_watched(self, number: int, part: str, reader: Reader | ScriptReader, caller: Caller) -> list[str]:
         from journal.features.shell.feature import Shell
-        self.views.card(self.outputs.watch(self.outputs.find(number), reader.name, "", caller.actor))
+        self.card.show(self.outputs.watch(self.outputs.find(number), reader.name, "", caller.actor))
         shape = CommandShape.build(part)
         watched = [Shell.READER_WATCH.create(n=number, command=shape, reader=reader.name).rendered()]
         varied = self.entries.shape_commands(caller.session, shape) if caller.session and not reader.topic_pattern else set()
@@ -132,7 +132,7 @@ class ShellRunner:
 
     def watched(self, number: int, alias: Alias, caller: Caller) -> list[str]:
         from journal.features.shell.feature import Shell
-        self.views.card(self.outputs.watch(self.outputs.find(number), alias.reader, "", caller.actor))
+        self.card.show(self.outputs.watch(self.outputs.find(number), alias.reader, "", caller.actor))
         return [Shell.ALIAS_WATCH.create(n=number, name=alias.name, reader=f" through the reader {alias.reader}" if alias.reader else "").rendered()]
 
     def closed(self, folder: OutputFiles, request: ShellRequest, caller: Caller, cap: Cap) -> None:

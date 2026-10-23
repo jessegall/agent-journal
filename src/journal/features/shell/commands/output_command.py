@@ -5,7 +5,7 @@ from journal.features.shell.support.activity_title import ActivityTitle
 from journal.console.command import HELPER_KINDS, WORKER_KINDS, Command
 from journal.support.caller import Caller
 from journal.features.shell.support.output_files import OutputFiles
-from journal.features.shell.support.output_views import OutputViews
+from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.support.reader import Reader
 from journal.features.shell.support.readers import Readers
 from journal.models.command_output import CommandOutput
@@ -21,8 +21,8 @@ class OutputCommand(Command):
     noun = "output"
     callers = {"read": HELPER_KINDS, "list": WORKER_KINDS, "status": WORKER_KINDS, "watch": WORKER_KINDS}
 
-    def __init__(self, outputs: CommandOutputs, readers: Readers, views: OutputViews) -> None:
-        self.outputs, self.readers, self.views = outputs, readers, views
+    def __init__(self, outputs: CommandOutputs, readers: Readers, card: OutputProcessCard) -> None:
+        self.outputs, self.readers, self.card = outputs, readers, card
 
     def arguments(self, verbs) -> None:
         read = self.verb(verbs, "read", "the part of an output a flag names; one flag is needed, so reading it whole is a choice: --summary for how it ended with its ends, --all for every line")
@@ -125,13 +125,13 @@ class OutputCommand(Command):
             raise Rejection(f"output {output.id} {output.ending()}; read it with journal output read {output.id} --summary")
         if args.reader:
             self.readers.reading_output(args.reader, output)
-        self.views.card(self.outputs.watch(output, args.reader, ActivityTitle.checked(args.title), caller.actor))
+        self.card.show(self.outputs.watch(output, args.reader, ActivityTitle.checked(args.title), caller.actor))
         print(f"watching output {output.id}: you see its view after every tool use until its command ends")
         return 0
 
     def undock(self, args: Namespace, caller: Caller) -> int:
         output = self.owned(args.n, caller)
-        self.views.undocked(output, caller.actor)
+        self.card.undocked(output, caller.actor)
         print(f"output {output.id}'s card undocked")
         return 0
 

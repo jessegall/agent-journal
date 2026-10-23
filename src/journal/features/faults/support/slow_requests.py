@@ -6,7 +6,7 @@ from journal.features.faults.support.request_timer import RequestTimer
 from journal.features.faults.support.test_run_files import TestRunFiles
 
 from journal.config import Config
-from journal.chat.cards import Cards
+from journal.features.faults.support.slow_request_process_card import SlowRequestProcessCard
 from journal.support.listener_queue import ListenerQueue
 from journal.engine.clock import Clock
 from journal.features.faults.feature import Faults
@@ -23,7 +23,6 @@ from journal.repositories.setting_rows import SettingRows
 from journal.engine.support.nudge_log import NudgeLog
 from journal.support.timeout import Timeout
 from journal.repositories.scope import Scope
-from journal.support.card_kind import CardKind
 
 STARTUP_GRACE_SECONDS = 60.0
 STARTING = "journal.starting"
@@ -37,8 +36,8 @@ OUTWARD_COMMANDS = ("/cli/plugin install", "/cli/plugin upgrade", "/cli/plugin p
 class SlowRequests:
     """Measures each request against its budget, on the CPU time the journal's thread spent on it so a busy machine or a process it waits on is not the journal's fault, where the journal develops itself, every one but a route's first since the boot, which loads its code and a cold cache once, with the rows it loaded while load counting is on, and reports one over it: a mark in the chat per route, settled in place with its worst time and count, and a line to the agent the first time and again once the set minutes have passed since it was last told, the time it was told kept in the mark's data."""
 
-    def __init__(self, config: Config, settings: SettingRows, cards: Cards, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, tally: DeveloperTally, test_runs: TestRunFiles) -> None:
-        self.config, self.settings, self.cards, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, cards, messages, agents, environments, scope, nudges, clock, deferred
+    def __init__(self, config: Config, settings: SettingRows, card: SlowRequestProcessCard, messages: Messages, agents: Agents, environments: Environments, scope: Scope, nudges: NudgeLog, clock: Clock, deferred: ListenerQueue, tally: DeveloperTally, test_runs: TestRunFiles) -> None:
+        self.config, self.settings, self.card, self.messages, self.agents, self.environments, self.scope, self.nudges, self.clock, self.deferred = config, settings, card, messages, agents, environments, scope, nudges, clock, deferred
         self.tally = tally
         self.test_runs = test_runs
         self.started = time.monotonic()
@@ -95,8 +94,7 @@ class SlowRequests:
             self.flagged(method, route, ms, budget)
 
     def flagged(self, method: str, route: str, ms: int, budget: int) -> None:
-        key = f"slow:{method} {route}"
-        older = self.messages.keyed(key, Actor.system())
+        older = self.messages.keyed(SlowRequestProcessCard.key(method, route), Actor.system())
         previous = older[0].data if older else {}
         count, worst, moment = previous.get("count", 0) + 1, max(ms, previous.get("worst", 0)), self.clock.time()
         agent = self.agents.current()
@@ -104,7 +102,7 @@ class SlowRequests:
         reported_at = previous.get("reported_at", 0.0) if reported is None else moment
         data = {"kind": "card", "icon": "gauge", "tone": "bad", "row": "", "count": count, "worst": worst, "reported_at": reported_at}
         detail = f"worst {worst} ms, {count} {'time' if count == 1 else 'times'}, budget {budget} ms"
-        self.cards.keyed(self.scope.id, key, f"Slow request: {method} {route}", data, Actor.system(), CardKind.FAULTS, detail)
+        self.card.show(method, route, data, detail)
         if reported is not None:
             self.nudges.type_line(reported, Faults.SLOW_REQUEST.create(method=method, route=route, ms=ms, budget=budget))
 

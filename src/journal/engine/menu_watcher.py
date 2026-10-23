@@ -1,6 +1,6 @@
 import time
 
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.engine.job import Job
 from journal.models.agent import Agent
 from journal.providers.support.menu import ESCAPE, Menu
@@ -21,7 +21,7 @@ class MenuWatcher(Job):
 
     interval_seconds = 0.5
 
-    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: Cards, scope: Scope, answers: MenuAnswers, launches: LaunchFiles) -> None:
+    def __init__(self, agents: Agents, supervisor: SupervisorLink, cards: MomentCards, scope: Scope, answers: MenuAnswers, launches: LaunchFiles) -> None:
         self.agents, self.supervisor, self.cards, self.scope = agents, supervisor, cards, scope
         self.answers, self.launches = answers, launches
         self._menu_signatures: dict[int, tuple] = {}

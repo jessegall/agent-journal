@@ -13,6 +13,7 @@ from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.support.skill import Skill
 from journal.features.shell.seeds.cut_off_outputs import CutOffOutputs
 from journal.features.shell.jobs.watch_refresh import WatchRefresh
+from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.seeds.default_readers import DefaultReaders
 
 
@@ -34,6 +35,7 @@ class Shell(Feature[ShellData]):
     listeners = (OutputNotice, WatchUpdate)
     seeds = (CutOffOutputs, DefaultReaders)
     jobs = (WatchRefresh,)
+    process_cards = (OutputProcessCard,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)
     states = (FixingReader,)

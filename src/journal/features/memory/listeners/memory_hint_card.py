@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.events.agent.line_delivered import LineDelivered
 from journal.events.agent_listener import AgentListener
 from journal.repositories.facts import Facts
@@ -13,7 +13,7 @@ MEMORY_CHAT_KINDS = {"fact": CardKind.FACTS, "rule": CardKind.RULES, "reminder":
 class MemoryHintCard(AgentListener[LineDelivered]):
     """A fact, rule or reminder the memory conduct whispered back is shown in the chat as a mark, once per line said."""
 
-    def __init__(self, facts: Facts, rules: Rules, reminders: Reminders, cards: Cards) -> None:
+    def __init__(self, facts: Facts, rules: Rules, reminders: Reminders, cards: MomentCards) -> None:
         self.cards = cards
         self.repositories: dict[str, Facts | Rules | Reminders] = {"fact": facts, "rule": rules, "reminder": reminders}
 

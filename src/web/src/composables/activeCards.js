@@ -3,21 +3,21 @@ import {useScope} from "./scope.js";
 
 const FETCH_MS = 1000;
 
-// The chat's messages with every live output card's view brought up to date: one request a second asks for all the
-// outputs still running, and none is sent while no card is live.
-export function useLiveOutputs(messages) {
+// The chat's messages with every active process card brought up to date: one request a second asks for the fields each
+// of them shows now, and none is sent while no process card is active.
+export function useActiveCards(messages) {
     const scope = useScope();
     const views = ref({});
-    const running = computed(() =>
-        messages.value.filter((m) => m.data?.output && !m.data.ending && !views.value[m.data.output]?.ending).map((m) => m.data.output)
+    const active = computed(() =>
+        messages.value.filter((m) => m.data?.card_type === "process" && m.data.active && views.value[m.id]?.active !== false).map((m) => m.id)
     );
     let timer = 0;
     const fetchViews = async () => {
-        const fetched = await scope.api.outputProgress(running.value);
+        const fetched = await scope.api.activeCards(active.value);
         views.value = {...views.value, ...fetched};
     };
     watch(
-        () => running.value.length > 0,
+        () => active.value.length > 0,
         (live) => {
             clearInterval(timer);
             timer = live ? setInterval(fetchViews, FETCH_MS) : 0;
@@ -27,7 +27,7 @@ export function useLiveOutputs(messages) {
     onUnmounted(() => clearInterval(timer));
     return computed(() =>
         messages.value.map((m) => {
-            const view = m.data?.output && !m.data.ending ? views.value[m.data.output] : null;
+            const view = m.data?.card_type === "process" && m.data.active ? views.value[m.id] : null;
             return view ? {...m, data: {...m.data, ...view}} : m;
         })
     );

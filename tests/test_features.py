@@ -6681,9 +6681,9 @@ def test_a_reader_whose_card_line_reads_as_code_is_pointed_out_and_a_wrapped_com
     outputs.save(outputs.find(2).backgrounded(), Actor.system())
     assert app.console().run(["output", "watch", "2", "--reader", "pytest"], AGENT).code == 0
     outputs.save(outputs.find(2).ended_with(0, 1.0), Actor.system())
-    from journal.features.shell.support.output_views import OutputViews
+    from journal.features.shell.support.output_process_card import OutputProcessCard
     from journal.repositories.messages import Messages
-    app.container.get(OutputViews).card(outputs.find(2))
+    app.container.get(OutputProcessCard).show(outputs.find(2))
     with app.container.get(Scope).environment(1):
         assert app.container.get(Messages).with_key("watch:2")[0].data["detail"] == "finished", "a finished card with nothing picked still says how it ended"
     told = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1])
@@ -8043,7 +8043,7 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
     """With Dock live outputs on, a watched run's card is docked as it goes live and taken down once it ends; a card docked by hand stays; off, nothing docks."""
     from journal.chat.docking import Docking
     from journal.features.shell.support.output_log import OutputLog
-    from journal.features.shell.support.output_views import OutputViews
+    from journal.features.shell.support.output_process_card import OutputProcessCard
     from journal.repositories.command_outputs import CommandOutputs
     from journal.repositories.messages import Messages
     hook(app, "SessionStart")
@@ -8065,7 +8065,7 @@ def test_a_live_outputs_card_docks_itself_and_comes_down_at_its_end_unless_the_u
 
     def end(n):
         with app.container.get(Scope).environment(MAIN):
-            app.container.get(OutputViews).card(outputs.find(n))
+            app.container.get(OutputProcessCard).show(outputs.find(n))
         outputs.save(outputs.find(n).ended_with(0, 0.0), Actor.system())
         app.runtime().deferred.drain()
         hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")
@@ -9443,7 +9443,8 @@ def test_the_skills_toggled_for_a_session_start_and_for_after_a_compaction_hold_
 
 
 def test_a_new_document_and_a_new_report_dock_themselves_at_the_bottom_of_the_chat(app: App, tmp_path):
-    from journal.chat.cards import DOCKED, Cards
+    from journal.chat.process_cards import DOCKED
+    from journal.chat.row_process_card import RowProcessCard
     from journal.chat.docking import Docking
     from journal.repositories.docs import Docs
     from journal.repositories.messages import Messages
@@ -9460,7 +9461,7 @@ def test_a_new_document_and_a_new_report_dock_themselves_at_the_bottom_of_the_ch
         for row in (app.container.get(Docs).all()[0], app.container.get(Reports).all()[0]):
             card = docking.card(row)
             assert card is not None and card.data.get(DOCKED), f"{row.heading()} is docked"
-            assert len(app.container.get(Messages).with_key(app.container.get(Cards).creation_key(row))) == 1, "one card each"
+            assert len(app.container.get(Messages).with_key(RowProcessCard.key(row))) == 1, "one card each"
 
 
 def test_a_subagents_report_in_a_notification_owes_no_skill_by_its_words(skilled):

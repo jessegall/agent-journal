@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.events.agent.compacting import Compacting
 from journal.events.agent_listener import AgentListener
 from journal.support.card_kind import CardKind
@@ -7,7 +7,7 @@ from journal.support.card_kind import CardKind
 class CompactionCard(AgentListener[Compacting]):
     """A compaction of the agent's window is a mark in the chat."""
 
-    def __init__(self, cards: Cards) -> None:
+    def __init__(self, cards: MomentCards) -> None:
         self.cards = cards
 
     def handle(self, event: Compacting) -> None:

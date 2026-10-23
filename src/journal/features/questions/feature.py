@@ -3,6 +3,7 @@ from journal.engine.nudge import Nudge
 from journal.support.skill import Skill
 from journal.features.questions.commands.question_command import QuestionCommand
 from journal.features.questions.listeners.question_card import QuestionCard
+from journal.features.questions.support.question_process_card import QuestionProcessCard
 from journal.features.questions.questions_conduct import QuestionsConduct
 from journal.features.questions.support.questions_data_reader import QuestionsDataReader
 from journal.features.questions.support.questions_data import QuestionsData
@@ -16,6 +17,7 @@ class Questions(Feature[QuestionsData]):
     states = (Waiting,)
     commands = (QuestionCommand,)
     listeners = (QuestionCard,)
+    process_cards = (QuestionProcessCard,)
     conduct = (QuestionsConduct,)
     data = (QuestionsDataReader,)
 

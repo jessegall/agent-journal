@@ -34,6 +34,9 @@ class SubagentEntries:
     def rows(self, session: str) -> list[Subagent]:
         return self.paired(self.entries.dispatches(session))
 
+    def dispatched(self, session: str, dispatch: str) -> Subagent:
+        return next(row for row in self.rows(session) if row.dispatch == dispatch)
+
     def current_rows(self, session: str, moment: float) -> list[Subagent]:
         return [row for row in self.rows(session) if row.is_current(moment)]
 

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from journal.providers.support.profile_kind import ProfileKind
-from journal.chat.cards import Cards
+from journal.chat.card_detail import CardDetail
 from argparse import Namespace
 
 from journal.repositories.setting_rows import SettingRows
@@ -245,7 +245,7 @@ class WorkerCommand(Command):
     def list(self, args: Namespace, caller: Caller) -> int:
         workers = self.workers.scoped()
         for worker in workers:
-            print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {Cards.shortened(worker.brief)}")
+            print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {CardDetail.shortened(worker.brief)}")
             if not worker.is_running():
                 print(f"{'':>16}files: {worker.files_line()}")
         output = [str(worker.id) for worker in workers if worker.is_running()]

@@ -19,6 +19,7 @@ from journal.http.controllers.notices import NoticeController
 from journal.http.controllers.suggestions import SuggestionController
 from journal.http.controllers.nudges import NudgeController
 from journal.http.controllers.outputs import OutputController
+from journal.http.controllers.process_cards import ProcessCardController
 from journal.http.controllers.plans import PlanController
 from journal.http.controllers.plugins import PluginController
 from journal.http.controllers.profiles import ProfileController
@@ -95,7 +96,7 @@ class Routes:
         router.post(f"{API}/migration/start", migration.start)
         router.get(f"{API}/entries", entries.index)
         router.get(f"{API}/entries/stream", entries.stream)
-        router.get(f"{API}/outputs/views", get(OutputController).progress)
+        router.get(f"{API}/cards/active", get(ProcessCardController).fields)
         router.get(f"{API}/outputs/{{id}}", get(OutputController).show)
         router.get(f"{API}/voices", get(VoiceController).index)
         router.post(f"{API}/voices/choose", get(VoiceController).choose)

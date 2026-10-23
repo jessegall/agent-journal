@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.19.0
+
+- Every card in the chat is a moment card or a process card, chosen where it is made. A moment card shows a moment as it was, such as a task moved, a skill loaded or a worker clocked out, and is never changed. A process card follows one process, such as a running command, a dispatch, an open question or a slow route, and is updated in place. While the process runs, the chat asks it once a second for what it shows now, through one endpoint for every kind of card, where only running commands were asked before.
+- The shipped pytest reader picks a run's summary only where the line starts with it, so a test's source quoted in a failure no longer ends up on the run's card.
+
 ## 4.18.0
 
 - A task handed to a worker is delegated, a state of its own: it never counts as the dispatching agent's task in hand, so the agent is free to start another; merging the worker's work finishes it, releasing the worker opens it again, and sending the worker back keeps it delegated. The task list, inspector and badges show it as With a worker, in a tone of its own. Tasks workers hold today are moved to it.

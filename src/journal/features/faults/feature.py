@@ -5,6 +5,7 @@ from journal.features.faults.commands.developer_command import DeveloperCommand
 from journal.features.faults.jobs.developer_write import DeveloperWrite
 from journal.features.faults.listeners.slow_job_notice import SlowJobNotice
 from journal.features.faults.seeds.stale_test_run_files import StaleTestRunFiles
+from journal.features.faults.support.slow_request_process_card import SlowRequestProcessCard
 
 
 class Faults(Feature):
@@ -26,4 +27,5 @@ class Faults(Feature):
     listeners = (SlowJobNotice,)
     seeds = (StaleTestRunFiles,)
     jobs = (DeveloperWrite,)
+    process_cards = (SlowRequestProcessCard,)
     commands = (DeveloperCommand,)

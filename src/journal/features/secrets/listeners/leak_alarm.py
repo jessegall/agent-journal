@@ -1,7 +1,7 @@
 import time
 
 from journal.support.masks import Masks
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.events.agent.ticked import Ticked
 from journal.events.agent_listener import AgentListener
 from journal.support.card_kind import CardKind
@@ -12,7 +12,7 @@ ALARM_INTERVAL_SECONDS = 600.0
 class LeakAlarm(AgentListener[Ticked]):
     """A secret's value that reached a write was masked there; at the next tick the user is shown which, so the leak is seen and not only stopped."""
 
-    def __init__(self, masks: Masks, cards: Cards) -> None:
+    def __init__(self, masks: Masks, cards: MomentCards) -> None:
         self.masks, self.cards = masks, cards
         self._said_at = 0.0
 

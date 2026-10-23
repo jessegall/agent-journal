@@ -1,13 +1,13 @@
 from journal.events.agent.line_delivered import LineDelivered
 from journal.events.agent_listener import AgentListener
 from journal.support.card_kind import CardKind
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 
 
 class DispatchRefusalCards(AgentListener[LineDelivered]):
     """A dispatch held in favour of idle workers is one mark in the chat: refused, and how many idle workers could take it, the idle list in its lines."""
 
-    def __init__(self, cards: Cards) -> None:
+    def __init__(self, cards: MomentCards) -> None:
         self.cards = cards
 
     def handle(self, event: LineDelivered) -> None:

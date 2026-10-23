@@ -1,7 +1,7 @@
 from journal.features.shell.support.ended_output import EndedOutput
 from journal.features.shell.support.output_reads import OutputReads
 from journal.features.shell.support.output_view import OutputView
-from journal.features.shell.support.output_views import OutputViews
+from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.support.readers import Readers
 from journal.features.shell.support.shell_data import ShellData
 from journal.models.agent import Agent
@@ -16,8 +16,8 @@ HISTORY_READS = 26
 class ShellDataReader:
     """Reads the shell feature's part of the feature data for an agent."""
 
-    def __init__(self, outputs: CommandOutputs, entries: Entries, readers: Readers, views: OutputViews, aliases: Aliases) -> None:
-        self.outputs, self.entries, self.readers, self.views, self.aliases = outputs, entries, readers, views, aliases
+    def __init__(self, outputs: CommandOutputs, entries: Entries, readers: Readers, card: OutputProcessCard, aliases: Aliases) -> None:
+        self.outputs, self.entries, self.readers, self.card, self.aliases = outputs, entries, readers, card, aliases
 
     def read(self, agent: Agent) -> ShellData:
         from journal.features.shell.feature import Shell
@@ -53,4 +53,4 @@ class ShellDataReader:
 
     def watch(self, agent: Agent) -> OutputView:
         watched = self.outputs.watched(agent.session)
-        return self.views.card_view(watched[0]) if watched else OutputView.empty()
+        return self.card.card_view(watched[0]) if watched else OutputView.empty()

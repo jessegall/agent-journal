@@ -4,7 +4,7 @@ from journal.models.reminder import Reminder
 from journal.models.rule import Rule
 from journal.support.actor import Actor
 from journal.support.actor_kind import ActorKind
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.support.card_kind import CardKind
 from journal.models.support.ref import Ref
 from journal.repositories.scope import Scope
@@ -15,7 +15,7 @@ MEMORY_KINDS = {Fact: ("Fact", CardKind.FACTS), Rule: ("Rule", CardKind.RULES), 
 class MemoryCards:
     """A card in the chat for what happened to a fact, a rule or a reminder: its noun, number and the verb, and the row it opens; a rule, which is the project's, is shown in the environment of the act."""
 
-    def __init__(self, cards: Cards, scope: Scope) -> None:
+    def __init__(self, cards: MomentCards, scope: Scope) -> None:
         self.cards, self.scope = cards, scope
 
     def show(self, row: Model, actor: Actor, verb: str, icon: str = "rules", tone: str = "") -> None:

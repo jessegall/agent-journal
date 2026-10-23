@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent_listener import AgentListener
 from journal.support.skill import Skill
@@ -14,7 +14,7 @@ class SkillCard(AgentListener[ToolFinished]):
 
     blocking = True
 
-    def __init__(self, agents: Agents, files: SkillFiles, cards: Cards, clock: Clock) -> None:
+    def __init__(self, agents: Agents, files: SkillFiles, cards: MomentCards, clock: Clock) -> None:
         self.agents, self.files, self.cards, self.clock = agents, files, cards, clock
 
     def handle(self, event: ToolFinished) -> None:

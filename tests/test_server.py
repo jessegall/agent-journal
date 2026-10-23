@@ -722,7 +722,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
-    from journal.chat.cards import Cards
+    from journal.chat.moment_cards import MomentCards
     from journal.support.card_kind import CardKind
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
@@ -735,14 +735,14 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=CardKind.CHECKS)
+        app.container.get(MomentCards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=CardKind.CHECKS)
         rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if r["id"] >= n]
         assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
         assert card["creator"] == "system"
         assert card["session"] == "s1"
-        assert card["data"] == {"kind": "card", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
+        assert card["data"] == {"kind": "card", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks", "card_type": "moment"}
     finally:
         app.runtime().stop()
 
@@ -1175,10 +1175,29 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
         status, read = call(server, "GET", f"/journal/outputs/{stored.id}")
         assert status == 200 and (read["id"], read["command"], read["outcome"], read["lines"]) == (stored.id, "make test", "failed with code 2", ["one", "two", "oops"])
         assert call(server, "GET", "/journal/outputs/99")[0] == 404
-        status, views = call(server, "GET", f"/journal/outputs/views?ids={stored.id}")
-        assert status == 200 and set(views[str(stored.id)]) >= {"figure", "fraction", "ending", "count", "tone", "detail"}, "the live views of several outputs come in one answer, keyed by number, with the fields their cards show"
     finally:
         app.runtime().stop()
+
+
+def test_a_process_card_changes_in_place_and_answers_the_poll_while_a_moment_card_is_always_new(app: App, server):
+    from journal.chat.moment_cards import MomentCards
+    from journal.repositories.messages import Messages
+    from journal.support.card_kind import CardKind
+    console = app.console()
+    with app.container.get(Scope).environment(1):
+        moments = [app.container.get(MomentCards).show(1, "s1", "Check lint passed", "check", key="lint", shows=CardKind.CHECKS) for _ in range(2)]
+    assert moments[0].id != moments[1].id and moments[0].data["card_type"] == "moment", "a moment card is new each time, and nothing updates it"
+    assert console.run(["question", "ask", "Which colour?", "--options", "red", "blue"], Caller.agent("main", "s1", "claude")).code == 0
+    with app.container.get(Scope).environment(1):
+        asked = app.container.get(Messages).with_key("question:1")[0]
+    assert (asked.data["card_type"], asked.data["process"], asked.data["active"]) == ("process", "question", True), "a question's card is a process card, active while the question is open"
+    status, fields = call(server, "GET", f"/journal/cards/active?ids={asked.id},{moments[0].id}")
+    assert status == 200 and fields == {str(asked.id): {"answer": None, "active": True}}, "the poll asks each active process card's refresh, and a moment card is never asked"
+    assert console.run(["question", "answer", "1", "blue"], Caller.user("main")).code == 0
+    with app.container.get(Scope).environment(1):
+        answered = app.container.get(Messages).with_key("question:1")
+    assert [(m.id, m.data["answer"], m.data["active"]) for m in answered] == [(asked.id, "blue", False)], "the answer settles the same card in place"
+    assert call(server, "GET", f"/journal/cards/active?ids={asked.id}")[1] == {}, "a process card whose process ended is no longer polled"
 
 
 def test_a_dump_is_dropped_with_files_and_acted_on_through_the_viewer(server):
@@ -1217,7 +1236,7 @@ def viewer_paths() -> set[tuple[str, str]]:
     matched = set()
     client = (WEB / "api" / "client.js").read_text()
     for method, path, address in OWN.findall(client):
-        literal = re.sub(r"\$\{query\(.*?\)\}", "", path or address)
+        literal = re.sub(r"\$\{query\(.*?\)\}", "", path or address).split("?")[0]
         if not literal.startswith("/${") and "${session" not in literal:
             matched.add(("POST" if method == "post" else "GET", re.sub(r"\$\{[^}]*\}", "1", literal)))
     for source in [*WEB.rglob("*.js"), *WEB.rglob("*.vue")]:

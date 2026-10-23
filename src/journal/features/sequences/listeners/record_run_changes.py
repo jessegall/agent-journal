@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.events.models.updated import Updated
 from journal.events.listener import Listener
 from journal.features.sequences.support.run_tracker import RunTracker
@@ -16,7 +16,7 @@ RUN = "sequence_run"
 class RecordRunChanges(Listener[Updated]):
     """Every change to an agent's runs is kept as an entry for the agent's panel and shown as a card in the chat."""
 
-    def __init__(self, active: RunTracker, entries: Entries, cards: Cards) -> None:
+    def __init__(self, active: RunTracker, entries: Entries, cards: MomentCards) -> None:
         self.running, self.entries, self.cards = active, entries, cards
 
     def handle(self, event: Updated) -> None:

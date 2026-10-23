@@ -3,7 +3,7 @@ from journal.models.support.ref import Ref
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.sequences.support.run_tracker import RunTracker
 from journal.models.sequence import Sequence
 from journal.repositories.scope import Scope
@@ -16,7 +16,7 @@ from journal.support.card_kind import CardKind
 class SequenceCommand(Command):
     noun = "sequence"
 
-    def __init__(self, sequences: Sequences, active: RunTracker, scope: Scope, cards: Cards) -> None:
+    def __init__(self, sequences: Sequences, active: RunTracker, scope: Scope, cards: MomentCards) -> None:
         self.sequences, self.running, self.scope, self.cards = sequences, active, scope, cards
 
     def arguments(self, verbs) -> None:

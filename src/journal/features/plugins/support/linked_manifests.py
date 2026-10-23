@@ -1,7 +1,7 @@
 import hashlib
 import json
 
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.plugins.support.manifest_reader import MANIFEST, ManifestReader
 from journal.features.plugins.support.plugin_changes import PluginChanges
 from journal.features.plugins.support.plugin_folders import PluginFolders
@@ -15,7 +15,7 @@ from journal.support.card_kind import CardKind
 class LinkedManifests:
     """A linked folder's manifest changed since the user last read it: the plugin goes on as it was installed, and a card shows the change once, until the user applies it with an upgrade."""
 
-    def __init__(self, folders: PluginFolders, plugins: Plugins, cards: Cards, reader: ManifestReader) -> None:
+    def __init__(self, folders: PluginFolders, plugins: Plugins, cards: MomentCards, reader: ManifestReader) -> None:
         self.folders, self.plugins, self.cards, self.reader = folders, plugins, cards, reader
 
     def notice(self, plugin: Plugin, environment_id: int) -> None:

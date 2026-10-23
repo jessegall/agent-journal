@@ -2,7 +2,7 @@ import re
 from argparse import Namespace
 from pathlib import Path
 
-from journal.features.shell.support.output_views import OutputViews
+from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.repositories.command_outputs import CommandOutputs
 from journal.features.shell.support.activity_title import ActivityTitle
 from journal.console.command import WORKER_KINDS, Command
@@ -21,8 +21,8 @@ class ReaderCommand(Command):
     noun = "reader"
     callers = {"list": WORKER_KINDS}
 
-    def __init__(self, readers: Readers, outputs: CommandOutputs, views: OutputViews) -> None:
-        self.readers, self.outputs, self.views = readers, outputs, views
+    def __init__(self, readers: Readers, outputs: CommandOutputs, card: OutputProcessCard) -> None:
+        self.readers, self.outputs, self.card = readers, outputs, card
 
     def arguments(self, verbs) -> None:
         addition = self.verb(verbs, "add", "a reader kept in .journal/readers/: the lines a pattern matches, or what a script handed the output prints; writing an existing one anew keeps each setting a flag leaves out, and an empty value takes one away")
@@ -54,7 +54,7 @@ class ReaderCommand(Command):
                 re.compile(pattern)
             self.readers.add(reader)
         for output in self.outputs.reader_outputs(args.name):
-            self.views.card(output)
+            self.card.show(output)
         print(f"reader {args.name} added: journal output read N --reader {args.name}")
         return 0
 

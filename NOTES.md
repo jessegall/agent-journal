@@ -189,6 +189,13 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - Skills, triggers, checks, the shell runner and etiquette are built; the feature table is complete.
   A check runs `subprocess` in the project root with a ten-minute cap, on demand or on the
   clock; the clock also dispatches a journal-wide `ClockTicked`.
+- Every card in the chat is one of two kinds (task 1424, 2026-10-23). A moment card (`MomentCards`)
+  shows a moment as it was and is never updated. A process card is a class of its own per process,
+  extending `ProcessCard`, listed in its feature's `process_cards` and written through
+  `ProcessCards`. It is updated in place by its key, and while it is active the viewer asks its
+  `refresh` once a second through `GET /cards/active`. A card's data says which kind it is
+  (`card_type`). Docking stays a placement of a message, not a change to its card. "Mark" and "live"
+  are on the project's banned-word list, so the code says card, moment and process.
 
 ## Skills (built as proposed)
 

@@ -11,11 +11,10 @@ from journal.repositories.messages import Messages
 from journal.repositories.setting_rows import SettingRows
 from journal.repositories.suggestions import Suggestions
 from journal.support.actor import Actor
-from journal.chat.cards import Cards
+from journal.features.suggestions.support.suggestion_process_card import SuggestionProcessCard
 from journal.support.missing_row import MissingRow
 from journal.support.rejection import Rejection
 from journal.repositories.scope import Scope
-from journal.support.card_kind import CardKind
 
 MINUTE_SECONDS = 60
 
@@ -23,8 +22,8 @@ MINUTE_SECONDS = 60
 class SuggestionSearch:
     """Rounds of suggestions: the first a while after the journal started, then one each interval; a round makes each suggestion that applies and was never made, as one card in the chat the user answers once."""
 
-    def __init__(self, settings: SettingRows, suggestions: Suggestions, cards: Cards, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
-        self.settings, self.suggestions, self.cards, self.agents, self.environments, self.messages, self.scope = settings, suggestions, cards, agents, environments, messages, scope
+    def __init__(self, settings: SettingRows, suggestions: Suggestions, card: SuggestionProcessCard, agents: Agents, environments: Environments, messages: Messages, scope: Scope, commandments: PackageCommandments) -> None:
+        self.settings, self.suggestions, self.card, self.agents, self.environments, self.messages, self.scope = settings, suggestions, card, agents, environments, messages, scope
         self.suggesters: tuple[Suggester, ...] = (commandments,)
         self.started_at = timing.time()
         self.last_round: float | None = None
@@ -48,7 +47,7 @@ class SuggestionSearch:
         row = self.suggestions.save(Suggestion(key=suggester.key, title=suggester.title()), Actor.system())
         environment_id = self.target_environment().row_id
         with self.scope.environment(environment_id):
-            self.shown(row, suggester, environment_id)
+            self.card.show(row, suggester, environment_id)
         return row
 
     def answer(self, suggestion: Suggestion, answer: SuggestionAnswer, actor: Actor) -> str:
@@ -58,15 +57,11 @@ class SuggestionSearch:
         suggester = self.lookup(suggestion.key)
         environment_id = self.card_environment(answered)
         with self.scope.environment(environment_id):
-            self.shown(answered, suggester, environment_id)
+            self.card.show(answered, suggester, environment_id)
         return suggester.target() if answer == SuggestionAnswer.ACCEPTED else ""
 
-    def shown(self, suggestion: Suggestion, suggester: Suggester, environment_id: int) -> None:
-        data = {"kind": "suggestion", "icon": "bulb", "row": f"suggestions:{suggestion.id}", "accept": suggester.accept_label, "answer": suggestion.answer or "", "description": suggester.detail()}
-        self.cards.keyed(environment_id, self.card_key(suggestion), suggestion.title, data, Actor.system(), CardKind.SUGGESTIONS)
-
     def card_environment(self, suggestion: Suggestion) -> int:
-        return self.messages.keyed_all(self.card_key(suggestion), Actor.system())[0].environment_id
+        return self.messages.keyed_all(SuggestionProcessCard.key(suggestion), Actor.system())[0].environment_id
 
     def lookup(self, key: str) -> Suggester:
         rows = [s for s in self.suggesters if s.key == key]
@@ -77,7 +72,3 @@ class SuggestionSearch:
     def target_environment(self) -> Environment:
         present = self.agents.all_current()
         return self.environments.find(present.environment_id) if present else self.environments.all()[0]
-
-    @staticmethod
-    def card_key(suggestion: Suggestion) -> str:
-        return f"suggestion:{suggestion.id}"

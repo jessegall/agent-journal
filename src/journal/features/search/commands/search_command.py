@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import HELPER_KINDS, Command
 from journal.support.caller import Caller
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.search.support.search import CONVERSATION, Search
 from journal.repositories.scope import Scope
 from journal.support.card_kind import CardKind
@@ -15,7 +15,7 @@ class SearchCommand(Command):
     callers = {"find": HELPER_KINDS}
     default_verb = "find"
 
-    def __init__(self, search: Search, cards: Cards, scope: Scope) -> None:
+    def __init__(self, search: Search, cards: MomentCards, scope: Scope) -> None:
         self.search, self.cards, self.scope = search, cards, scope
 
     def arguments(self, verbs) -> None:
