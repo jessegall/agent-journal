@@ -1,6 +1,6 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
-from journal.features.team.support.hosted_option import HOSTED
+from journal.sync.hosted_option import HOSTED
 from journal.features.team.support.team_data import TeamData
 from journal.features.team.support.team_data_reader import TeamDataReader
 from journal.features.team.team_conduct import TeamConduct

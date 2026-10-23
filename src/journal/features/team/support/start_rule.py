@@ -1,4 +1,4 @@
-from journal.features.team.support.hosted_option import HOSTED
+from journal.sync.hosted_option import HOSTED
 from journal.models.environment import Environment
 from journal.repositories.environment_owners import EnvironmentOwners
 from journal.repositories.setting_rows import SettingRows

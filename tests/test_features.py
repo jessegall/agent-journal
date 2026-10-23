@@ -10072,3 +10072,31 @@ def test_a_hosted_journal_starts_no_agent_by_any_door(app: App):
         app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
     assert all(row["refusal"] == "" for row in json.loads(app.console().run(["environment", "json"], USER).text)), "an ordinary journal refuses none of its own"
+
+
+def test_a_hosted_journal_installs_exactly_the_teams_pinned_version_and_never_upgrades_the_team(app: App, monkeypatch):
+    from journal.features.team.feature import TeamFeature
+    from journal.features.updates.support.release_installer import ReleaseInstaller
+    from journal.features.updates.support.release_source import ReleaseSource
+    from journal.features.updates.support.updater import Updater
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.setting_rows import SettingRows
+    from journal.sync.sync_client import SyncClient
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.version import VERSION
+
+    major, minor, _ = (int(n) for n in VERSION.split("."))
+    pinned, beyond = f"{major}.{minor + 1}.0", f"{major}.{minor + 2}.0"
+    installed = []
+    monkeypatch.setattr(ReleaseSource, "tags", lambda self, prefix: [f"v{pinned}", f"v{beyond}"])
+    monkeypatch.setattr(ReleaseInstaller, "run", lambda self, ref, repository: installed.append(ref))
+    monkeypatch.setattr(SyncClient, "prepare_upgrade", lambda self: installed.append("the team's upgrade lease"))
+    app.container.get(TeamAccount).write({"address": "http://127.0.0.1:9", "token": "t", "device": 9, "account_id": 1, "team_version": pinned})
+    try:
+        app.container.get(IdBlocks).add("settings", 800000, 800100)
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        app.container.get(Updater).checked()
+        assert installed == [f"v{pinned}"], "a hosted journal installs the team's pinned version on its own, no newer one, and never takes the team's upgrade lease"
+    finally:
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)

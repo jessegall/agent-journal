@@ -13,6 +13,7 @@ from journal.features.updates.support.update_card import UpdateCard
 from journal.features.updates.support.update_data import UpdateData
 from journal.features.updates.support.update_target import UpdateTarget
 from journal.supervisor_link import SupervisorLink
+from journal.sync.hosted_option import HOSTED
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.setting_rows import SettingRows
@@ -26,7 +27,7 @@ FIRST_CHECK_DELAY_SECONDS = 60
 
 
 class Updater:
-    """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, or when they say so."""
+    """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, when they say so, or on a hosted journal as soon as the team is pinned to another version, which it never upgrades the team to itself."""
 
     def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount, client: SyncClient) -> None:
         self.account, self.client = account, client
@@ -35,6 +36,7 @@ class Updater:
         self.releases: list[Release] = []
         self.head = ""
         self.problem = ""
+        self.team_version_seen = ""
         self._checked_at = timing.time() - CHECK_INTERVAL_SECONDS + FIRST_CHECK_DELAY_SECONDS
         self._working = threading.Lock()
 
@@ -79,7 +81,10 @@ class Updater:
 
     def automatic(self) -> bool:
         from journal.features.updates.feature import Updates
-        return bool(self.settings.option(Updates.AUTO)) and self.is_published()
+        return (bool(self.settings.option(Updates.AUTO)) or self.is_hosted()) and self.is_published()
+
+    def is_hosted(self) -> bool:
+        return bool(self.settings.option(HOSTED))
 
     def latest(self) -> str:
         if self.branch():
@@ -94,7 +99,10 @@ class Updater:
 
     def tick(self, time: float) -> None:
         self.reconcile(time)
-        if time - self._checked_at >= CHECK_INTERVAL_SECONDS:
+        if self.is_hosted() and self.account.team_version() not in (VERSION, self.team_version_seen):
+            self.team_version_seen = self.account.team_version()
+            self.separate(self.checked)
+        elif time - self._checked_at >= CHECK_INTERVAL_SECONDS:
             self._checked_at = time
             self.separate(self.checked)
 
@@ -156,7 +164,7 @@ class Updater:
 
     def install_newest(self, actor: Actor) -> None:
         target = self.target()
-        if self.account.is_joined():
+        if self.account.is_joined() and not self.is_hosted():
             self.mark.step("Sending this journal's changes to the team")
             self.client.prepare_upgrade()
         self.mark.step("Installing the new version")

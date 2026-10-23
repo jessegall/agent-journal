@@ -1,4 +1,4 @@
-from journal.features.team.support.hosted_option import HOSTED
+from journal.sync.hosted_option import HOSTED
 from journal.http.support.request import Request
 from journal.http.support.session_cookie import SessionCookie
 from journal.repositories.browser_sessions import BrowserSessions
