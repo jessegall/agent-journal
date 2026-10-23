@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.23.0
+
+- A test run's card counts its dots: while it runs it shows the tests passed and failed so far beside its progress, such as Running tests 64% · 812 passed, 1 failed, and a run that ends without printing a summary ends its card on those counts.
+- When a watched run ended printing no summary, the agent is told once how to make it print one, such as taking a doubled -q out of the command and the project's pytest settings.
+
 ## 4.22.0
 
 - The sequences that write a plan, an update or a report open by telling the agent to write in your own language in plain words, plain English or plain Dutch as you speak, never in the voice.

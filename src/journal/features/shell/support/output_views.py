@@ -6,6 +6,7 @@ from journal.features.shell.support.card_line import CardLine
 from journal.features.shell.support.output_files import OutputFiles
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.readers import Readers
+from journal.features.shell.support.step_tally import StepTally
 from journal.models.command_output import CommandOutput
 
 TAIL_LINES = 10
@@ -35,14 +36,28 @@ class OutputViews:
             return OutputView.unmeasured(output.row_id, tuple(files.last(TAIL_LINES)), ending)
         reader, lines = self.readers.lookup(output.watch_reader).variant(output.stage()), files.lines()
         progress = reader.progress(lines)
-        figure = progress.text() if progress.is_known() else ""
+        tally = reader.tally(lines) if not output.ended else StepTally(0, 0)
+        figure = " · ".join(part for part in (progress.text() if progress.is_known() else "", tally.text() if tally.is_known() else "") if part)
         return OutputView(output.row_id, tuple(reader.read(lines)[-VIEW_LINES:]), figure, progress.fraction(), ending)
 
     def card_lines(self, output: CommandOutput, view: OutputView) -> tuple[str, ...]:
         files = OutputFiles(Path(output.folder))
         if not output.watch_reader or not files.is_stored():
             return view.lines
-        return tuple(CardLine.plain(line) for line in self.readers.lookup(output.watch_reader).variant(output.stage()).card_lines(files.lines())[-VIEW_LINES:])
+        reader, lines = self.readers.lookup(output.watch_reader).variant(output.stage()), files.lines()
+        summary_lines = tuple(CardLine.plain(line) for line in reader.card_lines(lines)[-VIEW_LINES:])
+        return summary_lines or self.tally_lines(output, reader.tally(lines))
+
+    @staticmethod
+    def tally_lines(output: CommandOutput, tally: StepTally) -> tuple[str, ...]:
+        return (tally.text(),) if output.ended and tally.is_known() else ()
+
+    def is_summary_missing(self, output: CommandOutput) -> bool:
+        files = OutputFiles(Path(output.folder))
+        if not output.ended or not output.watch_reader or not files.is_stored():
+            return False
+        reader, lines = self.readers.lookup(output.watch_reader).variant(output.stage()), files.lines()
+        return not reader.card_lines(lines) and reader.tally(lines).is_known()
 
     @staticmethod
     def ending_lines(output: CommandOutput) -> tuple[str, ...]:

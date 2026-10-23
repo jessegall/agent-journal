@@ -9648,3 +9648,41 @@ def test_the_writing_sequences_open_in_plain_words_and_every_fiftieth_code_edit_
         assert ("names and text in code are plain words" in edit(path)) is said, f"edit {count + 1} of {path}"
     app.runtime().deferred.drain()
     assert agents.global_matching(session="s1")[0].code_edits == 51, "an edit of a code file is counted, a document's is not"
+
+
+def test_a_test_runs_card_counts_its_dots_while_it_runs_and_ends_on_them_when_it_prints_no_summary(app: App):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.features.shell.support.output_process_card import OutputProcessCard
+    from journal.repositories.command_outputs import CommandOutputs
+    from journal.repositories.messages import Messages
+    hook(app, "SessionStart")
+    outputs, card = app.container.get(CommandOutputs), app.container.get(OutputProcessCard)
+
+    def run(name, printed):
+        folder = app.config.root / name
+        folder.mkdir()
+        (folder / "parts").write_text("R-\n")
+        (folder / "0.part").write_text("pytest")
+        (folder / "0.out").write_text(printed)
+        output = app.container.get(OutputLog).start(name, "pytest", folder, Caller.agent("main", "s1", "claude"))
+        outputs.save(outputs.find(output.id).backgrounded(), Actor.system())
+        assert app.console().run(["output", "watch", str(output.id), "--reader", "pytest"], AGENT).code == 0
+        return output.id, folder
+
+    def shown(n):
+        card.show(outputs.find(n))
+        with app.container.get(Scope).environment(MAIN):
+            return app.container.get(Messages).with_key(f"watch:{n}")[0].data
+
+    dots, folder = run("dots", "....F...                [ 45%]\n")
+    assert shown(dots)["figure"] == "Running tests 45% · 7 passed, 1 failed", "a running card shows the counts so far beside its progress"
+    (folder / "0.out").write_text("....F...                [ 45%]\ntests/test_b.py ........ [100%]\n")
+    outputs.save(outputs.find(dots).ended_with(1, 1.0), Actor.system())
+    ended = shown(dots)
+    assert ended["detail"] == "15 passed, 1 failed" and ended["summary_missing"], "an ended run with no summary ends on the counts of its dots"
+    told = [json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]) for _ in range(2)]
+    assert f"output {dots}'s card ends on counts made from its dots" in told[0] and "made from its dots" not in told[1], "the agent is told once how to make the run print its summary"
+    summed, folder = run("summed", "....                    [100%]\n")
+    (folder / "0.out").write_text("....                    [100%]\n4 passed in 0.12s\n")
+    outputs.save(outputs.find(summed).ended_with(0, 1.0), Actor.system())
+    assert (shown(summed)["detail"], shown(summed)["summary_missing"]) == ("4 passed in 0.12s", False), "a run that prints its summary ends on it"

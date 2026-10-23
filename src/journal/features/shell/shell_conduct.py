@@ -64,6 +64,8 @@ def reader_fix(watch: OutputView, tipped: tuple[str, ...]) -> tuple[Nudge, ...]:
         return (Shell.SILENT_CARD.create(n=watch.output),)
     if watch.poor_line:
         return (Shell.READER_FIX.create(reader=watch.reader, n=watch.output, line=watch.poor_line[:120]),)
+    if watch.summary_missing:
+        return (Shell.SUMMARY_REQUEST.create(n=watch.output),)
     if watch.empty_card:
         return (Shell.READER_DETAIL.create(reader=watch.reader, n=watch.output),)
     return ()
