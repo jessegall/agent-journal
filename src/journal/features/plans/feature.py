@@ -6,6 +6,7 @@ from journal.features.plans.listeners.plan_blockade import PlanBlockade
 from journal.features.plans.listeners.clear_plan_waits import ClearPlanWaits
 from journal.features.plans.listeners.count_plan_reviewers import CountPlanReviewers
 from journal.engine.nudge import Nudge
+from journal.support.option import Option
 from journal.support.skill import Skill
 from journal.features.plans.commands.plan_command import PlanCommand
 from journal.features.plans.listeners.advance_plan import AdvancePlan
@@ -21,6 +22,7 @@ from journal.features.plans.listeners.release_plan_waits import ReleasePlanWaits
 
 class Plans(Feature[PlansData]):
     ALL_BLOCKED = "all its tasks left are blocked"
+    REVIEW_TOOL_USE_LIMIT = Option("plans.review_ready_within", "Ready a reviewed plan within", "Tool uses after a plan's reviewers are all back before every write but plan and task commands waits until the plan is readied", 10, unit="tool uses")
     name = "plans"
     title = "Plans"
     help = "A plan is a goal, phases and the tasks under them, built with the user and started on their approval; following it, finishing one task starts the next."
@@ -44,7 +46,10 @@ class Plans(Feature[PlansData]):
     PLAN_REOPENED = Nudge(name, "plan_reopened", "plan {{n}} is open again: {{why}}", "`journal plan start {{n}}` goes on with it", repeat_interval=0)
     UNAPPROVED_PLAN = Nudge(name, "plan_not_approved", "plan {{n}} is not approved, so it cannot be followed", "only the user approves a plan, on the plan page or with `journal plan approve {{n}}`", repeat_interval=0)
     APPROVED_UNSTARTED = Nudge(name, "approved_unstarted", "plan {{n}} is approved and not started", "`journal plan start {{n}}` begins its first task", repeat_interval=0)
-    nudges = (UNAPPROVED_PLAN, APPROVED_UNSTARTED, NEXT_PLAN_TASK, PLAN_FINISHED, PLAN_STALLED, PLAN_POSTPONED, PLAN_ABANDONED, PLAN_APPROVED, CHECKPOINT_PHASE_END, PHASE_END, PLAN_BLOCKED, PLAN_REOPENED, BUILDER_MODE)
+    REVIEW_ENTRY_REQUEST = Nudge(name, "put_the_review_into_the_plan", "plan {{n}}'s reviewers are all back", "put what they found into the plan as tasks under its phases, then `journal plan ready {{n}} --changed \"<what the round changed>\"`", repeat_interval=0)
+    REVIEW_ENTRY_BLOCK = Nudge(name, "review_write_up_waits", "your writes wait until plan {{n}} is readied: its reviewers came back {{uses}} tool uses ago", "put what they found into it and `journal plan ready {{n}} --changed \"<what the round changed>\"`; plan and task commands and reads still go through", repeat_interval=0)
+    options = (REVIEW_TOOL_USE_LIMIT,)
+    nudges = (REVIEW_ENTRY_REQUEST, REVIEW_ENTRY_BLOCK, UNAPPROVED_PLAN, APPROVED_UNSTARTED, NEXT_PLAN_TASK, PLAN_FINISHED, PLAN_STALLED, PLAN_POSTPONED, PLAN_ABANDONED, PLAN_APPROVED, CHECKPOINT_PHASE_END, PHASE_END, PLAN_BLOCKED, PLAN_REOPENED, BUILDER_MODE)
 
     skill = Skill("plans", 'Build and follow a plan of ordered tasks; load it when the user asks for a plan or a roadmap', """
 # Plans

@@ -94,6 +94,9 @@ class Plans(ScopedRepository[Plan]):
     def reviewing(self) -> list[Plan]:
         return self.matching(state=PlanState.REVIEWING)
 
+    def reviewed(self) -> list[Plan]:
+        return self.selected(self.query().filter(state=PlanState.REVIEWING, reviewers=0).order("id"))
+
     def approved(self) -> list[Plan]:
         return self.matching(state=PlanState.APPROVED)
 

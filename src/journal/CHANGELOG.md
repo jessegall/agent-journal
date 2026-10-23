@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.26.0
+
+- Once every reviewer of a plan in review is back, the agent is told to put what they found into the plan and ready it; after ten more tool uses (the setting Ready a reviewed plan within), every write but plan and task commands waits until the plan is readied.
+
 ## 4.25.1
 
 - A worker's chat marks say each moment once, in plain words: started, sent its next job, finished and ready to check, stopped before it finished, stopped, merged, released. Its clock-in adds no mark of its own, since its dispatch or next job already says it started.

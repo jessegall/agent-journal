@@ -9765,3 +9765,32 @@ def test_a_worker_sent_and_started_shows_one_mark_a_moment_and_none_says_clocked
         texts = [m.text for m in app.container.get(MessageRows).scoped() if m.data.get("shows") == "workers"]
     assert texts == ["Worker 1, Lady Lovelace: started on claude sonnet"], "the clock-in adds no second mark to the dispatch"
     assert not any("clocked" in text for text in texts)
+
+
+def test_a_plan_whose_reviewers_are_back_holds_writes_after_ten_tool_uses_until_it_is_readied(app: App, monkeypatch):
+    keystrokes = []
+    catch_typed(app, monkeypatch, keystrokes)
+    console = app.console()
+    console.run(["plan", "create", "p", "--brief", "b"], USER)
+    console.run(["plan", "add", "1", "first"], USER)
+    console.run(["plan", "phase", "1", "one", "--when", "w"], USER)
+    console.run(["plan", "todos", "1", "1", "1"], USER)
+    hook(app, "SessionStart")
+    console.run(["environment", "overview"], AGENT)
+    console.run(["task", "create", "the review", "--start"], AGENT)
+    console.run(["plan", "review", "1"], AGENT)
+    reviewer = {"subagent_type": "journal-researcher", "description": "Lady Lovelace reads plan 1", "prompt": "read plan 1", "model": "sonnet"}
+    hook(app, "PreToolUse", tool_name="Agent", tool_input=reviewer, tool_use_id="t-1")
+    app.runtime().deferred.drain()
+    told = json.dumps(hook(app, "PostToolUse", tool_name="Agent", tool_input=reviewer, tool_use_id="t-1", tool_response="found two gaps")[1])
+    app.runtime().deferred.drain()
+    edit = lambda: hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": "a.md", "old_string": "a", "new_string": "b"})
+    said = told + json.dumps(edit()[1]) + " ".join(keystrokes)
+    assert "plan 1's reviewers are all back" in said, "the agent is told to put the review into the plan"
+    statuses = [edit()[0] for _ in range(9)]
+    held = edit()
+    assert statuses == [200] * 9 and held[0] == 409 and "your writes wait until plan 1 is readied" in held[1]["error"], (statuses, held)
+    assert console.run(["plan", "show", "1"], AGENT).code == 0, "plan commands still go through"
+    assert console.run(["plan", "ready", "1", "--changed", "two gaps filled"], AGENT).code == 0
+    app.runtime().deferred.drain()
+    assert edit()[0] == 200, "the hold is gone once the plan is ready"

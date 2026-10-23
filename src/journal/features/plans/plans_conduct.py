@@ -3,18 +3,32 @@ from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.rows.plan_approved import PlanApproved
 from journal.events.rows.plan_blocked import PlanBlocked
+from journal.events.agent.tool_starting import ToolStarting
 from journal.events.rows.plan_reopened import PlanReopened
+from journal.events.rows.plan_reviewed import PlanReviewed
 from journal.events.rows.plan_started import PlanStarted
 from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_started import TaskStarted
 
 
 class PlansConduct(Conduct):
-    """The plans feature's conduct in every state: the user's approval told, a plan blocked or open again told, the plan's next task named when the plan starts it, and the wait named when none can start, at a start or a close."""
+    """The plans feature's conduct in every state: the user's approval told, a plan blocked or open again told, the plan's next task named when the plan starts it, the wait named when none can start, at a start or a close, and a plan whose reviewers are all back told to be written into and readied, the agent's writes held once the set tool uses pass without it."""
 
     def on_plan_approved(self, event: PlanApproved, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
         return self.none(Plans.PLAN_APPROVED.create(n=event.plan_id)) if event.user_origin else self.none()
+
+    def on_plan_reviewed(self, event: PlanReviewed, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        return self.none(Plans.REVIEW_ENTRY_REQUEST.create(n=event.plan_id))
+
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
+        from journal.features.plans.feature import Plans
+        plans = event.data.part(Plans)
+        uses = event.tool_use - plans.review_tool_use
+        if event.subagent or not event.call.writes or not plans.review_plan or uses <= settings.integer(Plans.REVIEW_TOOL_USE_LIMIT):
+            return self.none()
+        return self.refuse(Plans.REVIEW_ENTRY_BLOCK.create(n=plans.review_plan, uses=uses))
 
     def on_plan_blocked(self, event: PlanBlocked, settings: Settings) -> Transition:
         from journal.features.plans.feature import Plans
