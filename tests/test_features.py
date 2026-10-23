@@ -9823,6 +9823,69 @@ def test_the_messages_and_etiquette_skills_teach_a_colleagues_comment():
     assert "A colleague's comment is not your user's" in etiquette
 
 
+def test_the_team_chat_holder_pushes_its_quiet_files_and_another_machine_takes_them_in_while_its_copy_is_clean(app: App, tmp_path):
+    import dataclasses
+    import subprocess
+    from journal.chat.cards import Cards
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.scope import Scope
+    from journal.sync.sync_status import SyncStatus
+    from journal.repositories.environments import Environments
+    from journal.repositories.messages import Messages
+    from journal.support.worktree import Worktree
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from journal.sync.team_chat import TEAM_CHAT
+    from journal.sync.team_chat_branch import TeamChatBranch
+
+    root, remote, clone = app.config.root, tmp_path / "remote.git", tmp_path / "clone"
+
+    def git(*arguments, cwd=root):
+        return subprocess.run(["git", *arguments], cwd=cwd, capture_output=True, text=True, check=True, timeout=30).stdout.strip()
+
+    git("init", "-q", "--bare", str(remote), cwd=tmp_path)
+    git("init", "-q", "-b", "main")
+    git("config", "user.name", "Ada")
+    git("config", "user.email", "ada@example.com")
+    (root / ".gitignore").write_text("secret.env\n")
+    git("add", ".gitignore")
+    git("commit", "-q", "-m", "first")
+    git("remote", "add", "origin", str(remote))
+    git("push", "-q", "origin", "main")
+    git("clone", "-q", "-b", "main", str(remote), str(clone), cwd=tmp_path)
+    team = app.container.get(Environments).lookup(TEAM_CHAT)
+    account = app.container.get(TeamAccount)
+    try:
+        account.write({"account_id": 1, "device": "d1", "holds_chat": True})
+        app.container.get(IdBlocks).add("messages", 900000, 900100)
+        holder = app.container.get(TeamChatBranch)
+        held = Worktree(root, TEAM_CHAT).created()
+        (held / "plan.txt").write_text("the agent's work\n")
+        (held / "secret.env").write_text("TOKEN=1\n")
+        holder.push(0.0)
+        holder.push(5.0)
+        assert "plan.txt" not in git("ls-tree", "--name-only", "HEAD", cwd=held), "files still changing are not committed"
+        holder.push(20.0)
+        pushed = git("ls-tree", "--name-only", "journal/team-chat", cwd=remote)
+        assert "plan.txt" in pushed and "secret.env" not in pushed, "quiet files are committed and pushed, never an ignored one"
+
+        follower = TeamChatBranch(dataclasses.replace(app.config, root=clone), account, app.container.get(Environments), app.container.get(Cards), app.container.get(SyncStatus))
+        follower.pull()
+        copy = Worktree(clone, TEAM_CHAT).path
+        assert (copy / "plan.txt").read_text() == "the agent's work\n", "another machine's worktree of the Team chat takes the holder's files"
+
+        (copy / "local.txt").write_text("a change of this machine's own\n")
+        (held / "plan.txt").write_text("more work\n")
+        holder.push(30.0)
+        holder.push(50.0)
+        follower.pull()
+        assert (copy / "plan.txt").read_text() == "the agent's work\n", "a copy with changes of its own is never reset"
+        with app.container.get(Scope).environment(team.id):
+            cards = [m.text for m in app.container.get(Messages).with_key(f"team-chat-files:{account.device_name()}")]
+        assert len(cards) == 1, "and a card in the Team chat says so"
+    finally:
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+
+
 def test_on_a_shared_journal_a_worker_branches_from_and_merges_into_its_environments_worktree_and_main_is_untouched(app: App):
     import subprocess
     from journal.features.workers.support.worker_branch import WorkerBranch
