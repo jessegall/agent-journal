@@ -31,10 +31,10 @@ from sync_server.copied_row import CopiedRow
 from sync_server.file_place import FilePlace
 from journal.sync.attachments import FOLDERS
 from journal.support.worktree import Worktree
+from journal.sync.team_chat_branch import TEAM_CHAT
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
-TEAM_CHAT = "team"
 TABLES = {folder: table for table, folder in FOLDERS.items()}
 
 

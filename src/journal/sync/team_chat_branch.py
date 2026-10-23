@@ -6,8 +6,8 @@ from journal.support.card_kind import CardKind
 from journal.support.worktree import Worktree
 from journal.sync.sync_status import SyncStatus
 from journal.sync.team_account import TeamAccount
-from journal.sync.team_chat import TEAM_CHAT
 
+TEAM_CHAT = "team"
 REMOTE = "origin"
 SHARED_BRANCH = "journal/team-chat"
 COMMIT_DELAY_SECONDS = 15
@@ -24,15 +24,28 @@ class TeamChatBranch:
     def push(self, time: float) -> None:
         if not self.worktree.path.is_dir():
             return
-        self.worktree.run_git("add", "-A")
-        files_hash = self.worktree.run_git("write-tree").stdout.strip()
+        files_hash = self.staged_hash()
         if files_hash != self.files_hash:
             self.files_hash, self.files_hash_at = files_hash, time
-        elif files_hash != self.worktree.run_git("rev-parse", "HEAD^{tree}").stdout.strip() and time - self.files_hash_at >= COMMIT_DELAY_SECONDS:
-            self.worktree.run_git("commit", "-q", "-m", "The Team chat's files")
+        elif time - self.files_hash_at >= COMMIT_DELAY_SECONDS:
+            self.commit(files_hash)
         head = self.worktree.local_branch()
         if head != self.remote_head:
             self.push_head(head)
+
+    def push_all(self) -> None:
+        if not self.worktree.path.is_dir():
+            return
+        self.commit(self.staged_hash())
+        self.push_head(self.worktree.local_branch())
+
+    def staged_hash(self) -> str:
+        self.worktree.run_git("add", "-A")
+        return self.worktree.run_git("write-tree").stdout.strip()
+
+    def commit(self, files_hash: str) -> None:
+        if files_hash != self.worktree.run_git("rev-parse", "HEAD^{tree}").stdout.strip():
+            self.worktree.run_git("commit", "-q", "-m", "The Team chat's files")
 
     def push_head(self, head: str) -> None:
         pushed = self.worktree.run_git("push", "-q", REMOTE, f"{head}:refs/heads/{SHARED_BRANCH}")

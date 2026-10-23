@@ -9784,6 +9784,12 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert eventually(lambda: any(f"new message {bob_ask['id']}" in line for line in typed)), "a message posted on Bob's machine is typed into the agent Ada's machine runs for the Team chat"
         read_line = a.console().run(["message", "read", str(bob_ask["id"])], Caller.agent("team", "chat1", "claude")).text
         assert "Bob, one of the people you work for in the Team chat" in read_line, "and it reads as Bob's"
+        git("init", "-q", "--bare", str(tmp_path / "remote.git"))
+        git("-C", str(tmp_path / "a"), "remote", "add", "origin", str(tmp_path / "remote.git"))
+        git("-C", str(tmp_path / "b"), "remote", "set-url", "origin", str(tmp_path / "remote.git"))
+        git("-C", str(tmp_path / "a"), "config", "user.name", "Ada")
+        git("-C", str(tmp_path / "a"), "config", "user.email", "ada@example.com")
+        (Worktree(tmp_path / "a", "team").created() / "draft.txt").write_text("not committed yet\n")
         stopped = []
         monkeypatch.setattr(SupervisorLink, "stop", lambda self, environment_id: stopped.append(environment_id))
         assert "you no longer hold the Team chat" in a.console().run(["team", "release"], USER).text
@@ -9791,6 +9797,12 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert "you hold the Team chat now, as Bob" in b.console().run(["team", "claim"], replace(USER, person=2)).text, "another person claims the Team chat once it is released"
         bob_start = HttpRequest(f"http://127.0.0.1:{b.server().port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "chat2"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "team"})
         assert "Bob: please run the tests" in urlopen(bob_start, timeout=5).read().decode(), "the agent the new holder's machine starts carries the Team chat's recent history"
+        assert (Worktree(tmp_path / "b", "team").path / "draft.txt").read_text() == "not committed yet\n", "a release commits and pushes the holder's files, and the new holder starts from them"
+        monkeypatch.setattr("sync_server.leases.LAPSE_SECONDS", -1)
+        a.console().run(["team", "claim"], USER)
+        with a.container.get(Scope).environment(a.container.get(Environments).existing("team").row_id):
+            lapsed = [m.text for m in a.container.get(Messages).recent(20) if "while Bob was offline" in m.text]
+        assert lapsed == ["Ada claimed the Team chat while Bob was offline: what Bob had not pushed stayed on their machine"], "a claim over a lapsed holder says their unpushed work stayed behind"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")
@@ -9841,7 +9853,7 @@ def test_the_team_chat_holder_pushes_its_quiet_files_and_another_machine_takes_t
     from journal.repositories.messages import Messages
     from journal.support.worktree import Worktree
     from journal.sync.team_account import TEAM_FILE, TeamAccount
-    from journal.sync.team_chat import TEAM_CHAT
+    from journal.sync.team_chat_branch import TEAM_CHAT
     from journal.sync.team_chat_branch import TeamChatBranch
 
     root, remote, clone = app.config.root, tmp_path / "remote.git", tmp_path / "clone"
