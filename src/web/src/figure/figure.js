@@ -105,7 +105,6 @@ export class Posing {
         this.laptop = false;
         this.tablet = false;
         this.cloth = false;
-        this.glass = "";
         this.book = null;
         this.props = new Map();
         this.stowed = new Set();
@@ -240,11 +239,6 @@ export class Posing {
     // the cloth out of the pocket, in the hand that keeps it
     holdCloth() {
         this.cloth = true;
-    }
-
-    // a magnifying glass, comically large, in the hand on `side`
-    holdGlass(side) {
-        this.glass = side;
     }
 
     holdBook(open, page, visible) {
@@ -987,7 +981,7 @@ function search(pose, stance, t) {
     trunk(pose, {lean: 26, nod: 20, turn: -SIDES[side] * 28 * sweep, twist: -SIDES[side] * 10 * sweep});
     armsAtRest(pose, stance, [side]);
     armTo(pose, side, 1, {y: 30, z: -60 + 25 * sweep, bend: 80});
-    pose.holdGlass(side);
+    pose.holdUpright("magnifying_glass", side, [0, 0, 0], {x: GLASS_LEAN});
     eyesAs(pose, "reading");
 }
 
@@ -2071,14 +2065,13 @@ export async function figureOf(bytes, voice, decoder, shows = () => true) {
         shield: handsHolding(carried, new Set(["squire_shield"])),
     };
     const laptop = laptopOf();
-    const glass = glassOf();
     const book = bookOf();
     const propByName = propsOf();
-    scene.add(laptop, glass, book, ...propByName.values());
+    scene.add(laptop, book, ...propByName.values());
     const hulls = (shown) => shown.flatMap((mesh) => [mesh, mesh.userData.hull]);
     const inHand = carried.filter((mesh) => IN_HAND.has(mesh.userData.item));
     const stowable = hulls(carried.filter((mesh) => mesh.userData.item));
-    return {scene, rig: rigOf(scene), stance, eyes, laptop, glass, book, propByName, props: [...propByName.values()], stowable, tablet: hulls(tablet), cloth: hulls(cloth), inHand: hulls(inHand)};
+    return {scene, rig: rigOf(scene), stance, eyes, laptop, book, propByName, props: [...propByName.values()], stowable, tablet: hulls(tablet), cloth: hulls(cloth), inHand: hulls(inHand)};
 }
 
 // A laptop drawn in the flat colours of the chat's own: its hinge at the origin, its keyboard toward the body (-z), its lid opened a little
@@ -2119,14 +2112,14 @@ function laptopOf() {
     return laptop;
 }
 
-// A magnifying glass in the same flat colours, comically large as the figure is drawn small: its handle from the origin up its y axis, its
-// lens in the plane of x and y above the handle
+// A magnifying glass in the same flat colours, comically large as the figure is drawn small: its handle up its y axis with the handle's
+// middle, where the hand closes on it, at the origin, its lens in the plane of x and y above the handle
 const GLASS = {radius: 0.52, rim: 0.08, handle: 0.5, grip: 0.07};
 const GLASS_COLOURS = {rim: 0x2b2e38, lens: 0xcfe6ff, handle: 0x474a52, edge: 0xa9adb8};
 // how far the handle leans forward of upright, held out in front of the body
 const GLASS_LEAN = 40;
 
-function glassOf() {
+function glassOf(glass) {
     const {radius, rim, handle, grip} = GLASS;
     const flat = (geometry, colour, more = {}) => {
         const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({color: colour, side: THREE.DoubleSide, ...more}));
@@ -2134,17 +2127,12 @@ function glassOf() {
         return mesh;
     };
     const ring = flat(new THREE.TorusGeometry(radius, rim, 12, 48), GLASS_COLOURS.rim);
-    ring.position.y = handle + radius;
+    ring.position.y = handle / 2 + radius;
     ring.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.CircleGeometry(radius + rim, 48)), new THREE.LineBasicMaterial({color: GLASS_COLOURS.edge})));
     const lens = flat(new THREE.CircleGeometry(radius, 48), GLASS_COLOURS.lens, {transparent: true, opacity: 0.35, depthWrite: false});
-    lens.position.y = handle + radius;
+    lens.position.y = handle / 2 + radius;
     const shaft = flat(new THREE.CylinderGeometry(grip, grip * 1.2, handle, 16), GLASS_COLOURS.handle);
-    shaft.position.y = handle / 2;
-    const glass = new THREE.Group();
-    glass.matrixAutoUpdate = false;
-    glass.visible = false;
     glass.add(shaft, ring, lens);
-    return glass;
 }
 
 export const BOOK = {
@@ -2283,6 +2271,7 @@ function propsOf() {
     const mallet = group("work_hammer");
     part(mallet, "handle", new THREE.CylinderGeometry(hammer.handleRadius, hammer.handleRadius, hammer.handleLength, hammer.sides), colours.handle, [0, hammer.handleLength / 2 - hammer.gripFrom, 0]);
     part(mallet, "head", new THREE.BoxGeometry(...hammer.head), colours.silver, [0, hammer.handleLength - hammer.gripFrom, 0]);
+    glassOf(group("magnifying_glass"));
     const wipe = group("polishing_cloth");
     part(wipe, "fold", new THREE.BoxGeometry(cloth.width, cloth.thickness, cloth.depth), colours.white);
     reactionPropsOf(group, part);
@@ -2460,9 +2449,8 @@ function bookOf() {
     return book;
 }
 
-function heldBookOf(world, open) {
-    const at = (name) => new THREE.Vector3().setFromMatrixPosition(world.get(name));
-    const left = at("hand_l"), right = at("hand_r");
+function heldBookOf(grips, open) {
+    const left = grips.l.clone(), right = grips.r.clone();
     const across = left.clone().sub(right).normalize();
     const up = new THREE.Vector3(0, 1, 0).addScaledVector(across, -across.y).normalize();
     const forward = across.clone().cross(up).normalize();
@@ -2500,17 +2488,6 @@ function openBook(book, open, page) {
     for (let column = 0; column <= BOOK.pageSegments; column++) rim.push(new THREE.Vector3().fromBufferAttribute(positions, column));
     for (let column = BOOK.pageSegments; column >= 0; column--) rim.push(new THREE.Vector3().fromBufferAttribute(positions, BOOK.pageSegments + 1 + column));
     leaf.userData.edge.geometry.setFromPoints(rim);
-}
-
-// Where the glass is held: its handle in the hand on `side`, leaning forward of upright the way the body faces, its lens square to the body
-function heldGlassOf(world, side) {
-    const at = (name) => new THREE.Vector3().setFromMatrixPosition(world.get(name));
-    const up = new THREE.Vector3(0, 1, 0);
-    const across = at("thigh_r").sub(at("thigh_l")).setY(0).normalize();
-    const forward = up.clone().cross(across);
-    const handle = up.clone().multiplyScalar(Math.cos(radians(GLASS_LEAN))).addScaledVector(forward, Math.sin(radians(GLASS_LEAN)));
-    const facing = across.clone().cross(handle).normalize();
-    return new THREE.Matrix4().makeBasis(across, handle, facing).setPosition(at(`hand_${side}`));
 }
 
 // Where the laptop sits: level on the thighs with its hinge at the knees, its keyboard back over the thighs, turned the way the thighs
@@ -2557,6 +2534,11 @@ function heartOver(eye) {
     return heart;
 }
 
+// where each hand's closed fingers grip, in the figure's own space, for the pose's moves
+function gripsOf(pose, moves) {
+    return Object.fromEntries(Object.keys(SIDES).map((side) => [side, pose.grip(side, [0, 0, 0]).applyMatrix4(moves.get(`hand_${side}`)).applyMatrix4(TO_GLB)]));
+}
+
 // the figure's bones placed for the pose, turned `facing` degrees, eased from `blend.from` by `blend.k` while a blend is given; the moves
 // placed are returned, so the next change can ease from them
 function place(figure, pose, facing, blend) {
@@ -2576,19 +2558,14 @@ function place(figure, pose, facing, blend) {
         if (material.uniforms.light) material.uniforms.colour.value.set(...(pose.eyeTint ?? material.userData.colour));
     }
     figure.laptop.visible = pose.laptop;
-    figure.glass.visible = Boolean(pose.glass);
     figure.book.visible = Boolean(pose.book?.visible);
     if (figure.book.visible) {
         openBook(figure.book, pose.book.open, pose.book.page);
-        figure.book.matrix.copy(heldBookOf(world, pose.book.open));
+        figure.book.matrix.copy(heldBookOf(gripsOf(pose, moves), pose.book.open));
         figure.book.matrixWorldNeedsUpdate = true;
     }
-    if (pose.glass) {
-        figure.glass.matrix.copy(heldGlassOf(world, pose.glass));
-        figure.glass.matrixWorldNeedsUpdate = true;
-    }
     for (const part of figure.tablet) part.visible = pose.tablet;
-    const occupied = pose.glass || pose.laptop || pose.book || pose.props.size > 0;
+    const occupied = pose.laptop || pose.book || pose.props.size > 0;
     for (const part of figure.stowable) part.visible = !pose.stowed.has(part.userData.item);
     for (const part of figure.inHand) part.visible = !pose.stowed.has(part.userData.item) && (!occupied || pose.keep.has(part.userData.item));
     moveProps(figure, pose, moves);

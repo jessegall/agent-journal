@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.19.2
+
+- The magnifying glass is held by the middle of its handle, inside the fist, where its handle stood beside the fist before; it is held the way every other prop is, and the book's edges sit in the fingers rather than at the wrists.
+
 ## 4.19.1
 
 - While a command runs, the figure swings a hammer it holds, one blow at a time, so its right arm no longer pumps up and down with an empty hand.
