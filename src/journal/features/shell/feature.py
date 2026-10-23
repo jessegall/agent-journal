@@ -12,6 +12,7 @@ from journal.features.shell.commands.output_command import OutputCommand
 from journal.features.shell.commands.reader_command import ReaderCommand
 from journal.support.skill import Skill
 from journal.features.shell.seeds.cut_off_outputs import CutOffOutputs
+from journal.features.shell.jobs.restart_wait import RestartWait
 from journal.features.shell.jobs.watch_refresh import WatchRefresh
 from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.seeds.default_readers import DefaultReaders
@@ -34,7 +35,7 @@ class Shell(Feature[ShellData]):
     options = (FOREGROUND, MESSAGE_FOREGROUND_LIMIT, SHOWN, READ_SHOWN, COMMAND_SHOWN, SHORT, UNREAD_OUTPUT_INTERVAL, OUTPUT_DOCK, OUTPUT_COUNT)
     listeners = (OutputNotice, WatchUpdate)
     seeds = (CutOffOutputs, DefaultReaders)
-    jobs = (WatchRefresh,)
+    jobs = (WatchRefresh, RestartWait)
     process_cards = (OutputProcessCard,)
     data = (ShellDataReader,)
     conduct = (ShellConduct,)

@@ -29,6 +29,10 @@ class CommandOutputs(ScopedRepository[CommandOutput]):
     def unended_outputs(self, numbers: list[int]) -> list[CommandOutput]:
         return [output for output in (self.find(number) for number in numbers) if not output.ended]
 
+    def active_outputs(self, environment_id: int, excluded_folder: str) -> list[CommandOutput]:
+        query = self.query().filter(environment_id=environment_id, ended=False).filter_unequal("folder", excluded_folder).order("id")
+        return [o for o in self.selected_globally(query) if self.is_running(Path(o.folder))]
+
     def moved_unended(self) -> list[CommandOutput]:
         return self.selected_globally(self.query().filter(moved=True, ended=False).order("id"))
 

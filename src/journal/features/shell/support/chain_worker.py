@@ -34,6 +34,7 @@ class ChainWorker:
         self.record = record
 
     def run(self, folder: OutputFiles, request: ShellRequest, caller: Caller, direct: bool, output_text: Callable[[bytes], None]) -> int:
+        request = request.folder_request(folder.folder)
         shell, pump = self.started(request, output_text)
         code = 0
         for i, kind in enumerate(folder.kinds()):

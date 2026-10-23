@@ -9606,3 +9606,30 @@ def test_a_task_handed_to_a_worker_is_delegated_leaves_its_dispatcher_free_and_r
     tasks.handover(tasks.find(first.id), Ref(WORKERS, worker.id), Actor.system())
     tasks.save(tasks.find(first.id).finished(datetime.now(timezone.utc), "merged"), Actor.system())
     assert tasks.find(first.id).state == TaskState.FINISHED, "merging the worker's work finishes it"
+
+
+def test_a_restart_waits_while_a_command_runs_names_it_and_goes_once_it_ends_and_goes_at_once_when_none_runs(app: App, monkeypatch):
+    from journal.features.shell.jobs.restart_wait import RestartWait
+    from journal.features.shell.support.restart_queue import RestartQueue
+    from journal.models.command_output import CommandOutput
+    from journal.repositories.command_outputs import CommandOutputs
+    sent = []
+    monkeypatch.setattr(SupervisorLink, "_send", lambda link, environment_id, verb, fields: sent.append((environment_id, verb, fields.get("name"))))
+    monkeypatch.setattr(SupervisorLink, "hosting", lambda link: MAIN)
+    monkeypatch.setattr(SupervisorLink, "running", lambda link, environments: [e for e in environments if e.row_id == MAIN])
+    folder = app.config.root / "long-run"
+    folder.mkdir()
+    with app.container.get(Scope).environment(MAIN):
+        output = app.container.get(CommandOutputs).save(CommandOutput(chain="long-run", command="sleep 600", session="s1", folder=str(folder)).backgrounded(), Actor.system())
+    queue, wait = app.container.get(RestartQueue), app.container.get(RestartWait)
+    told = app.console().run(["setup", "restart"], AGENT).text
+    assert f"outputs {output.id} still run" in told and "end any that is stuck" in told and sent == [], "the restart waits and names the running command"
+    wait.tick(0.0)
+    assert sent == [] and queue.waiting() == [MAIN], "it keeps waiting while the command runs"
+    (folder / "done").write_text("1")
+    wait.tick(0.0)
+    assert sent == [(MAIN, "restart", "journal")] and queue.waiting() == [], "it goes by itself once the command ended"
+    (folder / "done").unlink()
+    assert queue.restart(MAIN, str(folder)) == [] and len(sent) == 2, "the command asking for the restart is never waited on"
+    (folder / "done").write_text("1")
+    assert queue.restart(MAIN, "") == [] and len(sent) == 3, "with nothing running the restart goes at once"
