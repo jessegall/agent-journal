@@ -64,7 +64,17 @@ class Task(Scoped):
         return self.plan_started(time, 0)
 
     def plan_started(self, time: datetime, plan_id: int) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id, prior_state=self.state))
+        return self.progress(TaskState.STARTED, time, time, plan_id)
+
+    def delegated(self, time: datetime) -> "Task":
+        return self.progress(TaskState.DELEGATED, self.started_at or time, time, 0)
+
+    def progress(self, state: TaskState, started_at: datetime, time: datetime, plan_id: int) -> "Task":
+        event = TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id, prior_state=self.state)
+        return self.with_(state=state, started_at=started_at, suspension_reason="", block_reason="").with_event(event)
+
+    def released(self, time: float) -> "Task":
+        return self.unblocked("its worker let it go", time)
 
     def suspended(self, reason: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:

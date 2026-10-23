@@ -31,7 +31,9 @@ const wait = computed(() => (taskBoard.display.wait ? waitLine(props.task) : "")
             <span class="wait">{{ wait }}</span>
         </template>
         <span class="acts" @click.stop>
-            <Btn small @click="emit('act', next.name)">{{ next.label }}</Btn>
+            <template v-if="next">
+                <Btn small @click="emit('act', next.name)">{{ next.label }}</Btn>
+            </template>
             <Btn small :title="`More for task ${task.id} (.)`" @click="emit('more', $event.currentTarget)">
                 <Icon name="more" :size="13" />
             </Btn>

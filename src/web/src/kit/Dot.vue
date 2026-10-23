@@ -5,6 +5,7 @@ const COLOR = {
     started: "var(--progress)",
     blocked: "var(--blocking)",
     parked: "var(--parked)",
+    delegated: "var(--delegated)",
     planned: "var(--text-3)",
     done: "var(--progress)",
     asked: "var(--blocking)",

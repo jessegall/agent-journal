@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.18.0
+
+- A task handed to a worker is delegated, a state of its own: it never counts as the dispatching agent's task in hand, so the agent is free to start another; merging the worker's work finishes it, releasing the worker opens it again, and sending the worker back keeps it delegated. The task list, inspector and badges show it as With a worker, in a tone of its own. Tasks workers hold today are moved to it.
+- A session start counts every fact, rule and reminder as in the agent's context before it replies, so one made right after the start is still named when its keyword comes up; and it closes only the restart notices pinned before it began.
+
 ## 4.17.0
 
 - A reminder can be set for a moment: `journal reminder create "<text>" --at "2026-10-24 09:30"` stays quiet until then, is told to the environment's agent once at the first moment after it (or at the next session start when no agent ran), and is struck. The list and its card in the chat show its moment; the session start lists only the standing reminders.

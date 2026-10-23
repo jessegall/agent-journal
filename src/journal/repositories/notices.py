@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from journal.models.notice import Notice
 from journal.repositories.scoped_repository import ScopedRepository
 from journal.repositories.tasks import USER_PREFIX
@@ -15,5 +17,5 @@ class Notices(ScopedRepository[Notice]):
     def open_scoped(self) -> list[Notice]:
         return self.selected(self.query().filter_null("closed_at"))
 
-    def open_titled(self, titles: tuple[str, ...]) -> list[Notice]:
-        return self.selected(self.query().filter_null("closed_at").filter_listed("title", list(titles)))
+    def open_titled(self, titles: tuple[str, ...], time: datetime) -> list[Notice]:
+        return self.selected(self.query().filter_null("closed_at").filter_listed("title", list(titles)).filter_less_equal("created_at", time))

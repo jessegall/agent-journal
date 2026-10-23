@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from journal.db.connection import Connection
 from journal.db.query import Query
 from journal.events.bus import Bus
@@ -84,7 +86,7 @@ class Tasks(ScopedRepository[Task]):
         return [task for task in self.scoped() if not task.is_closed()]
 
     def unfinished_ids(self, numbers: list[int]) -> list[int]:
-        return [number for number in numbers if self.matching(id=number, state=TaskState.OPEN) or self.matching(id=number, state=TaskState.STARTED)]
+        return [number for number in numbers if self.matching(id=number, state=TaskState.OPEN) or self.matching(id=number, state=TaskState.STARTED) or self.matching(id=number, state=TaskState.DELEGATED)]
 
     def ready_waiting_tasks(self, model) -> list[Task]:
         return [task for task in self.waiting_refs(model) if not self.open_waits(task)]
@@ -118,7 +120,7 @@ class Tasks(ScopedRepository[Task]):
 
     def holder_task(self, holder: Ref) -> Task | None:
         ids = self.holder_task_ids(holder)
-        return next((task for task in self.with_state(TaskState.STARTED) if task.row_id in ids), None)
+        return next((task for task in [*self.with_state(TaskState.STARTED), *self.with_state(TaskState.DELEGATED)] if task.row_id in ids), None)
 
     def holder_task_ids(self, holder: Ref) -> tuple[int, ...]:
         return tuple(link.target.id for link in self.links.all_matching(source=holder, kind=CURRENT_TASK_LINK))
@@ -152,6 +154,8 @@ class Tasks(ScopedRepository[Task]):
                 self.links.delete(link, actor)
         if owner != holder:
             self.links.save(Link(source=holder, target=target, kind=CURRENT_TASK_LINK), actor)
+        if holder.type == WORKERS and task.state != TaskState.DELEGATED:
+            self.save(task.delegated(datetime.now(timezone.utc)), actor)
 
     def worker_task(self, task_id: int, worker: int) -> Task:
         holdings = self.holder_task_ids(Ref(WORKERS, worker))
@@ -162,6 +166,8 @@ class Tasks(ScopedRepository[Task]):
     def release(self, holder: Ref, actor: Actor) -> None:
         for link in self.links.all_matching(source=holder, kind=CURRENT_TASK_LINK):
             self.links.delete(link, actor)
+            for task in self.matching(id=link.target.id, state=TaskState.DELEGATED):
+                self.save(task.released(datetime.now(timezone.utc).timestamp()), actor)
 
     def worker_holdings(self) -> dict[int, int]:
         return {link.target.id: link.source.id for link in self.links.all_matching(kind=CURRENT_TASK_LINK) if link.source.type == WORKERS}

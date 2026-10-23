@@ -9569,3 +9569,29 @@ def test_a_reminder_set_for_a_moment_is_quiet_before_it_and_told_once_after_it_t
     listed = app.console().run(["reminder", "list"], USER).text
     assert "call the plumber" not in listed and f"water the plants (at {later})" in listed, "a told reminder is struck, and the list shows a timed one with its moment"
     assert "call the plumber" not in json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]), "and it is told once"
+
+
+def test_a_task_handed_to_a_worker_is_delegated_leaves_its_dispatcher_free_and_reopens_when_released(app: App):
+    from datetime import datetime, timezone
+
+    from journal.models.support.ref import Ref
+    from journal.models.task import Task
+    from journal.models.task_state import TaskState
+    from journal.models.worker import Worker
+    from journal.repositories.tasks import WORKERS, Tasks
+    from journal.repositories.workers import Workers
+
+    hook(app, "SessionStart")
+    tasks = app.container.get(Tasks)
+    worker = app.container.get(Workers).save(Worker(environment_id=MAIN, name="Mr Faraday"), Actor.system())
+    first = tasks.save(Task(environment_id=MAIN, title="for the worker", brief="do it"), Actor.system())
+    second = tasks.save(Task(environment_id=MAIN, title="for the agent", brief="do it"), Actor.system())
+    tasks.handover(first, Ref(WORKERS, worker.id), Actor.system())
+    assert tasks.find(first.id).state == TaskState.DELEGATED, "a task handed to a worker is delegated"
+    assert app.console().run(["task", "start", str(second.id)], AGENT).code == 0, "and the agent that handed it over is free to start another"
+    assert tasks.holder_task(Ref(WORKERS, worker.id)).id == first.id, "the worker holds it as its task in hand"
+    tasks.release(Ref(WORKERS, worker.id), Actor.system())
+    assert tasks.find(first.id).state == TaskState.OPEN, "releasing the worker opens it again"
+    tasks.handover(tasks.find(first.id), Ref(WORKERS, worker.id), Actor.system())
+    tasks.save(tasks.find(first.id).finished(datetime.now(timezone.utc), "merged"), Actor.system())
+    assert tasks.find(first.id).state == TaskState.FINISHED, "merging the worker's work finishes it"

@@ -41,6 +41,10 @@ defineProps({status: {type: String, required: true}, size: {type: Number, defaul
                         <rect x="6" y="5.6" width="1.3" height="4.8" rx="0.6" class="fill" />
                         <rect x="8.7" y="5.6" width="1.3" height="4.8" rx="0.6" class="fill" />
                     </template>
+                    <template #delegated>
+                        <circle cx="8" cy="8" r="5.6" class="stroke" />
+                        <path d="M5.4 8 H10.2 M8.4 6 L10.4 8 L8.4 10" class="stroke" />
+                    </template>
                     <template #planned>
                         <circle cx="8" cy="8" r="5.6" class="stroke dashed" />
                     </template>
@@ -80,6 +84,10 @@ defineProps({status: {type: String, required: true}, size: {type: Number, defaul
 
 .ring.parked {
     --tone: var(--parked);
+}
+
+.ring.delegated {
+    --tone: var(--delegated);
 }
 
 .stroke {

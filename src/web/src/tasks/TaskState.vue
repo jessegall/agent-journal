@@ -27,6 +27,12 @@ const reasonOnly = computed(() => waitOf(props.task)?.kind === "reason");
             <p class="note">The journal stops reminding the agent about it until it is resumed.</p>
         </section>
     </template>
+    <template v-if="status === 'delegated'">
+        <section :class="['reason', status]">
+            <span class="label">With a worker</span>
+            <p class="note">A worker holds it: merging its work finishes it, and releasing the worker opens it again.</p>
+        </section>
+    </template>
     <template v-if="status === 'blocked'">
         <section :class="['reason', status]">
             <span class="label">Blocked, waiting on</span>
@@ -61,6 +67,10 @@ const reasonOnly = computed(() => waitOf(props.task)?.kind === "reason");
 
 .state-line.parked {
     --tone: var(--tone-helper);
+}
+
+.state-line.delegated {
+    --tone: var(--delegated);
 }
 
 .state-line.done {

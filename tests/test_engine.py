@@ -629,7 +629,7 @@ def test_a_worker_clocks_in_on_its_task_and_the_main_agent_hears_it(app: App, mo
     assert app.console().run(["clock-in"], babbage).code == 0
     assert app.container.get(SessionAgents).top("w1").task_id == task.id, "clocking in moves the worker to Working on its task"
     with scope.environment(1):
-        assert tasks.find(task.id).state == "started", "and starts the task under it"
+        assert tasks.find(task.id).state == "delegated", "and keeps the task delegated to it"
     assert any("worker 1, Mr. Babbage, clocked in" in line for line in typed), "the main agent hears that the worker is at work"
     assert "a worker clocks in once each time it is sent" in app.console().run(["clock-in"], babbage).error
     with scope.environment(1):
