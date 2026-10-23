@@ -25,6 +25,10 @@ class Worktree:
         return self.root / ".claude" / "worktrees" / self.name
 
     @property
+    def folder(self) -> Path:
+        return self.path if self.path.is_dir() else self.root
+
+    @property
     def branch(self) -> str:
         return f"worktree-{self.name}"
 

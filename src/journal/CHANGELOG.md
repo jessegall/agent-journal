@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.20.0
+
+- A cd that would leave the agent's shell in another folder for every command after it is refused, naming the subshell form, ( cd src/web && … ), or a command given the folder, as git -C, npm --prefix or an absolute path; a subshell and a cd to the environment's own folder go through.
+- A subagent's end card carries the last thing it said, whichever event shows the card first.
+- A task handed to a worker no longer shows as a task started in the chat: delegation is a move of its own.
+
 ## 4.19.2
 
 - The magnifying glass is held by the middle of its handle, inside the fist, where its handle stood beside the fist before; it is held the way every other prop is, and the book's edges sit in the fingers rather than at the wrists.

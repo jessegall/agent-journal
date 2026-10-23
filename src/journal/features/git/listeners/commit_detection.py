@@ -85,8 +85,7 @@ class CommitDetection(AgentListener[ToolFinished]):
         return next((answer for answer in self.events.post(commit) if isinstance(answer, Decision)), None)
 
     def folder(self, event: ToolFinished) -> Path:
-        tree = Worktree(self.config.root, self.environments.find(event.environment_id).name)
-        return tree.path if tree.path.is_dir() else self.config.root
+        return Worktree(self.config.root, self.environments.find(event.environment_id).name).folder
 
     def merged(self, event: ToolFinished) -> Decision | None:
         delivered = subprocess.run(["git", "log", "--format=%H%x00%B%x01", "ORIG_HEAD..HEAD"], cwd=self.config.root, capture_output=True, text=True, timeout=5)

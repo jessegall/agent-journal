@@ -10,6 +10,7 @@ from journal.events.agent.tool_starting import ToolStarting
 from journal.features.shell.states.fixing_reader import FixingReader
 from journal.features.shell.support.activity_label import ActivityLabel
 from journal.features.shell.support.ended_output import EndedOutput
+from journal.features.shell.support.folder_change import FolderChange
 from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.watch_suggestions import LONG_RUNS
 from journal.support.chain import Chain
@@ -28,10 +29,10 @@ READER_REQUEST_COUNT = 3
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, a test run no counting reader reads is offered one on its first run and every fiftieth, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends; a watched card that has shown nothing for 30 seconds is named once, after a tool use or while the agent waits."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a cd that would leave the shell outside its environment's folder is refused, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, a test run no counting reader reads is offered one on its first run and every fiftieth, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends; a watched card that has shown nothing for 30 seconds is named once, after a tool use or while the agent waits."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
-        return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings), reader_suggestion_check(self, event, settings), counting_reader_check(self, event, settings)])
+        return Transition.merged(self, [journal_isolation_check(self, event, settings), folder_change_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings), reader_suggestion_check(self, event, settings), counting_reader_check(self, event, settings)])
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.shell.feature import Shell
@@ -91,6 +92,13 @@ def journal_isolation_check(state: BaseState, event: ToolStarting, settings: Set
     from journal.features.shell.feature import Shell
     journal, parts = event.call.journal_parts()
     return state.refuse(Shell.JOURNAL_COMMAND_ISOLATION.create()) if 0 < journal < parts else state.none()
+
+
+def folder_change_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:
+    from journal.features.shell.feature import Shell
+    home = event.data.part(Shell).home
+    targets = [target for target in FolderChange.targets([part.text for part in event.call.parts]) if not FolderChange.is_home(target, home)]
+    return state.refuse(Shell.FOLDER_CHANGE_REFUSAL.create(target=targets[0], home=home)) if targets else state.none()
 
 
 def reader_suggestion_check(state: BaseState, event: ToolStarting, settings: Settings) -> Transition:

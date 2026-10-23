@@ -4,7 +4,6 @@ import time
 
 from journal.chat.moment_cards import MomentCards
 from journal.events.agent.agent_event import AgentEvent
-from journal.events.agent.subagent_ended import SubagentEnded
 from journal.events.agent.tool_failed import ToolFailed
 from journal.events.agent.tool_finished import ToolFinished
 from journal.events.agent.tool_starting import ToolStarting
@@ -45,6 +44,6 @@ class SubagentCards(AgentListener[AgentEvent]):
         key = f"subagent:{row.dispatch}:ended:{int(row.ended_at)}"
         if self.cards.is_shown(key, actor):
             return
-        report = event.report if isinstance(event, SubagentEnded) and event.subagent == row.session else ""
+        report = self.subagents.report(event.session, row)
         data = SubagentCard.built(event.session, agent, row, row.state, row.reason).as_data()
         self.cards.show_fields(event.environment_id, event.session, f"Subagent {row.agent_type} ended: {row.task}", data, actor, CardKind.SUBAGENTS, report or row.task, key)

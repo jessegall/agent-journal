@@ -45,6 +45,7 @@ class Shell(Feature[ShellData]):
     READER_HINT = Nudge(name, "use_the_reader", "reader {{reader}} already reads this: {{about}}", "`journal output read N --reader {{reader}}`", repeat_interval=0)
     READER_SUGGESTION = Nudge(name, "add_a_reader", "you read outputs this way again: {{command}}", "a reader does it for you: `journal reader add <name> --pattern <regex> --about \"<what it picks>\"`, then `journal output read N --reader <name>`", repeat_interval=0)
     PARTIAL_FILE_READ = Nudge(name, "read_the_file_in_parts", "the file has {{lines}} lines, more than the {{cap}} shown at each end of a command's output", "read it in parts, with offset and limit, or grep for the line you need: everything a tool returns stays in the context for good", repeat_interval=0)
+    FOLDER_CHANGE_REFUSAL = Nudge(name, "folder_change_refused", "cd {{target}} would leave your shell in another folder for every command after it", "put it in a subshell, ( cd {{target}} && … ), or give the command the folder, as git -C, npm --prefix or an absolute path do; cd {{home}} alone is allowed", repeat_interval=0)
     JOURNAL_COMMAND_ISOLATION = Nudge(name, "journal_command_runs_alone", "a journal command runs on its own, or chained only with other journal commands", "chained with anything else it would move to the background with it; run it in a call of its own", repeat_interval=0)
     BACKGROUND_CHECK = Nudge(name, "check_the_background", "output {{background_outputs}} still running", "look at it; hung or stuck: stop it and say why", repeat_interval=300, blocks_regardless=True)
     WATCH_VIEW = Nudge(name, "watched_output", "output {{n}}, which you watch:\n{{lines}}", repeat_interval=0)
@@ -63,7 +64,7 @@ class Shell(Feature[ShellData]):
     ALIAS_WATCH = Nudge(name, "watched_alias_output", "output {{n}}, the run of journal {{name}}, is watched{{reader}}", repeat_interval=0)
     ALIAS_HINT = Nudge(name, "use_the_alias", "journal {{name}} runs this line: {{line}}", "run `journal {{name}} [args]` next time: it passes the args on and watches a long run through its reader", repeat_interval=0)
     ALIAS_SUGGESTION = Nudge(name, "add_an_alias", "you ran {{shape}} three times or more", "make it an alias, `journal alias add <name> \"<the line without the values that change>\"{{reader}}`, and run `journal <name> <those values>` from then on", repeat_interval=0)
-    nudges = (READER_FIX, READER_REWRITE_REQUEST, READER_REWRITE_NOTICE, READER_DETAIL, SILENT_CARD, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, COUNTING_READER_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
+    nudges = (READER_FIX, READER_REWRITE_REQUEST, READER_REWRITE_NOTICE, READER_DETAIL, SILENT_CARD, READER_TOPIC, READER_WATCH, ALIAS_WATCH, ALIAS_HINT, ALIAS_SUGGESTION, WATCH_VIEW, WATCH_ENDED, WATCH_SUGGESTION, COUNTING_READER_SUGGESTION, NEW_READER_SUGGESTION, BACKGROUND_MOVE, OUTPUTS_ENDED, UNREAD_OUTPUT, JOURNAL_COMMAND_ISOLATION, FOLDER_CHANGE_REFUSAL, BACKGROUND_CHECK, READER_HINT, READER_SUGGESTION, PARTIAL_FILE_READ)
 
     skill = Skill("shell", "How the journal runs your shell commands: in parts, timed, and in the background past the limit", """
 # Shell commands

@@ -131,6 +131,9 @@ class Entries(ScopedRepository[Entry]):
     def dispatches(self, session: str) -> list[Entry]:
         return self.selected(DISPATCHES.filter_json("data->session_id", session).order("id"))
 
+    def subagent_ends(self, session: str, subagent: str) -> list[Entry]:
+        return self.selected(ENTRIES.filter(kind="SubagentEnded").filter_json("data->session_id", session).filter_json("data->agent_id", subagent).order("id"))
+
     def global_dispatches(self) -> list[Entry]:
         return self.selected_globally(DISPATCHES.order("id"))
 

@@ -8843,12 +8843,22 @@ def test_the_shim_runs_an_aliases_line_typed_at_a_terminal(app: App):
     assert typed.returncode == 0 and typed.stdout == "hi from the terminal\n", typed.stdout + typed.stderr
 
 
+def test_a_cd_that_would_move_the_shell_away_is_refused_and_a_subshell_or_a_folder_named_goes_through(app: App):
+    hook(app, "SessionStart")
+    bash = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})
+    status, body = bash("cd src/web && ls")
+    assert status == 409 and "( cd src/web && … )" in body["error"], "the refusal names the subshell form"
+    for line in ("(cd src/web && ls)", "ls src/web", f"cd {app.config.root} && ls"):
+        assert bash(line)[0] == 200, f"{line} leaves the shell where it was"
+    assert bash("cd")[0] == 409, "a bare cd goes to the home folder"
+
+
 def test_a_line_an_alias_runs_is_pointed_at_it_and_a_line_run_three_times_is_asked_to_become_one(app: App):
     hook(app, "SessionStart")
     app.console().run(["alias", "add", "unit", "pytest -q"], USER)
     said = lambda command: hook(app, "PreToolUse", tool_name="Bash", tool_input={"command": command})[1].get("hookSpecificOutput", {})
     assert "journal unit runs this line: pytest -q tests" in said("pytest -q tests").get("additionalContext", "")
-    chained = said("cd src && journal unit")
+    chained = said("ls src && journal unit")
     assert chained.get("permissionDecision") != "deny" and "runs on its own" not in chained.get("additionalContext", ""), "an alias chains like any command"
     assert "three times" not in said("make build -j1").get("additionalContext", "") + said("make build -j2").get("additionalContext", "")
     assert "you ran make build three times or more" in said("make build -j3").get("additionalContext", ""), "the same shape with other values counts as the same command"

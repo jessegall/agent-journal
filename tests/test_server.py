@@ -365,7 +365,7 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
     def hook(kind, **extra):
         urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-    shell = {"command": "cd src && git status"}
+    shell = {"command": "ls src && git status"}
     try:
         hook("SessionStart")
         hook("PreToolUse", tool_name="Bash", tool_input=shell, tool_use_id="t-1")
@@ -373,7 +373,7 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
         assert call(server, "GET", "/journal/agents/1/terminal")[1] == [], "a call still running shows nothing yet"
         hook("PostToolUse", tool_name="Bash", tool_input=shell, tool_response={"stdout": "nothing to commit"}, tool_use_id="t-1")
         lines = call(server, "GET", "/journal/agents/1/terminal")[1]
-        assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "cd src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
+        assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "ls src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
         assert lines[0]["time"] < lines[1]["time"], "each part has its own time, so the pane keeps both"
         assert call(server, "GET", f"/journal/agents/1/terminal?after={lines[1]['time']}")[1] == [], "the pane asks for what came after its last line"
         hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_use_id="t-2")
@@ -394,18 +394,18 @@ def test_an_agents_doing_is_the_part_of_a_chained_command_running_now(tmp_path: 
     def hook(kind, **extra):
         urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     doing = lambda: call(server, "GET", "/journal/agents")[1]["rows"][0]["doing"]
-    shell = {"command": "cd src && git status"}
+    shell = {"command": "ls src && git status"}
     try:
         hook("SessionStart")
         hook("PreToolUse", tool_name="Bash", tool_input=shell, tool_use_id="t-1")
-        assert doing() == "cd src", "a shell call names its first part before the journal's shell starts it"
-        ShellVerbs(app).started("cd src", "c1")
-        ShellVerbs(app).ran("cd src", "c1", 0)
+        assert doing() == "ls src", "a shell call names its first part before the journal's shell starts it"
+        ShellVerbs(app).started("ls src", "c1")
+        ShellVerbs(app).ran("ls src", "c1", 0)
         ShellVerbs(app).started("git status", "c1")
         assert doing() == "git status", "then each part as it runs"
         ShellVerbs(app).ran("git status", "c1", 0, output="clean")
         hook("PostToolUse", tool_name="Bash", tool_input=shell, tool_response={"stdout": "clean"}, tool_use_id="t-1")
-        assert doing() not in ("cd src", "git status"), "a finished call is no longer what the agent is doing"
+        assert doing() not in ("ls src", "git status"), "a finished call is no longer what the agent is doing"
         hook("PreToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_use_id="t-2")
         assert doing() == "reading a file", "another tool is its verb"
         hook("PostToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_response="", tool_use_id="t-2")

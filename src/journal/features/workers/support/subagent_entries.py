@@ -37,6 +37,10 @@ class SubagentEntries:
     def dispatched(self, session: str, dispatch: str) -> Subagent:
         return next(row for row in self.rows(session) if row.dispatch == dispatch)
 
+    def report(self, session: str, row: Subagent) -> str:
+        ends = self.entries.subagent_ends(session, row.session) if row.session else []
+        return ends[-1].data.get("last_assistant_message", "") if ends else ""
+
     def current_rows(self, session: str, moment: float) -> list[Subagent]:
         return [row for row in self.rows(session) if row.is_current(moment)]
 

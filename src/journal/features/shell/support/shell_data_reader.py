@@ -4,10 +4,13 @@ from journal.features.shell.support.output_view import OutputView
 from journal.features.shell.support.output_process_card import OutputProcessCard
 from journal.features.shell.support.readers import Readers
 from journal.features.shell.support.shell_data import ShellData
+from journal.config import Config
 from journal.models.agent import Agent
 from journal.repositories.aliases import Aliases
 from journal.repositories.command_outputs import CommandOutputs
 from journal.repositories.entries import Entries
+from journal.repositories.environments import Environments
+from journal.support.worktree import Worktree
 from journal.support.moment import Moment
 
 HISTORY_READS = 26
@@ -16,8 +19,8 @@ HISTORY_READS = 26
 class ShellDataReader:
     """Reads the shell feature's part of the feature data for an agent."""
 
-    def __init__(self, outputs: CommandOutputs, entries: Entries, readers: Readers, card: OutputProcessCard, aliases: Aliases) -> None:
-        self.outputs, self.entries, self.readers, self.card, self.aliases = outputs, entries, readers, card, aliases
+    def __init__(self, outputs: CommandOutputs, entries: Entries, readers: Readers, card: OutputProcessCard, aliases: Aliases, config: Config, environments: Environments) -> None:
+        self.outputs, self.entries, self.readers, self.card, self.aliases, self.config, self.environments = outputs, entries, readers, card, aliases, config, environments
 
     def read(self, agent: Agent) -> ShellData:
         from journal.features.shell.feature import Shell
@@ -38,6 +41,7 @@ class ShellDataReader:
             tipped=tuple(tipped),
             watch=self.watch(agent),
             aliases=tuple(self.aliases.rows()),
+            home=str(Worktree(self.config.root, self.environments.find(agent.environment_id).name).folder),
         )
 
     def reader_requests(self, agent: Agent) -> tuple[str, ...]:
