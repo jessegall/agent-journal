@@ -4,6 +4,7 @@ from journal.config import Config
 from journal.db.connection import Connection
 from journal.http.handler import Handler
 from journal.http.support.identity import Identity
+from journal.http.support.login_gate import LoginGate
 from journal.http.router import Router
 from journal.http.static_files import StaticFiles
 from journal.http.threading_server import ThreadingServer
@@ -12,8 +13,8 @@ from journal.http.threading_server import ThreadingServer
 class Server:
     """One process, one port; every request is answered on a thread of its own. The port it got is written where the hook script reads it."""
 
-    def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection) -> None:
-        self.config, self.router, self.identity, self.static, self.database = config, router, identity, static, database
+    def __init__(self, config: Config, router: Router, identity: Identity, static: StaticFiles, database: Connection, gate: LoginGate) -> None:
+        self.config, self.router, self.identity, self.static, self.database, self.gate = config, router, identity, static, database, gate
         self._bound: list[ThreadingServer] = []
         self._thread = threading.Thread(target=lambda: self._bound[0].serve_requests(), name="http", daemon=True)
 
@@ -40,7 +41,7 @@ class Server:
             self.config.port_file.unlink(missing_ok=True)
 
     def _build(self) -> ThreadingServer:
-        bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static, "database": self.database})
+        bound = type("BoundHandler", (Handler,), {"router": self.router, "identity": self.identity, "static": self.static, "database": self.database, "gate": self.gate})
         return self._bind(bound)
 
     def _bind(self, handler: type[Handler]) -> ThreadingServer:

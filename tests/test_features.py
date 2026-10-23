@@ -3775,7 +3775,7 @@ def test_a_plugin_runs_as_itself_never_as_the_user(app: App):
     assert "only the user approves" in cli(["plan", "approve", "1"])[1]["error"], "a plugin never approves a plan"
     assert cli(["task", "list"], value="wrong")[0] == 403 and cli(["task", "list"], plugin="lint")[0] == 403, "a wrong token, or a plugin's name without its own, is refused"
     identity = app.container.get(Identity)
-    assert identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": token}) == Actor.plugin("echo") and identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": "x"}) == Actor.user(1), "the API names the plugin only with its token"
+    assert identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": token}, "") == Actor.plugin("echo") and identity.build({"x-journal-plugin": "echo", "x-journal-plugin-token": "x"}, "") == Actor.user(1), "the API names the plugin only with its token"
 
 
 def test_the_plugin_protocol_sends_one_line_and_reads_one_back(app: App):
@@ -9555,10 +9555,10 @@ def test_a_second_persons_viewer_and_command_line_writes_are_stamped_with_their_
     from journal.support.caller_variables import CallerVariables
     from journal.sync.team_account import TEAM_FILE, TeamAccount
 
-    assert app.container.get(Identity).build({}) == Actor.user(1), "a journal in no team is user 1's"
+    assert app.container.get(Identity).build({}, "") == Actor.user(1), "a journal in no team is user 1's"
     app.container.get(TeamAccount).write({"account_id": 7, "device": "d7"})
     app.container.get(IdBlocks).add("tasks", 7001, 7999)
-    assert app.container.get(Identity).build({}) == Actor.user(7), "the viewer writes as the person whose account this machine joined with"
+    assert app.container.get(Identity).build({}, "") == Actor.user(7), "the viewer writes as the person whose account this machine joined with"
     caller = CallerVariables("main", "claude", False).caller(app.container.get(TeamAccount).user_number())
     assert caller.actor == Actor.user(7)
     app.console().run(["task", "create", "made by the second person"], caller)
@@ -9983,3 +9983,69 @@ def test_on_a_shared_journal_a_worker_branches_from_and_merges_into_its_environm
         assert git("rev-parse", "main" if git("branch", "--list", "main") else "master") == main_before, "and main is untouched"
     finally:
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+
+
+def test_a_hosted_journal_signs_each_person_in_with_their_team_account_and_names_them_in_what_they_write(app: App, tmp_path):
+    import json
+    from urllib.error import HTTPError
+    from urllib.request import HTTPRedirectHandler, Request as HttpRequest, build_opener
+
+    from journal.features.team.feature import TeamFeature
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.messages import Messages
+    from journal.repositories.setting_rows import SettingRows
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+    from sync_server.account import ADMIN, MEMBER
+    from sync_server.team_server import TeamServer
+
+    (tmp_path / "team").mkdir()
+    team = TeamServer(tmp_path / "team")
+    team.accounts.create("ada@example.com", "Ada", "correct horse battery", ADMIN, 1.0)
+    team.accounts.create("bob@example.com", "Bob", "correct horse battery", MEMBER, 1.0)
+    server = team.started("127.0.0.1", 0)
+    journal = f"http://127.0.0.1:{app.server().port}"
+
+    class Kept(HTTPRedirectHandler):
+        def redirect_request(self, *args, **kwargs):
+            return None
+
+    opener = build_opener(Kept)
+
+    def sent(path, body=None, cookie="", form=None):
+        headers = {"X-Journal-Env": "main", **({"Cookie": cookie} if cookie else {})}
+        data = None if body is None else json.dumps(body).encode()
+        if form is not None:
+            boundary = "journalform"
+            data = "".join(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n" for name, value in form.items()).encode() + f"--{boundary}--\r\n".encode()
+            headers["Content-Type"] = f"multipart/form-data; boundary={boundary}"
+        elif data is not None:
+            headers["Content-Type"] = "application/json"
+        try:
+            with opener.open(HttpRequest(journal + path, data=data, headers=headers, method="POST" if data is not None else "GET"), timeout=10) as answer:
+                return answer.status, answer.headers, answer.read()
+        except HTTPError as refused:
+            return refused.code, refused.headers, refused.read()
+
+    def signed_in(email):
+        status, headers, body = sent("/sign-in", form={"email": email, "password": "correct horse battery"})
+        assert status == 303 and headers["Location"] == "/", body
+        return headers["Set-Cookie"].split(";")[0]
+
+    app.container.get(TeamAccount).write({"address": f"http://127.0.0.1:{server.server_address[1]}", "token": "t", "device": 9, "account_id": 9})
+    try:
+        app.container.get(IdBlocks).add("messages", 800000, 800100)
+        app.container.get(IdBlocks).add("settings", 800000, 800100)
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        assert sent("/journal/people")[0] == 401, "a hosted journal refuses the API to a browser that has not signed in"
+        assert sent("/")[1]["Location"] == "/sign-in", "and sends a page request to the sign-in"
+        assert sent("/sign-in", form={"email": "ada@example.com", "password": "wrong"})[0] == 401, "a wrong password opens no session"
+        ada, bob = signed_in("ada@example.com"), signed_in("bob@example.com")
+        assert json.loads(sent("/journal/people", cookie=ada)[2])["me"] == 1 and json.loads(sent("/journal/people", cookie=bob)[2])["me"] == 2, "each person signed in is me to their own browser"
+        posted = [json.loads(sent("/journal/messages", {"text": f"from {who}"}, cookie=cookie)[2])["id"] for who, cookie in (("Ada", ada), ("Bob", bob))]
+        stamps = [app.container.get(Messages).find(n).creator.stamp for n in posted]
+        assert stamps == ["user:1", "user:2"], "a message each person posts is stamped as theirs"
+        assert sent("/sign-out", {}, cookie=bob)[0] == 303 and sent("/journal/people", cookie=bob)[0] == 401, "a signed-out session is gone"
+    finally:
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+        team.close(server)

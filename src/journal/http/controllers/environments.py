@@ -34,7 +34,7 @@ class EnvironmentController(Controller[Environment]):
 
     def launch(self, request: Request) -> Response:
         environment = self.repository.find(request.number("id"))
-        refusal = self.owners.start_refusal(environment, self.account.user_number()) or self.chat.start_refusal(environment)
+        refusal = self.owners.start_refusal(environment, request.actor.number()) or self.chat.start_refusal(environment)
         if refusal:
             raise Rejection(refusal)
         self.launcher.start(environment.name, request.body.get("agent", "claude"))

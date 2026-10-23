@@ -16,7 +16,12 @@ export const asksUpdateStatus = (url) => url.split("?")[0].endsWith(UPDATE_STATU
 
 const failure = (status, message) => Object.assign(new Error(message), {status});
 
+const SIGN_IN = "/sign-in";
+const UNSIGNED = 401;
+
+// a hosted journal answers 401 to a browser with no session: the page goes to its sign-in
 export async function answered(response, fallback, failed = failure) {
+    if (response.status === UNSIGNED) window.location.assign(SIGN_IN);
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw Object.assign(failed(response.status, body.error || fallback), {blocked: Boolean(body.blocked), details: body});
     return body;

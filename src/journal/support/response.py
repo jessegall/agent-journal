@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from journal.support.missing_row import MissingRow
 
@@ -7,6 +7,7 @@ from journal.support.missing_row import MissingRow
 class Response:
     status: int = 200
     body: object = None
+    headers: dict = field(default_factory=dict)
 
     @classmethod
     def json(cls, body: object, status: int = 200) -> "Response":

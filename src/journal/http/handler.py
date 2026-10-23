@@ -5,6 +5,7 @@ from urllib.parse import parse_qs, urlsplit
 from journal.http.support.json_out import JsonOut
 from journal.http.support.file_response import FileResponse
 from journal.http.support.identity import Identity
+from journal.http.support.login_gate import LoginGate
 from journal.http.support.multipart import Multipart
 from journal.http.support.pooled_handler import PooledHandler
 from journal.http.support.request import Request
@@ -20,15 +21,19 @@ class Handler(PooledHandler):
     router: Router
     identity: Identity
     static: StaticFiles
+    gate: LoginGate
 
     def do_GET(self) -> None:
         request = self._request()
+        if refusal := self.gate.refusal(request):
+            return self._reply(refusal)
         if not request.path.startswith(("/journal/", "/hooks/", "/cli")) and (rows := self.static.serve(request.path)):
             return self._file(rows)
         self._answer(self._dispatched(request))
 
     def do_POST(self) -> None:
-        self._answer(self._dispatched(self._request()))
+        request = self._request()
+        self._answer(self.gate.refusal(request) or self._dispatched(request))
 
     def _dispatched(self, request: Request):
         try:
@@ -54,11 +59,11 @@ class Handler(PooledHandler):
         headers = {name.lower(): value for name, value in self.headers.items()}
         query = {k: v[-1] for k, v in parse_qs(url.query).items()}
         if headers.get("content-type", "") == "application/octet-stream":
-            return Request(self.command, url.path, query, {"raw": raw}, {}, headers, self.identity.build(headers))
+            return Request(self.command, url.path, query, {"raw": raw}, {}, headers, self.identity.build(headers, headers.get("cookie", "")))
         if headers.get("content-type", "").startswith("multipart/form-data"):
             form = Multipart(headers["content-type"], raw)
-            return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.build(headers), form.files())
-        return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.build(headers))
+            return Request(self.command, url.path, query, form.fields(), {}, headers, self.identity.build(headers, headers.get("cookie", "")), form.files())
+        return Request(self.command, url.path, query, json.loads(raw) if raw else {}, {}, headers, self.identity.build(headers, headers.get("cookie", "")))
 
     def _file(self, file: FileResponse) -> None:
         self.send_response(file.status)
@@ -91,5 +96,7 @@ class Handler(PooledHandler):
         self.send_response(response.status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        for name, value in response.headers.items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(body)

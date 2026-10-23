@@ -1,3 +1,4 @@
+from contextlib import nullcontext
 from urllib.parse import unquote
 
 from journal.features.faults.support.slow_requests import SlowRequests
@@ -14,7 +15,7 @@ from journal.repositories.scope import Scope
 
 
 class Router:
-    """Finds the route a request takes and answers it inside the environment the request names."""
+    """Finds the route a request takes and answers it inside the environment the request names, or in none for an unscoped route."""
 
     def __init__(self, scope: Scope, presence: ViewerPresence, slow: SlowRequests) -> None:
         self.scope, self.presence, self.slow = scope, presence, slow
@@ -25,6 +26,12 @@ class Router:
 
     def post(self, path: str, handler: Handler) -> None:
         self.routes.append(Route("POST", path, handler))
+
+    def get_unscoped(self, path: str, handler: Handler) -> None:
+        self.routes.append(Route("GET", path, handler, scoped=False))
+
+    def post_unscoped(self, path: str, handler: Handler) -> None:
+        self.routes.append(Route("POST", path, handler, scoped=False))
 
     def get_outward(self, path: str, handler: Handler) -> None:
         self.routes.append(Route("GET", path, handler, outward=True))
@@ -47,7 +54,7 @@ class Router:
             return Response.absent(f"{request.method} {request.path}")
         route, params = matching
         try:
-            with self.scope.requested(lambda: request.environment):
+            with self.scope.requested(lambda: request.environment) if route.scoped else nullcontext():
                 if route.outward:
                     return route.handler(request.with_params({name: unquote(value) for name, value in params.items()}))
                 timer = self.slow.begin()

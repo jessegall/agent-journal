@@ -40,6 +40,14 @@ class Request:
         return float(value) if value else default
 
     @property
+    def cookie(self) -> str:
+        return self.headers.get("cookie", "")
+
+    @property
+    def protocol(self) -> str:
+        return self.headers.get("x-forwarded-proto", "")
+
+    @property
     def environment(self) -> str:
         matched = self.headers.get(ENVIRONMENT_HEADER.lower()) or self.query.get("env")
         if not matched:

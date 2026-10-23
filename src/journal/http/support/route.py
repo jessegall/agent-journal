@@ -13,12 +13,13 @@ Handler = Callable[[Request], Answer]
 
 @dataclass(frozen=True)
 class Route:
-    """One method and path pattern, such as POST /tasks/{id}/start, and what answers it."""
+    """One method and path pattern, such as POST /tasks/{id}/start, and what answers it; an unscoped one, such as the sign-in, runs in no environment."""
 
     method: str
     pattern: str
     handler: Handler
     outward: bool = False
+    scoped: bool = True
 
     def params(self, method: str, path: str) -> dict[str, str] | None:
         if method != self.method:
