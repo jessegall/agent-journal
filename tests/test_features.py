@@ -9633,3 +9633,18 @@ def test_a_restart_waits_while_a_command_runs_names_it_and_goes_once_it_ends_and
     assert queue.restart(MAIN, str(folder)) == [] and len(sent) == 2, "the command asking for the restart is never waited on"
     (folder / "done").write_text("1")
     assert queue.restart(MAIN, "") == [] and len(sent) == 3, "with nothing running the restart goes at once"
+
+
+def test_the_writing_sequences_open_in_plain_words_and_every_fiftieth_code_edit_brings_the_plain_words_reminder(app: App):
+    from journal.features.sequences.shipped import INSTRUCTION_FILES_CHECK, PLAIN_WRITING, PLAN_BUILDING, UPDATE_WRITING
+    from journal.repositories.agents import Agents
+    assert all(sequence.steps[0].startswith(PLAIN_WRITING) for sequence in (PLAN_BUILDING, UPDATE_WRITING, INSTRUCTION_FILES_CHECK)), "each sequence that writes opens with the plain words line"
+    hook(app, "SessionStart")
+    agents = app.container.get(Agents)
+    edit = lambda path: json.dumps(hook(app, "PreToolUse", tool_name="Edit", tool_input={"file_path": path, "old_string": "a", "new_string": "b"})[1])
+    for count, path, said in ((49, "src/app.py", True), (99, "src/app.vue", True), (49, "docs/notes.md", False), (50, "src/app.py", False)):
+        agent = agents.global_matching(session="s1")[0]
+        agents.save(agent.with_(code_edits=count), Actor.system())
+        assert ("names and text in code are plain words" in edit(path)) is said, f"edit {count + 1} of {path}"
+    app.runtime().deferred.drain()
+    assert agents.global_matching(session="s1")[0].code_edits == 51, "an edit of a code file is counted, a document's is not"

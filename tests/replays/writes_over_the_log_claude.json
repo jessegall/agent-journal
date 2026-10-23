@@ -527,9 +527,16 @@
     },
     {
       "name": "write 23 after the log",
-      "answer": {},
+      "answer": {
+        "hookSpecificOutput": {
+          "hookEventName": "PreToolUse",
+          "additionalContext": "names and text in code are plain words. every name, string and comment says literally what a thing is or does, in the user's own plain language, never in the voice"
+        }
+      },
       "typed": [],
-      "nudges": [],
+      "nudges": [
+        "etiquette.plain_words_in_code"
+      ],
       "stack": [
         "idle",
         "working"

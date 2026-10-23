@@ -4,6 +4,8 @@ from journal.engine.conduct import Conduct
 from journal.engine.support.settings import Settings
 from journal.engine.support.transition import Transition
 from journal.events.agent.tool_finished import ToolFinished
+from journal.events.agent.tool_starting import ToolStarting
+from journal.support.code_files import CodeFiles
 from journal.events.agent.turn_displayed import TurnDisplayed
 
 SHOP_TALK = re.compile(r"\bjournal (task|plan|message|question|fact|rule|reminder|sequence|worker|check|skill|stuck|nothing) [a-z]+\b|\[journal\]", re.I)
@@ -13,7 +15,7 @@ LONG_PARAGRAPH_CHARACTERS, SENTENCES = 400, 3
 
 
 class EtiquetteConduct(Conduct):
-    """The etiquette feature's conduct in every state: a turn for the user read once for shop talk, the third person, em dashes and run-on paragraphs, and the reminder what a journal line is every so many lines said."""
+    """The etiquette feature's conduct in every state: a turn for the user read once for shop talk, the third person, em dashes and run-on paragraphs, the reminder what a journal line is every so many lines said, and the reminder that code is written in plain words every so many edits of code files."""
 
     def on_turn_displayed(self, event: TurnDisplayed, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette
@@ -23,6 +25,13 @@ class EtiquetteConduct(Conduct):
         if runs_together(event.content):
             rows.append(Etiquette.PARAGRAPH_SPACING.create())
         return self.none(*rows)
+
+    def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
+        from journal.features.etiquette.feature import Etiquette
+        edits = settings.integer(Etiquette.PLAIN_CODE_INTERVAL)
+        if event.subagent or edits <= 0 or not CodeFiles.has_code(event.call.edited_paths) or event.data.part(Etiquette).code_edits % edits:
+            return self.none()
+        return self.none(Etiquette.PLAIN_CODE.create())
 
     def on_tool_finished(self, event: ToolFinished, settings: Settings) -> Transition:
         from journal.features.etiquette.feature import Etiquette

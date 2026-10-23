@@ -2,6 +2,11 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.22.0
+
+- The sequences that write a plan, an update or a report open by telling the agent to write in your own language in plain words, plain English or plain Dutch as you speak, never in the voice.
+- Every 50th edit the agent makes to a code file brings a reminder that names and text in code are plain words; edits of documents and other files are not counted. The number is the setting Remind to write code in plain words every.
+
 ## 4.21.1
 
 - A restart that goes at once clears a restart left waiting, so the journal is not restarted a second time.

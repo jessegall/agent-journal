@@ -25,6 +25,7 @@ class Agent(Scoped):
     skills_due: tuple[str, ...] = ()
     sequence_runs: tuple = ()
     tool_uses: int = 0
+    code_edits: int = 0
     inbox_position: int = 0
     role: AgentRole = AgentRole.MAIN
     queued_lines: tuple[str, ...] = ()
@@ -54,6 +55,9 @@ class Agent(Scoped):
 
     def tool_used(self) -> "Agent":
         return self.with_(tool_uses=self.tool_uses + 1)
+
+    def code_edited(self) -> "Agent":
+        return self.with_(code_edits=self.code_edits + 1)
 
     def compacted(self) -> "Agent":
         return self.with_(tool_uses=0, inbox_position=0)
