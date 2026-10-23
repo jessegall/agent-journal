@@ -2,6 +2,8 @@
 import {computed, ref} from "vue";
 import {api} from "../api/client.js";
 import {actsOf, editsOf} from "../domain/acts.js";
+import {DOCKABLE, isRowDocked} from "../domain/docks.js";
+import {rows} from "../sync/rows.js";
 import {label} from "../domain/tables.js";
 import TextInput from "../kit/TextInput.vue";
 import Btn from "../kit/Btn.vue";
@@ -14,6 +16,17 @@ const asking = ref(null);
 const how = ref("");
 const acts = computed(() => actsOf(props.resource));
 const editable = computed(() => Object.keys(editsOf(props.resource)).length > 0);
+const dockable = computed(() => DOCKABLE.has(props.resource.table));
+const docked = computed(() => isRowDocked(rows("messages"), props.resource.table, props.resource.id));
+
+async function dock() {
+    error.value = "";
+    try {
+        await (docked.value ? api.undockRow : api.dockRow).call(api, props.resource.table, props.resource.id);
+    } catch (e) {
+        error.value = e.message;
+    }
+}
 
 async function run(act) {
     error.value = "";
@@ -50,6 +63,11 @@ const press = (act) => (act.asks ? (asking.value = act) : run(act));
                 <Btn small @click="emit('edit')">
                     <Icon name="pencil" :size="12" />
                     Edit
+                </Btn>
+            </template>
+            <template v-if="dockable">
+                <Btn class="dock-action" kind="ghost" small :title="docked ? 'Take it down from above the chat' : 'Keep it above the chat'" @click="dock">
+                    {{ docked ? "Undock" : "Dock" }}
                 </Btn>
             </template>
             <template v-for="act in acts" :key="act.name">

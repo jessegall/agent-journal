@@ -18,8 +18,8 @@ from journal.repositories.templates import Templates
 from journal.repositories.triggers import Triggers
 from journal.repositories.workers import Workers
 from journal.support.actor import Actor
-from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
-from journal.support.card_kind import CardKind
+from journal.chat.process_cards import AUTO_DOCKED, DOCKED
+from journal.chat.row_process_card import RowProcessCard
 from journal.support.rejection import Rejection
 from journal.models.support.row_card import RowCard
 from journal.repositories.scope import Scope
@@ -30,9 +30,10 @@ class Docking:
     """The rows pinned above the chat: each is a keyed system message whose data carries docked and the row's card, the made mark where the row has one, else a card written for it; undocking leaves the message with docked false."""
 
     def __init__(self, tasks: Tasks, plans: Plans, docs: Docs, reports: Reports, facts: Facts, rules: Rules, reminders: Reminders, questions: Questions, sequences: Sequences,
-                 templates: Templates, workers: Workers, triggers: Triggers, checks: Checks, dumps: Dumps, notices: Notices, messages: Messages, cards: Cards, scope: Scope) -> None:
-        self.messages, self.cards, self.scope = messages, cards, scope
+                 templates: Templates, workers: Workers, triggers: Triggers, checks: Checks, dumps: Dumps, notices: Notices, messages: Messages, row_card: RowProcessCard, scope: Scope) -> None:
+        self.messages, self.row_card, self.scope = messages, row_card, scope
         self.kinds: dict[str, Repository] = {kind.model.noun(): kind for kind in (tasks, plans, docs, reports, facts, rules, reminders, questions, sequences, templates, workers, triggers, checks, dumps, notices)}
+        self.tables: dict[str, Repository] = {kind.model.table(): kind for kind in self.kinds.values()}
 
     def nouns(self) -> tuple[str, ...]:
         return tuple(self.kinds)
@@ -40,8 +41,15 @@ class Docking:
     def dock(self, noun: str, n: int, actor: Actor) -> Message:
         return self.dock_row(self.kinds[noun].find(n), actor)
 
+    def table_row(self, table: str, n: int) -> Model:
+        if table not in self.tables:
+            raise Rejection(f"a row of {table} cannot be docked")
+        return self.tables[table].find(n)
+
     def undock(self, noun: str, n: int, actor: Actor) -> Message:
-        row = self.kinds[noun].find(n)
+        return self.undock_row(self.kinds[noun].find(n), actor)
+
+    def undock_row(self, row: Model, actor: Actor) -> Message:
         card = self.card(row)
         if card is None or not card.data.get(DOCKED):
             raise Rejection(f"{row.heading()} is not docked")
@@ -63,8 +71,8 @@ class Docking:
         return self.messages.save(message.with_merged("data", data), actor)
 
     def card(self, row: Model) -> Message | None:
-        cards = self.messages.with_key(self.cards.creation_key(row))
+        cards = self.messages.with_key(RowProcessCard.key(row))
         return cards[0] if cards else None
 
     def new_card(self, row: Model, actor: Actor) -> Message:
-        return self.cards.keyed(self.scope.id, self.cards.creation_key(row), row.heading(), {"kind": DOCKED, **RowCard.build(row).as_data()}, actor, CardKind.CREATED)
+        return self.row_card.show_docked(self.scope.id, row, actor)

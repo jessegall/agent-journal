@@ -3,6 +3,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from journal.features.shell.support.progress import Progress
+from journal.features.shell.support.step_tally import StepTally
 from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
 from journal.models.command_output import FAILED, FINISHED
 from journal.support.rejection import Rejection
@@ -30,6 +31,9 @@ class Reader:
     topic_pattern: str = ""
     finished_pattern: str = ""
     failed_pattern: str = ""
+
+    def revised(self, **changes: object) -> "Reader":
+        return replace(self, **{name: value for name, value in changes.items() if value is not None})
 
     @classmethod
     def loaded(cls, path: Path) -> "Reader":
@@ -72,3 +76,6 @@ class Reader:
 
     def progress(self, lines: list[str]) -> Progress:
         return Progress.found(self.progress_pattern, self.label, lines, self.step_pattern)
+
+    def tally(self, lines: list[str]) -> StepTally:
+        return StepTally.counted(self.step_pattern, self.progress_pattern, lines)

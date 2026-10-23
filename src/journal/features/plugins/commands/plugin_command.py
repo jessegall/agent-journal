@@ -2,7 +2,7 @@ from argparse import Namespace
 
 from journal.console.command import Command
 from journal.support.caller import Caller
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.plugins.support.plugin_preview import PluginPreview
 from journal.features.plugins.support.plugin_aliases import PluginAliases
 from journal.features.plugins.support.plugin_installing import PluginInstalling
@@ -17,7 +17,7 @@ STEP_DESCRIPTIONS = {"needs": "needs", "setup": "runs at install", "installed": 
 class PluginCommand(Command):
     noun = "plugin"
 
-    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: Cards, scope: Scope, settings: PluginSettings, aliases: PluginAliases) -> None:
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, cards: MomentCards, scope: Scope, settings: PluginSettings, aliases: PluginAliases) -> None:
         self.plugins, self.installing, self.cards, self.scope, self.schemas, self.aliases = plugins, installing, cards, scope, settings, aliases
 
     def arguments(self, verbs) -> None:

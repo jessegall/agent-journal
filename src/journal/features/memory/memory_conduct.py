@@ -13,7 +13,7 @@ COMPACT = "compact"
 
 
 class MemoryConduct(Conduct):
-    """The memory feature's conduct in every state: at a context mark not taken yet the agent is told to decide what to keep, a write and a stop are held until it has, a fact, rule or reminder whose keyword comes up in what it writes or runs is typed back to it, and a rule the agent made is questioned once."""
+    """The memory feature's conduct in every state: at a context mark not taken yet the agent is told to decide what to keep, a write and a stop are held until it has, a fact, rule or reminder whose keyword comes up in what it writes or runs is typed back to it, a rule the agent made is questioned once, and a reminder set for a moment is told once its moment has come, at the first event after it or at the next session start."""
 
     def on_session_started(self, event: SessionStarted, settings: Settings) -> Transition:
         from journal.features.memory.feature import Memory
@@ -34,11 +34,16 @@ class MemoryConduct(Conduct):
         return self.refuse(feature.UNDECIDED_STOP.create(percent=obligations)) if obligations else self.none()
 
     def on_agent_event(self, event: AgentEvent, settings: Settings) -> Transition:
-        return Transition.merged(self, [hint_check(self, event, settings), threshold_check(self, event, settings)])
+        return Transition.merged(self, [hint_check(self, event, settings), threshold_check(self, event, settings), self.none(*due_lines(event))])
 
     def on_rule_created(self, event: RuleCreated, settings: Settings) -> Transition:
         feature = memory_feature()
         return self.none(feature.RULE_SCOPE_QUESTION.create(n=event.row_id)) if event.agent_origin else self.none()
+
+
+def due_lines(event: AgentEvent) -> list:
+    feature = memory_feature()
+    return [feature.REMINDER_DUE.create(n=reminder.id, text=reminder.text) for reminder in event.data.part(feature).due(event.time)]
 
 
 def memory_feature():

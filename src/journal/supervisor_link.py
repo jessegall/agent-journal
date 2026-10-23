@@ -54,7 +54,10 @@ class SupervisorLink:
             self.typed.queue(QueuedLine(environment_id, remainder, following))
 
     def is_busy(self, environment_id: int) -> bool:
-        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.typed.is_recent(environment_id, self.batch_seconds()) or self.is_queue_open(environment_id)
+        return self.typed.is_paused(environment_id) or self.typed.is_waiting(environment_id) or self.is_batching(environment_id)
+
+    def is_batching(self, environment_id: int) -> bool:
+        return self.typed.is_working(environment_id) and (self.typed.is_recent(environment_id, self.batch_seconds()) or self.is_queue_open(environment_id))
 
     def is_queue_open(self, environment_id: int) -> bool:
         oldest = self.typed.queue_start(environment_id)

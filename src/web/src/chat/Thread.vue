@@ -1,7 +1,7 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
 import {busyLine} from "../domain/agentState.js";
-import {openQuestion, questionView} from "../state/overlays.js";
+import {openQuestion, questionView, updateView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -25,7 +25,7 @@ import {quoted, withQuote} from "../format/quote.js";
 import {laidOut} from "../platform/view.js";
 import {mainChat, threadTurns} from "../domain/thread.js";
 import {DUMP_OFFER} from "../domain/dumpPile.js";
-import {useLiveOutputs} from "../composables/liveOutputs.js";
+import {useActiveCards} from "../composables/activeCards.js";
 import {useSharedNow} from "../composables/now.js";
 import {useScope} from "../composables/scope.js";
 import DumpWindow from "./DumpWindow.vue";
@@ -36,6 +36,7 @@ import {dockedDump, dockedRows, streamRows} from "../domain/docks.js";
 import RowDock from "./RowDock.vue";
 import WatchDock from "./WatchDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
+import UpdateOverlay from "./UpdateOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
@@ -97,7 +98,7 @@ const dumpOffer = {
     },
 };
 
-const chat = useLiveOutputs(computed(() => (scope.chat ? rows("messages") : mainChat(rows("messages")))));
+const chat = useActiveCards(computed(() => (scope.chat ? rows("messages") : mainChat(rows("messages")))));
 const mine = computed(() => chat.value.filter((m) => m.author === "user" && !m.read_at));
 
 function editLast() {
@@ -388,6 +389,9 @@ const {colleague, me} = useColleague();
         </Transition>
         <template v-if="questionView.id && questionView.owner === threadRoot">
             <QuestionOverlay :key="questionView.id" />
+        </template>
+        <template v-if="updateView.id && updateView.owner === threadRoot">
+            <UpdateOverlay :key="updateView.id" />
         </template>
         <template v-if="outputOpen">
             <OutputDialog :key="outputOpen" :n="outputOpen" :owner="colleague" @close="outputOpen = 0" />

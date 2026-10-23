@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.models.model import Model
 from journal.models.support.ref import Ref
 from journal.repositories.links import Links
@@ -15,7 +15,7 @@ DETAIL_CHARACTERS = 120
 class RejectedEdits:
     """The edits the team server rejected, put right on this machine: a field takes the value that stands, unless this machine has edited it again since, and a row deleted meanwhile is deleted here too; a card in the chat of the row's environment says whose edit was kept."""
 
-    def __init__(self, tables: SharedTables, outgoing: OutgoingChanges, links: Links, cards: Cards) -> None:
+    def __init__(self, tables: SharedTables, outgoing: OutgoingChanges, links: Links, cards: MomentCards) -> None:
         self.tables, self.outgoing, self.links, self.cards = tables, outgoing, links, cards
 
     def apply(self, rejections: tuple[RejectedField, ...]) -> None:

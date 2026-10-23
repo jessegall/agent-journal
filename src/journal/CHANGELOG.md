@@ -2,6 +2,95 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.26.0
+
+- Once every reviewer of a plan in review is back, the agent is told to put what they found into the plan and ready it; after ten more tool uses (the setting Ready a reviewed plan within), every write but plan and task commands waits until the plan is readied.
+
+## 4.25.1
+
+- A worker's chat marks say each moment once, in plain words: started, sent its next job, finished and ready to check, stopped before it finished, stopped, merged, released. Its clock-in adds no mark of its own, since its dispatch or next job already says it started.
+
+## 4.25.0
+
+- Update reports are back. After a commit the agent is offered, at most once an hour (the setting Offer to write an update at most every), to write you an update, never while one you have not read waits.
+- `journal report changes` lists what an update covers since the last one you read, by section: what waits on you, what got done, what is under way, the plans under way, the commits and what else was written. `journal report recap "<summary>"` writes it, docked at the bottom of the chat with its counts; `item`, `note` and `drop` change it.
+- Open update on its card shows the update over the chat, by section; each row opens from it, and opening it marks it read.
+
+## 4.24.1
+
+- A brief's points written on one line after the word Points, 1. ... 2. ... 3. ..., are read as that many points, so a worker proves each of them; points one to a line read as before.
+
+## 4.24.0
+
+- Every row that can be docked, a document, a report, a task, a plan and the rest, has a Dock button in its inspector, which reads Undock once the row is docked above the chat.
+
+## 4.23.2
+
+- The shipped pytest reader picks pytest's summary when no test ran, no tests ran or N deselected, so such a run's card says how it ended.
+
+## 4.23.1
+
+- A docked run's card is outlined in green once the run passed and in red once it failed; a running card keeps its plain outline.
+
+## 4.23.0
+
+- A test run's card counts its dots: while it runs it shows the tests passed and failed so far beside its progress, such as Running tests 64% · 812 passed, 1 failed, and a run that ends without printing a summary ends its card on those counts.
+- When a watched run ended printing no summary, the agent is told once how to make it print one, such as taking a doubled -q out of the command and the project's pytest settings.
+
+## 4.22.0
+
+- The sequences that write a plan, an update or a report open by telling the agent to write in your own language in plain words, plain English or plain Dutch as you speak, never in the voice.
+- Every 50th edit the agent makes to a code file brings a reminder that names and text in code are plain words; edits of documents and other files are not counted. The number is the setting Remind to write code in plain words every.
+
+## 4.21.1
+
+- A restart that goes at once clears a restart left waiting, so the journal is not restarted a second time.
+
+## 4.21.0
+
+- A restart of the journal, by journal install, journal setup restart or an update, waits while any of the environment's commands still runs, so none is cut off: the command asking for it says which outputs it waits for, to check each and end any that is stuck, and the restart starts by itself once the last ends. With none running it goes at once.
+
+## 4.20.0
+
+- A cd that would leave the agent's shell in another folder for every command after it is refused, naming the subshell form, ( cd src/web && … ), or a command given the folder, as git -C, npm --prefix or an absolute path; a subshell and a cd to the environment's own folder go through.
+- A subagent's end card carries the last thing it said, whichever event shows the card first.
+- A task handed to a worker no longer shows as a task started in the chat: delegation is a move of its own.
+
+## 4.19.2
+
+- The magnifying glass is held by the middle of its handle, inside the fist, where its handle stood beside the fist before; it is held the way every other prop is, and the book's edges sit in the fingers rather than at the wrists.
+
+## 4.19.1
+
+- While a command runs, the figure swings a hammer it holds, one blow at a time, so its right arm no longer pumps up and down with an empty hand.
+
+## 4.19.0
+
+- Every card in the chat is a moment card or a process card, chosen where it is made. A moment card shows a moment as it was, such as a task moved, a skill loaded or a worker clocked out, and is never changed. A process card follows one process, such as a running command, a dispatch, an open question or a slow route, and is updated in place. While the process runs, the chat asks it once a second for what it shows now, through one endpoint for every kind of card, where only running commands were asked before.
+- The shipped pytest reader picks a run's summary only where the line starts with it, so a test's source quoted in a failure no longer ends up on the run's card.
+
+## 4.18.0
+
+- A task handed to a worker is delegated, a state of its own: it never counts as the dispatching agent's task in hand, so the agent is free to start another; merging the worker's work finishes it, releasing the worker opens it again, and sending the worker back keeps it delegated. The task list, inspector and badges show it as With a worker, in a tone of its own. Tasks workers hold today are moved to it.
+- A session start counts every fact, rule and reminder as in the agent's context before it replies, so one made right after the start is still named when its keyword comes up; and it closes only the restart notices pinned before it began.
+
+## 4.17.0
+
+- A reminder can be set for a moment: `journal reminder create "<text>" --at "2026-10-24 09:30"` stays quiet until then, is told to the environment's agent once at the first moment after it (or at the next session start when no agent ran), and is struck. The list and its card in the chat show its moment; the session start lists only the standing reminders.
+- The state machine only answers events; typing into the terminal, the remarks and the queue are a part of their own, so nothing the agent sees changes.
+
+## 4.16.6
+
+- Writing a reader anew with `journal reader add` keeps each setting the command leaves out, its commands, step, topic, label, progress and finished and failed patterns among them; an empty value takes one away. A rewrite of the pattern alone had dropped the rest.
+
+## 4.16.5
+
+- A watched command whose card has shown nothing for 30 seconds, no line and no progress, is named to the agent once, after a tool use or while it waits, with what to do: print the command's steps, run it unbuffered, or give its reader a progress pattern.
+
+## 4.16.4
+
+- A message to an agent that has stopped is typed into its terminal at once; the window that gathers lines into one waits only while the agent works.
+
 ## 4.16.3
 
 - The chat's output dialog shows the output it was opened for; it had been asking for none and showing an error.

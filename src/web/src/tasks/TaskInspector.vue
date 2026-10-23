@@ -106,7 +106,9 @@ watch(
             </div>
         </Transition>
         <div class="dock">
-            <Btn kind="primary" @click="emit('act', next.name)">{{ next.label }}</Btn>
+            <template v-if="next">
+                <Btn kind="primary" @click="emit('act', next.name)">{{ next.label }}</Btn>
+            </template>
             <template v-for="o in others" :key="o.name">
                 <Btn @click="emit('act', o.name)">{{ o.label }}</Btn>
             </template>

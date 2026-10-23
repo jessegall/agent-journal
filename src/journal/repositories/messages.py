@@ -95,8 +95,17 @@ class Messages(ScopedRepository[Message]):
     def visitor_messages(self, share_id: int) -> list[Message]:
         return self.selected(self.query().filter_json("data->share", share_id).order("id"))
 
+    def earliest_commit(self, time: datetime) -> list[Message]:
+        return self.selected(self.query().filter_prefix("data->key", "commit:").filter_greater("created_at", time).order("id").limit(1))
+
+    def recent_commits(self, start: datetime, end: datetime, last: int) -> list[Message]:
+        return list(reversed(self.selected(self.query().filter_prefix("data->key", "commit:").filter_greater_equal("created_at", start).filter_less("created_at", end).order_descending("id").limit(last))))
+
     def keyed(self, key: str, actor: Actor) -> list[Message]:
         return self.selected(self.query().filter_json("data->key", key).filter(creator=actor))
+
+    def active_cards(self, ids: list[int]) -> list[Message]:
+        return self.selected(self.query().filter_listed("id", ids).filter_json("data->active", True))
 
     def with_key(self, key: str) -> list[Message]:
         return self.selected(self.query().filter_json("data->key", key))

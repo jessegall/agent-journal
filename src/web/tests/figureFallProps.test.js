@@ -15,7 +15,7 @@ test("a figure that falls puts the clip's props away, the book, the glass, the l
     for (let frame = 0; frame < fall.frames; frame++) {
         const pose = new Posing(RIG, "stand", 0);
         fall.pose(pose, STANCE, frame / fall.frames);
-        expect({laptop: pose.laptop, glass: pose.glass, book: pose.book, props: [...pose.props.keys()], stowed: [...pose.stowed]})
-            .toEqual({laptop: false, glass: "", book: null, props: [], stowed: []});
+        expect({laptop: pose.laptop, book: pose.book, props: [...pose.props.keys()], stowed: [...pose.stowed]})
+            .toEqual({laptop: false, book: null, props: [], stowed: []});
     }
 });

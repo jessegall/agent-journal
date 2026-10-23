@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.models.support.plugin_manifest import PluginManifest
 from journal.support.actor import Actor
@@ -13,7 +13,7 @@ from journal.support.card_kind import CardKind
 class PluginHashes:
     """The hash of each file a plugin runs, taken when you install, upgrade or switch it on and checked before each run; a plugin whose files changed is switched off with a card, until you switch it on again."""
 
-    def __init__(self, folders: PluginFolders, plugins: Plugins, cards: Cards) -> None:
+    def __init__(self, folders: PluginFolders, plugins: Plugins, cards: MomentCards) -> None:
         self.folders, self.plugins, self.cards = folders, plugins, cards
         self.checked: dict[Path, tuple[int, int, str]] = {}
 

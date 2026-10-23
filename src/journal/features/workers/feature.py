@@ -27,6 +27,8 @@ from journal.features.workers.listeners.worker_brief_record import WorkerBriefRe
 from journal.features.workers.listeners.worker_note_record import WorkerNoteRecord
 from journal.features.workers.listeners.worker_turn_record import WorkerTurnRecord
 from journal.features.workers.listeners.worker_cards import WorkerCards
+from journal.features.workers.support.subagent_process_card import SubagentProcessCard
+from journal.features.workers.support.worker_process_card import WorkerProcessCard
 from journal.engine.support.modes import Modes
 from journal.features.plans.states.plans_ready import PlansReady
 from journal.features.workers.listeners.worker_moment_cards import WorkerMomentCards
@@ -58,6 +60,7 @@ class Workers(Feature[WorkersData]):
     commands = (WorkerCommand, SubagentCommand, ArrivalCommand, TodoCommand, ProofCommand, DepartureCommand)
     seeds = (WorkersSeed, SubagentsSeed)
     jobs = (WorkerWatch,)
+    process_cards = (WorkerProcessCard, SubagentProcessCard)
     listeners = (SubagentRecord, SubagentCards, WorkerCards, WorkerMomentCards, DispatchRefusalCards, SilentWorkerRecord, WorkerTaskChanges, ShortfallReturn, TaskTouch, WorkerBriefRecord, WorkerNoteRecord, WorkerTurnRecord, SubagentTurnRecord, SubagentMessageRecord)
     data = (WorkersDataReader,)
     conduct = (WorkersConduct,)

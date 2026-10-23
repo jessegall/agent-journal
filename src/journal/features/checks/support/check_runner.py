@@ -9,7 +9,7 @@ from pathlib import Path
 from journal.models.support.ref import Ref
 
 from journal.config import Config
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.checks.support.check_output import CheckOutput
 from journal.features.checks.support.finished_run import FinishedRun
 from journal.support.actor import Actor
@@ -29,7 +29,7 @@ INTERVAL_SECONDS = 1.0
 class CheckRunner:
     """Runs one check in the project root, its progress on its row while it runs, and keeps its result and report; the run is a row event the check carries, and what the agent is told of a failure is the checks conduct's."""
 
-    def __init__(self, config: Config, checks: Checks, agents: Agents, cards: Cards) -> None:
+    def __init__(self, config: Config, checks: Checks, agents: Agents, cards: MomentCards) -> None:
         self.config, self.checks, self.agents, self.cards = config, checks, agents, cards
 
     def run(self, check: Check, actor: Actor) -> Check:

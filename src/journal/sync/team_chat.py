@@ -3,7 +3,7 @@ import time
 from journal.engine.agent_launcher import AgentLauncher
 from journal.models.environment import Environment
 from journal.repositories.environments import Environments
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.supervisor_link import SupervisorLink
 from journal.support.actor import Actor
 from journal.support.card_kind import CardKind
@@ -19,7 +19,7 @@ RENEW_SECONDS = 30
 class TeamChat:
     """Who runs the Team chat's agent: the one machine holding the team server's team-chat lease, which claims it, renews it while it runs the agent, and alone may start an agent in the Team chat. It lets the lease go by a release, which stops its agent here and commits and pushes the Team chat's files first, or loses it when it stops renewing it for the server's 90 seconds and another person claims it, whose claim says in the Team chat that what the last holder had not pushed stayed on their machine. A claim starts from the files of the last push."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, launcher: AgentLauncher, supervisor: SupervisorLink, environments: Environments, branch: TeamChatBranch, cards: Cards) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, launcher: AgentLauncher, supervisor: SupervisorLink, environments: Environments, branch: TeamChatBranch, cards: MomentCards) -> None:
         self.account, self.link, self.launcher, self.supervisor, self.environments = account, link, launcher, supervisor, environments
         self.branch, self.cards = branch, cards
         self.renewed_at = 0.0

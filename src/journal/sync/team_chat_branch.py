@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.config import Config
 from journal.repositories.environments import Environments
 from journal.support.actor import Actor
@@ -16,7 +16,7 @@ COMMIT_DELAY_SECONDS = 15
 class TeamChatBranch:
     """The Team chat's files, the same on every machine: the holder commits its worktree of the Team chat once its files have not changed for 15 seconds and pushes it to the branch journal/team-chat on origin, which every member fetches from; every other machine moves its own worktree of the Team chat to that branch's last commit when the worktree has no changes of its own, and says in the Team chat when it has. Files git ignores, the journal's folder and secrets among them, are never committed; repositories inside the project are not part of an environment's worktree, so they are not shared."""
 
-    def __init__(self, config: Config, account: TeamAccount, environments: Environments, cards: Cards, status: SyncStatus) -> None:
+    def __init__(self, config: Config, account: TeamAccount, environments: Environments, cards: MomentCards, status: SyncStatus) -> None:
         self.account, self.environments, self.cards, self.status = account, environments, cards, status
         self.worktree = Worktree(config.root, TEAM_CHAT)
         self.files_hash, self.files_hash_at, self.remote_head, self.warning_tip = "", 0.0, "", ""

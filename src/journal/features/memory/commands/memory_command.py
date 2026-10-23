@@ -20,9 +20,13 @@ class MemoryCommand(Command):
         creation.add_argument("text")
         creation.add_argument("--reason", default="")
         creation.add_argument("--keywords", default="", help="words that bring it back when you write one, comma-separated")
+        self.creation_arguments(creation)
         self.verb(verbs, "list", f"every {self.noun} here")
         self.verb(verbs, "read", f"a {self.noun} whole, which puts it in your context window").add_argument("n", type=int)
         self.verb(verbs, "strike", f"a {self.noun} that no longer holds").add_argument("n", type=int)
+
+    def creation_arguments(self, creation) -> None:
+        return None
 
     def create(self, args: Namespace, caller: Caller) -> int:
         row = self.repository.save(self.with_keywords(self.new(args), caller), caller.actor)
@@ -33,7 +37,7 @@ class MemoryCommand(Command):
     def list(self, args: Namespace, caller: Caller) -> int:
         rows = self.repository.all()
         for row in rows:
-            print(f"{row.id:>4}  {row.text}")
+            print(f"{row.id:>4}  {self.listed(row)}")
         return 0
 
     def read(self, args: Namespace, caller: Caller) -> int:
@@ -45,6 +49,9 @@ class MemoryCommand(Command):
         self.repository.delete(self.repository.find(args.n), caller.actor)
         print(f"{self.noun} {args.n} struck")
         return 0
+
+    def listed(self, row) -> str:
+        return row.text
 
     def with_keywords(self, row, caller: Caller):
         return row

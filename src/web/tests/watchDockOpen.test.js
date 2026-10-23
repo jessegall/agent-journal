@@ -45,3 +45,20 @@ test("a docked output is titled in words, names its command beneath, and opens o
     await flush();
     expect(host.querySelector(".watch-dock-output")).toBeNull();
 });
+
+test("an ended run's dock is outlined green when it passed and red when it failed, and a running one is not outlined", async () => {
+    const outlines = [];
+    for (const data of [{tone: "good", ending: "finished"}, {tone: "bad", ending: "failed with code 1"}, {tone: "", ending: ""}]) {
+        const host = document.createElement("div");
+        document.body.append(host);
+        app = createApp({render: () => h(WatchDock, {message: {...watched, data: {...watched.data, ...data}}})});
+        app.directive("tip", {});
+        app.mount(host);
+        await flush();
+        const card = host.querySelector(".chat-dock-card");
+        outlines.push(["tone-good", "tone-bad"].filter((name) => card.classList.contains(name)));
+        app.unmount();
+        app = null;
+    }
+    expect(outlines).toEqual([["tone-good"], ["tone-bad"], []]);
+});

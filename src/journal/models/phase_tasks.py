@@ -20,4 +20,4 @@ class PhaseTasks:
         return any(not task.is_closed() for task in self.tasks)
 
     def has_work_started(self) -> bool:
-        return any(task.state in (TaskState.STARTED, TaskState.FINISHED) for task in self.tasks)
+        return any(task.state in (TaskState.STARTED, TaskState.DELEGATED, TaskState.FINISHED) for task in self.tasks)

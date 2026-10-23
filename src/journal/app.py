@@ -14,6 +14,9 @@ from journal.runtime import Runtime
 from journal.features.registry import Registry
 from journal.features.standard import Standard
 from journal.engine.support.data_readers import DataReaders
+from journal.chat.process_card_poll import ProcessCardPoll
+from journal.chat.row_process_card import RowProcessCard
+from journal.repositories.messages import Messages
 from journal.repositories.setting_rows import SettingRows
 from journal.http.router import Router
 from journal.http.routes.routes import Routes
@@ -40,6 +43,7 @@ class App:
         self.container.bind(Registry, lambda: Registry(Standard.FEATURES, self.container.get(SettingRows)))
         self.container.bind(FeatureRegistry, lambda: self.container.get(Registry))
         self.container.bind(DataReaders, lambda: DataReaders({getattr(reader, "source", feature).name: self.container.get(reader) for feature in Standard.FEATURES for reader in feature.data}, self.container.get(Scope)))
+        self.container.bind(ProcessCardPoll, lambda: ProcessCardPoll(self.container.get(Messages), {RowProcessCard.name: self.container.get(RowProcessCard), **{card.name: self.container.get(card) for feature in Standard.FEATURES for card in feature.process_cards}}))
 
     def connection(self) -> Connection:
         self.config.home.mkdir(parents=True, exist_ok=True)

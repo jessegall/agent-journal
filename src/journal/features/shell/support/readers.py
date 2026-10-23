@@ -55,6 +55,10 @@ class Readers:
     def reading(self, line: str) -> Reader | ScriptReader | None:
         return next((reader for reader in self.all() if reader.commands.is_read(line)), None)
 
+    def pattern_reader(self, name: str) -> Reader | None:
+        path = self.config.readers / f"{name}.pattern"
+        return Reader.loaded(path) if path.is_file() else None
+
     def add(self, reader: Reader) -> None:
         self.config.readers.mkdir(parents=True, exist_ok=True)
         (self.config.readers / f"{reader.name}.pattern").write_text(reader.text())

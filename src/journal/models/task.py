@@ -9,6 +9,7 @@ from journal.events.rows.task_closed import TaskClosed
 from journal.events.rows.task_opened import TaskOpened
 from journal.events.rows.task_reopened import TaskReopened
 from journal.events.rows.task_wait_ended import TaskWaitEnded
+from journal.events.rows.task_delegated import TaskDelegated
 from journal.events.rows.task_started import TaskStarted
 from journal.models.scoped import Scoped
 from journal.models.task_state import TaskState
@@ -16,6 +17,8 @@ from journal.support.rejection import Rejection
 
 
 BULLET = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.+)$", re.MULTILINE)
+INLINE_POINTS = re.compile(r"\bpoints:\s*(.+)$", re.IGNORECASE | re.DOTALL)
+POINT_NUMBER = re.compile(r"(?:^|(?<=\s))(\d+)[.)]\s+")
 
 @dataclass(frozen=True)
 class Task(Scoped):
@@ -53,7 +56,15 @@ class Task(Scoped):
 
     def points(self) -> tuple[str, ...]:
         bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
-        return bullets or (self.brief.strip(),)
+        return bullets or self.inline_points() or (self.brief.strip(),)
+
+    def inline_points(self) -> tuple[str, ...]:
+        listing = INLINE_POINTS.search(self.brief)
+        segments = POINT_NUMBER.split(listing[1]) if listing else []
+        numbers, texts = segments[1::2], segments[2::2]
+        if not numbers or numbers != [str(n) for n in range(1, len(numbers) + 1)]:
+            return ()
+        return tuple(text.strip().rstrip(";").strip() for text in texts)
 
     def briefed(self, brief: str, time: float) -> "Task":
         rewritten = self.with_(brief=brief)
@@ -64,7 +75,15 @@ class Task(Scoped):
         return self.plan_started(time, 0)
 
     def plan_started(self, time: datetime, plan_id: int) -> "Task":
-        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id, prior_state=self.state))
+        event = TaskStarted(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title, plan_id=plan_id, prior_state=self.state)
+        return self.with_(state=TaskState.STARTED, started_at=time, suspension_reason="", block_reason="").with_event(event)
+
+    def delegated(self, time: datetime) -> "Task":
+        event = TaskDelegated(environment_id=self.environment_id, time=time.timestamp(), task_id=self.row_id, title=self.title)
+        return self.with_(state=TaskState.DELEGATED, started_at=self.started_at or time, suspension_reason="", block_reason="").with_event(event)
+
+    def released(self, time: float) -> "Task":
+        return self.unblocked("its worker let it go", time)
 
     def suspended(self, reason: str, time: datetime) -> "Task":
         if self.state != TaskState.STARTED:

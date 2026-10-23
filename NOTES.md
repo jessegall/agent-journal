@@ -189,6 +189,13 @@ supervisor. `v3.bak/` is the old tree and is the guide, never imported.
 - Skills, triggers, checks, the shell runner and etiquette are built; the feature table is complete.
   A check runs `subprocess` in the project root with a ten-minute cap, on demand or on the
   clock; the clock also dispatches a journal-wide `ClockTicked`.
+- Every card in the chat is one of two kinds (task 1424, 2026-10-23). A moment card (`MomentCards`)
+  shows a moment as it was and is never updated. A process card is a class of its own per process,
+  extending `ProcessCard`, listed in its feature's `process_cards` and written through
+  `ProcessCards`. It is updated in place by its key, and while it is active the viewer asks its
+  `refresh` once a second through `GET /cards/active`. A card's data says which kind it is
+  (`card_type`). Docking stays a placement of a message, not a change to its card. "Mark" and "live"
+  are on the project's banned-word list, so the code says card, moment and process.
 
 ## Skills (built as proposed)
 
@@ -1441,3 +1448,6 @@ Plan 24 builds it on the branch shared-journal, from doc 62 and report 42.
 - **Backups, restores and upgrades of a team server.** docker exec agent-journal-<project> python -m sync_server backup --data /data/team copies the live database with SQLite's online backup into /data/team/backups/team-<time>.db (or --to) and prints the path; restore --from <file> puts a copy in place of the database and is run in a one-off container on a volume no server runs on. An upgrade is docker pull and a restart: the server runs its own migrations at boot. Several projects on one host are several containers and volumes, but only one can have ports 80 and 443, which a public certificate needs; any further one takes ports of its own (TEAM_HTTPS_PORT and TEAM_HTTP_PORT in host/install.sh) with the server's own certificate, or TEAM_PLAIN_HTTP=1 behind a proxy the person runs. tests/team_image_run.py backs up a running server, restores it into a new volume and container, and finds the same rows.
 - **The team image is published with each release.** The Docker image workflow has a second job, team-image, which builds docker/team-server/Dockerfile for amd64 and arm64, pushes ghcr.io/jessegall/agent-journal-team tagged with the release (v4.x.y) and latest, signs it with cosign like the server image, and attaches to the release a copy of host/install.sh whose TEAM_VERSION default is that tag, so curl .../releases/latest/download/install.sh | sh pulls the matching server. Both jobs check the tag against src/journal/version.py, the version's one place: the root VERSION file, which still said 4.1.0, made every release since 4.1.0 fail that check, so the journal-on-a-server image has not been published since; the file is gone, and docker/Dockerfile no longer copies it. That fix reaches main with this plan's pull request, which restarts the server image's publishing too.
 
+## The state machine answers; the delivery types (task 1542, 2026-10-23)
+
+Sir Jesse, message 18488: the state machine decided and delivered at once. Now StateMachine only holds and moves each agent's stack and answers an event with a MachineReply: the agent as it stands, the decision, the lines to type, the remarks to queue and the moves the states entering and leaving the stack asked of the terminal (the Typist only records them). Delivery (engine/delivery.py) is the engine's one way to the supervisor for those replies: it makes the moves, types the lines and remarks, marks the agent working, resting or with a refused stop, handles the silence between hooks, and folds the queued lines into a hook's answer. HookAnswer is the blocking listener on every agent event (machine, then delivery); RowEventDelivery, journal panic and the boot's ending of compactions deliver the replies they get. StateMachine imports nothing of supervisor_link, and a Stack replacing another tells its leaving and arriving states, so the machine never walks a stack's states itself.

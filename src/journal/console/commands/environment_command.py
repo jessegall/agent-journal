@@ -99,7 +99,7 @@ class EnvironmentCommand(Command):
             self.matching_rows("running in the background", self.background()),
             self.matching_rows("rules in force", [f"{r.id} {r.text}" for r in self.rules.all()]),
             self.matching_rows("facts about this environment", [f"{f.id} {f.text}" for f in self.facts.scoped()]),
-            self.matching_rows("reminders here", [f"{r.id} {r.text}" for r in self.reminders.scoped()]),
+            self.matching_rows("reminders here", [f"{r.id} {r.text}" for r in self.reminders.standing()]),
         ]
         return [line for line in lines if line]
 

@@ -5,7 +5,7 @@
       "name": "the plan is created and Building a plan starts",
       "answer": null,
       "typed": [
-        "[journal] sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` to take it up, `journal sequence next` when it is done"
+        "[journal] sequence 1, step 1: Write what this asks for in the user's own language in plain words, plain English or plain Dutch as the user speaks, never in the voice you speak in. Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` to take it up, `journal sequence next` when it is done"
       ],
       "nudges": [
         "briefing.journal_ready",
@@ -21,7 +21,7 @@
     {
       "name": "a write before the goal is taken up",
       "answer": {
-        "error": "a write waits for sequence 1, step 1: Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside"
+        "error": "a write waits for sequence 1, step 1: Write what this asks for in the user's own language in plain words, plain English or plain Dutch as the user speaks, never in the voice you speak in. Agree on the plan's goal: settle with the user what is true when the plan is done, and put it in the plan's brief with `journal plan brief <plan n> \"<goal>\"`. `journal sequence follow` takes it up; `journal sequence suspend --why \"<why>\"` sets the run aside"
       },
       "typed": [],
       "nudges": [

@@ -21,6 +21,12 @@ export function streamRows(messages, now = Date.now() / 1000) {
     return messages.map((m) => (m.data?.docked === true && !isDocked(m, now) ? {...m, data: {...m.data, docked: false}} : m));
 }
 
+// The tables whose rows can be docked above the chat from their inspector.
+export const DOCKABLE = new Set(["tasks", "plans", "docs", "reports", "facts", "rules", "reminders", "questions", "sequences", "templates", "workers", "triggers", "checks", "dumps", "notices"]);
+
+// Whether the row of `table` numbered `id` sits docked above the chat, read from the messages that dock it.
+export const isRowDocked = (messages, table, id, now = Date.now() / 1000) => messages.some((m) => isDocked(m, now) && m.data.row === `${table}:${id}`);
+
 // The table and number of the row a docked message stands for, from its ref.
 export function dockedRef(message) {
     const [table, id] = String(message.data.row).split(":");

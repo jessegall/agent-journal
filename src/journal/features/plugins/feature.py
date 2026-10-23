@@ -13,6 +13,7 @@ from journal.features.plugins.support.plugins_data_reader import PluginsDataRead
 from journal.features.plugins.support.plugins_data import PluginsData
 from journal.engine.nudge import Nudge
 from journal.features.plugins.listeners.release_upgrade import ReleaseUpgrade
+from journal.features.plugins.support.plugin_process_card import PluginProcessCard
 
 
 class PluginsFeature(Feature[PluginsData]):
@@ -21,6 +22,7 @@ class PluginsFeature(Feature[PluginsData]):
     title = "Plugins"
     help = "Programs you install that hear the journal's events and answer them: refuse a tool, say a line to the agent, show a card or run journal commands, each as itself."
     options = (PLUGIN_ANSWER_WINDOW,)
+    process_cards = (PluginProcessCard,)
     listeners = (PluginAgentRelay, PluginRowRelay, PluginMergeRelay, PluginSettingsNotice, ReleaseUpgrade)
     data = (PluginsDataReader,)
     conduct = (PluginsConduct,)

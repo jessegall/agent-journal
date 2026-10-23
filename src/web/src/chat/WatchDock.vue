@@ -37,7 +37,7 @@ watch(
 </script>
 
 <template>
-    <ChatDock label="Watched output" :folded="folded" kind="watch-dock">
+    <ChatDock label="Watched output" :folded="folded" kind="watch-dock" :tone="card.ending ? card.tone : ''">
         <template #head>
             <Icon name="terminal" class="watch-dock-icon" />
             <button type="button" class="watch-dock-label" :aria-expanded="opened" :title="opened ? 'Fold the output' : 'Show the whole output'" @click="toggle">{{ message.text }}</button>

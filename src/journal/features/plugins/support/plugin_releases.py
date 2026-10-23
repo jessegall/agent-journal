@@ -1,4 +1,4 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.features.plugins.support.plugin_installing import PluginInstalling
 from journal.support.release import Release
 from journal.features.updates.support.release_source import ReleaseSource
@@ -13,7 +13,7 @@ from journal.support.rejection import Rejection
 class PluginReleases:
     """The installed plugins brought to the journal's version: each one installed from a source moves to its newest release whose manifest's journal field, the least journal version it runs on, the running journal meets, and the chat is told what moved."""
 
-    def __init__(self, plugins: Plugins, installing: PluginInstalling, source: ReleaseSource, cards: Cards, environments: Environments) -> None:
+    def __init__(self, plugins: Plugins, installing: PluginInstalling, source: ReleaseSource, cards: MomentCards, environments: Environments) -> None:
         self.plugins, self.installing, self.source, self.cards, self.environments = plugins, installing, source, cards, environments
 
     def upgraded_all(self, version: str, actor: Actor) -> None:

@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
 from journal.support.actor import Actor
 from journal.models.entry import Entry
 from journal.models.plugin import Plugin
@@ -15,7 +15,7 @@ FAILURE_COUNT = 5
 class PluginFaults:
     """A plugin's fault lets the event through and is recorded: an entry naming the plugin, the event and the words, the row's last fault, and a card at the fifth in a row; a card again once it answers."""
 
-    def __init__(self, plugins: Plugins, entries: Entries, cards: Cards) -> None:
+    def __init__(self, plugins: Plugins, entries: Entries, cards: MomentCards) -> None:
         self.plugins, self.entries, self.cards = plugins, entries, cards
 
     def failed(self, plugin: Plugin, environment_id: int, event: str, text: str) -> None:

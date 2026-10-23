@@ -54,7 +54,7 @@ test("a side thread view sits beside the chat for people, and says no agent read
 });
 
 test("a colleague's command card is drawn from its message, and opening it says the output stays on their machine", () => {
-    const live = readFileSync(resolve(__dirname, "../src/composables/liveOutputs.js"), "utf8");
+    const live = readFileSync(resolve(__dirname, "../src/composables/activeCards.js"), "utf8");
     expect(live).toMatch(/colleague\.value \? \[\] :/);
     const dock = readFileSync(resolve(__dirname, "../src/chat/WatchDock.vue"), "utf8");
     expect(dock).toMatch(/This output stays on \{\{ colleague \}\}'s machine/);

@@ -4,7 +4,7 @@ import {isClosed} from "./row.js";
 import {counted} from "../format/number.js";
 
 export const STATUS_WORDS = {...GROUPS, done: "Done"};
-export const STATUS_ORDER = ["blocked", "asked", "started", "parked", "open", "planned", "done"];
+export const STATUS_ORDER = ["blocked", "asked", "started", "delegated", "parked", "open", "planned", "done"];
 const WAIT_KINDS = {tasks: "task", questions: "question", checks: "command"};
 
 export const statusOf = (task) => (isClosed(task) ? "done" : groupOf(task));
@@ -36,6 +36,7 @@ const act = (name, label) => ({name, label});
 const NEXT = {
     done: () => act("reopen", "Reopen"),
     started: () => act("finish", "Finish"),
+    delegated: () => null,
     parked: () => act("start", "Resume"),
     asked: (t) => act("answer", `Answer question ${questionAbout(t).id}`),
     blocked: (t) => {

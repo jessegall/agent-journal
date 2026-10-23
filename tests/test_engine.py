@@ -18,6 +18,7 @@ from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
 from journal.support.moment import Moment
 from journal.support.caller import Caller
+from journal.engine.hook_answer import HookAnswer
 from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.impasse import Impasse
 from journal.features.tasks.states.ready import Ready
@@ -628,7 +629,7 @@ def test_a_worker_clocks_in_on_its_task_and_the_main_agent_hears_it(app: App, mo
     assert app.console().run(["clock-in"], babbage).code == 0
     assert app.container.get(SessionAgents).top("w1").task_id == task.id, "clocking in moves the worker to Working on its task"
     with scope.environment(1):
-        assert tasks.find(task.id).state == "started", "and starts the task under it"
+        assert tasks.find(task.id).state == "delegated", "and keeps the task delegated to it"
     assert any("worker 1, Mr. Babbage, clocked in" in line for line in typed), "the main agent hears that the worker is at work"
     assert "a worker clocks in once each time it is sent" in app.console().run(["clock-in"], babbage).error
     with scope.environment(1):
@@ -814,7 +815,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     agents, bus = app.container.get(Agents), app.container.get(Bus)
     assert [item.session for item in agents.main_scoped(1)] == ["s2"]
     assert any(isinstance(listener, RowEventDelivery) for listener in bus.listeners(RowEvent))
-    assert not any(isinstance(listener, (RowEventDelivery, StateMachine)) for listener in bus.listeners(Updated))
+    assert not any(isinstance(listener, (RowEventDelivery, HookAnswer)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))
     assert [row["state"] for row in agents.session_agent("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
 
@@ -902,11 +903,11 @@ def test_the_states_and_the_conduct_of_tasks_and_plans_answer_the_row_events_fro
     from journal.events.rows.task_started import TaskStarted
     settings = SettingsValue({WorkersFeature.MODE.key: "builder"})
     from journal.features.plans.support.started_plan import StartedPlan
-    plans = PlansData(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0))
+    plans = PlansData(approved=(), started=StartedPlan(plan_id=5, next_task=0, started_task=7, started_task_briefing="it has no brief and nothing logged yet", tasks=(7, 8), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0), review_plan=0, review_tool_use=0)
     tasks = TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=(), agent_tasks=(7, 8))
     data = FeatureData({"plans": plans, "tasks": tasks})
     assert PlansReady().respond(SessionStarted(time=4.0).with_data(data), settings).pushed == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=4.0)
-    assert PlansReady().respond(SessionStarted().with_data(FeatureData({"plans": PlansData((), None), "tasks": tasks})), settings).pushed is None
+    assert PlansReady().respond(SessionStarted().with_data(FeatureData({"plans": PlansData((), None, 0, 0), "tasks": tasks})), settings).pushed is None
     started = TaskStarted(environment_id=1, time=1.0, task_id=7, title="t", plan_id=0).with_data(data)
     assert PlansWorking(task_id=7, logged_at=2.0).respond(started, settings).target == FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=2.0)
     assert FollowingPlan(plan_id=5, task_id=7).respond(started, settings).target == FollowingPlan(plan_id=5, task_id=7, logged_at=1.0)
@@ -935,7 +936,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
     settings = SettingsValue({WorkersFeature.MODE.key: "builder", Etiquette.REMINDER_INTERVAL.key: 50})
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
-    data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "voices": VoicesData(instruction="as a butler"), "etiquette": EtiquetteData(reminder_gap=50), "pins": PinsData(pinned=("https://a.test/pinned",), recent_suggestions=("https://a.test/said",)), "migration": MigrationData(version_3_waiting=True)})
+    data = FeatureData({"plans": PlansData((), None, 0, 0), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "voices": VoicesData(instruction="as a butler"), "etiquette": EtiquetteData(reminder_gap=50, code_edits=0), "pins": PinsData(pinned=("https://a.test/pinned",), recent_suggestions=("https://a.test/said",)), "migration": MigrationData(version_3_waiting=True)})
     started = Ready().respond(SessionStarted().with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
     assert [nudge.key for nudge in started.nudges] == ["voices.how_to_talk_to_the_user", "migration.version_3_not_brought_across"]
     assert "as a butler" in started.nudges[0].rendered()
@@ -949,7 +950,7 @@ def test_the_conduct_of_voices_etiquette_pins_and_migration_speak_from_the_data(
     assert Ready().respond(TurnDisplayed(text="see https://a.test/pinned", final=False).with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
     finished = Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}, operation=Claude().operation("Bash", {})), output="opened https://a.test/pr/1").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct))
     assert [n.key for n in finished.nudges] == ["etiquette.a_line_is_an_instruction", "pins.pin_the_link"]
-    silent = FeatureData({**data.parts, "etiquette": EtiquetteData(reminder_gap=3)})
+    silent = FeatureData({**data.parts, "etiquette": EtiquetteData(reminder_gap=3, code_edits=0)})
     assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}, operation=Claude().operation("Bash", {})), output="nothing", subagent="s1").with_data(data), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
     assert Ready().respond(ToolFinished(call=ToolCall(tool="Bash", input={}, operation=Claude().operation("Bash", {})), output="nothing").with_data(silent), settings, (VoicesConduct, EtiquetteConduct, PinsConduct, MigrationConduct)).nudges == ()
 
@@ -974,7 +975,7 @@ def test_the_conduct_of_git_checks_triggers_and_plugins_speak_and_hold_from_the_
     settings = SettingsValue({"checks.repeat_minutes": 60})
     triggers = (Trigger(id=1, phrases=("deploy",), action=TriggerAction.DENY, text="no deploys tonight"), Trigger(id=2, phrases=("release",), action=TriggerAction.INSTRUCT, text="bump the version"), Trigger(id=3, phrases=("plan",), action=TriggerAction.SEQUENCE, text="Building a plan"))
     plugin_file = str(Path(".journal", "plugins", "x", "run.sh"))
-    data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
+    data = FeatureData({"plans": PlansData((), None, 0, 0), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()), "triggers": TriggersData(triggers=triggers), "plugins": PluginsData(root=Path("/p"), plugins_folder=Path("/p", ".journal", "plugins"))})
     assert Ready().respond(CommitDetected(sha="abcdef0123").with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct)).nudges == ()
     closed = Ready().respond(CommitDetected(sha="abcdef0123", closed=(4, 5), next_open=OpenTask(6, "the next", "", 0)).with_data(data), settings, (GitConduct, ChecksConduct, TriggersConduct, PluginsConduct))
     assert [n.rendered() for n in closed.nudges] == ["commit abcdef01 closed task 4, task 5", "tasks are open, and auto mode is on: task 6 next: the next. carry on with it"]
@@ -1031,10 +1032,10 @@ def test_the_conduct_of_messages_laws_shell_secrets_questions_profiles_and_worke
     settings = SettingsValue({MessagesFeature.TOOL_BLOCK_LIMIT.key: 10, MessagesFeature.ANSWER_REQUEST_LIMIT.key: 3, MessagesFeature.EDIT_BLOCK_LIMIT.key: 5, Shell.SHOWN.key: 100, WorkersFeature.SUBAGENT_LIMIT.key: 2, "tasks.auto": False})
     private = tmp_path / "private"
     parts = {
-        "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
+        "plans": PlansData((), None, 0, 0), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
         "messages": MessagesData(unread=(7, 8), unanswered=(5,), unanswered_files=(f"{tmp_path}/files/message/5/",), inbox_tool_uses=3, uses_unanswered=4, peer_questions=()),
         "profiles": ProfilesData(names=("journal-researcher", "journal-medior"), subagents=("journal-researcher",), workers=("journal-medior",)),
-        "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"), EndedOutput(4, "failed with code 1")), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=(), watch=OutputView.empty(), aliases=(), unread=(), reader_requests=(), tool_uses=0, last_ending_line=Moment()),
+        "shell": ShellData(background=(12,), backgrounded_at=100.0, unannounced=(EndedOutput(3, "finished"), EndedOutput(4, "failed with code 1")), output_reads=("journal output read <output> --grep x", "journal output read <output> --grep x"), readers=(Reader("tests", "the failures", "FAILED"),), tipped=(), watch=OutputView.empty(), aliases=(), unread=(), reader_requests=(), tool_uses=0, last_ending_line=Moment(), home="/project"),
         "secrets": SecretsData(root=tmp_path, folders=(private.resolve(),), spellings=(str(private),)),
         "workers": WorkersData(dispatched_workers=(), idle_workers=(Worker(id=2, name="Lady Lovelace", state=WorkerState.REPORTED),), active_subagents=2, subagents=(Subagent(id=1, dispatch="sub:1", started_at=1.0, task="read the plan", brief="look at src/a.py", agent_type="journal-researcher", model="sonnet", session="sub-1", state=SubagentState.FINISHED),), worktrees_root=tmp_path / "worktrees", worktrees=(WorkerWorktree("3-Lady-Lovelace", 3, "Lady Lovelace"),)),
     }
@@ -1125,7 +1126,7 @@ def test_the_conduct_of_skills_briefing_and_memory_say_the_debts_hold_on_them_an
     settings = SettingsValue({WorkersFeature.MODE.key: "builder", "tasks.auto": False, "skills.session_start": ["journal"], "skills.after_compaction": ["journal"]})
     cards = (SkillCard("journal", ".claude/skills/journal/SKILL.md", "h1", (), ()), SkillCard("plans", ".claude/skills/journal-plans/SKILL.md", "h2", ("plan", "roadmap"), ("following_plan",)))
     parts = {
-        "plans": PlansData((), None), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
+        "plans": PlansData((), None, 0, 0), "tasks": TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=()),
         "skills": SkillsData(skills_due=("journal",), loaded={"plans": "h2"}, skills=cards),
         "briefing": BriefingData(is_overview_read=False, environment="main", peer_session_active_at="09:12", rules="1. Always test", rules_count=1, facts="", reminders="1. Log often", waiting="2 tasks", team_history=""),
         "memory": MemoryData(threshold_due=50, context_threshold=50, rows=(MemoryRow("fact", 3, "the port is 8420", ("port",), CardKind.FACTS),), stale=()),
@@ -1206,7 +1207,7 @@ def test_idle_holds_the_stop_by_what_is_open_and_asks_on_the_ticks_from_the_data
     parked = replace(open_next, suspended=(2,), suspension_summary="task 2 (the parser)", first_suspension_reason="a review first")
     broken = replace(open_next, broken_waits=(3,), broken_waits_summary="task 3 waits on check 1, lint, which cannot run")
     blocked = replace(nothing, blocked_without_wait=(5,), blocked_without_wait_summary="task 5 (the key)")
-    of = lambda tasks, approved=(): FeatureData({"tasks": tasks, "plans": PlansData(approved, None)})
+    of = lambda tasks, approved=(): FeatureData({"tasks": tasks, "plans": PlansData(approved, None, 0, 0)})
     stop = lambda data, settings=auto, prior_refusal=False: PlansReady(silenced_at=100.0).respond(Stop(prior_refusal=prior_refusal).with_data(data), settings)
     assert stop(of(parked)).refusal.rendered().startswith("parked tasks, still open: task 2 (the parser)")
     assert stop(of(broken)).refusal.rendered().startswith("task 3 waits on check 1, lint, which cannot run")
@@ -1251,7 +1252,7 @@ def test_working_counts_its_edits_holds_and_says_its_lines_and_pops_when_its_tas
     from journal.events.rows.task_logged import TaskLogged
     settings = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_LIMIT.key: 4, TasksFeature.FIRST_DELAY.key: 2, TasksFeature.TASK_REMINDER_INTERVAL.key: 3, TasksFeature.LOG_AGE_LIMIT.key: 10})
     tasks = TasksData(current_task=7, last_log_line='"the parser reads"', suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())
-    of = lambda current_task=7, approved=(): FeatureData({"tasks": replace(tasks, current_task=current_task), "plans": PlansData(approved, None), "git": GitData(uncommitted="a.py, b.py")})
+    of = lambda current_task=7, approved=(): FeatureData({"tasks": replace(tasks, current_task=current_task), "plans": PlansData(approved, None, 0, 0), "git": GitData(uncommitted="a.py, b.py")})
     working = PlansWorking(task_id=7, logged_at=1000.0)
     write = lambda state, time=1001.0: state.respond(ToolStarting(call=ToolCall(tool="Edit", input={}, operation=Claude().operation("Edit", {}), writes=True), time=time).with_data(of()), settings)
     first = write(working)
@@ -1305,7 +1306,7 @@ def test_following_plan_keeps_the_next_task_stands_at_the_checkpoint_and_pops_wh
     auto, manual = SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_LIMIT.key: 50, TasksFeature.FIRST_DELAY.key: 25, TasksFeature.TASK_REMINDER_INTERVAL.key: 25}), SettingsValue({TasksFeature.AUTO.key: False})
     tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=(), agent_tasks=(3, 7, 8))
     plan = StartedPlan(plan_id=5, next_task=8, started_task=0, started_task_briefing="", tasks=(7, 8), remaining_tasks=1, checkpoint_pause=False, checkpoint_phase=0)
-    of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started)})
+    of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started, 0, 0)})
     following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
     assert following.on_push(auto) == () and isinstance(FollowingPlan(plan_id=5).on_push(auto), Block), "an unapproved plan is refused"
     closed = following.respond(TaskClosed(environment_id=1, time=20.0, task_id=7, outcome="done").with_data(of(plan)), auto)
@@ -1345,7 +1346,7 @@ def test_following_plan_pops_when_the_plan_is_postponed_or_abandoned_and_on_resu
     settings = SettingsValue({})
     tasks = TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())
     plan = StartedPlan(plan_id=5, next_task=8, started_task=7, started_task_briefing="", tasks=(7, 8), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0)
-    of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started)})
+    of = lambda started: FeatureData({"tasks": tasks, "plans": PlansData((), started, 0, 0)})
     following = FollowingPlan(plan_id=5, task_id=7, approved=True, logged_at=10.0)
     user_origin = following.respond(PlanPostponed(environment_id=1, time=20.0, plan_id=5, user_origin=True).with_data(of(None)), settings)
     assert user_origin.popped and [n.rendered() for n in user_origin.nudges] == ["the user postponed plan 5"]
@@ -1486,7 +1487,7 @@ def test_a_listener_may_stop_an_events_propagation_and_the_compacting_state_swit
     link.resting(1)
     link.type(1, "first")
     link.type(1, "held behind the first")
-    assert transmitted == ["[journal] first"] and len(link.typed._held) == 1, "a line within the batch window queues"
+    assert transmitted == ["[journal] first"] and len(link.typed._held) == 1, "a line behind one not yet seen back queues"
     assert hook(app, "PreCompact")[0] == 200
     assert agents.session_agent("s1").stack[-1]["state"] == "compacting" and agents.session_agent("s1").tool_uses == 0, "the compaction pushes its state and sets the count back to zero"
     link.type(1, "a dump arrived")
@@ -1527,7 +1528,7 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     settings = lambda mode: SettingsValue({Workers.MODE.key: mode, TasksFeature.AUTO.key: True, TasksFeature.LOG_AGE_LIMIT.key: 10})
     tasks = TasksData(current_task=0, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=OpenTask(3, "the footer", "", 0), last_commands=(), agent_tasks=(7,), open_ids=(3, 4), open_summary="task 3 (the footer), task 4 (the margin)")
     started = StartedPlan(plan_id=2, next_task=3, started_task=0, started_task_briefing="", tasks=(3, 4), remaining_tasks=2, checkpoint_pause=False, checkpoint_phase=0)
-    of = lambda plan: FeatureData({"plans": PlansData((), plan), "tasks": tasks})
+    of = lambda plan: FeatureData({"plans": PlansData((), plan, 0, 0), "tasks": tasks})
     from journal.engine.states_catalogue import StatesCatalogue
     from journal.engine.support.stack import Stack
     from journal.features.plans.states.plans_ready import PlansReady
@@ -1553,11 +1554,11 @@ def test_the_work_mode_is_the_bottom_state_the_orchestrator_dispatches_the_build
     stop = Orchestrating().respond(Stop().with_data(of(None)), settings("orchestrator"))
     assert stop.refusal is not None and "task 3 (the footer), task 4 (the margin)" in stop.refusal.rendered() and "dispatch a worker" in stop.refusal.rendered(), "the orchestrator's stop is held with the tasks to dispatch"
     from dataclasses import replace as replaced
-    all_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, open_ids=(), open_summary="", blocked=(5, 8))})
+    all_blocked = FeatureData({"plans": PlansData((), None, 0, 0), "tasks": replaced(tasks, open_ids=(), open_summary="", blocked=(5, 8))})
     held = Orchestrating().respond(Stop().with_data(all_blocked), settings("orchestrator"))
     told = held.refusal.rendered()
     assert "tasks 5, 8" in told and "journal task show" in told and "still truly blocked" in told and "decide for yourself" in told and "journal stuck" in told, "an orchestrator whose every task is blocked may not stop: it checks them, decides what it can, waits on its workers or says it is stuck"
-    some_blocked = FeatureData({"plans": PlansData((), None), "tasks": replaced(tasks, blocked=(5,))})
+    some_blocked = FeatureData({"plans": PlansData((), None, 0, 0), "tasks": replaced(tasks, blocked=(5,))})
     busy = Orchestrating().respond(Stop().with_data(some_blocked), settings("orchestrator"))
     assert busy.refusal.rendered().startswith("tasks 5 are blocked"), "a stop round asks about the blocked tasks before the open ones"
     again = busy.target.respond(Stop().with_data(some_blocked), settings("orchestrator"))
@@ -1638,7 +1639,7 @@ def test_a_stop_with_the_tasks_log_older_than_the_set_minutes_asks_for_the_log_l
     from journal.events.agent.stop import Stop
     from journal.features.plans.support.plans_data import PlansData
     from journal.features.tasks.support.tasks_data import TasksData
-    data = FeatureData({"plans": PlansData((), None), "tasks": TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())})
+    data = FeatureData({"plans": PlansData((), None, 0, 0), "tasks": TasksData(current_task=7, last_log_line="", suspended=(), suspension_summary="", blocked=(), blocked_without_wait=(), blocked_without_wait_summary="", broken_waits=(), broken_waits_summary="", first_suspension_reason="", next_open=None, last_commands=())})
     settings = lambda minutes: SettingsValue({TasksFeature.AUTO.key: True, TasksFeature.LOG_AGE_LIMIT.key: minutes, WorkersFeature.MODE.key: "builder"})
     working = Working(task_id=7, logged_at=0.0)
     assert working.respond(Stop(time=5 * 60.0).with_data(data), settings(10)).refusal.key == "tasks.carry_on", "within the minutes a stop is told to carry on"

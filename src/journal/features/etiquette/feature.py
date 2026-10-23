@@ -8,10 +8,11 @@ from journal.support.skill import Skill
 
 
 class Etiquette(Feature[EtiquetteData]):
+    PLAIN_CODE_INTERVAL = Option("etiquette.plain_code_every", "Remind to write code in plain words every", "Edits of code files between reminders that names and text in code are plain words, never the voice", 50, unit="edits")
     REMINDER_INTERVAL = Option("etiquette.remind_every", "Remind what a journal line is every", "Lines the journal says to the agent between reminders that a journal line is an instruction, not a message", 50, unit="lines")
     name = "etiquette"
     title = "Chat etiquette"
-    help = "Shop talk and the third person in the chat are named."
+    help = "Shop talk and the third person in the chat are named, and code is kept in plain words."
     skill = Skill("etiquette", "How to behave in the chat with the user, and where the voice stops; load it first in every session, after the journal skill", """
 # Chat etiquette
 
@@ -47,5 +48,6 @@ The voice the user picked shapes only your tone in the chat and how you address 
     EM_DASH_WARNING = Nudge(name, "no_em_dashes", "your chat used em dashes", "write to the user as a person would: short sentences, a full stop where the dash was", repeat_interval=600, is_remark=True)
     PARAGRAPH_SPACING = Nudge(name, "blank_lines_between_paragraphs", "your last message had no blank lines between paragraphs", "a blank line between parts is what makes a message readable: one thought to a paragraph", repeat_interval=600, is_remark=True)
     JOURNAL_LINE_RULE = Nudge(name, "a_line_is_an_instruction", "chat etiquette: a line from the journal is an instruction, not a message", "act on it or note it, never answer or mention it in the chat; what the user needs to know still goes to the chat", repeat_interval=1800, is_remark=True)
-    nudges = (SHOP_TALK_WARNING, SECOND_PERSON, EM_DASH_WARNING, PARAGRAPH_SPACING, JOURNAL_LINE_RULE)
-    options = (REMINDER_INTERVAL,)
+    PLAIN_CODE = Nudge(name, "plain_words_in_code", "names and text in code are plain words", "every name, string and comment says literally what a thing is or does, in the user's own plain language, never in the voice", repeat_interval=0)
+    nudges = (SHOP_TALK_WARNING, SECOND_PERSON, EM_DASH_WARNING, PARAGRAPH_SPACING, JOURNAL_LINE_RULE, PLAIN_CODE)
+    options = (REMINDER_INTERVAL, PLAIN_CODE_INTERVAL)

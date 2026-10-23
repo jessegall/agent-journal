@@ -672,7 +672,7 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
     from journal.sync.journal_copy import JournalCopy
     from journal.support.typed_lines import TypedLines
     from sync_server.login_request import LoginRequest
-    from journal.chat.cards import Cards
+    from journal.chat.moment_cards import MomentCards
     from journal.repositories.messages import Messages
     from journal.repositories.reactions import Reactions
     from journal.repositories.shared_tables import SharedTables
@@ -696,9 +696,9 @@ def test_two_journals_and_a_team_server_keep_a_task_in_step_and_a_change_made_wh
         account.write({"address": f"http://127.0.0.1:{port}", "token": answer.token, "device": answer.device_id})
         links = Links(tasks.connection, tasks.bus)
         messages = Messages(tasks.connection, tasks.bus, scope, Reactions(tasks.connection, tasks.bus, scope, links), links, EnvironmentOwners(links, Users(tasks.connection, tasks.bus), Environments(tasks.connection, tasks.bus)))
-        rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, Cards(messages))
+        rejected = RejectedEdits(SharedTables(tasks.connection, tasks.bus), outgoing, links, MomentCards(messages))
         uploads = PendingUploads(tasks.connection, tasks.bus)
-        client = SyncClient(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS))), TeamChat(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), AgentLauncher(Config(tmp_path / name)), SupervisorLink(Config(tmp_path / name), Environments(tasks.connection, tasks.bus), TypedLines(), SettingRows(tasks.connection, tasks.bus, scope)), Environments(tasks.connection, tasks.bus), TeamChatBranch(Config(tmp_path / name), account, Environments(tasks.connection, tasks.bus), Cards(messages), SyncStatus(account, outgoing)), Cards(messages)), TeamUpgrade(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), Schema(tasks.connection, AllModels.MODELS), JournalCopy(SharedTables(tasks.connection, tasks.bus))), JournalCopy(SharedTables(tasks.connection, tasks.bus)))
+        client = SyncClient(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), outgoing, incoming, rejected, signal, SyncStatus(account, outgoing), IdBlocks(tasks.connection, tasks.bus), SharedTables(tasks.connection, tasks.bus), uploads, Attachments(Config(tmp_path / name), uploads, account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS))), TeamChat(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), AgentLauncher(Config(tmp_path / name)), SupervisorLink(Config(tmp_path / name), Environments(tasks.connection, tasks.bus), TypedLines(), SettingRows(tasks.connection, tasks.bus, scope)), Environments(tasks.connection, tasks.bus), TeamChatBranch(Config(tmp_path / name), account, Environments(tasks.connection, tasks.bus), MomentCards(messages), SyncStatus(account, outgoing)), MomentCards(messages)), TeamUpgrade(account, TeamServerLink(account, Schema(tasks.connection, AllModels.MODELS)), Schema(tasks.connection, AllModels.MODELS), JournalCopy(SharedTables(tasks.connection, tasks.bus))), JournalCopy(SharedTables(tasks.connection, tasks.bus)))
         client.start()
         return scope, tasks, client, messages
 

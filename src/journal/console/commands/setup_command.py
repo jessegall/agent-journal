@@ -9,6 +9,10 @@ from journal.console.command import Command
 from journal.support.caller import Caller
 from journal.support.law_text import LawText
 from journal.features.profiles.support.profile_files import ProfileFiles
+from journal.features.shell.support.restart_queue import RestartQueue
+from journal.features.shell.support.shell_request import OUTPUT_FOLDER_VARIABLE
+from journal.models.command_output import CommandOutput
+from journal.models.environment import Environment
 from journal.features.skills.support.skill_files import SkillFiles
 from journal.providers.providers import Providers
 from journal.repositories.environments import Environments
@@ -24,8 +28,8 @@ class SetupCommand(Command):
     noun = "setup"
     default_verb = "project"
 
-    def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles, environments: Environments, supervisor: SupervisorLink) -> None:
-        self.config, self.providers, self.files, self.profiles, self.environments, self.supervisor = config, providers, files, profiles, environments, supervisor
+    def __init__(self, config: Config, providers: Providers, files: SkillFiles, profiles: ProfileFiles, environments: Environments, supervisor: SupervisorLink, queue: RestartQueue) -> None:
+        self.config, self.providers, self.files, self.profiles, self.environments, self.supervisor, self.queue = config, providers, files, profiles, environments, supervisor, queue
 
     def arguments(self, verbs) -> None:
         self.verb(verbs, "project", "wire the hooks, write the skills and the law, put journal on the path; what journal setup does alone")
@@ -45,23 +49,28 @@ class SetupCommand(Command):
         if dispatcher := Dispatcher(Path.home()).write():
             print(f"journal {dispatcher}")
         print(f"ignored {self.ignored().relative_to(self.config.root)}")
-        for name in self.restarted():
-            print(f"restart {name}: the journal of that environment runs the new code")
+        for line in self.restarted():
+            print(line)
         return 0
 
     def restart(self, args: Namespace, caller: Caller) -> int:
-        names = self.restarted()
-        for name in names:
-            print(f"restart {name}: the journal of that environment runs the new code")
-        if not names:
+        lines = self.restarted()
+        for line in lines:
+            print(line)
+        if not lines:
             print("no journal is running")
         return 0
 
     def restarted(self) -> list[str]:
-        journals = self.supervisor.running(self.environments.all())
-        for environment in journals:
-            self.supervisor.restart_journal(environment.row_id)
-        return [environment.name for environment in journals]
+        asking_folder = os.environ.get(OUTPUT_FOLDER_VARIABLE, "")
+        return [self.restart_line(environment, self.queue.restart(environment.row_id, asking_folder)) for environment in self.supervisor.running(self.environments.all())]
+
+    @staticmethod
+    def restart_line(environment: Environment, outputs: list[CommandOutput]) -> str:
+        if not outputs:
+            return f"restart {environment.name}: the journal of that environment runs the new code"
+        numbers = ", ".join(str(output.id) for output in outputs)
+        return f"restart {environment.name} waits: outputs {numbers} still run, and the restart starts by itself once the last of them ends. check each with journal output status, whether it is still working and why, and end any that is stuck"
 
     def hooks(self, args: Namespace, caller: Caller) -> int:
         for provider in self.providers.all():

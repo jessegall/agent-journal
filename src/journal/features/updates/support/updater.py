@@ -12,6 +12,7 @@ from journal.features.updates.support.release_source import ReleaseSource
 from journal.features.updates.support.update_card import UpdateCard
 from journal.features.updates.support.update_data import UpdateData
 from journal.features.updates.support.update_target import UpdateTarget
+from journal.features.shell.support.restart_queue import RestartQueue
 from journal.supervisor_link import SupervisorLink
 from journal.sync.hosting import Hosting
 from journal.support.actor import Actor
@@ -29,10 +30,10 @@ FIRST_CHECK_DELAY_SECONDS = 60
 class Updater:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, when they say so, or on a hosted journal as soon as the team is pinned to another version, which it never upgrades the team to itself."""
 
-    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount, client: SyncClient, hosting: Hosting) -> None:
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, card: UpdateCard, supervisor: SupervisorLink, config: Config, queue: RestartQueue, account: TeamAccount, client: SyncClient, hosting: Hosting) -> None:
         self.account, self.client, self.hosting = account, client, hosting
         self.settings, self.source, self.installer = settings, source, installer
-        self.mark, self.supervisor, self.config = threshold, supervisor, config
+        self.card, self.supervisor, self.config, self.queue = card, supervisor, config, queue
         self.releases: list[Release] = []
         self.head = ""
         self.problem = ""
@@ -93,7 +94,7 @@ class Updater:
         return newer[-1].version if newer else VERSION
 
     def data(self) -> UpdateData:
-        blocked = self.mark.running()
+        blocked = self.card.running()
         return UpdateData(installed=self.label(), latest=self.latest(), newer=self.is_published(), branch=self.branch(), versions=[release.version for release in self.newer()],
                               updating=blocked.target if blocked else "", step=blocked.step if blocked else "", problem=self.problem)
 
@@ -114,14 +115,14 @@ class Updater:
         return f"{self.label()} is the newest commit of the branch" if self.branch() else f"{VERSION} is the newest release of version {self.running().major}"
 
     def reconcile(self, time: float) -> None:
-        blocked = self.mark.paused()
+        blocked = self.card.paused()
         if blocked is None or (blocked.pid == os.getpid() and not blocked.is_stale(time)):
             return
-        self.mark.clear()
+        self.card.clear()
         self.problem = "" if blocked.target == self.label() else f"The update to {blocked.target} did not finish: .journal/runtime/update.log says how it went"
 
     def update_immediately(self, actor: Actor) -> None:
-        self.mark.claim(self.label(), self.target().label)
+        self.card.claim(self.label(), self.target().label)
         if not self.separate(lambda: self.install_newest(actor)):
             raise Rejection("an update is under way already")
 
@@ -136,7 +137,7 @@ class Updater:
             work()
         except Exception as fault:
             self.problem = f"The update failed: {fault}"
-            self.mark.clear()
+            self.card.clear()
             raise
         finally:
             self._working.release()
@@ -146,7 +147,7 @@ class Updater:
         if not self.automatic():
             return
         try:
-            self.mark.claim(self.label(), self.target().label)
+            self.card.claim(self.label(), self.target().label)
         except Rejection as refused:
             self.problem = str(refused)
             return
@@ -165,20 +166,21 @@ class Updater:
     def install_newest(self, actor: Actor) -> None:
         target = self.target()
         if self.account.is_joined() and not self.is_hosted():
-            self.mark.step("Sending this journal's changes to the team")
+            self.card.step("Sending this journal's changes to the team")
             self.client.prepare_upgrade()
-        self.mark.step("Installing the new version")
+        self.card.step("Installing the new version")
         try:
             self.installer.run(target.ref, self.repository())
         except Rejection as refused:
             self.problem = str(refused)
-            self.mark.clear()
+            self.card.clear()
             return
         self.problem = ""
-        self.mark.step("Restarting the journal")
+        self.card.step("Restarting the journal")
         self.restart()
 
     def restart(self) -> None:
         host = self.supervisor.hosting()
-        if host is not None:
-            self.supervisor.restart_journal(host)
+        outputs = self.queue.restart(host, "") if host is not None else []
+        if outputs:
+            self.card.step(f"Restarting once outputs {', '.join(str(output.id) for output in outputs)} end")

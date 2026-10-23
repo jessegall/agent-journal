@@ -4,6 +4,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 
 from journal.features.shell.support.progress import Progress
+from journal.features.shell.support.step_tally import StepTally
 from journal.features.shell.support.reader_commands import COMMANDS_PREFIX, ReaderCommands
 from journal.models.command_output import ACTIVE
 from journal.support.rejection import Rejection
@@ -57,3 +58,6 @@ class ScriptReader:
 
     def progress(self, lines: list[str]) -> Progress:
         return Progress.empty()
+
+    def tally(self, lines: list[str]) -> StepTally:
+        return StepTally(0, 0)

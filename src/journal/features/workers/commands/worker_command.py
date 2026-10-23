@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from journal.features.team.support.start_rule import StartRule
 from journal.providers.support.profile_kind import ProfileKind
-from journal.chat.cards import Cards
+from journal.chat.card_detail import CardDetail
 from argparse import Namespace
 
 from journal.repositories.setting_rows import SettingRows
@@ -39,6 +39,7 @@ ASSIGNMENT_REFUSALS = {
     TaskState.BLOCKED: "task {n} is {state}: unblock it before a worker takes it",
     TaskState.STARTED: "task {n} is started in another's hands: a worker is started only on an open task or one you hold",
     TaskState.SUSPENDED: "task {n} is {state} in another's hands: a worker is started only on an open task or one you hold",
+    TaskState.DELEGATED: "task {n} is delegated to a worker already: send that worker the next job, or release it first",
 }
 
 EMPTY_CHANGES = ("", "none", "nothing", "no files", "n/a", "-", "read only", "read-only", "nothing, it only reads")
@@ -247,7 +248,7 @@ class WorkerCommand(Command):
     def list(self, args: Namespace, caller: Caller) -> int:
         workers = self.workers.scoped()
         for worker in workers:
-            print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {Cards.shortened(worker.brief)}")
+            print(f"{worker.id:>4}  {worker.state:<10} {worker.name}: {CardDetail.shortened(worker.brief)}")
             if not worker.is_running():
                 print(f"{'':>16}files: {worker.files_line()}")
         output = [str(worker.id) for worker in workers if worker.is_running()]

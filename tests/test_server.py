@@ -365,7 +365,7 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
     hooks = f"http://127.0.0.1:{server.port}/hooks/claude"
     def hook(kind, **extra):
         urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
-    shell = {"command": "cd src && git status"}
+    shell = {"command": "ls src && git status"}
     try:
         hook("SessionStart")
         hook("PreToolUse", tool_name="Bash", tool_input=shell, tool_use_id="t-1")
@@ -373,7 +373,7 @@ def test_a_shell_calls_parts_are_its_terminal_lines_with_the_output_the_shell_ke
         assert call(server, "GET", "/journal/agents/1/terminal")[1] == [], "a call still running shows nothing yet"
         hook("PostToolUse", tool_name="Bash", tool_input=shell, tool_response={"stdout": "nothing to commit"}, tool_use_id="t-1")
         lines = call(server, "GET", "/journal/agents/1/terminal")[1]
-        assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "cd src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
+        assert [(l["tool"], l["command"], l["output"], l["seconds"]) for l in lines] == [("Bash", "ls src", "", 0.0), ("Bash", "git status", "nothing to commit", 1.5)]
         assert lines[0]["time"] < lines[1]["time"], "each part has its own time, so the pane keeps both"
         assert call(server, "GET", f"/journal/agents/1/terminal?after={lines[1]['time']}")[1] == [], "the pane asks for what came after its last line"
         hook("PreToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_use_id="t-2")
@@ -394,18 +394,18 @@ def test_an_agents_doing_is_the_part_of_a_chained_command_running_now(tmp_path: 
     def hook(kind, **extra):
         urlopen(HttpRequest(hooks, data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
     doing = lambda: call(server, "GET", "/journal/agents")[1]["rows"][0]["doing"]
-    shell = {"command": "cd src && git status"}
+    shell = {"command": "ls src && git status"}
     try:
         hook("SessionStart")
         hook("PreToolUse", tool_name="Bash", tool_input=shell, tool_use_id="t-1")
-        assert doing() == "cd src", "a shell call names its first part before the journal's shell starts it"
-        ShellVerbs(app).started("cd src", "c1")
-        ShellVerbs(app).ran("cd src", "c1", 0)
+        assert doing() == "ls src", "a shell call names its first part before the journal's shell starts it"
+        ShellVerbs(app).started("ls src", "c1")
+        ShellVerbs(app).ran("ls src", "c1", 0)
         ShellVerbs(app).started("git status", "c1")
         assert doing() == "git status", "then each part as it runs"
         ShellVerbs(app).ran("git status", "c1", 0, output="clean")
         hook("PostToolUse", tool_name="Bash", tool_input=shell, tool_response={"stdout": "clean"}, tool_use_id="t-1")
-        assert doing() not in ("cd src", "git status"), "a finished call is no longer what the agent is doing"
+        assert doing() not in ("ls src", "git status"), "a finished call is no longer what the agent is doing"
         hook("PreToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_use_id="t-2")
         assert doing() == "reading a file", "another tool is its verb"
         hook("PostToolUse", tool_name="Read", tool_input={"file_path": str(tmp_path / "a.py")}, tool_response="", tool_use_id="t-2")
@@ -722,7 +722,7 @@ def test_a_users_message_and_the_agents_reply_to_it_are_two_message_rows(tmp_pat
 
 
 def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_cards_by_number(tmp_path: Path):
-    from journal.chat.cards import Cards
+    from journal.chat.moment_cards import MomentCards
     from journal.support.card_kind import CardKind
     from journal.models.setting import Setting
     from journal.repositories.setting_rows import SettingRows
@@ -735,14 +735,14 @@ def test_the_message_stream_holds_the_users_words_the_agents_and_the_systems_car
         for kind, extra in (("SessionStart", {}), ("MessageDisplay", {"message": f"[!reply:{n}]\nHello back."})):
             urlopen(HttpRequest(f"http://127.0.0.1:{server.port}/hooks/claude", data=json.dumps({"hook_event_name": kind, "session_id": "s1", **extra}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"}), timeout=5).read()
         app.runtime().deferred.drain()
-        app.container.get(Cards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=CardKind.CHECKS)
+        app.container.get(MomentCards).show(1, "s1", "Check lint passed", "check", "good", "all clean", "checks:3", shows=CardKind.CHECKS)
         rows = [r for r in call(server, "GET", "/journal/messages")[1]["rows"] if r["id"] >= n]
         assert [r["id"] for r in rows] == sorted(r["id"] for r in rows)
         assert [(r["author"], r["text"]) for r in rows] == [("user", "hello"), ("agent", "Hello back."), ("system", "Check lint passed")]
         card = rows[-1]
         assert card["creator"] == "system"
         assert card["session"] == "s1"
-        assert card["data"] == {"kind": "card", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks"}
+        assert card["data"] == {"kind": "card", "icon": "check", "tone": "good", "detail": "all clean", "row": "checks:3", "command": "", "key": "", "shows": "checks", "card_type": "moment"}
     finally:
         app.runtime().stop()
 
@@ -1175,10 +1175,29 @@ def test_an_output_is_read_by_its_id(tmp_path: Path):
         status, read = call(server, "GET", f"/journal/outputs/{stored.id}")
         assert status == 200 and (read["id"], read["command"], read["outcome"], read["lines"]) == (stored.id, "make test", "failed with code 2", ["one", "two", "oops"])
         assert call(server, "GET", "/journal/outputs/99")[0] == 404
-        status, views = call(server, "GET", f"/journal/outputs/views?ids={stored.id}")
-        assert status == 200 and set(views[str(stored.id)]) >= {"figure", "fraction", "ending", "count", "tone", "detail"}, "the live views of several outputs come in one answer, keyed by number, with the fields their cards show"
     finally:
         app.runtime().stop()
+
+
+def test_a_process_card_changes_in_place_and_answers_the_poll_while_a_moment_card_is_always_new(app: App, server):
+    from journal.chat.moment_cards import MomentCards
+    from journal.repositories.messages import Messages
+    from journal.support.card_kind import CardKind
+    console = app.console()
+    with app.container.get(Scope).environment(1):
+        moments = [app.container.get(MomentCards).show(1, "s1", "Check lint passed", "check", key="lint", shows=CardKind.CHECKS) for _ in range(2)]
+    assert moments[0].id != moments[1].id and moments[0].data["card_type"] == "moment", "a moment card is new each time, and nothing updates it"
+    assert console.run(["question", "ask", "Which colour?", "--options", "red", "blue"], Caller.agent("main", "s1", "claude")).code == 0
+    with app.container.get(Scope).environment(1):
+        asked = app.container.get(Messages).with_key("question:1")[0]
+    assert (asked.data["card_type"], asked.data["process"], asked.data["active"]) == ("process", "question", True), "a question's card is a process card, active while the question is open"
+    status, fields = call(server, "GET", f"/journal/cards/active?ids={asked.id},{moments[0].id}")
+    assert status == 200 and fields == {str(asked.id): {"answer": None, "active": True}}, "the poll asks each active process card's refresh, and a moment card is never asked"
+    assert console.run(["question", "answer", "1", "blue"], Caller.user("main")).code == 0
+    with app.container.get(Scope).environment(1):
+        answered = app.container.get(Messages).with_key("question:1")
+    assert [(m.id, m.data["answer"], m.data["active"]) for m in answered] == [(asked.id, "blue", False)], "the answer settles the same card in place"
+    assert call(server, "GET", f"/journal/cards/active?ids={asked.id}")[1] == {}, "a process card whose process ended is no longer polled"
 
 
 def test_a_dump_is_dropped_with_files_and_acted_on_through_the_viewer(server):
@@ -1217,7 +1236,7 @@ def viewer_paths() -> set[tuple[str, str]]:
     matched = set()
     client = (WEB / "api" / "client.js").read_text()
     for method, path, address in OWN.findall(client):
-        literal = re.sub(r"\$\{query\(.*?\)\}", "", path or address)
+        literal = re.sub(r"\$\{query\(.*?\)\}", "", path or address).split("?")[0]
         if not literal.startswith("/${") and "${session" not in literal:
             matched.add(("POST" if method == "post" else "GET", re.sub(r"\$\{[^}]*\}", "1", literal)))
     for source in [*WEB.rglob("*.js"), *WEB.rglob("*.vue")]:
@@ -1395,6 +1414,17 @@ def test_the_viewer_undocks_a_docked_row_by_an_act_on_its_message(journal_root: 
         assert status == 200 and undocked["data"]["docked"] is False and undocked["data"]["row"] == "tasks:1"
     finally:
         server.stop()
+
+
+def test_a_document_is_docked_and_undocked_from_its_inspector_through_the_dock_endpoint(app: App, server):
+    page = app.config.root / "design.md"
+    page.write_text("## What\n\nThe words.\n")
+    assert app.console().run(["doc", "create", "The design", "--file", str(page), "--abstract", "what it is"], Caller.user("main")).code == 0
+    status, docked = call(server, "POST", "/journal/docks/docs/1")
+    assert status == 200 and docked["data"]["docked"] is True and docked["data"]["row"] == "docs:1", "the document is docked by its table and number"
+    status, undocked = call(server, "POST", "/journal/docks/docs/1/undock")
+    assert status == 200 and undocked["id"] == docked["id"] and undocked["data"]["docked"] is False, "and taken down by the same card"
+    assert call(server, "POST", "/journal/docks/environments/1")[0] == 409, "a row that cannot be docked is refused"
 
 
 def test_a_doc_or_a_report_downloads_as_a_word_file_made_from_its_html_page(server):

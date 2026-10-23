@@ -13,7 +13,7 @@ from journal.support.rejection import Rejection
 
 
 class ArrivalCommand(Command):
-    """journal clock-in: a worker says it is ready, which starts the task it holds under it and tells the agent that dispatched it."""
+    """journal clock-in: a worker says it is ready, which keeps the task it holds delegated to it and tells the agent that dispatched it."""
 
     noun = "clock-in"
     default_verb = "record"
@@ -35,8 +35,8 @@ class ArrivalCommand(Command):
         if not holdings:
             raise Rejection(f"worker {worker.id} holds no task: a worker clocks in on the task it was sent on")
         moment, task = datetime.now(timezone.utc), self.tasks.find(holdings[0])
-        if task.state != TaskState.STARTED:
-            self.tasks.save(task.started(moment), caller.actor)
+        if task.state != TaskState.DELEGATED:
+            self.tasks.save(task.delegated(moment), caller.actor)
         self.workers.save(worker.ready(moment.timestamp()), caller.actor)
         print(f"worker {worker.id} clocked in on task {task.id}: {task.title}")
         return 0

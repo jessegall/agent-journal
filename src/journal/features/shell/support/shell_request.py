@@ -1,6 +1,9 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from pathlib import Path
 
 from journal.support.posted_environment import PostedEnvironment
+
+OUTPUT_FOLDER_VARIABLE = "JOURNAL_OUTPUT_FOLDER"
 
 
 @dataclass(frozen=True)
@@ -16,3 +19,6 @@ class ShellRequest:
     def parse(cls, raw: bytes, cwd: str, shell: str) -> "ShellRequest":
         body = PostedEnvironment.split(raw, "a shell line")
         return cls(line=body.payload.decode(errors="replace"), cwd=cwd, shell=shell or "bash", environment=body.environment)
+
+    def folder_request(self, folder: Path) -> "ShellRequest":
+        return replace(self, environment={**self.environment, OUTPUT_FOLDER_VARIABLE: str(folder)})

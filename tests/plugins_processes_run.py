@@ -40,7 +40,7 @@ def test_a_plugins_service_answers_a_held_event_on_its_socket(app, tmp_path: Pat
         (folder / "journal-plugin.json").write_text(json.dumps({**manifest, "services": [*manifest["services"], {"name": "never", "command": ["./serve.py"], "when": "false"}]}))
         app.console().run(["plugin", "install", str(folder), "--yes"], USER)
         subscribed = app.container.get(PluginFolders).socket(app.container.get(Plugins).lookup("echo"), "main")
-        deadline = time.time() + 10
+        deadline = time.time() + 3
         while not subscribed.is_socket() and time.time() < deadline:
             time.sleep(0.1)
         assert subscribed.is_socket(), "the supervisor started the plugin's service"
@@ -50,7 +50,7 @@ def test_a_plugins_service_answers_a_held_event_on_its_socket(app, tmp_path: Pat
         status, body = hook(app, "PreToolUse", tool_name="Read", tool_input={"file_path": "forbidden.py"})
         assert status == 409 and "echo refuses a forbidden tool through its service" in body["error"], "the held event was answered by the service"
         app.console().run(["plugin", "disable", "echo"], USER)
-        deadline = time.time() + 5
+        deadline = time.time() + 3
         while any(p["name"] == "plugin.echo.serve" and p.get("running") for p in supervisor.described()) and time.time() < deadline:
             time.sleep(0.1)
         assert not any(p["name"] == "plugin.echo.serve" and p.get("running") for p in supervisor.described()), "turning it off stops its service"

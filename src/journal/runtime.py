@@ -5,6 +5,8 @@ from journal.engine.clock import Clock
 from journal.engine.job_runner import JobRunner
 from journal.engine.menu_watcher import MenuWatcher
 from journal.features.plugins.support.service_start import ServiceStart
+from journal.engine.delivery import Delivery
+from journal.engine.hook_answer import HookAnswer
 from journal.engine.state_machine import StateMachine
 from journal.console.creations import Creations
 from journal.features.listeners.record_changes import RecordChanges
@@ -56,7 +58,7 @@ class Runtime:
 
     def boot(self) -> None:
         self.register_nudges()
-        self.bus.listen(AgentEvent, self.machine)
+        self.bus.listen(AgentEvent, self.container.get(HookAnswer))
         self.bus.listen(RowEvent, self.container.get(RowEventDelivery))
         self.bus.listen(Created, Creations())
         self.bus.listen(ModelEvent, self.container.get(RecordChanges))
@@ -71,7 +73,8 @@ class Runtime:
                 self.bus.listen(listener.kind(), Switches(feature, self.container.get(listener), self.registry, self.scope))
             for seed in feature.seeds:
                 self.container.get(seed).run()
-        self.machine.compactions_ended()
+        for reply in self.machine.compactions_ended():
+            self.container.get(Delivery).applied(reply, 0.0)
         from journal.repositories.environments import Environments
         if not self.container.get(Environments).all() and not self.container.get(TeamAccount).is_joined():
             self.container.get(Environments).lookup("main")

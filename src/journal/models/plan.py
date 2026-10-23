@@ -4,6 +4,7 @@ from typing import ClassVar
 from journal.models.plan_state import PlanState
 from journal.events.rows.plan_abandoned import PlanAbandoned
 from journal.events.rows.plan_approved import PlanApproved
+from journal.events.rows.plan_reviewed import PlanReviewed
 from journal.events.rows.plan_blocked import PlanBlocked
 from journal.events.rows.plan_postponed import PlanPostponed
 from journal.events.rows.plan_reopened import PlanReopened
@@ -38,6 +39,12 @@ class Plan(Scoped):
 
     def reviewing(self) -> "Plan":
         return self.moved(PlanState.REVIEWING)
+
+    def reviewers_counted(self, reviewers: int, time: float) -> "Plan":
+        counted = self.with_(reviewers=reviewers)
+        if self.state != PlanState.REVIEWING or reviewers or not self.reviewers:
+            return counted
+        return counted.with_event(PlanReviewed(environment_id=self.environment_id, time=time, plan_id=self.row_id))
 
     def approved(self, time: float, user_origin: bool) -> "Plan":
         return self.moved(PlanState.APPROVED).with_event(PlanApproved(environment_id=self.environment_id, time=time, plan_id=self.row_id, user_origin=user_origin))

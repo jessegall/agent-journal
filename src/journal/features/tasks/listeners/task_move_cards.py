@@ -1,4 +1,5 @@
-from journal.chat.cards import Cards
+from journal.chat.moment_cards import MomentCards
+from journal.chat.card_detail import CardDetail
 from journal.events.listener import Listener
 from journal.events.rows.row_event import RowEvent
 from journal.events.rows.task_closed import TaskClosed
@@ -25,7 +26,7 @@ MOVES = {
 class TaskMoveCards(Listener[RowEvent]):
     """A task started, resumed, finished, parked, blocked or unblocked is one small mark in the chat, as a filed one is, naming the task and why it moved."""
 
-    def __init__(self, cards: Cards, tasks: Tasks, scope: Scope) -> None:
+    def __init__(self, cards: MomentCards, tasks: Tasks, scope: Scope) -> None:
         self.cards, self.tasks, self.scope = cards, tasks, scope
 
     def handle(self, event: RowEvent) -> None:
@@ -40,6 +41,6 @@ class TaskMoveCards(Listener[RowEvent]):
         heading, tone, reason_field = MOVES[move]
         with self.scope.environment(event.environment_id):
             task = self.tasks.find(event.task_id)
-        label = Cards.shortened(f"{heading} task {task.id}: {task.title}")
+        label = CardDetail.shortened(f"{heading} task {task.id}: {task.title}")
         detail = reason or (getattr(task, reason_field) if reason_field else "")
         self.cards.show(event.environment_id, None, label, "todos", tone=tone, detail=detail, row=Ref("tasks", task.id), actor=Actor.system(), shows=CardKind.TASK_MOVES)

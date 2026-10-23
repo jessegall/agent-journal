@@ -7,7 +7,7 @@ WATCH_KEY = "watch"
 
 @dataclass(frozen=True)
 class OutputView:
-    """What a watch on an output shows: the lines its reader picks, or its last lines, how far its command has come, as words and as a fraction, and how it ended once it has."""
+    """What a watch on an output shows: the lines its reader picks, or its last lines, how far its command has come, as words and as a fraction, how it ended once it has, whether its card has shown nothing for 30 seconds while it runs, and whether it ended printing no summary, so its card ends on the counts of its step marks."""
 
     output: int
     lines: tuple[str, ...]
@@ -17,6 +17,8 @@ class OutputView:
     reader: str = ""
     poor_line: str = ""
     empty_card: bool = False
+    silent: bool = False
+    summary_missing: bool = False
 
     @classmethod
     def empty(cls) -> "OutputView":
@@ -29,7 +31,7 @@ class OutputView:
     @classmethod
     def parsed(cls, card: Message) -> "OutputView":
         lines = card.data.get("lines") or [card.data["detail"]]
-        return cls(card.data["output"], tuple(line for line in lines if line), card.data["figure"], card.data["fraction"], card.data["ending"], card.data.get("reader", ""), card.data.get("poor_line", ""), card.data.get("empty_card", False))
+        return cls(card.data["output"], tuple(line for line in lines if line), card.data["figure"], card.data["fraction"], card.data["ending"], card.data.get("reader", ""), card.data.get("poor_line", ""), card.data.get("empty_card", False), card.data.get("silent", False), card.data.get("summary_missing", False))
 
     @staticmethod
     def key(output: int) -> str:

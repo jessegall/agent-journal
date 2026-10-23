@@ -227,7 +227,7 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
     journal.start()
     terminal.start()
     try:
-        deadline = time.time() + 5
+        deadline = time.time() + 3
         while time.time() < deadline and not (marker.exists() and terminal.pid > 0 and supervisor._revivals):
             supervisor.relay_once(0.05)
         pump(supervisor, 0.5)
@@ -242,7 +242,7 @@ def test_an_agent_that_dies_is_started_again_and_one_that_quits_ends_the_supervi
     quits.inbox.open()
     quitting.start()
     try:
-        deadline = time.time() + 5
+        deadline = time.time() + 3
         while time.time() < deadline and quits._code is None:
             quits.relay_once(0.05)
         assert quits._code == 0, "a clean exit ends the supervisor"

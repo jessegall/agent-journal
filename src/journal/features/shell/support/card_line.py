@@ -1,6 +1,6 @@
 import re
 
-from journal.chat.cards import DETAIL_CHARACTERS
+from journal.chat.card_detail import DETAIL_CHARACTERS
 
 CODE_SYMBOLS = re.compile(r"[{}\[\]();=\"]")
 CODE_SYMBOL_COUNT = 8

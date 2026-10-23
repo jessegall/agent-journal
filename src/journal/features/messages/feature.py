@@ -11,6 +11,7 @@ from journal.features.messages.listeners.deliver_message import DeliverMessage
 from journal.features.messages.listeners.start_inbox_delivery import StartInboxDelivery
 from journal.features.messages.listeners.task_mention_links import TaskMentionLinks
 from journal.features.messages.listeners.dump_item_card import DumpItemCard
+from journal.features.messages.support.receipt_process_card import ReceiptProcessCard
 from journal.features.messages.listeners.inbox_arrival_card import InboxArrivalCard
 from journal.features.messages.listeners.record_turn import RecordTurn
 from journal.features.messages.listeners.run_tags import RunTags
@@ -29,6 +30,7 @@ class Messages(Feature[MessagesData]):
     help = "A new message is named to the agent by its number, at once and again at start, at a prompt and at a stop; it reads it with the CLI and answers it first."
     commands = (MessageCommand,)
     options = (ANSWER_REQUEST_LIMIT, TOOL_BLOCK_LIMIT, EDIT_BLOCK_LIMIT, TRANSCRIPT_SCAN_DELAY)
+    process_cards = (ReceiptProcessCard,)
     listeners = (InboxArrivalCard, TranscriptScan, RecordTypedPrompt, RecordPeerMessage, OutgoingMessageRecord, RecordTurn, RunTags, TaskMentionLinks, DumpItemCard, DeliverMessage, StartInboxDelivery)
     data = (MessagesDataReader,)
     conduct = (MessagesConduct,)
