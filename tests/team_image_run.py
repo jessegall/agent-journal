@@ -15,6 +15,7 @@ VOLUME = "agent-journal-team-image-test"
 PORT = 8443
 SPOKEN = {PROTOCOL_HEADER: str(PROTOCOL)}
 PASSWORD = "correct horse battery"
+START_SECONDS = 20
 
 
 def docker(*arguments: str, seconds: int = 120) -> str:
@@ -25,7 +26,7 @@ def login(device_name: str) -> dict:
     request = urllib.request.Request(f"https://localhost:{PORT}/login", data=json.dumps({"email": "ada@example.com", "password": PASSWORD, "device_name": device_name}).encode(), headers=SPOKEN)
     unverified = ssl.create_default_context()
     unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
-    deadline = time.monotonic() + 20
+    deadline = time.monotonic() + START_SECONDS
     while True:
         try:
             with urllib.request.urlopen(request, timeout=10, context=unverified) as answer:
@@ -136,7 +137,7 @@ def test_the_hosted_address_signs_a_person_in_and_shows_the_teams_tasks():
         boundary = "journalform"
         form = "".join(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n" for name, value in (("email", "ada@example.com"), ("password", PASSWORD))).encode() + f"--{boundary}--\r\n".encode()
         print("waiting for the hosted journal to join and serve", flush=True)
-        deadline = time.monotonic() + 20
+        deadline = time.monotonic() + START_SECONDS
         while True:
             try:
                 browser.open(urllib.request.Request(f"https://localhost:{PORT}/sign-in", data=form, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}), timeout=10).read()
