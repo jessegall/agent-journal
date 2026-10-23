@@ -12,6 +12,7 @@ from journal.sync.team_requests import TeamRequests
 from journal.sync.team_server_link import TeamServerLink
 from sync_server.login_request import LoginRequest
 from journal.sync.team_chat import TeamChat
+from journal.features.team.support.start_rule import StartRule
 
 PASSWORD_PROMPT = "run journal team {verb} yourself in a terminal: it asks your password without showing it, and an agent cannot type it"
 
@@ -21,8 +22,8 @@ class TeamCommand(Command):
 
     noun = "team"
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, joining: TeamJoin, sync_status: SyncStatus, team_chat: TeamChat) -> None:
-        self.account, self.link, self.joining, self.sync_status, self.team_chat = account, link, joining, sync_status, team_chat
+    def __init__(self, account: TeamAccount, link: TeamServerLink, joining: TeamJoin, sync_status: SyncStatus, team_chat: TeamChat, starts: StartRule) -> None:
+        self.account, self.link, self.joining, self.sync_status, self.team_chat, self.starts = account, link, joining, sync_status, team_chat, starts
 
     def arguments(self, verbs) -> None:
         join = self.verb(verbs, "join", "join a team's server with the line its setup or an invitation printed: a team with no journal yet takes this one whole, else this machine downloads the team's")
@@ -98,6 +99,8 @@ class TeamCommand(Command):
 
     def claim(self, args: Namespace, caller: Caller) -> int:
         self.joined()
+        if self.starts.hosted_refusal():
+            raise Rejection(self.starts.hosted_refusal())
         lease = TeamRequests.reached(lambda: self.team_chat.claim(args.agent))
         print(f"you hold the Team chat now, as {lease.holder}; its agent starts on this machine in the team environment's worktree")
         return 0

@@ -10049,3 +10049,26 @@ def test_a_hosted_journal_signs_each_person_in_with_their_team_account_and_names
         app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
         team.close(server)
+
+
+def test_a_hosted_journal_starts_no_agent_by_any_door(app: App):
+    import json
+
+    from journal.features.team.feature import TeamFeature
+    from journal.features.team.support.start_rule import HOSTED_REFUSAL
+    from journal.repositories.id_blocks import IdBlocks
+    from journal.repositories.setting_rows import SettingRows
+    from journal.sync.team_account import TEAM_FILE, TeamAccount
+
+    app.container.get(TeamAccount).write({"address": "http://127.0.0.1:9", "token": "t", "device": 9, "account_id": 1})
+    try:
+        app.container.get(IdBlocks).add("settings", 800000, 800100)
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        rows = json.loads(app.console().run(["environment", "json"], USER).text)
+        assert all(row["refusal"] == HOSTED_REFUSAL for row in rows), "the launcher's rows, which the viewer's Start and the picker read, refuse every environment"
+        assert HOSTED_REFUSAL in app.console().run(["team", "claim"], USER).error, "the Team chat is never claimed by a hosted journal"
+        assert HOSTED_REFUSAL in app.console().run(["worker", "dispatch", "Mr Faraday", "--task", "1", "--profile", "journal-medior", "--changes", "a.py", "--tests", "No tests"], USER).error, "nor a worker dispatched from it"
+    finally:
+        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+    assert all(row["refusal"] == "" for row in json.loads(app.console().run(["environment", "json"], USER).text)), "an ordinary journal refuses none of its own"

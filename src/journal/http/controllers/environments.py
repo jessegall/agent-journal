@@ -11,7 +11,7 @@ from journal.support.worktree import Worktree
 from journal.repositories.environment_owners import EnvironmentOwners
 from journal.sync.team_account import TeamAccount
 from journal.support.rejection import Rejection
-from journal.sync.team_chat import TeamChat
+from journal.features.team.support.start_rule import StartRule
 
 
 class EnvironmentController(Controller[Environment]):
@@ -19,9 +19,9 @@ class EnvironmentController(Controller[Environment]):
 
     repository: Environments
 
-    def __init__(self, environments: Environments, launcher: AgentLauncher, supervisor: SupervisorLink, config: Config, owners: EnvironmentOwners, account: TeamAccount, chat: TeamChat) -> None:
+    def __init__(self, environments: Environments, launcher: AgentLauncher, supervisor: SupervisorLink, config: Config, owners: EnvironmentOwners, account: TeamAccount, starts: StartRule) -> None:
         self.repository, self.launcher, self.supervisor, self.config = environments, launcher, supervisor, config
-        self.owners, self.account, self.chat = owners, account, chat
+        self.owners, self.account, self.starts = owners, account, starts
 
     def rows(self) -> list[Environment]:
         return self.repository.all() or [self.repository.lookup("main")]
@@ -34,7 +34,7 @@ class EnvironmentController(Controller[Environment]):
 
     def launch(self, request: Request) -> Response:
         environment = self.repository.find(request.number("id"))
-        refusal = self.owners.start_refusal(environment, request.actor.number()) or self.chat.start_refusal(environment)
+        refusal = self.starts.refusal(environment, request.actor.number())
         if refusal:
             raise Rejection(refusal)
         self.launcher.start(environment.name, request.body.get("agent", "claude"))

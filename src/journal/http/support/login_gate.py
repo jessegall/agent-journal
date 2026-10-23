@@ -1,4 +1,4 @@
-from journal.features.team.feature import TeamFeature
+from journal.features.team.support.hosted_option import HOSTED
 from journal.http.support.request import Request
 from journal.http.support.session_cookie import SessionCookie
 from journal.repositories.browser_sessions import BrowserSessions
@@ -15,7 +15,7 @@ class LoginGate:
         self.settings, self.sessions = settings, sessions
 
     def refusal(self, request: Request) -> Response | None:
-        if not self.settings.option(TeamFeature.HOSTED) or request.path.startswith(OPEN_PATHS) or self.sessions.session(SessionCookie.key(request.cookie)):
+        if not self.settings.option(HOSTED) or request.path.startswith(OPEN_PATHS) or self.sessions.session(SessionCookie.key(request.cookie)):
             return None
         if request.path.startswith("/journal/"):
             return Response(401, {"error": "sign in with your team account at /sign-in"})
