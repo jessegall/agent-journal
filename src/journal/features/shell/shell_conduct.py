@@ -28,7 +28,7 @@ READER_REQUEST_COUNT = 3
 
 
 class ShellConduct(Conduct):
-    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, a test run no counting reader reads is offered one on its first run and every fiftieth, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends."""
+    """The shell feature's conduct in every state: a file longer than the runner shows is read in parts, a journal command runs alone while an alias may chain, a read of an output by hand is pointed at a reader or asked to become one, a line an alias runs is pointed at the alias and a line run three times is asked to become one, a test run no counting reader reads is offered one on its first run and every fiftieth, the commands that ended in the background are named once the agent is quiet, one the agent waits on left to the wait, one running five minutes is looked at, and a watched output's view is said after every tool use until its command ends; a watched card that has shown nothing for 30 seconds is named once, after a tool use or while the agent waits."""
 
     def on_tool_starting(self, event: ToolStarting, settings: Settings) -> Transition:
         return Transition.merged(self, [journal_isolation_check(self, event, settings), partial_read_check(self, event, settings), readers_check(self, event, settings), alias_check(self, event, settings), reader_suggestion_check(self, event, settings), counting_reader_check(self, event, settings)])
@@ -46,7 +46,7 @@ class ShellConduct(Conduct):
         return self.none(Shell.WATCH_VIEW.create(n=watch.output, lines=watch.text()), *fix_lines)
 
     def on_ticked(self, event: Ticked, settings: Settings) -> Transition:
-        return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings), unread_check(self, event, settings)])
+        return Transition.merged(self, [background_check(self, event, settings), ended_check(self, event, settings), unread_check(self, event, settings), silent_check(self, event)])
 
 
 def reader_rewrite(state: BaseState, event: ToolFinished, watch: OutputView) -> Transition:
@@ -59,11 +59,19 @@ def reader_fix(watch: OutputView, tipped: tuple[str, ...]) -> tuple[Nudge, ...]:
     from journal.features.shell.feature import Shell
     if any(f"output {watch.output}'s card" in tip_text for tip_text in tipped):
         return ()
+    if watch.silent:
+        return (Shell.SILENT_CARD.create(n=watch.output),)
     if watch.poor_line:
         return (Shell.READER_FIX.create(reader=watch.reader, n=watch.output, line=watch.poor_line[:120]),)
     if watch.empty_card:
         return (Shell.READER_DETAIL.create(reader=watch.reader, n=watch.output),)
     return ()
+
+
+def silent_check(state: BaseState, event: Ticked) -> Transition:
+    from journal.features.shell.feature import Shell
+    shell = event.data.part(Shell)
+    return state.none(*reader_fix(shell.watch, shell.tipped)) if shell.watch.is_watching() and shell.watch.silent else state.none()
 
 
 def outcome_text(ended: tuple[EndedOutput, ...]) -> str:

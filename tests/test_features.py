@@ -9521,3 +9521,22 @@ def test_a_watch_or_wait_through_a_reader_is_refused_on_an_output_its_reader_doe
     assert console.run(["output", "undock", str(tests.id)], AGENT).code == 0
     with app.container.get(Scope).environment(MAIN):
         assert not app.container.get(Messages).with_key(f"watch:{tests.id}")[0].data.get("docked"), "and its card can be taken down"
+
+
+def test_a_watched_run_whose_card_shows_nothing_for_30_seconds_is_named_once(app: App, monkeypatch):
+    from journal.features.shell.support.output_log import OutputLog
+    from journal.repositories.command_outputs import CommandOutputs
+    monkeypatch.setattr("journal.features.shell.support.output_views.SILENT_SECONDS", 0)
+    hook(app, "SessionStart")
+    folder = app.config.root / "quiet"
+    folder.mkdir()
+    (folder / "parts").write_text("R-\n")
+    (folder / "0.part").write_text("pytest -q")
+    (folder / "0.out").write_text("")
+    app.container.get(OutputLog).start("quiet", "pytest -q", folder, Caller.agent("main", "s1", "claude"))
+    outputs = app.container.get(CommandOutputs)
+    outputs.save(outputs.find(1).backgrounded(), Actor.system())
+    assert app.console().run(["output", "watch", "1", "--reader", "pytest"], AGENT).code == 0
+    told = [json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]) for _ in range(2)]
+    assert "output 1's card has shown nothing for 30 seconds" in told[0] and "run it unbuffered" in told[0], "a silent watched run is named, with what to do about it"
+    assert "has shown nothing" not in told[1], "and named once"

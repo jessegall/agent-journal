@@ -1,4 +1,5 @@
 import time
+from dataclasses import replace
 from pathlib import Path
 
 from journal.chat.cards import AUTO_DOCKED, DOCKED, Cards
@@ -20,6 +21,7 @@ VIEW_LINES = 20
 HEADLINE_CHARACTERS = 60
 ENDED_DOCK_SECONDS = 5
 UNDOCK_AT = "undock_at"
+SILENT_SECONDS = 30
 
 
 class OutputViews:
@@ -29,6 +31,13 @@ class OutputViews:
         self.readers, self.cards, self.messages, self.settings, self.docking = readers, cards, messages, settings, docking
 
     def view(self, output: CommandOutput) -> OutputView:
+        measured = self.measured(output)
+        return replace(measured, silent=self.is_silent(output, measured))
+
+    def is_silent(self, output: CommandOutput, view: OutputView) -> bool:
+        return not output.ended and time.time() - output.creation_time.timestamp() >= SILENT_SECONDS and not view.figure and not self.card_lines(output, view)
+
+    def measured(self, output: CommandOutput) -> OutputView:
         files = OutputFiles(Path(output.folder))
         ending = output.ending() if output.ended else ""
         if not files.is_stored():
@@ -66,7 +75,7 @@ class OutputViews:
     def card(self, output: CommandOutput) -> OutputView:
         view = self.view(output)
         part = self.watched_part(output)
-        data = {"kind": "card", "icon": "terminal", "output": output.id, "line": part, "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view), **self.progress(output, view).fields(), **self.dock_state(output)}
+        data = {"kind": "card", "icon": "terminal", "output": output.id, "line": part, "reader": output.watch_reader, "poor_line": self.poor_line(output, view), "empty_card": self.is_empty_card(output, view), "silent": view.silent, **self.progress(output, view).fields(), **self.dock_state(output)}
         self.cards.keyed(output.environment_id, OutputView.key(output.row_id), self.title(output, part), data, Actor.system(), CardKind.COMMANDS, self.card_text(output, view), output.session)
         return view
 

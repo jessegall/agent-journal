@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.5
+
+- A watched command whose card has shown nothing for 30 seconds, no line and no progress, is named to the agent once, after a tool use or while it waits, with what to do: print the command's steps, run it unbuffered, or give its reader a progress pattern.
+
 ## 4.16.4
 
 - A message to an agent that has stopped is typed into its terminal at once; the window that gathers lines into one waits only while the agent works.
