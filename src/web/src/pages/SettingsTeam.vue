@@ -4,8 +4,14 @@ import {api} from "../api/client.js";
 import Btn from "../kit/Btn.vue";
 import FormField from "../kit/FormField.vue";
 import TextInput from "../kit/TextInput.vue";
+import {colleaguesEnvironments} from "../domain/people.js";
+import {href} from "../route.js";
+import {choose} from "../state/environment.js";
+import {store} from "../state/store.js";
+import {rows} from "../sync/rows.js";
 
 const standing = ref(null);
+const colleagues = computed(() => colleaguesEnvironments(rows("environments"), store.people));
 const address = ref("");
 const code = ref("");
 const name = ref("");
@@ -97,6 +103,17 @@ onMounted(load);
                 <dt>Team's version</dt>
                 <dd>{{ standing.version || "not known yet" }}</dd>
             </dl>
+            <template v-if="colleagues.length">
+                <section class="team-people">
+                    <h3 class="team-heading">Your colleagues' environments</h3>
+                    <template v-for="person in colleagues" :key="person.id">
+                        <p class="team-person">{{ person.name }}</p>
+                        <template v-for="environment in person.environments" :key="environment.id">
+                            <a class="team-environment" :href="href.page()" @click="choose(environment.name)">{{ environment.name }}</a>
+                        </template>
+                    </template>
+                </section>
+            </template>
             <form class="team-form" @submit.prevent="invite">
                 <FormField label="Invite a person" for="team-invite" help="Admins only: the line they join with comes back here.">
                     <TextInput id="team-invite" :value="email" type="email" placeholder="name@example.com" @input="email = $event.target.value" />
@@ -146,6 +163,28 @@ onMounted(load);
 
 .team-standing dd {
     margin: 0 0 8px;
+}
+
+.team-people {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.team-heading {
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.team-person {
+    margin: 8px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.team-environment {
+    color: var(--text);
 }
 
 .team-outcome,

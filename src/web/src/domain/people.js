@@ -26,3 +26,13 @@ export function colleagueOwner(environmentId, people = NOBODY) {
     const owner = people.owners[String(environmentId)] || 0;
     return owner && owner !== people.me ? owner : 0;
 }
+
+// The environments the sidebar lists: the viewer's own and the Team chat, never a colleague's, which open from the Team page.
+export const ownEnvironments = (rows, people = NOBODY) => rows.filter((row) => !colleagueOwner(row.id, people));
+
+// Each colleague with the environments they own, for the Team page.
+export function colleaguesEnvironments(rows, people = NOBODY) {
+    const owned = rows.filter((row) => colleagueOwner(row.id, people));
+    const owners = [...new Set(owned.map((row) => colleagueOwner(row.id, people)))];
+    return owners.map((owner) => ({id: owner, name: personName(owner, people), environments: owned.filter((row) => colleagueOwner(row.id, people) === owner)}));
+}

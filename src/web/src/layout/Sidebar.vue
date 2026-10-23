@@ -14,8 +14,9 @@ import {store} from "../state/store.js";
 import {useNavigation} from "../composables/navigation.js";
 import {rows} from "../sync/rows.js";
 import {pluginPages} from "../domain/pluginPages.js";
+import {ownEnvironments} from "../domain/people.js";
 
-const envs = computed(() => rows("environments"));
+const envs = computed(() => ownEnvironments(rows("environments"), store.people));
 const pages = computed(() => pluginPages(rows("plugins")));
 const openPage = (page) => (store.pluginPage = {plugin: page.plugin, open: page.open, settled: null});
 const release = computed(() => store.spec.version || "");
