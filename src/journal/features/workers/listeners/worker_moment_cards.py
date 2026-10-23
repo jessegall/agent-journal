@@ -11,15 +11,15 @@ from journal.chat.card_detail import CardDetail
 from journal.models.support.ref import Ref
 
 MOMENTS = {
-    WorkerReused: ("reused for its next job", "", "brief"),
-    WorkerRevived: ("revived in its last session", "", "brief"),
-    WorkerNotified: ("told a message in its session", "", "text"),
+    WorkerReused: ("sent its next job", "", "brief"),
+    WorkerRevived: ("started again in its last session", "", "brief"),
+    WorkerNotified: ("sent a message in its session", "", "text"),
     WorkerRetired: ("retired, its report acted on", "good", ""),
 }
 
 
 class WorkerMomentCards(Listener[RowEvent]):
-    """Each moment of a worker after its dispatch is one new mark in the chat with its own tone: reused, revived, told a message, retired."""
+    """Each moment of a worker after its dispatch is one new mark in the chat with its own tone: sent its next job, started again, sent a message, retired."""
 
     def __init__(self, cards: MomentCards) -> None:
         self.cards = cards

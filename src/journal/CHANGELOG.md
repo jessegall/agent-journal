@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.25.1
+
+- A worker's chat marks say each moment once, in plain words: started, sent its next job, finished and ready to check, stopped before it finished, stopped, merged, released. Its clock-in adds no mark of its own, since its dispatch or next job already says it started.
+
 ## 4.25.0
 
 - Update reports are back. After a commit the agent is offered, at most once an hour (the setting Offer to write an update at most every), to write you an update, never while one you have not read waits.

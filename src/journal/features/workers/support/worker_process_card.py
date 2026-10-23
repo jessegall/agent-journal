@@ -14,6 +14,7 @@ from journal.support.card_kind import CardKind
 
 FAILURES = ("could not start", "failed with code", "stopped after")
 STATE_TONES = {WorkerState.STOPPED: "", WorkerState.READY: "", WorkerState.MERGED: "good", WorkerState.RELEASED: ""}
+STATE_NAMES = {WorkerState.STOPPED: "stopped", WorkerState.READY: "started", WorkerState.MERGED: "merged", WorkerState.RELEASED: "released", WorkerState.UNFINISHED: "stopped before it finished", WorkerState.DELIVERED: "finished, ready to check"}
 FAILED = "failed"
 
 
@@ -43,16 +44,16 @@ class WorkerProcessCard(ProcessCard):
 
     def standing(self, worker: Worker) -> CardStanding:
         if worker.state in STATE_TONES:
-            return CardStanding(worker.state, STATE_TONES[worker.state])
+            return CardStanding(STATE_NAMES[worker.state], STATE_TONES[worker.state])
         if worker.state == WorkerState.UNFINISHED:
-            return CardStanding(worker.state, "bad", worker.run_end)
+            return CardStanding(STATE_NAMES[worker.state], "bad", worker.run_end)
         if worker.state == WorkerState.DELIVERED:
-            return CardStanding(worker.state, "good", self.first_line(worker))
+            return CardStanding(STATE_NAMES[worker.state], "good", self.first_line(worker))
         if worker.state == WorkerState.REPORTED and self.reports.last(worker).startswith(FAILURES):
             return CardStanding(FAILED, "bad", self.reports.last(worker))
         if worker.state == WorkerState.REPORTED:
             return CardStanding("reported", "good", self.first_line(worker))
-        return CardStanding(f"dispatched on {worker.provider} {worker.model}".rstrip(), "", worker.brief)
+        return CardStanding(f"started on {worker.provider} {worker.model}".rstrip(), "", worker.brief)
 
     def first_line(self, worker: Worker) -> str:
         report = self.reports.last(worker)

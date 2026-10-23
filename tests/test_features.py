@@ -7138,7 +7138,7 @@ def test_a_workers_dispatch_mark_stays_and_each_later_standing_is_a_new_mark(app
     messages = app.container.get(MessageRows)
     card = lambda n: next(m for m in messages.scoped() if m.data.get("key") == f"worker:{n}")
     marks = lambda n: [m.text for m in messages.scoped() if str(m.data.get("key", "")).startswith(f"worker:{n}:")]
-    assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
+    assert card(1).text == "Worker 1, Lady Lovelace: started on claude sonnet" and card(1).data["detail"] == "a job for Lady Lovelace" and card(1).data["shows"] == "workers"
     runner, workers = app.container.get(WorkerRunner), app.container.get(Workers)
     runner.run(workers.find(1), ["sh", "-c", 'echo "the footer is fixed"; test -n "$JOURNAL_WORKER_TOKEN" || exit 9; test "$JOURNAL_ROOT" = "$0" || exit 8', str(app.config.root)], Actor.agent("s1"))
     first_hash = workers.find(1).token_hash
@@ -7146,11 +7146,11 @@ def test_a_workers_dispatch_mark_stays_and_each_later_standing_is_a_new_mark(app
     runner.run(workers.find(3), ["sh", "-c", "true"], Actor.agent("s1"))
     assert first_hash == "" and workers.find(3).token_hash == "", "a run carries its token in its process, and the token is cleared when the run ends without clocking out"
     console.run(["worker", "stop", "3"], AGENT)
-    assert card(1).text == "Worker 1, Lady Lovelace: dispatched on claude sonnet", "the dispatch mark stays as it went out"
-    assert marks(1) == ["Worker 1, Lady Lovelace: ended without clocking out"], "a run that ends without clocking out is a new mark"
-    assert marks(2) == ["Worker 2, Dr. Einstein: ended without clocking out"] and marks(3)[-1] == "Worker 3, Mr. Babbage: stopped"
+    assert card(1).text == "Worker 1, Lady Lovelace: started on claude sonnet", "the dispatch mark stays as it went out"
+    assert marks(1) == ["Worker 1, Lady Lovelace: stopped before it finished"], "a run that ends without clocking out is a new mark"
+    assert marks(2) == ["Worker 2, Dr. Einstein: stopped before it finished"] and marks(3)[-1] == "Worker 3, Mr. Babbage: stopped"
     console.run(["worker", "release", "1"], AGENT)
-    assert marks(1)[-1] == "Worker 1, Lady Lovelace: released" and card(1).text.endswith("dispatched on claude sonnet"), "and a release is one more"
+    assert marks(1)[-1] == "Worker 1, Lady Lovelace: released" and card(1).text.endswith("started on claude sonnet"), "and a release is one more"
     newest = [m for m in messages.scoped() if str(m.data.get("key", "")).startswith("worker:")][-1]
     assert newest.text == "Worker 1, Lady Lovelace: released", "each new mark lands at the bottom of the chat"
 
@@ -8490,9 +8490,9 @@ def test_each_worker_moment_after_its_dispatch_is_a_short_mark_of_its_own(app: A
     console.run(["worker", "report", "1", "the teapot pours"], Caller.agent("main", "w1", "claude"))
     console.run(["worker", "complete", "1"], AGENT)
     assert marks() == [
-        ("Worker 1, Mr. Wedgwood: reused for its next job", "", "the jug"),
-        ("Worker 1, Mr. Wedgwood: told a message in its session", "", "a blue glaze"),
-        ("Worker 1, Mr. Wedgwood: revived in its last session", "", "the teapot"),
+        ("Worker 1, Mr. Wedgwood: sent its next job", "", "the jug"),
+        ("Worker 1, Mr. Wedgwood: sent a message in its session", "", "a blue glaze"),
+        ("Worker 1, Mr. Wedgwood: started again in its last session", "", "the teapot"),
         ("Worker 1, Mr. Wedgwood: retired, its report acted on", "good", ""),
     ]
     assert all(len(text) <= 80 for text, _, _ in marks())
@@ -9745,3 +9745,23 @@ def test_a_commit_offers_an_update_at_most_once_an_hour_and_recap_docks_one_over
         messages.save(messages.earliest_commit(datetime.fromtimestamp(0, timezone.utc))[0].with_(created_at=datetime.now(timezone.utc) - timedelta(hours=3)), Actor.system())
     assert not commit("Speed up the parser"), "nothing is offered while the update waits unread"
     assert console.run(["report", "note", "1", "the slow part"], AGENT).code == 0 and console.run(["report", "drop", "99"], AGENT).code != 0
+
+
+def test_a_worker_sent_and_started_shows_one_mark_a_moment_and_none_says_clocked(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.messages import Messages as MessageRows
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "the parser", "--brief", "reads the grammar"], AGENT)
+    console.run(["worker", "dispatch", "Lady Lovelace", "--task", "1", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
+        texts = [m.text for m in app.container.get(MessageRows).scoped() if m.data.get("shows") == "workers"]
+    assert texts == ["Worker 1, Lady Lovelace: started on claude sonnet"], "the clock-in adds no second mark to the dispatch"
+    assert not any("clocked" in text for text in texts)
