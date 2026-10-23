@@ -30,8 +30,7 @@ from journal.sync.team_server_link import TeamServerLink
 from sync_server.file_place import FilePlace
 from journal.sync.attachments import FOLDERS
 from journal.support.worktree import Worktree
-from journal.repositories.setting_rows import SettingRows
-from journal.sync.hosted_option import HOSTED
+from journal.sync.hosting import Hosting
 from journal.sync.journal_copy import JournalCopy
 from journal.sync.team_chat_branch import TEAM_CHAT
 from journal.version import VERSION
@@ -48,10 +47,10 @@ TABLES = {folder: table for table, folder in FOLDERS.items()}
 class TeamJoin:
     """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's (but for the team server's own hosted journal, which has no checkout), the journal's version against the team's pinned one (or, where the team allows any version, its migration against the team's), with the line to install the team's version when they differ, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it and a new environment named team, owned by no one, which is the Team chat, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links, copy: JournalCopy, schema: Schema, settings: SettingRows) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links, copy: JournalCopy, schema: Schema, hosting: Hosting) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
         self.backups, self.config, self.environments, self.agents, self.entries = backups, config, environments, agents, entries
-        self.owners, self.links, self.copy, self.schema, self.settings = owners, links, copy, schema, settings
+        self.owners, self.links, self.copy, self.schema, self.hosting = owners, links, copy, schema, hosting
 
     def join(self, address: str, code: str, password: str, fingerprint: str, name: str) -> str:
         if self.account.is_joined():
@@ -76,7 +75,7 @@ class TeamJoin:
         return outcome
 
     def repository_refusal(self, summary: TeamSummary, repository: str) -> str:
-        if not summary.repository or summary.repository == repository or self.settings.option(HOSTED):
+        if not summary.repository or summary.repository == repository or self.hosting.is_hosted():
             return ""
         return f"the team's journal belongs to the repository whose first commit is {summary.repository}, and this checkout's is {repository or 'none'}: join from a clone of the team's repository"
 

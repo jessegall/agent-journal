@@ -1,6 +1,5 @@
 from journal.engine.nudge import Nudge
 from journal.features.feature import Feature
-from journal.sync.hosted_option import HOSTED
 from journal.features.team.support.team_data import TeamData
 from journal.features.team.support.team_data_reader import TeamDataReader
 from journal.features.team.team_conduct import TeamConduct
@@ -11,13 +10,11 @@ from journal.features.team.listeners.environment_owner_record import Environment
 
 
 class TeamFeature(Feature[TeamData]):
-    HOSTED = HOSTED
     name = "team"
     title = "Team"
     help = "A journal shared with a team through its server: joining it, inviting people, the team's devices and how the sync stands."
     commands = (TeamCommand,)
     listeners = (EnvironmentOwnerRecord, ColleagueWriteGuard)
-    options = (HOSTED,)
     jobs = (TeamChatFiles,)
     data = (TeamDataReader,)
     conduct = (TeamConduct,)

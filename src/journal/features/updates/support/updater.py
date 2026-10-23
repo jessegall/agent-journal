@@ -13,7 +13,7 @@ from journal.features.updates.support.update_card import UpdateCard
 from journal.features.updates.support.update_data import UpdateData
 from journal.features.updates.support.update_target import UpdateTarget
 from journal.supervisor_link import SupervisorLink
-from journal.sync.hosted_option import HOSTED
+from journal.sync.hosting import Hosting
 from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.setting_rows import SettingRows
@@ -29,8 +29,8 @@ FIRST_CHECK_DELAY_SECONDS = 60
 class Updater:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, when they say so, or on a hosted journal as soon as the team is pinned to another version, which it never upgrades the team to itself."""
 
-    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount, client: SyncClient) -> None:
-        self.account, self.client = account, client
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount, client: SyncClient, hosting: Hosting) -> None:
+        self.account, self.client, self.hosting = account, client, hosting
         self.settings, self.source, self.installer = settings, source, installer
         self.mark, self.supervisor, self.config = threshold, supervisor, config
         self.releases: list[Release] = []
@@ -84,7 +84,7 @@ class Updater:
         return (bool(self.settings.option(Updates.AUTO)) or self.is_hosted()) and self.is_published()
 
     def is_hosted(self) -> bool:
-        return bool(self.settings.option(HOSTED))
+        return self.hosting.is_hosted()
 
     def latest(self) -> str:
         if self.branch():

@@ -10035,7 +10035,7 @@ def test_a_hosted_journal_signs_each_person_in_with_their_team_account_and_names
     try:
         app.container.get(IdBlocks).add("messages", 800000, 800100)
         app.container.get(IdBlocks).add("settings", 800000, 800100)
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        (app.config.home / "hosted").touch()
         assert sent("/journal/people")[0] == 401, "a hosted journal refuses the API to a browser that has not signed in"
         assert sent("/")[1]["Location"] == "/sign-in", "and sends a page request to the sign-in"
         assert sent("/sign-in", form={"email": "ada@example.com", "password": "wrong"})[0] == 401, "a wrong password opens no session"
@@ -10046,7 +10046,7 @@ def test_a_hosted_journal_signs_each_person_in_with_their_team_account_and_names
         assert stamps == ["user:1", "user:2"], "a message each person posts is stamped as theirs"
         assert sent("/sign-out", {}, cookie=bob)[0] == 303 and sent("/journal/people", cookie=bob)[0] == 401, "a signed-out session is gone"
     finally:
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / "hosted").unlink(missing_ok=True)
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
         team.close(server)
 
@@ -10063,13 +10063,13 @@ def test_a_hosted_journal_starts_no_agent_by_any_door(app: App):
     app.container.get(TeamAccount).write({"address": "http://127.0.0.1:9", "token": "t", "device": 9, "account_id": 1})
     try:
         app.container.get(IdBlocks).add("settings", 800000, 800100)
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        (app.config.home / "hosted").touch()
         rows = json.loads(app.console().run(["environment", "json"], USER).text)
         assert all(row["refusal"] == HOSTED_REFUSAL for row in rows), "the launcher's rows, which the viewer's Start and the picker read, refuse every environment"
         assert HOSTED_REFUSAL in app.console().run(["team", "claim"], USER).error, "the Team chat is never claimed by a hosted journal"
         assert HOSTED_REFUSAL in app.console().run(["worker", "dispatch", "Mr Faraday", "--task", "1", "--profile", "journal-medior", "--changes", "a.py", "--tests", "No tests"], USER).error, "nor a worker dispatched from it"
     finally:
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / "hosted").unlink(missing_ok=True)
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
     assert all(row["refusal"] == "" for row in json.loads(app.console().run(["environment", "json"], USER).text)), "an ordinary journal refuses none of its own"
 
@@ -10094,11 +10094,11 @@ def test_a_hosted_journal_installs_exactly_the_teams_pinned_version_and_never_up
     app.container.get(TeamAccount).write({"address": "http://127.0.0.1:9", "token": "t", "device": 9, "account_id": 1, "team_version": pinned})
     try:
         app.container.get(IdBlocks).add("settings", 800000, 800100)
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, True, Actor.system())
+        (app.config.home / "hosted").touch()
         app.container.get(Updater).checked()
         assert installed == [f"v{pinned}"], "a hosted journal installs the team's pinned version on its own, no newer one, and never takes the team's upgrade lease"
     finally:
-        app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
+        (app.config.home / "hosted").unlink(missing_ok=True)
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
 
 
