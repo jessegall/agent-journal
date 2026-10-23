@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.23.2
+
+- The shipped pytest reader picks pytest's summary when no test ran, no tests ran or N deselected, so such a run's card says how it ended.
+
 ## 4.23.1
 
 - A docked run's card is outlined in green once the run passed and in red once it failed; a running card keeps its plain outline.
