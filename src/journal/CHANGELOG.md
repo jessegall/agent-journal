@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.21.1
+
+- A restart that goes at once clears a restart left waiting, so the journal is not restarted a second time.
+
 ## 4.21.0
 
 - A restart of the journal, by journal install, journal setup restart or an update, waits while any of the environment's commands still runs, so none is cut off: the command asking for it says which outputs it waits for, to check each and end any that is stuck, and the restart starts by itself once the last ends. With none running it goes at once.

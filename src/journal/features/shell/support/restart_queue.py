@@ -20,6 +20,7 @@ class RestartQueue:
             self.waiting_folder().mkdir(parents=True, exist_ok=True)
             (self.waiting_folder() / str(environment_id)).write_text(asking_folder)
             return outputs
+        (self.waiting_folder() / str(environment_id)).unlink(missing_ok=True)
         self.supervisor.restart_journal(environment_id)
         return []
 
@@ -27,11 +28,7 @@ class RestartQueue:
         return sorted(int(waiting_file.name) for waiting_file in self.waiting_folder().glob("*")) if self.waiting_folder().is_dir() else []
 
     def release(self, environment_id: int) -> None:
-        waiting_file = self.waiting_folder() / str(environment_id)
-        if self.outputs.active_outputs(environment_id, waiting_file.read_text()):
-            return
-        waiting_file.unlink()
-        self.supervisor.restart_journal(environment_id)
+        self.restart(environment_id, (self.waiting_folder() / str(environment_id)).read_text())
 
     def waiting_folder(self) -> Path:
         return self.config.home / "runtime" / WAITING_FOLDER
