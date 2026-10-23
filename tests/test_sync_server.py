@@ -232,10 +232,10 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         for path in ("/invite", "/blocks", "/devices/revoke", "/people/remove", "/upload"):
             assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
         ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
-        upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}}
-        assert call("/team") == (200, {"repository": "", "has_rows": False}), "anyone may ask what the team holds before joining"
+        upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}, "repository": "", "version": "4.20.0"}
+        assert call("/team") == (200, {"repository": "", "has_rows": False, "version": ""}), "anyone may ask what the team holds before joining"
         assert call("/upload", {**upload, "repository": "abc123"}, ada) == (200, {"rows": 1, "head": 1})
-        assert call("/team") == (200, {"repository": "abc123", "has_rows": True})
+        assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0"}), "the first copy pins the team to its journal's version"
         assert call("/upload", upload, ada)[1]["error"].startswith("the team's journal already holds rows"), "a full copy is taken once"
         assert call("/blocks", {"tables": ["tasks", "messages"]}, ada)[1]["blocks"] == [{"row_table": "tasks", "first": 1451, "last": 1950}, {"row_table": "messages", "first": 1, "last": 5000}], "blocks start above the copy's numbers and messages get a bigger one"
         invitation = call("/invite", {"email": "Bob@Example.com"}, ada)[1]
@@ -243,6 +243,10 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
         assert call("/accept", {"code": invitation["code"], "name": "Bob", "password": PASSWORD, "password_repeat": "another password", "device_name": "desktop"})[1]["error"].startswith("the two passwords differ")
         bob = call("/accept", {"code": invitation["code"], "name": "Bob", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "desktop"})[1]
         assert bob["name"] == "Bob" and bob["account_id"] == 2
+        assert call("/team/version", {"version": "4.21.0"}, bob["token"])[0] == 403, "only an admin moves the team's version"
+        assert call("/team/version", {"version": "latest"}, ada)[1]["error"].startswith("latest is not a journal version"), "a version is three numbers"
+        assert call("/team/version", {"version": "4.21.0"}, ada)[1]["version"] == "4.21.0"
+        assert call("/pull?after=0&wait=0", None, bob["token"])[1]["team_version"] == "4.21.0", "every pull names the version the team is pinned to"
         assert call("/accept", {"code": invitation["code"], "name": "Eve", "password": PASSWORD, "password_repeat": PASSWORD, "device_name": "x"})[1]["error"].startswith("this invitation code is not known or was used"), "a code is used once"
         assert call("/invite", {"email": "eve@example.com"}, bob["token"])[1]["error"].startswith("Bob is no admin"), "only an admin invites"
         assert [device["name"] for device in call("/devices", token=ada)[1]["devices"]] == ["laptop", "desktop"]

@@ -1,6 +1,6 @@
 from journal.chat.cards import Cards
 from journal.features.plugins.support.plugin_installing import PluginInstalling
-from journal.features.updates.support.release import Release
+from journal.support.release import Release
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.models.plugin import Plugin
 from journal.repositories.environments import Environments

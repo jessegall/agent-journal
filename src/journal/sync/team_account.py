@@ -7,6 +7,7 @@ from pathlib import Path
 from journal.config import Config
 from journal.support.actor import Actor
 from journal.support.caller import LOCAL_USER
+from journal.support.release import Release
 
 TEAM_FILE = "team.json"
 ROOT_FILE = "team-root.crt"
@@ -39,6 +40,15 @@ class TeamAccount:
 
     def record_sequence(self, sequence: int) -> None:
         self.write({**self.contents(), "sequence": sequence})
+
+    def record_pull(self, sequence: int, team_version: str) -> None:
+        self.write({**self.contents(), "sequence": sequence, "team_version": team_version})
+
+    def team_version(self) -> str:
+        return str(self.contents().get("team_version", ""))
+
+    def allows(self, release: Release) -> bool:
+        return not self.is_joined() or release.version == self.team_version()
 
     def write(self, contents: dict) -> None:
         path = self.config.home / TEAM_FILE

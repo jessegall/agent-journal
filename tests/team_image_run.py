@@ -88,7 +88,7 @@ def test_a_running_servers_backup_restores_into_a_new_container_that_answers_the
         time.sleep(2)
         docker("exec", NAME, "python", "-c", f"from pathlib import Path; from sync_server.account import ADMIN; from sync_server.team_server import TeamServer; TeamServer(Path('/data/team')).accounts.create('ada@example.com', 'Ada', '{PASSWORD}', ADMIN, 1.0)")
         token = login("before the backup")["token"]
-        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": [{"row_table": "tasks", "row": 7, "fields": {"title": "kept"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 7}}).encode(), headers={**SPOKEN, "Authorization": f"Bearer {token}"})
+        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": [{"row_table": "tasks", "row": 7, "fields": {"title": "kept"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 7}, "repository": "", "version": "4.20.0"}).encode(), headers={**SPOKEN, "Authorization": f"Bearer {token}"})
         unverified = ssl.create_default_context()
         unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
         urllib.request.urlopen(upload, timeout=10, context=unverified).read()

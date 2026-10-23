@@ -5,7 +5,7 @@ from pathlib import Path
 from journal.features.plugins.support.plugin_folders import PluginFolders
 from journal.features.registry import Registry
 from journal.models.support.plugin_manifest import PUBLISHED, PluginManifest
-from journal.features.updates.support.release import Release
+from journal.support.release import Release
 from journal.support.rejection import Rejection
 from journal.version import VERSION
 from journal.repositories.plugins import Plugins

@@ -36,7 +36,7 @@ from journal.repositories.setting_rows import SettingRows
 from journal.support.caller import Caller
 from journal.engine.state_machine import StateMachine
 from journal.features.sequences.support.run_tracker import RunTracker
-from journal.features.updates.support.release import Release
+from journal.support.release import Release
 from journal.features.updates.support.updater import Updater
 from journal.features.tasks.states.working import Working
 from journal.repositories.subagents import Subagents
@@ -9573,6 +9573,10 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     import subprocess
     from journal.engine.agent_launcher import AgentLauncher
     from journal.support.worktree import Worktree
+    from journal.features.updates.support.updater import Updater
+    from journal.support.release import Release
+    from journal.sync.sync_status import SyncStatus
+    from journal.version import VERSION
     from journal.sync.environment_names import EnvironmentNames
     from journal.sync.attachments import Attachments
     from journal.features.shell.support.output_log import OutputLog
@@ -9803,6 +9807,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         with a.container.get(Scope).environment(a.container.get(Environments).existing("team").row_id):
             lapsed = [m.text for m in a.container.get(Messages).recent(20) if "while Bob was offline" in m.text]
         assert lapsed == ["Ada claimed the Team chat while Bob was offline: what Bob had not pushed stayed on their machine"], "a claim over a lapsed holder says their unpushed work stayed behind"
+        major, minor, _ = (int(n) for n in VERSION.split("."))
+        pinned, beyond = f"{major}.{minor + 1}.0", f"{major}.{minor + 2}.0"
+        assert "the team is pinned to version" in a.console().run(["team", "upgrade", pinned], USER).text
+        assert eventually(lambda: b.container.get(SyncStatus).line() == f"Your team is on version {pinned}: journal update apply installs it"), "the admin's pin makes every member's status bar ask for the upgrade"
+        updater = b.container.get(Updater)
+        updater.releases = Release.lookup([f"v{pinned}", f"v{beyond}"])
+        assert [release.version for release in updater.newer()] == [pinned], "a shared journal is offered only the team's version, never a newer release"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

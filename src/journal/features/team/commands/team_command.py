@@ -38,6 +38,7 @@ class TeamCommand(Command):
         self.verb(verbs, "status", "the team's address, this person and device, and how the sync stands")
         self.verb(verbs, "devices", "every device of the team; admins only")
         self.verb(verbs, "revoke", "revoke a device, so it reaches the team no more; admins only").add_argument("device", type=int)
+        self.verb(verbs, "upgrade", "pin the team to a journal version, such as 4.20.0, which every member's journal then asks to install; admins only").add_argument("version")
         claim = self.verb(verbs, "claim", "hold the Team chat, so this machine runs its agent; one machine holds it at a time")
         claim.add_argument("--agent", default="claude", help="the agent program to run it with")
         self.verb(verbs, "release", "let the Team chat go, so another person may claim it; its agent on this machine stops")
@@ -80,6 +81,12 @@ class TeamCommand(Command):
         self.joined()
         device = TeamRequests.reached(lambda: self.link.revoke(args.device))
         print(f"device {device.id}, {device.name}, is revoked")
+        return 0
+
+    def upgrade(self, args: Namespace, caller: Caller) -> int:
+        self.joined()
+        summary = TeamRequests.reached(lambda: self.link.pin_version(args.version))
+        print(f"the team is pinned to version {summary.version}; every member's journal asks to install it, and installs no other")
         return 0
 
     def claim(self, args: Namespace, caller: Caller) -> int:

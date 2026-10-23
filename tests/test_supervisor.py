@@ -406,7 +406,7 @@ def test_a_folder_no_worktree_owns_is_moved_aside_never_deleted_and_a_failed_mak
 def test_the_boot_screen_offers_a_newer_release_of_the_same_major_before_the_journal_starts(tmp_path: Path, monkeypatch):
     import io
     from journal.config import Config
-    from journal.features.updates.support.release import Release
+    from journal.support.release import Release
     from journal.features.updates.support.release_installer import ReleaseInstaller
     from journal.features.updates.support.release_source import ReleaseSource
     from journal.launcher.support.update_prompt import UpdatePrompt

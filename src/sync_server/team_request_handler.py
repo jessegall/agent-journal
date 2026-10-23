@@ -22,7 +22,7 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it."""
 
     def do_GET(self) -> None:
         if self.is_outdated_client():
@@ -51,6 +51,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             "/invite": lambda: team.admins.invite(self.token(), self.typed(AdminRequest).email),
             "/devices/revoke": lambda: team.admins.revoke(self.token(), self.typed(AdminRequest).device_id),
             "/people/remove": lambda: team.admins.remove(self.token(), self.typed(AdminRequest).account_id),
+            "/team/version": lambda: team.admins.pin(self.token(), self.typed(AdminRequest).version),
             "/upload": lambda: self.uploaded(self.typed(UploadRequest.parsed)),
             "/leases/take": lambda: team.leases.acquire(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.devices.person(self.token()), team.clock.time()),
             "/leases/release": lambda: team.leases.release(self.typed(LeaseRequest).name, team.devices.device(self.token()), team.clock.time()),
@@ -109,7 +110,7 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         return self.server.team.leases.state(name, self.server.team.clock.time())
 
     def uploaded(self, request: UploadRequest):
-        return self.server.team.uploads.answer(self.token(), request.rows, request.highest, request.repository)
+        return self.server.team.uploads.answer(self.token(), request.rows, request.highest, request.repository, request.version)
 
     def login_request(self) -> LoginRequest:
         return self.typed(LoginRequest)

@@ -6,7 +6,7 @@ import time as timing
 from typing import Callable
 
 from journal.config import Config
-from journal.features.updates.support.release import Release
+from journal.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import ReleaseSource
 from journal.features.updates.support.update_card import UpdateCard
@@ -25,7 +25,7 @@ FIRST_CHECK_DELAY_SECONDS = 60
 
 
 class Updater:
-    """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, and its install: on its own when the user has switched that on, or when they say so."""
+    """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, or when they say so."""
 
     def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount) -> None:
         self.account = account
@@ -61,7 +61,7 @@ class Updater:
         return f"{self.branch()} at {self.installed_commit()[:7] or 'an unrecorded commit'}" if self.branch() else VERSION
 
     def newer(self) -> list[Release]:
-        return [release for release in self.releases if release.upgrades(self.running())]
+        return [release for release in self.releases if release.upgrades(self.running()) and self.account.allows(release)]
 
     def is_published(self) -> bool:
         if self.branch():

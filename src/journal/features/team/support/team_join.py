@@ -32,6 +32,7 @@ from sync_server.file_place import FilePlace
 from journal.sync.attachments import FOLDERS
 from journal.support.worktree import Worktree
 from journal.sync.team_chat_branch import TEAM_CHAT
+from journal.version import VERSION
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
@@ -61,7 +62,7 @@ class TeamJoin:
             self.claim_environments(prefix, login.account_id)
             self.name_user(login.account_id, login.name)
             self.environments.save(Environment(name=TEAM_CHAT, is_team_chat=True), Actor.system())
-        self.account.write({"address": address, "token": login.token, "device": login.device_id, "account_id": login.account_id, "sequence": 0})
+        self.account.write({"address": address, "token": login.token, "device": login.device_id, "account_id": login.account_id, "sequence": 0, "team_version": summary.version or VERSION})
         outcome = self.downloaded(login.account_id, login.name) if summary.has_rows else self.uploaded(repository)
         self.client.start()
         return outcome
@@ -75,7 +76,7 @@ class TeamJoin:
     def uploaded(self, repository: str) -> str:
         rows = [CopiedRow(table, row.row_id, Schema.stored_values(row, None), {name: row.updated_at.timestamp() for name in Schema.stored_values(row, None)}) for table in self.tables.names() for row in self.tables.rows(table).rows()]
         highest = {table: max((row.row for row in rows if row.row_table == table), default=0) for table in self.tables.names()}
-        answer = self.link.upload(rows, highest, repository)
+        answer = self.link.upload(rows, highest, repository, VERSION)
         self.account.record_sequence(answer.head)
         files = self.upload_files()
         self.client.refill()

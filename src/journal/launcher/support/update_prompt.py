@@ -1,15 +1,16 @@
 from journal.config import Config
-from journal.features.updates.support.release import Release
+from journal.support.release import Release
 from journal.features.updates.support.release_installer import ReleaseInstaller
 from journal.features.updates.support.release_source import REPOSITORY, ReleaseSource
 from journal.launcher.screen import Screen
 from journal.launcher.support.option import Option
 from journal.support.rejection import Rejection
+from journal.sync.team_account import TeamAccount
 from journal.version import VERSION
 
 
 class UpdatePrompt:
-    """At a launch from a terminal, a release newer than the installed one, of the same major version, is offered before the journal starts: yes installs it, no starts as it is."""
+    """At a launch from a terminal, a release newer than the installed one, of the same major version, is offered before the journal starts, on a shared journal only the version the team is pinned to: yes installs it, no starts as it is."""
 
     def __init__(self, config: Config, screen: Screen, source: ReleaseSource) -> None:
         self.config, self.screen, self.source = config, screen, source
@@ -17,7 +18,7 @@ class UpdatePrompt:
     def newest(self) -> Release | None:
         installed = Release.lookup([VERSION])[0]
         try:
-            newer = [r for r in Release.lookup(self.source.tags(f"v{installed.major}.")) if r.upgrades(installed)]
+            newer = [r for r in Release.lookup(self.source.tags(f"v{installed.major}.")) if r.upgrades(installed) and TeamAccount(self.config).allows(r)]
         except (OSError, ValueError):
             return None
         return newer[-1] if newer else None

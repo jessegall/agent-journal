@@ -51,13 +51,13 @@ class TeamServer:
         self.invitations = Invitations(self.store, InvitationRows(self.store), self.accounts)
         self.logins = LoginHandler(self.devices, self.invitations, self.clock)
         self.blocks = BlocksHandler(self.ranges, self.devices)
-        self.admins = AdminHandler(self.devices, self.accounts, self.invitations, self.clock)
         self.details = TeamDetails(TeamDetailRows(self.store), self.log)
+        self.admins = AdminHandler(self.devices, self.accounts, self.invitations, self.clock, self.details)
         self.files = FileStore(data / FILES)
         self.leases = Leases(self.store, LeaseRows(self.store), self.accounts)
         self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices, self.details)
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
-        self.pulls = PullHandler(self.log, self.devices, self.clock)
+        self.pulls = PullHandler(self.log, self.devices, self.clock, self.details)
         self.copies = CopyHandler(self.store, self.log, self.devices, self.clock)
 
     def http(self, host: str, port: int) -> ThreadingHTTPServer:

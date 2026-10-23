@@ -44,8 +44,8 @@ class TeamServerLink:
     def full_copy(self) -> FullCopy:
         return FullCopy.parsed(**json.loads(self.sent(self.account.address(), "/copy", None, COPY_SECONDS)))
 
-    def upload(self, rows: list[CopiedRow], highest: dict, repository: str) -> UploadAnswer:
-        body = json.dumps({"rows": [row.__dict__ for row in rows], "highest": highest, "repository": repository}).encode()
+    def upload(self, rows: list[CopiedRow], highest: dict, repository: str, version: str) -> UploadAnswer:
+        body = json.dumps({"rows": [row.__dict__ for row in rows], "highest": highest, "repository": repository, "version": version}).encode()
         return UploadAnswer(**json.loads(self.sent(self.account.address(), "/upload", body, COPY_SECONDS)))
 
     def invite(self, email: str) -> InvitationAnswer:
@@ -53,6 +53,9 @@ class TeamServerLink:
 
     def devices(self) -> DeviceList:
         return DeviceList.parsed(**json.loads(self.sent(self.account.address(), "/devices", None, REQUEST_SECONDS)))
+
+    def pin_version(self, version: str) -> TeamSummary:
+        return TeamSummary(**json.loads(self.posted("/team/version", {"version": version})))
 
     def revoke(self, device_id: int) -> Device:
         return Device(**json.loads(self.posted("/devices/revoke", {"device_id": device_id})))

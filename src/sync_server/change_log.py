@@ -11,12 +11,13 @@ PAGE_ROWS = 500
 
 
 class ChangeLog:
-    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows. A held pull waits on the newest sequence kept in memory, never on the database, so a push that holds the store while it wakes the pulls cannot meet a pull that waits for the store."""
+    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows. A held pull waits on the newest sequence kept in memory, never on the database, so a push that holds the store while it wakes the pulls cannot meet a pull that waits for the store; news that is no change, such as a new pinned version, wakes them too."""
 
     def __init__(self, store: Store, changes: ChangeRows, values: RowValues) -> None:
         self.store, self.changes, self.values = store, changes, values
         self.signal = threading.Condition()
         self.is_closed = False
+        self.wakes = 0
         self.latest = changes.head()
 
     def appended(self, change: LoggedChange) -> LoggedChange:
@@ -47,7 +48,13 @@ class ChangeLog:
 
     def wait_past(self, head: int, seconds: float) -> None:
         with self.signal:
-            self.signal.wait_for(lambda: self.is_closed or self.latest > head, timeout=seconds)
+            wakes = self.wakes
+            self.signal.wait_for(lambda: self.is_closed or self.latest > head or self.wakes != wakes, timeout=seconds)
+
+    def wake(self) -> None:
+        with self.signal:
+            self.wakes += 1
+            self.signal.notify_all()
 
     def close(self) -> None:
         with self.signal:

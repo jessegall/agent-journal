@@ -91,5 +91,5 @@ class SyncClient:
         answer = self.link.fetch_changes(self.account.sequence(), LONG_POLL_SECONDS)
         self.clock_offset = answer.server_time - time.time()
         self.incoming.apply([TeamChange.logged(change) for change in answer.changes])
-        self.account.record_sequence(answer.head)
+        self.account.record_pull(answer.head, answer.team_version)
         self.status.connected()
