@@ -2,6 +2,15 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.27.0
+
+- A journal can be shared with a team. A team server, one Docker image with HTTPS, keeps the team's accounts, devices and an ordered log of changes; every shared row syncs between the team's machines, each field settled on the later edit, and an edit that lost is named in a card.
+- Settings > Team connects a journal to a team server by its address and join code, and shows the sync, the people, the devices, invites and the Team chat. Colleagues' environments open from the Team page, not the sidebar.
+- Every environment has an owner. A colleague's chat opens live and read-only with a comment box, and a comment reaches its agent as a colleague's words, never its user's. People can talk beside a chat in a side thread no agent reads.
+- The Team chat is one shared environment whose agent one person claims at a time, hearing everyone by name.
+- The team holds one pinned version the admin moves with journal team upgrade; syncing needs that exact version unless the admin allows others, and an upgrade migrates the team's copy under a lock.
+- The team server's address opens the team's journal in a browser, signed in with a team account; that hosted journal never starts an agent.
+
 ## 4.26.0
 
 - Once every reviewer of a plan in review is back, the agent is told to put what they found into the plan and ready it; after ten more tool uses (the setting Ready a reviewed plan within), every write but plan and task commands waits until the plan is readied.
