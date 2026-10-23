@@ -12,4 +12,5 @@ class BriefingDataReader:
         self.start, self.environments, self.rules = start, environments, rules
 
     def read(self, agent: Agent) -> BriefingData:
-        return BriefingData(is_overview_read=agent.is_overview_read, environment=self.environments.find(agent.environment_id).name, peer_session_active_at=self.start.other_session_time(agent.session), rules=self.start.rules_numbered(), rules_count=len(self.rules.all()), facts=self.start.facts_numbered(), reminders=self.start.reminders_numbered(), waiting=self.start.waiting())
+        environment = self.environments.find(agent.environment_id)
+        return BriefingData(is_overview_read=agent.is_overview_read, environment=environment.name, peer_session_active_at=self.start.other_session_time(agent.session), rules=self.start.rules_numbered(), rules_count=len(self.rules.all()), facts=self.start.facts_numbered(), reminders=self.start.reminders_numbered(), waiting=self.start.waiting(), team_history=self.start.team_history(environment))

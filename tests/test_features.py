@@ -9784,6 +9784,13 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert eventually(lambda: any(f"new message {bob_ask['id']}" in line for line in typed)), "a message posted on Bob's machine is typed into the agent Ada's machine runs for the Team chat"
         read_line = a.console().run(["message", "read", str(bob_ask["id"])], Caller.agent("team", "chat1", "claude")).text
         assert "Bob, one of the people you work for in the Team chat" in read_line, "and it reads as Bob's"
+        stopped = []
+        monkeypatch.setattr(SupervisorLink, "stop", lambda self, environment_id: stopped.append(environment_id))
+        assert "you no longer hold the Team chat" in a.console().run(["team", "release"], USER).text
+        assert stopped == [a.container.get(Environments).existing("team").row_id] and not a.container.get(TeamAccount).is_chat_holder(), "a release stops the Team chat's agent on the machine that let it go"
+        assert "you hold the Team chat now, as Bob" in b.console().run(["team", "claim"], replace(USER, person=2)).text, "another person claims the Team chat once it is released"
+        bob_start = HttpRequest(f"http://127.0.0.1:{b.server().port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "chat2"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "team"})
+        assert "Bob: please run the tests" in urlopen(bob_start, timeout=5).read().decode(), "the agent the new holder's machine starts carries the Team chat's recent history"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

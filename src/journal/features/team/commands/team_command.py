@@ -40,6 +40,7 @@ class TeamCommand(Command):
         self.verb(verbs, "revoke", "revoke a device, so it reaches the team no more; admins only").add_argument("device", type=int)
         claim = self.verb(verbs, "claim", "hold the Team chat, so this machine runs its agent; one machine holds it at a time")
         claim.add_argument("--agent", default="claude", help="the agent program to run it with")
+        self.verb(verbs, "release", "let the Team chat go, so another person may claim it; its agent on this machine stops")
         self.verb(verbs, "chat", "who holds the Team chat, and whether they are online")
 
     def join(self, args: Namespace, caller: Caller) -> int:
@@ -85,6 +86,12 @@ class TeamCommand(Command):
         self.joined()
         lease = TeamRequests.reached(lambda: self.team_chat.claim(args.agent))
         print(f"you hold the Team chat now, as {lease.holder}; its agent starts on this machine in the team environment's worktree")
+        return 0
+
+    def release(self, args: Namespace, caller: Caller) -> int:
+        self.joined()
+        TeamRequests.reached(self.team_chat.release)
+        print("you no longer hold the Team chat; its agent on this machine is stopped, and anyone may claim it")
         return 0
 
     def chat(self, args: Namespace, caller: Caller) -> int:

@@ -50,6 +50,9 @@ class Actor:
     def is_user(self) -> bool:
         return self.kind in (ActorKind.USER, ActorKind.PHONE)
 
+    def number(self) -> int:
+        return int(self.id)
+
     def agent_session(self) -> str | None:
         return self.id if self.kind == ActorKind.AGENT else None
 

@@ -29,9 +29,9 @@ class Messages(ScopedRepository[Message]):
     def save(self, row: Message, actor: Actor) -> Message:
         authored = self._placed(row.authored(actor.agent_session()))
         if authored.is_unsaved_user_message() and self.owners.is_colleague(actor, authored.environment_id):
-            authored = authored.commented(self.owners.person_name(int(actor.id)), int(actor.id))
+            authored = authored.commented(self.owners.person_name(actor.number()), actor.number())
         if authored.is_unsaved_user_message() and self.owners.is_teammate(actor, authored.environment_id):
-            authored = authored.with_merged("data", {Message.TEAMMATE: self.owners.person_name(int(actor.id))})
+            authored = authored.with_merged("data", {Message.TEAMMATE: self.owners.person_name(actor.number())})
         return super().save(authored, actor)
 
     def unread_comments(self) -> list[Message]:
@@ -121,6 +121,10 @@ class Messages(ScopedRepository[Message]):
 
     def recent(self, last: int) -> list[Message]:
         return self.window(self.main_chat(), last)
+
+    def exchanges(self, last: int) -> list[Message]:
+        chat = self.main_chat().filter_alternatives(self.query().filter(author=Author.USER), self.query().filter(author=Author.AGENT).filter_present("reply_target"))
+        return self.window(chat, last)
 
     def voice_matches(self, text: str, last: int) -> list[Message]:
         return [message for message in self.recent_voice(last) if message.text == text]
