@@ -9661,6 +9661,12 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert c.console().run(["team", "join", address, "--code", bob_code, "--password", "correct horse battery"], USER).error.startswith("the team's journal belongs to the repository"), "a checkout of another repository is refused"
         with b.container.get(Scope).environment(MAIN):
             b.container.get(Tasks).save(Task(environment_id=MAIN, title="b's own, before joining"), Actor.user(1))
+        major, minor, patch = (int(n) for n in VERSION.split("."))
+        for other in (f"{major}.{minor}.{patch + 1}", f"{major}.{minor - 1}.0"):
+            monkeypatch.setattr("journal.features.team.support.team_join.VERSION", other)
+            refused_join = b.console().run(["team", "join", address, "--code", bob_code, "--name", "Bob", "--password", "correct horse battery"], USER)
+            assert refused_join.error.startswith(f"the team runs journal version {VERSION} and this journal {other}: install {VERSION} first with curl -fsSL"), "a join from a newer or an older journal is refused with the line to install the team's version"
+        monkeypatch.setattr("journal.features.team.support.team_join.VERSION", VERSION)
         joined_b = b.console().run(["team", "join", address, "--code", bob_code, "--name", "Bob", "--password", "correct horse battery"], USER)
         assert joined_b.code == 0 and "joined the team" in joined_b.text, joined_b.error
         assert [row.title for row in b.container.get(Tasks).global_matching()] == [row.title for row in a.container.get(Tasks).global_matching()], "the joining journal holds exactly the team's tasks, its own replaced"

@@ -33,6 +33,10 @@ from journal.support.worktree import Worktree
 from journal.sync.journal_copy import JournalCopy
 from journal.sync.team_chat_branch import TEAM_CHAT
 from journal.version import VERSION
+from journal.features.updates.support.release_installer import ReleaseInstaller
+from journal.features.updates.support.release_source import REPOSITORY
+from sync_server.team_details import ANY
+from sync_server.team_summary import TeamSummary
 
 BACKUP_NAME = "journal-before-team-%Y%m%d-%H%M%S.db"
 MAIN = "main"
@@ -40,12 +44,12 @@ TABLES = {folder: table for table, folder in FOLDERS.items()}
 
 
 class TeamJoin:
-    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it and a new environment named team, owned by no one, which is the Team chat, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
+    """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the journal's version against the team's pinned one (or, where the team allows any version, its migration against the team's), with the line to install the team's version when they differ, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it and a new environment named team, owned by no one, which is the Team chat, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links, copy: JournalCopy) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links, copy: JournalCopy, schema: Schema) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
         self.backups, self.config, self.environments, self.agents, self.entries = backups, config, environments, agents, entries
-        self.owners, self.links, self.copy = owners, links, copy
+        self.owners, self.links, self.copy, self.schema = owners, links, copy, schema
 
     def join(self, address: str, code: str, password: str, fingerprint: str, name: str) -> str:
         if self.account.is_joined():
@@ -56,6 +60,8 @@ class TeamJoin:
         repository = self.identity.first_commit()
         if summary.repository and summary.repository != repository:
             raise Rejection(f"the team's journal belongs to the repository whose first commit is {summary.repository}, and this checkout's is {repository or 'none'}: join from a clone of the team's repository")
+        if self.version_refusal(summary):
+            raise Rejection(self.version_refusal(summary))
         login = self.link.accept(address, code, name or self.identity.person_name(), password, socket.gethostname())
         prefix = self.account.write_prefix(login.name)
         if not summary.has_rows:
@@ -66,6 +72,14 @@ class TeamJoin:
         outcome = self.downloaded(login.account_id, login.name) if summary.has_rows else self.uploaded(repository)
         self.client.start()
         return outcome
+
+    def version_refusal(self, summary: TeamSummary) -> str:
+        if not summary.has_rows or summary.version in ("", VERSION):
+            return ""
+        if summary.versions == ANY and summary.migration == self.schema.version():
+            return ""
+        tag = f"v{summary.version}"
+        return f"the team runs journal version {summary.version} and this journal {VERSION}: install {summary.version} first with curl -fsSL {ReleaseInstaller.script_path(REPOSITORY, tag)} | AGENT_JOURNAL_REF={tag} sh, then join again"
 
     def trust(self, address: str, fingerprint: str) -> None:
         certificate = self.link.root_certificate(address)
