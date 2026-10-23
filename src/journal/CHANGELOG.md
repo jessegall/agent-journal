@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.16.6
+
+- Writing a reader anew with `journal reader add` keeps each setting the command leaves out, its commands, step, topic, label, progress and finished and failed patterns among them; an empty value takes one away. A rewrite of the pattern alone had dropped the rest.
+
 ## 4.16.5
 
 - A watched command whose card has shown nothing for 30 seconds, no line and no progress, is named to the agent once, after a tool use or while it waits, with what to do: print the command's steps, run it unbuffered, or give its reader a progress pattern.

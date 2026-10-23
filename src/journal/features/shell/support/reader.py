@@ -31,6 +31,9 @@ class Reader:
     finished_pattern: str = ""
     failed_pattern: str = ""
 
+    def revised(self, **changes: object) -> "Reader":
+        return replace(self, **{name: value for name, value in changes.items() if value is not None})
+
     @classmethod
     def loaded(cls, path: Path) -> "Reader":
         lines = path.read_text().splitlines()

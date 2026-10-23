@@ -9540,3 +9540,16 @@ def test_a_watched_run_whose_card_shows_nothing_for_30_seconds_is_named_once(app
     told = [json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "ls"}, tool_response="")[1]) for _ in range(2)]
     assert "output 1's card has shown nothing for 30 seconds" in told[0] and "run it unbuffered" in told[0], "a silent watched run is named, with what to do about it"
     assert "has shown nothing" not in told[1], "and named once"
+
+
+def test_writing_a_reader_anew_keeps_every_setting_a_flag_leaves_out(app: App):
+    from journal.features.shell.support.readers import Readers
+
+    full = ["reader", "add", "unit-runs", "--pattern", "[0-9]+ passed", "--about", "a unit run's summary", "--progress", r"\[ *([0-9]+)%\]", "--label", "Running tests", "--commands", "pytest", "--step", "[.F]", "--topic", r"(\S+\.py)", "--finished", "[0-9]+ passed", "--failed", "[0-9]+ failed"]
+    assert app.console().run(full, USER).code == 0
+    assert app.console().run(["reader", "add", "unit-runs", "--pattern", "[0-9]+ (passed|failed)"], USER).code == 0
+    reader = app.container.get(Readers).lookup("unit-runs")
+    assert reader.pattern == "[0-9]+ (passed|failed)" and reader.subject == "a unit run's summary" and reader.label == "Running tests" and reader.commands.programs and reader.step_pattern == "[.F]" and reader.topic_pattern and reader.finished_pattern and reader.failed_pattern, "a rewrite of the pattern alone keeps every other setting"
+    assert app.console().run(["reader", "add", "unit-runs", "--pattern", "[0-9]+ passed", "--topic", ""], USER).code == 0
+    assert app.container.get(Readers).lookup("unit-runs").topic_pattern == "", "an empty value takes a setting away"
+    assert "a new reader says what it picks with --about" in app.console().run(["reader", "add", "fresh-one", "--pattern", "x"], USER).error, "a new reader still needs --about"
