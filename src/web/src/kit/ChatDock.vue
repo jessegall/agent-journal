@@ -1,7 +1,7 @@
 <script setup>
 import {ref} from "vue";
 
-defineProps({label: {type: String, default: ""}, folded: Boolean, lifted: Boolean, kind: {type: String, default: ""}});
+defineProps({label: {type: String, default: ""}, folded: Boolean, lifted: Boolean, kind: {type: String, default: ""}, tone: {type: String, default: ""}});
 const card = ref(null);
 defineExpose({card});
 </script>
@@ -9,7 +9,7 @@ defineExpose({card});
 <template>
     <div :class="['chat-dock', {lifted}]">
         <div class="chat-dock-fold">
-            <section ref="card" :class="['chat-dock-card', kind]" :aria-label="label">
+            <section ref="card" :class="['chat-dock-card', kind, tone && `tone-${tone}`]" :aria-label="label">
                 <header class="chat-dock-head">
                     <slot name="head" />
                 </header>
@@ -43,6 +43,14 @@ defineExpose({card});
     border-radius: 10px;
     background: var(--raised);
     overflow: hidden;
+}
+
+.chat-dock-card.tone-good {
+    border-color: var(--tone-good);
+}
+
+.chat-dock-card.tone-bad {
+    border-color: var(--tone-bad);
 }
 
 .chat-dock-head {

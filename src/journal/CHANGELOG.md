@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.23.1
+
+- A docked run's card is outlined in green once the run passed and in red once it failed; a running card keeps its plain outline.
+
 ## 4.23.0
 
 - A test run's card counts its dots: while it runs it shows the tests passed and failed so far beside its progress, such as Running tests 64% · 812 passed, 1 failed, and a run that ends without printing a summary ends its card on those counts.
