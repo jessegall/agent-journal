@@ -9,11 +9,12 @@ from sync_server.team_summary import TeamSummary
 REPOSITORY = "repository"
 VERSION = "version"
 MIGRATION = "migration"
+LOWEST_SEQUENCE = "lowest_sequence"
 VERSION_SHAPE = re.compile(r"\d+\.\d+\.\d+")
 
 
 class TeamDetails:
-    """What the team server knows of the journal it hosts: the first commit of its repository, which a joining checkout must share, the journal version the team is pinned to, which the first copy's journal sets and an admin moves, and the migration the team's rows are at, which the first copy sets: a journal on an older migration may neither push nor pull until it is upgraded."""
+    """What the team server knows of the journal it hosts: the first commit of its repository, which a joining checkout must share, the journal version the team is pinned to, which the first copy's journal sets and an admin moves, and the migration the team's rows are at, which the first copy sets: a journal on an older migration may neither push nor pull until it is upgraded; and the lowest sequence a pull may go on from, below which a device takes the full copy."""
 
     def __init__(self, rows: TeamDetailRows, log: ChangeLog) -> None:
         self.rows, self.log = rows, log
@@ -31,12 +32,21 @@ class TeamDetails:
         self.rows.write(MIGRATION, str(number))
 
     def require_migration(self, number: int) -> None:
-        team = int(self.rows.value(MIGRATION) or UNVERSIONED)
+        team = self.migration()
         if number < team:
             raise Refusal(f"this journal is on migration {number} and the team on {team}: upgrade it to version {self.version()} with journal update apply; its changes wait here until then")
+
+    def record_lowest_sequence(self, sequence: int) -> None:
+        self.rows.write(LOWEST_SEQUENCE, str(sequence))
+
+    def lowest_sequence(self) -> int:
+        return int(self.rows.value(LOWEST_SEQUENCE) or UNVERSIONED)
+
+    def migration(self) -> int:
+        return int(self.rows.value(MIGRATION) or UNVERSIONED)
 
     def version(self) -> str:
         return self.rows.value(VERSION)
 
     def answer(self) -> TeamSummary:
-        return TeamSummary(self.rows.value(REPOSITORY), self.log.head() > 0, self.version())
+        return TeamSummary(self.rows.value(REPOSITORY), self.log.head() > 0, self.version(), self.migration())

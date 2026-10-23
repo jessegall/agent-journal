@@ -9573,6 +9573,10 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
     import subprocess
     from journal.engine.agent_launcher import AgentLauncher
     from journal.support.worktree import Worktree
+    from journal.db.schema import Schema
+    from journal.sync.sync_client import SyncClient
+    from journal.sync.team_server_link import TeamServerLink
+    from journal.sync.team_upgrade import TeamUpgrade
     from journal.features.updates.support.updater import Updater
     from journal.support.release import Release
     from journal.sync.sync_status import SyncStatus
@@ -9804,6 +9808,7 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert (Worktree(tmp_path / "b", "team").path / "draft.txt").read_text() == "not committed yet\n", "a release commits and pushes the holder's files, and the new holder starts from them"
         monkeypatch.setattr("sync_server.leases.LAPSE_SECONDS", -1)
         a.console().run(["team", "claim"], USER)
+        monkeypatch.setattr("sync_server.leases.LAPSE_SECONDS", 90)
         with a.container.get(Scope).environment(a.container.get(Environments).existing("team").row_id):
             lapsed = [m.text for m in a.container.get(Messages).recent(20) if "while Bob was offline" in m.text]
         assert lapsed == ["Ada claimed the Team chat while Bob was offline: what Bob had not pushed stayed on their machine"], "a claim over a lapsed holder says their unpushed work stayed behind"
@@ -9816,6 +9821,14 @@ def test_a_journal_joins_an_empty_team_whole_a_clone_joins_with_an_invitation_an
         assert [release.version for release in updater.newer()] == [pinned], "a shared journal is offered only the team's version, never a newer release"
         own_start = HttpRequest(f"http://127.0.0.1:{b.server().port}/hooks/claude", data=json.dumps({"hook_event_name": "SessionStart", "session_id": "bob-own"}).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "bob-main"})
         assert f"this journal is behind its team: Your team is on version {pinned}" in urlopen(own_start, timeout=5).read().decode(), "the agent is told at its session start that the journal must be upgraded"
+        migrated = a.container.get(Schema).version() + 1
+        a.container.get(SyncClient).prepare_upgrade()
+        assert a.container.get(TeamAccount).is_upgrader(), "an upgrade marks its journal the upgrader before the new version installs"
+        monkeypatch.setattr(Schema, "version", lambda self: migrated)
+        a.container.get(TeamUpgrade).finish()
+        link = a.container.get(TeamServerLink)
+        assert link.summary(a.container.get(TeamAccount).address()).migration == migrated, "the upgrader's migrated copy becomes the team's"
+        assert not a.container.get(TeamAccount).is_upgrader() and not link.lease_state("upgrade").holder, "and it lets the lease and the mark go"
         run = tmp_path / "a" / "run"
         run.mkdir()
         (run / "parts").write_text("R-\n")

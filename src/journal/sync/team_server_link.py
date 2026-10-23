@@ -49,6 +49,10 @@ class TeamServerLink:
         body = json.dumps({"rows": [row.__dict__ for row in rows], "highest": highest, "repository": repository, "version": version, "migration": self.schema.version()}).encode()
         return UploadAnswer(**json.loads(self.sent(self.account.address(), "/upload", body, COPY_SECONDS)))
 
+    def upgrade(self, rows: list[CopiedRow], highest: dict, base_sequence: int) -> UploadAnswer:
+        body = json.dumps({"rows": [row.__dict__ for row in rows], "highest": highest, "migration": self.schema.version(), "base_sequence": base_sequence}).encode()
+        return UploadAnswer(**json.loads(self.sent(self.account.address(), "/upgrade", body, COPY_SECONDS)))
+
     def invite(self, email: str) -> InvitationAnswer:
         return InvitationAnswer(**json.loads(self.posted("/invite", {"email": email})))
 

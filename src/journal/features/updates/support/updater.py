@@ -17,6 +17,7 @@ from journal.support.actor import Actor
 from journal.support.rejection import Rejection
 from journal.repositories.setting_rows import SettingRows
 from journal.version import VERSION
+from journal.sync.sync_client import SyncClient
 from journal.sync.team_account import TeamAccount
 
 PLUGIN = "code-commandments"
@@ -27,8 +28,8 @@ FIRST_CHECK_DELAY_SECONDS = 60
 class Updater:
     """The newest release of the installed major version, or the head of the branch the settings name, asked of GitHub at most hourly on a thread of its own, on a shared journal only the version the team is pinned to, and its install: on its own when the user has switched that on, or when they say so."""
 
-    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount) -> None:
-        self.account = account
+    def __init__(self, settings: SettingRows, source: ReleaseSource, installer: ReleaseInstaller, threshold: UpdateCard, supervisor: SupervisorLink, config: Config, account: TeamAccount, client: SyncClient) -> None:
+        self.account, self.client = account, client
         self.settings, self.source, self.installer = settings, source, installer
         self.mark, self.supervisor, self.config = threshold, supervisor, config
         self.releases: list[Release] = []
@@ -155,6 +156,9 @@ class Updater:
 
     def install_newest(self, actor: Actor) -> None:
         target = self.target()
+        if self.account.is_joined():
+            self.mark.step("Sending this journal's changes to the team")
+            self.client.prepare_upgrade()
         self.mark.step("Installing the new version")
         try:
             self.installer.run(target.ref, self.repository())

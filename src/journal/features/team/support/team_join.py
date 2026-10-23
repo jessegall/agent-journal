@@ -27,10 +27,10 @@ from journal.support.rejection import Rejection
 from journal.sync.sync_client import SyncClient
 from journal.sync.team_account import TeamAccount
 from journal.sync.team_server_link import TeamServerLink
-from sync_server.copied_row import CopiedRow
 from sync_server.file_place import FilePlace
 from journal.sync.attachments import FOLDERS
 from journal.support.worktree import Worktree
+from journal.sync.journal_copy import JournalCopy
 from journal.sync.team_chat_branch import TEAM_CHAT
 from journal.version import VERSION
 
@@ -42,10 +42,10 @@ TABLES = {folder: table for table, folder in FOLDERS.items()}
 class TeamJoin:
     """A journal joining its team's server: the server's own certificate authority checked against the fingerprint when it has one, the repository checked against the team's, the code and password traded for this machine's token; then a team with no journal yet takes this one whole, every file under .journal/files with it and a new environment named team, owned by no one, which is the Team chat, and a team with one replaces this journal's shared rows with its copy, this journal kept as it was in a backup file beside it, the hook log emptied and every agent moved to the person's own environment of its name, and adds this person's user row. The sync client starts once it is done."""
 
-    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links) -> None:
+    def __init__(self, account: TeamAccount, link: TeamServerLink, tables: SharedTables, outgoing: OutgoingChanges, identity: RepositoryIdentity, client: SyncClient, backups: JournalBackup, config: Config, environments: Environments, agents: Agents, entries: Entries, owners: EnvironmentOwners, links: Links, copy: JournalCopy) -> None:
         self.account, self.link, self.tables, self.outgoing, self.identity, self.client = account, link, tables, outgoing, identity, client
         self.backups, self.config, self.environments, self.agents, self.entries = backups, config, environments, agents, entries
-        self.owners, self.links = owners, links
+        self.owners, self.links, self.copy = owners, links, copy
 
     def join(self, address: str, code: str, password: str, fingerprint: str, name: str) -> str:
         if self.account.is_joined():
@@ -74,9 +74,8 @@ class TeamJoin:
         self.account.root_path().write_text(certificate)
 
     def uploaded(self, repository: str) -> str:
-        rows = [CopiedRow(table, row.row_id, Schema.stored_values(row, None), {name: row.updated_at.timestamp() for name in Schema.stored_values(row, None)}) for table in self.tables.names() for row in self.tables.rows(table).rows()]
-        highest = {table: max((row.row for row in rows if row.row_table == table), default=0) for table in self.tables.names()}
-        answer = self.link.upload(rows, highest, repository, VERSION)
+        rows = self.copy.rows()
+        answer = self.link.upload(rows, self.copy.highest(rows), repository, VERSION)
         self.account.record_sequence(answer.head)
         files = self.upload_files()
         self.client.refill()

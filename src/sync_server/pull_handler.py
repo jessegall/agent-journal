@@ -8,7 +8,7 @@ WAIT_SECONDS = 25
 
 
 class PullHandler:
-    """Answers a device with the team's changes past the sequence it holds, not its own, in order; while none are new it holds the request up to WAIT_SECONDS and answers the moment one arrives. The sequence it holds is recorded, so the log can be trimmed once every device is past it; each answer names the team's pinned version, and a held pull is answered at once when it moves."""
+    """Answers a device with the team's changes past the sequence it holds, not its own, in order; while none are new it holds the request up to WAIT_SECONDS and answers the moment one arrives. The sequence it holds is recorded, so the log can be trimmed once every device is past it; each answer names the team's pinned version, and a held pull is answered at once when it moves; a device behind the lowest sequence a pull may go on from is told to take the full copy."""
 
     def __init__(self, log: ChangeLog, devices: Devices, clock: ServerClock, details: TeamDetails) -> None:
         self.log, self.devices, self.clock, self.details = log, devices, clock, details
@@ -16,6 +16,8 @@ class PullHandler:
     def answer(self, token: str, sequence: int, wait_seconds: float) -> PullAnswer:
         device = self.devices.device(token)
         self.devices.record_pull(device, sequence)
+        if sequence < self.details.lowest_sequence():
+            return PullAnswer((), self.log.head(), self.clock.time(), self.details.version(), True)
         deadline = self.clock.monotonic() + min(wait_seconds, WAIT_SECONDS)
         head = self.log.head()
         changes = self.log.pull_page(sequence, device.id)

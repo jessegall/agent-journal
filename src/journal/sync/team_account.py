@@ -27,7 +27,10 @@ class TeamAccount:
         return str(self.contents().get("device", ""))
 
     def is_seed_writer(self) -> bool:
-        return not self.is_joined() or bool(self.contents().get("upgrade", False))
+        return not self.is_joined() or self.is_upgrader()
+
+    def is_upgrader(self) -> bool:
+        return bool(self.contents().get("upgrade", False))
 
     def address(self) -> str:
         return self.contents().get("address", "")

@@ -233,9 +233,9 @@ def test_an_admin_invites_a_person_hands_out_blocks_lists_revokes_and_removes_an
             assert call(path, {})[0] == 403, f"{path} refuses a request with no token"
         ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
         upload = {"rows": [{"row_table": "tasks", "row": 1450, "fields": {"title": "from before"}, "changed_at": {"title": 1.0}}], "highest": {"tasks": 1450}, "repository": "", "version": "4.20.0", "migration": 3}
-        assert call("/team") == (200, {"repository": "", "has_rows": False, "version": ""}), "anyone may ask what the team holds before joining"
+        assert call("/team") == (200, {"repository": "", "has_rows": False, "version": "", "migration": 0}), "anyone may ask what the team holds before joining"
         assert call("/upload", {**upload, "repository": "abc123"}, ada) == (200, {"rows": 1, "head": 1})
-        assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0"}), "the first copy pins the team to its journal's version"
+        assert call("/team") == (200, {"repository": "abc123", "has_rows": True, "version": "4.20.0", "migration": 3}), "the first copy pins the team to its journal's version"
         assert call("/upload", upload, ada)[1]["error"].startswith("the team's journal already holds rows"), "a full copy is taken once"
         assert call("/blocks", {"tables": ["tasks", "messages"]}, ada)[1]["blocks"] == [{"row_table": "tasks", "first": 1451, "last": 1950}, {"row_table": "messages", "first": 1, "last": 5000}], "blocks start above the copy's numbers and messages get a bigger one"
         invitation = call("/invite", {"email": "Bob@Example.com"}, ada)[1]
@@ -324,3 +324,51 @@ def test_a_journal_and_a_team_server_on_different_protocols_are_refused_with_the
     finally:
         server.shutdown()
         server.server_close()
+
+
+def test_an_upgrade_holds_every_other_push_replaces_the_teams_rows_once_and_keeps_the_old_copy(tmp_path):
+    import json
+    import sqlite3
+    import urllib.error
+    import urllib.request
+
+    from sync_server.team_server import TeamServer
+
+    team = TeamServer(tmp_path)
+    team.accounts.create("ada@example.com", "Ada", PASSWORD, ADMIN, 1.0)
+    team.accounts.create("bob@example.com", "Bob", PASSWORD, MEMBER, 1.0)
+    server = team.started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+
+    def call(path, body=None, token="", migration=3):
+        request = urllib.request.Request(address + path, data=None if body is None else json.dumps(body).encode(), headers={PROTOCOL_HEADER: str(PROTOCOL), MIGRATION_HEADER: str(migration), "Authorization": f"Bearer {token}"})
+        try:
+            with urllib.request.urlopen(request, timeout=10) as answer:
+                return answer.status, json.loads(answer.read())
+        except urllib.error.HTTPError as refused:
+            return refused.code, json.loads(refused.read())
+
+    def row(title):
+        return {"row_table": "tasks", "row": 7, "fields": {"title": title}, "changed_at": {"title": 1.0}}
+
+    try:
+        ada = call("/login", {"email": "ada@example.com", "password": PASSWORD, "device_name": "laptop"})[1]["token"]
+        bob = call("/login", {"email": "bob@example.com", "password": PASSWORD, "device_name": "desktop"})[1]["token"]
+        head = call("/upload", {"rows": [row("before")], "highest": {"tasks": 7}, "repository": "", "version": "4.20.0", "migration": 3}, ada)[1]["head"]
+        assert call("/leases/take", {"name": "upgrade"}, ada)[0] == 200
+        assert call("/leases/take", {"name": "upgrade"}, bob)[0] == 403, "a second device cannot take the upgrade lease while it is held"
+        refused = call("/push", {"changes": []}, bob)
+        assert refused == (403, {"error": "the team is upgrading on Ada's machine: this journal's changes wait until it is done"}), "every other device's push waits while the upgrade lease is held"
+        assert call("/upgrade", {"rows": [row("migrated")], "highest": {"tasks": 7}, "migration": 4, "base_sequence": head - 1}, ada)[1]["error"].startswith("the team's journal moved on"), "a copy migrated from a stale pull is refused"
+        upgraded = call("/upgrade", {"rows": [row("migrated")], "highest": {"tasks": 7}, "migration": 4, "base_sequence": head}, ada, migration=4)
+        assert upgraded[0] == 200
+        assert call("/copy", None, bob, migration=4)[1]["rows"][0]["fields"] == {"title": "migrated"}, "the migrated copy is the team's"
+        assert call("/team")[1]["migration"] == 4
+        behind = call(f"/pull?after={head}&wait=0", None, bob, migration=4)[1]
+        assert behind["copy_needed"] and not behind["changes"], "a device behind the upgrade takes the full copy"
+        assert call(f"/pull?after={upgraded[1]['head']}&wait=0", None, ada, migration=4)[1]["copy_needed"] is False, "the upgrader goes on from its upload"
+        [backup] = (tmp_path / "backups").glob("team-before-upgrade-*.db")
+        with sqlite3.connect(backup) as old:
+            assert json.loads(old.execute("SELECT fields FROM rows").fetchone()[0]) == {"title": "before"}, "the copy it replaced is kept as a backup"
+    finally:
+        team.close(server)

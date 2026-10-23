@@ -7,10 +7,9 @@ from pathlib import Path
 from sync_server.db.store import Store
 from sync_server.refusal import Refusal
 from sync_server.setup_answers import SetupAnswers
-from sync_server.team_server import DATABASE, TeamServer
+from sync_server.team_server import BACKUPS, DATABASE, TeamServer
 from sync_server.team_setup import TeamSetup
 
-BACKUPS = "backups"
 
 
 def serve(arguments: argparse.Namespace) -> None:

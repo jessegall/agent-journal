@@ -17,5 +17,8 @@ class RowValues:
     def write(self, table: str, row: int, stored: StoredRow, is_deleted: bool, sequence: int) -> None:
         self.store.execute("INSERT INTO rows (row_table, row, fields, changed_at, writers, is_deleted, sequence) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (row_table, row) DO UPDATE SET fields = excluded.fields, changed_at = excluded.changed_at, writers = excluded.writers, is_deleted = excluded.is_deleted, sequence = excluded.sequence", (table, row, json.dumps(stored.fields), json.dumps(stored.changed_at), json.dumps(stored.writers), int(is_deleted), sequence))
 
+    def clear(self) -> None:
+        self.store.execute("DELETE FROM rows")
+
     def existing(self) -> list[Row]:
         return self.store.all("SELECT row_table, row, fields, changed_at FROM rows WHERE is_deleted = 0 ORDER BY row_table, row")

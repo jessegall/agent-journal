@@ -10,10 +10,12 @@ from sync_server.blocks_request import BlocksRequest
 from sync_server.file_answer import FileAnswer
 from sync_server.file_place import FilePlace
 from sync_server.lease_request import LeaseRequest
+from sync_server.leases import UPGRADE_LEASE
 from sync_server.login_request import LoginRequest
 from sync_server.protocol import MIGRATION_HEADER, PROTOCOL, PROTOCOL_HEADER, UNVERSIONED
 from sync_server.push_request import PushRequest
 from sync_server.refusal import Refusal
+from sync_server.upgrade_request import UpgradeRequest
 from sync_server.upload_request import UploadRequest
 
 BEARER = "Bearer "
@@ -22,7 +24,7 @@ FORWARDED_HEADER = "X-Forwarded-For"
 
 
 class TeamRequestHandler(BaseHTTPRequestHandler):
-    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version and /upload, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it, and a push or pull from a journal on an older migration than the team's is refused with it."""
+    """One request to the team server, answered in JSON: POST /login, /accept, /push, /blocks, /invite, /devices/revoke, /people/remove, /team/version, /upload and /upgrade, GET /pull?after=<sequence>&wait=<seconds>, /copy, /devices and /team, which alone needs no token; /files/<table>/<row>/<name>, read with GET and written with POST of its bytes, and /leases?name=<name>, which POST /leases/take and /leases/release change; a refusal is a 403 with its line, an unknown path a 404. Every request names the protocol its journal speaks and every answer the server's: a journal on an older protocol is answered 426 with the line to upgrade it, and a push or pull from a journal on an older migration than the team's is refused with it."""
 
     def do_GET(self) -> None:
         if self.is_outdated_client():
@@ -46,7 +48,8 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
         routes = {
             "/login": lambda: self.login(self.login_request()),
             "/accept": lambda: team.logins.accepted(self.typed(AcceptRequest), self.address()),
-            "/push": lambda: self.current(lambda: team.pushes.answer(self.token(), self.push_request(), team.clock.time())),
+            "/push": lambda: self.current(lambda: self.push_reply(team)),
+            "/upgrade": lambda: team.upgrades.answer(self.token(), self.typed(UpgradeRequest.parsed)),
             "/blocks": lambda: team.blocks.answer(self.token(), self.typed(BlocksRequest).tables),
             "/invite": lambda: team.admins.invite(self.token(), self.typed(AdminRequest).email),
             "/devices/revoke": lambda: team.admins.revoke(self.token(), self.typed(AdminRequest).device_id),
@@ -64,6 +67,10 @@ class TeamRequestHandler(BaseHTTPRequestHandler):
             return False
         self.sent(426, {"error": f"this journal speaks protocol {client_protocol} and the team server {PROTOCOL}: upgrade the journal with journal update apply"})
         return True
+
+    def push_reply(self, team):
+        team.leases.require_free(UPGRADE_LEASE, team.devices.device(self.token()), team.clock.time())
+        return team.pushes.answer(self.token(), self.push_request(), team.clock.time())
 
     def current(self, route):
         self.server.team.details.require_migration(int(self.headers.get(MIGRATION_HEADER, UNVERSIONED)))

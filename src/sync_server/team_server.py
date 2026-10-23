@@ -7,6 +7,7 @@ from sync_server.admin_handler import AdminHandler
 from sync_server.blocks_handler import BlocksHandler
 from sync_server.db.invitation_rows import InvitationRows
 from sync_server.invitations import Invitations
+from sync_server.upgrade_handler import UpgradeHandler
 from sync_server.upload_handler import UploadHandler
 from sync_server.file_store import FileStore
 from sync_server.leases import Leases
@@ -34,6 +35,7 @@ from sync_server.server_clock import ServerClock
 from sync_server.team_request_handler import TeamRequestHandler
 
 DATABASE = "team.db"
+BACKUPS = "backups"
 FILES = "files"
 
 
@@ -59,6 +61,7 @@ class TeamServer:
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock, self.details)
         self.copies = CopyHandler(self.store, self.log, self.devices, self.clock)
+        self.upgrades = UpgradeHandler(self.store, self.log, self.ranges, self.devices, self.leases, self.details, self.clock, data / BACKUPS)
 
     def http(self, host: str, port: int) -> ThreadingHTTPServer:
         server = ThreadingHTTPServer((host, port), TeamRequestHandler)

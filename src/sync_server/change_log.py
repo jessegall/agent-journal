@@ -30,6 +30,9 @@ class ChangeLog:
             self.signal.notify_all()
         return LoggedChange(**{**change.__dict__, "sequence": sequence})
 
+    def cleared(self) -> None:
+        self.values.clear()
+
     def pull_page(self, sequence: int, device_id: int) -> list[LoggedChange]:
         return [LoggedChange(row["row_table"], row["row"], row["action"], row["actor"], row["account_id"], row["device_id"], json.loads(row["fields"]), json.loads(row["changed_at"]), row["sequence"]) for row in self.changes.newer(sequence, device_id, PAGE_ROWS)]
 
