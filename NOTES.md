@@ -1377,3 +1377,7 @@ Code commandments judges `src/journal` clean (657 files). Decided on the way:
   is gone: the refusal lives where the holder is known.
 - The viewer's task inspector shows "Held by" on a started task: a worker by number and name, an agent by program
   and session.
+
+## The state machine answers; the delivery types (task 1542, 2026-10-23)
+
+Sir Jesse, message 18488: the state machine decided and delivered at once. Now StateMachine only holds and moves each agent's stack and answers an event with a MachineReply: the agent as it stands, the decision, the lines to type, the remarks to queue and the moves the states entering and leaving the stack asked of the terminal (the Typist only records them). Delivery (engine/delivery.py) is the engine's one way to the supervisor for those replies: it makes the moves, types the lines and remarks, marks the agent working, resting or with a refused stop, handles the silence between hooks, and folds the queued lines into a hook's answer. HookAnswer is the blocking listener on every agent event (machine, then delivery); RowEventDelivery, journal panic and the boot's ending of compactions deliver the replies they get. StateMachine imports nothing of supervisor_link, and a Stack replacing another tells its leaving and arriving states, so the machine never walks a stack's states itself.

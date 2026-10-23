@@ -18,6 +18,7 @@ from journal.engine.support.session_agents import SessionAgents
 from journal.config import Config
 from journal.support.moment import Moment
 from journal.support.caller import Caller
+from journal.engine.hook_answer import HookAnswer
 from journal.engine.state_machine import StateMachine
 from journal.features.tasks.states.impasse import Impasse
 from journal.features.tasks.states.ready import Ready
@@ -814,7 +815,7 @@ def test_a_row_event_reaches_the_live_agents_top_in_its_environment_and_updated_
     agents, bus = app.container.get(Agents), app.container.get(Bus)
     assert [item.session for item in agents.main_scoped(1)] == ["s2"]
     assert any(isinstance(listener, RowEventDelivery) for listener in bus.listeners(RowEvent))
-    assert not any(isinstance(listener, (RowEventDelivery, StateMachine)) for listener in bus.listeners(Updated))
+    assert not any(isinstance(listener, (RowEventDelivery, HookAnswer)) for listener in bus.listeners(Updated))
     bus.dispatch(PlanStarted(environment_id=1, time=1.0, plan_id=1, task_id=0))
     assert [row["state"] for row in agents.session_agent("s2").stack] == ["idle", "following_plan"], "the live agent of the environment follows the plan"
 

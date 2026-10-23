@@ -1,6 +1,7 @@
 from argparse import Namespace
 
 from journal.console.command import Command
+from journal.engine.delivery import Delivery
 from journal.engine.state_machine import StateMachine
 from journal.support.rejection import Rejection
 from journal.repositories.scope import Scope
@@ -17,8 +18,8 @@ class PanicCommand(Command):
     noun = "panic"
     default_verb = "apply"
 
-    def __init__(self, machine: StateMachine, states: StatesCatalogue, scope: Scope) -> None:
-        self.machine, self.states, self.scope = machine, states, scope
+    def __init__(self, machine: StateMachine, states: StatesCatalogue, scope: Scope, delivery: Delivery) -> None:
+        self.machine, self.states, self.scope, self.delivery = machine, states, scope, delivery
 
     def arguments(self, verbs) -> None:
         time = self.verb(verbs, "apply", "push a state by name, pop the top, or idle to empty the stack")
@@ -27,7 +28,9 @@ class PanicCommand(Command):
 
     def apply(self, args: Namespace, caller: Caller) -> int:
         text = " ".join(["journal panic", args.state, *args.values])
-        agent = self.changed(args, caller, text)
+        reply = self.changed(args, caller, text)
+        self.delivery.applied(reply, 0.0)
+        agent = reply.agent
         print(f"the stack, bottom to top: {', '.join(state.state_text() for state in self.machine.states.stack(agent).states)}")
         return 0
 
