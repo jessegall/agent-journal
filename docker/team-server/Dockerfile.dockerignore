@@ -1,4 +1,10 @@
 *
 !src/sync_server
+!src/journal
+!src/supervisor
+!src/journal.py
+!src/journal.sh
+!src/web/dist
+!install.sh
 !docker/team-server
 **/__pycache__

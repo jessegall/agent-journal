@@ -70,9 +70,10 @@ docker run -d --name "$name" --restart unless-stopped -p "$HTTPS_PORT:443" -p "$
     -e TEAM_ADDRESS="$address" -e TEAM_CERTIFICATE="$certificate" "$IMAGE" >/dev/null
 
 if [ "$HTTPS_PORT" = "443" ]; then url="https://$address"; else url="https://$address:$HTTPS_PORT"; fi
-# The server answers an unknown path with 404 once Caddy holds a certificate the client accepts.
+# The team server answers /team from a client that names no protocol with 426 once Caddy holds a certificate the client
+# accepts; the hosted journal behind the other paths starts only once the team holds a journal.
 tries=0
-until [ "$(curl -s ${certificate:+-k} --max-time 5 -o /dev/null -w '%{http_code}' "$url/nothing")" = "404" ]; do
+until [ "$(curl -s ${certificate:+-k} --max-time 5 -o /dev/null -w '%{http_code}' "$url/team")" = "426" ]; do
     tries=$((tries + 1))
     if [ "$tries" -ge 30 ]; then
         echo "The server runs, but $url does not answer over HTTPS: the certificate for $address could not be got." >&2

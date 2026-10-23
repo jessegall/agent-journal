@@ -8,5 +8,5 @@
 		root * /data/caddy/pki/authorities/local
 		file_server
 	}
-	reverse_proxy 127.0.0.1:8470
+	import /etc/caddy/routes.caddy
 }

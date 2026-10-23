@@ -104,3 +104,55 @@ def test_a_running_servers_backup_restores_into_a_new_container_that_answers_the
     finally:
         subprocess.run(["docker", "rm", "-f", NAME], capture_output=True, timeout=60)
         subprocess.run(["docker", "volume", "rm", VOLUME, restored], capture_output=True, timeout=60)
+
+
+def test_the_hosted_address_signs_a_person_in_and_shows_the_teams_tasks():
+    import http.cookiejar
+    import re
+
+    from sync_server.protocol import MIGRATION_HEADER, VERSION_HEADER
+
+    version = re.search(r'VERSION = "(.*)"', (ROOT / "src" / "journal" / "version.py").read_text()).group(1)
+    migration = max(int(re.search(r"number: ClassVar\[int\] = (\d+)", path.read_text()).group(1)) for path in (ROOT / "src" / "journal" / "db" / "migrations").glob("*.py") if "number: ClassVar" in path.read_text())
+    print("building the team image", flush=True)
+    docker("build", "-q", "-f", "docker/team-server/Dockerfile", "-t", IMAGE, str(ROOT), seconds=600)
+    subprocess.run(["docker", "rm", "-f", NAME], capture_output=True, timeout=60)
+    subprocess.run(["docker", "volume", "rm", VOLUME], capture_output=True, timeout=60)
+    docker("volume", "create", VOLUME)
+    unverified = ssl.create_default_context()
+    unverified.check_hostname, unverified.verify_mode = False, ssl.CERT_NONE
+    try:
+        print("starting the team server", flush=True)
+        docker("run", "-d", "--name", NAME, "-e", "TEAM_ADDRESS=localhost", "-p", f"{PORT}:443", "-v", f"{VOLUME}:/data", IMAGE)
+        time.sleep(2)
+        docker("exec", NAME, "python", "-c", f"from pathlib import Path; from sync_server.account import ADMIN; from sync_server.team_server import TeamServer; TeamServer(Path('/data/team')).accounts.create('ada@example.com', 'Ada', '{PASSWORD}', ADMIN, 1.0)")
+        token = login("a member's journal")["token"]
+        stamped = {"created_at": "2026-10-23T08:00:00+00:00", "updated_at": "2026-10-23T08:00:00+00:00"}
+        rows = [{"row_table": "environments", "row": 1, "fields": {"name": "main", **stamped}, "changed_at": {"name": 1.0}}, {"row_table": "tasks", "row": 7, "fields": {"title": "pushed by a member", "environment_id": 1, **stamped}, "changed_at": {"title": 1.0, "environment_id": 1.0}}]
+        upload = urllib.request.Request(f"https://localhost:{PORT}/upload", data=json.dumps({"rows": rows, "highest": {"environments": 1, "tasks": 7}, "repository": "abc", "version": version, "migration": migration}).encode(), headers={**SPOKEN, MIGRATION_HEADER: str(migration), VERSION_HEADER: version, "Authorization": f"Bearer {token}"})
+        urllib.request.urlopen(upload, timeout=10, context=unverified).read()
+        jar = http.cookiejar.CookieJar()
+        browser = urllib.request.build_opener(urllib.request.HTTPSHandler(context=unverified), urllib.request.HTTPCookieProcessor(jar))
+        boundary = "journalform"
+        form = "".join(f"--{boundary}\r\nContent-Disposition: form-data; name=\"{name}\"\r\n\r\n{value}\r\n" for name, value in (("email", "ada@example.com"), ("password", PASSWORD))).encode() + f"--{boundary}--\r\n".encode()
+        print("waiting for the hosted journal to join and serve", flush=True)
+        deadline = time.monotonic() + 180
+        while True:
+            try:
+                browser.open(urllib.request.Request(f"https://localhost:{PORT}/sign-in", data=form, headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}), timeout=10).read()
+                break
+            except OSError:
+                if time.monotonic() > deadline:
+                    raise
+                time.sleep(2)
+        people = json.loads(browser.open(urllib.request.Request(f"https://localhost:{PORT}/journal/people", headers={"X-Journal-Env": "main"}), timeout=10).read())
+        assert people["me"] == 1, "the hosted address signs Ada in as Ada"
+        tasks = browser.open(urllib.request.Request(f"https://localhost:{PORT}/journal/tasks", headers={"X-Journal-Env": "main"}), timeout=10).read().decode()
+        assert "pushed by a member" in tasks, "and shows the task a member pushed"
+        assert urllib.request.urlopen(urllib.request.Request(f"https://localhost:{PORT}/team", headers=SPOKEN), timeout=10, context=unverified).status == 200, "while the team server's own paths still reach it"
+    except AssertionError:
+        print("\n".join(line for line in subprocess.run(["docker", "logs", NAME], capture_output=True, text=True, timeout=60).stderr.splitlines() + subprocess.run(["docker", "logs", NAME], capture_output=True, text=True, timeout=60).stdout.splitlines() if '"logger"' not in line))
+        raise
+    finally:
+        subprocess.run(["docker", "rm", "-f", NAME], capture_output=True, timeout=60)
+        subprocess.run(["docker", "volume", "rm", VOLUME], capture_output=True, timeout=60)

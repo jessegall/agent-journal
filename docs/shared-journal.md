@@ -15,6 +15,8 @@ the server at. A domain gets an HTTPS certificate of its own; a bare IP address 
 certificate, whose fingerprint the join line carries. Everything the server keeps lives in one Docker volume.
 At the end it prints the line the admin joins with.
 
+Opening the server's address in a browser shows the team's journal: sign in with your team account and you work in it as yourself, every write named as yours. No agent runs there; agents run on each person's own journal, and the hosted journal always runs the team's version.
+
 Back up a running server with `docker exec agent-journal-<project> python -m sync_server backup --data /data/team`.
 
 ## Joining

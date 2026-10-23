@@ -1,10 +1,12 @@
 import argparse
 import json
+from dataclasses import asdict
 import sys
 import time
 from pathlib import Path
 
 from sync_server.db.store import Store
+from sync_server.hosted_invitation import HostedInvitation
 from sync_server.refusal import Refusal
 from sync_server.setup_answers import SetupAnswers
 from sync_server.team_server import BACKUPS, DATABASE, TeamServer
@@ -40,7 +42,11 @@ def restore(arguments: argparse.Namespace) -> None:
     print(f"restored {arguments.source} into {arguments.data / DATABASE}")
 
 
-VERBS = {"serve": serve, "setup": setup, "backup": backup, "restore": restore}
+def hosted(arguments: argparse.Namespace) -> None:
+    print(json.dumps(asdict(HostedInvitation(arguments.data).issued())))
+
+
+VERBS = {"serve": serve, "setup": setup, "backup": backup, "restore": restore, "hosted": hosted}
 
 
 def main() -> None:
@@ -54,6 +60,7 @@ def main() -> None:
     backing.add_argument("--to", type=Path)
     restoring = verbs.add_parser("restore", help="put a backup in place of the database; run it while no server runs on the data folder")
     restoring.add_argument("--from", dest="source", type=Path, required=True)
+    verbs.add_parser("hosted", help="wait until the team holds a journal, then print, as JSON, the invitation, name and password the server's own hosted journal joins with, and the team's version")
     for verb in verbs.choices.values():
         verb.add_argument("--data", type=Path, required=True, help="the folder its database lives in")
     arguments = parser.parse_args()
