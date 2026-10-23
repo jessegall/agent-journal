@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
@@ -10,6 +10,7 @@ import {undock} from "../actions/docking.js";
 import {dockedRef} from "../domain/docks.js";
 import {meta} from "../domain/tables.js";
 import {peek} from "../route.js";
+import {openUpdate} from "../state/overlays.js";
 
 const props = defineProps({message: Object, folded: Boolean});
 const scope = useScope();
@@ -19,15 +20,17 @@ const kind = computed(() => meta(row.value.table));
 const buttons = computed(() => (card.value.dock?.buttons || []).filter((b) => b.act !== "close"));
 const folds = computed(() => props.folded && card.value.dock?.folds !== false);
 
+const dock = ref(null);
 const takeDown = () => undock(scope, props.message);
 
 const open = () => peek(row.value.table, row.value.id);
-const OWN = {open, close: takeDown};
+const openUpdateHere = () => openUpdate(row.value.id, dock.value?.card?.closest(".thread"));
+const OWN = {open, close: takeDown, open_update: openUpdateHere};
 const press = (button) => (OWN[button.act] || (() => scope.api.act(row.value.table, row.value.id, button.act)))();
 </script>
 
 <template>
-    <ChatDock :label="kind.title" :folded="folds">
+    <ChatDock ref="dock" :label="kind.title" :folded="folds">
         <template #head>
             <Icon :name="kind.icon" class="row-dock-icon" />
             <button type="button" class="row-dock-heading" :title="`Open the ${kind.title.toLowerCase()}`" @click="open">

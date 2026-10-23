@@ -112,6 +112,9 @@ class Tasks(ScopedRepository[Task]):
         plan_task_ids = {link.source.id for link in self.links.model_links("source", tasks, PLAN_LINK) if str(link.target) in plan_refs}
         return [task for task in tasks if task.row_id not in plan_task_ids]
 
+    def recent_completions(self, start: datetime, end: datetime) -> list[Task]:
+        return self.selected(self.query().filter(state=TaskState.FINISHED).filter_greater_equal("finished_at", start).filter_less("finished_at", end).order("id"))
+
     def with_state(self, state: TaskState) -> list[Task]:
         return self.matching(state=state)
 

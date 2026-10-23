@@ -16,9 +16,9 @@ PLAN_BUILDING = Sequence(
 UPDATE_WRITING = Sequence(
     title="Writing an update",
     steps=(
-        PLAIN_WRITING + "Find what changed since the user last had an update: `journal task list` for what was done and is under way, `journal plan list`, the messages answered, and `git log --oneline -15`; read any row you do not remember before you sum it up",
-        "Write the update as a report from a markdown file with `journal report create \"Update <date>\" --file <path> --about <the rows it covers>`: what got done, what is under way, what waits on the user, each in one or two plain sentences",
-        "Tell the user in one short line that the update is on the reports page, with the report's reference on a line of its own, like report 3; talk about the work, never about rows or commands",
+        PLAIN_WRITING + "See what the update covers with `journal report changes`: the rows since the last update the user read, by section; read any row you do not remember before you sum it up",
+        "Write the update with `journal report recap \"<one or two sentences>\"`: what got done and what waits on the user, in plain words; the journal puts the rows under it and docks it at the bottom of the chat. Take out what does not belong with `journal report drop <n>` and add a note with `journal report note <n> \"<text>\"`",
+        "Tell the user in one short line that the update is docked above the chat, with the report's reference on a line of its own, like report 3; talk about the work, never about rows or commands",
     ),
 )
 INSTRUCTION_FILES_CHECK = Sequence(

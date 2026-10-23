@@ -3006,7 +3006,7 @@ def test_words_start_a_sequence_from_a_prompt_or_from_the_users_message(app: App
     app.container.get(Bus).dispatch(Ticked(session="s1", environment_id=1, time=0.0, silence_seconds=60.0))
     app.runtime().deferred.drain()
     said = " ".join(transmitted) + app.container.get(SupervisorLink).pending_lines(1)
-    assert active.current("s1", 1).title == "Writing an update" and "Find what changed" in said, "the user's message starts the update sequence, and the step goes to the agent: typed once it is quiet, or on its next tool use while its held stop keeps it at work"
+    assert active.current("s1", 1).title == "Writing an update" and "See what the update covers" in said, "the user's message starts the update sequence, and the step goes to the agent: typed once it is quiet, or on its next tool use while its held stop keeps it at work"
 
 def test_a_subagent_dispatched_long_ago_in_the_session_stays_in_the_dropdown(app: App):
     hook(app, "SessionStart")
@@ -9706,3 +9706,42 @@ def test_a_briefs_points_written_inline_after_points_are_five_points_a_worker_pr
     proved = [console.run(["proof", str(n), f"point {n} met"], orwell) for n in range(1, 6)]
     assert [outcome.code for outcome in proved] == [0] * 5, [outcome.error for outcome in proved]
     assert "brief has 5 points" in console.run(["proof", "6", "no such point"], orwell).error, "the brief holds five points, no more"
+
+
+def test_a_commit_offers_an_update_at_most_once_an_hour_and_recap_docks_one_over_the_gathered_rows(app: App):
+    import subprocess
+    from datetime import datetime, timedelta, timezone
+    from journal.repositories.messages import Messages
+    from journal.repositories.reports import Reports
+    root = app.config.root
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True, timeout=30)
+    hook(app, "SessionStart")
+    console, messages, reports = app.console(), app.container.get(Messages), app.container.get(Reports)
+
+    def commit(subject):
+        subprocess.run(["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", subject], cwd=root, check=True, timeout=30)
+        reply = json.dumps(hook(app, "PostToolUse", tool_name="Bash", tool_input={"command": "git commit -m x"}, tool_response={"stdout": "", "stderr": ""})[1])
+        app.runtime().deferred.drain()
+        return "write the user an update" in reply
+
+    assert not commit("Start the parser"), "the first commit only starts the clock"
+    with app.container.get(Scope).environment(MAIN):
+        first = [m for m in messages.all() if m.data.get("tone") == "commit"][0]
+        messages.save(first.with_(created_at=datetime.now(timezone.utc) - timedelta(hours=2)), Actor.system())
+    assert commit("Finish the parser"), "an hour after the clock started, a commit offers an update"
+    assert not commit("Tidy the parser"), "the offer starts the clock again"
+    console.run(["task", "create", "the parser", "--start"], AGENT)
+    console.run(["task", "complete", "1", "--how", "it reads the grammar"], AGENT)
+    told = console.run(["report", "changes"], AGENT).text
+    assert "done" in told and "tasks:1" in told and "commits" in told, told
+    assert console.run(["report", "recap", "The parser reads the grammar."], AGENT).code == 0
+    app.runtime().deferred.drain()
+    with app.container.get(Scope).environment(MAIN):
+        update = reports.latest_update()[0]
+        card = messages.with_key(f"made:report:{update.id}")
+    assert update.abstract == "The parser reads the grammar." and {"done", "commits"} <= {item["section"] for item in update.items}, update.items
+    assert card and card[0].data.get("docked"), "the update is docked at the bottom of the chat"
+    with app.container.get(Scope).environment(MAIN):
+        messages.save(messages.earliest_commit(datetime.fromtimestamp(0, timezone.utc))[0].with_(created_at=datetime.now(timezone.utc) - timedelta(hours=3)), Actor.system())
+    assert not commit("Speed up the parser"), "nothing is offered while the update waits unread"
+    assert console.run(["report", "note", "1", "the slow part"], AGENT).code == 0 and console.run(["report", "drop", "99"], AGENT).code != 0

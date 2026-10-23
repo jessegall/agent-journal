@@ -1,7 +1,7 @@
 <script setup>
 import {subagentsOf} from "../domain/subagents.js";
 import {busyLine} from "../domain/agentState.js";
-import {openQuestion, questionView} from "../state/overlays.js";
+import {openQuestion, questionView, updateView} from "../state/overlays.js";
 import {agent} from "../composables/leadAgent.js";
 import {feedOn} from "../composables/settings.js";
 import {store} from "../state/store.js";
@@ -36,6 +36,7 @@ import {dockedDump, dockedRows, streamRows} from "../domain/docks.js";
 import RowDock from "./RowDock.vue";
 import WatchDock from "./WatchDock.vue";
 import QuestionOverlay from "./QuestionOverlay.vue";
+import UpdateOverlay from "./UpdateOverlay.vue";
 import FileFeed from "./FileFeed.vue";
 import Compose from "./Compose.vue";
 import Turn from "./Turn.vue";
@@ -386,6 +387,9 @@ watch(
         </Transition>
         <template v-if="questionView.id && questionView.owner === threadRoot">
             <QuestionOverlay :key="questionView.id" />
+        </template>
+        <template v-if="updateView.id && updateView.owner === threadRoot">
+            <UpdateOverlay :key="updateView.id" />
         </template>
         <template v-if="outputOpen">
             <OutputDialog :key="outputOpen" :n="outputOpen" @close="outputOpen = 0" />

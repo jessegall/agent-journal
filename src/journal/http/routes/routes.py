@@ -174,7 +174,7 @@ class Routes:
         router.post(f"{API}/docs/{{id}}/keep", docs.revision_close)
         router.get(f"{API}/docs/{{id}}/export", docs.export)
         self.resource(router, "reports", reports)
-        self.acts(router, "reports", reports, "section")
+        self.acts(router, "reports", reports, "section", "read")
         self.resource(router, "collections", get(CollectionController))
         router.get(f"{API}/reports/{{id}}/export", reports.export)
         self.listed(router, "dumps", dumps)

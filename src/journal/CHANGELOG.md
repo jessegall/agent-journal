@@ -2,6 +2,12 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.25.0
+
+- Update reports are back. After a commit the agent is offered, at most once an hour (the setting Offer to write an update at most every), to write you an update, never while one you have not read waits.
+- `journal report changes` lists what an update covers since the last one you read, by section: what waits on you, what got done, what is under way, the plans under way, the commits and what else was written. `journal report recap "<summary>"` writes it, docked at the bottom of the chat with its counts; `item`, `note` and `drop` change it.
+- Open update on its card shows the update over the chat, by section; each row opens from it, and opening it marks it read.
+
 ## 4.24.1
 
 - A brief's points written on one line after the word Points, 1. ... 2. ... 3. ..., are read as that many points, so a worker proves each of them; points one to a line read as before.
