@@ -15,5 +15,5 @@ class CopyHandler:
         device = self.devices.device(token)
         with self.store.transaction():
             copy = FullCopy(tuple(self.log.copied_rows()), self.log.head(), self.clock.time())
-        self.devices.record_pull(device, copy.head)
+        self.devices.record_pull(device, copy.head, self.clock.time())
         return copy

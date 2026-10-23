@@ -10127,10 +10127,13 @@ def test_the_viewer_joins_a_team_and_shows_how_it_stands_and_a_refusal_is_its_li
         except HTTPError as refused:
             return refused.code, json.loads(refused.read())
 
-    def standing():
-        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/team", headers={"X-Journal-Env": "main"})
+    def fetched(path):
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal{path}", headers={"X-Journal-Env": "main"})
         with urlopen(request, timeout=10) as answer:
             return json.loads(answer.read())
+
+    def standing():
+        return fetched("/team")
 
     try:
         assert standing() == {"joined": False}, "a journal in no team says so, and the page shows the form"
@@ -10140,6 +10143,13 @@ def test_the_viewer_joins_a_team_and_shows_how_it_stands_and_a_refusal_is_its_li
         assert joined[0] == 201 and joined[1]["outcome"].startswith("this journal is now the team's"), "the page's join makes the first journal the team's"
         joined_standing = standing()
         assert joined_standing["joined"] and joined_standing["address"] == address and joined_standing["version"], "and the page shows the team's server, its sync and its version"
+        assert joined_standing["admin"] and joined_standing["state"] in ("in_step", "waiting", "connecting") and joined_standing["running"], "it says whether this person is an admin and which sync state to draw"
+        [ada] = fetched("/team/people")["people"]
+        assert ada["name"] == "Ada" and ada["role"] == "admin" and ada["me"] and ada["environments"], "the people list names each person with their role and environments, the viewer's own marked"
+        [device] = fetched("/team/devices")["devices"]
+        assert device["this"], "an admin sees the team's devices, this one marked"
+        chat = fetched("/team-chat")
+        assert chat["line"] == "No one holds the Team chat" and chat["claimable"] and not chat["mine"], "the Team chat answer says who holds it and whether anyone may claim it"
     finally:
         app.container.get(SyncClient).stop()
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)

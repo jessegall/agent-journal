@@ -1,7 +1,7 @@
 import {expect, test} from "vitest";
 import {readFileSync} from "node:fs";
 import {resolve} from "node:path";
-import {actorName, agentName, colleagueOwner, colleaguesEnvironments, isMe, ownEnvironments, personName} from "../src/domain/people.js";
+import {actorName, agentName, colleagueOwner, isMe, ownEnvironments, personName} from "../src/domain/people.js";
 import {workerActions} from "../src/domain/workers.js";
 
 const team = (me) => ({me, device: me === 3 ? "d3" : "d7", people: [{id: 3, name: "Jesse Gall"}, {id: 7, name: "Anna de Vries"}], owners: {12: 7, 13: 3}});
@@ -82,17 +82,19 @@ test("the Team chat's bar names who holds it and offers a Claim", () => {
     expect(team).toMatch(/<Btn class="team-chat-claim" @click="claim">Claim<\/Btn>/);
 });
 
-test("the sidebar lists the viewer's own environments and the Team chat, and the Team page each colleague's", () => {
+test("the sidebar lists the viewer's own environments and the Team chat", () => {
     const people = {me: 1, device: "d1", people: [{id: 1, name: "Ada"}, {id: 2, name: "Bob"}], owners: {"10": 1, "11": 2, "12": 2, "13": 0}};
     const rows = [{id: 10, name: "ada-main"}, {id: 11, name: "bob-main"}, {id: 12, name: "bob-docs"}, {id: 13, name: "team"}];
     expect(ownEnvironments(rows, people).map((row) => row.name)).toEqual(["ada-main", "team"]);
-    expect(colleaguesEnvironments(rows, people)).toEqual([{id: 2, name: "Bob", environments: [rows[1], rows[2]]}]);
     const sidebar = readFileSync(resolve(__dirname, "../src/layout/Sidebar.vue"), "utf8");
     expect(sidebar).toMatch(/ownEnvironments\(rows\("environments"\), store\.people\)/);
 });
 
-test("the Team page lists each colleague's environments and opens one in place", () => {
+test("the Team page lists each person with their environments and opens a colleague's in place", () => {
+    const people = readFileSync(resolve(__dirname, "../src/pages/TeamPeople.vue"), "utf8");
+    expect(people).toMatch(/api\.teamPeople\(\)/);
+    expect(people).toMatch(/@click="choose\(environment\.name\)"/);
     const page = readFileSync(resolve(__dirname, "../src/pages/SettingsTeam.vue"), "utf8");
-    expect(page).toMatch(/colleaguesEnvironments\(rows\("environments"\), store\.people\)/);
-    expect(page).toMatch(/@click="choose\(environment\.name\)"/);
+    expect(page).toMatch(/<TeamConnect @joined="joined" \/>/);
+    expect(page).toMatch(/<template v-if="standing\.admin">\s*<TeamInvite \/>\s*<TeamDevices \/>/);
 });

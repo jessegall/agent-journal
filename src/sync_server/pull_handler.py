@@ -17,7 +17,7 @@ class PullHandler:
 
     def answer(self, token: str, sequence: int, wait_seconds: float) -> PullAnswer:
         device = self.devices.device(token)
-        self.devices.record_pull(device, sequence)
+        self.devices.record_pull(device, sequence, self.clock.time())
         self.trim()
         deadline = self.clock.monotonic() + min(wait_seconds, WAIT_SECONDS)
         head = self.log.head()

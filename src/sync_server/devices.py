@@ -45,7 +45,7 @@ class Devices:
         row = self.rows.numbered(id)
         if row is None:
             raise Refusal(f"no device {id}")
-        return Device(row["id"], row["account_id"], row["name"], row["revoked_at"])
+        return Device(row["id"], row["account_id"], row["name"], row["revoked_at"], row["pulled_at"])
 
     def listed(self) -> list[Device]:
         return [self.find(id) for id in self.rows.ids()]
@@ -59,8 +59,8 @@ class Devices:
     def token_hash(token: str) -> str:
         return hashlib.sha256(token.encode()).hexdigest()
 
-    def record_pull(self, device: Device, sequence: int) -> None:
-        self.rows.record_pull(device.id, sequence)
+    def record_pull(self, device: Device, sequence: int, pulled_at: float) -> None:
+        self.rows.record_pull(device.id, sequence, pulled_at)
 
     def lowest_pull(self) -> int:
         return self.rows.lowest_pull()

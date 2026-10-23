@@ -13,7 +13,7 @@ class DeviceRows:
         return self.store.execute("INSERT INTO devices (account_id, name, token_hash, created_at) VALUES (?, ?, ?, ?)", (account_id, name, token_hash, created_at)).lastrowid
 
     def numbered(self, id: int) -> Row | None:
-        return self.store.one("SELECT id, account_id, name, revoked_at FROM devices WHERE id = ?", (id,))
+        return self.store.one("SELECT id, account_id, name, revoked_at, pulled_at FROM devices WHERE id = ?", (id,))
 
     def with_token_hash(self, token_hash: str) -> Row | None:
         return self.store.one("SELECT id FROM devices WHERE token_hash = ?", (token_hash,))
@@ -24,8 +24,8 @@ class DeviceRows:
     def revoke(self, id: int, revoked_at: float) -> None:
         self.store.execute("UPDATE devices SET revoked_at = ? WHERE id = ?", (revoked_at, id))
 
-    def record_pull(self, id: int, sequence: int) -> None:
-        self.store.execute("UPDATE devices SET pulled_sequence = MAX(pulled_sequence, ?) WHERE id = ?", (sequence, id))
+    def record_pull(self, id: int, sequence: int, pulled_at: float) -> None:
+        self.store.execute("UPDATE devices SET pulled_sequence = MAX(pulled_sequence, ?), pulled_at = ? WHERE id = ?", (sequence, pulled_at, id))
 
     def lowest_pull(self) -> int:
         return self.store.one("SELECT COALESCE(MIN(pulled_sequence), 0) AS lowest FROM devices WHERE revoked_at = 0 AND pulled_sequence > 0")["lowest"]

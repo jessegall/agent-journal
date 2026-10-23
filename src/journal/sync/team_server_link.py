@@ -15,6 +15,7 @@ from sync_server.full_copy import FullCopy
 from sync_server.invitation_answer import InvitationAnswer
 from sync_server.login_answer import LoginAnswer
 from sync_server.login_request import LoginRequest
+from sync_server.people_answer import PeopleAnswer
 from sync_server.pull_answer import PullAnswer
 from sync_server.push_answer import PushAnswer
 from sync_server.team_summary import TeamSummary
@@ -65,6 +66,9 @@ class TeamServerLink:
 
     def allow_versions(self, rule: str) -> TeamSummary:
         return TeamSummary(**json.loads(self.posted("/team/versions", {"versions": rule})))
+
+    def people(self) -> PeopleAnswer:
+        return PeopleAnswer.parsed(**json.loads(self.sent(self.account.address(), "/people", None, REQUEST_SECONDS)))
 
     def revoke(self, device_id: int) -> Device:
         return Device(**json.loads(self.posted("/devices/revoke", {"device_id": device_id})))

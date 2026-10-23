@@ -31,6 +31,9 @@ class Accounts:
             raise Refusal("the email or the password is wrong")
         return self.find(row["id"])
 
+    def active(self) -> list[Account]:
+        return [Account(row["id"], row["email"], row["name"], row["role"]) for row in self.rows.active()]
+
     def is_empty(self) -> bool:
         return self.rows.count() == 0
 

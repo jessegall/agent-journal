@@ -399,7 +399,7 @@ def test_the_log_is_trimmed_of_what_every_device_pulled_while_deletions_stay_and
     assert team.log.size() == 1 and team.log.head() == 4, "the changes every device pulled are trimmed, a revoked device not counted and the newest kept"
     assert team.log.is_deleted("tasks", 8), "a deleted row stays on the server as a marker, so a deletion still wins over a later edit"
     _, late = team.devices.login("bob@example.com", PASSWORD, "old laptop", "127.0.0.1", 3.0)
-    team.devices.record_pull(team.devices.device(late), 1)
+    team.devices.record_pull(team.devices.device(late), 1, 3.0)
     assert team.pulls.answer(late, 1, 0).copy_needed, "a device older than the trimmed tail takes the full copy again"
     _, joiner = team.devices.login("bob@example.com", PASSWORD, "new laptop", "127.0.0.1", 4.0)
     assert [(row.row, row.fields) for row in team.copies.answer(joiner).rows] == [(7, {"title": "c"})], "a new device still joins from the full copy"

@@ -70,7 +70,7 @@ class TeamJoin:
             self.claim_environments(prefix, login.account_id)
             self.name_user(login.account_id, login.name)
             self.environments.save(Environment(name=TEAM_CHAT, is_team_chat=True), Actor.system())
-        self.account.write({"address": address, "token": login.token, "device": login.device_id, "account_id": login.account_id, "sequence": 0, "team_version": summary.version or VERSION})
+        self.account.write({"address": address, "token": login.token, "device": login.device_id, "account_id": login.account_id, "role": login.role, "sequence": 0, "team_version": summary.version or VERSION})
         outcome = self.downloaded(login.account_id, login.name) if summary.has_rows else self.uploaded(repository)
         self.client.start()
         return outcome

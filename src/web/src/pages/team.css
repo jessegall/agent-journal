@@ -1,0 +1,49 @@
+.team-block {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+}
+
+.team-block .btn {
+    align-self: flex-start;
+}
+
+.team-plain,
+.team-fine,
+.team-failure,
+.team-line {
+    margin: 0;
+    line-height: 1.45;
+}
+
+.team-plain,
+.team-line {
+    color: var(--text-2);
+}
+
+.team-fine {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.team-failure {
+    color: var(--danger);
+}
+
+.team-command {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--bg-2);
+}
+
+.team-command code {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}

@@ -70,7 +70,7 @@ class TeamChat:
     @staticmethod
     def holder_line(lease: Lease) -> str:
         if not lease.holder:
-            return "No one holds the Team chat; its messages wait until someone claims it"
+            return "No one holds the Team chat"
         if lease.is_lapsed:
             return f"Held by {lease.holder}, offline since {time.strftime('%H:%M', time.localtime(lease.renewed_at))}; anyone may claim it"
         return f"Held by {lease.holder}"

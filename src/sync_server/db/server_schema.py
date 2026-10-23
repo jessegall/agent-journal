@@ -28,6 +28,9 @@ MIGRATIONS = (
     """
     CREATE TABLE leases (name TEXT PRIMARY KEY, device_id INTEGER NOT NULL, account_id INTEGER NOT NULL, renewed_at REAL NOT NULL);
     """,
+    """
+    ALTER TABLE devices ADD COLUMN pulled_at REAL NOT NULL DEFAULT 0;
+    """,
 )
 
 

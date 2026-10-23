@@ -18,6 +18,9 @@ class AccountRows:
     def with_email(self, email: str) -> Row | None:
         return self.store.one("SELECT id, password_hash, removed_at FROM accounts WHERE email = ?", (email,))
 
+    def active(self) -> list[Row]:
+        return self.store.all("SELECT id, email, name, role FROM accounts WHERE removed_at = 0 ORDER BY id")
+
     def count(self) -> int:
         return self.store.one("SELECT COUNT(*) AS count FROM accounts")["count"]
 

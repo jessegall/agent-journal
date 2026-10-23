@@ -10,6 +10,7 @@ from journal.config import Config
 from journal.support.actor import Actor
 from journal.support.caller import LOCAL_USER
 from journal.support.release import Release
+from sync_server.account import ADMIN
 
 TEAM_FILE = "team.json"
 ROOT_FILE = "team-root.crt"
@@ -94,6 +95,9 @@ class TeamAccount:
         prefix_file = self.config.home / PREFIX_FILE
         prefix = prefix_file.read_text().strip() if prefix_file.is_file() else ""
         return f"{prefix}-{name}" if prefix and not name.startswith(f"{prefix}-") else name
+
+    def is_admin(self) -> bool:
+        return self.contents().get("role") == ADMIN
 
     def is_chat_holder(self) -> bool:
         return bool(self.contents().get("holds_chat", False))

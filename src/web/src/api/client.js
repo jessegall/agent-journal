@@ -325,6 +325,11 @@ export class ApiClient {
         return this.post("/team-chat/claim", {});
     }
 
+    // lets the Team chat go: its agent here stops after its files are committed and pushed
+    releaseTeamChat() {
+        return this.post("/team-chat/release", {}, LONG_WAIT_MS);
+    }
+
     // the people's side thread beside an environment's chat, which no agent reads
     sideThread() {
         return this.get(this.here("/side-thread"));
@@ -347,6 +352,21 @@ export class ApiClient {
     // joins a team server with the line its setup or an invitation printed, as journal team join does
     joinTeam(fields) {
         return this.post("/team/join", fields, LONG_WAIT_MS);
+    }
+
+    // the team's people, each with their role, when they were last seen and their environments
+    teamPeople() {
+        return this.get("/team/people");
+    }
+
+    // the team's devices, for an admin
+    teamDevices() {
+        return this.get("/team/devices");
+    }
+
+    // revokes one device, so it reaches the team no more
+    revokeDevice(id) {
+        return this.post(`/team/devices/${encoded(id)}/revoke`, {});
     }
 
     // an admin's invitation for one email, answered with the line the person joins with

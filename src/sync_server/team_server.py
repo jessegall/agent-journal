@@ -28,6 +28,7 @@ from sync_server.db.store import Store
 from sync_server.devices import Devices
 from sync_server.id_ranges import IdRanges
 from sync_server.login_handler import LoginHandler
+from sync_server.people_handler import PeopleHandler
 from sync_server.pull_handler import PullHandler
 from sync_server.push_handler import PushHandler
 from sync_server.push_results import PushResults
@@ -60,6 +61,7 @@ class TeamServer:
         self.uploads = UploadHandler(self.store, self.log, self.ranges, self.devices, self.details)
         self.pushes = PushHandler(self.store, self.log, self.devices, PushResults(PushResultRows(self.store)))
         self.pulls = PullHandler(self.log, self.devices, self.clock, self.details)
+        self.people = PeopleHandler(self.accounts, self.devices)
         self.copies = CopyHandler(self.store, self.log, self.devices, self.clock)
         self.upgrades = UpgradeHandler(self.store, self.log, self.ranges, self.devices, self.leases, self.details, self.clock, data / BACKUPS)
 
