@@ -16,6 +16,7 @@ from journal.http.controllers.messages import MessageController
 from journal.http.controllers.migration import MigrationController
 from journal.http.controllers.mode import ModeController
 from journal.http.controllers.sync import SyncController
+from journal.http.controllers.team import TeamController
 from journal.http.controllers.people import PeopleController
 from journal.http.controllers.login_controller import LoginController
 from journal.http.controllers.team_chat import TeamChatController
@@ -95,6 +96,9 @@ class Routes:
         router.get_outward(f"{API}/updates/fresh", get(UpdateController).is_recent)
         router.post(f"{API}/updates", get(UpdateController).update)
         router.get(f"{API}/sync", get(SyncController).show)
+        router.get(f"{API}/team", get(TeamController).show)
+        router.post(f"{API}/team/join", get(TeamController).join)
+        router.post(f"{API}/team/invite", get(TeamController).invite)
         router.get(f"{API}/people", get(PeopleController).show)
         router.get(f"{API}/team-chat", get(TeamChatController).show)
         router.post(f"{API}/team-chat/claim", get(TeamChatController).claim)

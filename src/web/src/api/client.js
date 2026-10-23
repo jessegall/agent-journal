@@ -339,6 +339,21 @@ export class ApiClient {
         return this.get("/people");
     }
 
+    // how this journal stands with its team, or that it has joined none
+    team() {
+        return this.get("/team");
+    }
+
+    // joins a team server with the line its setup or an invitation printed, as journal team join does
+    joinTeam(fields) {
+        return this.post("/team/join", fields, LONG_WAIT_MS);
+    }
+
+    // an admin's invitation for one email, answered with the line the person joins with
+    inviteToTeam(email) {
+        return this.post("/team/invite", {email});
+    }
+
     // ends the browser's session on a hosted journal
     signOut() {
         return transport.request("POST", `${this.base}/sign-out`, {});

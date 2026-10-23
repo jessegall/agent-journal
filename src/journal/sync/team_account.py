@@ -1,5 +1,7 @@
+import hashlib
 import json
 import os
+import ssl
 import re
 import socket
 from pathlib import Path
@@ -68,6 +70,14 @@ class TeamAccount:
 
     def root_path(self) -> Path:
         return self.config.home / ROOT_FILE
+
+    def fingerprint(self) -> str:
+        root = self.root_path()
+        return hashlib.sha256(ssl.PEM_cert_to_DER_cert(root.read_text())).hexdigest() if root.is_file() else ""
+
+    def join_line(self, code: str) -> str:
+        fingerprint = self.fingerprint()
+        return f"journal team join {self.address()} --code {code}{f' --fingerprint {fingerprint}' if fingerprint else ''}"
 
     def device_name(self) -> str:
         return socket.gethostname()

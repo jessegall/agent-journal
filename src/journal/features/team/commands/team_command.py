@@ -1,5 +1,3 @@
-import hashlib
-import ssl
 from argparse import Namespace
 
 from journal.console.command import Command
@@ -64,8 +62,7 @@ class TeamCommand(Command):
     def invite(self, args: Namespace, caller: Caller) -> int:
         self.joined()
         answer = TeamRequests.reached(lambda: self.link.invite(args.email))
-        fingerprint = self.fingerprint()
-        print(f"{answer.email} joins with this line until {answer.expires_at:.0f}:\n\n    journal team join {self.account.address()} --code {answer.code}{f' --fingerprint {fingerprint}' if fingerprint else ''}")
+        print(f"{answer.email} joins with this line until {answer.expires_at:.0f}:\n\n    {self.account.join_line(answer.code)}")
         return 0
 
     def status(self, args: Namespace, caller: Caller) -> int:
@@ -120,6 +117,3 @@ class TeamCommand(Command):
         if not self.account.is_joined():
             raise Rejection("this journal has joined no team: journal team join <address> --code <code> joins one")
 
-    def fingerprint(self) -> str:
-        root = self.account.root_path()
-        return hashlib.sha256(ssl.PEM_cert_to_DER_cert(root.read_text())).hexdigest() if root.is_file() else ""

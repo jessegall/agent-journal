@@ -10100,3 +10100,47 @@ def test_a_hosted_journal_installs_exactly_the_teams_pinned_version_and_never_up
     finally:
         app.container.get(SettingRows).set(TeamFeature.HOSTED.key, False, Actor.system())
         (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+
+
+def test_the_viewer_joins_a_team_and_shows_how_it_stands_and_a_refusal_is_its_line(app: App, tmp_path):
+    import json
+    import time as timing
+    from urllib.error import HTTPError
+    from urllib.request import Request as HttpRequest, urlopen
+
+    from journal.sync.sync_client import SyncClient
+    from journal.sync.team_account import TEAM_FILE
+    from sync_server.team_server import TeamServer
+    from sync_server.team_setup import TeamSetup
+
+    (tmp_path / "team").mkdir()
+    team = TeamServer(tmp_path / "team")
+    code = TeamSetup(team).create("Ada", "ada@example.com", "correct horse battery", "correct horse battery", timing.time()).split("--code ")[-1].split()[0]
+    server = team.started("127.0.0.1", 0)
+    address = f"http://127.0.0.1:{server.server_address[1]}"
+
+    def posted(path, body):
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal{path}", data=json.dumps(body).encode(), method="POST", headers={"Content-Type": "application/json", "X-Journal-Env": "main"})
+        try:
+            with urlopen(request, timeout=20) as answer:
+                return answer.status, json.loads(answer.read())
+        except HTTPError as refused:
+            return refused.code, json.loads(refused.read())
+
+    def standing():
+        request = HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/team", headers={"X-Journal-Env": "main"})
+        with urlopen(request, timeout=10) as answer:
+            return json.loads(answer.read())
+
+    try:
+        assert standing() == {"joined": False}, "a journal in no team says so, and the page shows the form"
+        refused = posted("/team/join", {"address": address, "code": "0000", "password": "correct horse battery"})
+        assert refused[0] == 409 and "invitation code is not known" in refused[1]["error"], "a refusal comes back as the line the page shows"
+        joined = posted("/team/join", {"address": address + "/", "code": code, "password": "correct horse battery"})
+        assert joined[0] == 201 and joined[1]["outcome"].startswith("this journal is now the team's"), "the page's join makes the first journal the team's"
+        joined_standing = standing()
+        assert joined_standing["joined"] and joined_standing["address"] == address and joined_standing["version"], "and the page shows the team's server, its sync and its version"
+    finally:
+        app.container.get(SyncClient).stop()
+        (app.config.home / TEAM_FILE).unlink(missing_ok=True)
+        team.close(server)
