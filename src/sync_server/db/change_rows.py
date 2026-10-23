@@ -23,5 +23,11 @@ class ChangeRows:
     def newer(self, sequence: int, device_id: int, limit: int) -> list[Row]:
         return self.store.all("SELECT * FROM changes WHERE sequence > ? AND device_id != ? ORDER BY sequence LIMIT ?", (sequence, device_id, limit))
 
+    def delete_older(self, sequence: int) -> None:
+        self.store.execute("DELETE FROM changes WHERE sequence <= ? AND sequence < (SELECT MAX(sequence) FROM changes)", (sequence,))
+
+    def count(self) -> int:
+        return self.store.one("SELECT COUNT(*) AS count FROM changes")["count"]
+
     def head(self) -> int:
         return self.store.one("SELECT COALESCE(MAX(sequence), 0) AS head FROM changes")["head"]

@@ -11,7 +11,7 @@ PAGE_ROWS = 500
 
 
 class ChangeLog:
-    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows. A held pull waits on the newest sequence kept in memory, never on the database, so a push that holds the store while it wakes the pulls cannot meet a pull that waits for the store; news that is no change, such as a new pinned version, wakes them too."""
+    """The team's changes in the order the server took them, and the current value of every row they made, so a pull is the changes past a number and a full copy is the rows. A held pull waits on the newest sequence kept in memory, never on the database, so a push that holds the store while it wakes the pulls cannot meet a pull that waits for the store; news that is no change, such as a new pinned version, wakes them too. Changes every device has pulled are trimmed, the newest always kept so the head stands; the current values, deleted rows among them as markers, are never trimmed."""
 
     def __init__(self, store: Store, changes: ChangeRows, values: RowValues) -> None:
         self.store, self.changes, self.values = store, changes, values
@@ -29,6 +29,12 @@ class ChangeLog:
             self.latest = max(self.latest, sequence)
             self.signal.notify_all()
         return LoggedChange(**{**change.__dict__, "sequence": sequence})
+
+    def trim(self, sequence: int) -> None:
+        self.changes.delete_older(sequence)
+
+    def size(self) -> int:
+        return self.changes.count()
 
     def cleared(self) -> None:
         self.values.clear()

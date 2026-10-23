@@ -27,6 +27,9 @@ class DeviceRows:
     def record_pull(self, id: int, sequence: int) -> None:
         self.store.execute("UPDATE devices SET pulled_sequence = MAX(pulled_sequence, ?) WHERE id = ?", (sequence, id))
 
+    def lowest_pull(self) -> int:
+        return self.store.one("SELECT COALESCE(MIN(pulled_sequence), 0) AS lowest FROM devices WHERE revoked_at = 0 AND pulled_sequence > 0")["lowest"]
+
     def pulled_sequence(self, id: int) -> int:
         return self.store.one("SELECT pulled_sequence FROM devices WHERE id = ?", (id,))["pulled_sequence"]
 

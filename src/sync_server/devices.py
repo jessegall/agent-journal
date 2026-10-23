@@ -62,6 +62,9 @@ class Devices:
     def record_pull(self, device: Device, sequence: int) -> None:
         self.rows.record_pull(device.id, sequence)
 
+    def lowest_pull(self) -> int:
+        return self.rows.lowest_pull()
+
     def pulled_sequence(self, device: Device) -> int:
         return self.rows.pulled_sequence(device.id)
 

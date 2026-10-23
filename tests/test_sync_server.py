@@ -379,3 +379,28 @@ def test_an_upgrade_holds_every_other_push_replaces_the_teams_rows_once_and_keep
             assert json.loads(old.execute("SELECT fields FROM rows").fetchone()[0]) == {"title": "before"}, "the copy it replaced is kept as a backup"
     finally:
         team.close(server)
+
+
+def test_the_log_is_trimmed_of_what_every_device_pulled_while_deletions_stay_and_an_older_device_takes_the_copy(tmp_path, monkeypatch):
+    from sync_server.team_server import TeamServer
+
+    monkeypatch.setattr("sync_server.pull_handler.TRIM_SECONDS", 0)
+    team = TeamServer(tmp_path)
+    for email, name, role in (("ada@example.com", "Ada", ADMIN), ("bob@example.com", "Bob", MEMBER), ("eve@example.com", "Eve", MEMBER)):
+        team.accounts.create(email, name, PASSWORD, role, 1.0)
+    (ada_device, ada), (_, bob), (eve_device, eve) = (team.devices.login(email, PASSWORD, "laptop", "127.0.0.1", 1.0) for email in ("ada@example.com", "bob@example.com", "eve@example.com"))
+    for change in (LoggedChange("tasks", 7, "created", "user:1", 1, ada_device.id, {"title": "a"}, {"title": 1.0}), LoggedChange("tasks", 8, "created", "user:1", 1, ada_device.id, {"title": "b"}, {"title": 1.0}),
+                   LoggedChange("tasks", 8, "deleted", "user:1", 1, ada_device.id), LoggedChange("tasks", 7, "updated", "user:1", 1, ada_device.id, {"title": "c"}, {"title": 2.0})):
+        team.log.appended(change)
+    team.pulls.answer(eve, 1, 0)
+    team.devices.revoke(eve_device.id, 2.0)
+    team.pulls.answer(ada, 4, 0)
+    team.pulls.answer(bob, 3, 0)
+    assert team.log.size() == 1 and team.log.head() == 4, "the changes every device pulled are trimmed, a revoked device not counted and the newest kept"
+    assert team.log.is_deleted("tasks", 8), "a deleted row stays on the server as a marker, so a deletion still wins over a later edit"
+    _, late = team.devices.login("bob@example.com", PASSWORD, "old laptop", "127.0.0.1", 3.0)
+    team.devices.record_pull(team.devices.device(late), 1)
+    assert team.pulls.answer(late, 1, 0).copy_needed, "a device older than the trimmed tail takes the full copy again"
+    _, joiner = team.devices.login("bob@example.com", PASSWORD, "new laptop", "127.0.0.1", 4.0)
+    assert [(row.row, row.fields) for row in team.copies.answer(joiner).rows] == [(7, {"title": "c"})], "a new device still joins from the full copy"
+    team.store.close()
