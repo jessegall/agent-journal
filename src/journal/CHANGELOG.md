@@ -2,6 +2,10 @@
 
 What each release of agent-journal version 4 brought, newest first.
 
+## 4.24.1
+
+- A brief's points written on one line after the word Points, 1. ... 2. ... 3. ..., are read as that many points, so a worker proves each of them; points one to a line read as before.
+
 ## 4.24.0
 
 - Every row that can be docked, a document, a report, a task, a plan and the rest, has a Dock button in its inspector, which reads Undock once the row is docked above the chat.

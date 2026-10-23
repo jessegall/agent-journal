@@ -9686,3 +9686,23 @@ def test_a_test_runs_card_counts_its_dots_while_it_runs_and_ends_on_them_when_it
     (folder / "0.out").write_text("....                    [100%]\n4 passed in 0.12s\n")
     outputs.save(outputs.find(summed).ended_with(0, 1.0), Actor.system())
     assert (shown(summed)["detail"], shown(summed)["summary_missing"]) == ("4 passed in 0.12s", False), "a run that prints its summary ends on it"
+
+
+def test_a_briefs_points_written_inline_after_points_are_five_points_a_worker_proves_one_by_one(app: App, monkeypatch):
+    import subprocess
+    from journal.features.workers.support.worker_runner import WorkerRunner
+    from journal.repositories.workers import Workers
+    monkeypatch.setattr(WorkerRunner, "start", lambda self, worker, actor: None)
+    for argv in (["init", "-q", "-b", "main"], ["-c", "user.email=t@example.com", "-c", "user.name=T", "commit", "-q", "--allow-empty", "-m", "start"]):
+        subprocess.run(["git", *argv], cwd=app.config.root, capture_output=True, timeout=30)
+    console = app.console()
+    hook(app, "SessionStart")
+    console.run(["task", "create", "plain prose", "--brief", "Write the project's prose plainly. Points: 1. the names; 2. the docs, 4.20.0 included; 3. the skills; 4. NOTES.md; 5. the changelog."], AGENT)
+    console.run(["worker", "dispatch", "Mr Orwell", "--task", "1", "--changes", "the files of its task", "--tests", "Scoped tests", "--profile", "journal-medior", "--model", "sonnet", "--worktree", "--no-libraries"], AGENT)
+    with app.container.get(Scope).environment(MAIN):
+        workers = app.container.get(Workers)
+        workers.save(workers.find(1).with_(token_hash="h", session="w-1").ready(1.0), Actor.system())
+    orwell = Caller.worker("main", 1, "w-1", "claude")
+    proved = [console.run(["proof", str(n), f"point {n} met"], orwell) for n in range(1, 6)]
+    assert [outcome.code for outcome in proved] == [0] * 5, [outcome.error for outcome in proved]
+    assert "brief has 5 points" in console.run(["proof", "6", "no such point"], orwell).error, "the brief holds five points, no more"

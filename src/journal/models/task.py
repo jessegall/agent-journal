@@ -17,6 +17,8 @@ from journal.support.rejection import Rejection
 
 
 BULLET = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.+)$", re.MULTILINE)
+INLINE_POINTS = re.compile(r"\bpoints:\s*(.+)$", re.IGNORECASE | re.DOTALL)
+POINT_NUMBER = re.compile(r"(?:^|(?<=\s))(\d+)[.)]\s+")
 
 @dataclass(frozen=True)
 class Task(Scoped):
@@ -54,7 +56,15 @@ class Task(Scoped):
 
     def points(self) -> tuple[str, ...]:
         bullets = tuple(match[1].strip() for match in BULLET.finditer(self.brief))
-        return bullets or (self.brief.strip(),)
+        return bullets or self.inline_points() or (self.brief.strip(),)
+
+    def inline_points(self) -> tuple[str, ...]:
+        listing = INLINE_POINTS.search(self.brief)
+        segments = POINT_NUMBER.split(listing[1]) if listing else []
+        numbers, texts = segments[1::2], segments[2::2]
+        if not numbers or numbers != [str(n) for n in range(1, len(numbers) + 1)]:
+            return ()
+        return tuple(text.strip().rstrip(";").strip() for text in texts)
 
     def briefed(self, brief: str, time: float) -> "Task":
         rewritten = self.with_(brief=brief)
