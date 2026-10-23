@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^([4-9]|[1-9][0-9]+)(\\.[0-9]+)?$"
+            },
+            {
+                "of": "parent",
+                "descendant": {
+                    "nameMatches": "^(monotonic|time)$"
+                }
+            },
+            {
+                "inside": {
+                    "is": "assignment"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "is": "call"
+                }
+            },
+            {
+                "file": "tests/*_live_run.py"
+            }
+        ]
+    },
+    "sin": {
+        "name": "long-answer-wait",
+        "description": "A deadline waits more than 3 seconds for an answer. A server, a sync or a process that has not answered in about 3 seconds is not working, and a longer wait only makes a broken run slow.",
+        "rule": "Wait at most 3 seconds for an answer. A wait that is not for an answer, such as a container starting or an image building, names its seconds in a constant that says so, such as START_SECONDS = 20, and adds that.",
+        "skill": "plain-code-words"
+    }
+}

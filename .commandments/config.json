@@ -15,6 +15,7 @@
         "PlainServerTextDetector",
         "PlainViewerScriptTextDetector",
         "PlainViewerPageTextDetector",
+        "LongAnswerWaitDetector",
         "SentenceLabelDetector",
         "SentenceLabelScriptDetector",
         "SearchMarkLabelDetector",

@@ -865,7 +865,7 @@ def test_a_running_check_shows_how_far_it_is_and_keeps_its_report(app: App, tmp_
     assert started.progress is not None, "a run started from the page answers at once, marked running"
 
     def shown(progress: tuple | None):
-        deadline = clock.monotonic() + 10
+        deadline = clock.monotonic() + 3
         while (row := checks.find(1)).progress and (row.progress.finished_count, row.progress.total) != progress and clock.monotonic() < deadline:
             clock.sleep(0.01)
         return row
@@ -2568,7 +2568,7 @@ def test_the_mcp_page_shows_every_server_as_the_kept_check_found_it_without_a_re
     monkeypatch.setattr(Health, "probe", lambda self: HealthReport({"blender": ServerCatalogue("blender", "uvx blender-mcp", "connected", "")}))
     read = lambda: j.load(urlopen(HttpRequest(f"http://127.0.0.1:{app.server().port}/journal/mcp", headers={"X-Journal-Env": "main"}), timeout=5))
     read()
-    deadline = timing.monotonic() + 5
+    deadline = timing.monotonic() + 3
     while not read()["checked_at"] and timing.monotonic() < deadline:
         timing.sleep(0.05)
     shown = read()
@@ -4732,7 +4732,7 @@ def test_a_worker_outlives_a_restart_and_is_watched_again_at_boot(app: App, tmp_
     workers.save(active.running_as(pid, timing.time()), Actor.system())
     app.container.get(WorkersSeed).run()
     done.write_text("\n")
-    end = timing.monotonic() + 10
+    end = timing.monotonic() + 3
     while runner.is_running(pid) and timing.monotonic() < end:
         timing.sleep(0.01)
     app.container.get(WorkerWatch).tick(timing.time())
@@ -8140,7 +8140,7 @@ def test_a_workers_session_is_kept_as_it_prints_it_and_never_taken_from_the_disp
     printed = f"""echo '{{"type": "system", "session_id": "worker-session"}}'; {fifo_line(said)}; echo '{{"type": "result", "result": "hello said", "session_id": "worker-session"}}'"""
     running = threading.Thread(target=runner.run, args=(workers.find(1), ["sh", "-c", printed], Actor.agent("s1")))
     running.start()
-    end = timing.monotonic() + 5
+    end = timing.monotonic() + 3
     while timing.monotonic() < end and workers.find(1).resume != "worker-session":
         timing.sleep(0.01)
     assert workers.find(1).resume == "worker-session" and workers.find(1).is_running(), "the session is kept the moment the worker prints it, while it still works"
@@ -8191,7 +8191,7 @@ def listening_session(home: Path, pid: int, session: str) -> list[dict]:
 
 
 def arrived(received: list, count: int) -> list:
-    end = timing.time() + 5
+    end = timing.time() + 3
     while timing.time() < end and len(received) < count:
         timing.sleep(0.02)
     return received
