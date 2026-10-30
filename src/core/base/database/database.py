@@ -1,0 +1,72 @@
+import sqlite3
+from contextlib import contextmanager
+
+from core.base.database.nesting_fault import NestingFault
+from core.base.database.statement import Statement
+from core.base.journal_home import JournalHome
+
+PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL", "busy_timeout = 5000")
+NESTING_LIMIT_LEVELS = 8
+
+
+class Database:
+    """The run's one SQLite connection: transactions that commit whole or roll back to the first error, and
+    savepoints for what is nested inside one."""
+
+    def __init__(self, connection: sqlite3.Connection) -> None:
+        self.connection = connection
+        self.nested: list[str] = []
+
+    @classmethod
+    def opened(cls, home: JournalHome) -> "Database":
+        home.database.parent.mkdir(parents=True, exist_ok=True)
+        connection = sqlite3.connect(home.database, autocommit=True)
+        connection.row_factory = sqlite3.Row
+        for pragma in PRAGMAS:
+            connection.execute(f"PRAGMA {pragma}")
+        return cls(connection)
+
+    @property
+    def has_transaction(self) -> bool:
+        return self.connection.in_transaction
+
+    @contextmanager
+    def transaction(self):
+        self.connection.execute("BEGIN IMMEDIATE")
+        try:
+            yield
+            self.connection.execute("COMMIT")
+        except BaseException:
+            if self.connection.in_transaction:
+                self.connection.execute("ROLLBACK")
+            raise
+
+    @contextmanager
+    def savepoint(self, label: str):
+        if len(self.nested) >= NESTING_LIMIT_LEVELS:
+            raise NestingFault((*self.nested, label))
+        name = f"nested_{len(self.nested)}"
+        self.nested.append(label)
+        self.connection.execute(f"SAVEPOINT {name}")
+        try:
+            yield
+            self.connection.execute(f"RELEASE {name}")
+        except BaseException:
+            if self.connection.in_transaction:
+                self.connection.execute(f"ROLLBACK TO {name}")
+                self.connection.execute(f"RELEASE {name}")
+            raise
+        finally:
+            self.nested.pop()
+
+    def rows(self, statement: Statement) -> list[sqlite3.Row]:
+        return statement.result(self.connection).fetchall()
+
+    def insert(self, statement: Statement) -> int:
+        return statement.result(self.connection).lastrowid
+
+    def update(self, statement: Statement) -> int:
+        return statement.result(self.connection).rowcount
+
+    def close(self) -> None:
+        self.connection.close()
