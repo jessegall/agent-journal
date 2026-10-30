@@ -4,7 +4,11 @@ from datetime import datetime, timezone
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
+from core.base.database.schema_mismatch import SchemaMismatch
 from core.base.database.statement import Statement
+from core.base.database.view import View
+from core.base.model.model import Model
+from core.base.model.tables import Tables
 
 MIGRATIONS_TABLE = "CREATE TABLE IF NOT EXISTS migrations (module TEXT NOT NULL, number INTEGER NOT NULL, ran_at TEXT NOT NULL, PRIMARY KEY (module, number)) STRICT"
 LAST_NUMBERS = Statement("SELECT module, max(number) AS number FROM migrations GROUP BY module")
@@ -23,8 +27,8 @@ class Schema:
     """All the work on the database's shape: each module's migrations not yet run, by module and number, in the
     order of the modules' dependencies."""
 
-    def __init__(self, database: Database) -> None:
-        self.database = database
+    def __init__(self, database: Database, tables: Tables) -> None:
+        self.database, self.tables = database, tables
 
     def migrate(self, ordered: tuple[ModuleMigrations, ...]) -> tuple[str, ...]:
         self.database.update(Statement(MIGRATIONS_TABLE))
@@ -51,3 +55,23 @@ class Schema:
     def drop_views(self) -> None:
         for row in self.database.rows(VIEWS):
             self.database.update(Statement(f"DROP VIEW {row['name']}"))
+
+    def rebuild_views(self, views: tuple[View, ...]) -> None:
+        with self.database.transaction():
+            self.drop_views()
+            for view in views:
+                self.database.update(Statement(f"CREATE VIEW {view.name} AS {view.select}"))
+
+    def check_tables(self, models: tuple[type[Model], ...]) -> None:
+        differences = tuple(difference for model in models for difference in self.differences(model))
+        if differences:
+            raise SchemaMismatch(differences)
+
+    def differences(self, model: type[Model]) -> tuple[str, ...]:
+        table = self.tables.table(model)
+        stored = {row["name"] for row in self.database.rows(Statement(f"PRAGMA table_info({table.name})"))}
+        if not stored:
+            return (f"{model.__name__} has no table {table.name}",)
+        missing = tuple(f"{model.__name__}.{column} has no column in {table.name}" for column in table.columns if column not in stored)
+        extra = tuple(f"{table.name}.{column} has no field in {model.__name__}" for column in sorted(stored) if not table.has_column(column))
+        return missing + extra
