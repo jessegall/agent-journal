@@ -1,8 +1,0 @@
-{
-  "tabWidth": 4,
-  "printWidth": 140,
-  "bracketSpacing": false,
-  "singleQuote": false,
-  "trailingComma": "es5",
-  "htmlWhitespaceSensitivity": "ignore"
-}

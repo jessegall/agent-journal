@@ -1,3 +1,0 @@
-{$TEAM_ADDRESS} {
-	import /etc/caddy/routes.caddy
-}
