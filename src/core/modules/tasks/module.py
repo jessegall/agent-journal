@@ -10,6 +10,7 @@ from core.modules.tasks.migrations.m001_tasks import TasksTables
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlocked
 from core.modules.tasks.quiet_task_reminder import QuietTaskReminder
 from core.modules.tasks.task_summary_line import TaskSummaryLine
+from core.modules.tasks.where_you_stand import WhereYouStand
 from core.modules.tasks.task_log_subcommand import TaskLogSubcommand
 from core.modules.tasks.task_query import TaskQuery
 from core.modules.tasks.task_undepend_handler import TaskUndependHandler
@@ -36,4 +37,4 @@ class TasksModule(Module):
     handlers = [TaskUndependHandler]
     guards = [NoDependencyLoop]
     listeners = [ForgetDependencies]
-    driver_rules = [LogRequest, LogHold, CarryOnRefusal, BlockedWorkRefusal, TaskSummaryLine, QuietTaskReminder]
+    driver_rules = [LogRequest, LogHold, CarryOnRefusal, BlockedWorkRefusal, TaskSummaryLine, WhereYouStand, QuietTaskReminder]

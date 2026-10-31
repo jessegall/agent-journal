@@ -8,7 +8,7 @@ class TaskSummaryLine(DriverRule):
     """A session that starts again with a task in hand, after a compaction or a resume, is told the task and its
     newest log line."""
 
-    name = "tasks.where-you-stand"
+    name = "tasks.session-start-summary"
     hook = "session_start"
     drivers = ["*"]
     roles = ["main"]

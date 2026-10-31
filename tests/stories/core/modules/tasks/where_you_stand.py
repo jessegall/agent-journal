@@ -11,3 +11,12 @@ def test_a_builder_whose_session_starts_again_is_told_its_task_and_its_last_log(
 def test_a_builder_whose_session_starts_again_with_nothing_logged_is_told_so(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     story.expect_hook_allowed("s-1", HookSamples.session_start(), "task 1, Fix the cart, is in hand; nothing logged yet")
+
+
+def test_a_builder_whose_wait_ends_is_told_it_is_back_at_its_task(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.run('task make "The review" --environment main')
+    story.run("wait on 'the review of the cart' --target tasks:2", actor=story.agent)
+    story.hook("s-1", HookSamples.stop())
+    story.run("wait end 1", actor=story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "back to task 1, Fix the cart")
