@@ -6,6 +6,7 @@ accept
 accepted
 accepts
 access
+ack
 acquire
 active
 actor
@@ -68,10 +69,12 @@ attempts
 attr
 attribute
 attributes
+auth
 author
 authors
 availability
 bad
+bang
 base
 becomes
 begins
@@ -100,6 +103,7 @@ broken
 build
 builder
 built
+bulb
 bus
 busy
 but
@@ -114,6 +118,7 @@ can
 cancel
 cancelled
 candidate
+capital
 capitalize
 capsys
 captured
@@ -140,6 +145,7 @@ checksum
 child
 chmod
 choice
+choices
 choose
 claim
 claimed
@@ -153,6 +159,7 @@ classifier
 classify
 classmethod
 claude
+claudes
 clear
 cli
 client
@@ -230,6 +237,7 @@ created
 creation
 creator
 credentials
+cross
 curl
 current
 cursor
@@ -251,6 +259,7 @@ declaration
 decode
 decoded
 decoder
+decoders
 deep
 def
 default
@@ -264,6 +273,7 @@ deletion
 deliver
 delivered
 delivery
+denied
 deny
 depend
 dependencies
@@ -293,9 +303,11 @@ disk
 dispatch
 display
 doc
+dock
 document
 documents
 does
+dot
 dotted
 draft
 drain
@@ -335,6 +347,7 @@ entry
 enum
 enumerate
 enums
+envelope
 environ
 environment
 environments
@@ -384,6 +397,7 @@ faded
 fader
 fades
 fading
+fail
 failed
 failing
 failure
@@ -414,17 +428,21 @@ finished
 fired
 first
 fit
+fitness
 fits
 fixed
 fixture
 fixtures
 flag
 flags
+flat
 float
 flock
+flowchart
 flush
 fnmatchcase
 focus
+fold
 folder
 folders
 follow
@@ -480,6 +498,7 @@ guard
 guarded
 guards
 guess
+halt
 hand
 handed
 handle
@@ -496,6 +515,7 @@ headers
 health
 healthy
 heartbeat
+height
 help
 helper
 hertz
@@ -514,6 +534,7 @@ hook
 hooks
 host
 http
+icon
 identity
 ids
 imode
@@ -522,6 +543,7 @@ implemented
 import
 importlib
 inactive
+inbox
 included
 includes
 indefinite
@@ -572,6 +594,7 @@ last
 lastrowid
 late
 later
+latest
 launch
 layer
 layers
@@ -597,6 +620,7 @@ lineno
 lines
 linked
 list
+listen
 listener
 listeners
 listing
@@ -624,6 +648,7 @@ lower
 lowest
 lstart
 main
+makefile
 makers
 makes
 manual
@@ -647,6 +672,7 @@ member
 members
 memories
 memory
+menu
 merge
 merged
 message
@@ -735,6 +761,7 @@ option
 optional
 options
 orchestrator
+ord
 order
 ordered
 orders
@@ -742,6 +769,7 @@ origin
 original
 orphan
 out
+outbox
 outcome
 outcomes
 outer
@@ -784,6 +812,7 @@ patterned
 patterns
 pause
 paused
+payload
 peer
 peercred
 pending
@@ -801,6 +830,7 @@ person
 personal
 phase
 phases
+phone
 pid
 pipe
 piped
@@ -834,6 +864,8 @@ prefixes
 prepared
 prepend
 present
+preset
+presets
 previous
 prints
 priority
@@ -869,6 +901,7 @@ qualname
 quantiles
 queries
 query
+question
 queue
 quotation
 quote
@@ -894,6 +927,7 @@ ready
 real
 reason
 rebuild
+receive
 received
 receiver
 recently
@@ -944,6 +978,7 @@ replace
 replaced
 replacement
 replacements
+replaces
 replies
 reply
 report
@@ -977,6 +1012,7 @@ returnable
 returncode
 returned
 reused
+reversed
 review
 reviewed
 reviewer
@@ -987,6 +1023,7 @@ rmtree
 role
 roles
 rollback
+rollout
 root
 roots
 rotate
@@ -1079,6 +1116,7 @@ simple
 single
 size
 sizes
+skill
 skip
 skipif
 skipped
@@ -1087,6 +1125,7 @@ sleep
 sliced
 slot
 slow
+sock
 socket
 socketpair
 sol
@@ -1097,6 +1136,7 @@ space
 span
 spans
 spec
+speech
 spellings
 split
 splitlines
@@ -1239,8 +1279,10 @@ timings
 title
 titles
 today
+toggle
 token
 tokens
+tomllib
 tool
 tools
 top
@@ -1254,9 +1296,11 @@ trailer
 transaction
 transcript
 transient
+translate
 translated
 transport
 tree
+trigger
 triggers
 trip
 trust
@@ -1265,6 +1309,7 @@ try
 tuple
 turn
 twice
+two
 type
 types
 typing
@@ -1293,6 +1338,7 @@ unmatched
 unpack
 unparsed
 unreachable
+unread
 unrelated
 unsafe
 unset
@@ -1305,6 +1351,7 @@ unwritten
 update
 updated
 upgraded
+upload
 upsert
 uri
 url
@@ -1315,6 +1362,7 @@ use
 used
 user
 uses
+using
 utc
 utcoffset
 utime
@@ -1331,6 +1379,7 @@ view
 viewer
 views
 visited
+visitor
 voice
 vowels
 wait
@@ -1343,6 +1392,7 @@ walked
 walker
 want
 wanted
+warning
 watch
 web
 weigh
@@ -1356,6 +1406,7 @@ when
 which
 whitespace
 wider
+width
 wildcard
 window
 windows

@@ -58,6 +58,7 @@ argv
 arranges
 asking
 asks
+assistant
 attach
 attribute
 base
@@ -73,6 +74,7 @@ belongs
 beneath
 beside
 besides
+big
 bin
 bind
 binds
@@ -101,6 +103,7 @@ built
 busy
 but
 bypass
+bypasses
 bytes
 cache
 calendar
@@ -117,6 +120,7 @@ capable
 cart
 cascade
 case
+categories
 category
 cause
 cents
@@ -124,6 +128,7 @@ chain
 change
 changed
 changes
+channel
 character
 characters
 charset
@@ -138,6 +143,7 @@ checkpoints
 checks
 children
 choice
+choices
 choose
 chooses
 chose
@@ -162,6 +168,7 @@ cls
 coalesce
 code
 codex
+codextokencount
 coding
 colleague
 collected
@@ -202,10 +209,12 @@ contains
 content
 context
 control
+conversation
 converts
 cookie
 copied
 copieditemsmodule
+copies
 copy
 core
 corrected
@@ -221,6 +230,7 @@ created
 creates
 creating
 creator
+cross
 curl
 current
 cursor
@@ -260,6 +270,9 @@ describes
 description
 design
 detach
+detached
+developer
+developers
 diff
 differ
 differs
@@ -310,6 +323,7 @@ entered
 entries
 entry
 enum
+envelope
 environment
 environments
 equals
@@ -378,7 +392,10 @@ fixed
 fixture
 flag
 flags
+float
+floats
 flock
+flush
 flushed
 fly
 focus
@@ -415,6 +432,7 @@ guard
 guards
 half
 hand
+handed
 handle
 handled
 handler
@@ -432,6 +450,7 @@ header
 headers
 health
 heaviest
+height
 hello
 help
 helper
@@ -450,6 +469,8 @@ how
 html
 http
 httponly
+icon
+icons
 identify
 ids
 ignore
@@ -458,6 +479,7 @@ immediate
 import
 imported
 imports
+inbox
 included
 includes
 incomplete
@@ -492,6 +514,7 @@ journal
 json
 keeping
 key
+keyed
 keyerror
 keys
 keyword
@@ -531,6 +554,7 @@ life
 lifecycle
 like
 limit
+limited
 line
 linerun
 lines
@@ -540,6 +564,7 @@ linux
 list
 listener
 listeners
+listens
 lists
 loaded
 loading
@@ -588,6 +613,7 @@ median
 member
 memories
 memory
+menu
 message
 messages
 messiah
@@ -601,6 +627,7 @@ migrations
 milliseconds
 min
 mind
+mine
 minute
 minutes
 missing
@@ -611,7 +638,9 @@ model
 models
 module
 modules
+monitor
 monotonic
+month
 motor
 move
 moved
@@ -648,6 +677,7 @@ numbers
 objects
 oct
 off
+offered
 offers
 offset
 often
@@ -656,10 +686,13 @@ older
 oldest
 ones
 open
+openai
 opened
 opening
 opens
+option
 optional
+options
 orchestrator
 order
 ordered
@@ -680,6 +713,7 @@ page
 pages
 pair
 pane
+panels
 parent
 parents
 parse
@@ -708,9 +742,11 @@ permissions
 person
 phase
 phases
+picker
 picks
 pid
 piped
+pixels
 place
 placed
 placeholder
@@ -718,6 +754,7 @@ placeholders
 places
 plain
 plan
+planner
 plans
 plugin
 plugins
@@ -731,6 +768,8 @@ pragma
 precise
 prepared
 prepares
+preset
+presets
 price
 primary
 printf
@@ -766,7 +805,9 @@ raise
 raised
 raises
 raising
+range
 rare
+rate
 raw
 reached
 reaches
@@ -795,6 +836,7 @@ refusal
 refusals
 refuse
 refuses
+refusing
 registered
 registry
 relative
@@ -859,6 +901,8 @@ role
 roles
 rollback
 rolled
+rollout
+rollouts
 rolls
 root
 round
@@ -885,6 +929,7 @@ save
 saved
 savepoint
 saves
+saving
 scan
 schema
 scope
@@ -926,6 +971,7 @@ short
 shorter
 should
 shows
+side
 signal
 silenced
 silences
@@ -937,6 +983,7 @@ skip
 skipped
 skips
 sleeps
+small
 socket
 software
 solo
@@ -989,6 +1036,7 @@ strftime
 strict
 string
 style
+styles
 sub
 subagent
 subagents
@@ -1009,6 +1057,7 @@ synced
 synchronous
 sys
 system
+tab
 table
 tables
 tabs
@@ -1036,6 +1085,7 @@ thanks
 that
 the
 their
+theirs
 them
 themselves
 then
@@ -1063,7 +1113,10 @@ titled
 titles
 today
 together
+toggle
 token
+tokens
+toml
 tool
 tools
 top
@@ -1086,6 +1139,7 @@ trusting
 trusts
 try
 tuple
+turn
 turns
 twenty
 twice
@@ -1176,6 +1230,7 @@ who
 whose
 why
 wide
+width
 will
 window
 windows
@@ -1196,6 +1251,7 @@ writable
 writer
 writes
 wrong
+year
 you
 your
 yours

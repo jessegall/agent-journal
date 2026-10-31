@@ -36,14 +36,14 @@ class AgentHookRoute(HookRoute):
         return self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
 
     def agent(self, event: HookEvent) -> Agent | None:
-        main = self.open_agent(event.session) or self.launched_agent(event)
+        main = self.open_agent(event.session) or self.agent_by_launch(event)
         if main is None and event.event == HookEventName.SESSION_START and not event.subagent and not event.launch:
             main = self.started(event, event.session, AgentRole.MAIN, None)
         if main is None or not event.subagent:
             return main
         return self.open_agent(event.subagent) or self.started(event, event.subagent, AgentRole.SUBAGENT, main.id)
 
-    def launched_agent(self, event: HookEvent) -> Agent | None:
+    def agent_by_launch(self, event: HookEvent) -> Agent | None:
         if not event.launch:
             return None
         agent = self.open_agent(event.launch)

@@ -6,7 +6,7 @@ from core.base.journal_home import JournalHome
 
 class ErrorLog:
     """Records unexpected errors in full, so the console can point to them in one line, and notes a hook the
-    journal let through for want of a row."""
+    journal let through because no row holds its agent."""
 
     def __init__(self, home: JournalHome) -> None:
         self.path = home.error_log

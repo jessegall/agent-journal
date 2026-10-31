@@ -55,7 +55,7 @@ func TestARefusalWithNoStyleGoesToStderrWithExitCodeTwo(t *testing.T) {
 	}
 }
 
-func TestLinesRideOnAnEventThatTakesThemAndAreDroppedElsewhere(t *testing.T) {
+func TestLinesGoOnAnEventThatTakesThemAndAreDroppedElsewhere(t *testing.T) {
 	lineEventAnswer, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Lines: []string{"log your task"}})
 	otherEventAnswer, _, _ := shippedAnswer("claude", "SessionEnd", "session_end", Reply{Lines: []string{"log your task"}})
 	if !strings.Contains(lineEventAnswer, `"additionalContext":"log your task"`) || otherEventAnswer != "" {
