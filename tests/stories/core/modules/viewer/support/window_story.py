@@ -9,6 +9,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.module_removal import ModuleRemoval
 from core.base.refusal import Refusal
 from core.modules.viewer.window_lines import WindowLines
@@ -44,7 +45,7 @@ class WindowStory:
     def module_upgraded(self, old: str, new: str) -> None:
         modules = [new if path == old else path for path in json.loads(self.story.home.module_list.read_text())]
         self.story.home.module_list.write_text(json.dumps(modules))
-        self.story.expect_success("module sync")
+        self.synced()
 
     @contextmanager
     def module_code_changed(self) -> Iterator[None]:
@@ -52,10 +53,16 @@ class WindowStory:
         status = os.stat(source_file)
         os.utime(source_file, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
         try:
-            self.story.expect_success("module sync")
+            self.synced()
             yield
         finally:
             os.utime(source_file, ns=(status.st_atime_ns, status.st_mtime_ns))
 
+    def synced(self) -> None:
+        code, output_text = self.story.synced()
+        assert code == 0, f"module sync gave {code}: {output_text}"
+
     def module_removed(self, name: str) -> None:
         self.story.container.get(ModuleRemoval).remove(name)
+        self.synced()
+        self.story.container.get(CommitListenerRunner).run()

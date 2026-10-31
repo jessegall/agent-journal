@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from core.base.change.event_log import REGISTRY_SYNC_EVENT
 from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.tables import Tables
@@ -67,9 +68,10 @@ class ModuleCheck:
 
     def event_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events = self.known_events(modules)
-        declared = [(guard.name, guard.event) for module in modules for guard in module.guards]
-        declared += [(listener.name, listener.event) for module in modules for listener in module.listeners]
-        return tuple(f"{name} covers {event}, which no model raises" for name, event in declared if not any(EventPattern(event).matches(event_name) for event_name in events))
+        guards = [(guard.name, guard.event, events) for module in modules for guard in module.guards]
+        listeners = [(listener.name, listener.event, (*events, REGISTRY_SYNC_EVENT)) for module in modules for listener in module.listeners]
+        return tuple(f"{name} covers {event}, which no model raises" for name, event, raised in guards + listeners
+                     if not any(EventPattern(event).matches(event_name) for event_name in raised))
 
     def duplicate_handlers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         commands = [DottedPath.class_path(handler.command).text for module in modules for handler in module.handlers]

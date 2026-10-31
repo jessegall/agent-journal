@@ -2,8 +2,8 @@ from tests.stories.core.modules.viewer.support.window_samples import NOTES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
 
-LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-1\"}'"
-SECOND_LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-2\"}'"
+LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-1\"}' --environment main"
+SECOND_LAYOUT_SAVE = "viewer-layout save --suite notes --page home --layout '{\"root\": \"pane-2\"}' --environment main"
 
 
 def window_story(new_story) -> WindowStory:
@@ -13,9 +13,8 @@ def window_story(new_story) -> WindowStory:
 def test_a_person_saving_the_same_page_twice_keeps_one_layout_row_holding_the_last(new_story):
     window = window_story(new_story)
     window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
-    window.story.expect_success(SECOND_LAYOUT_SAVE, actor=window.story.user)
+    window.story.expect_success(SECOND_LAYOUT_SAVE, 'layout: {"root": "pane-2"}', actor=window.story.user)
     window.expect_row_count("viewer_layouts", 1)
-    window.story.expect_success("viewer-layout list", 'layout: {"root": "pane-2"}', actor=window.story.user)
 
 
 def test_two_people_keep_their_own_layout_of_the_same_page(new_story):

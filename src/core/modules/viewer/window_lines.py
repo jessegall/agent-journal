@@ -3,7 +3,10 @@ from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
+from core.base.environment_names import EnvironmentNames
 from core.base.registry.registry import Registry
+from core.modules.viewer.window_allowances import WindowAllowances
+from core.modules.viewer.window_permission_type import WindowPermissionType
 from core.modules.viewer.window_refusal import WindowRefusal
 
 
@@ -12,8 +15,9 @@ class WindowLines:
     declares or a command it declares, it neither skips a guard nor names another environment, and the person has
     allowed it unless the journal ships the window. It checks the parsed line, never its raw words."""
 
-    def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags) -> None:
+    def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames) -> None:
         self.registry, self.line_parser, self.flags = registry, line_parser, flags
+        self.allowances, self.environment_names = allowances, environment_names
 
     def check(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
         if not self.registry.has_window(window_name):
@@ -26,7 +30,8 @@ class WindowLines:
         declared = window.reads if parsed.is_read else window.runs
         if parsed.line not in declared:
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
-        if not window.shipped:
+        permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
+        if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, self.environment_names.environment_id(environment), window_name, permission_type):
             raise WindowRefusal(f"{window_name} may run {parsed.line} once you allow it")
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:

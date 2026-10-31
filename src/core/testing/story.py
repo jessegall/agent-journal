@@ -48,10 +48,7 @@ class Story:
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
         clock, process_table = ManualClock(), FixedProcessTable([])
-        container = synced_container(home)
-        container.bind(Clock, clock)
-        container.bind(ProcessTable, process_table)
-        return cls(home, container, clock, process_table, state)
+        return cls(home, story_container(home, clock, process_table), clock, process_table, state)
 
     @property
     def state(self) -> StoryState:
@@ -175,8 +172,22 @@ class Story:
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(self.home.module_list.read_text())
         self.home.module_list.write_text(json.dumps([*modules, module]))
+        return self.synced()
+
+    def synced(self) -> tuple[int, str]:
         stream = io.StringIO()
-        return self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream), stream.getvalue()
+        code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
+        if code == 0:
+            self.container.get(Database).close()
+            self.container = story_container(self.home, self.clock, self.process_table)
+        return code, stream.getvalue()
 
     def expect_rows(self, *checks: bool) -> None:
         assert all(checks), f"a row check failed: {checks}"
+
+
+def story_container(home: JournalHome, clock: ManualClock, process_table: "FixedProcessTable") -> Container:
+    container = synced_container(home)
+    container.bind(Clock, clock)
+    container.bind(ProcessTable, process_table)
+    return container
