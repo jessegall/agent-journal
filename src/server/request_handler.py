@@ -188,14 +188,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def close_with_json(self, status: int, answer: dict[str, object]) -> None:
         self.close_connection = True
-        self.send_json(status, answer, {"Connection": "close"})
+        self.send_json(status, answer)
 
-    def send_json(self, status: int, answer: dict[str, object], extra_headers: dict[str, str] | None = None) -> None:
+    def send_json(self, status: int, answer: dict[str, object]) -> None:
         body = json.dumps(answer).encode()
         self.status = status
         self.send_response(status)
-        for name, value in (extra_headers or {}).items():
-            self.send_header(name, value)
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
