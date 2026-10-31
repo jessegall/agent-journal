@@ -18,6 +18,11 @@ from core.modules.processes.commands.prune_outputs_handler import PruneOutputsHa
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.rules.lost_process_rule import LostProcessRule
+from core.modules.processes.commands.note_progress_handler import NoteProgressHandler
+from core.modules.processes.listeners.output_dock_listener import OutputDockListener
+from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
+from core.modules.processes.rules.process_progress_rule import ProcessProgressRule
+from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
 from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
 from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
 from core.modules.processes.commands.lose_process import LoseProcess
@@ -55,11 +60,13 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, ShippedReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler, PruneOutputsHandler]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler, PruneOutputsHandler, NoteProgressHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, LostProcessRule]
-    listeners = [EndedProcessWatchListener, OutputPruneListener]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, LostProcessRule, ProcessProgressRule]
+    listeners = [EndedProcessWatchListener, OutputPruneListener, ProcessEndMarkListener, OutputDockListener]
+    marks = PROCESS_MARKS
+    docks = PROCESS_DOCKS

@@ -24,6 +24,15 @@ class ReaderRun:
         pattern = re.compile(reader.lines_pattern)
         return [f"{number}: {line}" for number, line in enumerate(text.splitlines(), first_number) if pattern.search(line)]
 
+    def progress(self, reader: Reader, text: str, before: int) -> int:
+        if not reader.progress_pattern:
+            return before
+        pattern = re.compile(reader.progress_pattern)
+        matches = [found for line in text.splitlines() if (found := pattern.search(line))]
+        if not matches or not matches[-1].groups() or not (matches[-1].group(1) or "").isdigit():
+            return before
+        return min(100, int(matches[-1].group(1)))
+
     def summary(self, reader: Reader, text: str) -> str:
         if not reader.summary_pattern:
             return ""

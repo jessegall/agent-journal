@@ -29,6 +29,7 @@ class Process(Model):
     state: ProcessState = ProcessState.RUNNING
     exit_code: int | None = None
     pid: int | None = None
+    progress: int = 0
     moved_at: Timestamp | None = None
     ended_at: Timestamp | None = None
 
