@@ -7,7 +7,9 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 	"github.com/jessegall/agent-journal/tools/journal/launch"
@@ -40,16 +42,31 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 			}
 		}
 	}
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{}); err == nil {
+	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home}); err == nil {
 		defer listener.Close()
 	}
+	launchName := "launch-" + strconv.FormatInt(time.Now().UnixNano(), 36)
+	agentID, err := journal.StartAgent(choice.Environment, request.Program, launchName)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return ErrorCode
+	}
+	log, err := launch.OpenTerminalLog(launch.TerminalFile(home, agentID))
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return ErrorCode
+	}
+	defer log.Close()
 	command := exec.Command(request.Program, launch.ProgramArguments(request.Program, choice)...)
-	command.Dir, command.Stdin, command.Stdout, command.Stderr = choice.Folder, os.Stdin, stdout, stderr
-	command.Env = os.Environ()
+	command.Dir = choice.Folder
+	command.Env = append(os.Environ(), "JOURNAL_LAUNCH="+launchName)
 	for name, value := range choice.Variables {
 		command.Env = append(command.Env, name+"="+value)
 	}
-	if err := command.Run(); err != nil {
+	restoreProgram := terminal.Raw()
+	err = launch.RunInTerminal(command, os.Stdin, stdout, log)
+	restoreProgram()
+	if err != nil {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {
 			return exit.ExitCode()

@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 )
 
 // WorkerRequest is what a dispatch hands the launcher: the worker's agent row and session, its environment, the
@@ -20,8 +21,10 @@ type WorkerRequest struct {
 	Variables   map[string]string `json:"variables"`
 }
 
-// ProgramStart is one program the launcher starts: its folder, its command line and the variables it starts with.
+// ProgramStart is one program the launcher starts: its agent row, its folder, its command line and the variables it
+// starts with.
 type ProgramStart struct {
+	AgentID   int
 	Folder    string
 	Command   []string
 	Variables map[string]string
@@ -32,18 +35,29 @@ type Starter interface {
 	Start(start ProgramStart) error
 }
 
-// ProcessStarter starts a program as a process of its own in its folder.
-type ProcessStarter struct{}
+// ProcessStarter starts a program in a pseudo terminal of its own in its folder, its output kept in its agent's
+// terminal log under the journal's folder.
+type ProcessStarter struct {
+	Home string
+}
 
 // Start starts the program and leaves it running.
-func (ProcessStarter) Start(start ProgramStart) error {
+func (starter ProcessStarter) Start(start ProgramStart) error {
 	command := exec.Command(start.Command[0], start.Command[1:]...)
 	command.Dir = start.Folder
 	command.Env = os.Environ()
 	for name, value := range start.Variables {
 		command.Env = append(command.Env, name+"="+value)
 	}
-	return command.Start()
+	log, err := OpenTerminalLog(TerminalFile(starter.Home, start.AgentID))
+	if err != nil {
+		return err
+	}
+	go func() {
+		defer log.Close()
+		_ = RunInTerminal(command, strings.NewReader(""), io.Discard, log)
+	}()
+	return nil
 }
 
 // Listen takes worker requests on the launcher's socket and starts each worker's program with its identity.
@@ -75,5 +89,5 @@ func started(connection net.Conn, starter Starter) {
 	for name, value := range request.Variables {
 		variables[name] = value
 	}
-	_ = starter.Start(ProgramStart{Folder: request.Folder, Command: request.Command, Variables: variables})
+	_ = starter.Start(ProgramStart{AgentID: request.AgentID, Folder: request.Folder, Command: request.Command, Variables: variables})
 }

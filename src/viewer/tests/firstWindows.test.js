@@ -62,8 +62,16 @@ test("a window shows the reason a read was refused", async () => {
     expect(await drawn(TaskList, context({}))).toContain("no answer for task list");
 });
 
-test("the terminal window says it is not available yet", async () => {
-    expect(await drawn(Terminal, context({}, 2))).toContain("The terminal is not available in version 5 yet");
+test("the terminal window draws its agent's terminal lines and reads the newer ones after the last", async () => {
+    const windowContext = context({"agent terminal": page([{number: 1, text: "ready"}, {number: 2, text: "The total is in cents now"}])}, 2);
+    const text = await drawn(Terminal, windowContext);
+    expect(text).toContain("ready");
+    expect(text).toContain("The total is in cents now");
+    expect(windowContext.reads[0]).toBe("agent terminal 2 --after 0");
+});
+
+test("the terminal window of an agent with no terminal lines says so", async () => {
+    expect(await drawn(Terminal, context({"agent terminal": page([])}, 2))).toContain("No terminal output from this agent yet");
 });
 
 test("the transcript window shows one agent's conversation, each turn under its author", async () => {

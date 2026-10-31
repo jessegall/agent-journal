@@ -1,4 +1,5 @@
 from core.modules.agents.commands.bind_agent_session_handler import BindAgentSessionHandler
+from core.modules.agents.commands.agent_terminal_subcommand import AgentTerminalSubcommand
 from core.modules.agents.commands.agent_transcript_subcommand import AgentTranscriptSubcommand
 from core.modules.agents.commands.end_agent_handler import EndAgentHandler
 from core.modules.agents.commands.end_agent_subcommand import EndAgentSubcommand
@@ -25,7 +26,7 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     migrations = [AgentsTableMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler]
-    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand]
+    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list"],

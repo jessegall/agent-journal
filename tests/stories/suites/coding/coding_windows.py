@@ -28,8 +28,10 @@ def test_the_file_edits_window_reads_its_lines_with_no_allowance(new_story):
     window.expect_window_allowed("coding.file-edits", "agent list")
 
 
-def test_the_terminal_window_is_a_page_window_of_one_agent_that_reads_nothing(new_story):
-    window_story(new_story).expect_declared_window("coding.terminal", "component", "agent")
+def test_the_terminal_window_is_a_page_window_of_one_agent_that_reads_its_terminal_with_no_allowance(new_story):
+    window = window_story(new_story)
+    window.expect_declared_window("coding.terminal", "component", "agent")
+    window.expect_window_allowed("coding.terminal", "agent terminal 2 --after 0")
 
 
 def test_the_coding_suite_gives_the_orchestrator_its_own_home_layout_and_every_other_driver_the_plain_one(new_story):

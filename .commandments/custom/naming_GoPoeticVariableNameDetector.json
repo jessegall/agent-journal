@@ -42,6 +42,17 @@
                         "is": "identifier"
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "of": "parent",
+                        "kind": "FuncDecl"
+                    },
+                    {
+                        "nameMatches": "^(Write|Read|Close|String|Error)$"
+                    }
+                ]
             }
         ]
     },

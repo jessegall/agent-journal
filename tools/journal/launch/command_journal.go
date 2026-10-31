@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -68,6 +69,20 @@ func (journal CommandJournal) Conversations(environment, program string) ([]Conv
 		}
 	}
 	return conversations, nil
+}
+
+// StartAgent makes the agent row a launch runs under, held by its launch name until its first hook names its session.
+func (journal CommandJournal) StartAgent(environment, program, launchName string) (int, error) {
+	output, err := journal.Run("agent", "start", launchName, program, "main", "--environment", environment)
+	if err != nil {
+		return 0, err
+	}
+	for _, line := range strings.Split(output, "\n") {
+		if id, prefixed := strings.CutPrefix(line, "id: "); prefixed {
+			return strconv.Atoi(strings.TrimSpace(id))
+		}
+	}
+	return 0, fmt.Errorf("journal agent start gave no agent: %s", output)
 }
 
 // MakeEnvironment makes the environment with journal environment make and chooses its suite for it.

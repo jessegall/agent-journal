@@ -38,6 +38,9 @@ class JournalHome:
     def program_table(self) -> Path:
         return self.folder / "programs.json"
 
+    def terminal_file(self, agent_id: int) -> Path:
+        return self.folder / "runtime" / "terminals" / f"{agent_id}.log"
+
     def socket(self, name: str) -> Path:
         path = self.folder.resolve() / f"{name}.sock"
         if len(str(path)) <= SOCKET_PATH_LIMIT_CHARACTERS:
