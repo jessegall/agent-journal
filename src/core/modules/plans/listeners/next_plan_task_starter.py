@@ -3,6 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
+from core.modules.plans.conditions.no_open_dependency import NoOpenDependency
 from core.modules.plans.plan import Plan, PlanState
 from core.modules.plans.plan_task import PlanTask
 from core.modules.tasks.commands import TaskStart
@@ -23,6 +24,7 @@ class NextPlanTaskStarter(CommitListener):
         places = self.queries.query(PlanTask).filter(task_id=event.row_id).page(1, 1).rows
         if not places or self.queries.query(Plan).find(places[0].plan_id).state is not PlanState.STARTED:
             return
-        following = self.queries.query(PlanTask).filter(plan_id=places[0].plan_id, state=TaskState.OPEN).ordered("phase_position", "position").page(1, 1).rows
+        free_tasks = self.queries.query(PlanTask).filter(plan_id=places[0].plan_id, state=TaskState.OPEN).matching(NoOpenDependency("task_id"))
+        following = free_tasks.ordered("phase_position", "position").page(1, 1).rows
         if following:
             self.bus.run(TaskStart(following[0].task_id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)

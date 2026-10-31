@@ -8,6 +8,7 @@ from core.modules.plans.migrations.m001_plans import PlansTables
 from core.modules.plans.plan_progress import PlanProgress
 from core.modules.plans.plan_task import PlanTask
 from core.modules.tasks.migrations.m001_tasks import TasksTables
+from core.modules.tasks.open_dependency import OpenDependency
 
 PLAN_COUNT = 2000
 PHASES_PER_PLAN = 5
@@ -16,9 +17,7 @@ READ_COUNT = 300
 STAMP = "2026-10-31T09:00:00.000000+00:00"
 STATES = ("open", "started", "completed", "cancelled")
 
-OPEN_DEPENDENCIES_SELECT = ("SELECT task_dependencies.id, task_dependencies.task_id, task_dependencies.dependency_id"
-                            " FROM task_dependencies JOIN tasks ON tasks.id = task_dependencies.dependency_id WHERE tasks.closed_at IS NULL")
-VIEWS = (("open_dependencies", OPEN_DEPENDENCIES_SELECT), (PlanTask.view, PlanTask.select), (PlanProgress.view, PlanProgress.select))
+VIEWS = ((OpenDependency.view, OpenDependency.select), (PlanTask.view, PlanTask.select), (PlanProgress.view, PlanProgress.select))
 
 
 @dataclass(frozen=True)
@@ -35,8 +34,8 @@ class ReadTiming:
 
 
 class ViewTiming:
-    """A scratch database of plans, phases and tasks with the plans module's views and the open dependencies view, on
-    which a read by key is timed."""
+    """A scratch database of plans, phases and tasks with the plans and tasks modules' views, on which a read by
+    key is timed."""
 
     def __init__(self) -> None:
         self.connection = sqlite3.connect(":memory:")
