@@ -33,7 +33,7 @@ def test_a_watch_of_an_ended_process_is_refused_and_a_watch_ends_with_its_proces
     process_id = watched(story)
     end_run(story, start_process(story, "make other"), "done\n")
     story.expect_refusal("output watch 2", "has ended", actor=story.agent)
-    story.run("process stop 1", actor=story.agent)
+    story.run("output stop 1", actor=story.agent)
     story.expect_success("watch show 1", "state: ended", f"process_id: {process_id}", actor=story.agent)
 
 

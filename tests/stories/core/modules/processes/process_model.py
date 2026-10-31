@@ -60,7 +60,7 @@ def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end
     bus(story).run(LoseProcess(2), story.agent, environment_id=1)
     story.expect_success(PROCESS, "state: stopped")
     story.expect_success("process show 2", "state: lost")
-    story.expect_refusal("process stop 1", "stopped", actor=story.agent)
+    story.expect_refusal("output stop 1", "stopped", actor=story.agent)
 
 
 def test_the_end_of_a_long_run_keeps_its_output_and_a_short_one_keeps_none(new_story):

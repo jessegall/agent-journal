@@ -7,9 +7,9 @@ from core.modules.processes.models.process import Process
 
 
 class StopProcessSubcommand(Subcommand[StopProcess, Process]):
-    """`journal process stop <process>`: kills the process group of a run and ends it stopped."""
+    """`journal output stop <n>`: kills the process group of a run and ends it stopped."""
 
-    cli_name = "process"
+    cli_name = "output"
     name = "stop"
 
     def arguments(self, parser: ArgumentParser) -> None:
