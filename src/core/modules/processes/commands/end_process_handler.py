@@ -15,15 +15,15 @@ class EndProcessHandler(Handler[EndProcess, Process]):
 
     command = EndProcess
 
-    def __init__(self, queries: Queries, repository: Repository, settings: ProcessSettings) -> None:
-        self.queries, self.repository, self.settings = queries, repository, settings
+    def __init__(self, queries: Queries, repository: Repository, settings: ProcessSettings, folder: OutputFolder) -> None:
+        self.queries, self.repository, self.settings, self.folder = queries, repository, settings, folder
 
     def handle(self, command: EndProcess, context: Context) -> Process:
         process = self.queries.query(Process).find(command.row_id)
         ended = process.finish(context.timestamp, context.actor, command.exit_code) if command.exit_code == 0 else process.fail(context.timestamp, context.actor, command.exit_code)
         ended = self.repository.save(ended, context)
         if not self.is_short(process, command):
-            self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=OutputFolder.of(process.id), byte_count=command.byte_count,
+            self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), byte_count=command.byte_count,
                                         line_count=command.line_count), context)
         return ended
 

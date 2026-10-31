@@ -6,6 +6,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.support.output_folder import OutputFolder
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
@@ -13,8 +14,8 @@ class StartProcessHandler(Handler[StartProcess, Process]):
 
     command = StartProcess
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, folder: OutputFolder) -> None:
+        self.queries, self.repository, self.folder = queries, repository, folder
 
     def handle(self, command: StartProcess, context: Context) -> Process:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -23,4 +24,5 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                limit_seconds=command.limit_seconds), context)
         for position, part in enumerate(command.parts, 1):
             self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped), context)
+        self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         return process
