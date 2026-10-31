@@ -4,7 +4,7 @@ from typing import TypeVar
 from core.base.command.command import Command
 from core.base.model.model import Model
 
-M = TypeVar("M", bound=Model)
+M = TypeVar("M", bound=Model, covariant=True)
 
 
 @dataclass(frozen=True)

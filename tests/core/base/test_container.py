@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.container import Container, MissingHint, WrongInstance
+from core.base.container import Container, MissingHintError, WrongInstanceError
 
 
 class Clockwork:
@@ -46,12 +46,12 @@ def test_the_container_gives_itself():
 
 
 def test_a_parameter_without_a_type_is_a_clear_fault():
-    with pytest.raises(MissingHint, match="something"):
+    with pytest.raises(MissingHintError, match="something"):
         Container().get(Unhinted)
 
 
 def test_a_value_bound_for_a_class_must_be_one_of_it():
     container = Container()
     container.instances[Clockwork] = "not a clockwork"
-    with pytest.raises(WrongInstance, match="Clockwork"):
+    with pytest.raises(WrongInstanceError, match="Clockwork"):
         container.get(Clockwork)

@@ -7,7 +7,7 @@ from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
 from core.base.database.schema import ModuleMigrations, Schema
 from core.base.database.statement import Statement
-from core.base.database.schema_mismatch import SchemaMismatch
+from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.database.view import View
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
@@ -84,6 +84,6 @@ def test_a_view_is_made_again_from_its_declaration(database):
 
 def test_a_model_and_its_table_that_disagree_are_named_by_model_and_column(database):
     database.update(Statement("CREATE TABLE shelves (id INTEGER PRIMARY KEY, label TEXT, version INTEGER, metadata TEXT, created_at TEXT, updated_at TEXT, colour TEXT) STRICT"))
-    with pytest.raises(SchemaMismatch) as caught:
+    with pytest.raises(SchemaMismatchError) as caught:
         Schema(database, Tables()).check_tables((Shelf,))
     assert caught.value.differences == ("Shelf.floor has no column in shelves", "shelves.colour has no field in Shelf")

@@ -7,10 +7,10 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 
 
-class RowlessChange(Exception):
+class RowlessChangeError(Exception):
     """Raised when a change is made without any row, old or new."""
 
-M = TypeVar("M", bound=Model)
+M = TypeVar("M", bound=Model, covariant=True)
 METADATA = "metadata"
 UNCOMPARED_FIELDS = ("id", "version", METADATA, "created_at", "updated_at", "move")
 
@@ -25,7 +25,7 @@ class Change(Generic[M]):
 
     def __post_init__(self) -> None:
         if self.old_row is None and self.new_row is None:
-            raise RowlessChange("a change needs an old row, a new row or both")
+            raise RowlessChangeError("a change needs an old row, a new row or both")
 
     @property
     def row(self) -> M:
@@ -33,7 +33,7 @@ class Change(Generic[M]):
             return self.new_row
         if self.old_row is not None:
             return self.old_row
-        raise RowlessChange("a change needs an old row, a new row or both")
+        raise RowlessChangeError("a change needs an old row, a new row or both")
 
     @property
     def actor(self) -> Actor:

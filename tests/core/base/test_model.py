@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.model.model import Model, ModelFault
+from core.base.model.model import Model, ModelError
 from core.base.model.move import Move
 from core.base.moment import Moment
 from tests.core.base.test_lifecycle import LoanLifecycle, LoanState
@@ -28,7 +28,7 @@ def test_a_change_is_a_copy_and_the_original_stays():
 
 
 def test_a_change_cannot_set_the_state():
-    with pytest.raises(ModelFault, match="ask for a move"):
+    with pytest.raises(ModelError, match="ask for a move"):
         Loan(title="Dune").changed(state=LoanState.RETURNED)
 
 
@@ -38,7 +38,7 @@ def test_a_move_sets_the_state_and_carries_the_move():
 
 
 def test_a_move_of_another_lifecycle_is_refused():
-    with pytest.raises(ModelFault, match="no move of Loan"):
+    with pytest.raises(ModelError, match="no move of Loan"):
         Loan(title="Dune").moved(Move("overdue", (LoanState.LENT,), LoanState.RETURNED))
 
 

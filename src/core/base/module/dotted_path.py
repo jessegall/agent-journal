@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from importlib import import_module
 
 
-class DottedPathFault(Exception):
+class DottedPathError(Exception):
     """Raised when a dotted path does not lead to a class."""
 
 
@@ -20,5 +20,5 @@ class DottedPath:
         module, _, name = self.text.partition(":")
         target = getattr(import_module(module), name, None)
         if not isinstance(target, type):
-            raise DottedPathFault(f"{self.text} names no class")
+            raise DottedPathError(f"{self.text} names no class")
         return target

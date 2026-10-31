@@ -4,7 +4,7 @@ from contextlib import ExitStack
 import pytest
 
 from core.base.database.database import NESTING_LIMIT_LEVELS, Database
-from core.base.database.nesting_fault import NestingFault
+from core.base.database.nesting_error import NestingError
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 
@@ -83,7 +83,7 @@ def test_inner_work_is_lost_when_the_outer_rolls_back(database):
 
 def test_nesting_past_the_limit_is_a_fault_naming_the_chain(database):
     with database.transaction():
-        with pytest.raises(NestingFault, match="TaskUpdate > TaskUpdate"):
+        with pytest.raises(NestingError, match="TaskUpdate > TaskUpdate"):
             with ExitStack() as stack:
                 for _ in range(NESTING_LIMIT_LEVELS + 1):
                     stack.enter_context(database.savepoint("TaskUpdate"))

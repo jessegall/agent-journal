@@ -13,5 +13,5 @@ class JournalHome:
         return self.folder / "journal.db"
 
     @property
-    def fault_log(self) -> Path:
-        return self.folder / "runtime" / "faults.log"
+    def error_log(self) -> Path:
+        return self.folder / "runtime" / "errors.log"

@@ -17,7 +17,7 @@ M = TypeVar("M", bound=Model)
 PAGE_SIZE_ROWS = 50
 
 
-class UnknownColumn(Exception):
+class UnknownColumnError(Exception):
     """Raised when a query filters on a column its model does not have."""
 
 
@@ -41,7 +41,7 @@ class Query(Generic[M]):
     def filter(self, **values: object) -> Self:
         unknown = [column for column in values if not self.table.has_column(column)]
         if unknown:
-            raise UnknownColumn(f"{self.model.__name__} has no column {', '.join(unknown)}")
+            raise UnknownColumnError(f"{self.model.__name__} has no column {', '.join(unknown)}")
         select = self.select
         for column, value in values.items():
             select = select.matching(Equal(column, stored(value)))

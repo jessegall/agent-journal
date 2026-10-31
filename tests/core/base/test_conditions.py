@@ -9,7 +9,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.in_select import InSelect
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
-from core.base.query.conditions.metadata_equal import MetadataEqual, MetadataKeyFault
+from core.base.query.conditions.metadata_equal import MetadataEqual, MetadataKeyError
 from core.base.query.conditions.not_equal import NotEqual
 
 
@@ -42,5 +42,5 @@ def test_metadata_is_matched_by_module_and_key_on_a_stored_row(tmp_path):
 
 
 def test_metadata_named_with_anything_but_plain_words_is_refused():
-    with pytest.raises(MetadataKeyFault):
+    with pytest.raises(MetadataKeyError):
         MetadataEqual("reviews", "asked') OR 1=1 --", "yes").statement()

@@ -11,7 +11,7 @@ from core.base.module.listener_entry import ListenerEntry, ListenerTiming
 READ = Statement("SELECT fingerprint, entries FROM registry WHERE id = 1")
 
 
-class StaleRegistry(Exception):
+class StaleRegistryError(Exception):
     """Raised when the code has changed since the registry was built, so it must be synced first."""
 
 
@@ -31,7 +31,7 @@ class Registry:
     def read(cls, database: Database) -> "Registry":
         rows = database.rows(READ)
         if not rows:
-            raise StaleRegistry("the journal has never been synced: journal module sync")
+            raise StaleRegistryError("the journal has never been synced: journal module sync")
         entries = json.loads(rows[0]["entries"])
         return cls(
             fingerprint=rows[0]["fingerprint"],
@@ -41,12 +41,12 @@ class Registry:
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"])
                          for guard in entries["guards"]),
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
-                                          listener["position"]) for listener in entries["listeners"]),
+                                          listener["position"], listener["actor_id"]) for listener in entries["listeners"]),
         )
 
     def require_current(self, code_fingerprint: str) -> None:
         if code_fingerprint != self.fingerprint:
-            raise StaleRegistry("the journal's modules changed: journal module sync")
+            raise StaleRegistryError("the journal's modules changed: journal module sync")
 
     def event_guards(self, event: str) -> tuple[GuardEntry, ...]:
         return tuple(sorted((guard for guard in self.guards if guard.event.matches(event)), key=lambda guard: guard.position))

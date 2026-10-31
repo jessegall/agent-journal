@@ -12,7 +12,7 @@ from core.base.refusal import Refusal
 LIFECYCLE_GUARD = "core.lifecycle"
 
 
-class GuardClassFault(Exception):
+class GuardClassError(Exception):
     """Raised when a registered guard's path leads to a class that is not a guard."""
 
 
@@ -39,7 +39,7 @@ class Guards:
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
         guard_class = entry.path.loaded()
         if not issubclass(guard_class, Guard):
-            raise GuardClassFault(f"{entry.path.text} is no guard")
+            raise GuardClassError(f"{entry.path.text} is no guard")
         try:
             self.container.get(guard_class).check(change)
         except Refusal as refusal:

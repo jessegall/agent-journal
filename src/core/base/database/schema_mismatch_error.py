@@ -1,4 +1,4 @@
-class SchemaMismatch(Exception):
+class SchemaMismatchError(Exception):
     """Raised when a model's fields and its database table do not match."""
 
     def __init__(self, differences: tuple[str, ...]) -> None:

@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from core.base.database.constraint_fault import RULE_PREFIX
+from core.base.database.constraint_refusals import RULE_PREFIX
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.model.model import STATE, Model

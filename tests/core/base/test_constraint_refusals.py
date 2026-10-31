@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from core.base.database.constraint_fault import ConstraintFault
+from core.base.database.constraint_refusals import ConstraintRefusals
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
@@ -25,7 +25,7 @@ def database(tmp_path):
 def refusal_of(database: Database, sql: str, table: str, noun: str):
     with pytest.raises(sqlite3.IntegrityError) as caught:
         database.update(Statement(sql))
-    return ConstraintFault(database).refusal(caught.value, table, noun)
+    return ConstraintRefusals(database).refusal(caught.value, table, noun)
 
 
 def test_a_rule_raised_by_a_trigger_is_printed_as_written(database):
@@ -45,4 +45,4 @@ def test_a_failure_it_cannot_read_is_raised_as_it_is(database):
     with pytest.raises(sqlite3.IntegrityError) as caught:
         database.update(Statement("INSERT INTO loans (state) VALUES ('lost')"))
     with pytest.raises(sqlite3.IntegrityError, match="CHECK"):
-        ConstraintFault(database).refusal(caught.value, "loans", "loan")
+        ConstraintRefusals(database).refusal(caught.value, "loans", "loan")

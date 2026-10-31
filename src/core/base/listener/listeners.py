@@ -8,7 +8,7 @@ from core.base.module.listener_entry import ListenerTiming
 from core.base.module.registry import Registry
 
 
-class ListenerClassFault(Exception):
+class ListenerClassError(Exception):
     """Raised when a registered listener's path leads to a class of the wrong kind."""
 
 
@@ -23,7 +23,7 @@ class Listeners:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.DELETION):
             listener_class = entry.path.loaded()
             if not issubclass(listener_class, DeletionListener):
-                raise ListenerClassFault(f"{entry.path.text} is no deletion listener")
+                raise ListenerClassError(f"{entry.path.text} is no deletion listener")
             if self.applicability.applies(entry.name, change):
                 self.container.get(listener_class).handle(change)
 
@@ -31,6 +31,6 @@ class Listeners:
         for entry in self.registry.event_listeners(change.event, ListenerTiming.SAVE):
             listener_class = entry.path.loaded()
             if not issubclass(listener_class, SaveListener):
-                raise ListenerClassFault(f"{entry.path.text} is no save listener")
+                raise ListenerClassError(f"{entry.path.text} is no save listener")
             if self.applicability.applies(entry.name, change):
                 self.container.get(listener_class).handle(change)

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
-from core.base.database.schema_mismatch import SchemaMismatch
+from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.database.statement import Statement
 from core.base.database.view import View
 from core.base.model.model import Model
@@ -64,7 +64,7 @@ class Schema:
     def check_tables(self, models: tuple[type[Model], ...]) -> None:
         differences = tuple(difference for model in models for difference in self.differences(model))
         if differences:
-            raise SchemaMismatch(differences)
+            raise SchemaMismatchError(differences)
 
     def differences(self, model: type[Model]) -> tuple[str, ...]:
         table = self.tables.table(model)

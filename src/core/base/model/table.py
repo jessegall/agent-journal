@@ -1,4 +1,5 @@
 import sqlite3
+from collections.abc import Mapping
 from dataclasses import MISSING, fields
 from types import NoneType, UnionType
 from enum import StrEnum
@@ -47,6 +48,12 @@ class Table:
     def row(self, model: Model, columns: tuple[str, ...]) -> dict[str, object]:
         return {column: stored(getattr(model, column)) for column in columns}
 
+    def new_model(self, values: Mapping[str, Any]) -> Model:
+        unknown = [name for name in values if not self.has_column(name)]
+        if unknown:
+            raise UnstorableTypeError(f"{self.model.__name__} has no field {', '.join(unknown)}")
+        return self.model(**values)
+
     def row_model(self, row: sqlite3.Row) -> Model:
         return self.model(**{column: loaded(self.types[column], row[column]) for column in self.columns})
 
@@ -57,7 +64,7 @@ def plural(name: str) -> str:
     return name + ("es" if name.endswith(("s", "x", "sh", "ch")) else "s")
 
 
-class UnstorableType(Exception):
+class UnstorableTypeError(Exception):
     """Raised when a model has a field whose type cannot be stored in the database."""
 
 
@@ -66,7 +73,7 @@ def plain_type(hint: object) -> type:
         hint = next(arg for arg in get_args(hint) if arg is not NoneType)
     if isinstance(hint, type):
         return hint
-    raise UnstorableType(f"a field typed {hint} cannot be stored")
+    raise UnstorableTypeError(f"a field typed {hint} cannot be stored")
 
 
 def stored(value: object) -> object:

@@ -1,7 +1,7 @@
 import sqlite3
 from contextlib import contextmanager
 
-from core.base.database.nesting_fault import NestingFault
+from core.base.database.nesting_error import NestingError
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 
@@ -43,7 +43,7 @@ class Database:
     @contextmanager
     def savepoint(self, label: str):
         if len(self.nested) >= NESTING_LIMIT_LEVELS:
-            raise NestingFault((*self.nested, label))
+            raise NestingError((*self.nested, label))
         name = f"nested_{len(self.nested)}"
         self.nested.append(label)
         self.connection.execute(f"SAVEPOINT {name}")

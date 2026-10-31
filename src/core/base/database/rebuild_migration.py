@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 from core.base.database.statement import Statement
 
 
-class ForeignKeyBreak(Exception):
+class ForeignKeyError(Exception):
     """Raised when rebuilding a table would leave rows pointing at rows that no longer exist."""
 
     def __init__(self, broken: list[tuple[object, ...]]) -> None:
@@ -20,6 +20,6 @@ class RebuildMigration(Migration):
                 super().run(database)
                 broken: list[tuple[object, ...]] = [tuple(row) for row in database.rows(Statement("PRAGMA foreign_key_check"))]
                 if broken:
-                    raise ForeignKeyBreak(broken)
+                    raise ForeignKeyError(broken)
         finally:
             database.update(Statement("PRAGMA foreign_keys = ON"))

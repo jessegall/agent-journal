@@ -9,9 +9,9 @@ from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.module.dotted_path import DottedPath, DottedPathFault
+from core.base.module.dotted_path import DottedPath, DottedPathError
 from core.base.module.listener_entry import ListenerTiming
-from core.base.module.registry import Registry, StaleRegistry
+from core.base.module.registry import Registry, StaleRegistryError
 from tests.core.base.test_commands import LoanMake
 
 SAMPLE = "tests.core.base.registry_sample:SampleGuard"
@@ -25,8 +25,8 @@ ENTRIES = {
         {"name": "loans.only-shelved", "event": "shelf.*", "path": SAMPLE, "position": 3, "short_flag": "confirm"},
     ],
     "listeners": [
-        {"name": "loans.tell-the-reader", "event": "loan.*", "timing": "commit", "path": SAMPLE, "position": 1},
-        {"name": "loans.count-loans", "event": "loan.create", "timing": "save", "path": SAMPLE, "position": 2},
+        {"name": "loans.tell-the-reader", "event": "loan.*", "timing": "commit", "path": SAMPLE, "position": 1, "actor_id": 3},
+        {"name": "loans.count-loans", "event": "loan.create", "timing": "save", "path": SAMPLE, "position": 2, "actor_id": 3},
     ],
 }
 
@@ -66,14 +66,14 @@ def test_a_command_finds_its_handler(database):
 def test_a_registry_built_from_other_code_is_refused(database):
     registry = Registry.read(database)
     registry.require_current("abc")
-    with pytest.raises(StaleRegistry, match="journal module sync"):
+    with pytest.raises(StaleRegistryError, match="journal module sync"):
         registry.require_current("def")
 
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
     Schema(database, Tables()).migrate((CORE_MIGRATIONS,))
-    with pytest.raises(StaleRegistry, match="never been synced"):
+    with pytest.raises(StaleRegistryError, match="never been synced"):
         Registry.read(database)
 
 
@@ -82,5 +82,5 @@ def test_a_class_named_by_its_path_is_imported_only_when_asked_for(database):
     Registry.read(database)
     assert "tests.core.base.registry_sample" not in sys.modules
     assert DottedPath(SAMPLE).loaded().__name__ == "SampleGuard"
-    with pytest.raises(DottedPathFault):
+    with pytest.raises(DottedPathError):
         DottedPath("tests.core.base.registry_sample:Nothing").loaded()

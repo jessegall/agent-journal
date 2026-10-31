@@ -10,7 +10,7 @@ from core.base.moment import Moment
 STATE = "state"
 
 
-class ModelFault(Exception):
+class ModelError(Exception):
     """Raised when a model is changed in a way it never allows, such as setting its state directly."""
 
 
@@ -35,12 +35,12 @@ class Model:
 
     def changed(self, **values: object) -> Self:
         if self.lifecycle is not None and STATE in values:
-            raise ModelFault(f"{type(self).__name__}.changed cannot set the state: ask for a move")
+            raise ModelError(f"{type(self).__name__}.changed cannot set the state: ask for a move")
         return replace(self, **values)
 
     def moved(self, move: Move, **values: object) -> Self:
         if self.lifecycle is None or move not in self.lifecycle.moves():
-            raise ModelFault(f"{move.name} is no move of {type(self).__name__}")
+            raise ModelError(f"{move.name} is no move of {type(self).__name__}")
         return replace(self, **{STATE: move.target, "move": move, **values})
 
     def saved(self, id: int, version: int, moment: Moment) -> Self:

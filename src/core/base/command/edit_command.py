@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.command.move_command import ROW_ID
 from core.base.model.model import Model
 
-M = TypeVar("M", bound=Model)
+M = TypeVar("M", bound=Model, covariant=True)
 
 
 @dataclass(frozen=True)

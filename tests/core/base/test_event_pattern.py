@@ -1,6 +1,6 @@
 import pytest
 
-from core.base.change.event_pattern import EventPattern, EventPatternFault
+from core.base.change.event_pattern import EventPattern, EventPatternError
 
 
 def test_a_name_matches_only_itself():
@@ -20,5 +20,5 @@ def test_a_star_alone_matches_every_event():
 
 def test_a_pattern_with_the_wrong_number_of_parts_is_refused():
     for text in ("task", "task.start.now", "task.", ".start"):
-        with pytest.raises(EventPatternFault):
+        with pytest.raises(EventPatternError):
             EventPattern(text)

@@ -1,4 +1,4 @@
-class NestingFault(Exception):
+class NestingError(Exception):
     """Raised when commands run inside each other too deeply, usually because two listeners keep triggering each
     other."""
 

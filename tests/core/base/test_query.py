@@ -12,7 +12,7 @@ from core.base.model.tables import Tables
 from core.base.moment import Moment
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
-from core.base.query.query import Query, UnknownColumn
+from core.base.query.query import Query, UnknownColumnError
 from tests.core.base.test_table import LibraryEntry
 
 AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
@@ -52,7 +52,7 @@ def test_filtering_on_none_finds_the_rows_with_no_value(entries: Query[LibraryEn
 
 
 def test_a_column_the_model_does_not_have_is_refused(entries: Query[LibraryEntry]):
-    with pytest.raises(UnknownColumn, match="colour"):
+    with pytest.raises(UnknownColumnError, match="colour"):
         entries.filter(colour="red")
 
 
