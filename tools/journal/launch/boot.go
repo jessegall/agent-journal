@@ -48,7 +48,7 @@ type Journal interface {
 	MakeEnvironment(environment Environment) error
 }
 
-// Request is what the command line previousSteps for: the program, the project's folder, and a worktree when one is named.
+// Request is what the command line asked for: the program, the project's folder, and a worktree when one is named.
 type Request struct {
 	Program       string
 	Root          string
@@ -77,7 +77,7 @@ type boot struct {
 }
 
 // Boot asks the boot menu's questions one at a time, the last answer as the default and the left arrow going back
-// to the last question previousSteps, and gives back the launch it settled.
+// to the last question asked, and gives back the launch it settled.
 func Boot(journal Journal, terminal Terminal, request Request) (Choice, error) {
 	menu := &boot{journal: journal, terminal: terminal, request: request, choice: Choice{Answers: map[string]string{}, Variables: map[string]string{}}}
 	steps := []func() (bool, error){menu.suite, menu.environment, menu.conversation, menu.prompts}

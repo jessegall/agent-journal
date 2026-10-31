@@ -88,3 +88,17 @@ func TestTheLeftArrowGoesBackToTheLastQuestion(t *testing.T) {
 		t.Fatalf("the launch chose %+v, %v", choice, err)
 	}
 }
+
+func TestTheLastAnswerIsOfferedAsTheDefault(t *testing.T) {
+	journal := codingProject()
+	journal.suites = []string{"coding", "marketing"}
+	journal.environments = append(journal.environments, Environment{Name: "brand", Folder: "/work/shop", Branch: "main", Suite: "marketing"})
+	first, err := Boot(journal, keys(downPress, enterPress, enterPress, enterPress, enterPress), Request{Program: "claude", Root: "/work/shop"})
+	if err != nil || first.Suite != "marketing" {
+		t.Fatalf("the first launch chose %+v, %v", first, err)
+	}
+	choice, err := Boot(journal, keys(enterPress, enterPress, enterPress, enterPress), Request{Program: "claude", Root: "/work/shop", Answers: first.Answers})
+	if err != nil || choice.Suite != "marketing" || choice.Environment != "brand" {
+		t.Fatalf("a launch with the last answers as defaults chose %+v, %v", choice, err)
+	}
+}
