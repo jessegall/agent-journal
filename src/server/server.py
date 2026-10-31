@@ -88,12 +88,10 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        health_thread.stop()
-        services_thread.stop()
-        plugin_services.close()
-        threads = (tunnel_thread, ticker, listener_thread)
+        threads = (health_thread, services_thread, tunnel_thread, ticker, listener_thread)
         for thread in threads:
             thread.signal_stop()
+        plugin_services.close()
         tunnel.close()
         viewer.stop()
         deadline = time.monotonic() + STOP_LIMIT_SECONDS
