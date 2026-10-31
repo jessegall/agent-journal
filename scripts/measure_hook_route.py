@@ -11,8 +11,8 @@ from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from core.testing.template_databases import TemplateDatabases
-from tests.stories.core.base.drivers.support.fixtures import LeadLocked
-from tests.stories.core.base.drivers.support.samples import SAMPLES
+from tests.stories.core.base.driver.support.fixtures import LeadLocked
+from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from tests.stories.server.support.server_client import request_answer, started_server
 
