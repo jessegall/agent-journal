@@ -1,5 +1,6 @@
 from core.modules.plans.commands import PlanBlock, PlanCancel
 from core.modules.plans.guards.phase_position_by_move import PhasePositionByMove
+from core.modules.plans.guards.plan_tasks_done import PlanTasksDone
 from core.modules.plans.listeners.cancel_open_plan_tasks import CancelOpenPlanTasks
 from core.modules.plans.listeners.phase_renumbering import PhaseRenumbering
 from core.modules.plans.listeners.forget_place import ForgetPlace
@@ -32,6 +33,6 @@ class PlansModule(Module):
     subcommands = (PhaseMakeSubcommand, PhaseMoveSubcommand,
                    PhasePlaceSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
-    guards = [PhasePositionByMove]
+    guards = [PhasePositionByMove, PlanTasksDone]
     listeners = (ForgetPlace, PhaseRenumbering, CancelOpenPlanTasks,
                  NextPlanTaskStarter)
