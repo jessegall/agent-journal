@@ -24,6 +24,8 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import SidebarPages from "../shell/SidebarPages.vue";
+import ActivityPanel from "../shell/ActivityPanel.vue";
 
 const props = defineProps({
     store: {type: Object, required: true},
@@ -52,12 +54,38 @@ const measure = () => {
 // the bar shows as many window buttons as fit beside its fixed buttons; the rest fold into a menu, so Presets never leaves the screen
 const BUTTON_WIDTH = 124;
 const FIXED_WIDTH = 330;
-const room = computed(() => Math.max(2, Math.floor((width.value - FIXED_WIDTH) / BUTTON_WIDTH)));
+const SIDEBAR_WIDTH = 220;
+const ACTIVITY_WIDTH = 280;
+const room = computed(() => {
+    const taken = (sidebarShown.value ? SIDEBAR_WIDTH : 0) + (activityOpen.value ? ACTIVITY_WIDTH : 0);
+    return Math.max(2, Math.floor((width.value - taken - FIXED_WIDTH) / BUTTON_WIDTH));
+});
 const folded = ref(false);
 const agentRow = ref(null);
+// the rows a list read gave, none when it failed or answered something else
+const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
+const environments = ref([]);
+const events = ref([]);
+const activityOpen = ref(false);
+const SIDEBAR_FROM_WIDTH = 1100;
+const ACTIVITY_SECONDS = 4;
+const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH);
+let activityTimer = null;
+async function readActivity() {
+    const answer = activityOpen.value && props.shellRead ? await props.shellRead(["event", "list", "--limit", "30"]) : null;
+    if (answer?.ok) events.value = rowsOf(answer);
+}
+function toggleActivity() {
+    activityOpen.value = !activityOpen.value;
+    readActivity();
+}
+async function readEnvironments() {
+    const answer = props.shellRead ? await props.shellRead(["environment", "list"]) : null;
+    environments.value = rowsOf(answer);
+}
 async function readAgent() {
     const answer = props.shellRead ? await props.shellRead(["agent", "list"]) : null;
-    const rows = answer?.ok ? answer.value.rows : [];
+    const rows = rowsOf(answer);
     agentRow.value = rows.find((row) => row.role === "main" && !row.ended_at) ?? rows[0] ?? null;
 }
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
@@ -83,9 +111,12 @@ onMounted(() => {
     navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
     readAgent();
+    readEnvironments();
+    activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
+    clearInterval(activityTimer);
     window.removeEventListener("resize", measure);
     navigator.serviceWorker?.removeEventListener("message", heardWorker);
 });
@@ -115,6 +146,10 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </script>
 
 <template>
+    <div class="stage-frame">
+        <template v-if="sidebarShown">
+            <SidebarPages :windows="catalogue.windows.value" :environments="environments" :current="environment" @open="openView" />
+        </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">
             <template v-if="picked">
@@ -166,6 +201,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
                 </template>
                 <span class="agent-bar-space" />
+                <template v-if="shellRead">
+                    <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
+                </template>
                 <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
                     <Icon name="wide" :size="13" />
                 </Btn>
@@ -252,9 +290,20 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <DragGhost v-bind="ghost" />
         </template>
     </div>
+        <template v-if="activityOpen">
+            <ActivityPanel :events="events" />
+        </template>
+    </div>
 </template>
 
 <style scoped>
+.stage-frame {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+}
+
 .pane-stage {
     display: flex;
     min-width: 0;

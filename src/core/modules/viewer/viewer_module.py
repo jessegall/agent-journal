@@ -36,7 +36,7 @@ from core.modules.viewer.upgrade.viewer_move import ViewerMove
 
 SHELL_RUNS = ["setting make", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove"]
 SHELL_READS = ["environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
-               "window permissions", "suite current", "suite layout", "suite presets", "person-preset list"]
+               "window permissions", "suite current", "suite layout", "suite presets", "person-preset list", "event list"]
 
 
 class ViewerModule(Module):
