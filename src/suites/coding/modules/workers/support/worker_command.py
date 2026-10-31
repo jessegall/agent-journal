@@ -15,7 +15,7 @@ ACTIVE_VARIABLE = "AGENT_JOURNAL_ACTIVE"
 
 
 class WorkerCommand:
-    """The command line that starts a worker's program on its task in its worktree, as its program's provider writes it."""
+    """The command line that starts a worker's program on its task, as its provider writes it."""
 
     def __init__(self, providers: Providers) -> None:
         self.providers = providers
