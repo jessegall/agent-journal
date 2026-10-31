@@ -1,6 +1,6 @@
 from core.base.driver.driver import Driver
-from suites.coding.open_task_stop_refusal import OpenTaskStopRefusal
-from suites.coding.orchestrator_start_guard import OrchestratorStartGuard
+from suites.coding.drivers.orchestrator.rules.open_task_stop_refusal import OpenTaskStopRefusal
+from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 
 
 class Orchestrator(Driver):

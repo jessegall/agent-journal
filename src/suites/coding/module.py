@@ -3,15 +3,15 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
-from suites.coding.builder import Builder
+from suites.coding.drivers.builder.builder import Builder
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.file_edit import FileEdit
 from suites.coding.file_edit_record_handler import FileEditRecordHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTable
-from suites.coding.orchestrator import Orchestrator
-from suites.coding.orchestrator_start_guard import OrchestratorStartGuard
-from suites.coding.record_file_edit import RecordFileEdit
-from suites.coding.subagent import Subagent
+from suites.coding.drivers.orchestrator.orchestrator import Orchestrator
+from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
+from suites.coding.rules.record_file_edit import RecordFileEdit
+from suites.coding.drivers.subagent.subagent import Subagent
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show"]
 

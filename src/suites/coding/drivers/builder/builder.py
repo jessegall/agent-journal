@@ -1,6 +1,6 @@
 from core.base.driver.driver import Driver
-from suites.coding.open_task_assignment import OpenTaskAssignment
-from suites.coding.subagent_allowance import SubagentAllowance
+from suites.coding.drivers.builder.rules.open_task_assignment import OpenTaskAssignment
+from suites.coding.drivers.builder.rules.subagent_allowance import SubagentAllowance
 
 
 class Builder(Driver):

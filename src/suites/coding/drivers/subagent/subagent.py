@@ -1,5 +1,5 @@
 from core.base.driver.driver import Driver
-from suites.coding.subagent_write_limit import SubagentWriteLimit
+from suites.coding.drivers.subagent.limits.subagent_write_limit import SubagentWriteLimit
 
 
 class Subagent(Driver):
