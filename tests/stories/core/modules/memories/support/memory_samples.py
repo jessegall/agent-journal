@@ -1,0 +1,26 @@
+from core.base.database.migration import Migration
+from core.base.database.timestamp_sql import TIMESTAMP_SQL
+from core.base.module.module import Module
+
+VOICE = "tests.stories.core.modules.memories.support.memory_samples:VoiceModule"
+
+
+class VoiceMemoryTypes(Migration):
+    """Adds the voice memory type, on in every suite."""
+
+    number = 1
+    statements = (
+        "INSERT INTO memory_types (creator_id, name, module, description, agents_may_make, fades, starting_weight, given_at_start, given_at_mark,"
+        f" given_by_keyword, created_at, updated_at) VALUES (1, 'voice', 'voice', 'how the project speaks', 1, 0, 8, 1, 0, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
+        "INSERT INTO memory_type_switches (creator_id, type, suite, module, is_on, created_at, updated_at)"
+        f" VALUES (1, 'voice', '*', 'voice', 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
+    )
+
+
+class VoiceModule(Module):
+    """A sample module that adds a memory type of its own."""
+
+    name = "voice"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.memories"]
+    migrations = [VoiceMemoryTypes]
