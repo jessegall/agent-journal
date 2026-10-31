@@ -40,3 +40,16 @@ class LeadLocked(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("edit-lock show 1", f"agent_id: {story.agent.id}", "state: open")
+
+
+class LeadWaiting(StoryFixture):
+    """The lead's agent waits on task 1, the review, which a person made."""
+
+    parent = LeadStarted
+
+    def steps(self, story: Story) -> None:
+        story.run('task make "The review" --environment main')
+        story.run("wait on 'the review of the cart' --target tasks:1", actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("wait show 1", "type: rows", "state: open")

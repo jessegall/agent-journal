@@ -40,7 +40,7 @@ class ModuleCheck:
     def duplicate_names(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         models = self.models(modules)
         switch_names = [*(guard.name for module in modules for guard in module.guards), *(listener.name for module in modules for listener in module.listeners),
-                        *(rule.name for rule in rules)]
+                        *(name for name, _ in dict.fromkeys((rule.name, rule.path.text) for rule in rules))]
         return NameGroups.duplicates([("models", [model.model_name for model in models]), ("tables", [self.tables.table(model).name for model in models]),
                                       ("guards, listeners or driver rules", switch_names)])
 
