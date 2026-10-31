@@ -1,7 +1,7 @@
 from core.base.cli.console import REFUSED_CODE
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from tests.stories.core.support.fixtures import ThreeTasks
-from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.server_client import expect_trail_names, server_story
 
 
 def test_health_answers_with_the_servers_pid_and_code_version(new_story):
@@ -44,3 +44,11 @@ def test_a_write_whose_deadline_passed_before_the_commit_writes_nothing(new_stor
 def test_an_error_outside_a_command_is_answered_500_with_one_line_and_logged_with_its_traceback(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
         story.expect_raw_request_error(b"POST /cli HTTP/1.1\r\nHost: journal\r\nContent-Length: many\r\nConnection: close\r\n\r\n", "ValueError")
+
+
+def test_a_write_sent_with_a_trail_leaves_one_log_line_with_every_stamp_in_order(new_story):
+    story = new_story(fixture=ThreeTasks)
+    with server_story(story) as server:
+        server.send_with_trail('task make "Fourth" --environment main', "go_start=1;go_sent=2")
+    expect_trail_names(story.home, [["go_start", "go_sent", "server_accepted", "server_received", "command_started", "write_started", "committed",
+                                     "command_done", "answered"]])

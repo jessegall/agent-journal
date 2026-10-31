@@ -14,6 +14,8 @@ from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
 from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.timestamp import Timestamp
+from core.base.trail import TRAIL_HEADER, Trail
+from core.base.trail_log import TrailLog
 from core.testing.story import Story
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -116,6 +118,15 @@ class ServerStory:
         answer = request_answer(self.socket_path, method, route, body)
         assert answer.status == status, answer
 
+    def send_with_trail(self, line: str, trail_text: str) -> None:
+        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TRAIL_HEADER: trail_text})
+        assert answer.exit_code == 0, answer
+
+
+def expect_trail_names(home: JournalHome, names: list[list[str]]) -> None:
+    lines = [json.loads(line) for line in TrailLog(home).path.read_text().splitlines()]
+    assert [[name for name, _ in Trail.parsed(line["trail"]).stamps or []] for line in lines] == names, lines
+
 
 @contextmanager
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
@@ -151,8 +162,8 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
 
 def request_answer(socket_path: Path, method: str, route: str, body: object = None, headers: dict[str, str] | None = None) -> ServerAnswer:
     data = json.dumps(body).encode() if body is not None else b""
-    extra = "".join(f"{name}: {value}\r\n" for name, value in (headers or {}).items())
-    head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\n{extra}Connection: close\r\n\r\n".encode()
+    header_lines = "".join(f"{name}: {value}\r\n" for name, value in (headers or {}).items())
+    head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\n{header_lines}Content-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode()
     return answer_from(raw_answer(socket_path, head + data))
 
 
