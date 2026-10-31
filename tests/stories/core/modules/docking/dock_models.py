@@ -1,3 +1,6 @@
+from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.modules.docking.migrations.m002_docks_of_existing_environments import DocksOfExistingEnvironmentsMigration
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -51,3 +54,13 @@ def test_add_keep_and_remove_run_from_the_command_line(new_story):
     item_id = story.new_row_id("dock add docksample.task task 1 --environment main", actor=story.user)
     story.expect_text(f"dock keep {item_id}", "kept: True")
     story.expect_text(f"dock remove {item_id}", "state: undocked")
+
+
+def test_the_migration_makes_the_dock_of_every_environment_that_has_none(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run("environment make elsewhere /work/elsewhere")
+    database = story.container.get(Database)
+    database.update(Statement("DELETE FROM docks"))
+    for sql in DocksOfExistingEnvironmentsMigration.statements:
+        database.update(Statement(sql))
+    assert database.rows(Statement("SELECT count(*) FROM docks"))[0][0] == 2
