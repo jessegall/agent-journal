@@ -16,6 +16,7 @@ from core.modules.plugins.migrations.m001_plugins import PluginsTablesMigration
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_setting import PluginSetting
 from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.upgrade.plugins_move import PluginsMove
 
 BUILT = ["make", "edit", "show", "list", "delete"]
 
@@ -28,6 +29,7 @@ class PluginsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT)]
+    moves = [PluginsMove]
     migrations = [PluginsTablesMigration]
     handlers = [InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler]
     subcommands = (PluginListSubcommand, PluginSettingsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
