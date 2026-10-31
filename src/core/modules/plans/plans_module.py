@@ -25,6 +25,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
+from core.modules.plans.upgrade.plans_move import PlansMove
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
@@ -43,6 +44,7 @@ class PlansModule(Module):
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
+    moves = [PlansMove]
     subcommands = (MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
