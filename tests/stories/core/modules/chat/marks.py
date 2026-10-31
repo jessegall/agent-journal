@@ -89,3 +89,11 @@ def test_a_mark_naming_a_variant_its_type_does_not_list_is_refused(new_story):
     strange = ShowMark(1, SampleMarkType.MOMENT, StrangeVariant.STRANGE, "moment:2", "A mark")
     with pytest.raises(Refusal, match="the mark chatsample.moment has no variant strange"):
         story.container.get(Bus).run(strange, module_actor(story, "chatsample"))
+
+
+def test_a_listener_run_twice_for_one_event_leaves_one_mark(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
+    for _ in range(2):
+        bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:event-7", "Event 7"), actor)
+    assert mark_count(story) == 1
