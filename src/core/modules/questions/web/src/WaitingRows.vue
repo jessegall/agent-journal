@@ -6,8 +6,7 @@ const {rows: waits, failure} = useRows("wait list", ["wait.*", "question.*"]);
 const {rows: targets} = useRows("wait-target list", ["wait_target.*"]);
 
 function waited(openedAt) {
-    const minutes = Math.max(0, Math.round((Date.now() - Date.parse(openedAt)) / 60000));
-    return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+    return `${Math.max(0, Math.round((Date.now() - Date.parse(openedAt)) / 60000))} min`;
 }
 
 function waitsOnUser(wait) {
