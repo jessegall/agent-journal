@@ -9,6 +9,7 @@ from core.modules.agents.commands.start_agent_handler import StartAgentHandler
 from core.modules.agents.commands.start_agent_subcommand import StartAgentSubcommand
 from core.modules.agents.migrations.m001_agents import AgentsTableMigration
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
@@ -29,6 +30,7 @@ class AgentsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
+    moves = [AgentsMove]
     migrations = [AgentsTableMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler]
     subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
