@@ -30,7 +30,7 @@ def test_the_upgrade_of_a_version_4_project_makes_version_5_live_and_moves_versi
     version_four_bytes = content(scratch.journal / "journal.db")
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
-    assert "upgraded" in run.stdout and "not claimed: notices (1 rows)" in run.stdout
+    assert "upgraded" in run.stdout and "not claimed: aliases (1 rows)" in run.stdout
     assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
     assert not (scratch.journal / "journal.db").exists() and content(scratch.journal / "version-4" / "journal.db") == version_four_bytes
     assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == version_four_bytes
@@ -41,7 +41,7 @@ def test_a_dry_run_prints_the_counts_and_changes_nothing(tmp_path):
     starting_files = scratch.snapshot()
     run = upgrade(scratch, "--dry-run")
     assert run.returncode == 0, run.stdout + run.stderr
-    assert "dry run: nothing was changed" in run.stdout and "not claimed: notices (1 rows)" in run.stdout
+    assert "dry run: nothing was changed" in run.stdout and "not claimed: aliases (1 rows)" in run.stdout
     assert scratch.snapshot() == starting_files
 
 
