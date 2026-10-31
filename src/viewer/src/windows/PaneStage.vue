@@ -3,6 +3,7 @@ import {onMounted, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
+import DetachedWindows from "../layout/DetachedWindows.vue";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
 import PaneGrid from "../panes/PaneGrid.vue";
@@ -35,11 +36,12 @@ const {counts} = useTabCounts({
     environment: props.environment,
     names: () => (props.store.layout.value ? [...props.store.open.value] : []),
 });
-const {detach, dock, sendAway, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
+const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
     counts,
+    environment: props.environment,
 });
 
 const groups = () => props.catalogue.group(closedWindows.value);
@@ -126,18 +128,15 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 </template>
             </nav>
         </template>
-        <template v-for="float in store.layout.value?.floats || []" :key="float.id">
-            <section class="pane-float" :style="{left: `${float.x}px`, top: `${float.y}px`, width: `${float.w}px`, height: `${float.h}px`}">
-                <header class="pane-float-bar">
-                    <span>{{ catalogue.window(float.view)?.title || float.view }}</span>
-                    <Btn :data-float-dock="float.id" @click="dock(float.id)">Dock</Btn>
-                    <Btn :data-float-away="float.id" @click="sendAway(float.id)">Send away</Btn>
-                </header>
-                <div class="pane-body">
-                    <WindowPane :name="float.view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
-                </div>
-            </section>
-        </template>
+        <DetachedWindows
+            :detached="detached"
+            :catalogue="catalogue"
+            :subscriptions="subscriptions"
+            :environment="environment"
+            :agent="agent"
+            :prompts="prompts"
+            :shell-read="shellRead"
+        />
         <template v-if="ghost">
             <DragGhost v-bind="ghost" />
         </template>
@@ -175,28 +174,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     border: 1px solid var(--line);
     border-radius: 6px;
     background: var(--bg);
-}
-
-.pane-float {
-    position: fixed;
-    z-index: 60;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--bg);
-}
-
-.pane-float-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--line);
-}
-
-.pane-float-bar > span {
-    flex: 1;
 }
 
 .reopen-bar .unavailable {

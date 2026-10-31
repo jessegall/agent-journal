@@ -53,7 +53,7 @@ function grow(e) {
             <button type="button" class="float-btn float-menu-btn" v-tip="'Window menu'" @click.stop="emit('menu', $event)">
                 <Icon name="dots" />
             </button>
-            <button type="button" class="float-btn" v-tip="'Dock it back into the layout'" @click="emit('dock')">
+            <button type="button" class="float-btn" aria-label="Dock" v-tip="'Dock it back into the layout'" @click="emit('dock')">
                 <Icon name="dock" />
             </button>
         </div>

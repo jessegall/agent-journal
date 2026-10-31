@@ -1,14 +1,11 @@
 <script setup>
 import {onUnmounted} from "vue";
-import {AllowancePrompts} from "./allowancePrompts.js";
-import {lineResult} from "./windowContext.js";
-import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatalogue.js";
+import {followEvents} from "./windowCatalogue.js";
+import {startWindows} from "./startup.js";
 import PaneStage from "./PaneStage.vue";
 import {useHomeLayout} from "./homeLayout.js";
 import {paneLayout} from "./paneLayout.js";
-import {WindowSubscriptions} from "./windowSubscriptions.js";
 
-const SHELL_WINDOW = "viewer.shell";
 const props = defineProps({
     environment: {type: String, required: true},
     layout: {type: Array, default: null},
@@ -16,10 +13,7 @@ const props = defineProps({
     events: {type: Function, default: followEvents},
 });
 
-const catalogue = props.catalogue || new WindowCatalogue(() => fetchWindowCatalogue(props.environment));
-const subscriptions = new WindowSubscriptions();
-const shellLine = (line) => lineResult(SHELL_WINDOW, line, props.environment);
-const prompts = new AllowancePrompts(shellLine);
+const {catalogue, subscriptions, shellLine, prompts, listeners, stop} = startWindows(props);
 const home = props.layout ? null : useHomeLayout(props.environment, shellLine, catalogue);
 
 // a fixed list of windows is one row of panes in memory, never saved
@@ -34,14 +28,9 @@ const fixed = () =>
     });
 const store = home ? home.store : fixed();
 
-const stop = props.events(props.environment, async (event) => {
-    await catalogue.heard(event);
-    home?.heard(event);
-    subscriptions.dispatch(event);
-});
 onUnmounted(stop);
 
-catalogue.load();
+if (home) listeners.push(home.heard);
 if (home) home.load();
 else store.load({environment: props.environment, person: 0, suite: "", page: "fixed", driver: ""});
 </script>

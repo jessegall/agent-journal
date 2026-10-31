@@ -1,106 +1,71 @@
-import {computed, effectScope, ref} from "vue";
-import {usePaneLayout} from "./paneLayout.js";
+import {computed} from "vue";
 import {listenViewTabs, openViewTab} from "./viewTabs.js";
 import {clamp} from "../format/number.js";
-import {broughtBack, floated, forgotten, fronted, landed, reshaped, sentAway, unfloated} from "../domain/panes.js";
+import {broughtBack, floated, forgotten, fronted, landed, reshaped, sentAway, tabClosed, unfloated} from "../domain/panes.js";
 
-const LAND = 280;
 const MIN_W = 260;
 const MIN_H = 180;
 const EDGE = 8;
 const BAR = 40;
+const START = 80;
+const SIZE = {w: 480, h: 360};
 
-function shared() {
-    const {layout, measured, apply, replace, stage} = usePaneLayout();
-    const landing = ref({});
-    const floats = computed(() => layout.value.floats || []);
+// the floating and sent-away windows of a layout store: a pane's window detached at the size it declares, moved, sized,
+// docked back into a pane, sent to a browser window of its own and brought back from there
+export function useDetached(store, catalogue, environment) {
+    const layout = () => store.layout.value;
+    const floats = computed(() => layout()?.floats || []);
     const find = (id) => floats.value.find((f) => f.id === id);
     const tabs = listenViewTabs({
-        dock: (id) => replace(broughtBack(layout.value, id)),
-        closed: (id) => replace(forgotten(layout.value, id)),
+        dock: (id) => store.replace(broughtBack(layout(), id)),
+        closed: (id) => store.replace(forgotten(layout(), id)),
     });
 
-    function detach(view, box) {
-        const w = clamp(box.w, MIN_W, window.innerWidth - 2 * EDGE);
-        const h = clamp(box.h, MIN_H, window.innerHeight - 2 * EDGE);
-        const x = clamp(box.x, EDGE, window.innerWidth - w - EDGE);
-        const y = clamp(box.y, EDGE, window.innerHeight - h - EDGE);
-        replace(floated(layout.value, view, {x, y, w, h}));
+    function detach(pane) {
+        const view = layout().panes[pane].active;
+        const entry = catalogue.window(view);
+        const w = clamp(entry?.float_width || SIZE.w, MIN_W, window.innerWidth - 2 * EDGE);
+        const h = clamp(entry?.float_height || SIZE.h, MIN_H, window.innerHeight - 2 * EDGE);
+        const change = tabClosed(layout(), pane, view);
+        store.apply({...change, layout: floated(change.layout, view, {x: START, y: START, w, h})});
     }
 
     function move(id, to) {
         const f = find(id);
-        if (f)
-            replace(
-                reshaped(layout.value, id, {
-                    x: clamp(to.x, BAR - f.w, window.innerWidth - BAR),
-                    y: clamp(to.y, 0, window.innerHeight - BAR),
-                })
-            );
+        if (f) store.replace(reshaped(layout(), id, {x: clamp(to.x, BAR - f.w, window.innerWidth - BAR), y: clamp(to.y, 0, window.innerHeight - BAR)}));
     }
 
     function size(id, to) {
         const f = find(id);
-        if (f)
-            replace(
-                reshaped(layout.value, id, {
-                    w: clamp(to.w, MIN_W, window.innerWidth - f.x),
-                    h: clamp(to.h, MIN_H, window.innerHeight - f.y),
-                })
-            );
+        if (f) store.replace(reshaped(layout(), id, {w: clamp(to.w, MIN_W, window.innerWidth - f.x), h: clamp(to.h, MIN_H, window.innerHeight - f.y)}));
     }
 
-    const tune = (id, patch) => replace(reshaped(layout.value, id, patch));
+    const tune = (id, patch) => store.replace(reshaped(layout(), id, patch));
 
     function front(id) {
         const last = floats.value[floats.value.length - 1];
-        if (last && last.id !== id) replace(fronted(layout.value, id));
-    }
-
-    function close(id) {
-        replace(unfloated(layout.value, id));
-    }
-
-    function settle(id) {
-        const rest = {...landing.value};
-        delete rest[id];
-        landing.value = rest;
-        replace(unfloated(layout.value, id));
+        if (last && last.id !== id) store.replace(fronted(layout(), id));
     }
 
     function dock(id) {
-        const change = landed(layout.value, id);
+        const change = landed(layout(), id);
         if (!change) return;
-        apply(change);
-        const box = stage.value && stage.value.getBoundingClientRect();
-        if (!box) return close(id);
-        const r = measured.value.rects[change.target];
-        landing.value = {
-            ...landing.value,
-            [id]: {x: box.left + r.x * box.width, y: box.top + r.y * box.height, w: r.w * box.width, h: r.h * box.height},
-        };
-        setTimeout(() => settle(id), LAND);
+        store.apply(change);
+        store.replace(unfloated(layout(), id));
     }
 
     function sendAway(id) {
         const f = find(id);
         if (!f) return null;
-        openViewTab(f.view, id);
-        replace(sentAway(layout.value, id));
+        openViewTab(f.view, id, environment);
+        store.replace(sentAway(layout(), id));
         return f;
     }
 
     function bringBack(id) {
         tabs.recall(id);
-        replace(broughtBack(layout.value, id));
+        store.replace(broughtBack(layout(), id));
     }
 
-    return {floats, drawn: floats, landing, detach, move, size, tune, front, close, dock, sendAway, bringBack};
-}
-
-let one = null;
-
-export function useDetached() {
-    one = one || effectScope(true).run(shared);
-    return one;
+    return {floats, detach, move, size, tune, front, dock, sendAway, bringBack};
 }

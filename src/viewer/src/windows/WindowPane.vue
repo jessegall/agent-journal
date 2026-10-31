@@ -64,6 +64,7 @@ watch(
             :visible="visible"
             :permissions="permissions"
             :prompts="prompts"
+            :options="options"
         />
     </template>
     <template v-else-if="entry && entry.loading === 'frame'">
@@ -75,6 +76,7 @@ watch(
             :visible="visible"
             :permissions="permissions"
             :prompts="prompts"
+            :options="options"
         />
     </template>
     <template v-else-if="entry">

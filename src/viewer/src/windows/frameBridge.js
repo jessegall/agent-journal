@@ -29,6 +29,7 @@ export class FrameBridge {
         if (!request || typeof request.id !== "number") return;
         if (request.type === "read") this.send(request.id, await this.context.read(request.line));
         if (request.type === "run") this.send(request.id, await this.context.run(request.line));
+        if (request.type === "option") this.send(request.id, {ok: true, value: this.context.option(request.key).value ?? null});
         if (request.type === "follow") {
             this.context.follow(request.patterns, (event) => this.send(request.id, {ok: true, value: event}));
             this.send(request.id, {ok: true, value: null});

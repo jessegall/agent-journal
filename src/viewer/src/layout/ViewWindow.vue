@@ -1,38 +1,43 @@
 <script setup>
-import {computed, watchEffect} from "vue";
+import {onUnmounted, watchEffect} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
-import HomeView from "../pages/HomeView.vue";
-import {useHomeViews} from "../composables/homeViews.js";
 import {useViewTab} from "../composables/viewTabs.js";
-import {soloFloat, soloView} from "../platform/view.js";
-import {route} from "../route.js";
+import {followEvents} from "../windows/windowCatalogue.js";
+import {startWindows} from "../windows/startup.js";
+import WindowPane from "../windows/WindowPane.vue";
 
-const {views} = useHomeViews();
-const view = computed(() => views.value[soloView] || null);
-const {dock} = useViewTab(soloFloat);
+const props = defineProps({
+    environment: {type: String, required: true},
+    view: {type: String, required: true},
+    float: {type: Number, required: true},
+    catalogue: {type: Object, default: null},
+    events: {type: Function, default: followEvents},
+});
+
+const {catalogue, subscriptions, shellLine, prompts, stop} = startWindows(props);
+const {dock} = useViewTab(props.float);
+onUnmounted(stop);
 watchEffect(() => {
-    if (view.value) document.title = `${view.value.title} · ${route.value.env}`;
+    const entry = catalogue.window(props.view);
+    if (entry) document.title = `${entry.title} · ${props.environment}`;
 });
 </script>
 
 <template>
     <div class="view-window">
-        <template v-if="view">
+        <template v-if="catalogue.windows.value.length">
             <div class="view-window-bar">
-                <Icon :name="view.icon" :size="13" />
-                <span class="view-window-title">{{ view.title }}</span>
-                <span class="view-window-env">{{ route.env }}</span>
+                <Icon :name="catalogue.window(view)?.icon || 'window'" :size="13" />
+                <span class="view-window-title">{{ catalogue.window(view)?.title || view }}</span>
+                <span class="view-window-env">{{ environment }}</span>
                 <span class="view-window-space" />
                 <Btn small @click="dock()">
                     <Icon name="dock" :size="13" />
                     Dock back
                 </Btn>
             </div>
-            <HomeView :view="soloView" />
-        </template>
-        <template v-else>
-            <p class="view-window-none">This view does not exist.</p>
+            <WindowPane :name="view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
         </template>
     </div>
 </template>
@@ -63,10 +68,5 @@ watchEffect(() => {
 
 .view-window-space {
     flex: 1;
-}
-
-.view-window-none {
-    margin: auto;
-    color: var(--text-3);
 }
 </style>

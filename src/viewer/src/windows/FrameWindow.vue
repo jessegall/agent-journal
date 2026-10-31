@@ -11,6 +11,7 @@ const props = defineProps({
     visible: {type: Boolean, default: true},
     permissions: {type: Object, default: () => ({reads: [], runs: [], missing: [], ask: async () => true})},
     prompts: {type: Object, default: null},
+    options: {type: Object, default: () => ({})},
 });
 const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
 </script>
@@ -26,6 +27,8 @@ const component = {render: () => h(FrameContent, {src: props.entry.entry_url})};
         :visible="visible"
         :permissions="permissions"
         :prompts="prompts"
+        :options="options"
+        :declared="entry.options"
         :events="entry.events || []"
         :unavailable-reason="entry.unavailable_reason || ''"
     />

@@ -1,141 +1,86 @@
 <script setup>
-import {pinnedNotices} from "../domain/notices.js";
-import {hiddenOf} from "../domain/chatVisibility.js";
-import {computed, ref} from "vue";
+import {ref} from "vue";
+import Btn from "../kit/Btn.vue";
 import FloatWindow from "../kit/FloatWindow.vue";
-import Toast from "../kit/Toast.vue";
-import HomeView from "../pages/HomeView.vue";
-import PinsToggle from "../chat/PinsToggle.vue";
-import {open} from "../domain/records.js";
-import PaneMenu from "../panes/PaneMenu.vue";
-import {useHomeViews} from "../composables/homeViews.js";
-import {useDetached} from "../composables/detached.js";
-import {route} from "../route.js";
-import {schemeColors, windowSchemes} from "../domain/schemes.js";
-import {levelChoices, levelOf} from "../domain/verbosity.js";
-import {usePaneLayout} from "../composables/paneLayout.js";
+import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
+import WindowPane from "../windows/WindowPane.vue";
 
-const {views} = useHomeViews();
-const notices = computed(() => pinnedNotices(open("notices")));
-const {drawn, landing, move, size, tune, front, close, dock, sendAway, bringBack} = useDetached();
+const props = defineProps({
+    detached: {type: Object, required: true},
+    catalogue: {type: Object, required: true},
+    subscriptions: {type: Object, required: true},
+    environment: {type: String, required: true},
+    agent: {type: Number, default: null},
+    prompts: {type: Object, default: null},
+    shellRead: {type: Function, default: null},
+});
+
+const {floats, move, size, tune, front, dock, sendAway} = props.detached;
 const menu = ref(null);
-const toast = ref(null);
-const windows = computed(() =>
-    drawn.value.filter((f) => views.value[f.view]).map((f) => ({...f, ...(landing.value[f.id] || {}), landing: !!landing.value[f.id]}))
-);
-const menuFloat = computed(() => menu.value && drawn.value.find((f) => f.id === menu.value.id));
-const {layout} = usePaneLayout();
-const menuSchemes = computed(() => (menuFloat.value ? windowSchemes(menuFloat.value.scheme, layout.value.scheme) : []));
-const menuFlushable = computed(() => !!(menuFloat.value && views.value[menuFloat.value.view].canFlush));
-const menuLevels = computed(() => (menuFloat.value && menuFloat.value.view === "terminal" ? levelChoices(menuFloat.value) : []));
-const menuAll = computed(() => (menuFloat.value && views.value[menuFloat.value.view].all) || null);
-
-function toggleMenu(e, id) {
-    menu.value = menu.value && menu.value.id === id ? null : {id, anchor: e.currentTarget};
-}
+const entryOf = (f) => props.catalogue.window(f.view);
 
 function away(id) {
-    const f = sendAway(id);
-    if (f) toast.value = {text: `${views.value[f.view].title} opened in another tab`, label: "Restore", action: () => bringBack(id)};
+    menu.value = null;
+    sendAway(id);
 }
 </script>
 
 <template>
-    <TransitionGroup name="float" tag="div" class="detached">
-        <template v-for="f in windows" :key="f.id">
+    <div class="detached">
+        <template v-for="f in floats" :key="f.id">
             <FloatWindow
                 :x="f.x"
                 :y="f.y"
                 :w="f.w"
                 :h="f.h"
-                :title="views[f.view].title"
-                :icon="views[f.view].icon"
-                :landing="f.landing"
-                :minimized="!!f.minimized"
-                :colors="schemeColors(f.scheme, layout.scheme)"
+                :title="entryOf(f)?.title || f.view"
+                :icon="entryOf(f)?.icon || 'window'"
+                :minimized="Boolean(f.minimized)"
                 @front="front(f.id)"
                 @move="(to) => move(f.id, to)"
                 @size="(to) => size(f.id, to)"
                 @dock="dock(f.id)"
-                @menu="(e) => toggleMenu(e, f.id)"
+                @menu="menu = menu === f.id ? null : f.id"
                 @minimize="(minimized) => tune(f.id, {minimized})"
             >
-                <template #head>
-                    <template v-if="f.view === 'chat'">
-                        <PinsToggle :notices="notices" inline />
-                    </template>
+                <template v-if="menu === f.id">
+                    <div class="float-menu" role="menu">
+                        <PaneMenuOptions :declared="entryOf(f)?.options || []" :values="f.options || {}" @set="(key, value) => tune(f.id, {options: {...(f.options || {}), [key]: value}})" />
+                        <Btn :data-float-away="f.id" @click="away(f.id)">Send away</Btn>
+                    </div>
                 </template>
-                <HomeView
-                    floating
-                    :view="f.view"
-                    :level="levelOf(f)"
-                    :flush="!!f.flush"
-                    :feed="f.feed || null"
-                    :hidden="hiddenOf(f.hide)"
-                    @feed="(feed) => tune(f.id, {feed})"
+                <WindowPane
+                    :name="f.view"
+                    :catalogue="catalogue"
+                    :subscriptions="subscriptions"
+                    :environment="environment"
+                    :agent="agent"
+                    :options="f.options || {}"
+                    :prompts="prompts"
+                    :shell-read="shellRead"
                 />
             </FloatWindow>
         </template>
-    </TransitionGroup>
-    <template v-if="menuFloat">
-        <PaneMenu
-            :pane="menu.id"
-            :anchor="menu.anchor"
-            floating
-            :all="menuAll"
-            :schemes="menuSchemes"
-            :levels="menuLevels"
-            :chat="menuFloat.view === 'chat'"
-            :agents="menuFloat.view === 'agents'"
-            :hidden="hiddenOf(menuFloat.hide)"
-            @verbosity="(id, verbosity) => tune(id, {verbosity})"
-            @hide="(id, hide) => tune(id, {hide})"
-            :flushable="menuFlushable"
-            :flush="!!menuFloat.flush"
-            @flush="(id, flush) => tune(id, {flush})"
-            @scheme="(id, scheme) => tune(id, {scheme})"
-            @close="menu = null"
-            @dock="dock"
-            @away="away"
-            @unfloat="close"
-        />
-    </template>
-    <Toast :toast="toast" @done="toast = null" />
+    </div>
 </template>
 
 <style scoped>
 .detached {
     position: fixed;
     inset: 0;
-    z-index: 70;
+    z-index: 60;
     pointer-events: none;
 }
 
-.detached > .float-window {
+.detached > :deep(*) {
     pointer-events: auto;
 }
 
-.float-enter-active,
-.float-leave-active {
-    transition:
-        opacity 0.22s ease,
-        transform 0.22s var(--ease);
-}
-
-.float-enter-from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-}
-
-.float-leave-to {
-    opacity: 0;
-    transform: scale(0.97);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .float-enter-active,
-    .float-leave-active {
-        transition: none;
-    }
+.float-menu {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px;
+    border-bottom: 1px solid var(--line);
 }
 </style>

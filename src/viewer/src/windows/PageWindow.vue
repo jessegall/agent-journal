@@ -10,6 +10,7 @@ const props = defineProps({
     visible: {type: Boolean, default: true},
     permissions: {type: Object, required: true},
     prompts: {type: Object, default: null},
+    options: {type: Object, default: () => ({})},
 });
 const component = shallowRef(null);
 const loadFailure = ref("");
@@ -41,6 +42,8 @@ watch(
         :visible="visible"
         :permissions="permissions"
         :prompts="prompts"
+        :options="options"
+        :declared="entry.options"
         :events="entry.events"
         :unavailable-reason="entry.unavailable_reason || loadFailure"
     />

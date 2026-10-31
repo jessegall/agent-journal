@@ -385,7 +385,7 @@ test("Dock returns a float to a pane", async () => {
     await settled();
     element.querySelector(`[data-menu="detach"]`).click();
     await settled();
-    element.querySelector(`[data-float-dock]`).click();
+    element.querySelector(`.float-window [aria-label="Dock"]`).click();
     await settled();
     expect(store.layout.value.floats).toEqual([]);
     expect(holder(store, "a.notes")).toBeDefined();
@@ -400,6 +400,8 @@ test("Send away opens the window in a view window, and the dock message brings i
     element.querySelector(`[data-menu="detach"]`).click();
     await settled();
     const floatId = store.layout.value.floats[0].id;
+    element.querySelector(".float-menu-btn").click();
+    await settled();
     element.querySelector(`[data-float-away="${floatId}"]`).click();
     await settled();
     expect(opened.mock.calls[0][0]).toContain("a.notes");
