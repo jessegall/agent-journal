@@ -17,10 +17,11 @@ const frameTokens = () => ({
 });
 
 // the window kit built on its own, served at /viewer/kit/window-kit.js with Vue left to the page's import map, and
-// the bridge a frame window loads at /viewer/kit/frame-bridge.js
+// the bridge a frame window loads at /viewer/kit/frame-bridge.js; inside the kit its own name is its context key file
 export default defineConfig({
     plugins: [vue(), stylesInScripts(), frameTokens()],
     publicDir: false,
+    resolve: {alias: {"@journal/window-kit": here("./windowContextKey.js")}},
     build: {
         outDir: OUT_DIR,
         emptyOutDir: true,

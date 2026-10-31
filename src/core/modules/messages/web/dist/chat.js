@@ -1,61 +1,69 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-bd58917470d5")) { const style = document.createElement("style"); style.id = "window-styles-bd58917470d5"; style.textContent = ".chat[data-v-f814d43f]{display:flex;flex-direction:column;gap:12px}.from[data-v-f814d43f]{min-width:56px;color:var(--text-3);font-size:12px}.text[data-v-f814d43f]{white-space:pre-wrap}.composer[data-v-f814d43f]{display:flex;gap:8px}.composer-input[data-v-f814d43f]{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.composer-failure[data-v-f814d43f]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { ref as f, openBlock as _, createElementBlock as v, createVNode as x, unref as r, withCtx as h, createElementVNode as n, toDisplayString as m, withModifiers as k, withDirectives as w, vModelText as y, createTextVNode as g, createCommentVNode as C } from "vue";
-import { useRows as N, RowList as V, Btn as b } from "@journal/window-kit";
-const B = (l, i) => {
-  const t = l.__vccOpts || l;
-  for (const [c, u] of i)
-    t[c] = u;
-  return t;
-}, S = { class: "chat" }, D = { class: "from" }, E = { class: "text" }, M = {
+if (!document.getElementById("window-styles-13594d42891b")) { const style = document.createElement("style"); style.id = "window-styles-13594d42891b"; style.textContent = ".chat[data-v-e13cf586]{display:flex;flex-direction:column;gap:12px}.from[data-v-e13cf586]{min-width:56px;color:var(--text-3);font-size:12px}.text[data-v-e13cf586]{white-space:pre-wrap}.composer[data-v-e13cf586]{display:flex;gap:8px}.composer-input[data-v-e13cf586]{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.composer-failure[data-v-e13cf586]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { computed as h, onMounted as C, ref as w, openBlock as n, createElementBlock as k, createVNode as p, unref as s, withCtx as x, createBlock as N, Fragment as V, createElementVNode as c, toDisplayString as f, withModifiers as B, withDirectives as S, vModelText as b, createTextVNode as E, createCommentVNode as F } from "vue";
+import { useRows as _, shownMarks as R, markDeclaration as T, interleaved as H, fetchMarkDeclarations as I, fetchDockDeclarations as L, DockStack as O, RowList as P, MarkHost as U, Btn as W } from "@journal/window-kit";
+const j = (i, m) => {
+  const a = i.__vccOpts || i;
+  for (const [u, r] of m)
+    a[u] = r;
+  return a;
+}, q = { class: "chat" }, z = { class: "from" }, A = { class: "text" }, G = {
   key: 0,
   class: "composer-failure"
-}, R = {
+}, J = {
   __name: "Chat",
-  setup(l) {
-    const { rows: i, failure: t, load: c, context: u } = N("message list", ["message.*"]), e = f(""), d = f("");
-    async function p() {
-      const s = await u.run(["message", "send", e.value]);
-      d.value = s.ok ? "" : s.error, s.ok && (e.value = ""), c();
+  setup(i) {
+    const { rows: m, failure: a, load: u, context: r } = _("message list", ["message.*"]), { rows: y } = _("chat-mark list", ["chat_mark.*"]), { rows: g } = _("dock-item list", ["dock_item.*"]), D = h(() => R(y.value, T, (e) => r.option(e).value)), M = h(() => H(m.value, D.value));
+    C(() => Promise.all([I(), L()]));
+    const o = w(""), d = w("");
+    async function v() {
+      const e = await r.run(["message", "send", o.value]);
+      d.value = e.ok ? "" : e.error, e.ok && (o.value = ""), u();
     }
-    return (s, o) => (_(), v("div", S, [
-      x(r(V), {
-        rows: r(i),
-        failure: r(t),
+    return (e, l) => (n(), k("div", q, [
+      p(s(O), { items: s(g) }, null, 8, ["items"]),
+      p(s(P), {
+        rows: M.value,
+        failure: s(a),
         empty: "No messages yet"
       }, {
-        default: h(({ row: a }) => [
-          n("span", D, m(a.type), 1),
-          n("span", E, m(a.text), 1)
+        default: x(({ row: t }) => [
+          t.kind === "mark" ? (n(), N(s(U), {
+            key: 0,
+            mark: t.row
+          }, null, 8, ["mark"])) : (n(), k(V, { key: 1 }, [
+            c("span", z, f(t.row.type), 1),
+            c("span", A, f(t.row.text), 1)
+          ], 64))
         ]),
         _: 1
       }, 8, ["rows", "failure"]),
-      n("form", {
+      c("form", {
         class: "composer",
-        onSubmit: k(p, ["prevent"])
+        onSubmit: B(v, ["prevent"])
       }, [
-        w(n("input", {
-          "onUpdate:modelValue": o[0] || (o[0] = (a) => e.value = a),
+        S(c("input", {
+          "onUpdate:modelValue": l[0] || (l[0] = (t) => o.value = t),
           class: "composer-input",
           placeholder: "Write a message"
         }, null, 512), [
-          [y, e.value]
+          [b, o.value]
         ]),
-        x(r(b), {
+        p(s(W), {
           kind: "primary",
-          disabled: !e.value.trim(),
-          onClick: p
+          disabled: !o.value.trim(),
+          onClick: v
         }, {
-          default: h(() => [...o[1] || (o[1] = [
-            g("Send", -1)
+          default: x(() => [...l[1] || (l[1] = [
+            E("Send", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
       ], 32),
-      d.value ? (_(), v("p", M, m(d.value), 1)) : C("", !0)
+      d.value ? (n(), k("p", G, f(d.value), 1)) : F("", !0)
     ]));
   }
-}, I = /* @__PURE__ */ B(R, [["__scopeId", "data-v-f814d43f"]]);
+}, X = /* @__PURE__ */ j(J, [["__scopeId", "data-v-e13cf586"]]);
 export {
-  I as default
+  X as default
 };
