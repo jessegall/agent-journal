@@ -5,8 +5,8 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.drivers.builder.builder import Builder
 from suites.coding.coding_suite import CodingSuite
-from suites.coding.file_edit import FileEdit
-from suites.coding.file_edit_record_handler import FileEditRecordHandler
+from suites.coding.models.file_edit import FileEdit
+from suites.coding.commands.file_edit_record_handler import FileEditRecordHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTable
 from suites.coding.drivers.orchestrator.orchestrator import Orchestrator
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard

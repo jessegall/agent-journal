@@ -1,8 +1,8 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
-from suites.coding.file_edit import FileEdit
-from suites.coding.file_edit_record import FileEditRecord
+from suites.coding.models.file_edit import FileEdit
+from suites.coding.commands.file_edit_record import FileEditRecord
 
 
 class FileEditRecordHandler(Handler[FileEditRecord, FileEdit]):

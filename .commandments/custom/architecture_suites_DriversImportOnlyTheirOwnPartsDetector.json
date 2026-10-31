@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/suites/[^/]+/drivers/[^/]+/[^/]+\\.py$"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^suites\\.[^.]+\\.(rules|guards)\\."
+                    },
+                    {
+                        "descendant": {
+                            "nameMatches": "^suites\\.[^.]+\\.(rules|guards)\\."
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "driver-imports-a-shared-part",
+        "description": "A driver imports a rule or guard from its suite's shared folders, so a part only it uses sits where every driver's parts sit.",
+        "rule": "A driver's own rules and guards live beneath it, in drivers/<driver>/rules and drivers/<driver>/guards, and it imports them from there.",
+        "skill": "plain-code-words"
+    }
+}

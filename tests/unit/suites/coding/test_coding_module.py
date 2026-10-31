@@ -1,4 +1,4 @@
-from suites.coding.module import CodingModule
+from suites.coding.coding_module import CodingModule
 
 
 def test_a_suites_module_lives_in_its_suite_folder_and_is_named_after_it():

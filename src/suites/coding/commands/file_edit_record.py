@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.command.command import Command
 from core.base.driver.diff_count import DiffCount
-from suites.coding.file_edit import FileEdit
+from suites.coding.models.file_edit import FileEdit
 
 
 @dataclass(frozen=True)
