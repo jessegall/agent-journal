@@ -20,4 +20,4 @@ class ForgetPlace(DeletionListener):
     def handle(self, change: Change[Model]) -> None:
         for place in self.queries.query(PhaseTask).filter(task_id=change.row.id).page(1, 1).rows:
             self.repository.delete(place, change.context)
-            self.positions.renumber_places(place.phase_id, place.position, change.context)
+            self.positions.renumber(PhaseTask, "phase_id", place.phase_id, place.position, change.context)

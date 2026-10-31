@@ -1,8 +1,11 @@
 from core.base.command.context import Context
+from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.plans.phase import Phase
 from core.modules.plans.phase_task import PhaseTask
+
+POSITION = "position"
 
 
 class Positions:
@@ -12,18 +15,11 @@ class Positions:
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def next_phase_position(self, plan_id: int) -> int:
-        return max((phase.position for phase in self.queries.query(Phase).filter(plan_id=plan_id).all_rows()), default=0) + 1
+    def next_position(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int) -> int:
+        highest = self.queries.query(model).filter(**{parent_column: parent_id}).descending(POSITION).page(1, 1).rows
+        return highest[0].position + 1 if highest else 1
 
-    def next_place(self, phase_id: int) -> int:
-        return max((place.position for place in self.queries.query(PhaseTask).filter(phase_id=phase_id).all_rows()), default=0) + 1
-
-    def renumber_phases(self, plan_id: int, position: int, context: Context) -> None:
-        later = [phase for phase in self.queries.query(Phase).filter(plan_id=plan_id).all_rows() if phase.position > position]
-        for phase in sorted(later, key=lambda phase: phase.position):
-            self.repository.save(phase.changed(position=phase.position - 1), context)
-
-    def renumber_places(self, phase_id: int, position: int, context: Context) -> None:
-        later = [place for place in self.queries.query(PhaseTask).filter(phase_id=phase_id).all_rows() if place.position > position]
-        for place in sorted(later, key=lambda place: place.position):
-            self.repository.save(place.changed(position=place.position - 1), context)
+    def renumber(self, model: type[Phase] | type[PhaseTask], parent_column: str, parent_id: int, position: int, context: Context) -> None:
+        later = self.queries.query(model).filter(**{parent_column: parent_id}).matching(Greater(POSITION, position)).ordered(POSITION)
+        for row in tuple(later.all_rows()):
+            self.repository.save(row.changed(position=row.position - 1), context)

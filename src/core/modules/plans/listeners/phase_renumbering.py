@@ -17,4 +17,4 @@ class PhaseRenumbering(SaveListener):
     def handle(self, change: Change[Model]) -> None:
         phase = change.row
         if isinstance(phase, Phase):
-            self.positions.renumber_phases(phase.plan_id, phase.position, change.context)
+            self.positions.renumber(Phase, "plan_id", phase.plan_id, phase.position, change.context)

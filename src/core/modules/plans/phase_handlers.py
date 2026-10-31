@@ -18,7 +18,7 @@ class PhaseMakeHandler(Handler[PhaseMake, Phase]):
         self.positions, self.repository = positions, repository
 
     def handle(self, command: PhaseMake, context: Context) -> Phase:
-        phase = Phase(plan_id=command.plan_id, creator_id=context.actor.id, position=self.positions.next_phase_position(command.plan_id),
+        phase = Phase(plan_id=command.plan_id, creator_id=context.actor.id, position=self.positions.next_position(Phase, "plan_id", command.plan_id),
                       title=command.title, goal=command.goal, checkpoint=command.checkpoint)
         return self.repository.save(phase, context)
 
@@ -61,6 +61,6 @@ class PhasePlaceHandler(Handler[PhasePlace, PhaseTask]):
             return current[0]
         if current:
             self.repository.delete(current[0], context)
-            self.positions.renumber_places(current[0].phase_id, current[0].position, context)
+            self.positions.renumber(PhaseTask, "phase_id", current[0].phase_id, current[0].position, context)
         return self.repository.save(PhaseTask(phase_id=command.phase_id, task_id=command.task_id, creator_id=context.actor.id,
-                                              position=self.positions.next_place(command.phase_id)), context)
+                                              position=self.positions.next_position(PhaseTask, "phase_id", command.phase_id)), context)

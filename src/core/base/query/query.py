@@ -63,6 +63,12 @@ class Query(Generic[M]):
             select = select.ordered(column, False)
         return self.with_select(select)
 
+    def descending(self, *columns: str) -> Self:
+        select = self.select
+        for column in columns:
+            select = select.ordered(column, True)
+        return self.with_select(select)
+
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         return Page(tuple(self.rows(self.select.sliced(size, (number - 1) * size))), number, size, self.count())
 
