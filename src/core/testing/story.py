@@ -174,6 +174,10 @@ class Story:
         windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
         assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
 
+    def expect_registered_provider(self, name: str, module: str) -> None:
+        providers = [provider for provider in Registry.read(self.container.get(Database)).providers if provider.name == name]
+        assert [provider.module for provider in providers] == [module], f"agent program {name} is registered as {providers}"
+
     def expect_logged_event(self, name: str) -> None:
         names = [event.event for event in self.container.get(EventLog).events_past(0)]
         assert name in names, f"no {name} event among {names}"

@@ -13,6 +13,7 @@ from core.base.model.tables import Tables
 from core.base.module.module import Module
 from core.base.module.driver_entries import DriverEntries
 from core.base.module.module_check import ModuleCheck
+from core.base.module.provider_check import ProviderCheck
 from core.base.module.suite_check import SuiteCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.model_declaration import ModelDeclaration
@@ -117,5 +118,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck())
 

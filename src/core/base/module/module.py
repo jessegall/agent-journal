@@ -16,6 +16,7 @@ from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.provider.provider import Provider
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -31,7 +32,7 @@ class Module:
     """What a module adds to the journal, named by the classes themselves: its models, the modules it builds on,
     the core version it needs, its migrations and views, its handlers, subcommands, guards and listeners, the
     classes it binds in place of the core's interfaces, the migration that removes its tables, and the suites,
-    drivers, overlays and driver rules it adds."""
+    drivers, overlays, driver rules, windows and agent programs it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -50,6 +51,7 @@ class Module:
     overlays: ClassVar[Sequence[type[Overlay]]] = ()
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
     windows: ClassVar[Sequence[WindowDeclaration]] = ()
+    providers: ClassVar[Sequence[type[Provider]]] = ()
 
     @classmethod
     def folder(cls) -> Path:

@@ -33,6 +33,7 @@ from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
 from core.base.module.driver_entries import DriverEntries
+from core.base.module.provider_entries import ProviderEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.module.module_check import ModuleCheck
 from core.base.module.subcommand_line import subcommand_line
@@ -50,10 +51,10 @@ class ModuleSync:
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
-                 entries: DriverEntries, events: EventLog) -> None:
+                 entries: DriverEntries, providers: ProviderEntries, events: EventLog) -> None:
         self.database, self.clock, self.finder, self.order, self.check, self.events = database, clock, finder, order, check, events
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
-        self.actors, self.registry_table, self.entries = actors, registry_table, entries
+        self.actors, self.registry_table, self.entries, self.providers = actors, registry_table, entries, providers
 
     def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
@@ -103,6 +104,7 @@ class ModuleSync:
             suites=self.entries.suites(modules),
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
+            providers=self.providers.providers(modules),
         )
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:

@@ -19,7 +19,7 @@ def providers(tmp_path):
 
 
 def test_a_program_is_found_by_the_name_its_hooks_give(providers):
-    assert isinstance(providers.named("sample"), SampleProgram)
+    assert isinstance(providers.provider("sample"), SampleProgram)
 
 
 def test_every_registered_program_is_listed(providers):
@@ -28,4 +28,4 @@ def test_every_registered_program_is_listed(providers):
 
 def test_a_program_no_module_provides_is_refused_by_its_name(providers):
     with pytest.raises(UnknownProgramError, match="no module provides the agent program 'gemini'"):
-        providers.named("gemini")
+        providers.provider("gemini")

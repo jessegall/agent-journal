@@ -13,6 +13,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
+from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.registry.window_entry import WindowEntry
@@ -36,6 +37,7 @@ class Registry:
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
+    providers: tuple[ProviderEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
     @classmethod
@@ -67,6 +69,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"])
                           for window in entries.get("windows", [])),
+            providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
 
@@ -92,6 +95,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason} for window in self.windows],
+            "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
 

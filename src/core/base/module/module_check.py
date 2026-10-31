@@ -8,6 +8,7 @@ from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
+from core.base.module.provider_check import ProviderCheck
 from core.base.module.suite_check import SuiteCheck
 from core.base.module.window_check import WindowCheck
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -21,8 +22,8 @@ class ModuleCheck:
     modules claim one name, table or command, and every lifecycle is complete; all problems are reported at
     once."""
 
-    def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck) -> None:
-        self.tables, self.suites, self.windows = tables, suites, windows
+    def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck) -> None:
+        self.tables, self.suites, self.windows, self.providers = tables, suites, windows, providers
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events: list[str] = []
@@ -33,7 +34,8 @@ class ModuleCheck:
 
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
-                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules)))
+                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules))
+                    + self.providers.problems(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 

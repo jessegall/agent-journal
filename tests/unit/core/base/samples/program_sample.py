@@ -25,7 +25,7 @@ class SampleProgram(Provider):
     hook_events = {"Start": HookEventName.SESSION_START, "BeforeTool": HookEventName.PRE_TOOL_USE, "End": HookEventName.STOP}
     subagent_events = []
     line_events = [HookEventName.SESSION_START]
-    refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.EXIT_CODE}
+    refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
     tool_categories = {"shell": ToolType.SHELL}
     hook_file = HookFile(HOOK_FILE, {})
     session_variable = "SAMPLE_SESSION_ID"
