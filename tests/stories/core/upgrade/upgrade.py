@@ -148,10 +148,9 @@ def test_a_table_whose_module_is_not_built_is_listed_as_waiting_and_stays_in_the
 
     story = new_story()
     version_four_fixture(story.home.folder / "journal.db")
-    outcome = expect_upgrade(story, "not claimed: workers (1 rows); waits for its module and stays in the backup",
-                             "not claimed: questions (1 rows); waits for its module and stays in the backup")
+    outcome = expect_upgrade(story, "not claimed: sequences (1 rows); waits for its module and stays in the backup")
     assert "old_reports (1 rows)" in outcome.text and "waits" not in next(line for line in outcome.text.splitlines() if "old_reports" in line)
-    assert sqlite3.connect(next((story.home.folder / "version-4").rglob("journal.db"))).execute("SELECT count(*) FROM workers").fetchone()[0] == 1
+    assert sqlite3.connect(next((story.home.folder / "version-4").rglob("journal.db"))).execute("SELECT count(*) FROM sequences").fetchone()[0] == 1
 
 
 def test_a_module_added_later_runs_its_move_on_a_second_upgrade_from_the_retired_database(new_story):

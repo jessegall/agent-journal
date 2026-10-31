@@ -1,7 +1,7 @@
 from core.base.upgrade.upgrade_report import UpgradeReport
 
-WAITING_TABLES = ("workers", "reviewers", "verifiers", "questions", "sequences", "templates", "triggers", "checks", "dumps", "notices", "docs", "reports",
-                  "comments", "links", "phones", "shares", "plugins", "suggestions", "skills")
+WAITING_TABLES = ("sequences", "templates", "triggers", "checks", "dumps", "notices", "docs", "reports",
+                  "comments", "links", "phones", "shares", "plugins", "suggestions")
 WAITING_NOTE = "waits for its module and stays in the backup"
 HEADER = "module  rows  left behind"
 UNCLAIMED_HEADING = "tables no module claims"

@@ -24,6 +24,7 @@ from core.modules.questions.migrations.m001_questions import QuestionsTablesMigr
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.models.question import Question
 from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
+from core.modules.questions.upgrade.questions_move import QuestionsMove
 
 
 class QuestionsModule(Module):
@@ -34,6 +35,7 @@ class QuestionsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration, AnswerMessageMigration]
+    moves = [QuestionsMove]
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]

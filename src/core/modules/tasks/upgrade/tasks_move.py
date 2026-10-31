@@ -74,7 +74,7 @@ class TasksMove(VersionFourMove):
         closed = (row["completed_at"] or row["updated_at"] or created) if state in CLOSED else None
         task_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "holder_id": holder_id if state is TaskState.STARTED else None,
                                       "creator_id": creator_id, "title": title, "brief": brief, "priority": self.priority(row["priority"]),
-                                      "reason": row["block_reason"] or row["pause_reason"] or "", "outcome": row["outcome"] or "", "closed_at": closed,
+                                      "reason": row["block_reason"] or "", "outcome": row["outcome"] or "", "closed_at": closed,
                                       "created_at": created, "updated_at": row["updated_at"] or created})
         for step in StateWalk(TaskLifecycle).path(state) or []:
             rows.set_state(TABLE, task_id, step.value)
