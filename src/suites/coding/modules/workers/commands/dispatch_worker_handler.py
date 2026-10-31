@@ -14,28 +14,38 @@ from core.modules.agents.agent import Agent
 from core.modules.agents.agent_role import AgentRole
 from core.modules.agents.agent_start import AgentStart
 from core.modules.environments.environment import Environment
+from core.modules.settings.setting_values import SettingValues
 from core.modules.tasks.task import Task
 from core.modules.tasks.task_start import TaskStart
-from suites.coding.modules.workers.commands.worker_dispatch import WorkerDispatch
+from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
+from suites.coding.modules.workers.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
+from suites.coding.modules.workers.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.worktree_git import WorktreeGit
 
 WORKER_PROGRAM = "claude"
+LIBRARY_LINKS = "workers.library-links"
+LIBRARY_COPIES = "workers.library-copies"
+WORKTREE_COMMANDS = "workers.worktree-commands"
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
-class WorkerDispatchHandler(Handler[WorkerDispatch, Agent]):
-    """Makes the worker's agent row and its worktree row, cuts the worktree from the environment's branch and starts
-    the task with the worker as its holder; a failed cut removes what git made, and the rows roll back."""
+class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
+    """Starts a worker: its agent row, a worktree cut from the environment's branch, its task; a failure undoes it."""
 
-    command = WorkerDispatch
+    command = DispatchWorker
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, git: WorktreeGit) -> None:
-        self.queries, self.repository, self.bus, self.git = queries, repository, bus, git
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders,
+                 commands: WorktreeCommands) -> None:
+        self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
+        self.git, self.libraries, self.commands = git, libraries, commands
 
-    def handle(self, command: WorkerDispatch, context: Context) -> Agent:
+    def handle(self, command: DispatchWorker, context: Context) -> Agent:
         task = self.queries.query(Task).find(command.task_id)
         environment = self.queries.query(Environment).find(task.environment_id)
+        links = (*self.settings.texts(LIBRARY_LINKS, environment.id, ()), *command.library_links)
+        copies = (*self.settings.texts(LIBRARY_COPIES, environment.id, ()), *command.library_copies)
+        self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
         start = AgentStart(str(uuid4()), self.program(context.actor), AgentRole.WORKER, context.actor.id)
         worker = self.bus.dispatch(start, worker_context)
@@ -46,6 +56,8 @@ class WorkerDispatchHandler(Handler[WorkerDispatch, Agent]):
         base_commit = self.git.tip(environment.folder, environment.branch)
         try:
             self.git.cut(environment.folder, worktree)
+            self.libraries.place(environment.folder, worktree, links, copies)
+            self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id, ()), (*links, *copies))
             self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
             self.bus.dispatch(TaskStart(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Refusal:

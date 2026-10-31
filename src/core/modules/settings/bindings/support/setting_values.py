@@ -1,9 +1,12 @@
 import json
+from typing import TypeVar
 
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.type_guards import is_list
 from core.modules.settings.models.setting import Setting
+
+T = TypeVar("T")
 
 
 class SettingValues:
@@ -26,8 +29,14 @@ class SettingValues:
         return json.loads(rows[0].value) if rows else default
 
     def numbers(self, key: str, environment_id: int, default: tuple[int, ...]) -> tuple[int, ...]:
+        return self.items(key, environment_id, default, int)
+
+    def texts(self, key: str, environment_id: int, default: tuple[str, ...]) -> tuple[str, ...]:
+        return self.items(key, environment_id, default, str)
+
+    def items(self, key: str, environment_id: int, default: tuple[T, ...], item_type: type[T]) -> tuple[T, ...]:
         value = self.value(key, environment_id, default)
-        return tuple(number for number in value if isinstance(number, int)) if is_list(value) else default
+        return tuple(item for item in value if isinstance(item, item_type)) if is_list(value) else default
 
     def text(self, key: str, environment_id: int, default: str) -> str:
         value = self.value(key, environment_id, default)

@@ -7,7 +7,7 @@ from core.modules.agents.agent import Agent
 from core.modules.agents.agent_role import AgentRole
 
 
-class WorkerDispatchGuard(Guard):
+class DispatchWorkerGuard(Guard):
     """Refuses a worktree a worker asked for: a worker does its own task and dispatches no workers."""
 
     name = "workers.worker-runs-no-dispatch"

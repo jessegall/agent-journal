@@ -20,6 +20,9 @@ class WorktreeGit:
     def cut(self, folder: str, worktree: Worktree) -> None:
         self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
 
+    def exclude_file(self, worktree: Worktree) -> Path:
+        return Path(worktree.folder) / self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-path", "info/exclude").stdout.strip()
+
     def remove(self, folder: str, worktree: Worktree) -> None:
         if Path(worktree.folder).exists():
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)

@@ -6,6 +6,6 @@ from suites.coding.modules.workers.models.proof_lifecycle import ProofLifecycle
 
 
 @dataclass(frozen=True)
-class ProofShort(MoveCommand[Proof]):
+class ShortProof(MoveCommand[Proof]):
     move = ProofLifecycle.short
     shortfall: str

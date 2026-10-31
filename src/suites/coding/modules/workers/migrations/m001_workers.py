@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class WorkersTables(Migration):
+class WorkersTablesMigration(Migration):
     """Creates the worktrees table, one row per worker's worktree, and the proofs table, one row per point proved."""
 
     number = 1
