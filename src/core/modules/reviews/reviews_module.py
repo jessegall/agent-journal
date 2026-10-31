@@ -23,7 +23,9 @@ from core.modules.reviews.guards.recorded_by_its_reviewer_guard import RecordedB
 from core.modules.reviews.guards.one_open_review_per_subject_guard import OneOpenReviewPerSubjectGuard
 from core.modules.reviews.migrations.m001_reviews import ReviewsTablesMigration
 from core.modules.reviews.migrations.m002_reviewers import ReviewersTableMigration
+from core.modules.reviews.migrations.m003_review_steps import ReviewStepsTableMigration
 from core.modules.reviews.models.review import Review
+from core.modules.reviews.models.review_step import ReviewStep
 from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.models.review_point import ReviewPoint
 from core.modules.reviews.queries.review_query import ReviewQuery
@@ -35,8 +37,8 @@ class ReviewsModule(Module):
     name = "journal.core.reviews"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [ReviewsTablesMigration, ReviewersTableMigration]
+    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
+    migrations = [ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
     subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
