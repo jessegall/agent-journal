@@ -77,10 +77,14 @@ class ServerStory:
     def program_run(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
         return HookProgram(self.story.home.folder).sent(body)
 
-    def viewer_key(self, person_id: int) -> str:
-        answer = request_answer(self.socket_path, "POST", "/viewer/key", {"person_id": person_id}).json()
+    def viewer_key(self, login_name: str) -> str:
+        answer = request_answer(self.socket_path, "POST", "/viewer/key", {"variables": {"USER": login_name}, "folder": "/"}).json()
         assert isinstance(answer, dict) and isinstance(answer["key"], str), answer
         return answer["key"]
+
+    def expect_viewer_key_refusal(self, body: object, status: int, text: str) -> None:
+        answer = request_answer(self.socket_path, "POST", "/viewer/key", body)
+        assert answer.status == status and text in answer.text, answer
 
     def viewer_port(self) -> int:
         answer = request_answer(self.socket_path, "GET", "/health").json()

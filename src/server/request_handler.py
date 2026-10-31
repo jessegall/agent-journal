@@ -9,6 +9,10 @@ from core.base.caller.caller_request import CallerRequestError
 from core.base.cli.console import ERROR_CODE
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
+from core.base.caller.caller_request import CallerRequest
+from core.base.refusal import Refusal
+from core.base.type_guards import is_mapping
+from server.viewer.viewer_key_route import ViewerKeyRoute
 from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
@@ -96,7 +100,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.journal_server().release_files()
             return
         if self.path == "/viewer/key":
-            self.answer_json(200, {"key": self.journal_server().context.viewer.login.new_key(int(json.loads(body or b"{}")["person_id"]))})
+            self.answer_viewer_key(body)
             return
         if self.path == "/stop":
             self.answer_json(200, {"status": "stopping"})
@@ -116,6 +120,20 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         self.line = " ".join(request.argv[:2])
         self.answer_cli(request)
+
+    def answer_viewer_key(self, body: bytes) -> None:
+        try:
+            data = json.loads(body or b"{}")
+            request = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": self.sender_pid}
+                                           if is_mapping(data) else data)
+        except (CallerRequestError, json.JSONDecodeError) as error:
+            self.answer_json(400, {"error": str(error)})
+            return
+        context = self.journal_server().context
+        try:
+            self.answer_json(200, {"key": ViewerKeyRoute(context.home, context.viewer.login).key(request)})
+        except Refusal as refusal:
+            self.answer_json(403, {"error": refusal.reason})
 
     def answer_hook(self, body: bytes, program: str) -> None:
         try:
