@@ -10,8 +10,8 @@ class Lifecycle:
 
     states: ClassVar[type[StrEnum]]
     initial: ClassVar[Sequence[StrEnum]]
-    editable: ClassVar[tuple[StrEnum, ...]]
-    deletable: ClassVar[tuple[StrEnum, ...]]
+    editable: ClassVar[Sequence[StrEnum]]
+    deletable: ClassVar[Sequence[StrEnum]]
 
     @classmethod
     def moves(cls) -> tuple[Move, ...]:
