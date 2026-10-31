@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
@@ -9,6 +9,7 @@ from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.model_entry import ModelEntry
+from core.base.registry.overlay_entry import OverlayEntry
 
 
 
@@ -28,6 +29,7 @@ class Registry:
     guards: tuple[GuardEntry, ...]
     listeners: tuple[ListenerEntry, ...]
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
+    overlays: tuple[OverlayEntry, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -45,6 +47,7 @@ class Registry:
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
                                           listener["position"], listener["actor_id"]) for listener in entries["listeners"]),
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
+            overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
         )
 
     def entries_text(self) -> str:
@@ -57,7 +60,14 @@ class Registry:
             "listeners": [{"name": listener.name, "event": listener.event.text, "timing": listener.timing.value, "path": listener.path.text,
                            "position": listener.position, "actor_id": listener.actor_id} for listener in self.listeners],
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
+            "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
         }, sort_keys=True)
+
+    def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
+        return replace(self, overlays=overlays)
+
+    def driver_overlays(self, driver: str) -> list[OverlayEntry]:
+        return [overlay for overlay in self.overlays if overlay.covers(driver)]
 
     def bind(self, container: Container) -> None:
         for interface, implementation in self.bindings.items():
