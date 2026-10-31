@@ -1,3 +1,7 @@
+from core.base.module.window_check import WindowCheck
+from core.base.module.module_finder import ModuleFinder
+from core.base.journal_home import JournalHome
+from pathlib import Path
 from dataclasses import dataclass
 
 import pytest
@@ -73,17 +77,17 @@ def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[t
 
 def problems(*modules: type[Module]) -> str:
     with pytest.raises(ModuleError) as raised:
-        ModuleCheck(Tables(), SuiteCheck()).check(modules, DriverEntries().rules(modules))
+        module_check().check(modules, DriverEntries().rules(modules))
     return str(raised.value)
 
 
 def test_every_event_of_every_model_is_known():
-    events = ModuleCheck(Tables(), SuiteCheck()).known_events([module("items", [ModelDeclaration(Item)])])
+    events = module_check().known_events([module("items", [ModelDeclaration(Item)])])
     assert events == ("item.create", "item.update", "item.delete", "item.metadata", "item.pause", "item.close")
 
 
 def test_modules_without_problems_pass():
-    ModuleCheck(Tables(), SuiteCheck()).check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])], ())
+    module_check().check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])], ())
 
 
 def test_a_guard_on_an_event_no_model_raises_is_refused():
@@ -113,3 +117,8 @@ def test_a_lifecycle_without_a_first_state_is_incomplete():
 
 def test_two_handlers_for_one_command_are_refused():
     assert "two handlers carry out" in problems(module("items", [ModelDeclaration(Item)], handlers=[MakeHandler]), module("support", handlers=[MakeHandler]))
+
+
+def module_check() -> ModuleCheck:
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("unused")))))
+

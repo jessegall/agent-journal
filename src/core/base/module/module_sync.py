@@ -29,6 +29,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.window_entry import WindowEntry
+from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
 from core.base.module.driver_entries import DriverEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -118,7 +119,8 @@ class ModuleSync:
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
         shipped = set(self.finder.default_modules())
-        return tuple(WindowEntry(window.name, module.name, tuple(window.reads), tuple(window.runs), module in shipped)
+        return tuple(WindowEntry(window.name, module.name, window.title, window.entry, window.loading.value, window.place.value, tuple(window.roles),
+                                 tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window))
                      for module in modules for window in module.windows)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:

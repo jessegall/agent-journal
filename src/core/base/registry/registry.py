@@ -61,7 +61,8 @@ class Registry:
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
-            windows=tuple(WindowEntry(window["name"], window["module"], tuple(window["reads"]), tuple(window["runs"]), window["shipped"])
+            windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
+                                      tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"])
                           for window in entries.get("windows", [])),
         )
 
@@ -83,8 +84,9 @@ class Registry:
                         "included_overlays": list(suite.included_overlays)} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
                          "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
-            "windows": [{"name": window.name, "module": window.module, "reads": list(window.reads), "runs": list(window.runs), "shipped": window.shipped}
-                        for window in self.windows],
+            "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
+                         "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
+                         "shipped": window.shipped, "unavailable_reason": window.unavailable_reason} for window in self.windows],
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
