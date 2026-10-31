@@ -8,6 +8,7 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.docking.support.dock_limits import MOST_ITEMS_SETTING, DockLimits
+from core.modules.docking.support.leave_time import LeaveTime
 from core.modules.docking.support.row_end import RowEnd
 
 
@@ -18,8 +19,9 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
 
     command = AddDockItem
 
-    def __init__(self, queries: Queries, repository: Repository, items: DockItemQuery, limits: DockLimits, row_end: RowEnd) -> None:
-        self.queries, self.repository, self.items, self.limits, self.row_end = queries, repository, items, limits, row_end
+    def __init__(self, queries: Queries, repository: Repository, items: DockItemQuery, limits: DockLimits, row_end: RowEnd,
+                 leave_time: LeaveTime) -> None:
+        self.queries, self.repository, self.items, self.limits, self.row_end, self.leave_time = queries, repository, items, limits, row_end, leave_time
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
         dock = next(self.queries.query(Dock).filter(environment_id=command.environment_id).all_rows(), None)
@@ -29,7 +31,8 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
             self.make_room(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} holds at most {type_most} items", context)
         dock_most = self.limits.dock_most(dock.id)
         self.make_room(self.items.docked(dock.id), dock_most, f"the dock holds at most {dock_most} items", context)
-        return self.repository.save(DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id), context)
+        item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id)
+        return self.repository.save(item.changed(leaves_at=self.leave_time.at(item, context.timestamp)), context)
 
     def make_room(self, held: DockItemQuery, most: int, limit_text: str, context: Context) -> None:
         docked = list(held.oldest().all_rows())

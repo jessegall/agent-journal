@@ -12,6 +12,8 @@ from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
 from core.modules.docking.guards.type_limit_guard import TypeLimitGuard
 from core.modules.docking.queries.dock_item_query import DockItemQuery
+from core.modules.docking.commands.schedule_dock_item_leave_handler import ScheduleDockItemLeaveHandler
+from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeaveListener
 from core.modules.docking.listeners.environment_dock_listener import EnvironmentDockListener
 from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.models.dock import Dock
@@ -26,7 +28,7 @@ class DockingModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
     migrations = [DocksTableMigration]
-    handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler]
+    handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
-    listeners = [EnvironmentDockListener]
+    listeners = [EnvironmentDockListener, DockItemLeaveListener]
     guards = [DockTypeGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard]

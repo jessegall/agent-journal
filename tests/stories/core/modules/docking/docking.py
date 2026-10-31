@@ -46,8 +46,8 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(new_story):
     leaving, staying = ended_task(story, "Leaving"), ended_task(story, "Staying")
     leaves, stays = docked(story, leaving), docked(story, staying)
     story.container.get(Bus).run(KeepDockItem(stays.id), story.user)
-    story.run_listeners()
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
+    story.run('task make "Tick" --environment main', actor=story.user)
     story.run_listeners()
     assert (docked_state(story, leaves), docked_state(story, stays)) == ("undocked", "docked")
 

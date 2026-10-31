@@ -2,7 +2,9 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
+from core.base.timestamp import Timestamp
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.models.enums.dock_item_state import DockItemState
 
@@ -21,3 +23,9 @@ class DockItemQuery(Query[DockItem]):
 
     def pointing_at(self, target_model: str, target_id: int) -> Self:
         return self.filter(target_model=target_model, target_id=target_id)
+
+    def waiting(self) -> Self:
+        return self.filter(state=DockItemState.DOCKED, kept=False).matching(IsNull("leaves_at"))
+
+    def leaving(self, now: Timestamp) -> list[DockItem]:
+        return [item for item in self.filter(state=DockItemState.DOCKED, kept=False).all_rows() if item.leaves_at is not None and item.leaves_at.value <= now.value]
