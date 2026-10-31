@@ -47,8 +47,8 @@ def test_a_closed_question_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(ASK, actor=story.agent)
     story.run("question close 1")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question 1 was closed without an answer")
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 was closed")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "the user closed question 1 unanswered: go on without it")
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "the user closed question 1")
 
 
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):

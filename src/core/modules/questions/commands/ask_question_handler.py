@@ -25,6 +25,6 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
         choices = [command.recommended, *(option for option in command.options if option != command.recommended)] if command.recommended else list(command.options)
         question = self.repository.save(Question(environment_id=context.environment_id, agent_id=context.actor.id, creator_id=context.actor.id,
                                              text=command.text, options=tuple(choices), recommended=command.recommended), context)
-        wait = OpenWait(WaitType.ROWS, question.text, (f"questions:{question.id}",))
+        wait = OpenWait(WaitType.ROWS, question.text, [f"questions:{question.id}"])
         self.bus.dispatch(wait, context.nested(wait))
         return question
