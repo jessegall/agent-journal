@@ -2,6 +2,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
 from core.modules.skills.models.agent_skill import AgentSkill
+from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
+from core.modules.skills.listeners.skill_read_listener import SkillReadListener
 from core.modules.skills.commands.load_agent_skill import LoadAgentSkill
 from core.modules.skills.commands.load_skill_handler import LoadSkillHandler
 from core.modules.skills.commands.require_skill_handler import RequireSkillHandler
@@ -17,8 +19,9 @@ class SkillsModule(Module):
 
     name = "journal.core.skills"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill])]
     migrations = [SkillsTablesMigration]
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler]
+    listeners = [SkillReadListener, CompactionResetListener]
