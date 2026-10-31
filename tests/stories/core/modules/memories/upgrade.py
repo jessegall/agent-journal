@@ -33,3 +33,10 @@ def test_keywords_and_a_weight_of_zero_move_and_a_task_expiry_ties_the_memory_to
 def test_the_new_memories_are_listed_nowhere_as_a_rule_or_reminder(new_story):
     story = upgraded_story(new_story)
     assert "type: rule" not in story.run("memory list").output_text and "type: reminder" not in story.run("memory list").output_text
+
+
+def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_their_keywords(new_story):
+    story = upgraded_story(new_story)
+    memories = story.run("memory list --json").output_text
+    assert "Always keep totals in cents" in memories and "Run the cart tests before a commit" in memories
+    assert '"type": "rule"' in memories and '"type": "reminder"' in memories

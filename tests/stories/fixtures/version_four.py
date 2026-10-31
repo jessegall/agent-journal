@@ -31,6 +31,9 @@ TABLES = (
     f"CREATE TABLE proofs ({COMMON}, environment_id INTEGER, point INTEGER, text TEXT, state TEXT, shortfall TEXT)",
     f"CREATE TABLE subagents ({COMMON}, environment_id INTEGER, dispatch TEXT, brief TEXT, agent_type TEXT, model TEXT, session TEXT, state TEXT, name TEXT)",
     f"CREATE TABLE sequences ({COMMON}, environment_id INTEGER, title TEXT)",
+    f"CREATE TABLE rules ({COMMON}, text TEXT, reason TEXT, keywords TEXT, presence INTEGER, trigger TEXT, condition TEXT, is_single_use INTEGER)",
+    f"CREATE TABLE reminders ({COMMON}, environment_id INTEGER, text TEXT, keywords TEXT, presence INTEGER, due_at TEXT, trigger TEXT, condition TEXT,"
+    " is_single_use INTEGER)",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
 USER = "user:1"
@@ -93,6 +96,8 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("proofs:1", "tasks:1", "proves", STAMP, USER)),
     ("subagents", "(environment_id, dispatch, brief, agent_type, model, session, state, name)", (1, "d-1", "read the cart", "Explore", "haiku", "s-1", "ended", "Darwin")),
     ("sequences", "(environment_id, title, created_at, creator)", (1, "Release steps", STAMP, USER)),
+    ("rules", "(text, reason, keywords, trigger, condition, created_at, creator)", ("Always keep totals in cents", "rounding errors", '["totals"]', "", "{}", STAMP, USER)),
+    ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "Run the cart tests before a commit", '["commit"]', None, "", "{}", STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 
