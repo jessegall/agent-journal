@@ -781,3 +781,30 @@ Traceback (most recent call last):
     raise RuntimeError("the listener failed")
 RuntimeError: the listener failed
 
+2026-10-31T02:32:17+00:00 journal listener items.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 53, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/listener/test_commit_listener_runner.py", line 72, in handle
+    raise RuntimeError("the listener failed")
+RuntimeError: the listener failed
+
+2026-10-31T02:32:17+00:00 journal listener items.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 53, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/listener/test_commit_listener_runner.py", line 72, in handle
+    raise RuntimeError("the listener failed")
+RuntimeError: the listener failed
+
+2026-10-31T02:32:17+00:00 journal listener items.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 53, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/listener/test_commit_listener_runner.py", line 72, in handle
+    raise RuntimeError("the listener failed")
+RuntimeError: the listener failed
+
