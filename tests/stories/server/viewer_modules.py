@@ -23,3 +23,11 @@ def test_the_windows_on_offer_carry_the_registry_fingerprint_in_their_entry_url(
         story.story.run("suite choose notes --environment main")
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
         story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"entry_url": "/modules/notes/board.html?v=')
+
+
+def test_a_document_window_is_offered_the_line_it_reads_and_the_lines_it_declares_with_no_file(new_story):
+    with server_story(new_story(NOTES, fixture=UserJoined)) as story:
+        story.story.run("suite choose notes --environment main")
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"entry_url": "", "line": "task list"')
+        story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"reads": ["task list"], "runs": []')

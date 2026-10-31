@@ -23,5 +23,4 @@ class WindowsRoute:
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
         finally:
             container.get(Database).close()
-        return [WindowOffer(window.name, window.title, f"/modules/{window.module}/{window.entry}?v={registry.fingerprint}", window.loading, window.place,
-                            window.roles, window.unavailable_reason, window.shipped) for window in windows]
+        return [WindowOffer.offered(window, registry.fingerprint) for window in windows]

@@ -16,10 +16,11 @@ def test_a_login_key_sets_a_cookie_once_and_is_spent(new_story):
         story.expect_viewer_status(f"/?key={key}", 401)
 
 
-def test_the_cookie_names_the_person_and_opens_the_viewer(new_story):
+def test_the_cookie_opens_the_viewer_shell_with_its_import_map(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-        story.expect_viewer_status("/viewer/", 200, cookie, text=f'"person_id": {story.story.user.id}')
+        story.expect_viewer_status("/viewer/", 200, cookie, text='"@journal/window-kit": "/viewer/kit/window-kit.js"')
+        story.expect_viewer_headers("/viewer/kit/window-kit.js", cookie, {"Content-Type": "text/javascript"})
 
 
 def test_a_request_naming_another_host_is_refused_even_with_the_cookie(new_story):

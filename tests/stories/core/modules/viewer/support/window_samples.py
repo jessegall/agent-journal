@@ -24,7 +24,7 @@ class NotesSuite(Suite):
     """A sample suite that offers the notes board."""
 
     name = "notes"
-    windows = ["notes.board"]
+    windows = ["notes.board", "notes.summary"]
 
 
 class NotesModule(Module):
@@ -35,4 +35,5 @@ class NotesModule(Module):
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.drivers"]
     guards = [NotesStartCheck]
     suites = [NotesSuite]
-    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"])]
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"]),
+               WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"])]

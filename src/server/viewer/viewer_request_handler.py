@@ -5,6 +5,7 @@ from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
 from server.viewer.event_stream import EventStream
+from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file import MissingModuleFile
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.unknown_login_key import UnknownLoginKey
@@ -14,6 +15,8 @@ from server.viewer.viewer_server import ViewerServer
 
 COOKIE_NAME = "journal_viewer"
 VIEWER_ROOT = "/viewer/"
+VIEWER_MODULE = "journal.core.viewer"
+SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 EVENTS_ROUTE = "/api/events"
 WINDOWS_ROUTE = "/api/windows"
@@ -45,13 +48,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"windows": [asdict(offer) for offer in offers]})
             return
         if route.path.startswith(MODULES_ROUTE):
-            self.answer_module_file(viewer, route.path.removeprefix(MODULES_ROUTE))
+            module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
+            self.answer_module_file(viewer, module_name, path)
             return
         if route.path == EVENTS_ROUTE:
             self.answer_events(viewer.routes.event_stream, parse_qs(route.query))
             return
-        if route.path in ("/", VIEWER_ROOT) or route.path.startswith(VIEWER_ROOT):
-            self.answer(200, {"person_id": viewer.login.person_id(token)})
+        if route.path == "/" or route.path.startswith(VIEWER_ROOT):
+            self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT).strip("/") or SHELL_PAGE)
             return
         self.answer(404, {"error": f"no route {route.path}"})
 
@@ -76,15 +80,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.answer(200, asdict(viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment)))
 
     def answer_events(self, event_stream: EventStream, query: dict[str, list[str]]) -> None:
-        cursor_text = self.headers.get("Last-Event-ID") or query.get("cursor", ["0"])[0]
+        request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        event_stream.follow(query.get("environment", [""])[0], int(cursor_text) if cursor_text.isdigit() else 0, self.stream_message)
+        event_stream.follow(request.environment, request.cursor_id, self.stream_message)
 
-    def answer_module_file(self, viewer: ViewerServer, module_path: str) -> None:
-        module_name, _, path = module_path.partition("/")
+    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str) -> None:
         try:
             module_file = viewer.routes.module_files.file(module_name, path)
         except MissingModuleFile as error:
