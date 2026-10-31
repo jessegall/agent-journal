@@ -1,3 +1,4 @@
+import http.client
 import json
 from datetime import datetime, timezone
 import os
@@ -28,6 +29,8 @@ from server.listener_thread import ListenerThread, ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
+from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_login import ViewerLogin
 from scripts.timing_report import logged_timings, report
 from tests.stories.server.support.hook_program import HookProgram
 
@@ -72,6 +75,26 @@ class ServerStory:
 
     def program_run(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
         return HookProgram(self.story.home.folder).sent(body)
+
+    def viewer_key(self, person_id: int) -> str:
+        answer = request_answer(self.socket_path, "POST", "/viewer/key", {"person_id": person_id}).json()
+        assert isinstance(answer, dict) and isinstance(answer["key"], str), answer
+        return answer["key"]
+
+    def viewer_port(self) -> int:
+        answer = request_answer(self.socket_path, "GET", "/health").json()
+        assert isinstance(answer, dict) and isinstance(answer["viewer_port"], int), answer
+        return answer["viewer_port"]
+
+    def expect_viewer_login(self, key: str) -> str:
+        status, headers, _ = viewer_answer(self.viewer_port(), f"/?key={key}", "", "")
+        cookie = headers.get("Set-Cookie", "")
+        assert status == 303 and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers)
+        return cookie.split(";", 1)[0]
+
+    def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
+        answered, headers, body = viewer_answer(self.viewer_port(), path, cookie, host)
+        assert answered == status and text in body, (answered, headers, body)
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")
@@ -180,16 +203,18 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home))
+                            HookDatabase(home), ViewerListener(ViewerLogin()))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
     files.write_pid()
     thread = Thread(target=server.serve_requests, daemon=True)
     thread.start()
+    context.viewer.start()
     try:
         yield files.socket
     finally:
+        context.viewer.stop()
         listener_thread.stop()
         server.request_stop()
         thread.join(TIMEOUT_SECONDS)
@@ -238,4 +263,15 @@ def answer_from(raw: bytes) -> ServerAnswer:
 
 def expect_same_answer(raw: tuple[object, object], prepared: tuple[object, object]) -> None:
     assert raw == prepared, f"the raw body was answered {raw} and the prepared object {prepared}"
+
+
+def viewer_answer(port: int, path: str, cookie: str, host: str) -> tuple[int, dict[str, str], str]:
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=TIMEOUT_SECONDS)
+    headers = {"Host": host or f"127.0.0.1:{port}", **({"Cookie": cookie} if cookie else {})}
+    try:
+        connection.request("GET", path, headers=headers)
+        response = connection.getresponse()
+        return response.status, dict(response.getheaders()), response.read().decode()
+    finally:
+        connection.close()
 

@@ -12,6 +12,7 @@ from server.code_version import CodeVersion
 from server.hook_database import HookDatabase
 from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
+from server.viewer.viewer_listener import ViewerListener
 
 DRAIN_LIMIT_SECONDS = 10
 
@@ -19,7 +20,8 @@ DRAIN_LIMIT_SECONDS = 10
 @dataclass(frozen=True)
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
-    files, when it started, its listener thread and the database connection its hooks share."""
+    files, when it started, its listener thread, the database connection its hooks share, and the viewer's
+    listener."""
 
     home: JournalHome
     code_version: CodeVersion
@@ -27,6 +29,7 @@ class ServerContext:
     started_at: Timestamp
     listener_thread: ListenerThread
     hook_database: HookDatabase
+    viewer: ViewerListener
 
 
 class JournalServer(ThreadingMixIn, UnixStreamServer):

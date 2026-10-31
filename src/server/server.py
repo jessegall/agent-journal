@@ -20,6 +20,8 @@ from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread
 from server.listener_work import ListenerWork
 from server.tick_work import TickWork
+from server.viewer.viewer_listener import ViewerListener
+from server.viewer.viewer_login import ViewerLogin
 from server.request_handler import RequestHandler
 from server.server_files import ServerFiles
 
@@ -43,8 +45,9 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     tick_round = JournalRound(home, "ticker", TickWork())
     hook_database = HookDatabase(home)
+    viewer = ViewerListener(ViewerLogin())
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database))
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer))
     files.restrict_socket()
     files.write_pid()
     files.log_line(f"listening on {files.socket}")
@@ -52,10 +55,12 @@ def main(argv: list[str]) -> int:
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
     listener_thread.start()
     ticker.start()
+    viewer.start()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
+        viewer.stop()
         ticker.stop()
         listener_thread.stop()
         hook_database.close()

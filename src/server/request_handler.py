@@ -95,6 +95,9 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(409, {"error": "newer code: the server restarts, send the request again"})
             self.journal_server().release_files()
             return
+        if self.path == "/viewer/key":
+            self.answer_json(200, {"key": self.journal_server().context.viewer.login.new_key(int(json.loads(body or b"{}")["person_id"]))})
+            return
         if self.path == "/stop":
             self.answer_json(200, {"status": "stopping"})
             self.journal_server().request_stop()
