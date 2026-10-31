@@ -81,6 +81,13 @@ def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_
         story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "window": {')
 
 
+
+def test_a_stale_person_cookie_beside_the_share_cookie_does_not_hide_the_share_session(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        story.expect_viewer_status("/api/session", 200, f"journal_session=a-session-from-another-journal; {visitor}", text='"type": "share"')
+
 def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)

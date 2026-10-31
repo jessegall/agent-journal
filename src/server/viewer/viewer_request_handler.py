@@ -247,9 +247,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def cookie_token(self) -> str:
-        cookie = SimpleCookie(self.headers.get("Cookie", ""))
-        names = [name for name in (COOKIE_NAME, SHARE_COOKIE_NAME) if name in cookie]
-        return cookie[names[0]].value if names else ""
+        cookie, login = SimpleCookie(self.headers.get("Cookie", "")), self.viewer().login
+        tokens = [cookie[name].value for name in (COOKIE_NAME, SHARE_COOKIE_NAME) if name in cookie]
+        return next((token for token in tokens if login.has_session(token)), "")
 
     def viewer(self) -> ViewerServer:
         return server_instance(self.server, ViewerServer)
