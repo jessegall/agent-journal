@@ -27,3 +27,6 @@ each piece keeps to its place.
 - **`module-kind-path`** - code that declares, stores or lists marks and docks reads whether a module is core, a
   suite's or a third party's. Every module declares marks and docks the same way; only the trust rule, which
   decides how a body file loads, may read whether the journal ships a module.
+- **`mark-type-in-the-viewer`** - the viewer's chat code (`src/viewer/src/chat/`, `domain/thread.js`) names the type
+  of a module's mark or dock. The viewer takes a mark's type, family, icons and words from its declaration in
+  `/api/marks` and draws every mark with the one template; it names no module's type.
