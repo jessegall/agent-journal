@@ -38,6 +38,7 @@ TABLES = (
     f"CREATE TABLE rules ({COMMON}, text TEXT, reason TEXT, keywords TEXT, presence INTEGER, trigger TEXT, condition TEXT, is_single_use INTEGER)",
     f"CREATE TABLE reminders ({COMMON}, environment_id INTEGER, text TEXT, keywords TEXT, presence INTEGER, due_at TEXT, trigger TEXT, condition TEXT,"
     " is_single_use INTEGER)",
+    f"CREATE TABLE edits ({COMMON}, environment_id INTEGER, session TEXT, path TEXT, edit_type TEXT, added INTEGER, removed INTEGER, first_line INTEGER, last_line INTEGER, rows TEXT, command TEXT, tool_use INTEGER, time REAL, old_text TEXT, new_text TEXT)",
     f"CREATE TABLE command_outputs ({COMMON}, environment_id INTEGER, chain TEXT, command TEXT, session TEXT, folder TEXT, moved INTEGER, ended INTEGER, status INTEGER, is_announced INTEGER, wait INTEGER, is_watched INTEGER, watch_reader TEXT, is_interrupted INTEGER, watch_title TEXT, is_read INTEGER, summary TEXT, ran_in TEXT, is_quiet_named INTEGER, is_total_asked INTEGER, is_complete_reported INTEGER, invalid_reason TEXT, reader_revision REAL)",
     f"CREATE TABLE reactions ({COMMON}, environment_id INTEGER, emoji TEXT, author TEXT)",
     f"CREATE TABLE dashboard_rows ({COMMON}, plugin TEXT, key TEXT, label TEXT, badge TEXT, tone TEXT, note TEXT, section TEXT)",
@@ -141,6 +142,10 @@ ROWS = (
     ("settings", "(environment_id, key, value, created_at, creator)", (0, "workers.builder_may_dispatch", "false", STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (0, "workers.command_kinds", '"read, search, edit"', STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (0, "features.aliases", "true", STAMP, USER)),
+    ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "s-1", "cart.py", "edit", 11, 2, STAMP, "agent:s-1")),
+    ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "s-1", "totals.py", "create", 30, 0, STAMP, "agent:s-1")),
+    ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "", "merged.py", "edit", 4, 1, STAMP, USER)),
+    ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "gone-session", "lost.py", "edit", 1, 1, STAMP, "agent:gone-session")),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 

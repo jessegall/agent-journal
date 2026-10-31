@@ -8,6 +8,7 @@ from core.base.viewer.window_place import WindowPlace
 from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
+from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.commands.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
@@ -27,7 +28,8 @@ class CodingModule(Module):
     name = "journal.suites.coding"
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
+    moves = [FileEditsMove]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
     drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
