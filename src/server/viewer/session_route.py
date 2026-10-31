@@ -1,4 +1,4 @@
-from server.viewer.session_answer import SessionAnswer
+from server.viewer.session_answer import SessionAnswer, ShareAnswer
 from server.viewer.viewer_login import ViewerLogin
 
 
@@ -10,4 +10,7 @@ class SessionRoute:
 
     def answer(self, token: str) -> SessionAnswer:
         session = self.login.session(token)
-        return SessionAnswer(session.type, session.person_id)
+        if session.shared is None or session.ends_at is None:
+            return SessionAnswer(session.type, session.person_id)
+        shared = session.shared
+        return SessionAnswer(session.type, session.person_id, ShareAnswer(shared.model, shared.id, self.login.shares.environment_name(shared.environment_id), session.ends_at.text))

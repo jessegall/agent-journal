@@ -71,6 +71,13 @@ def test_opening_a_link_gives_a_share_session_that_works_again_until_the_link_en
         story.expect_viewer_status("/api/session", 200, second, text='"type": "share"')
 
 
+def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_ends(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "environment": "main"')
+
+
 def test_a_revoked_link_is_gone_and_a_made_up_one_is_unknown(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         cookie, share = shared_link(story)
