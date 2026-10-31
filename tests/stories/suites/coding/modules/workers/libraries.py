@@ -1,0 +1,39 @@
+from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.suites.coding.modules.workers.support.git_repository import expect_nothing_dispatched, repository_environment
+
+DISPATCH = "worker dispatch 1"
+LIBRARY_FILE = "index.js"
+LIBRARY_TEXT = "module.exports = 1\n"
+
+
+def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_never_sees(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
+    worker_id = story.new_row_id(f"{DISPATCH} --library-link node_modules", actor=story.agent)
+    repository.expect_link(worker_id, "node_modules")
+    repository.expect_excluded(worker_id, "node_modules")
+
+
+def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
+    story.expect_success("""setting make workers.library-copies '["vendor"]' --environment main""", "key: workers.library-copies")
+    worker_id = story.new_row_id(DISPATCH, actor=story.agent)
+    repository.expect_copy(worker_id, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
+    repository.expect_excluded(worker_id, "vendor")
+
+
+def test_a_library_name_that_is_no_folder_of_the_environment_is_refused_and_makes_nothing(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
+    expect_nothing_dispatched(story, repository)
+
+
+def test_a_library_name_outside_the_environments_folder_is_refused_and_makes_nothing(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
+    expect_nothing_dispatched(story, repository)
