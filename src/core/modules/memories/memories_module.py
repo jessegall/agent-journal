@@ -17,6 +17,7 @@ from core.modules.memories.listeners.memory_weighed_mark_listener import MemoryW
 from core.modules.memories.listeners.compaction_fader_listener import CompactionFaderListener
 from core.modules.memories.listeners.task_memory_remover_listener import TaskMemoryRemoverListener
 from core.modules.memories.models.memory import Memory
+from core.modules.memories.upgrade.memories_move import MemoriesMove
 from core.modules.memories.commands.fade_memories_handler import FadeMemoriesHandler
 from core.modules.memories.commands.give_memories_handler import GiveMemoriesHandler
 from core.modules.memories.listeners.mark_closer_listener import MarkCloserListener
@@ -64,6 +65,7 @@ class MemoriesModule(Module):
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
     migrations = [MemoriesTablesMigration]
+    moves = [MemoriesMove]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
     guards = [TypeMakersGuard, TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, TypeChangeGuard, SwitchChangeGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]

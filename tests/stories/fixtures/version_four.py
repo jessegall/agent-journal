@@ -19,7 +19,7 @@ TABLES = (
     f"CREATE TABLE phases ({COMMON}, plan_id INTEGER, position INTEGER, title TEXT, done_when TEXT, checkpoint INTEGER)",
     f"CREATE TABLE plan_reviews ({COMMON}, plan_id INTEGER, verdict TEXT)",
     f"CREATE TABLE messages ({COMMON}, environment_id INTEGER, author TEXT, session TEXT, text TEXT, reply_target INTEGER, read_at TEXT, data TEXT)",
-    f"CREATE TABLE memories ({COMMON}, environment_id INTEGER, text TEXT, weight INTEGER, keywords TEXT, removed_at TEXT, expires_at TEXT)",
+    f"CREATE TABLE memories ({COMMON}, environment_id INTEGER, text TEXT, weight INTEGER, keywords TEXT, removed_at TEXT, expires_at TEXT, expiry_row TEXT)",
     f"CREATE TABLE phone_codes ({COMMON}, code TEXT)",
     f"CREATE TABLE old_reports ({COMMON}, body TEXT)",
 )
@@ -59,6 +59,7 @@ ROWS = (
     ("memories", "(environment_id, text, weight, keywords, expires_at, created_at, creator)", (1, "Use the old API until March", 5, "[]", PAST, STAMP, USER)),
     ("memories", "(environment_id, text, weight, keywords, expires_at, created_at, creator)", (1, "Deploy at nine", 5, "[]", FUTURE, STAMP, USER)),
     ("memories", "(environment_id, text, weight, keywords, removed_at, created_at, creator)", (1, "A removed fact", 5, "[]", STAMP, STAMP, USER)),
+    ("memories", "(environment_id, text, weight, keywords, expiry_row, created_at, creator)", (1, "Remove this when the cart task is done", 0, '["cart", "task"]', "tasks:1", STAMP, USER)),
     ("phone_codes", "(code, created_at)", ("123456", STAMP)),
     ("old_reports", "(body, created_at)", ("a report", STAMP)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
