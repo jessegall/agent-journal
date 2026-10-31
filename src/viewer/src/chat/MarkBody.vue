@@ -27,11 +27,7 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
                     <OutputLines class="mark-terminal" :lines="pages.lines.value" @older="pages.older" />
                 </template>
                 <template v-else-if="lines.length">
-                    <ul class="mark-lines">
-                        <template v-for="line in lines" :key="line">
-                            <li class="mark-line">{{ line }}</li>
-                        </template>
-                    </ul>
+                    <p class="mark-lines">{{ lines.join("\n") }}</p>
                 </template>
             </template>
         </div>
@@ -55,7 +51,7 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
     color: var(--text-2);
     font-size: 12px;
     line-height: 1.45;
-    list-style: none;
+    white-space: pre-line;
     overflow-wrap: anywhere;
 }
 
