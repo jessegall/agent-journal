@@ -1,10 +1,17 @@
 <script setup>
+import {ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import {api} from "../api/client.js";
 import {pressButton} from "./markButtons.js";
 
 const props = defineProps({buttons: {type: Array, default: () => []}, mark: {type: Object, required: true}});
-const press = (button) => pressButton(button, props.mark, api.env());
+const refusal = ref("");
+
+// a button the server refuses shows the refusal beside it, until the next press
+async function press(button) {
+    const result = await pressButton(button, props.mark, api.env());
+    refusal.value = result.ok ? "" : result.error;
+}
 </script>
 
 <template>
@@ -13,9 +20,17 @@ const press = (button) => pressButton(button, props.mark, api.env());
             <MarkIcon :name="button.icon" />
         </button>
     </template>
+    <template v-if="refusal">
+        <span class="mark-refusal" role="alert">{{ refusal }}</span>
+    </template>
 </template>
 
 <style scoped>
+.mark-refusal {
+    color: var(--danger);
+    font-size: 11.5px;
+}
+
 .mark-button {
     display: grid;
     flex: none;

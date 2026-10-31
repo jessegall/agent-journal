@@ -16,7 +16,7 @@ export function markLook(mark, declaration) {
     const opens = OPENERS[kind.click] && mark.target_model ? kind.click : "";
     return {
         key: `chat_mark:${mark.id}`,
-        icon: kind.family_icon || "",
+        icon: kind.family_icon || (declaration ? "" : "dot"),
         markIcon: kind.mark_icon || "",
         group: kind.group || "",
         tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : "",
