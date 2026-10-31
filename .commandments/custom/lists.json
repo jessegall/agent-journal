@@ -1056,5 +1056,18 @@
         "Start",
         "Trust",
         "Weigh"
+    ],
+    "mark_types": [
+        "messages.thought",
+        "messages.filed",
+        "tasks.task",
+        "plans.plan",
+        "plans.started",
+        "waits.impasse",
+        "agents.subagent",
+        "memories.memory",
+        "memories.reminder",
+        "memories.compaction",
+        "chat.fault"
     ]
 }

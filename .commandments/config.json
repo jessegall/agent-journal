@@ -60,6 +60,7 @@
         "architecture_chat_MarkEnumsInEnumsFolderDetector",
         "architecture_docking_DockOnlyByCommandDetector",
         "architecture_chat_NoModuleKindPathDetector",
+        "architecture_chat_NoMarkTypeInViewerDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
