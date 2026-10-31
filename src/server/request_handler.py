@@ -1,6 +1,7 @@
 import json
 from collections.abc import Callable
 import traceback
+from urllib.parse import parse_qs
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler
 
@@ -8,6 +9,8 @@ from core.base.caller.caller_request import CallerRequestError
 from core.base.cli.console import ERROR_CODE
 from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
+from server.endpoints.hook_endpoint import HookEndpoint
+from server.hook.hook_event import HookEventError
 from server.journal_server import JournalServer
 from server.listener_thread import ListenerWake
 from server.peer_pid import peer_pid
@@ -17,9 +20,9 @@ CODE_VERSION_HEADER = "Journal-Code-Version"
 
 
 class RequestHandler(BaseHTTPRequestHandler):
-    """Reads one HTTP request on the journal's socket and sends it to its endpoint: GET /health, POST /cli and
-    POST /stop; a request the server's code is older than is answered 409 and runs nothing, and the server
-    releases its files at once so a new one can start while it finishes its open requests."""
+    """Reads one HTTP request on the journal's socket and sends it to its endpoint: GET /health, POST /cli,
+    POST /hook and POST /stop; a request the server's code is older than is answered 409 and runs nothing,
+    and the server releases its files at once so a new one can start while it finishes its open requests."""
 
     protocol_version = "HTTP/1.1"
 
@@ -57,6 +60,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(200, {"status": "stopping"})
             self.journal_server().request_stop()
             return
+        route, _, query = self.path.partition("?")
+        if route == "/hook":
+            self.answer_hook(body, parse_qs(query).get("program", [""])[0])
+            return
         if self.path != "/cli":
             self.answer_json(404, {"error": f"no route {self.path}"})
             return
@@ -66,6 +73,20 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(400, {"error": str(error)})
             return
         self.answer_cli(request)
+
+    def answer_hook(self, body: bytes, program: str) -> None:
+        try:
+            endpoint = HookEndpoint()
+            answer = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
+        except (HookEventError, json.JSONDecodeError) as error:
+            self.answer_json(400, {"error": str(error)})
+            return
+        data = answer.encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
 
     def answer_cli(self, request: CliRequest) -> None:
         self.send_response(200)

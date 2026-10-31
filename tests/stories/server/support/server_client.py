@@ -108,6 +108,10 @@ class ServerStory:
     def expect_line(self, line: str, expected_line: str) -> None:
         assert expected_line in self.story.run(line).output_text.splitlines(), self.story.run(line).output_text
 
+    def expect_hook_answer(self, route: str, body: object, status: int, text: str, headers: dict[str, str] | None = None) -> None:
+        answer = request_answer(self.socket_path, "POST", route, body, headers or {})
+        assert answer.status == status and (text in answer.text if text else answer.text == ""), answer
+
     def expect_status(self, method: str, route: str, body: object, status: int) -> None:
         answer = request_answer(self.socket_path, method, route, body)
         assert answer.status == status, answer
@@ -145,9 +149,10 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         files.release_lock()
 
 
-def request_answer(socket_path: Path, method: str, route: str, body: object = None) -> ServerAnswer:
+def request_answer(socket_path: Path, method: str, route: str, body: object = None, headers: dict[str, str] | None = None) -> ServerAnswer:
     data = json.dumps(body).encode() if body is not None else b""
-    head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode()
+    extra = "".join(f"{name}: {value}\r\n" for name, value in (headers or {}).items())
+    head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\n{extra}Connection: close\r\n\r\n".encode()
     return answer_from(raw_answer(socket_path, head + data))
 
 
