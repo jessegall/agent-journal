@@ -27,6 +27,8 @@ from core.modules.tasks.models.open_dependency import OpenDependency
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
+from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
+from core.modules.tasks.support.task_marks import TASK_DOCKS, TASK_MARKS
 
 TASK_COMMANDS = (BlockTask, CloseTask, CancelTask)
 
@@ -37,7 +39,7 @@ class TasksModule(Module):
 
     name = "journal.core.tasks"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration]
     subcommands = (MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
@@ -45,6 +47,8 @@ class TasksModule(Module):
     handlers = [RemoveTaskDependencyHandler]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency]
-    listeners = [DependencyRemoverListener]
+    listeners = [DependencyRemoverListener, TaskMoveMarkListener]
+    marks = TASK_MARKS
+    docks = TASK_DOCKS
     driver_rules = [LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task list", "task show", "task-log list"], events=["task.*"])]

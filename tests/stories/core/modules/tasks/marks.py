@@ -50,3 +50,10 @@ def test_the_tasks_module_writes_only_its_own_marks(new_story):
 
 def test_the_task_mark_is_declared_as_version_4_showed_it(new_story):
     expect_declared_look(new_story(fixture=BuilderWithOpenTask), TASK)
+
+
+def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    before = story.run("task show 1").output_text
+    story.expect_success("dock add tasks.task task 1 --environment main", actor=story.user)
+    assert story.run("task show 1").output_text == before
