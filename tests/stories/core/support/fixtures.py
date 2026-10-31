@@ -227,6 +227,28 @@ class PlanTasksWaitingOutside(StoryFixture):
         story.expect_success("task show 4", "state: open")
 
 
+class PlanWithCheckpoint(StoryFixture):
+    """A started plan 1 whose phase Build (1) is a checkpoint holding Cart (1), Tax (2) and Totals (3), followed by
+    phase Ship (2) holding Release (4); Tax waits on Outside (5), an open task in no plan."""
+
+    parent = AgentStarted
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.NEW_PLAN)
+        story.run('phase make --plan 1 "Build" --checkpoint')
+        story.run('phase make --plan 1 "Ship"')
+        for title, phase in (("Cart", 1), ("Tax", 1), ("Totals", 1), ("Release", 2)):
+            task_id = story.new_row_id(f'task make "{title}" --environment main')
+            story.run(f"phase place {task_id} --phase {phase}")
+        story.run('task make "Outside" --environment main')
+        story.run("task depend 2 --on 5")
+        for move in ("ready", "approve", "start"):
+            story.run(f"plan {move} 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("phase show 1", "checkpoint: True")
+
+
 class MessageAnswered(StoryFixture):
     """Ada's message 1, answered by the agent's reply 2."""
 
