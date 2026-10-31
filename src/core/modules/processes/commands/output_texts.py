@@ -8,8 +8,6 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_access import OutputAccess
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.reader_run import ReaderRun
-from core.modules.processes.support.reader_selection import ReaderSelection
 
 FLAGS = "--summary, --all, --lines, --tail or --reader"
 ENDING_PHRASES = {ProcessState.RUNNING: "is running", ProcessState.BACKGROUND: "is running", ProcessState.STOPPED: "was stopped", ProcessState.ORPHANED: "was lost"}
@@ -19,8 +17,8 @@ class OutputTexts:
     """What an output shows in the way asked, one of five: the summary, all of it, a range of its lines, its
     tail or the lines a reader picks; it changes nothing."""
 
-    def __init__(self, access: OutputAccess, folder: OutputFolder, outputs: OutputQuery, readers: ReaderQuery, run: ReaderRun) -> None:
-        self.access, self.folder, self.outputs, self.readers, self.run = access, folder, outputs, readers, run
+    def __init__(self, access: OutputAccess, folder: OutputFolder, outputs: OutputQuery, readers: ReaderQuery) -> None:
+        self.access, self.folder, self.outputs, self.readers = access, folder, outputs, readers
 
     def lines(self, actor: Actor, command: ReadOutput) -> list[str]:
         ways = {"summary": command.summary, "all": command.all, "lines": command.lines, "tail": command.tail, "reader": command.reader}
@@ -51,14 +49,17 @@ class OutputTexts:
         matching = self.readers.with_name(command.reader).page(1, 1).rows
         if not matching:
             raise Refusal(f"there is no reader {command.reader}", "journal reader list shows them")
-        return self.run.lines(matching[0], text, process.state.value)
+        kept = self.outputs.process(process.id).page(1, 1).rows
+        if not kept or kept[0].reader_id != matching[0].id:
+            raise Refusal(f"output {process.id} is read by the reader chosen when it started, not by {command.reader}", f"journal output read {process.id} --all")
+        return self.folder.reader_lines(process.id)
 
     def summary(self, process: Process, text: str, command: ReadOutput) -> list[str]:
         size = f"{len(text.splitlines())} lines, {len(text)} characters"
         outcome = ENDING_PHRASES.get(process.state, f"{process.state.value} with exit code {process.exit_code}")
-        reader = ReaderSelection.choose(tuple(self.readers.all_rows()), process)
-        lines_read = self.run.lines(reader, text, process.state.value) if reader is not None else []
-        digest = self.run.summary(reader, text) if reader is not None else ""
+        kept = self.outputs.process(process.id).page(1, 1).rows
+        lines_read = self.folder.reader_lines(process.id) if kept else []
+        digest = kept[0].reader_summary if kept else ""
         return [f"output {process.id} {outcome}: {size}", *lines_read, *self.digest_line(digest)]
 
     @staticmethod

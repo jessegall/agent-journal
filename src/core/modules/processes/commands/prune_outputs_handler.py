@@ -17,10 +17,10 @@ class PruneOutputsHandler(Handler[PruneOutputs, int]):
         self.outputs, self.repository, self.folder, self.settings = outputs, repository, folder, settings
 
     def handle(self, command: PruneOutputs, context: Context) -> int:
-        excess = self.outputs.kept().count() - self.settings.integer(ProcessSetting.OUTPUTS_KEPT_COUNT, command.environment_id)
+        excess = self.outputs.ended().count() - self.settings.integer(ProcessSetting.OUTPUTS_KEPT_COUNT, command.environment_id)
         if excess <= 0:
             return 0
-        for output in tuple(self.outputs.kept().oldest().page(1, excess).rows):
+        for output in tuple(self.outputs.ended().oldest().page(1, excess).rows):
             self.repository.save(output.prune(context.timestamp, context.actor), context)
             self.folder.remove(output.process_id)
         return excess

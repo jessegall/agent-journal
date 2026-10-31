@@ -22,11 +22,13 @@ from core.modules.processes.commands.prune_outputs_handler import PruneOutputsHa
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
 from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
-from core.modules.processes.commands.note_progress_handler import NoteProgressHandler
 from core.modules.processes.listeners.output_dock_listener import OutputDockListener
 from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
-from core.modules.processes.rules.process_progress_rule import ProcessProgressRule
 from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
+from core.modules.processes.commands.read_new_output_handler import ReadNewOutputHandler
+from core.modules.processes.listeners.stopped_process_output_listener import StoppedProcessOutputListener
+from core.modules.processes.migrations.m004_output_readers import OutputReadersMigration
+from core.modules.processes.rules.output_reader_rule import OutputReaderRule
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
 from core.modules.processes.guards.run_owner_reports_guard import RunOwnerReportsGuard
 from core.modules.processes.commands.orphan_process import OrphanProcess
@@ -73,12 +75,12 @@ class ProcessesModule(Module):
     settings = PROCESS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, NoteProgressHandler]
+    migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, OrphanProcessRule, ProcessProgressRule]
-    listeners = [EndedProcessWatchListener, OutputPruneListener, ProcessEndMarkListener, OutputDockListener]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, OrphanProcessRule, OutputReaderRule]
+    listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),

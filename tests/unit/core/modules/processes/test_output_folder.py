@@ -49,3 +49,16 @@ def test_the_folder_the_go_runner_wrote_is_read_back():
     assert (processes.line(4), processes.part_texts(4), processes.status(4, 1), processes.status(4, 2), processes.end(4), processes.pid(4)) == (
         "echo one && echo two", ["echo one", "echo two"], 0, 0, 0, 321)
     assert (processes.output(4, 1), processes.output(4, 2), processes.sizes(4)) == ("one\n", "two\n", (8, 2))
+
+
+def test_only_the_bytes_past_an_offset_are_read_across_the_parts_and_the_readers_lines_are_appended(tmp_path):
+    processes = folder(tmp_path)
+    processes.write_start(4, "a && b", ["a", "b"])
+    processes.write_output(4, 1, "one\ntwo\n")
+    processes.write_output(4, 2, "three\n")
+    assert (processes.total_bytes(4), processes.bytes_from(4, 0), processes.bytes_from(4, 4), processes.bytes_from(4, 8), processes.bytes_from(4, 14)) == (14, b"one\ntwo\nthree\n", b"two\nthree\n", b"three\n", b"")
+    processes.append_reader_lines(4, ["1: one"])
+    processes.append_reader_lines(4, ["3: three"])
+    assert processes.reader_lines(4) == ["1: one", "3: three"]
+    processes.replace_reader_lines(4, ["9: nine"])
+    assert processes.reader_lines(4) == ["9: nine"]

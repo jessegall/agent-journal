@@ -2,6 +2,7 @@ from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
+from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
 from core.modules.processes.models.enums.output_state import OutputState
@@ -16,6 +17,9 @@ class OutputQuery(Query[Output]):
 
     def kept(self) -> Self:
         return self.filter(state=OutputState.KEPT)
+
+    def ended(self) -> Self:
+        return self.kept().matching(Greater("ended_at", ""))
 
     def unread(self) -> Self:
         return self.kept().matching(IsNull("read_at"))

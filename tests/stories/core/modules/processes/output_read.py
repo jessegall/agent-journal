@@ -29,7 +29,8 @@ def test_the_summary_says_how_the_run_ended_with_the_default_readers_lines(new_s
 
 def test_a_named_reader_reads_the_output_whatever_the_default_is(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run('reader add passes --commands "none*" --lines "PASSED"', actor=story.agent)
+    story.run('reader add passes --commands "pytest*" --lines "PASSED"', actor=story.agent)
+    story.run("reader default passes", actor=story.agent)
     process = ended_run(story, PYTEST, REPORT)
     story.expect_success(f"output read {process.id} --reader passes", "2: test_a PASSED", actor=story.agent)
     story.expect_absent(f"output read {process.id} --reader passes", "3: test_b FAILED", actor=story.agent)

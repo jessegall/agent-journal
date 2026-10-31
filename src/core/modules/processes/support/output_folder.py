@@ -1,4 +1,5 @@
 import shutil
+from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 
@@ -8,6 +9,7 @@ PARTS_FILE = "parts"
 PID_FILE = "pid"
 END_FILE = "end"
 HEARTBEAT_FILE = "heartbeat"
+READER_LINES_FILE = "reader.lines"
 
 
 class OutputFolder:
@@ -64,6 +66,34 @@ class OutputFolder:
     def heartbeat(self, process_id: int) -> Timestamp | None:
         text = self.text(process_id, HEARTBEAT_FILE).strip()
         return Timestamp.parsed(text) if text else None
+
+    def total_bytes(self, process_id: int) -> int:
+        return sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
+
+    def output_paths(self, process_id: int) -> list[Path]:
+        return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
+
+    def bytes_from(self, process_id: int, offset: int) -> bytes:
+        """The bytes of the parts' output, in order, from the offset on; only the part files that reach past it are opened."""
+        passed, collected = 0, b""
+        for path in self.output_paths(process_id):
+            size = path.stat().st_size if path.exists() else 0
+            if passed + size > offset:
+                with path.open("rb") as handle:
+                    handle.seek(max(0, offset - passed))
+                    collected += handle.read()
+            passed += size
+        return collected
+
+    def reader_lines(self, process_id: int) -> list[str]:
+        return self.text(process_id, READER_LINES_FILE).splitlines()
+
+    def append_reader_lines(self, process_id: int, lines: list[str]) -> None:
+        if lines:
+            self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in [*self.reader_lines(process_id), *lines]))
+
+    def replace_reader_lines(self, process_id: int, lines: list[str]) -> None:
+        self.write(process_id, READER_LINES_FILE, "".join(f"{line}\n" for line in lines))
 
     def all_output(self, process_id: int) -> str:
         return "".join(self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1))

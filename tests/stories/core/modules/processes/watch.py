@@ -2,7 +2,7 @@ from core.base.driver.command_category import CommandCategory
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
@@ -21,9 +21,11 @@ def test_a_watch_gives_the_readers_lines_of_the_running_output_after_each_tool_u
     process_id = watched(story)
     folder = story.container.get(OutputFolder)
     folder.write_output(process_id, 1, "step 1\nFAILED a\n")
+    tick(story)
     assert f"output {process_id}: 2: FAILED a" in story.hook("s-1", AFTER).lines
     assert not any("output" in line for line in story.hook("s-1", AFTER).lines)
     folder.write_output(process_id, 1, "step 1\nFAILED a\nerror b\n")
+    tick(story)
     new = list(story.hook("s-1", AFTER).lines)
     assert f"output {process_id}: 3: error b" in new and f"output {process_id}: 2: FAILED a" not in new
 

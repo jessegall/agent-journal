@@ -9,7 +9,7 @@ from core.modules.docking.commands.keep_dock_item import KeepDockItem
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.chat.support.mark_samples import mark_count
 from core.modules.processes.commands.move_process import MoveProcess
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -34,12 +34,12 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story.run_listeners()
     starting_count = mark_count(story)
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n")
-    story.hook("s-1", AFTER)
+    tick(story)
     story.run_listeners()
     assert mark_count(story) == starting_count
     story.expect_text(MARKS, "40%")
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n[ 80%]\n")
-    story.hook("s-1", AFTER)
+    tick(story)
     story.run_listeners()
     assert mark_count(story) == starting_count
     story.expect_text(MARKS, "80%")

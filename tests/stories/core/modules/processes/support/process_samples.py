@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import shlex
 
 from core.base.actor import Actor
@@ -10,6 +12,7 @@ from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.part_spec import PartSpec
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
+from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_sample import HookSample
 from core.testing.story import Story
@@ -77,3 +80,11 @@ def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> No
     bus = story.container.get(Bus)
     bus.run(EndProcessPart(process.id, 1, exit_code), story.agent, environment_id=1)
     bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), story.agent, environment_id=1)
+
+
+def tick(story) -> None:
+    """A minute passes and the ticker comes: the one place a reader runs while a run goes on."""
+    story.advance(timedelta(minutes=1))
+    for process in tuple(story.container.get(ProcessQuery).running().all_rows()):
+        story.container.get(OutputFolder).beat(process.id, story.clock.timestamp())
+    story.tick("s-1")

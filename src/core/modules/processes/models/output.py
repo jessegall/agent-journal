@@ -21,7 +21,14 @@ class Output(Model):
     folder: str
     byte_count: int = 0
     line_count: int = 0
+    reader_id: int | None = None
+    read_offset: int = 0
+    read_lines: int = 0
+    reader_lines: int = 0
+    reader_summary: str = ""
+    progress: int = 0
     state: OutputState = OutputState.KEPT
+    ended_at: Timestamp | None = None
     read_at: Timestamp | None = None
     pruned_at: Timestamp | None = None
 

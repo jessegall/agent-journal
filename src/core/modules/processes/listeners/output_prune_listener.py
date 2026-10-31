@@ -9,15 +9,15 @@ from core.modules.processes.models.process import Process
 
 
 class OutputPruneListener(SaveListener):
-    """A new kept output prunes the oldest ones past the number the settings keep, in the same transaction."""
+    """An output that ends prunes the oldest ended ones past the number the settings keep, in the same transaction."""
 
     name = "processes.output-prune"
-    event = "output.create"
+    event = "output.update"
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries
 
     def handle(self, change: Change[Model]) -> None:
-        output = change.row
-        if isinstance(output, Output):
+        old, output = change.old_row, change.row
+        if isinstance(output, Output) and isinstance(old, Output) and old.ended_at is None and output.ended_at is not None:
             self.bus.dispatch(PruneOutputs(self.queries.query(Process).find(output.process_id).environment_id), change.context)
