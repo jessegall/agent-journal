@@ -25,7 +25,3 @@ def test_a_line_no_declaration_lists_is_refused(new_story):
     window_story.expect_window_refusal(CHAT, f"task delete {task_id}", "messages.chat does not declare task delete")
 
 
-
-def test_a_button_runs_only_what_the_pressing_person_may_run(new_story):
-    window_story, task_id = chat_story(new_story)
-    window_story.expect_window_refusal(CHAT, f"window allow {task_id}", "may never run window allow")

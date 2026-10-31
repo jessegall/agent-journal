@@ -3,6 +3,9 @@ from datetime import timedelta
 import pytest
 
 from core.base.command.bus import Bus
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
+from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.base.refusal import Refusal
 from core.modules.docking.commands.add_dock_item import AddDockItem
 from core.modules.docking.commands.keep_dock_item import KeepDockItem
@@ -93,3 +96,10 @@ def test_an_agent_cannot_undock_or_unkeep_an_item_a_person_kept(new_story):
     story.container.get(Bus).run(KeepDockItem(item.id), story.user)
     story.expect_refusal(f"dock remove {item.id}", "was kept by a person", actor=story.agent)
     story.expect_success(f"dock remove {item.id}", actor=story.user)
+
+
+def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    window = Registry.read(story.container.get(Database)).window("messages.chat")
+    assert "dock-item list" in window.reads and "dock_item.*" in window.events
+    WindowStory(story).expect_window_allowed("messages.chat", "dock-item list")
