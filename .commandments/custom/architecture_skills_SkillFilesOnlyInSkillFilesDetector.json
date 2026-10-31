@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(\\.claude/skills|\\.agents/skills|SKILL\\.md)"
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/support/skill_files\\.py$"
+            },
+            {
+                "is": "expression-statement",
+                "of": "parent"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "skill-path-outside-skill-files",
+        "description": "A program's skill folder or a SKILL.md path is written outside SkillFiles, so two places decide where a skill lives.",
+        "rule": "Ask SkillFiles for a skill's path; only support/skill_files.py names the program folders and the file.",
+        "skill": "plain-code-words"
+    }
+}

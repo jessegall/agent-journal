@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["findall", "finditer", "fullmatch", "compile", "search"]
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/skills/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "keyword-matched-in-skills",
+        "description": "The skills module splits or matches words itself, so keyword matching is written twice.",
+        "rule": "Take the words of a text from text_keywords or hook_keywords in core.base.driver.hook_keywords, which memories use too.",
+        "skill": "plain-code-words"
+    }
+}

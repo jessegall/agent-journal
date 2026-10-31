@@ -5,7 +5,10 @@ from core.base.driver.hook_event import HookEvent
 WORD = re.compile(r"[a-z0-9][a-z0-9-]{1,39}")
 
 
+def text_keywords(text: str) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(WORD.findall(text.lower())))
+
+
 def hook_keywords(event: HookEvent) -> tuple[str, ...]:
     tool = event.tool
-    texts = [event.prompt or "", *(tool.files if tool is not None else ()), tool.shell.line if tool is not None and tool.shell is not None else ""]
-    return tuple(dict.fromkeys(WORD.findall(" ".join(texts).lower())))
+    return text_keywords(" ".join([event.prompt or "", *(tool.files if tool is not None else ()), tool.shell.line if tool is not None and tool.shell is not None else ""]))

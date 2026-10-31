@@ -9,7 +9,7 @@ from core.modules.skills.models.agent_skill import AgentSkill
 from core.modules.skills.rules.skill_read_first_rule import SkillReadFirstRule
 from core.modules.skills.rules.command_skill_rule import CommandSkillRule
 from core.modules.skills.rules.unread_skill_stop_rule import UnreadSkillStopRule
-from core.modules.skills.rules.keyword_skills_rule import KeywordSkillsRule
+from core.modules.skills.listeners.keyword_skills_listener import KeywordSkillsListener
 from core.modules.skills.listeners.skill_loaded_mark_listener import SkillLoadedMarkListener
 from core.modules.skills.support.skill_marks import SKILL_MARKS
 from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
@@ -37,8 +37,8 @@ class SkillsModule(Module):
     migrations = [SkillsTablesMigration]
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler]
-    listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener]
+    listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener]
     marks = SKILL_MARKS
-    driver_rules = [KeywordSkillsRule, SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
+    driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
                                  reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
