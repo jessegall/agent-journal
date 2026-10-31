@@ -150,3 +150,11 @@ class ChangedModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     marks = [mark(Renamed.NOTE)]
+
+
+class NewerKitModule(Module):
+    name = "good"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    marks = [mark(Plain.NOTE, kit=">=2,<3")]
+    docks = [DockDeclaration(Plain.NOTE, "words", "Note", "note.js", kit=">=2,<3")]

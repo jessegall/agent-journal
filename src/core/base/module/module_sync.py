@@ -117,7 +117,7 @@ class ModuleSync:
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
         shipped = set(self.finder.default_modules())
         return tuple(WindowEntry(window.name, module.name, window.title, window.entry, window.loading.value, window.place.value, tuple(window.roles),
-                                 tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window), window.icon.value,
+                                 tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window.kit), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count)
                      for module in modules for window in module.windows)
 
@@ -126,13 +126,13 @@ class ModuleSync:
         return tuple(MarkEntry(mark.type.value, module.name, mark.family.name, mark.family.title, mark.family.icon, mark.family.group.value, mark.family.colouring.value,
                                tuple(variant.value for variant in mark.variants), mark.label, mark.mark_icon, mark.click.value, mark.grouping.value, mark.group_label,
                                tuple(button.listed() for button in mark.group_buttons), tuple(button.listed() for button in mark.buttons), mark.body, mark.shown, mark.main,
-                               mark.process, module in shipped, "")
+                               mark.process, module in shipped, unavailable_reason(mark.kit))
                      for module in modules for mark in module.marks)
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())
         return tuple(DockEntry(dock.type.value, module.name, dock.icon, dock.title, dock.body, tuple(button.listed() for button in dock.buttons), dock.most,
-                               dock.leaves_after_seconds, tuple(dock.reads), module in shipped, "")
+                               dock.leaves_after_seconds, tuple(dock.reads), module in shipped, unavailable_reason(dock.kit))
                      for module in modules for dock in module.docks)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:

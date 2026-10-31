@@ -9,7 +9,6 @@ from core.base.module.version_requirement import VersionRequirement
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.registry_lines import RegistryLines
-from core.base.viewer.window_declaration import WindowDeclaration
 
 
 
@@ -42,7 +41,7 @@ class WindowCheck:
         return reads, runs
 
 
-def unavailable_reason(window: WindowDeclaration) -> str:
-    if VersionRequirement(window.kit).allows(VIEWER_KIT):
+def unavailable_reason(kit: str) -> str:
+    if VersionRequirement(kit).allows(VIEWER_KIT):
         return ""
-    return f"built for window kit {window.kit}; this viewer has kit {VIEWER_KIT[0]}"
+    return f"built for window kit {kit}; this viewer has kit {VIEWER_KIT[0]}"

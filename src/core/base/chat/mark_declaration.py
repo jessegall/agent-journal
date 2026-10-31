@@ -15,7 +15,7 @@ GROUP_LABEL_FIELDS = ("family", "type", "count")
 class MarkDeclaration:
     """A type of chat mark a module adds: its type and variants as members of the module's own enums, its family, the
     words Show in chat lists it under, what a click on it and on its group does, its buttons, and the file of its own
-    body if it has one."""
+    body if it has one, and the viewer kit versions it was built for."""
 
     type: StrEnum
     variants: type[StrEnum]
@@ -31,6 +31,7 @@ class MarkDeclaration:
     shown: bool = True
     main: bool = True
     process: bool = False
+    kit: str = ">=1,<2"
 
     def problems(self) -> list[str]:
         fields = [field for _, field, _, _ in Formatter().parse(self.group_label) if field is not None]
