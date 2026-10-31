@@ -14,7 +14,7 @@ class RuleAnswer:
     commands: Sequence[Command[object]] = ()
     last: bool = False
     ends_layer: bool = False
-    updated_input: Mapping[str, object] = field(default_factory=dict)
+    updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
     input_after_commands: Callable[[Sequence[object]], Mapping[str, object]] | None = None
 
     @classmethod

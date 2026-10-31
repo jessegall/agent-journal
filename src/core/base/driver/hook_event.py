@@ -58,5 +58,4 @@ class HookEvent:
                    text(fields, "launch"))
 
     def tool_input(self) -> Mapping[object, object]:
-        value = self.raw.get("tool_input")
-        return value if isinstance(value, Mapping) else {}
+        return mapping(self.raw.get("tool_input", {}), "tool_input")

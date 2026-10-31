@@ -13,7 +13,7 @@ class HookReply:
     refusal: str = ""
     lines: Sequence[str] = ()
     hook_call_id: int | None = None
-    updated_input: Mapping[str, object] = field(default_factory=dict)
+    updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
 
     @classmethod
     def allowed(cls, *lines: str) -> "HookReply":

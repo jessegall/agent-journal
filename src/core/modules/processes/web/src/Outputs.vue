@@ -2,7 +2,7 @@
 import {RowList, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
-const {rows, failure} = useRows("process list", ["process.*", "output.*"]);
+const {rows, failure, loaded} = useRows("process list", ["process.*", "output.*"]);
 
 const isRunning = (row) => row.state === "running" || row.state === "background";
 const stop = (row) => context.run(`output stop ${row.id}`);
@@ -10,7 +10,7 @@ const watch = (row) => context.run(`output watch ${row.id}`);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" empty="No commands yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No commands yet">
         <template #default="{row}">
             <div class="run">
                 <span :class="['state', row.state]">{{ row.state }}</span>
