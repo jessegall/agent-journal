@@ -1,5 +1,6 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.chat.chat_marks import CHAT_MARKS
 from core.modules.chat.commands.show_mark_handler import ShowMarkHandler
 from core.modules.chat.guards.declared_type_guard import DeclaredTypeGuard
 from core.modules.chat.migrations.m001_chat_marks import ChatMarksTableMigration
@@ -17,3 +18,4 @@ class ChatModule(Module):
     migrations = [ChatMarksTableMigration]
     handlers = (ShowMarkHandler,)
     guards = [DeclaredTypeGuard]
+    marks = CHAT_MARKS
