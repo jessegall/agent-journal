@@ -5,7 +5,7 @@ import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {leaves} from "../src/domain/panes.js";
 
-const TITLES = {"a.chat": "Chat", "a.tasks": "Tasks", "a.notes": "Notes", "a.spare": "Spare"};
+const TITLES = {"a.chat": "Chat", "a.tasks": "Tasks", "a.notes": "Notes", "a.spare": "Spare", "messages.chat": "Chat"};
 const fake = (name) => ({name, title: TITLES[name], icon: "window", options: [], line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true});
 const SHAPE = {
     dir: "row",
