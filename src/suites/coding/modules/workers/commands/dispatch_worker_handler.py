@@ -18,10 +18,10 @@ from core.modules.settings.setting_values import SettingValues
 from core.modules.tasks.task import Task
 from core.modules.tasks.task_start import TaskStart
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.library_folders import LibraryFolders
+from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.worktree_commands import WorktreeCommands
-from suites.coding.modules.workers.worktree_git import WorktreeGit
+from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
+from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
 
 WORKER_PROGRAM = "claude"
 LIBRARY_LINKS = "workers.library-links"

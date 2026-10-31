@@ -5,7 +5,7 @@ from pathlib import Path
 
 from core.base.refusal import Refusal
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.worktree_git import WorktreeGit
+from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
 
 COPY_LIMIT_SECONDS = 300
 MAC_COPY = ("cp", "-cR")

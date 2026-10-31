@@ -43,5 +43,8 @@ class Task(Model):
     def cancel(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
         return self.moved(TaskLifecycle.cancel, reason=reason, closed_at=timestamp, holder_id=None)
 
+    def release(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
+        return self.moved(TaskLifecycle.release, reason=reason, holder_id=None)
+
     def reopen(self, timestamp: Timestamp, actor: Actor) -> "Task":
         return self.moved(TaskLifecycle.reopen, closed_at=None, outcome="", reason="")

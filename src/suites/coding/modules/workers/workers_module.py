@@ -2,15 +2,17 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
+from suites.coding.modules.workers.commands.release_worker_handler import ReleaseWorkerHandler
+from suites.coding.modules.workers.commands.release_worker_subcommand import ReleaseWorkerSubcommand
 from suites.coding.modules.workers.guards.dispatch_branch_guard import DispatchBranchGuard
 from suites.coding.modules.workers.guards.dispatch_worker_guard import DispatchWorkerGuard
 from suites.coding.modules.workers.migrations.m001_workers import WorkersTablesMigration
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.proof_query import ProofQuery
+from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.commands.short_proof import ShortProof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
-from suites.coding.modules.workers.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
 
@@ -24,6 +26,6 @@ class WorkersModule(Module):
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"])]
     migrations = [WorkersTablesMigration]
-    handlers = [DispatchWorkerHandler]
-    subcommands = [DispatchWorkerSubcommand]
+    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler]
+    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard]

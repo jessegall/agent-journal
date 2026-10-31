@@ -1,0 +1,28 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.subcommand.caller import Caller
+from core.base.subcommand.output import Output
+from core.base.subcommand.subcommand import Subcommand
+from suites.coding.modules.workers.commands.release_worker import ReleaseWorker
+from suites.coding.modules.workers.commands.worker_release import WorkerRelease
+
+
+class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, WorkerRelease]):
+    """`journal worker release <worker> "<why>"`: the worker's task goes back to open and its worktree is removed."""
+
+    cli_name = "worker"
+    name = "release"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("worker_id", type=int)
+        parser.add_argument("reason")
+
+    def command(self, arguments: Namespace, caller: Caller) -> ReleaseWorker:
+        return ReleaseWorker(arguments.worker_id, arguments.reason)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if not isinstance(value, WorkerRelease):
+            return
+        output.row(value.worktree)
+        if value.unmerged_branch:
+            output.line(f"branch {value.unmerged_branch} is kept for its commits")

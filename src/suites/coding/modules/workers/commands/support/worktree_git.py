@@ -23,11 +23,15 @@ class WorktreeGit:
     def exclude_file(self, worktree: Worktree) -> Path:
         return Path(worktree.folder) / self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-path", "info/exclude").stdout.strip()
 
-    def remove(self, folder: str, worktree: Worktree) -> None:
+    def remove(self, folder: str, worktree: Worktree) -> bool:
         if Path(worktree.folder).exists():
             self.git(folder, GIT_LIMIT_SECONDS, "worktree", "remove", "--force", worktree.folder)
         self.git(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
+        unmerged = self.git(folder, GIT_LIMIT_SECONDS, "rev-list", "--count", f"refs/heads/{worktree.base_branch}..refs/heads/{worktree.branch}")
+        if unmerged.returncode == 0 and unmerged.stdout.strip() != "0":
+            return True
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
+        return False
 
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         finished = self.git(folder, limit_seconds, *arguments)
