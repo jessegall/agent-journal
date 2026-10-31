@@ -1,6 +1,7 @@
 from core.base.database.migration import Migration
 from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.core_actor_row_migration import CoreActorRowMigration
+from core.base.database.version_four_map_migration import VersionFourMapMigration
 
 CORE_MODULE = "core"
 
@@ -30,4 +31,4 @@ class CoreTablesMigration(Migration):
     )
 
 
-CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, [CoreTablesMigration(), CoreActorRowMigration()])
+CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, [CoreTablesMigration(), CoreActorRowMigration(), VersionFourMapMigration()])

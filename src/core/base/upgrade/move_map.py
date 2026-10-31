@@ -25,3 +25,9 @@ class MoveMap:
 
     def count(self) -> int:
         return self.table.count()
+
+    def finish(self, module: str, move: str, counts: dict[str, dict[str, int]]) -> None:
+        self.table.finish(module, move, counts)
+
+    def finished(self, module: str, move: str) -> dict[str, dict[str, int]] | None:
+        return self.table.finished(module, move)
