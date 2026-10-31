@@ -2,7 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.type_guards import is_mapping
-from server.hook.hook_event import HookEvent, HookEventError, Tool, mapping, text
+from core.base.driver.hook_event import HookEvent, HookEventError, Tool, mapping, text
 
 RAW_BODY_VERSION = 0
 EVENT_NAMES = {"PreToolUse": "pre_tool_use", "PostToolUse": "post_tool_use", "PostToolUseFailure": "post_tool_use_failure",

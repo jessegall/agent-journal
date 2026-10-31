@@ -12,7 +12,7 @@ from core.base.timing_log import TimingLog
 from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
-from server.hook.hook_event import HookEventError
+from core.base.driver.hook_event import HookEventError
 from server.journal_server import JournalServer
 from server.listener_thread import ListenerWake
 from server.peer_pid import peer_pid
