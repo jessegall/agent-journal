@@ -5,37 +5,18 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
-func TestTheAnswerIsPrintedAsHookShPrintsIt(t *testing.T) {
+func TestAnUnansweredClaudeToolUseIsToldTheJournalDidNotAnswerAndAStopGoesOnWithoutALine(t *testing.T) {
 	root := project(t, "8431")
-	missed := `{"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": "[journal] The journal did not answer within 5 seconds, so this went through unchecked. Investigate now: curl -s http://127.0.0.1:8431/journal/health should answer 200, and runtime/server.log in .journal says why it does not."}}` + "\n"
-	cases := []struct {
-		name    string
-		program string
-		event   string
-		status  int
-		answer  string
-		stdout  string
-		stderr  string
-		code    int
-	}{
-		{"claude allowed", "claude", "pre_tool_use", 200, `{"hookSpecificOutput": {"permissionDecision": "allow"}}`, `{"hookSpecificOutput": {"permissionDecision": "allow"}}`, "", 0},
-		{"codex allowed", "codex", "pre_tool_use", 200, `{}`, `{}`, "", 0},
-		{"claude blocked with its own answer", "claude", "pre_tool_use", 409, `{"answer": {"hookSpecificOutput": {"permissionDecision": "deny"}}, "error": "no"}`, `{"hookSpecificOutput": {"permissionDecision": "deny"}}`, "", 0},
-		{"codex blocked with its own answer", "codex", "prompt", 409, `{"answer": {"decision": "block"}, "error": "no"}`, `{"decision": "block"}`, "", 0},
-		{"claude blocked with a reason", "claude", "stop", 409, `{"error": "finish the task first\nthen stop"}`, "", "finish the task first\nthen stop", 2},
-		{"codex blocked with a reason", "codex", "pre_tool_use", 409, `{"error": "not this one"}`, "", "not this one", 2},
-		{"claude told the journal did not answer", "claude", "pre_tool_use", 0, "", missed, "", 0},
-		{"claude stop goes on without a line", "claude", "stop", 0, "", "", "", 0},
-		{"codex goes on without a line", "codex", "pre_tool_use", 0, "", "", "", 0},
-	}
-	for _, sample := range cases {
-		var stdout, stderr strings.Builder
-		code := ExitCode(&stdout, &stderr, sample.program, sample.event, sample.status, []byte(sample.answer), root, LimitFor(sample.event))
-		if code != sample.code || stdout.String() != sample.stdout || stderr.String() != sample.stderr {
-			t.Errorf("%s: exit %d\n stdout %q\n stderr %q", sample.name, code, stdout.String(), stderr.String())
-		}
+	claude := programs.LoadTable("").Programs["claude"]
+	var lineAnswer, stopAnswer strings.Builder
+	Answered(&lineAnswer, &strings.Builder{}, claude, "PreToolUse", "pre_tool_use", 0, nil, root, 5*time.Second)
+	Answered(&stopAnswer, &strings.Builder{}, claude, "Stop", "stop", 0, nil, root, 5*time.Second)
+	if !strings.Contains(lineAnswer.String(), "did not answer within 5 seconds") || !strings.Contains(lineAnswer.String(), "127.0.0.1:8431") || stopAnswer.String() != "" {
+		t.Errorf("printed %q and %q", lineAnswer.String(), stopAnswer.String())
 	}
 }
 
@@ -43,8 +24,48 @@ func TestTheJournalsOwnRepositoryIsAskedForThePanicWatch(t *testing.T) {
 	root := project(t, "8431")
 	writeFile(t, filepath.Join(root, "src", "journal", "hooks", "hook.sh"), "#!/bin/sh\n")
 	var stdout strings.Builder
-	ExitCode(&stdout, &strings.Builder{}, "claude", "prompt", 0, nil, root, 8*time.Second)
-	if !strings.Contains(stdout.String(), `"hookEventName": "UserPromptSubmit"`) || !strings.Contains(stdout.String(), "within 8 seconds") || !strings.Contains(stdout.String(), "start the panic watch") {
+	Answered(&stdout, &strings.Builder{}, programs.LoadTable("").Programs["claude"], "UserPromptSubmit", "prompt", 0, nil, root, 8*time.Second)
+	if !strings.Contains(stdout.String(), `"hookEventName":"UserPromptSubmit"`) || !strings.Contains(stdout.String(), "within 8 seconds") || !strings.Contains(stdout.String(), "start the panic watch") {
 		t.Errorf("printed %s", stdout.String())
+	}
+}
+
+func shippedAnswer(program, hookName, event string, reply Reply) (string, string, int) {
+	return ProgramAnswer(programs.LoadTable("").Programs[program], hookName, event, reply)
+}
+
+func TestARefusedClaudeToolUseIsDeniedInClaudesOwnAnswer(t *testing.T) {
+	stdout, stderr, code := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Refusal: "no git here"})
+	if code != 0 || stderr != "" || !strings.Contains(stdout, `"permissionDecision":"deny"`) || !strings.Contains(stdout, "no git here") {
+		t.Fatalf("printed %q %q %d", stdout, stderr, code)
+	}
+}
+
+func TestARefusedClaudeStopIsBlockedWithItsReason(t *testing.T) {
+	stdout, _, code := shippedAnswer("claude", "Stop", "stop", Reply{Refusal: "task 1 is yours now"})
+	if code != 0 || !strings.Contains(stdout, `"decision":"block"`) || !strings.Contains(stdout, "task 1 is yours now") {
+		t.Fatalf("printed %q %d", stdout, code)
+	}
+}
+
+func TestARefusalWithNoStyleGoesToStderrWithExitCodeTwo(t *testing.T) {
+	stdout, stderr, code := shippedAnswer("codex", "PreToolUse", "pre_tool_use", Reply{Refusal: "no git here"})
+	if code != 2 || stdout != "" || stderr != "no git here" {
+		t.Fatalf("printed %q %q %d", stdout, stderr, code)
+	}
+}
+
+func TestLinesRideOnAnEventThatTakesThemAndAreDroppedElsewhere(t *testing.T) {
+	lineEventAnswer, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Lines: []string{"log your task"}})
+	otherEventAnswer, _, _ := shippedAnswer("claude", "SessionEnd", "session_end", Reply{Lines: []string{"log your task"}})
+	if !strings.Contains(lineEventAnswer, `"additionalContext":"log your task"`) || otherEventAnswer != "" {
+		t.Fatalf("printed %q and %q", lineEventAnswer, otherEventAnswer)
+	}
+}
+
+func TestAnUnansweredCodexHookTellsTheAgentToo(t *testing.T) {
+	stdout, _, code := shippedAnswer("codex", "SessionStart", "session_start", Reply{Lines: []string{missedLine(t.TempDir(), 3*time.Second)}})
+	if code != 0 || !strings.Contains(stdout, "did not answer within 3 seconds") {
+		t.Fatalf("printed %q %d", stdout, code)
 	}
 }

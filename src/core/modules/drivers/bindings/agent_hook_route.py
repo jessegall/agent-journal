@@ -35,7 +35,7 @@ class AgentHookRoute(HookRoute):
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session)
-        if main is None and event.event == HookEventName.SESSION_START:
+        if main is None and event.event == HookEventName.SESSION_START and not event.subagent:
             main = self.started(event, event.session, AgentRole.MAIN, None)
         if main is None or not event.subagent:
             return main

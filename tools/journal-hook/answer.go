@@ -1,57 +1,70 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
-var (
-	// a refusal that carries the agent's own answer, a Claude tool call denied or a prompt blocked
-	answered   = regexp.MustCompile(`^\{"answer": `)
-	ownAnswer  = regexp.MustCompile(`^\{"answer": (.*), "error": ".*$`)
-	errorStart = regexp.MustCompile(`^\{"error": *"`)
-	errorEnd   = regexp.MustCompile(`"\}$`)
-)
+// Reply is the server's HookReply: a refusal's reason, or the lines for the agent.
+type Reply struct {
+	Refusal string   `json:"refusal"`
+	Lines   []string `json:"lines"`
+}
 
-// The Claude hooks whose answer takes a line for the agent, which is told at once when the journal did not answer.
-var noticedEvents = map[string]string{"pre_tool_use": "PreToolUse", "post_tool_use": "PostToolUse", "prompt": "UserPromptSubmit", "session_start": "SessionStart"}
-
-// ExitCode writes the journal's answer for the agent program as hook.sh does and gives the exit code: 200 prints the
-// answer, which is JSON in the agent's own hook shape; 409 is a refusal, printed as it is when it starts with the
-// agent's own answer, else its error is the reason, on stderr, and exit 2 tells the agent to stop; anything else went
-// around the journal, and a Claude hook that takes a line is told so at once.
-func ExitCode(stdout, stderr io.Writer, program, eventName string, status int, answer []byte, root string, limit time.Duration) int {
-	switch status {
-	case http.StatusOK:
-		stdout.Write(answer)
-		return 0
-	case http.StatusConflict:
-		lines := strings.Split(string(answer), "\n")
-		if anyLine(lines, answered) {
-			for index, line := range lines {
-				lines[index] = ownAnswer.ReplaceAllString(line, "$1")
-			}
-			io.WriteString(stdout, strings.Join(lines, "\n"))
-			return 0
-		}
-		for index, line := range lines {
-			lines[index] = strings.ReplaceAll(errorEnd.ReplaceAllString(errorStart.ReplaceAllString(line, ""), ""), `\n`, "\n")
-		}
-		io.WriteString(stderr, strings.Join(lines, "\n"))
-		return 2
-	}
-	hookEventName, listed := noticedEvents[eventName]
-	if program != "claude" || !listed {
+// Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
+// answer goes through, and the agent is lineAnswer so on an event whose answer takes lines.
+func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration) int {
+	reply := Reply{Lines: []string{missedLine(root, limit)}}
+	if status == http.StatusOK && json.Unmarshal(answer, &reply) != nil {
 		return 0
 	}
-	fmt.Fprintf(stdout, "{\"hookSpecificOutput\": {\"hookEventName\": \"%s\", \"additionalContext\": \"%s\"}}\n", hookEventName, missedLine(root, limit))
-	return 0
+	stdoutText, stderrText, code := ProgramAnswer(program, hookName, event, reply)
+	io.WriteString(stdout, stdoutText)
+	io.WriteString(stderr, stderrText)
+	return code
+}
+
+// ProgramAnswer is the reply in the program's own answer: what goes to stdout and to stderr, and the exit code. hookName is the
+// name the program gave the hook, which its answer repeats.
+func ProgramAnswer(program programs.Program, hookName, event string, reply Reply) (string, string, int) {
+	lines := strings.Join(reply.Lines, "\n")
+	if reply.Refusal != "" {
+		return refused(program.Refusals[event], hookName, joined(reply.Refusal, lines))
+	}
+	if lines == "" || !program.AcceptsLines(event) {
+		return "", "", 0
+	}
+	return jsonText(map[string]any{"hookSpecificOutput": map[string]any{"hookEventName": hookName, "additionalContext": lines}}), "", 0
+}
+
+func refused(style, hookName, reason string) (string, string, int) {
+	switch style {
+	case "deny":
+		return jsonText(map[string]any{"hookSpecificOutput": map[string]any{"hookEventName": hookName, "permissionDecision": "deny", "permissionDecisionReason": reason}}), "", 0
+	case "block":
+		return jsonText(map[string]any{"decision": "block", "reason": reason}), "", 0
+	}
+	return "", reason, 2
+}
+
+func joined(first, second string) string {
+	if second == "" {
+		return first
+	}
+	return first + "\n" + second
+}
+
+func jsonText(value any) string {
+	text, _ := json.Marshal(value)
+	return string(text) + "\n"
 }
 
 // missedLine is the line hook.sh gives an agent whose hook went around the journal, with the panic watch asked for in
@@ -63,14 +76,4 @@ func missedLine(root string, limit time.Duration) string {
 		line += " This is the journal's own repository: start the panic watch, a CronCreate job every 15 minutes that checks the health, restarts the journal with journal setup restart when it does not answer, and tells the user in one line."
 	}
 	return line
-}
-
-func anyLine(lines []string, pattern *regexp.Regexp) bool {
-	for _, line := range lines {
-		if !pattern.MatchString(line) {
-			continue
-		}
-		return true
-	}
-	return false
 }

@@ -1,22 +1,17 @@
 import sys
 from pathlib import Path
 
-from install.program_hooks import ProgramHooks
-
-CLAUDE_EVENTS = ["SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "PreCompact", "Stop", "StopFailure",
-                 "SubagentStart", "SubagentStop", "SessionEnd"]
-CODEX_EVENTS = ["SessionStart", "Stop", "UserPromptSubmit", "PreToolUse", "PostToolUse", "SessionEnd", "PreCompact", "SubagentStart", "SubagentStop"]
-HOOK_TIMEOUT_SECONDS = 60
-CODEX_ENTRY_FIELDS = {"additionalContextLimit": 0}
+from core.base.provider.program_hooks import ProgramHooks
+from core.modules import DEFAULT_MODULES
 
 
 class HookWriter:
-    """Writes the hooks of both agent programs into a project, each calling the given hook runner."""
+    """Writes the hooks of every agent program the journal ships into a project, each calling the given hook
+    runner."""
 
     def __init__(self, root: Path) -> None:
         self.root = root
-        self.programs = [ProgramHooks("claude", root / ".claude" / "settings.local.json", CLAUDE_EVENTS, HOOK_TIMEOUT_SECONDS),
-                         ProgramHooks("codex", root / ".codex" / "hooks.json", CODEX_EVENTS, HOOK_TIMEOUT_SECONDS, CODEX_ENTRY_FIELDS)]
+        self.programs = [ProgramHooks.hooks(provider, root) for module in DEFAULT_MODULES for provider in module.providers]
 
     def write(self, runner: str) -> None:
         for program in self.programs:

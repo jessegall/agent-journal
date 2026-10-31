@@ -141,7 +141,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def answer_hook(self, body: bytes, program: str) -> None:
         try:
             endpoint = HookEndpoint(self.timing, self.journal_server().context)
-            reply = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
+            reply = endpoint.answer(json.loads(body or b"{}"), program, dict(self.headers.items()))
         except (HookEventError, UnknownProgramError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return

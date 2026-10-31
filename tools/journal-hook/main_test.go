@@ -27,7 +27,7 @@ func TestTheBuiltBinaryRunsARecordedBody(t *testing.T) {
 	root := project(t, "")
 
 	stdout, code := run(t, binary, root, body, "AGENT_JOURNAL_ACTIVE=1", "JOURNAL_ENV=scratch")
-	if code != 0 || !strings.Contains(stdout, `"hookEventName": "PreToolUse"`) || !strings.Contains(stdout, "did not answer within 5 seconds") {
+	if code != 0 || !strings.Contains(stdout, `"hookEventName":"PreToolUse"`) || !strings.Contains(stdout, "did not answer within 5 seconds") {
 		t.Errorf("exit %d, printed %q", code, stdout)
 	}
 	if read(t, filepath.Join(root, ".journal", "runtime", "bypass.log")) == "" || read(t, filepath.Join(root, ".journal", "runtime", "hooks", "scratch.fired")) == "" {

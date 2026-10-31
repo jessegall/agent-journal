@@ -26,27 +26,22 @@ class HookEndpoint:
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
 
-    def event(self, data: object, program: str, headers: Mapping[str, str]) -> HookEvent:
-        event = RawHookBody.parsed(data).event(program, HookHeaders.parsed(headers)) if is_raw_body(data) else HookEvent.parsed(data)
-        self.timing.stamp("hook_read")
-        return event
-
-    def answer(self, event: HookEvent) -> HookReply:
+    def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         try:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
-                return self.routed_answer(event, database)
+                return self.routed_answer(data, program, headers, database)
         except HookDatabaseBusyError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
         finally:
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
 
-    def routed_answer(self, event: HookEvent, database: Database) -> HookReply:
+    def routed_answer(self, data: object, program: str, headers: Mapping[str, str], database: Database) -> HookReply:
         try:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
-        container.get(Providers).provider(event.program)
+        event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
         try:
             return container.get(HookRoute).answer(event)
@@ -56,6 +51,15 @@ class HookEndpoint:
             return self.failure(error)
         except Exception as error:
             return self.failure(error)
+
+    def event(self, data: object, program: str, headers: Mapping[str, str], providers: Providers) -> HookEvent:
+        if is_raw_body(data):
+            event = RawHookBody.parsed(data).event(program, providers.provider(program).hook_events, HookHeaders.parsed(headers))
+        else:
+            event = HookEvent.parsed(data)
+            providers.provider(event.program)
+        self.timing.stamp("hook_read")
+        return event
 
     def failure(self, error: Exception) -> HookReply:
         self.context.files.log_line("".join(traceback.format_exception(error)))

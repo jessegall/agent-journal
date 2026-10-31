@@ -12,6 +12,8 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
+from core.base.provider.program_hooks import ProgramHooks
+from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
@@ -88,11 +90,13 @@ class CodexProvider(Provider):
         return rows
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
+        ProgramHooks.hooks(type(self), folder).write(runner, root)
         self.trust_record().copied(root.resolve() / self.hook_file.path, folder.resolve() / self.hook_file.path)
 
     def hook_trust(self, project: Path) -> HookTrust:
-        hook_file = project.resolve() / self.hook_file.path
-        return self.trust_record().trust(hook_file, list(self.hook_events)) if hook_file.is_file() else HookTrust.UNWRITTEN
+        if not ProgramHooks.hooks(type(self), project).is_complete():
+            return HookTrust.UNWRITTEN
+        return self.trust_record().trust(project.resolve() / self.hook_file.path, list(self.hook_events))
 
     def trust_record(self) -> CodexTrust:
         return CodexTrust(self.folders.folder(HOME_VARIABLE, ".codex") / "config.toml")

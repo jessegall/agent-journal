@@ -12,6 +12,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
+from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
@@ -102,10 +103,11 @@ class ClaudeCodeProvider(Provider):
         return Path(path) if isinstance(path, str) and path else super().transcript_path(event)
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:
+        ProgramHooks.hooks(type(self), folder).write(runner, root)
         ClaudeTrust(self.state_file()).trusted(folder)
 
     def hook_trust(self, project: Path) -> HookTrust:
-        return HookTrust.READY if (project / self.hook_file.path).is_file() else HookTrust.UNWRITTEN
+        return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
 
     def state_file(self) -> Path:
         return self.folders.folder(CONFIG_VARIABLE, "") / ".claude.json"

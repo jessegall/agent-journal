@@ -25,6 +25,7 @@ from core.modules.drivers.commands.hook_call_show_subcommand import HookCallShow
 from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
+from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
 from core.modules.drivers.rules.opening_lines_rule import OpeningLinesRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
 from core.modules.drivers.models.rule_history import RuleHistory
@@ -51,7 +52,7 @@ class DriversModule(Module):
     subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [NewDriverLinesListener]
+    listeners = [NewDriverLinesListener, SubagentStopListener]
     driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]

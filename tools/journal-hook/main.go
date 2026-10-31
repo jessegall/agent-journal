@@ -59,5 +59,14 @@ func main() {
 		limit:       limit,
 		timing:      requestTiming,
 	}, nil, time.Now())
-	os.Exit(ExitCode(os.Stdout, os.Stderr, program, prepared.Event, status, answer, root, limit))
+	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))
+}
+
+// hookName is the name the program gave the hook, which its answer repeats.
+func hookName(body []byte) string {
+	var read struct {
+		HookEventName string `json:"hook_event_name"`
+	}
+	json.Unmarshal(body, &read)
+	return read.HookEventName
 }

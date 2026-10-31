@@ -40,7 +40,7 @@ def test_a_hook_object_of_another_version_is_refused_naming_both_versions(new_st
 
 def test_a_hook_body_the_server_cannot_read_is_refused_with_its_reason(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
-        story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Whatever"}, 400, "hook_event_name", RAW_HEADERS)
+        story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Whatever"}, 400, "claude sends no 'Whatever' hook", RAW_HEADERS)
         story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Stop", "session_id": "s-1"}, 400, "the headers the hook sends")
 
 
