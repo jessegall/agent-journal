@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import os
 import tempfile
 import shlex
+import subprocess
 import socket
 import time
 from contextlib import contextmanager
@@ -54,13 +55,26 @@ class ServerStory:
         self.story, self.socket_path = story, socket_path
 
     def expect_program_answer(self, body: dict[str, object], text: str) -> None:
+        run = self.program_run(body)
+        assert text in run.stdout + run.stderr, f"the hook program printed {run.stdout!r} and {run.stderr!r}, code {run.returncode}"
+
+    def program_decision(self, body: dict[str, object]) -> tuple[object, object]:
+        run = self.program_run(body)
+        reply = json.loads(run.stdout)
+        return reply["refusal"], reply["lines"]
+
+    def raw_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
+        reply = request_answer(self.socket_path, "POST", "/hook?program=claude", body, headers).json()
+        assert isinstance(reply, dict), reply
+        return reply["refusal"], reply["lines"]
+
+    def program_run(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
         scratch = Path(tempfile.mkdtemp())
         program = HookProgram(scratch)
         program.build()
         root = scratch / "project"
         root.mkdir()
-        run = program.sent(self.story.home.folder, root, {**body, "cwd": str(root)})
-        assert text in run.stdout + run.stderr, f"the hook program printed {run.stdout!r} and {run.stderr!r}, code {run.returncode}"
+        return program.sent(self.story.home.folder, root, {**body, "cwd": str(root)})
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")
@@ -221,3 +235,8 @@ def answer_from(raw: bytes) -> ServerAnswer:
             break
         text, remaining = text + remaining[:size], remaining[size + 2:]
     return ServerAnswer(status, text.decode(), exit_code, headers.get(b"journal-code-version", b"").decode())
+
+
+def expect_same_answer(raw: tuple[object, object], prepared: tuple[object, object]) -> None:
+    assert raw == prepared, f"the raw body was answered {raw} and the prepared object {prepared}"
+
