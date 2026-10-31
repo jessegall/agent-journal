@@ -82,3 +82,6 @@ src/web/node_modules/
 runtime/
 src/viewer/node_modules
 src/viewer/tests/sample-window/web/
+
+# code-commandments checklists of sin runs
+/.commandments/sessions/

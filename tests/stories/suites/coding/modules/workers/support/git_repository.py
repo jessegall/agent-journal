@@ -108,6 +108,12 @@ class GitRepository:
         status = self.git("status", "--porcelain", "--untracked-files=all", folder=folder).stdout
         assert ignored and name not in status, f"git sees {name} in {folder}: {status}"
 
+    def expect_root_exclude_unchanged(self) -> None:
+        exclude_file = self.folder / ".git" / "info" / "exclude"
+        text = exclude_file.read_text() if exclude_file.exists() else ""
+        assert "/node_modules" not in text and "/vendor" not in text, f"the root checkout's own info/exclude was changed: {text}"
+        assert self.git("check-ignore", "-q", "--no-index", "node_modules").returncode != 0, "the root checkout now ignores node_modules"
+
     def expect_link(self, worker_id: int, name: str) -> None:
         library = self.worktree_folder(worker_id) / name
         assert library.is_symlink() and library.resolve() == (self.folder / name).resolve(), f"{library} is no link to {self.folder / name}"

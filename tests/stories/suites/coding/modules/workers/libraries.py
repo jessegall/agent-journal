@@ -11,6 +11,7 @@ def test_a_folder_named_to_link_is_a_link_to_the_environments_folder_that_git_ne
     worker_id = dispatched_worker(story, f"{DISPATCH} --library-link node_modules").id
     repository.expect_link(worker_id, "node_modules")
     repository.expect_excluded(worker_id, "node_modules")
+    repository.expect_root_exclude_unchanged()
 
 
 def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_never_sees(new_story):
@@ -21,6 +22,7 @@ def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_neve
     worker_id = dispatched_worker(story).id
     repository.expect_copy(worker_id, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
     repository.expect_excluded(worker_id, "vendor")
+    repository.expect_root_exclude_unchanged()
 
 
 def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refused_and_makes_nothing(new_story):

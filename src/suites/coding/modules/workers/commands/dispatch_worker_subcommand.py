@@ -8,10 +8,10 @@ import stat
 from core.base.journal_home import LAUNCHER_SOCKET, JournalHome
 from core.base.subcommand.output import Output
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.commands.worker_dispatch import WorkerDispatch
+from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 
 
-class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerDispatch]):
+class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
     """`journal worker dispatch <task> [--library-link <folder>] [--library-copy <folder>]`: a worker for the task."""
 
     cli_name = "worker"
@@ -29,7 +29,7 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerDispatch]):
         return DispatchWorker(arguments.task_id, tuple(arguments.library_link), tuple(arguments.library_copy))
 
     def write_output(self, value: object, output: Output) -> None:
-        if not isinstance(value, WorkerDispatch):
+        if not isinstance(value, WorkerLaunch):
             return
         output.row(value.worker)
         if not self.launcher_runs():

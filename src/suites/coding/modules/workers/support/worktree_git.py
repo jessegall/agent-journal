@@ -6,6 +6,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
+WORKTREE_EXCLUDE_FILE = "journal-exclude"
 
 
 class WorktreeGit:
@@ -49,7 +50,11 @@ class WorktreeGit:
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
     def exclude_file(self, worktree: Worktree) -> Path:
-        return Path(worktree.folder) / self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-path", "info/exclude").stdout.strip()
+        git_folder = Path(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
+        exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
+        return exclude_file
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
         if Path(worktree.folder).exists():

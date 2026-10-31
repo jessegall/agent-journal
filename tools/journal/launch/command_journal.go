@@ -148,3 +148,14 @@ func ProgramArguments(program string, choice Choice) []string {
 	}
 	return arguments
 }
+
+// HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.
+func HookTrustLine(trust string) string {
+	switch trust {
+	case "untrusted":
+		return "Codex does not trust the journal's hooks in this folder yet, so they will not run: trust them in Codex's Hooks need review menu, or with /hooks inside codex"
+	case "changed":
+		return "the journal's Codex hooks changed since you trusted them, so they will not run: trust them again in Codex's Hooks need review menu, or with /hooks inside codex"
+	}
+	return ""
+}

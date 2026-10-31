@@ -94,13 +94,16 @@ def test_a_merge_after_the_environments_branch_changed_is_refused(new_story):
     story.expect_success(lines.TASK_DETAILS, "state: testing")
 
 
-def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_changed_is_refused_naming_them(new_story):
+def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_changed_is_refused_naming_them_before_any_rebase(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
+    worker_tip = repository.tip(repository.worker_branch(worker.id))
     repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("tax.py", "TAX = 21\n", "The tax")
     repository.uncommitted("cart.py", "TOTAL = 5\n")
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", "the checkout of environment main has uncommitted changes to cart.py", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: testing")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+    repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)

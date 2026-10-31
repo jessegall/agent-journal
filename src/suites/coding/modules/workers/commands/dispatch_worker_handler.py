@@ -19,7 +19,7 @@ from core.modules.tasks.models.task import Task
 from core.modules.tasks.commands.start_task import StartTask
 from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
-from suites.coding.modules.workers.commands.worker_dispatch import WorkerDispatch
+from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -33,7 +33,7 @@ WORKTREE_COMMANDS = "workers.worktree-commands"
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
-class DispatchWorkerHandler(Handler[DispatchWorker, WorkerDispatch]):
+class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
     """Starts a worker: its agent row, a worktree cut from the environment's branch, its task; a failure undoes it."""
 
     command = DispatchWorker
@@ -43,7 +43,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerDispatch]):
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
         self.git, self.libraries, self.commands, self.worker_command = git, libraries, commands, worker_command
 
-    def handle(self, command: DispatchWorker, context: Context) -> WorkerDispatch:
+    def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         task = self.queries.query(Task).find(command.task_id)
         if task.state is not TaskState.OPEN:
             raise Refusal(f"task {task.id} is {task.state.value}", "a worker is dispatched to an open task")
@@ -70,4 +70,4 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerDispatch]):
         except Refusal:
             self.git.remove(environment.folder, worktree)
             raise
-        return WorkerDispatch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))
+        return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))

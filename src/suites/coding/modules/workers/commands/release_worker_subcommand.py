@@ -4,10 +4,10 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.release_worker import ReleaseWorker
-from suites.coding.modules.workers.commands.worker_release import WorkerRelease
+from suites.coding.modules.workers.support.release_outcome import ReleaseOutcome
 
 
-class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, WorkerRelease]):
+class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, ReleaseOutcome]):
     """`journal worker release <worker> "<why>"`: the worker's task goes back to open and its worktree is removed."""
 
     cli_name = "worker"
@@ -21,7 +21,7 @@ class ReleaseWorkerSubcommand(Subcommand[ReleaseWorker, WorkerRelease]):
         return ReleaseWorker(arguments.worker_id, arguments.reason)
 
     def write_output(self, value: object, output: Output) -> None:
-        if not isinstance(value, WorkerRelease):
+        if not isinstance(value, ReleaseOutcome):
             return
         output.row(value.worktree)
         if value.unmerged_branch:

@@ -23,8 +23,14 @@ class FakeLauncher:
         with connection, connection.makefile("r") as stream:
             self.requests.append(json.loads(stream.readline()))
 
-    def expect_worker(self, worker_id: int, folder: Path) -> None:
+    def expect_worker(self, worker_id: int, session: str, folder: Path) -> None:
         self.thread.join(ACCEPT_TIMEOUT_SECONDS)
         self.server.close()
-        assert self.requests and self.requests[0].get("agent_id") == worker_id and self.requests[0].get("folder") == str(folder), \
-            f"the launcher was handed {self.requests}, not worker {worker_id} in {folder}"
+        assert self.requests, f"the launcher was handed nothing for worker {worker_id}"
+        request = self.requests[0]
+        expected = {"agent_id": worker_id, "session": session, "folder": str(folder)}
+        assert {key: request.get(key) for key in expected} == expected, f"the launcher was handed {request}, not {expected}"
+        command, variables = request.get("command"), request.get("variables")
+        assert isinstance(command, list) and session in command, f"the worker's program would not start under its session {session}: {command}"
+        assert isinstance(variables, dict) and variables.get("JOURNAL_ENV") == "main" and variables.get("AGENT_JOURNAL_ACTIVE") == "1", \
+            f"the worker's hooks would not reach environment main: {variables}"

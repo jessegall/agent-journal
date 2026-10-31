@@ -33,6 +33,13 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	_ = launch.SaveAnswers(home, choice.Answers)
+	if request.Program == "codex" {
+		if trust, err := journal.Run("codex", "hook-trust", choice.Folder); err == nil {
+			if line := launch.HookTrustLine(strings.TrimSpace(trust)); line != "" {
+				fmt.Fprintln(stderr, line)
+			}
+		}
+	}
 	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{}); err == nil {
 		defer listener.Close()
 	}

@@ -19,3 +19,11 @@ func TestTheCommandJournalReadsEnvironmentsWithTheirSuiteAndWhetherALiveSessionH
 		t.Fatalf("the environments read are %+v, %v", environments, err)
 	}
 }
+
+func TestACodexLaunchNamesTheTrustStepOnlyWhenItsHooksAreUntrustedOrChanged(t *testing.T) {
+	for trust, named := range map[string]bool{"untrusted": true, "changed": true, "ready": false, "unwritten": false} {
+		if line := HookTrustLine(trust); (line != "") != named || (named && !strings.Contains(line, "/hooks")) {
+			t.Fatalf("hook trust %s gave the line %q", trust, line)
+		}
+	}
+}

@@ -38,6 +38,14 @@ def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_the_main_a
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 
+def test_a_main_session_whose_recorded_process_is_gone_is_never_ended_by_the_tick(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_success(f"agent edit {story.agent.id} --pid 700 --process-started-at {PROCESS_START}", "pid: 700")
+    story.use_processes()
+    story.tick(MAIN_SESSION)
+    story.expect_rows("ended_at" not in story.run(f"agent show {story.agent.id}").output_text)
+
+
 def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_next_session_start_names_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

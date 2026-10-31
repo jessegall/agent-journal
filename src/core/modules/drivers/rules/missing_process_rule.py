@@ -11,9 +11,9 @@ from core.base.agent_role import AgentRole
 
 
 class MissingProcessRule(DriverRule):
-    """A tick ends each open agent of the environment whose recorded process is gone; one never seen stays."""
+    """A tick ends each open worker of the environment whose recorded process is gone; one never seen stays."""
 
-    name = "drivers.end_commands-process"
+    name = "drivers.missing-process"
     hook = HookEventName.TICK
     drivers = ["*"]
     roles = [AgentRole.MAIN]
@@ -22,7 +22,7 @@ class MissingProcessRule(DriverRule):
         self.queries, self.processes = queries, processes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        agents = self.queries.query(Agent).filter(environment_id=hook.environment_id).matching(IsNull("ended_at")).all_rows()
+        agents = self.queries.query(Agent).filter(environment_id=hook.environment_id, role=AgentRole.WORKER).matching(IsNull("ended_at")).all_rows()
         recorded = [agent for agent in agents if agent.pid is not None and agent.process_started_at is not None]
         if not recorded:
             return RuleAnswer.allowed()
