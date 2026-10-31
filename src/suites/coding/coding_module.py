@@ -14,6 +14,7 @@ from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorD
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
+from suites.coding.drivers.worker.worker_driver import WorkerDriver
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show"]
 
@@ -27,7 +28,7 @@ class CodingModule(Module):
     dependencies = ["journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
-    drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver]
+    drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration]
     handlers = [RecordFileEditHandler]
