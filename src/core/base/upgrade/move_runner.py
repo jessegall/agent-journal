@@ -56,10 +56,16 @@ class MoveRunner:
         if stored is not None:
             report.moved[entry.module], report.repeated[entry.module] = 0, sum(stored["moved"].values()) + sum(stored["repeated"].values())
             report.dropped[entry.module] = sum(stored["dropped"].values())
+            self.add_dropped(report, stored["dropped"])
             return
         outcome = self.transaction(entry, move, source, moved, context, scope)
         report.moved[entry.module], report.repeated[entry.module] = sum(outcome.moved.values()), sum(outcome.repeated.values())
         report.dropped[entry.module] = sum(outcome.dropped.values())
+        self.add_dropped(report, outcome.dropped)
+
+    def add_dropped(self, report: UpgradeReport, tables: dict[str, int]) -> None:
+        for table, rows in tables.items():
+            report.dropped_tables[table] = report.dropped_tables.get(table, 0) + rows
 
     def transaction(self, entry: MoveEntry, move: VersionFourMove, source: VersionFourSource, moved: MoveMap, context: MoveContext,
                     scope: Callable[[str], AbstractContextManager[None]]) -> MoveReport:

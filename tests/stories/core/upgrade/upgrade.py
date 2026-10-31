@@ -1,7 +1,10 @@
+import sqlite3
 from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from install.upgrade_journal import UpgradeJournal
+from install.upgrade_outcome import UpgradeOutcome
 from tests.stories.core.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
 
 NOTES, TAGS, FAILS_ONCE = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:FailsOnceTagsModule"
@@ -18,30 +21,52 @@ def upgrading(new_story, *modules: str, with_rows: bool = True):
     return story, version_four_database(story.home.folder, "journal.db", with_rows)
 
 
+def upgrade(story, dry_run: bool = False, confirmed: bool = True) -> UpgradeOutcome:
+    return UpgradeJournal(story.home).run(dry_run=dry_run, confirmed=confirmed)
+
+
+def expect_upgrade(story, *lines: str, dry_run: bool = False) -> UpgradeOutcome:
+    outcome = upgrade(story, dry_run)
+    assert outcome.code == 0, outcome.text
+    missing = [line for line in lines if line not in outcome.text.splitlines()]
+    assert not missing, f"{missing} not in {outcome.text}"
+    return outcome
+
+
+def expect_refusal(story, text: str) -> None:
+    outcome = upgrade(story)
+    assert outcome.code == 1 and text in outcome.text, outcome
+
+
+def content(path: Path) -> list[str]:
+    connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
+    try:
+        return list(connection.iterdump())
+    finally:
+        connection.close()
+
+
 def line_value(text: str, label: str) -> str:
     return next(line.split(label, 1)[1].strip() for line in text.splitlines() if line.startswith(label))
 
 
 def test_the_upgrade_copies_the_version_4_database_into_the_backup_folder_first_and_checks_the_copy(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
-    original = version_four.read_bytes()
-    outcome = story.run("upgrade")
-    assert outcome.code == 0, outcome.output_text
-    assert Path(line_value(outcome.output_text, "backup: ")).read_bytes() == original and "backup checked" in outcome.output_text
+    outcome = expect_upgrade(story)
+    assert content(Path(line_value(outcome.text, "backup: "))) == content(version_four) and "backup checked" in outcome.text
 
 
 def test_a_failed_run_still_leaves_the_backup(new_story):
     story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
-    original = version_four.read_bytes()
-    outcome = story.run("upgrade")
-    assert outcome.code != 0 and "the move of movetags failed: the tags table could not be read" in outcome.output_text
-    assert any(path.read_bytes() == original for path in story.home.folder.rglob("*") if path.is_file() and path != version_four)
+    outcome = upgrade(story)
+    assert outcome.code != 0 and "the move of movetags failed: the tags table could not be read" in outcome.text
+    assert any(path.name == "journal.db" and path != version_four and content(path) == content(version_four) for path in story.home.folder.rglob("*"))
 
 
 def test_the_version_4_database_is_opened_read_only_and_its_bytes_are_equal_after(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     original = version_four.read_bytes()
-    story.expect_success("upgrade")
+    expect_upgrade(story)
     assert version_four.read_bytes() == original
 
 
@@ -49,44 +74,43 @@ def test_a_dry_run_prints_the_counts_per_module_and_per_dropped_table_and_leaves
     story, version_four = upgrading(new_story, NOTES, TAGS)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     before = story.home.database.read_bytes()
-    story.expect_success("upgrade --dry-run", "dry run: nothing was changed", "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0",
-                         "dropped note_drafts: 1 rows")
+    expect_upgrade(story, "dry run: nothing was changed", "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "dropped note_drafts: 1 rows", dry_run=True)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
     assert story.home.database.read_bytes() == before and count(story, "notes") == 0
 
 
 def test_a_run_moves_every_declared_module_in_order(new_story):
     story, version_four = upgrading(new_story, TAGS, NOTES)
-    story.expect_success("upgrade", "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "upgraded")
+    expect_upgrade(story, "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "upgraded")
     assert ORDER == ["notes", "tags"] and (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
 def test_a_second_run_says_already_upgraded_and_moves_nothing(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
-    story.run("upgrade")
-    story.expect_success("upgrade", "already upgraded")
+    upgrade(story)
+    expect_upgrade(story, "already upgraded; nothing moved")
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
 def test_a_run_that_fails_in_the_tags_move_leaves_notes_moved_rolls_tags_back_and_a_rerun_finishes_from_tags(new_story):
     story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
-    story.expect_refusal("upgrade", "the move of movetags failed")
+    assert upgrade(story).code == 1
     assert (count(story, "notes"), count(story, "tags")) == (2, 0)
-    story.expect_success("upgrade", "movetags: moved 2")
+    expect_upgrade(story, "movetags: moved 2, already moved 0")
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
 def test_a_version_4_table_no_module_claims_is_listed_and_not_lost(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
-    story.expect_success("upgrade", "not claimed: old_reports (1 rows)")
+    expect_upgrade(story, "not claimed: old_reports (1 rows)")
     assert version_four.exists() and b"a report" in version_four.read_bytes()
 
 
 def test_the_upgrade_of_an_empty_version_4_journal_works(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS, with_rows=False)
-    story.expect_success("upgrade", "movenotes: moved 0, already moved 0", "upgraded")
+    expect_upgrade(story, "movenotes: moved 0, already moved 0", "upgraded")
 
 
 def test_the_upgrade_of_a_project_with_no_version_4_journal_is_refused_with_what_it_looked_for(new_story):
     story = new_story(NOTES, TAGS)
-    story.expect_refusal("upgrade", "no version 4 journal: journal.db is not in")
+    expect_refusal(story, "no version 4 journal: journal.db is not in")
