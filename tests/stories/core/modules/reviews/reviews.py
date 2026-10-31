@@ -7,9 +7,16 @@ def test_a_review_is_requested_for_a_subject_row_and_waits_queued(new_story):
     story.expect_success("review list --queued", "1  task 1  queued")
 
 
-def test_a_review_of_a_subject_that_does_not_exist_is_refused(new_story):
+def test_a_subject_with_an_unfinished_review_is_refused_a_second(new_story):
     story = new_story(fixture=ReviewRequested)
-    story.expect_refusal(REVIEW_REQUEST.replace("task 1", "task 99"), "task 99 does not exist", actor=story.agent)
+    story.expect_refusal(REVIEW_REQUEST, "already has an unfinished review", actor=story.agent)
+
+
+def test_a_subject_is_reviewed_again_once_its_review_is_abandoned(new_story):
+    story = new_story(fixture=ReviewRequested)
+    story.run("review abandon 1", actor=story.agent)
+    story.expect_success(REVIEW_SHOW, "state: abandoned")
+    story.expect_success(REVIEW_REQUEST, "state: queued", actor=story.agent)
 
 
 def test_a_report_that_passes_every_point_approves_the_review(new_story):
