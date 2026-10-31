@@ -2,12 +2,13 @@
 import {percentBox} from "../format/number.js";
 
 defineProps({cells: {type: Array, required: true}});
+const CHAT = "messages.chat";
 </script>
 
 <template>
     <span class="layout-thumb" aria-hidden="true">
         <template v-for="(c, at) in cells" :key="at">
-            <span :class="['layout-cell', c.view]" :style="percentBox(c.box)">
+            <span :class="['layout-cell', c.view === CHAT ? 'chat' : `module-${c.view.split('.')[0]}`]" :style="percentBox(c.box)">
                 <i />
             </span>
         </template>
@@ -41,19 +42,11 @@ defineProps({cells: {type: Array, required: true}});
     background: color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-.layout-cell.terminal i {
-    background: #0b0c0e;
-    box-shadow: inset 0 0 0 1px var(--border-3);
+.layout-cell.module-agents i {
+    background: color-mix(in srgb, var(--tone-good) 50%, transparent);
 }
 
-.layout-cell.agents i {
-    background:
-        linear-gradient(90deg, transparent 30%, var(--bg) 30% 36%, transparent 36% 64%, var(--bg) 64% 70%, transparent 70%),
-        linear-gradient(transparent 30%, var(--bg) 30% 36%, transparent 36% 64%, var(--bg) 64% 70%, transparent 70%),
-        color-mix(in srgb, var(--tone-good) 50%, transparent);
-}
-
-.layout-cell.feed i {
+.layout-cell.module-coding i {
     background: color-mix(in srgb, var(--add-fg) 45%, transparent);
 }
 </style>

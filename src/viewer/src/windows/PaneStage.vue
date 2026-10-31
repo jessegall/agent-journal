@@ -1,5 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
+import LayoutPicker from "../agents/LayoutPicker.vue";
+import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
@@ -18,17 +20,22 @@ const props = defineProps({
     subscriptions: {type: Object, required: true},
     environment: {type: String, required: true},
     agent: {type: Number, default: null},
+    page: {type: String, default: "home"},
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
 });
 
+const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
 const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";
 const grid = ref(null);
 const narrow = ref(window.innerWidth < PHONE_WIDTH);
 const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
-onMounted(() => window.addEventListener("resize", measure));
+onMounted(() => {
+    window.addEventListener("resize", measure);
+    presets?.load();
+});
 onUnmounted(() => window.removeEventListener("resize", measure));
 const {counts} = useTabCounts({
     catalogue: props.catalogue,
@@ -50,6 +57,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 
 <template>
     <div class="pane-stage" @keydown="keyed">
+        <template v-if="presets">
+            <nav class="pane-stage-bar"><LayoutPicker :list="presets" /></nav>
+        </template>
         <template v-if="store.layout.value">
             <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
@@ -149,6 +159,13 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     flex: 1;
     flex-direction: column;
     min-height: 0;
+}
+
+.pane-stage-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--line);
 }
 
 .pane-body {
