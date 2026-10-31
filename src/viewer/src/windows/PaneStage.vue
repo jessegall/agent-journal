@@ -5,6 +5,7 @@ import {usePaneActions} from "../composables/paneActions.js";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
 import PaneGrid from "../panes/PaneGrid.vue";
+import SplitOffer from "../panes/SplitOffer.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
 
@@ -26,7 +27,7 @@ const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 onMounted(() => window.addEventListener("resize", measure));
 onUnmounted(() => window.removeEventListener("resize", measure));
-const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, reopen} = usePaneActions({
+const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
@@ -81,6 +82,9 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
                             <p class="pane-empty">Nothing is open in this pane.</p>
                         </template>
                     </div>
+                    <template v-if="offer?.id === id">
+                        <SplitOffer :text="offerText" @pick="answer" />
+                    </template>
                     <template v-if="aimed?.id === id && aimed.zone !== 'tabs' && state === 'live'">
                         <DropCompass :zone="aimed.zone" />
                     </template>
@@ -92,7 +96,7 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
                 <template v-for="module in modules()" :key="module">
                     <span class="reopen-module">{{ module }}</span>
                     <template v-for="window in ofModule(module)" :key="window.name">
-                        <Btn :data-reopen="window.name" @click="reopen(window.name)">{{ window.title }}</Btn>
+                        <Btn :data-reopen="window.name" @pointerdown="grabWindow($event, window.name)" @click="openView(window.name)">{{ window.title }}</Btn>
                     </template>
                 </template>
             </nav>

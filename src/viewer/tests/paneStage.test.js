@@ -263,3 +263,40 @@ test("at phone width the panes stack one to a screen, the chat first, and no res
     const order = [...element.querySelectorAll("section.pane")].map((section) => [section.querySelector("[data-tab]").dataset.tab, Number(section.style.order)]);
     expect(order.find(([name]) => name === "messages.chat")[1]).toBeLessThan(order.find(([name]) => name === "a.tasks")[1]);
 });
+
+test("opening a window that is not in the layout puts it in the largest pane, and one that is in the layout shows its tab", async () => {
+    const {store, element} = await stage({dir: "row", r: 0.3, a: {tabs: ["a.chat"], active: "a.chat"}, b: {tabs: ["a.tasks", "a.notes"], active: "a.tasks"}});
+    element.querySelector(`[data-reopen="a.spare"]`).click();
+    await settled();
+    expect(holder(store, "a.spare")).toBe(holder(store, "a.tasks"));
+    expect(store.layout.value.panes[holder(store, "a.tasks")].active).toBe("a.spare");
+});
+
+async function offered() {
+    const made = await stage();
+    const button = made.element.querySelector(`[data-reopen="a.spare"]`);
+    button.dispatchEvent(pointer("pointerdown", 5, 5));
+    window.dispatchEvent(pointer("pointermove", 250, 300));
+    window.dispatchEvent(pointer("pointerup", 250, 300));
+    await settled();
+    return made;
+}
+
+test("a window dropped on the centre of a pane with tabs offers a split or a tab, and nothing is placed until it is answered", async () => {
+    const {store, element} = await offered();
+    expect(element.querySelector(".split-offer")).not.toBeNull();
+    expect(holder(store, "a.spare")).toBeUndefined();
+});
+
+test("the offer answered Side by side splits the pane, and answered Add as tab joins its tabs", async () => {
+    const split = await offered();
+    const buttons = (made) => [...made.element.querySelectorAll(".split-offer button")];
+    buttons(split).find((button) => button.textContent.includes("Side by side")).click();
+    await settled();
+    expect(tabsIn(split.store, holder(split.store, "a.spare"))).toEqual(["a.spare"]);
+    expect(leaves(split.store.layout.value.tree)).toHaveLength(3);
+    const tabbed = await offered();
+    buttons(tabbed).find((button) => button.textContent.includes("Add as tab")).click();
+    await settled();
+    expect(tabsIn(tabbed.store, holder(tabbed.store, "a.chat"))).toEqual(["a.chat", "a.spare"]);
+});

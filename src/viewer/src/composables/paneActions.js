@@ -1,5 +1,5 @@
 import {computed, ref} from "vue";
-import {activated, aimAt, leaves, ordered, paneClosed, placed, tabClosed} from "../domain/panes.js";
+import {activated, aimAt, holding, leaves, measure, ordered, paneClosed, placed, tabClosed} from "../domain/panes.js";
 import {usePaneDrag} from "./paneDrag.js";
 
 const HINTS = {
@@ -15,6 +15,7 @@ const HINTS = {
 // pick and reopen; `area` is the ref to the pane grid
 export function usePaneActions({store, area, catalogue}) {
     const layout = () => store.layout.value;
+    const offer = ref(null);
 
     function stripAt(x, y) {
         for (const strip of area.value.element.querySelectorAll("[data-tabs-of]")) {
@@ -34,6 +35,10 @@ export function usePaneActions({store, area, catalogue}) {
     }
 
     function land(grip, target) {
+        if (grip.from === null && target.zone === "center" && layout().panes[target.id].tabs.length) {
+            offer.value = {id: target.id, view: grip.view};
+            return;
+        }
         if (target.zone !== "tabs") return store.apply(placed(layout(), grip.view, target.id, target.zone, grip.from));
         const before = layout().panes[target.id].tabs.filter((tab) => tab !== grip.view)[target.index];
         if (target.id !== grip.from) store.apply(placed(layout(), grip.view, target.id, "center", grip.from));
@@ -69,7 +74,7 @@ export function usePaneActions({store, area, catalogue}) {
             x: drag.value.x,
             y: drag.value.y,
             icon: entry?.icon || "window",
-            title: entry?.title || pane.titles?.[drag.value.view] || drag.value.view,
+            title: entry?.title || pane?.titles?.[drag.value.view] || drag.value.view,
             hint: drag.value.target ? HINTS[drag.value.target.zone] : "",
         };
     });
@@ -99,7 +104,29 @@ export function usePaneActions({store, area, catalogue}) {
             .map((other) => ({id: other, title: tabsOf(other, layout().panes[other]).find((tab) => tab.on)?.title || "Empty pane"}));
 
     const closedWindows = computed(() => !layout() ? [] : catalogue.windows.value.filter((window) => !store.open.value.has(window.name)));
-    const reopen = (name) => store.apply(placed(layout(), name, leaves(layout().tree)[0], "center"));
 
-    return {full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, reopen};
+    // a window joins the pane holding it, else the largest pane
+    function openView(name) {
+        const at = holding(layout(), name);
+        if (at !== null) return pick(at, name);
+        const {rects} = measure(layout().tree);
+        const area = (id) => rects[id].w * rects[id].h;
+        const largest = leaves(layout().tree).reduce((best, id) => (area(id) > area(best) ? id : best));
+        store.apply(placed(layout(), name, largest, "center"));
+    }
+
+    const offerText = computed(() => {
+        const entry = offer.value && catalogue.window(offer.value.view);
+        return `${entry?.title || offer.value?.view} can sit beside this pane or join its tabs.`;
+    });
+
+    function answer(zone) {
+        const {id, view} = offer.value;
+        offer.value = null;
+        if (zone) store.apply(placed(layout(), view, id, zone, null));
+    }
+
+    const grabWindow = (event, view) => grab(event, {view, from: null});
+
+    return {full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer};
 }
