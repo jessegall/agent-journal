@@ -34,6 +34,8 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.link import Link
 from core.modules.documents.models.report import Report
+from core.modules.documents.seeders.documents_seeder import DocumentsSeeder
+from core.modules.documents.upgrade.documents_move import DocumentsMove
 
 BUILT = ["make", "edit", "show", "list", "delete"]
 
@@ -44,12 +46,14 @@ class DocumentsModule(Module):
 
     name = "journal.core.documents"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans"]
     settings = [SettingValue("revision-minutes", "Revision minutes", "How long one person's edits of a document fold into one revision.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=BUILT), ModelDeclaration(Report, excluded_subcommands=BUILT),
               ModelDeclaration(DocRevision, excluded_subcommands=BUILT), ModelDeclaration(Link, excluded_subcommands=BUILT)]
     migrations = [DocumentsTablesMigration]
+    moves = [DocumentsMove]
+    seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
                                  reads=["doc list", "doc show", "report list", "report show"], events=["doc.*", "report.*"])]
     handlers = [MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]

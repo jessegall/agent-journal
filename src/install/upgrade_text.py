@@ -1,6 +1,6 @@
 from core.base.upgrade.upgrade_report import UpgradeReport
 
-WAITING_TABLES = ("sequences", "templates", "triggers", "checks", "dumps", "notices", "docs", "doc_revisions", "reports", "phones",
+WAITING_TABLES = ("sequences", "templates", "triggers", "checks", "dumps", "notices", "phones",
                   "shares", "plugins", "suggestions", "edits", "command_outputs", "reader_reports", "reader_suggestions", "aliases",
                   "collections", "library_items", "mcp_servers", "reactions", "release_messages", "scheduled_jobs", "secrets", "statistics", "test_turns")
 BOOKKEEPING_TABLES = ("entries", "state_transitions", "migrations", "migrated_rows", "version3_migrations", "journal_versions", "timings", "dashboard_rows")
