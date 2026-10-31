@@ -139,3 +139,14 @@ class ForeignDockModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     docks = [DockDeclaration(Plain.NOTE, "words", "Note", "note.js")]
+
+
+class Renamed(StrEnum):
+    NOTE = "good.memo"
+
+
+class ChangedModule(Module):
+    name = "good"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    marks = [mark(Renamed.NOTE)]
