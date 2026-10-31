@@ -4,7 +4,7 @@ import {defineConfig} from "vite";
 
 // a module's styles, put into each of its window scripts and added to the page once, since the page loads a window's
 // script alone
-const stylesInScripts = () => ({
+export const stylesInScripts = () => ({
     name: "styles-in-scripts",
     apply: "build",
     enforce: "post",

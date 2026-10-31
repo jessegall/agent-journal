@@ -1,10 +1,12 @@
 import vue from "@vitejs/plugin-vue";
 import {fileURLToPath} from "node:url";
 import {defineConfig} from "vite";
+import {stylesInScripts} from "./build.js";
 
 // the window kit built on its own, served at /viewer/kit/window-kit.js, with Vue left to the page's import map
 export default defineConfig({
-    plugins: [vue()],
+    plugins: [vue(), stylesInScripts()],
+    publicDir: false,
     build: {
         outDir: fileURLToPath(new URL("../../core/modules/viewer/web/dist/kit", import.meta.url)),
         emptyOutDir: true,

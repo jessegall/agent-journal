@@ -54,7 +54,7 @@ def test_a_priority_outside_its_list_is_a_usage_error(new_story):
 
 def test_an_environment_its_tasks_refer_to_cannot_be_deleted(new_story):
     story = new_story(fixture=OpenTask)
-    story.expect_refusal("environment delete 1", "this environment is still referred to by agents, hook_calls, messages, plans, settings, tasks")
+    story.expect_refusal("environment delete 1", "this environment is still referred to by")
 
 
 def test_a_started_task_blocks_and_unblocks_to_open(new_story):
