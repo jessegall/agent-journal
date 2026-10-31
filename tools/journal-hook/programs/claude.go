@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/classify"
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
-	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
 // The kind of each Claude tool, read from version 4's Claude.decoders; a tool not named here is other.
@@ -38,11 +38,11 @@ func claudeEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 	if skip || err != nil || !isToolEvent(prepared.Event) {
 		return prepared, skip, err
 	}
-	prepared.Tool = claudeTool(read.ToolName, read.ToolInput.values)
+	prepared.Tool = claudeTool(read.ToolName, read.ToolInput.values, context.Classifier)
 	return prepared, false, nil
 }
 
-func claudeTool(name string, input map[string]any) *event.Tool {
+func claudeTool(name string, input map[string]any, classifier *classify.Classifier) *event.Tool {
 	kind, known := claudeToolKinds[name]
 	if !known {
 		kind = "other"
@@ -50,7 +50,7 @@ func claudeTool(name string, input map[string]any) *event.Tool {
 	tool := &event.Tool{Name: name, Kind: kind, Files: []string{}}
 	switch kind {
 	case "shell":
-		line := shell.Line(pythonText(input, "command"))
+		line := classifier.Line(pythonText(input, "command"))
 		tool.Shell = &line
 	case "edit", "write", "read":
 		tool.Files = filePaths(input)

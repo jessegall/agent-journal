@@ -46,11 +46,11 @@ func codexEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 	if skip || err != nil || !isToolEvent(prepared.Event) {
 		return prepared, skip, err
 	}
-	prepared.Tool = codexTool(read.ToolName, read.ToolInput, context.RunScript)
+	prepared.Tool = codexTool(read.ToolName, read.ToolInput, context)
 	return prepared, false, nil
 }
 
-func codexTool(name string, input toolInput, runScript string) *event.Tool {
+func codexTool(name string, input toolInput, context Context) *event.Tool {
 	kind, known := codexToolKinds[name]
 	if !known {
 		kind = "other"
@@ -62,7 +62,7 @@ func codexTool(name string, input toolInput, runScript string) *event.Tool {
 		if words, ok := input.values["command"].([]any); ok {
 			command = words
 		}
-		line := shell.Line(codexShellLine(command, runScript))
+		line := context.Classifier.Line(codexShellLine(command, context.RunScript))
 		tool.Shell = &line
 	case "edit":
 		tool.Files = patchPaths(input.texts)

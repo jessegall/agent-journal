@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/classify"
 	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
@@ -34,6 +35,7 @@ func hookContext(getenv func(string) string, root, folder string, processID int,
 		Firing:      fmt.Sprintf("%d-%d", processID, firedAtMs),
 		FiredAtMs:   firedAtMs,
 		RunScript:   filepath.Join(root, ".journal", "src", "journal", "hooks", "run.sh"),
+		Classifier:  classify.NewClassifier(classify.LoadTable(filepath.Join(root, ".journal", "command_table.json"))),
 	}, false
 }
 

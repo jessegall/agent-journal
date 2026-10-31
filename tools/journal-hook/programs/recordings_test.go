@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/classify"
 	"github.com/jessegall/agent-journal/tools/journal-hook/internal/schemacheck"
 )
 
@@ -17,7 +18,7 @@ import (
 // committing it.
 var update = flag.Bool("update", false, "write the expected objects of the recorded bodies again")
 
-var testContext = Context{Environment: "development", Actor: "agent", Firing: "7731-1793395000123", FiredAtMs: 1793395000123}
+var testContext = Context{Environment: "development", Actor: "agent", Firing: "7731-1793395000123", FiredAtMs: 1793395000123, Classifier: classify.NewClassifier(classify.LoadTable(""))}
 
 // checkRecordings runs every recorded body of the program and compares each object, its raw body left out, with the
 // expected one beside it in testdata/prepared; every object must fit the schema and keep its body as raw.

@@ -1,0 +1,5314 @@
+{
+ "about": "What a single shell command is and does: each program's base, the subcommands and options that change it, the wrappers that run another command, and the forms whose meaning the line cannot tell. A concrete command is its base with every modifier it carries; a chain is the union of its parts.",
+ "version": 2,
+ "kinds": [
+  "search",
+  "read",
+  "edit",
+  "version control",
+  "test run",
+  "build",
+  "check",
+  "package",
+  "network",
+  "process",
+  "journal",
+  "unknown"
+ ],
+ "effects": [
+  "reads_files",
+  "prints_files",
+  "writes_files",
+  "makes_files",
+  "deletes_files",
+  "reaches_network",
+  "writes_network",
+  "changes_version_control",
+  "runs_long",
+  "changes_folder"
+ ],
+ "redirects": {
+  "writes": [
+   ">",
+   ">>",
+   "&>",
+   "&>>",
+   ">|"
+  ],
+  "except": [
+   "/dev/null",
+   "&1",
+   "&2",
+   ">&2"
+  ],
+  "effects": [
+   "writes_files"
+  ],
+  "reads": [
+   "<"
+  ]
+ },
+ "interpreted": {
+  "note": "code handed to an interpreter (python -c, node -e, a heredoc body, sh -c) cannot be judged from the table: a row marked interpreted is a write, and uncertain, only when its line carries the write check's content markers"
+ },
+ "unknown": {
+  "kind": "unknown",
+  "effects": [],
+  "note": "a program not in the table: no write for the write gate, recorded so the next round adds it"
+ },
+ "scripts": {
+  "(^|/)(tests?|suite)[\\w.-]*\\.(sh|py)$": {
+   "kind": "test run",
+   "effects": [
+    "reads_files",
+    "runs_long"
+   ],
+   "label": "testing",
+   "note": "a script whose name says it runs the tests, run alone or handed to an interpreter"
+  },
+  "(^|/)(build|compile)[\\w.-]*\\.(sh|ps1|bat|cmd)$": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building",
+   "note": "a script whose name says it builds"
+  },
+  "(^|/)configure$": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files"
+   ],
+   "label": "configuring the build",
+   "note": "an autotools configure script"
+  },
+  "(^|/)(install|setup|bootstrap)[\\w.-]*\\.(sh|ps1|bat|cmd)$": {
+   "kind": "package",
+   "effects": [
+    "reaches_network",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "installing",
+   "note": "a script whose name says it installs or sets up"
+  }
+ },
+ "wrappers": {
+  "builtin": {
+   "lookup_flags": [
+    "-v",
+    "-V"
+   ]
+  },
+  "bundle": {
+   "subcommands": [
+    "exec"
+   ]
+  },
+  "bunx": {
+   "same_as": "npx"
+  },
+  "caffeinate": {
+   "value_flags": [
+    "-t",
+    "-w"
+   ]
+  },
+  "command": {
+   "lookup_flags": [
+    "-v",
+    "-V"
+   ]
+  },
+  "docker": {
+   "subcommands": [
+    "exec",
+    "run",
+    "compose run",
+    "compose exec"
+   ],
+   "value_flags": [
+    "-w",
+    "--workdir",
+    "-e",
+    "--env",
+    "--env-file",
+    "-u",
+    "--user",
+    "-v",
+    "--volume",
+    "--name",
+    "--network",
+    "--entrypoint",
+    "--platform",
+    "-p",
+    "--publish",
+    "--mount",
+    "--label",
+    "-f",
+    "--file",
+    "-H",
+    "--host"
+   ],
+   "leading_values": 1
+  },
+  "env": {
+   "value_flags": [
+    "-u",
+    "--unset",
+    "-C",
+    "--chdir",
+    "-S"
+   ],
+   "assignments": true,
+   "dropped_from_shape": true,
+   "runs_script_file": true,
+   "may_follow_a_script": true
+  },
+  "exec": {},
+  "flock": {
+   "value_flags": [
+    "-w",
+    "-E"
+   ],
+   "leading_values": 1,
+   "dropped_from_shape": true
+  },
+  "gtimeout": {
+   "same_as": "timeout"
+  },
+  "kubectl": {
+   "subcommands": [
+    "exec"
+   ],
+   "value_flags": [
+    "-n",
+    "--namespace",
+    "-c",
+    "--container"
+   ],
+   "until": "--"
+  },
+  "lockf": {
+   "value_flags": [
+    "-t"
+   ],
+   "leading_values": 1,
+   "dropped_from_shape": true
+  },
+  "nice": {
+   "value_flags": [
+    "-n"
+   ],
+   "dropped_from_shape": true
+  },
+  "nix": {
+   "subcommands": [
+    "develop",
+    "shell"
+   ],
+   "until": "-c"
+  },
+  "nohup": {
+   "runs_script_file": true
+  },
+  "npm": {
+   "subcommands": [
+    "exec"
+   ],
+   "value_flags": [
+    "--prefix",
+    "-C",
+    "-w",
+    "--workspace"
+   ],
+   "until": "--"
+  },
+  "npx": {
+   "value_flags": [
+    "-p",
+    "--package",
+    "--prefix"
+   ]
+  },
+  "perl": {
+   "subcommands": [
+    "-e"
+   ],
+   "leading_values": 1,
+   "code_contains": "exec @ARGV",
+   "limits_time": true,
+   "dropped_from_shape": true
+  },
+  "pipenv": {
+   "subcommands": [
+    "run"
+   ]
+  },
+  "pnpm": {
+   "subcommands": [
+    "exec",
+    "dlx"
+   ],
+   "value_flags": [
+    "--filter",
+    "-F",
+    "-C",
+    "--dir"
+   ]
+  },
+  "pnpx": {
+   "same_as": "npx"
+  },
+  "poetry": {
+   "subcommands": [
+    "run"
+   ]
+  },
+  "python": {
+   "subcommands": [
+    "-m"
+   ]
+  },
+  "python3": {
+   "same_as": "python"
+  },
+  "stdbuf": {
+   "value_flags": [
+    "-i",
+    "-o",
+    "-e"
+   ]
+  },
+  "sudo": {
+   "value_flags": [
+    "-u",
+    "-g",
+    "-C"
+   ]
+  },
+  "time": {
+   "value_flags": [
+    "-f",
+    "-o"
+   ],
+   "dropped_from_shape": true,
+   "runs_script_file": true
+  },
+  "timeout": {
+   "value_flags": [
+    "-s",
+    "--signal",
+    "-k",
+    "--kill-after"
+   ],
+   "leading_values": 1,
+   "limits_time": true,
+   "dropped_from_shape": true
+  },
+  "uv": {
+   "value_flags": [
+    "--with",
+    "--python",
+    "-p",
+    "--project",
+    "--directory"
+   ],
+   "subcommands": [
+    "run"
+   ]
+  },
+  "xargs": {
+   "value_flags": [
+    "--arg-file",
+    "-E",
+    "-I",
+    "-J",
+    "-L",
+    "-P",
+    "-a",
+    "-d",
+    "-n",
+    "-s"
+   ]
+  },
+  "xvfb-run": {
+   "value_flags": [
+    "-n",
+    "-s",
+    "-e",
+    "-f",
+    "-p",
+    "-w"
+   ]
+  },
+  "yarn": {
+   "subcommands": [
+    "exec",
+    "dlx"
+   ]
+  }
+ },
+ "programs": {
+  ".": {
+   "kind": "process",
+   "effects": [],
+   "interpreted": true
+  },
+  ":": {
+   "kind": "read",
+   "effects": []
+  },
+  "[": {
+   "kind": "read",
+   "effects": []
+  },
+  "[[": {
+   "kind": "read",
+   "effects": []
+  },
+  "ack": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "ag": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "apt": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running apt"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "update": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "apt-get": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running apt-get"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "update": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "ava": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "awk": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-i": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ],
+     "dialects": "gawk -i inplace edits the file; other awks have no -i"
+    }
+   }
+  },
+  "aws": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ],
+   "uncertain": true
+  },
+  "bandit": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "base64": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "basename": {
+   "kind": "read",
+   "effects": []
+  },
+  "bash": {
+   "kind": "process",
+   "effects": [],
+   "runs": "the script after -c",
+   "interpreted": true,
+   "runs_script_file": true,
+   "starts_processes": true
+  },
+  "bat": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ]
+  },
+  "bazel": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running bazel"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "biome": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "black": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ],
+   "modifiers": {
+    "--check": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "--diff": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ]
+    }
+   },
+   "label": "checking code"
+  },
+  "blender": {
+   "kind": "process",
+   "effects": [
+    "runs_long"
+   ],
+   "uncertain": true
+  },
+  "brew": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running brew"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "list": {
+     "kind": "package",
+     "effects": []
+    },
+    "info": {
+     "kind": "package",
+     "effects": [
+      "reaches_network"
+     ]
+    },
+    "uninstall": {
+     "kind": "package",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "upgrade": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ]
+    }
+   }
+  },
+  "bun": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running bun"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "add": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "run": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "build": {
+       "kind": "build",
+       "effects": [
+        "reads_files",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "building"
+      },
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      }
+     },
+     "label": "running a script"
+    }
+   },
+   "value_flags": [
+    "--cwd"
+   ]
+  },
+  "bundle": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running bundle"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "cargo": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "check": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "nextest": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "clippy": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "fmt": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "fetch": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "run": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "label": "running cargo"
+    }
+   }
+  },
+  "cat": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "label": "reading",
+   "redirected_label": "writing a file"
+  },
+  "cd": {
+   "kind": "read",
+   "effects": [
+    "changes_folder"
+   ],
+   "label": "moving"
+  },
+  "chmod": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "chown": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "clang": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "claude": {
+   "kind": "process",
+   "effects": [
+    "reaches_network",
+    "runs_long"
+   ],
+   "uncertain": true
+  },
+  "cmake": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "cmp": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "codex": {
+   "kind": "process",
+   "effects": [
+    "reaches_network",
+    "runs_long"
+   ],
+   "uncertain": true
+  },
+  "column": {
+   "kind": "read",
+   "effects": []
+  },
+  "comm": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "composer": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running composer"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "require": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "update": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   },
+   "value_flags": [
+    "-d",
+    "--working-dir"
+   ]
+  },
+  "cp": {
+   "kind": "edit",
+   "effects": [
+    "reads_files",
+    "writes_files"
+   ]
+  },
+  "ctest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "curl": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ],
+   "modifiers": {
+    "-X": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "uncertain": true
+    },
+    "--request": {
+     "same_as": "-X"
+    },
+    "-d": {
+     "kind": "network",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "--data": {
+     "kind": "network",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "--data-raw": {
+     "kind": "network",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "-F": {
+     "kind": "network",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "-T": {
+     "kind": "network",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "-o": {
+     "kind": "network",
+     "effects": [
+      "reaches_network",
+      "writes_files"
+     ]
+    },
+    "-O": {
+     "kind": "network",
+     "effects": [
+      "reaches_network",
+      "writes_files"
+     ]
+    },
+    "--output": {
+     "kind": "network",
+     "effects": [
+      "reaches_network",
+      "writes_files"
+     ]
+    }
+   },
+   "label": "fetching"
+  },
+  "cut": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ],
+   "label": "reading"
+  },
+  "cypress": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running cypress"
+   },
+   "subcommands": {
+    "run": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "dart": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running dart"
+   },
+   "subcommands": {
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "analyze": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "pub": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "get": {
+       "kind": "package",
+       "effects": [
+        "reaches_network",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "installing"
+      }
+     },
+     "label": "running dart"
+    }
+   }
+  },
+  "dash": {
+   "same_as": "sh"
+  },
+  "date": {
+   "kind": "read",
+   "effects": []
+  },
+  "deno": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running deno"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "detekt": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "df": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "diff": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "dig": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "dirname": {
+   "kind": "read",
+   "effects": []
+  },
+  "dnf": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running dnf"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "docker": {
+   "kind": "process",
+   "effects": [],
+   "subcommands": {
+    "ps": {
+     "kind": "process",
+     "effects": []
+    },
+    "logs": {
+     "kind": "process",
+     "effects": [],
+     "modifiers": {
+      "-f": {
+       "kind": "process",
+       "effects": [
+        "runs_long"
+       ]
+      }
+     }
+    },
+    "images": {
+     "kind": "process",
+     "effects": []
+    },
+    "inspect": {
+     "kind": "process",
+     "effects": []
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "pull": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ]
+    },
+    "push": {
+     "kind": "network",
+     "effects": [
+      "writes_network",
+      "runs_long"
+     ]
+    },
+    "run": {
+     "kind": "process",
+     "effects": [
+      "runs_long"
+     ],
+     "uncertain": true
+    },
+    "compose": {
+     "kind": "process",
+     "effects": [
+      "runs_long"
+     ],
+     "uncertain": true,
+     "label": "running docker",
+     "subcommands": {
+      "build": {
+       "label": "building",
+       "kind": "build",
+       "effects": [
+        "reads_files",
+        "makes_files",
+        "runs_long"
+       ]
+      }
+     }
+    },
+    "rm": {
+     "kind": "process",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "rmi": {
+     "kind": "process",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "stop": {
+     "kind": "process",
+     "effects": []
+    },
+    "kill": {
+     "kind": "process",
+     "effects": []
+    },
+    "system": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true
+    },
+    "volume": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true
+    },
+    "network": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true
+    }
+   },
+   "label": "running docker"
+  },
+  "dotnet": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running dotnet"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "publish": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "restore": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "format": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    }
+   }
+  },
+  "du": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "echo": {
+   "kind": "read",
+   "effects": [],
+   "redirected_label": "writing a file"
+  },
+  "egrep": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "env": {
+   "kind": "read",
+   "effects": []
+  },
+  "esbuild": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "eslint": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "--fix": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    }
+   },
+   "label": "checking code"
+  },
+  "eval": {
+   "kind": "process",
+   "effects": [],
+   "runs": "its arguments joined"
+  },
+  "export": {
+   "kind": "read",
+   "effects": []
+  },
+  "false": {
+   "kind": "read",
+   "effects": []
+  },
+  "fd": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "fgrep": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "file": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "find": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-delete": {
+     "kind": "edit",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "-exec": {
+     "kind": "process",
+     "effects": [
+      "reads_files"
+     ],
+     "runs": "until ;"
+    },
+    "-execdir": {
+     "kind": "process",
+     "effects": [
+      "reads_files"
+     ],
+     "runs": "until ;"
+    }
+   },
+   "label": "searching"
+  },
+  "flake8": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "flutter": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running flutter"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "pub": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "get": {
+       "kind": "package",
+       "effects": [
+        "reaches_network",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "installing"
+      }
+     },
+     "label": "running flutter"
+    }
+   }
+  },
+  "fmt": {
+   "kind": "read",
+   "effects": []
+  },
+  "fold": {
+   "kind": "read",
+   "effects": []
+  },
+  "g++": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "gawk": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-i": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    }
+   }
+  },
+  "gcc": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "gem": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running gem"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "gh": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ],
+   "subcommands": {
+    "pr": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "subcommands": {
+      "create": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "merge": {
+       "kind": "network",
+       "effects": [
+        "writes_network",
+        "changes_version_control"
+       ]
+      },
+      "comment": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "edit": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "close": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "view": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "list": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "diff": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "checks": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "checkout": {
+       "kind": "version control",
+       "effects": [
+        "reaches_network",
+        "changes_version_control",
+        "writes_files"
+       ]
+      }
+     }
+    },
+    "issue": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "subcommands": {
+      "create": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "comment": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "edit": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "close": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "view": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "list": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      }
+     }
+    },
+    "release": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "subcommands": {
+      "create": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "upload": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "delete": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "view": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "list": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "download": {
+       "kind": "network",
+       "effects": [
+        "reaches_network",
+        "writes_files"
+       ]
+      }
+     }
+    },
+    "run": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "subcommands": {
+      "view": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "list": {
+       "kind": "network",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "watch": {
+       "kind": "network",
+       "effects": [
+        "reaches_network",
+        "runs_long"
+       ]
+      },
+      "rerun": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      }
+     }
+    },
+    "api": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "modifiers": {
+      "-X": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ],
+       "uncertain": true
+      },
+      "--method": {
+       "same_as": "-X"
+      },
+      "-f": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      },
+      "-F": {
+       "kind": "network",
+       "effects": [
+        "writes_network"
+       ]
+      }
+     }
+    },
+    "repo": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "uncertain": true
+    },
+    "auth": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ]
+    },
+    "workflow": {
+     "kind": "network",
+     "effects": [
+      "reaches_network"
+     ],
+     "uncertain": true
+    }
+   },
+   "label": "on github"
+  },
+  "git": {
+   "base": {
+    "kind": "version control",
+    "effects": [
+     "reads_files"
+    ]
+   },
+   "subcommands": {
+    "commit": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ],
+     "label": "committing"
+    },
+    "push": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_network"
+     ],
+     "modifiers": {
+      "--dry-run": {
+       "kind": "version control",
+       "effects": [
+        "reaches_network"
+       ]
+      },
+      "-n": {
+       "kind": "version control",
+       "effects": [
+        "reaches_network"
+       ]
+      }
+     },
+     "label": "pushing to origin"
+    },
+    "pull": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "reaches_network",
+      "writes_files"
+     ],
+     "label": "pulling"
+    },
+    "add": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ],
+     "label": "staging"
+    },
+    "checkout": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ],
+     "uncertain": true,
+     "label": "switching branch"
+    },
+    "merge": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ],
+     "label": "merging"
+    },
+    "rebase": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ],
+     "label": "rebasing"
+    },
+    "status": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking git"
+    },
+    "diff": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading a diff"
+    },
+    "show": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading a diff"
+    },
+    "log": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading history"
+    },
+    "rev-list": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "reading history"
+    },
+    "grep": {
+     "kind": "search",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "searching"
+    },
+    "ls-files": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "listing"
+    },
+    "switch": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ],
+     "label": "switching branch"
+    },
+    "tag": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ],
+     "label": "tagging"
+    },
+    "branch": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "modifiers": {
+      "-d": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      },
+      "-D": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      },
+      "-m": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      },
+      "-M": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      },
+      "--delete": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control"
+       ]
+      }
+     },
+     "label": "listing"
+    },
+    "fetch": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "reaches_network"
+     ],
+     "label": "fetching"
+    },
+    "ls-remote": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking git"
+    },
+    "rev-parse": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking git"
+    },
+    "stash": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "reset": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ],
+     "modifiers": {
+      "--hard": {
+       "kind": "version control",
+       "effects": [
+        "changes_version_control",
+        "writes_files"
+       ]
+      }
+     }
+    },
+    "restore": {
+     "kind": "version control",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "clean": {
+     "kind": "version control",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "rm": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "deletes_files"
+     ]
+    },
+    "mv": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "worktree": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "cherry-pick": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "revert": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "am": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "apply": {
+     "kind": "version control",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "clone": {
+     "kind": "version control",
+     "effects": [
+      "reaches_network",
+      "writes_files",
+      "runs_long"
+     ]
+    },
+    "init": {
+     "kind": "version control",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "config": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ],
+     "uncertain": true
+    },
+    "remote": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "blame": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "shortlog": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "describe": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "cat-file": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "ls-tree": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "merge-base": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "show-ref": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "for-each-ref": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "reflog": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "symbolic-ref": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "check-ignore": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "count-objects": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "fsck": {
+     "kind": "version control",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "gc": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ]
+    },
+    "update-index": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ]
+    },
+    "notes": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control"
+     ]
+    },
+    "bisect": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "writes_files"
+     ]
+    },
+    "submodule": {
+     "kind": "version control",
+     "effects": [
+      "changes_version_control",
+      "reaches_network",
+      "writes_files"
+     ]
+    },
+    "lfs": {
+     "kind": "version control",
+     "effects": [
+      "reaches_network",
+      "writes_files"
+     ]
+    }
+   },
+   "value_flags": [
+    "-C",
+    "-c",
+    "--git-dir",
+    "--work-tree"
+   ]
+  },
+  "go": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running go"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "vet": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "mod": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "tidy": {
+       "kind": "package",
+       "effects": [
+        "reaches_network",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "installing"
+      },
+      "download": {
+       "kind": "package",
+       "effects": [
+        "reaches_network",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "installing"
+      }
+     },
+     "label": "running go"
+    }
+   }
+  },
+  "gofmt": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-w": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    }
+   },
+   "label": "checking code"
+  },
+  "golangci-lint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "gotestsum": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "gradle": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running gradle"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "check": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assemble": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assembleDebug": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assembleRelease": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "gradlew": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running gradle"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "check": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assemble": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assembleDebug": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "assembleRelease": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "grep": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ],
+   "label": "searching"
+  },
+  "gunzip": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "gzcat": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "gzip": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "hadolint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "head": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "label": "reading"
+  },
+  "hexdump": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "hostname": {
+   "kind": "read",
+   "effects": []
+  },
+  "http": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "id": {
+   "kind": "read",
+   "effects": []
+  },
+  "install": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "isort": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "javac": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "jest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "jobs": {
+   "kind": "process",
+   "effects": []
+  },
+  "journal": {
+   "kind": "journal",
+   "effects": [],
+   "subcommands": {
+    "search": {
+     "kind": "search",
+     "effects": []
+    },
+    "suite": {
+     "label": "testing",
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ]
+    }
+   },
+   "label": "journalling",
+   "starts_processes": true
+  },
+  "jq": {
+   "kind": "read",
+   "effects": []
+  },
+  "just": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running just"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "lint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "karma": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running karma"
+   },
+   "subcommands": {
+    "start": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "kill": {
+   "kind": "process",
+   "effects": []
+  },
+  "killall": {
+   "kind": "process",
+   "effects": []
+  },
+  "ktlint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "launchctl": {
+   "kind": "process",
+   "effects": [],
+   "uncertain": true
+  },
+  "less": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "label": "reading"
+  },
+  "ln": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "locate": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "ls": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ],
+   "label": "listing"
+  },
+  "lsof": {
+   "kind": "process",
+   "effects": []
+  },
+  "make": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building",
+    "starts_processes": true
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "check": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "lint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   },
+   "value_flags": [
+    "--directory",
+    "--file",
+    "-C",
+    "-f"
+   ]
+  },
+  "markdownlint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "md5": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "md5sum": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "memory_pressure": {
+   "kind": "process",
+   "effects": []
+  },
+  "mix": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running mix"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "deps.get": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "format": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    }
+   }
+  },
+  "mkdir": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "mocha": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "more": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "label": "reading"
+  },
+  "mv": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "mvn": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running mvn"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "verify": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "package": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "install": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "clean": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "subcommands": {
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      },
+      "verify": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      }
+     },
+     "label": "building"
+    },
+    "dependency:resolve": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   },
+   "value_flags": [
+    "--file",
+    "--projects",
+    "--settings",
+    "-f",
+    "-pl",
+    "-s"
+   ]
+  },
+  "mypy": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "nc": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "ninja": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "nix": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running nix"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "nl": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "node": {
+   "kind": "process",
+   "effects": [],
+   "interpreted": true,
+   "runs_script_file": true
+  },
+  "nox": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "npm": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "run": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "build": {
+       "kind": "build",
+       "effects": [
+        "reads_files",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "building"
+      },
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      },
+      "lint": {
+       "kind": "check",
+       "effects": [
+        "reads_files"
+       ],
+       "label": "checking code"
+      },
+      "typecheck": {
+       "kind": "check",
+       "effects": [
+        "reads_files"
+       ],
+       "label": "checking code"
+      }
+     },
+     "label": "running a script"
+    },
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "ci": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "ls": {
+     "kind": "package",
+     "effects": [
+      "reads_files"
+     ]
+    },
+    "view": {
+     "kind": "package",
+     "effects": [
+      "reaches_network"
+     ]
+    },
+    "outdated": {
+     "kind": "package",
+     "effects": [
+      "reaches_network"
+     ]
+    },
+    "audit": {
+     "kind": "package",
+     "effects": [
+      "reaches_network"
+     ]
+    },
+    "publish": {
+     "kind": "package",
+     "effects": [
+      "writes_network"
+     ]
+    },
+    "uninstall": {
+     "kind": "package",
+     "effects": [
+      "deletes_files"
+     ]
+    },
+    "exec": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true
+    },
+    "version": {
+     "kind": "package",
+     "effects": [
+      "makes_files",
+      "changes_version_control"
+     ]
+    }
+   },
+   "value_flags": [
+    "--prefix",
+    "-C",
+    "-w",
+    "--workspace"
+   ]
+  },
+  "nslookup": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "od": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "open": {
+   "kind": "process",
+   "effects": []
+  },
+  "paste": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "patch": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "perl": {
+   "kind": "process",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-i": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ],
+     "dialects": "-pi and -i.bak cluster the flag with others",
+     "label": "editing"
+    }
+   },
+   "interpreted": true,
+   "value_flags": [
+    "-e",
+    "-E"
+   ]
+  },
+  "pest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "pgrep": {
+   "kind": "process",
+   "effects": []
+  },
+  "php": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "interpreted": true
+   },
+   "subcommands": {
+    "artisan": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      }
+     },
+     "label": "running artisan"
+    },
+    "phpunit": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "pest": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   },
+   "modifiers": {
+    "-l": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ]
+    }
+   }
+  },
+  "php-cs-fixer": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "phpstan": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "phpunit": {
+   "kind": "test run",
+   "effects": [
+    "reads_files",
+    "runs_long"
+   ],
+   "label": "testing"
+  },
+  "ping": {
+   "kind": "network",
+   "effects": [
+    "reaches_network",
+    "runs_long"
+   ]
+  },
+  "pint": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ],
+   "modifiers": {
+    "--test": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ]
+    }
+   }
+  },
+  "pip": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "pip3": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "pipx": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "pkill": {
+   "kind": "process",
+   "effects": []
+  },
+  "playwright": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running playwright"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "pnpm": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running a script"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "i": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "add": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "run": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "build": {
+       "kind": "build",
+       "effects": [
+        "reads_files",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "building"
+      },
+      "test": {
+       "kind": "test run",
+       "effects": [
+        "reads_files",
+        "runs_long"
+       ],
+       "label": "testing"
+      },
+      "lint": {
+       "kind": "check",
+       "effects": [
+        "reads_files"
+       ],
+       "label": "checking code"
+      }
+     },
+     "label": "running a script"
+    },
+    "vitest": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "jest": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "eslint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "lint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    }
+   },
+   "value_flags": [
+    "--filter",
+    "-F",
+    "-C",
+    "--dir"
+   ]
+  },
+  "poetry": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running poetry"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "add": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "popd": {
+   "same_as": "cd"
+  },
+  "prettier": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "--write": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "-w": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    }
+   },
+   "label": "checking code"
+  },
+  "printenv": {
+   "kind": "read",
+   "effects": []
+  },
+  "printf": {
+   "kind": "read",
+   "effects": [],
+   "redirected_label": "writing a file"
+  },
+  "ps": {
+   "kind": "process",
+   "effects": []
+  },
+  "psalm": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "pushd": {
+   "same_as": "cd"
+  },
+  "pwd": {
+   "kind": "read",
+   "effects": []
+  },
+  "py_compile": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "pyflakes": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "pylint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "pyright": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "pytest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "python": {
+   "kind": "process",
+   "effects": [],
+   "interpreted": true,
+   "runs_script_file": true
+  },
+  "python3": {
+   "same_as": "python"
+  },
+  "rails": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running rails"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "test:system": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "rake": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running rake"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "spec": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "read": {
+   "kind": "read",
+   "effects": []
+  },
+  "readlink": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "realpath": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "rebar3": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running rebar3"
+   },
+   "subcommands": {
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "eunit": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "ct": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "rev": {
+   "kind": "read",
+   "effects": []
+  },
+  "rg": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ],
+   "label": "searching"
+  },
+  "rm": {
+   "kind": "edit",
+   "effects": [
+    "deletes_files"
+   ]
+  },
+  "rmdir": {
+   "kind": "edit",
+   "effects": [
+    "deletes_files"
+   ]
+  },
+  "rollup": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "rspec": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "rsync": {
+   "kind": "network",
+   "effects": [
+    "reads_files",
+    "writes_files"
+   ]
+  },
+  "rubocop": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "ruby": {
+   "kind": "process",
+   "effects": [],
+   "interpreted": true
+  },
+  "ruff": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ],
+   "subcommands": {
+    "check": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "modifiers": {
+      "--fix": {
+       "kind": "edit",
+       "effects": [
+        "writes_files"
+       ]
+      }
+     }
+    },
+    "format": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ],
+     "modifiers": {
+      "--check": {
+       "kind": "check",
+       "effects": [
+        "reads_files"
+       ]
+      },
+      "--diff": {
+       "kind": "check",
+       "effects": [
+        "reads_files"
+       ]
+      }
+     }
+    }
+   },
+   "label": "checking code"
+  },
+  "sample": {
+   "kind": "process",
+   "effects": []
+  },
+  "sbt": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running sbt"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "testOnly": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "compile": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "scp": {
+   "kind": "network",
+   "effects": [
+    "reaches_network",
+    "writes_network",
+    "writes_files"
+   ]
+  },
+  "script": {
+   "kind": "process",
+   "effects": [],
+   "uncertain": true,
+   "starts_processes": true
+  },
+  "sed": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "modifiers": {
+    "-i": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ],
+     "dialects": "BSD sed takes a suffix word after -i, '' for none; GNU sed takes it attached, -i.bak",
+     "label": "editing"
+    },
+    "--in-place": {
+     "same_as": "-i"
+    },
+    "-n": {
+     "label": "reading"
+    },
+    "--quiet": {
+     "same_as": "-n"
+    }
+   },
+   "value_flags": [
+    "-e",
+    "-f",
+    "--expression",
+    "--file"
+   ],
+   "label": "running sed"
+  },
+  "set": {
+   "kind": "read",
+   "effects": []
+  },
+  "sftp": {
+   "kind": "network",
+   "effects": [
+    "reaches_network",
+    "writes_network"
+   ]
+  },
+  "sh": {
+   "kind": "process",
+   "effects": [],
+   "runs": "the script after -c",
+   "interpreted": true,
+   "runs_script_file": true,
+   "starts_processes": true
+  },
+  "sha256sum": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "shasum": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "shellcheck": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "shred": {
+   "kind": "edit",
+   "effects": [
+    "deletes_files"
+   ]
+  },
+  "sips": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "sleep": {
+   "kind": "process",
+   "effects": [
+    "runs_long"
+   ]
+  },
+  "sort": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "source": {
+   "kind": "process",
+   "effects": [],
+   "interpreted": true
+  },
+  "sqlite3": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ],
+   "uncertain": true
+  },
+  "ssh": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ],
+   "runs": "the words after the host"
+  },
+  "stat": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "strings": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "stylelint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "swift": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running swift"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "swiftlint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "sysctl": {
+   "kind": "process",
+   "effects": []
+  },
+  "tail": {
+   "kind": "read",
+   "effects": [
+    "reads_files",
+    "prints_files"
+   ],
+   "modifiers": {
+    "-f": {
+     "kind": "read",
+     "effects": [
+      "reads_files",
+      "prints_files",
+      "runs_long"
+     ]
+    },
+    "-F": {
+     "kind": "read",
+     "effects": [
+      "reads_files",
+      "prints_files",
+      "runs_long"
+     ]
+    }
+   },
+   "label": "reading"
+  },
+  "tar": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "-x": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "-c": {
+     "kind": "edit",
+     "effects": [
+      "reads_files",
+      "writes_files"
+     ]
+    },
+    "x": {
+     "kind": "edit",
+     "effects": [
+      "writes_files"
+     ]
+    },
+    "c": {
+     "kind": "edit",
+     "effects": [
+      "reads_files",
+      "writes_files"
+     ]
+    }
+   },
+   "uncertain": true
+  },
+  "task": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running task"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "lint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "tee": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ],
+   "label": "writing a file"
+  },
+  "terraform": {
+   "kind": "network",
+   "effects": [
+    "reaches_network",
+    "runs_long"
+   ],
+   "subcommands": {
+    "plan": {
+     "kind": "network",
+     "effects": [
+      "reaches_network",
+      "runs_long"
+     ]
+    },
+    "apply": {
+     "kind": "network",
+     "effects": [
+      "writes_network",
+      "runs_long"
+     ]
+    },
+    "destroy": {
+     "kind": "network",
+     "effects": [
+      "writes_network",
+      "runs_long"
+     ]
+    },
+    "init": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files"
+     ]
+    }
+   }
+  },
+  "test": {
+   "kind": "read",
+   "effects": []
+  },
+  "tmutil": {
+   "kind": "process",
+   "effects": [],
+   "uncertain": true
+  },
+  "top": {
+   "kind": "process",
+   "effects": []
+  },
+  "touch": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "tox": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "tr": {
+   "kind": "read",
+   "effects": []
+  },
+  "tree": {
+   "kind": "search",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "true": {
+   "kind": "read",
+   "effects": []
+  },
+  "truncate": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "tsc": {
+   "kind": "check",
+   "effects": [
+    "reads_files"
+   ],
+   "modifiers": {
+    "--noEmit": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ]
+    }
+   },
+   "uncertain": true,
+   "label": "checking code"
+  },
+  "tsup": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "type": {
+   "kind": "read",
+   "effects": []
+  },
+  "ulimit": {
+   "kind": "read",
+   "effects": []
+  },
+  "uname": {
+   "kind": "read",
+   "effects": []
+  },
+  "uniq": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "unittest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "unlink": {
+   "kind": "edit",
+   "effects": [
+    "deletes_files"
+   ]
+  },
+  "unset": {
+   "kind": "read",
+   "effects": []
+  },
+  "unzip": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "uptime": {
+   "kind": "read",
+   "effects": []
+  },
+  "uv": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running uv"
+   },
+   "subcommands": {
+    "sync": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "add": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "lock": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "pip": {
+     "kind": "process",
+     "effects": [],
+     "uncertain": true,
+     "subcommands": {
+      "install": {
+       "kind": "package",
+       "effects": [
+        "reaches_network",
+        "makes_files",
+        "runs_long"
+       ],
+       "label": "installing"
+      }
+     },
+     "label": "running uv"
+    }
+   }
+  },
+  "vite": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running vite"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "vitest": {
+   "base": {
+    "kind": "test run",
+    "effects": [
+     "reads_files",
+     "runs_long"
+    ],
+    "label": "testing"
+   }
+  },
+  "vm_stat": {
+   "kind": "process",
+   "effects": []
+  },
+  "wait": {
+   "kind": "process",
+   "effects": [
+    "runs_long"
+   ]
+  },
+  "watch": {
+   "kind": "process",
+   "effects": [
+    "runs_long"
+   ]
+  },
+  "wc": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "webpack": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   }
+  },
+  "wget": {
+   "base": {
+    "kind": "network",
+    "effects": [
+     "reaches_network",
+     "writes_files"
+    ],
+    "label": "fetching"
+   }
+  },
+  "whereis": {
+   "kind": "read",
+   "effects": []
+  },
+  "which": {
+   "kind": "read",
+   "effects": []
+  },
+  "whoami": {
+   "kind": "read",
+   "effects": []
+  },
+  "xattr": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "xcodebuild": {
+   "base": {
+    "kind": "build",
+    "effects": [
+     "reads_files",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "building"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    }
+   }
+  },
+  "xmllint": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "xxd": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "yamllint": {
+   "base": {
+    "kind": "check",
+    "effects": [
+     "reads_files"
+    ],
+    "label": "checking code"
+   }
+  },
+  "yarn": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running a script",
+    "bare_label": "installing"
+   },
+   "subcommands": {
+    "test": {
+     "kind": "test run",
+     "effects": [
+      "reads_files",
+      "runs_long"
+     ],
+     "label": "testing"
+    },
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    },
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "add": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    },
+    "lint": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    },
+    "tsc": {
+     "kind": "check",
+     "effects": [
+      "reads_files"
+     ],
+     "label": "checking code"
+    }
+   },
+   "value_flags": [
+    "--cwd"
+   ]
+  },
+  "yes": {
+   "kind": "process",
+   "effects": []
+  },
+  "yq": {
+   "kind": "read",
+   "effects": []
+  },
+  "yum": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running yum"
+   },
+   "subcommands": {
+    "install": {
+     "kind": "package",
+     "effects": [
+      "reaches_network",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "installing"
+    }
+   }
+  },
+  "zcat": {
+   "kind": "read",
+   "effects": [
+    "reads_files"
+   ]
+  },
+  "zig": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running zig"
+   },
+   "subcommands": {
+    "build": {
+     "kind": "build",
+     "effects": [
+      "reads_files",
+      "makes_files",
+      "runs_long"
+     ],
+     "label": "building"
+    }
+   }
+  },
+  "zip": {
+   "kind": "edit",
+   "effects": [
+    "reads_files",
+    "writes_files"
+   ]
+  },
+  "zsh": {
+   "kind": "process",
+   "effects": [],
+   "runs": "the script after -c",
+   "interpreted": true,
+   "runs_script_file": true,
+   "starts_processes": true
+  },
+  "exit": {
+   "kind": "read",
+   "effects": []
+  },
+  "local": {
+   "kind": "read",
+   "effects": []
+  },
+  "trap": {
+   "kind": "read",
+   "effects": []
+  },
+  "break": {
+   "kind": "read",
+   "effects": []
+  },
+  "continue": {
+   "kind": "read",
+   "effects": []
+  },
+  "return": {
+   "kind": "read",
+   "effects": []
+  },
+  "shift": {
+   "kind": "read",
+   "effects": []
+  },
+  "readonly": {
+   "kind": "read",
+   "effects": []
+  },
+  "declare": {
+   "kind": "read",
+   "effects": []
+  },
+  "typeset": {
+   "kind": "read",
+   "effects": []
+  },
+  "alias": {
+   "kind": "read",
+   "effects": []
+  },
+  "umask": {
+   "kind": "read",
+   "effects": []
+  },
+  "getopts": {
+   "kind": "read",
+   "effects": []
+  },
+  "shopt": {
+   "kind": "read",
+   "effects": []
+  },
+  "let": {
+   "kind": "read",
+   "effects": []
+  },
+  "Write-Host": {
+   "kind": "read",
+   "effects": []
+  },
+  "Write-Output": {
+   "kind": "read",
+   "effects": []
+  },
+  "Write-Error": {
+   "kind": "read",
+   "effects": []
+  },
+  "Write-Verbose": {
+   "kind": "read",
+   "effects": []
+  },
+  "throw": {
+   "kind": "read",
+   "effects": []
+  },
+  "foreach": {
+   "kind": "read",
+   "effects": []
+  },
+  "Set-Location": {
+   "kind": "read",
+   "effects": []
+  },
+  "Get-ChildItem": {
+   "kind": "read",
+   "effects": []
+  },
+  "Get-Content": {
+   "kind": "read",
+   "effects": []
+  },
+  "Test-Path": {
+   "kind": "read",
+   "effects": []
+  },
+  "Get-Command": {
+   "kind": "read",
+   "effects": []
+  },
+  "Select-String": {
+   "kind": "read",
+   "effects": []
+  },
+  "$env:PATH": {
+   "kind": "read",
+   "effects": []
+  },
+  "apk": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "choco": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "pacman": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "pixi": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "mise": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "ghcup": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "winget": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "scoop": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "snap": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "zypper": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "conda": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "mamba": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "melos": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "opam": {
+   "base": {
+    "kind": "package",
+    "effects": [
+     "reaches_network",
+     "makes_files",
+     "runs_long"
+    ],
+    "label": "installing"
+   }
+  },
+  "rustup": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running rustup"
+   }
+  },
+  "cabal": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "stack": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "dune": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "meson": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "mill": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "bake": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "mvnw": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "./mvnw": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "./gradlew": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "$(MAKE)": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "$(CC)": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "$(CXX)": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "msbuild": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "bb": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "clojure": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "lein": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "elm": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "nim": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "odin": {
+   "kind": "build",
+   "effects": [
+    "reads_files",
+    "makes_files",
+    "runs_long"
+   ],
+   "label": "building"
+  },
+  "$(INSTALL)": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "$(INSTALL_DATA)": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "$(INSTALL_PROGRAM)": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Copy-Item": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "New-Item": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Remove-Item": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Move-Item": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Compress-Archive": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Expand-Archive": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "7z": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "useradd": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "adduser": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "groupadd": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "usermod": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "setfacl": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "codesign": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "security": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "PlistBuddy": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "reg": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "gpg": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "cosign": {
+   "kind": "edit",
+   "effects": [
+    "writes_files"
+   ]
+  },
+  "Invoke-WebRequest": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "Invoke-RestMethod": {
+   "kind": "network",
+   "effects": [
+    "reaches_network"
+   ]
+  },
+  "kubectl": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running kubectl"
+   }
+  },
+  "helm": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running helm"
+   }
+  },
+  "adb": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running adb"
+   }
+  },
+  "xcrun": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running xcrun"
+   }
+  },
+  "julia": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running julia"
+   }
+  },
+  "Rscript": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running Rscript"
+   }
+  },
+  "nvim": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running nvim"
+   }
+  },
+  "java": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running java"
+   }
+  },
+  "losetup": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running losetup"
+   }
+  },
+  "bc": {
+   "kind": "read",
+   "effects": []
+  },
+  "az": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running az"
+   }
+  },
+  "gcloud": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running gcloud"
+   }
+  },
+  "ansible-playbook": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running ansible-playbook"
+   }
+  },
+  "packer": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running packer"
+   }
+  },
+  "vagrant": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running vagrant"
+   }
+  },
+  "npx": {
+   "base": {
+    "kind": "process",
+    "effects": [],
+    "uncertain": true,
+    "label": "running npx"
+   }
+  }
+ }
+}

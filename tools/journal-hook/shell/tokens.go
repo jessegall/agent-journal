@@ -5,16 +5,17 @@ import (
 	"errors"
 	"regexp"
 	"strings"
-	"unicode"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/internal/pyre"
 )
 
 // Tokens is version 4's Part.tokens: the words of a command as Python's shlex.split reads them in POSIX mode, the
 // comment lines before it and the variable assignments in front of it left out; a line shlex cannot read (an unclosed
 // quote, a trailing backslash) is split at whitespace instead.
 func Tokens(text string) []string {
-	words, err := Words(commandText(text))
+	words, err := Words(CommandText(text))
 	if err != nil {
-		words = strings.Fields(commandText(text))
+		words = strings.FieldsFunc(CommandText(text), pyre.IsSpace)
 	}
 	for len(words) > 0 && strings.Contains(words[0], "=") && !strings.HasPrefix(words[0], "-") {
 		words = words[1:]
@@ -22,11 +23,11 @@ func Tokens(text string) []string {
 	return words
 }
 
-// commandText leaves out the lines before the first that is not a comment.
-func commandText(text string) string {
+// CommandText is Part.command_text: the text from its first line that is not a comment.
+func CommandText(text string) string {
 	lines := strings.Split(text, "\n")
 	for index, line := range lines {
-		if !strings.HasPrefix(strings.TrimLeftFunc(line, unicode.IsSpace), "#") {
+		if !strings.HasPrefix(strings.TrimLeftFunc(line, pyre.IsSpace), "#") {
 			return strings.Join(lines[index:], "\n")
 		}
 	}

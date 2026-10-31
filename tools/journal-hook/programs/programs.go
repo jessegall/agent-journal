@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/jessegall/agent-journal/tools/journal-hook/classify"
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
 )
 
@@ -15,6 +16,7 @@ type Context struct {
 	Actor       string
 	Firing      string
 	RunScript   string
+	Classifier  *classify.Classifier
 	FiredAtMs   int64
 }
 
