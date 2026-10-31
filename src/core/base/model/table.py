@@ -5,11 +5,11 @@ from dataclasses import MISSING, fields
 from types import NoneType, UnionType
 from enum import StrEnum
 from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
-
 from core.base.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
+from core.base.model.unsupported_column_type_error import UnsupportedColumnTypeError
 
 R = TypeVar("R", bound=Model | ViewModel, covariant=True)
 T = TypeVar("T", bound=Model | ViewModel)
@@ -72,10 +72,6 @@ def plural(name: str) -> str:
 
 def indefinite_article(cli_name: str) -> str:
     return "an" if cli_name[:1].lower() in "aeiou" else "a"
-
-
-class UnsupportedColumnTypeError(Exception):
-    """Raised when a model has a field whose type cannot be stored in the database."""
 
 
 def plain_type(hint: object) -> type:

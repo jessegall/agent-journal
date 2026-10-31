@@ -1,12 +1,12 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
-
 from core.base.type_guards import is_mapping
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_fields import mapping, text
 from core.base.driver.tool import Tool
+from server.hook.hook_headers import HookHeaders
 
 RAW_BODY_VERSION = 0
 EVENT_NAMES = {"PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE, "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE,
@@ -14,25 +14,6 @@ EVENT_NAMES = {"PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEven
                "SessionStart": HookEventName.SESSION_START, "SessionEnd": HookEventName.SESSION_END, "PreCompact": HookEventName.COMPACT,
                "SubagentStart": HookEventName.SUBAGENT_START, "SubagentStop": HookEventName.SUBAGENT_STOP, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
 TOOL_EVENTS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
-HOOK_HEADERS = ("X-Journal-Hook-Id", "X-Journal-Request-At", "X-Journal-Actor", "X-Journal-Env")
-
-
-@dataclass(frozen=True)
-class HookHeaders:
-    """What version 4's hook sends beside a raw body: its firing id, when it fired in milliseconds, its actor and
-    its environment."""
-
-    firing: str
-    hook_timestamp_ms: int
-    actor: str
-    environment: str
-
-    @classmethod
-    def parsed(cls, headers: Mapping[str, str]) -> "HookHeaders":
-        missing = [name for name in HOOK_HEADERS if name not in headers]
-        if missing or not headers["X-Journal-Request-At"].isdigit():
-            raise HookEventError(f"a raw hook body comes with the headers the hook sends: {', '.join(HOOK_HEADERS)}")
-        return cls(headers["X-Journal-Hook-Id"], int(headers["X-Journal-Request-At"]), headers["X-Journal-Actor"], headers["X-Journal-Env"])
 
 
 @dataclass(frozen=True)

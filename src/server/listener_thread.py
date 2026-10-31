@@ -1,8 +1,6 @@
 import threading
 from collections.abc import Callable
 
-from core.base.listener.commit_listener_runner import CommitListenerRunner
-
 LISTENER_PERIOD_SECONDS = 60.0
 STOP_LIMIT_SECONDS = 10.0
 
@@ -40,14 +38,3 @@ class ListenerThread:
         self.wake_event.set()
         if self.thread.is_alive():
             self.thread.join(STOP_LIMIT_SECONDS)
-
-
-class ListenerWake(CommitListenerRunner):
-    """Stands in for the commit listener runner in the server's requests: a request only wakes the listener thread,
-    so no request thread ever runs a commit listener."""
-
-    def __init__(self, thread: ListenerThread) -> None:
-        self.listener_thread = thread
-
-    def run(self) -> None:
-        self.listener_thread.wake()

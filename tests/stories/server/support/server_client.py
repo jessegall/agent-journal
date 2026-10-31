@@ -25,7 +25,8 @@ from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
 from server.hook_database import HookDatabase
 from server.journal_round import JournalRound
-from server.listener_thread import ListenerThread, ListenerWake
+from server.listener_thread import ListenerThread
+from server.listener_wake import ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles

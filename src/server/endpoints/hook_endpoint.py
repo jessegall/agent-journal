@@ -10,7 +10,8 @@ from core.base.driver.hook_route import HookRoute
 from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
-from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
+from server.hook.raw_hook_body import RawHookBody, is_raw_body
+from server.hook.hook_headers import HookHeaders
 from server.hook_database_busy import HookDatabaseBusy
 from server.journal_server import ServerContext
 

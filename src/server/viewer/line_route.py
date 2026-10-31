@@ -12,7 +12,8 @@ from core.base.refusal import Refusal
 from core.base.subcommand.caller import Caller
 from core.modules.viewer.window_lines import WindowLines
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
-from server.listener_thread import ListenerThread, ListenerWake
+from server.listener_thread import ListenerThread
+from server.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
 
 REFUSED_CODE = 1
