@@ -32,11 +32,11 @@ func TestACodexShellCommandIsReadBackToTheLineItRuns(t *testing.T) {
 }
 
 // Hand-written: the Codex tools the recorded session did not use.
-func TestEachCodexToolHasItsKindAndFiles(t *testing.T) {
+func TestEachCodexToolHasItsCategoryAndFiles(t *testing.T) {
 	cases := []struct {
-		body  string
-		kind  string
-		files string
+		body     string
+		category string
+		files    string
 	}{
 		{`{"tool_name":"apply_patch","tool_input":{"command":"*** Begin Patch\n*** Update File: a.go\n@@\n-x\n+y\n*** Update File: b.go\n*** Move to: c.go\n*** Update File: a.go\n*** End Patch"}}`, "edit", "a.go b.go c.go"},
 		{`{"tool_name":"write_file","tool_input":{"path":"notes.md","content":"x"}}`, "write", "notes.md"},
@@ -50,8 +50,8 @@ func TestEachCodexToolHasItsKindAndFiles(t *testing.T) {
 		if err != nil || skip {
 			t.Fatalf("%s: skip %v, %v", sample.body, skip, err)
 		}
-		if prepared.Tool.Kind != sample.kind || strings.Join(prepared.Tool.Files, " ") != sample.files {
-			t.Errorf("%s gave kind %s files %v", sample.body, prepared.Tool.Kind, prepared.Tool.Files)
+		if prepared.Tool.Category != sample.category || strings.Join(prepared.Tool.Files, " ") != sample.files {
+			t.Errorf("%s gave category %s files %v", sample.body, prepared.Tool.Category, prepared.Tool.Files)
 		}
 	}
 }

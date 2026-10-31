@@ -110,9 +110,9 @@ func (classifier *Classifier) rowClassification(text string) Classification {
 			}
 		}
 	}
-	classification := Classification{Kind: unknown, Effects: []string{}, Label: label}
+	classification := Classification{Category: unknown, Effects: []string{}, Label: label}
 	for index := len(rows) - 1; index >= 0; index-- {
-		if rows[index].Kind != "" || rows[index] == row {
+		if rows[index].Category != "" || rows[index] == row {
 			classification = classification.withRow(rows[index])
 			break
 		}
@@ -209,7 +209,7 @@ func (classifier *Classifier) redirectTargets(text string) []string {
 func (classifier *Classifier) targetArguments(text string) []string {
 	program := classifier.rowClassification(text)
 	if program.IsWrite() {
-		if namingKinds[program.Kind] && (program.has(writesFiles) || program.has(deletesFiles)) {
+		if namingCategories[program.Category] && (program.has(writesFiles) || program.has(deletesFiles)) {
 			return classifier.arguments(text)
 		}
 		return []string{}

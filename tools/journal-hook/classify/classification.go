@@ -6,66 +6,66 @@ import (
 )
 
 const (
-	unknown      = "unknown"
-	journalKind  = "journal"
-	writesFiles  = "writes_files"
-	deletesFiles = "deletes_files"
-	printsFiles  = "prints_files"
+	unknown         = "unknown"
+	journalCategory = "journal"
+	writesFiles     = "writes_files"
+	deletesFiles    = "deletes_files"
+	printsFiles     = "prints_files"
 )
 
-// KindOrder names a line by its weightiest part: a test run over the tee that keeps its log, an edit over a read, a
+// CategoryOrder names a line by its weightiest part: a test run over the tee that keeps its log, an edit over a read, a
 // journal command or a program the table does not know over a read. It is version 4's KIND_ORDER, kept in the table's
-// kind_order, the one place Go and Python both read it from.
-var KindOrder = shippedKindOrder()
+// category_order, the one place Go and Python both read it from.
+var CategoryOrder = shippedCategoryOrder()
 
-func shippedKindOrder() []string {
+func shippedCategoryOrder() []string {
 	var table struct {
-		KindOrder []string `json:"kind_order"`
+		CategoryOrder []string `json:"category_order"`
 	}
-	if err := json.Unmarshal(shippedTable, &table); err != nil || len(table.KindOrder) == 0 {
-		panic("the shipped command table names no kind_order")
+	if err := json.Unmarshal(shippedTable, &table); err != nil || len(table.CategoryOrder) == 0 {
+		panic("the shipped command table names no category_order")
 	}
-	return table.KindOrder
+	return table.CategoryOrder
 }
 
-// The kinds whose words name the files they write, as rm build and sed -i s/a/b/ notes.txt do.
-var namingKinds = map[string]bool{"edit": true, "version control": true}
+// The categories whose words name the files they write, as rm build and sed -i s/a/b/ notes.txt do.
+var namingCategories = map[string]bool{"edit": true, "version control": true}
 
-// Classification is what a command is and does: its kind, its effects, whether the line alone leaves it uncertain,
+// Classification is what a command is and does: its category, its effects, whether the line alone leaves it uncertain,
 // and the activity it is shown as.
 type Classification struct {
-	Kind      string
+	Category  string
 	Effects   []string
 	Uncertain bool
 	Label     string
 }
 
 func newClassification() Classification {
-	return Classification{Kind: unknown, Effects: []string{}}
+	return Classification{Category: unknown, Effects: []string{}}
 }
 
-func kindRank(kind string) int {
-	for index, each := range KindOrder {
-		if each == kind {
+func categoryRank(category string) int {
+	for index, each := range CategoryOrder {
+		if each == category {
 			return index
 		}
 	}
-	return len(KindOrder)
+	return len(CategoryOrder)
 }
 
-// Union is the classification of commands taken together: the weightiest kind, every effect, uncertain when any is,
-// and the label of the first command of that kind that has one, else of any.
+// Union is the classification of commands taken together: the weightiest category, every effect, uncertain when any is,
+// and the label of the first command of that category that has one, else of any.
 func Union(classifications []Classification) Classification {
 	if len(classifications) == 0 {
 		return newClassification()
 	}
-	kind := classifications[0].Kind
+	category := classifications[0].Category
 	for _, each := range classifications[1:] {
-		if kindRank(each.Kind) < kindRank(kind) {
-			kind = each.Kind
+		if categoryRank(each.Category) < categoryRank(category) {
+			category = each.Category
 		}
 	}
-	united := Classification{Kind: kind}
+	united := Classification{Category: category}
 	var effects []string
 	for _, each := range classifications {
 		effects = append(effects, each.Effects...)
@@ -73,7 +73,7 @@ func Union(classifications []Classification) Classification {
 	}
 	united.Effects = sortedUnique(effects)
 	ordered := append([]Classification{}, classifications...)
-	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Kind == kind && ordered[j].Kind != kind })
+	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Category == category && ordered[j].Category != category })
 	for _, each := range ordered {
 		if each.Label != "" {
 			united.Label = each.Label
@@ -83,16 +83,16 @@ func Union(classifications []Classification) Classification {
 	return united
 }
 
-// withRow is the classification a row gives: a row that names a kind replaces the effects, one that names none adds
+// withRow is the classification a row gives: a row that names a category replaces the effects, one that names none adds
 // to them.
 func (classification Classification) withRow(row *Row) Classification {
 	effects := row.Effects
-	if row.Kind == "" {
+	if row.Category == "" {
 		effects = append(append([]string{}, classification.Effects...), row.Effects...)
 	}
 	changed := classification
-	if row.Kind != "" {
-		changed.Kind = row.Kind
+	if row.Category != "" {
+		changed.Category = row.Category
 	}
 	changed.Effects = sortedUnique(effects)
 	changed.Uncertain = classification.Uncertain || row.Uncertain
@@ -117,7 +117,7 @@ func (classification Classification) has(effect string) bool {
 // IsWrite says the command changes files: not the journal's own, and it writes or deletes files or leaves its meaning
 // uncertain.
 func (classification Classification) IsWrite() bool {
-	return classification.Kind != journalKind && (classification.has(writesFiles) || classification.has(deletesFiles) || classification.Uncertain)
+	return classification.Category != journalCategory && (classification.has(writesFiles) || classification.has(deletesFiles) || classification.Uncertain)
 }
 
 func sortedUnique(words []string) []string {

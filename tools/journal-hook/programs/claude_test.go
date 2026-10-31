@@ -31,11 +31,11 @@ func TestASubagentsOwnHookIsSkippedAndItsToolUsesAndStopGoOn(t *testing.T) {
 	}
 }
 
-func TestEachClaudeToolHasItsKindAndFiles(t *testing.T) {
+func TestEachClaudeToolHasItsCategoryAndFiles(t *testing.T) {
 	cases := []struct {
-		body  string
-		kind  string
-		files []string
+		body     string
+		category string
+		files    []string
 	}{
 		{`{"tool_name":"Bash","tool_input":{"command":"ls"}}`, "shell", nil},
 		{`{"tool_name":"Monitor","tool_input":{"command":"tail -f log"}}`, "shell", nil},
@@ -53,8 +53,8 @@ func TestEachClaudeToolHasItsKindAndFiles(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if prepared.Tool.Kind != sample.kind || len(prepared.Tool.Files) != len(sample.files) || (len(sample.files) == 1 && prepared.Tool.Files[0] != sample.files[0]) {
-			t.Errorf("%s gave kind %s files %v", sample.body, prepared.Tool.Kind, prepared.Tool.Files)
+		if prepared.Tool.Category != sample.category || len(prepared.Tool.Files) != len(sample.files) || (len(sample.files) == 1 && prepared.Tool.Files[0] != sample.files[0]) {
+			t.Errorf("%s gave category %s files %v", sample.body, prepared.Tool.Category, prepared.Tool.Files)
 		}
 	}
 }

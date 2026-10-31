@@ -39,21 +39,21 @@ var wrongShapes = map[string]func(prepared map[string]any){
 	},
 }
 
-func TestTheSchemaTakesTheDocumentsExampleAndOneOfEachToolKind(t *testing.T) {
+func TestTheSchemaTakesTheDocumentsExampleAndOneOfEachToolCategory(t *testing.T) {
 	examples, _ := filepath.Glob("testdata/schema/*.json")
-	kinds := map[string]bool{}
+	categories := map[string]bool{}
 	for _, example := range examples {
 		prepared := readExample(t, example)
 		if err := schemacheck.Problem(t, prepared); err != nil {
 			t.Errorf("%s does not validate: %v", example, err)
 		}
 		if found, ok := prepared["tool"].(map[string]any); ok {
-			kinds[found["kind"].(string)] = true
+			categories[found["kind"].(string)] = true
 		}
 	}
-	for _, kind := range []string{"shell", "edit", "write", "read", "search", "agent", "other"} {
-		if !kinds[kind] {
-			t.Errorf("no example of the tool kind %s", kind)
+	for _, category := range []string{"shell", "edit", "write", "read", "search", "agent", "other"} {
+		if !categories[category] {
+			t.Errorf("no example of the tool category %s", category)
 		}
 	}
 }

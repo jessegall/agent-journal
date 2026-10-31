@@ -10,8 +10,8 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
-// The kind of each Codex tool, read from version 4's Codex.decoders; a tool not named here is other.
-var codexToolKinds = map[string]string{
+// The category of each Codex tool, read from version 4's Codex.decoders; a tool not named here is other.
+var codexToolCategories = map[string]string{
 	"Bash":                     "shell",
 	"apply_patch":              "edit",
 	"write_file":               "write",
@@ -52,12 +52,12 @@ func codexEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 }
 
 func codexTool(name string, input toolInput, context Context) *event.Tool {
-	kind, known := codexToolKinds[name]
+	category, known := codexToolCategories[name]
 	if !known {
-		kind = "other"
+		category = "other"
 	}
-	tool := &event.Tool{Name: name, Kind: kind, Files: []string{}}
-	switch kind {
+	tool := &event.Tool{Name: name, Category: category, Files: []string{}}
+	switch category {
 	case "shell":
 		var command any = pythonText(input.values, "command")
 		if words, ok := input.values["command"].([]any); ok {

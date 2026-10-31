@@ -13,7 +13,7 @@ import (
 // since the original text it hands back is cut short for a long file. A notebook's cells are not lines, so
 // NotebookEdit gets no diff.
 func claudeDiff(eventName string, read commonBody, tool *event.Tool) *event.DiffCount {
-	if (tool.Kind != "edit" && tool.Kind != "write") || len(tool.Files) == 0 || tool.Name == "NotebookEdit" {
+	if (tool.Category != "edit" && tool.Category != "write") || len(tool.Files) == 0 || tool.Name == "NotebookEdit" {
 		return nil
 	}
 	path := tool.Files[0]
@@ -22,7 +22,7 @@ func claudeDiff(eventName string, read commonBody, tool *event.Tool) *event.Diff
 		return claudePatched(path, read.ToolResponse, input)
 	}
 	before := edits.OnDisk(absolute(read.Cwd, path))
-	if tool.Kind == "write" {
+	if tool.Category == "write" {
 		content, _ := input["content"].(string)
 		return edits.Counted(path, before, content)
 	}
@@ -93,13 +93,13 @@ func replacementOf(fields map[string]any) edits.Replacement {
 func codexDiff(eventName string, read commonBody, tool *event.Tool) *event.DiffCount {
 	onDisk := func(path string) *string { return edits.OnDisk(absolute(read.Cwd, path)) }
 	switch {
-	case tool.Kind == "edit":
+	case tool.Category == "edit":
 		for _, text := range read.ToolInput.texts {
 			if counted := edits.Patched(text, onDisk); counted != nil {
 				return counted
 			}
 		}
-	case tool.Kind == "write" && len(tool.Files) > 0 && eventName == "pre_tool_use":
+	case tool.Category == "write" && len(tool.Files) > 0 && eventName == "pre_tool_use":
 		content, _ := read.ToolInput.values["content"].(string)
 		return edits.Counted(tool.Files[0], onDisk(tool.Files[0]), content)
 	}

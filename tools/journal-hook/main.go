@@ -1,8 +1,9 @@
-// Command journal-hook is the hook the agent programs run: it reads the hook body on stdin, prepares the HookEvent and
-// hands it to the journal's Python server. Run as journal-hook <program> <project root>.
+// Command journal-hook is the hook the agent programs run: it reads the hook body on stdin, prepares the HookEvent,
+// hands it to the journal's Python server and prints the answer. Run as journal-hook <program> <project root>.
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"time"
@@ -25,8 +26,27 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
-	_, skip, err = programs.Prepared(program, body, context)
+	prepared, skip, err := programs.Prepared(program, body, context)
 	if skip || err != nil {
 		os.Exit(0)
 	}
+	object, err := json.Marshal(prepared)
+	if err != nil {
+		os.Exit(0)
+	}
+	limit := LimitFor(prepared.Event)
+	status, answer := post(delivery{
+		root:        root,
+		program:     program,
+		event:       prepared.Event,
+		environment: context.Environment,
+		actor:       context.Actor,
+		actorToken:  os.Getenv("JOURNAL_ACTOR_TOKEN"),
+		launch:      os.Getenv("JOURNAL_LAUNCH"),
+		firing:      context.Firing,
+		firedAtMs:   context.FiredAtMs,
+		body:        object,
+		limit:       limit,
+	}, nil, time.Now())
+	os.Exit(Printed(os.Stdout, os.Stderr, program, prepared.Event, status, answer, root, limit))
 }

@@ -8,7 +8,7 @@ import (
 // Each command beside the classification version 4's table and classifier give it.
 var classifyCases = []struct {
 	text      string
-	kind      string
+	category  string
 	effects   []string
 	uncertain bool
 }{
@@ -26,17 +26,17 @@ var classifyCases = []struct {
 func TestEachCommandIsClassifiedByItsRowSubcommandAndFlags(t *testing.T) {
 	for _, sample := range classifyCases {
 		got := shippedClassifier.Classify(sample.text)
-		if got.Kind != sample.kind || !reflect.DeepEqual(got.Effects, sample.effects) || got.Uncertain != sample.uncertain {
-			t.Errorf("%q: %+v, want %s %q uncertain %v", sample.text, got, sample.kind, sample.effects, sample.uncertain)
+		if got.Category != sample.category || !reflect.DeepEqual(got.Effects, sample.effects) || got.Uncertain != sample.uncertain {
+			t.Errorf("%q: %+v, want %s %q uncertain %v", sample.text, got, sample.category, sample.effects, sample.uncertain)
 		}
 	}
 }
 
 func TestALineIsNamedByItsWeightiestPartAndKnowsAJournalOnlyLine(t *testing.T) {
 	cases := []struct {
-		line    string
-		kind    string
-		journal bool
+		line     string
+		category string
+		journal  bool
 	}{
 		{"git status && echo hi > out.txt", "version control", false},
 		{"ls && pytest -q", "test run", false},
@@ -46,17 +46,17 @@ func TestALineIsNamedByItsWeightiestPartAndKnowsAJournalOnlyLine(t *testing.T) {
 	}
 	for _, sample := range cases {
 		line := shippedClassifier.Line(sample.line)
-		if line.Kind != sample.kind || line.IsJournalOnly != sample.journal {
-			t.Errorf("%q: kind %s journal %v", sample.line, line.Kind, line.IsJournalOnly)
+		if line.Category != sample.category || line.IsJournalOnly != sample.journal {
+			t.Errorf("%q: category %s journal %v", sample.line, line.Category, line.IsJournalOnly)
 		}
 	}
 }
 
-// Version 4's KIND_ORDER in src/journal/support/classification.py, which the table's kind_order must keep.
-func TestTheKindOrderIsVersion4s(t *testing.T) {
+// Version 4's KIND_ORDER in src/journal/support/classification.py, which the table's category_order must keep.
+func TestTheCategoryOrderIsVersion4s(t *testing.T) {
 	version4 := []string{"test run", "build", "package", "edit", "network", "version control", "check", "process", "journal", "unknown", "search", "read"}
-	if !reflect.DeepEqual(KindOrder, version4) {
-		t.Errorf("kind_order is %q", KindOrder)
+	if !reflect.DeepEqual(CategoryOrder, version4) {
+		t.Errorf("category_order is %q", CategoryOrder)
 	}
 }
 
@@ -72,9 +72,9 @@ func TestMixedLinesAreNamedByTheirWeightiestPart(t *testing.T) {
 		"ls && nosuchtool":                            "unknown",
 		"curl -s https://example.com | jq . > a.json": "network",
 	}
-	for line, kind := range cases {
-		if got := shippedClassifier.Line(line).Kind; got != kind {
-			t.Errorf("%q is %s, want %s", line, got, kind)
+	for line, category := range cases {
+		if got := shippedClassifier.Line(line).Category; got != category {
+			t.Errorf("%q is %s, want %s", line, got, category)
 		}
 	}
 }

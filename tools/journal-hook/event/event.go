@@ -29,18 +29,18 @@ type HookEvent struct {
 }
 
 type Tool struct {
-	Name  string     `json:"name"`
-	Kind  string     `json:"kind"`
-	Shell *ShellLine `json:"shell,omitempty"`
-	Files []string   `json:"files"`
-	Diff  *DiffCount `json:"diff"`
+	Name     string     `json:"name"`
+	Category string     `json:"kind"`
+	Shell    *ShellLine `json:"shell,omitempty"`
+	Files    []string   `json:"files"`
+	Diff     *DiffCount `json:"diff"`
 }
 
 type ShellLine struct {
 	Line          string   `json:"line"`
 	Parts         []Part   `json:"parts"`
 	Redirects     []string `json:"redirects"`
-	Kind          string   `json:"kind"`
+	Category      string   `json:"kind"`
 	IsJournalOnly bool     `json:"is_journal_only"`
 	ParseError    string   `json:"parse_error"`
 }
@@ -58,8 +58,8 @@ type Part struct {
 }
 
 type Classification struct {
-	Kind    string   `json:"kind"`
-	Effects []string `json:"effects"`
+	Category string   `json:"kind"`
+	Effects  []string `json:"effects"`
 }
 
 type DiffCount struct {

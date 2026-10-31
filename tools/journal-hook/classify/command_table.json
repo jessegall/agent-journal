@@ -15,7 +15,7 @@
   "journal",
   "unknown"
  ],
- "kind_order": [
+ "category_order": [
   "test run",
   "build",
   "package",

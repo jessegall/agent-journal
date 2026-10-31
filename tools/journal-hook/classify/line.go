@@ -10,7 +10,7 @@ import (
 // weightiest part, as version 4 names it. A line no shell can read has no parts, says why in parse_error and is
 // unknown.
 func (classifier *Classifier) Line(line string) event.ShellLine {
-	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}, Kind: unknown}
+	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}, Category: unknown}
 	commands, redirects, err := shell.Split(line)
 	if err != nil {
 		prepared.ParseError = err.Error()
@@ -23,7 +23,7 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 		classifications = append(classifications, classification)
 		prepared.Parts = append(prepared.Parts, classifier.part(command, classification))
 	}
-	prepared.Kind = Union(classifications).Kind
+	prepared.Category = Union(classifications).Category
 	prepared.IsJournalOnly = isJournalOnly(commands)
 	return prepared
 }
@@ -35,7 +35,7 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		Program:        program,
 		Subcommand:     subcommand,
 		Arguments:      arguments,
-		Classification: event.Classification{Kind: classification.Kind, Effects: classification.Effects},
+		Classification: event.Classification{Category: classification.Category, Effects: classification.Effects},
 		ReadPaths:      nonEmpty(classifier.ReadPaths(command.Text)),
 		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
 		JoinedBy:       command.JoinedBy,

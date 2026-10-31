@@ -27,7 +27,7 @@ const operatorSigns = "<>|&;"
 
 // Row is one row of the table: a program, a subcommand or an option.
 type Row struct {
-	Kind            string
+	Category        string
 	Effects         []string
 	Uncertain       bool
 	Interpreted     bool
@@ -166,7 +166,7 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 		_ = json.Unmarshal(raw, &base)
 	}
 	row := &Row{Subcommands: map[string]*Row{}, Modifiers: map[string]*Row{}, ValueFlags: set(stringsOf(data["value_flags"]))}
-	row.Kind = textOf(base["kind"])
+	row.Category = textOf(base["kind"])
 	row.Effects = stringsOf(base["effects"])
 	row.Uncertain = truthOf(base["uncertain"])
 	row.Interpreted = truthOf(base["interpreted"])
