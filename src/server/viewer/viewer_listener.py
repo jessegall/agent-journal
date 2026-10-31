@@ -1,6 +1,7 @@
 import threading
 from http.server import ThreadingHTTPServer
 
+from server.viewer.line_route import LineRoute
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_handler import ViewerRequestHandler
 
@@ -14,9 +15,9 @@ class ViewerListener(ThreadingHTTPServer):
 
     daemon_threads = True
 
-    def __init__(self, login: ViewerLogin) -> None:
+    def __init__(self, login: ViewerLogin, line_route: LineRoute) -> None:
         super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
-        self.login = login
+        self.login, self.line_route = login, line_route
         self.thread = threading.Thread(target=self.serve_forever, name="viewer", daemon=True)
 
     @property

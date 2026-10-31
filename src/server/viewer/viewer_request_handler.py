@@ -1,13 +1,17 @@
 import json
+from dataclasses import asdict
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
+from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_login import ViewerLogin
+from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
 
 COOKIE_NAME = "journal_viewer"
 VIEWER_ROOT = "/viewer/"
+LINE_ROUTE = "/api/line"
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -32,6 +36,26 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"person_id": viewer.login.person_id(token)})
             return
         self.answer(404, {"error": f"no route {route.path}"})
+
+    def do_POST(self) -> None:
+        viewer = self.viewer()
+        body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
+        if self.headers.get("Host") != viewer.host:
+            self.answer(403, {"error": "this listener answers only its own address"})
+            return
+        token = self.cookie_token()
+        if not viewer.login.has_session(token):
+            self.answer(401, {"error": "open the address journal viewer prints to log in"})
+            return
+        if urlsplit(self.path).path != LINE_ROUTE:
+            self.answer(404, {"error": f"no route {self.path}"})
+            return
+        try:
+            request = ViewerLineRequest.parsed(json.loads(body or b"{}"))
+        except ViewerRequestError as error:
+            self.answer(400, {"error": str(error)})
+            return
+        self.answer(200, asdict(viewer.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment)))
 
     def answer_login(self, login: ViewerLogin, key: str) -> None:
         if not login.has_key(key):

@@ -1,6 +1,7 @@
 from core.base.actor import Actor
 from core.base.cli.line_parser import LineParser
 from core.base.cli.parsed_line import ParsedLine
+from core.base.cli.subcommand_lookup import UsageError
 from core.base.registry.registry import Registry
 from core.modules.viewer.window_refusal import WindowRefusal
 
@@ -28,9 +29,9 @@ class WindowLines:
 
     def parsed(self, window_name: str, argv: list[str]) -> ParsedLine:
         if len(argv) < 2:
-            raise WindowRefusal(f"{window_name} sent no command line")
+            raise UsageError(f"{window_name} sent no command line")
         subcommand, parser = self.line_parser.parser(argv)
         try:
             return ParsedLine(subcommand, parser.parse_args(argv[2:]))
         except SystemExit as exit_request:
-            raise WindowRefusal(f"{window_name} sent a line that does not parse: {' '.join(argv)}") from exit_request
+            raise UsageError(f"{window_name} sent a line that does not parse: {' '.join(argv)}") from exit_request

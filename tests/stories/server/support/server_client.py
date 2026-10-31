@@ -29,6 +29,7 @@ from server.listener_thread import ListenerThread, ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
+from server.viewer.line_route import LineRoute
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_login import ViewerLogin
 from scripts.timing_report import logged_timings, report
@@ -95,6 +96,10 @@ class ServerStory:
     def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
         answered, headers, body = viewer_answer(self.viewer_port(), path, cookie, host)
         assert answered == status and text in body, (answered, headers, body)
+
+    def expect_viewer_line(self, cookie: str, body: dict[str, object], status: int, text: str) -> None:
+        answered, headers, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
+        assert answered == status and text in answer, (answered, headers, answer)
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")
@@ -203,7 +208,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(ViewerLogin()))
+                            HookDatabase(home), ViewerListener(ViewerLogin(), LineRoute(home, listener_thread)))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
@@ -265,11 +270,11 @@ def expect_same_answer(raw: tuple[object, object], prepared: tuple[object, objec
     assert raw == prepared, f"the raw body was answered {raw} and the prepared object {prepared}"
 
 
-def viewer_answer(port: int, path: str, cookie: str, host: str) -> tuple[int, dict[str, str], str]:
+def viewer_answer(port: int, path: str, cookie: str, host: str, body: dict[str, object] | None = None) -> tuple[int, dict[str, str], str]:
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=TIMEOUT_SECONDS)
     headers = {"Host": host or f"127.0.0.1:{port}", **({"Cookie": cookie} if cookie else {})}
     try:
-        connection.request("GET", path, headers=headers)
+        connection.request("GET" if body is None else "POST", path, body=None if body is None else json.dumps(body), headers=headers)
         response = connection.getresponse()
         return response.status, dict(response.getheaders()), response.read().decode()
     finally:
