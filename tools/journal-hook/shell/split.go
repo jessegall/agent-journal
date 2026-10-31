@@ -249,3 +249,19 @@ func ownEnd(statement *syntax.Stmt) int {
 	}
 	return end
 }
+
+// Runs are the parts of version 4's Chain: the commands joined by || or a pipe stay one part.
+func Runs(commands []Command) [][]Command {
+	var runs [][]Command
+	for index, command := range commands {
+		if index == 0 || !joinsOn(commands[index-1]) {
+			runs = append(runs, nil)
+		}
+		runs[len(runs)-1] = append(runs[len(runs)-1], command)
+	}
+	return runs
+}
+
+func joinsOn(command Command) bool {
+	return command.JoinedBy == "||" || command.PipedInto >= 0
+}

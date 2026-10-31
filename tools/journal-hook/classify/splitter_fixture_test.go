@@ -18,7 +18,7 @@ func version4Chain(line string) ([][]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	runs := Runs(commands)
+	runs := shell.Runs(commands)
 	parts := [][]any{}
 	for index, run := range runs {
 		preceding, following := "", run[len(run)-1].JoinedBy

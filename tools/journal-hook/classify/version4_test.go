@@ -36,7 +36,7 @@ func (classifier *Classifier) version4Parts(line string) []version4Part {
 		return nil
 	}
 	var parts []version4Part
-	for _, run := range Runs(commands) {
+	for _, run := range shell.Runs(commands) {
 		text := runText(run)
 		var classifications []Classification
 		files := []string{}

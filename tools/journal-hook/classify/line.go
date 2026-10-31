@@ -47,25 +47,9 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 	return prepared
 }
 
-// Runs are the parts of version 4's Chain: the commands joined by || or a pipe stay one part.
-func Runs(commands []shell.Command) [][]shell.Command {
-	var runs [][]shell.Command
-	for index, command := range commands {
-		if index == 0 || !joinsOn(commands[index-1]) {
-			runs = append(runs, nil)
-		}
-		runs[len(runs)-1] = append(runs[len(runs)-1], command)
-	}
-	return runs
-}
-
-func joinsOn(command shell.Command) bool {
-	return command.JoinedBy == "||" || command.PipedInto >= 0
-}
-
 // isJournalOnly is Chain.is_journal_line: every part of the line is a journal command.
 func isJournalOnly(commands []shell.Command) bool {
-	runs := Runs(commands)
+	runs := shell.Runs(commands)
 	for _, run := range runs {
 		if isJournal(run[0].Text) {
 			continue
