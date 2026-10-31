@@ -19,7 +19,7 @@ class ReviewRequested(StoryFixture):
         story.run(REVIEW_REQUEST, actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: queued", "subject: task 1")
+        story.expect_success(REVIEW_SHOW, "state: queued", "subject_model: task", "subject_id: 1")
 
 
 class ReviewTaken(StoryFixture):

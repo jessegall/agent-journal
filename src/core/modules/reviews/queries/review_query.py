@@ -21,3 +21,12 @@ class ReviewQuery(Query[Review]):
 
     def unfinished(self) -> Self:
         return self.matching(Among("state", UNFINISHED))
+
+    def queued(self, environment_id: int) -> Self:
+        return self.filter(environment_id=environment_id, state=ReviewState.QUEUED).oldest()
+
+    def reviewing(self) -> Self:
+        return self.filter(state=ReviewState.REVIEWING)
+
+    def of_reviewer(self, reviewer_id: int) -> Self:
+        return self.filter(reviewer_id=reviewer_id)
