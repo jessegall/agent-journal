@@ -6,7 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.plans.plan_progress import PlanProgress
 
 
-class PlanTasksDone(Guard):
+class PlanCloseGuard(Guard):
     """Refuses to close a plan while a task in it is neither completed nor cancelled."""
 
     name = "plans.tasks-done"

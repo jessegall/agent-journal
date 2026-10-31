@@ -6,7 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.plans.phase import Phase
 
 
-class PhasePositionByMove(Guard):
+class PhasePositionGuard(Guard):
     """A phase changes its place only through journal phase move, which shifts the phases between; an edit of its
     place alone would leave two phases on one place or a gap."""
 

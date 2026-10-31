@@ -1,0 +1,21 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:keyword",
+        "where": [
+            {"name": "position"},
+            {"fileMatches": "(^|/)core/modules/plans/"}
+        ],
+        "reject": [
+            {"fileMatches": "(^|/)core/modules/plans/(positions|phase_handlers)\\.py$"},
+            {"testCode": true}
+        ]
+    },
+    "sin": {
+        "name": "position-outside-positions",
+        "description": "Plans code sets a phase's or a place's position outside Positions and the phase handlers, which can leave a gap or two rows on one place.",
+        "rule": "Take a new place from Positions.next_phase_position or next_place, renumber with Positions, and move a phase with journal phase move.",
+        "skill": "views-architecture"
+    }
+}
