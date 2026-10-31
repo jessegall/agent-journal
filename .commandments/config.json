@@ -65,6 +65,10 @@
         "architecture_questions_RulesNeverAskDetector",
         "architecture_chat_NoModuleKindPathDetector",
         "architecture_chat_NoMarkTypeInViewerDetector",
+        "architecture_reviews_ReviewsNameNoWorkerDetector",
+        "architecture_reviews_ReviewMovedByCommandDetector",
+        "architecture_reviews_StepsOnlyFromListenersDetector",
+        "architecture_reviews_ParserIsPureDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
