@@ -1,10 +1,11 @@
 import io
 import json
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.cli.console import USAGE_CODE
 from core.base.cli.line_run import LineRun
-from core.base.cli.subcommand_lookup import UsageError
+from core.base.cli.usage_error import UsageError
 from core.base.container import Container
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome

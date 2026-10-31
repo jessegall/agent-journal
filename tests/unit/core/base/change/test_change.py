@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.timestamp import Timestamp

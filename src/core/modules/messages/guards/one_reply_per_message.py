@@ -2,7 +2,8 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.messages.message import Message, MessageType
+from core.modules.messages.message import Message
+from core.modules.messages.message_type import MessageType
 from core.modules.messages.message_query import MessageQuery
 
 

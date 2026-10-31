@@ -1,4 +1,5 @@
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
@@ -6,7 +7,8 @@ from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.agent import Agent, AgentRole
+from core.modules.agents.agent import Agent
+from core.modules.agents.agent_role import AgentRole
 from core.modules.agents.agent_start import AgentStart
 from core.modules.drivers.hook_call import HookCall
 from core.modules.drivers.hook_call_record import HookCallRecord

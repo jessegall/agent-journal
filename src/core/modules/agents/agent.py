@@ -1,18 +1,7 @@
 from dataclasses import dataclass
-from enum import StrEnum
-
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
-
-
-class AgentRole(StrEnum):
-    """What an agent session is there for: the main agent of an environment, or a helper it started."""
-
-    MAIN = "main"
-    WORKER = "worker"
-    SUBAGENT = "subagent"
-    REVIEWER = "reviewer"
-    VERIFIER = "verifier"
+from core.modules.agents.agent_role import AgentRole
 
 
 @dataclass(frozen=True, kw_only=True)

@@ -1,10 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from core.base.type_guards import is_mapping
-
-
-class CallerRequestError(Exception):
-    """Raised when the data of a request does not have the shape of a caller request."""
+from core.base.caller.caller_request_error import CallerRequestError
 
 
 @dataclass(frozen=True)

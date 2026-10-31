@@ -6,10 +6,10 @@ from core.base.subcommand.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
-from core.base.cli.subcommand_lookup import UsageError
+from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
-from core.base.deadline import DeadlinePassedError
+from core.base.deadline_passed_error import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner

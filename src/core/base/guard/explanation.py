@@ -1,14 +1,6 @@
 from dataclasses import dataclass, field
-
 from core.base.guard_refusal import GuardRefusal
-
-
-@dataclass(frozen=True)
-class EventListeners:
-    """An event a change would raise, with the listeners registered for it."""
-
-    event: str
-    listeners: list[str]
+from core.base.guard.event_listeners import EventListeners
 
 
 @dataclass

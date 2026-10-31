@@ -1,5 +1,6 @@
 from tests.stories.core.support import story_lines as lines
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from tests.stories.core.base.drivers.support.fixtures import LeadStarted
 from tests.stories.core.base.drivers.support.samples import SAMPLES
 

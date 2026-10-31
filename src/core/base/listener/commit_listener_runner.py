@@ -7,15 +7,11 @@ from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
+from core.base.listener.commit_listener_error import CommitListenerError
+
 
 FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
-
-
-class CommitListenerError(Exception):
-    """Raised when a registered commit listener's path leads to a class that is not a commit listener."""
-
-
 class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
     run left undone is done by the next. It claims each event before handling it, so a second runner never

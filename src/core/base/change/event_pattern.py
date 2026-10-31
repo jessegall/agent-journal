@@ -1,13 +1,9 @@
 from dataclasses import dataclass
+from core.base.change.event_pattern_error import EventPatternError
+
 
 ANY = "*"
 EVENT_PARTS = 2
-
-
-class EventPatternError(Exception):
-    """Raised when an event pattern is neither * nor a model name and a change, each of which may be *."""
-
-
 @dataclass(frozen=True)
 class EventPattern:
     """An event name or a pattern of one, such as task.start, task.*, *.delete or *, and whether an event

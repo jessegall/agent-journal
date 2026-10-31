@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.cli.line_run import LineRun
 from core.base.command.bus import Bus

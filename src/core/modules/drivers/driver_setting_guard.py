@@ -1,4 +1,4 @@
-from core.base.actor import ActorType
+from core.base.actor_type import ActorType
 import json
 
 from core.base.change.change import Change

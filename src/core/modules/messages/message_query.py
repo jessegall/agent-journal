@@ -3,7 +3,8 @@ from typing import Self
 from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.query import Query
-from core.modules.messages.message import Message, MessageType
+from core.modules.messages.message import Message
+from core.modules.messages.message_type import MessageType
 
 
 class MessageQuery(Query[Message]):

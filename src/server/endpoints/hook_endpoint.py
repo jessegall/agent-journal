@@ -13,7 +13,7 @@ from core.base.timing import Timing
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
 from server.hook_database_busy import HookDatabaseBusy
-from server.journal_server import ServerContext
+from server.server_context import ServerContext
 
 HOOK_LIMIT_SECONDS = 3.0
 PROGRAMS = ("claude", "codex")

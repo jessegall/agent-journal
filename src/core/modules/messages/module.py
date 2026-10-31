@@ -1,8 +1,11 @@
 from core.modules.messages.guards.one_reply_per_message import OneReplyPerMessage
-from core.modules.messages.handlers import MessageReadHandler, MessageSendHandler
+from core.modules.messages.message_read_handler import MessageReadHandler
+from core.modules.messages.message_send_handler import MessageSendHandler
 from core.modules.messages.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTable
-from core.modules.messages.subcommands import MessageReadSubcommand, MessageReplySubcommand, MessageSendSubcommand
+from core.modules.messages.message_read_subcommand import MessageReadSubcommand
+from core.modules.messages.message_reply_subcommand import MessageReplySubcommand
+from core.modules.messages.message_send_subcommand import MessageSendSubcommand
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.message import Message

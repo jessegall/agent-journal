@@ -1,29 +1,17 @@
 import os
 import subprocess
 import sys
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-
 from core.base.timestamp import Timestamp
+from core.base.caller.process_row import ProcessRow
 
-CHAIN_LIMIT_STEPS = 32
+
 PS_TIMEOUT_SECONDS = 5
 PS_LINE = ["ps", "-A", "-o", "pid=,ppid=,lstart="]
 LSTART_FORMAT = "%a %b %d %H:%M:%S %Y"
 PROC_FOLDER = Path("/proc")
 START_FIELD_INDEX = 19
-
-
-@dataclass(frozen=True)
-class ProcessRow:
-    """One process of the machine's process table: its pid, its parent's pid, and when it started, to the second."""
-
-    pid: int
-    parent_pid: int
-    started_at: Timestamp
-
-
 def ps_rows(text: str) -> list[ProcessRow]:
     rows: list[ProcessRow] = []
     for line in text.splitlines():
@@ -33,15 +21,11 @@ def ps_rows(text: str) -> list[ProcessRow]:
         started = datetime.strptime(" ".join(columns[2:7]), LSTART_FORMAT).astimezone(timezone.utc)
         rows.append(ProcessRow(int(columns[0]), int(columns[1]), Timestamp(started)))
     return rows
-
-
 def proc_row(stat_text: str, boot_seconds: float, tick_rate_hertz: int) -> ProcessRow:
     pid_text, stat_tail = stat_text.split(" (", 1)
     fields = stat_tail.rsplit(") ", 1)[1].split()
     started_seconds = int(boot_seconds + int(fields[START_FIELD_INDEX]) / tick_rate_hertz)
     return ProcessRow(int(pid_text), int(fields[1]), Timestamp(datetime.fromtimestamp(started_seconds, timezone.utc)))
-
-
 class ProcessTable:
     """The machine's running processes, read once: from ps on macOS, from /proc on Linux."""
 
@@ -61,19 +45,3 @@ class ProcessTable:
             except OSError:
                 continue
         return rows
-
-
-class ProcessChain:
-    """The processes from one pid up to the first process, read from one look at the process table, at most
-    CHAIN_LIMIT_STEPS of them."""
-
-    def __init__(self, table: ProcessTable) -> None:
-        self.table = table
-
-    def steps(self, pid: int) -> list[ProcessRow]:
-        rows = {row.pid: row for row in self.table.rows()}
-        chain: list[ProcessRow] = []
-        while pid in rows and len(chain) < CHAIN_LIMIT_STEPS and all(step.pid != pid for step in chain):
-            chain.append(rows[pid])
-            pid = rows[pid].parent_pid
-        return chain

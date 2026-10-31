@@ -8,7 +8,7 @@ from core.base.module.module_finder import ModuleFinder
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
-from core.base.subcommand.subcommand import ReadSubcommand
+from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading

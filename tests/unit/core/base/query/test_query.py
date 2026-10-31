@@ -12,7 +12,8 @@ from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
-from core.base.query.query import Query, UnknownColumnError
+from core.base.query.query import Query
+from core.base.query.unknown_column_error import UnknownColumnError
 from tests.unit.core.base.model.test_table import LogEntry
 
 AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

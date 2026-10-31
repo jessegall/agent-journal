@@ -1,0 +1,19 @@
+from argparse import ArgumentParser, Namespace
+from core.base.subcommand.caller import Caller
+from core.base.subcommand.subcommand import Subcommand
+from core.modules.plans.phase_place import PhasePlace
+from core.modules.plans.phase_task import PhaseTask
+
+
+class PhasePlaceSubcommand(Subcommand[PhasePlace, PhaseTask]):
+    """`journal phase place <task> --phase <phase>`: puts a task at the end of a phase, out of any other."""
+
+    cli_name = "phase"
+    name = "place"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("task_id", type=int)
+        parser.add_argument("--phase", type=int, required=True, dest="phase_id")
+
+    def command(self, arguments: Namespace, caller: Caller) -> PhasePlace:
+        return PhasePlace(arguments.task_id, arguments.phase_id)

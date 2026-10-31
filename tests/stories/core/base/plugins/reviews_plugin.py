@@ -1,5 +1,6 @@
 from tests.stories.core.support import story_lines as lines
-from core.modules.tasks.task import Task, TaskState
+from core.modules.tasks.task import Task
+from core.modules.tasks.task_state import TaskState
 from tests.stories.core.support.reviews_samples import Review, ReviewState
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture

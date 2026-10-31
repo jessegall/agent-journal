@@ -17,7 +17,8 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
-from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
+from core.base.subcommand.subcommand import Subcommand
+from core.base.subcommand.read_subcommand import ReadSubcommand
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]

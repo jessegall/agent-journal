@@ -6,10 +6,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
-
-
-class ListenerClassError(Exception):
-    """Raised when a registered listener's path leads to a class that is no listener."""
+from core.base.listener.listener_class_error import ListenerClassError
 
 
 class Listeners:

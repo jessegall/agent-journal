@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 
 import pytest
 
-from core.base.model.model import Model, ModelError
+from core.base.model.model import Model
+from core.base.model.model_error import ModelError
 from core.base.model.move import Move
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState

@@ -1,5 +1,4 @@
 from typing import TypeVar
-
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.command import Command
@@ -11,23 +10,12 @@ from core.base.deadline import Deadline
 from core.base.guard.explanation import Explanation
 from core.base.registry.registry import Registry
 from core.base.timing import Timing
+from core.base.command.missing_handler_error import MissingHandlerError
+from core.base.command.transaction_error import TransactionError
+from core.base.command.explanation_rollback import ExplanationRollback
+
 
 R = TypeVar("R")
-
-
-
-class MissingHandlerError(Exception):
-    """Raised when no registered handler carries out a command."""
-
-
-class TransactionError(Exception):
-    """Raised when a command is run at the top inside a transaction, or nested outside one."""
-
-
-class ExplanationRollback(Exception):
-    """Raised at the end of a command run with --explain, so its transaction rolls back."""
-
-
 class Bus:
     """Runs commands: a command at the top runs in a transaction of its own, rolled back when the caller's
     deadline passes before its commit, and stamps the request's timing when its write lock is held and when it

@@ -1,6 +1,7 @@
 import pytest
 
-from core.base.deadline import Deadline, DeadlinePassedError
+from core.base.deadline import Deadline
+from core.base.deadline_passed_error import DeadlinePassedError
 
 
 def test_no_deadline_never_passes_and_has_no_time_left():

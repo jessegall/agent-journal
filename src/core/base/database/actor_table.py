@@ -1,4 +1,5 @@
-from core.base.actor import CORE_ACTOR_ID, ActorType
+from core.base.actor import CORE_ACTOR_ID
+from core.base.actor_type import ActorType
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 

@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from tests.unit.core.base.command.test_commands import ItemMake

@@ -1,13 +1,7 @@
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.statement import Statement
-
-
-class ForeignKeyError(Exception):
-    """Raised when rebuilding a table would leave rows pointing at rows that no longer exist."""
-
-    def __init__(self, broken: list[tuple[object, ...]]) -> None:
-        super().__init__(f"the rebuild left {len(broken)} rows pointing nowhere: {broken[:5]}")
+from core.base.database.foreign_key_error import ForeignKeyError
 
 
 class RebuildMigration(Migration):

@@ -5,7 +5,7 @@ from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.plans.plan_task import PlanTask
-from core.modules.tasks.commands import TaskCancel
+from core.modules.tasks.task_cancel import TaskCancel
 
 
 class CancelOpenPlanTasks(SaveListener):

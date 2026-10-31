@@ -1,8 +1,9 @@
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
-from core.base.caller.process_table import ProcessChain
-from core.base.cli.subcommand_lookup import UsageError
+from core.base.caller.process_chain import ProcessChain
+from core.base.cli.usage_error import UsageError
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries

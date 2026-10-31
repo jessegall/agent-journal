@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from core.modules.agents.agent import Agent, AgentRole
+from core.modules.agents.agent import Agent
+from core.modules.agents.agent_role import AgentRole
 from core.base.command.command import Command
 from core.base.timestamp import Timestamp
 

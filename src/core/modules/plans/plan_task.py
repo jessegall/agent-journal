@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 from core.modules.plans.views import PLAN_TASKS_SELECT
-from core.modules.tasks.task import TaskState
+from core.modules.tasks.task_state import TaskState
 
 
 @dataclass(frozen=True, kw_only=True)

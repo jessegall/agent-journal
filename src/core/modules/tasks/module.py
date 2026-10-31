@@ -1,7 +1,10 @@
 from core.modules.tasks.blocked_work_refusal import BlockedWorkRefusal
 from core.modules.tasks.task_stop_refusal import TaskStopRefusal
-from core.modules.tasks.commands import TaskBlock, TaskCancel, TaskClose
-from core.modules.tasks.dependency_subcommands import TaskDependSubcommand, TaskUndependSubcommand
+from core.modules.tasks.task_block import TaskBlock
+from core.modules.tasks.task_cancel import TaskCancel
+from core.modules.tasks.task_close import TaskClose
+from core.modules.tasks.task_depend_subcommand import TaskDependSubcommand
+from core.modules.tasks.task_undepend_subcommand import TaskUndependSubcommand
 from core.modules.tasks.guards.dependencies_closed import DependenciesClosed
 from core.modules.tasks.guards.no_dependency_loop import NoDependencyLoop
 from core.modules.tasks.listeners.forget_dependencies import ForgetDependencies

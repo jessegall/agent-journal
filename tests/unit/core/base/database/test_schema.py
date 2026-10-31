@@ -6,7 +6,8 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
-from core.base.database.schema import ModuleMigrations, Schema
+from core.base.database.schema import Schema
+from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.statement import Statement
 from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.model.view_model import ViewModel

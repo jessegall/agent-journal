@@ -1,16 +1,7 @@
 from dataclasses import dataclass
-from enum import StrEnum
-
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
-
-
-class MessageType(StrEnum):
-    """Who a message is from: the user, an agent, or the journal itself."""
-
-    USER = "user"
-    AGENT = "agent"
-    JOURNAL = "journal"
+from core.modules.messages.message_type import MessageType
 
 
 @dataclass(frozen=True, kw_only=True)

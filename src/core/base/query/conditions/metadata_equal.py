@@ -1,15 +1,10 @@
 import re
 from dataclasses import dataclass
-
 from core.base.database.statement import Statement
+from core.base.query.conditions.metadata_key_error import MetadataKeyError
+
 
 PLAIN_KEY = re.compile(r"^[a-z_][a-z0-9_]*$")
-
-
-class MetadataKeyError(Exception):
-    """Raised when a metadata module or key name contains characters it may not."""
-
-
 @dataclass(frozen=True)
 class MetadataEqual:
     """Matches rows whose metadata holds a given value under a module's key."""

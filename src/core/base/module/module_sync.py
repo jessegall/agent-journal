@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from core.base.clock import Clock
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
@@ -14,7 +12,8 @@ from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.base.database.migration import Migration
-from core.base.database.schema import ModuleMigrations, Schema
+from core.base.database.schema import Schema
+from core.base.database.module_migrations import ModuleMigrations
 from core.base.database.triggers import Triggers
 from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.listener.deletion_listener import DeletionListener
@@ -39,28 +38,11 @@ from core.base.module.module_check import ModuleCheck
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
+from core.base.module.sync_report import SyncReport
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
                     for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler))}
-
-
-@dataclass(frozen=True)
-class SyncReport:
-    """What a sync found and changed: the modules in their order, the migrations it ran, and whether the
-    registry changed."""
-
-    modules: tuple[str, ...]
-    migrations: list[str]
-    registry_changed: bool
-
-    @property
-    def text(self) -> str:
-        migrations = ", ".join(self.migrations) if self.migrations else "none"
-        registry = "rewritten" if self.registry_changed else "unchanged"
-        return f"modules: {', '.join(self.modules) or 'none'}\nmigrations run: {migrations}\nregistry: {registry}"
-
-
 class ModuleSync:
     """Updates the database and the registry to match the installed modules: finds, orders and checks them,
     runs the schema, gives each module its actor and each new commit listener its cursor, and writes the

@@ -1,7 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.agents.agent import AgentRole
+from core.modules.agents.agent_role import AgentRole
 from core.modules.tasks.current_tasks import CurrentTasks
 
 

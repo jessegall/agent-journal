@@ -1,6 +1,7 @@
 import pytest
 
-from core.base.change.event_pattern import EventPattern, EventPatternError
+from core.base.change.event_pattern import EventPattern
+from core.base.change.event_pattern_error import EventPatternError
 
 
 def test_a_name_matches_only_itself():

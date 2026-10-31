@@ -1,19 +1,6 @@
 import os
-from dataclasses import dataclass
-
-from server.journal_server import ServerContext
-
-
-@dataclass(frozen=True)
-class Health:
-    """What GET /health answers: the server is up, with its pid, the code it runs, when it started and the port
-    of its viewer."""
-
-    status: str
-    pid: int
-    code_version: str
-    started_at: str
-    viewer_port: int
+from server.server_context import ServerContext
+from server.endpoints.health import Health
 
 
 class HealthEndpoint:

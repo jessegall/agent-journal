@@ -9,7 +9,8 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.less import Less
-from core.base.query.conditions.metadata_equal import MetadataEqual, MetadataKeyError
+from core.base.query.conditions.metadata_equal import MetadataEqual
+from core.base.query.conditions.metadata_key_error import MetadataKeyError
 
 
 def test_each_condition_gives_its_sql_and_parameters():

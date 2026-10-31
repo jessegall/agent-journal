@@ -8,7 +8,8 @@ import subprocess
 import sys
 
 from core.base.journal_home import JournalHome
-from server.server_files import ServerFiles, ServerFilesError, socket_path
+from server.server_files import ServerFiles, socket_path
+from server.server_files_error import ServerFilesError
 
 TIMEOUT_SECONDS = 10
 LOCK_SCRIPT = ("import fcntl, sys; f = open(sys.argv[1], 'a')\n"

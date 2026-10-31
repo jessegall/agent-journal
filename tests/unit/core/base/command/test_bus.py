@@ -2,10 +2,13 @@ from dataclasses import dataclass
 
 import pytest
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
-from core.base.command.bus import Bus, MissingHandlerError, TransactionError
+from core.base.command.bus import Bus
+from core.base.command.missing_handler_error import MissingHandlerError
+from core.base.command.transaction_error import TransactionError
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.command.handler import Handler

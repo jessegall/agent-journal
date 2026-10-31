@@ -4,7 +4,8 @@ from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from server.code_version import CodeFolders, CodeVersion
+from server.code_version import CodeVersion
+from server.code_folders import CodeFolders
 
 
 class SampleFolders(CodeFolders):

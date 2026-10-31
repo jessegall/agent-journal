@@ -1,5 +1,5 @@
 from core.base.database.migration import Migration
-from core.base.database.schema import ModuleMigrations
+from core.base.database.module_migrations import ModuleMigrations
 
 CORE_MODULE = "core"
 

@@ -1,55 +1,17 @@
 from dataclasses import dataclass
-from enum import StrEnum
-
 from core.base.actor import Actor
-from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
-from core.base.model.move import Move
 from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
+from core.modules.tasks.task_state import TaskState
+from core.modules.tasks.task_priority import TaskPriority
+from core.modules.tasks.task_lifecycle import TaskLifecycle
+
 
 TITLE_LIMIT_CHARACTERS = 80
-
-
 def check_title(cli_name: str, title: str) -> None:
     if not 1 <= len(title) <= TITLE_LIMIT_CHARACTERS:
         raise Refusal(f"a {cli_name}'s title is 1 to {TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
-
-
-class TaskState(StrEnum):
-    """Where a task stands."""
-
-    OPEN = "open"
-    STARTED = "started"
-    BLOCKED = "blocked"
-    TESTING = "testing"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class TaskPriority(StrEnum):
-    """How soon a task should be taken up."""
-
-    LOW = "low"
-    NORMAL = "normal"
-    HIGH = "high"
-
-
-class TaskLifecycle(Lifecycle):
-    states = TaskState
-    initial = [TaskState.OPEN]
-    editable = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
-    deletable = (TaskState.OPEN, TaskState.CANCELLED)
-
-    start = Move("start", [TaskState.OPEN], TaskState.STARTED)
-    block = Move("block", (TaskState.OPEN, TaskState.STARTED), TaskState.BLOCKED)
-    unblock = Move("unblock", [TaskState.BLOCKED], TaskState.OPEN)
-    test = Move("test", [TaskState.STARTED], TaskState.TESTING)
-    close = Move("close", (TaskState.STARTED, TaskState.TESTING), TaskState.COMPLETED)
-    cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
-    reopen = Move("reopen", (TaskState.COMPLETED, TaskState.CANCELLED), TaskState.OPEN)
-
-
 @dataclass(frozen=True, kw_only=True)
 class Task(Model):
     """One unit of work; its state moves only as TaskLifecycle allows."""

@@ -9,7 +9,8 @@ from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
-from core.modules.agents.agent import Agent, AgentRole
+from core.modules.agents.agent import Agent
+from core.modules.agents.agent_role import AgentRole
 from core.modules.drivers.hook_call_prune import HookCallPrune
 from core.modules.environments.environment import Environment
 from server.round_work import RoundWork

@@ -1,16 +1,8 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-
-from core.base.command.make_command import MakeCommand
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.tasks.task_log import TaskLog
-
-
-@dataclass(frozen=True)
-class TaskLogMake(MakeCommand[TaskLog]):
-    task_id: int
-    line: str
+from core.modules.tasks.task_log_make import TaskLogMake
 
 
 class TaskLogSubcommand(Subcommand[TaskLogMake, TaskLog]):

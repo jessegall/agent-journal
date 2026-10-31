@@ -3,7 +3,8 @@ import json
 
 import pytest
 
-from core.base.caller.caller_request import CallerRequest, CallerRequestError
+from core.base.caller.caller_request import CallerRequest
+from core.base.caller.caller_request_error import CallerRequestError
 from core.base.cli.line_run import LineRun
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome

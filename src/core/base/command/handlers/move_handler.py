@@ -4,10 +4,7 @@ from core.base.command.move_command import MoveCommand
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-
-
-class MoveMethodError(Exception):
-    """Raised when a model's method for a move gives back something other than a model."""
+from core.base.command.handlers.move_method_error import MoveMethodError
 
 
 class MoveHandler(Handler[MoveCommand[Model], Model]):

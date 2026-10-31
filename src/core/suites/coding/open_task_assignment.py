@@ -1,7 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.commands import TaskStart
+from core.modules.tasks.task_start import TaskStart
 from core.modules.tasks.task_query import TaskQuery
 
 

@@ -1,16 +1,11 @@
 from collections.abc import Sequence
 from dataclasses import dataclass, fields
 from typing import Generic, TypeIs, TypeVar, get_args
-
 from core.base.model.model import Model
+from core.base.command.command_error import CommandError
+
 
 R = TypeVar("R", covariant=True)
-
-
-class CommandError(Exception):
-    """Raised when a command class does not say which model it works on."""
-
-
 @dataclass(frozen=True)
 class Command(Generic[R]):
     """A request to change something, holding only the data the request needs."""

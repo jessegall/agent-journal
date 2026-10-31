@@ -1,19 +1,14 @@
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import ClassVar, Self
-
 from core.base.metadata import Metadata
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
 from core.base.timestamp import Timestamp
+from core.base.model.model_error import ModelError
+
 
 STATE = "state"
-
-
-class ModelError(Exception):
-    """Raised when a model is changed in a way it never allows, such as setting its state directly."""
-
-
 @dataclass(frozen=True, kw_only=True)
 class Model:
     """A row of the database as an object that cannot be changed in place; every change makes a copy."""

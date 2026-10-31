@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
-from core.modules.agents.agent import Agent, AgentRole
+from core.modules.agents.agent import Agent
+from core.modules.agents.agent_role import AgentRole
 from core.modules.agents.agent_start import AgentStart
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand

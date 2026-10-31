@@ -2,17 +2,16 @@ import io
 import json
 import shlex
 from uuid import uuid4
-from dataclasses import dataclass, field
 from typing import TypeVar
 from datetime import timedelta
-
 from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.registry.registry import Registry
 from core.base.change.event_log import EventLog
 from core.base.caller.caller_request import CallerRequest
-from core.base.caller.process_table import ProcessRow, ProcessTable
+from core.base.caller.process_table import ProcessTable
+from core.base.caller.process_row import ProcessRow
 from core.base.clock import Clock
 from core.base.container import Container
 from core.base.database.database import Database
@@ -23,45 +22,18 @@ from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.base.refusal_log import RecordedRefusal, RefusalLog
+from core.base.refusal_log import RefusalLog
+from core.base.recorded_refusal import RecordedRefusal
 from core.base.subcommand.caller import Caller
 from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock
+from core.testing.story_state import StoryState
+from core.testing.fixed_process_table import FixedProcessTable
+from core.testing.line_outcome import LineOutcome
+
 
 M = TypeVar("M", bound=Model)
-
-
-@dataclass(frozen=True)
-class StoryState:
-    """The state a story keeps besides its database, passed from a fixture to the stories that start from it: the
-    agent, the subagent it sent and the person it acts as."""
-
-    agent: Actor = field(default_factory=Actor.core)
-    user: Actor = field(default_factory=Actor.core)
-    subagent: Actor = field(default_factory=Actor.core)
-
-
-class FixedProcessTable(ProcessTable):
-    """A process table a story writes itself, empty until it does, so a story never reads the machine's
-    processes."""
-
-    def __init__(self, rows: list[ProcessRow]) -> None:
-        self.fixed_rows = rows
-
-    def rows(self) -> list[ProcessRow]:
-        return self.fixed_rows
-
-
-@dataclass(frozen=True)
-class LineOutcome:
-    """What one command line gave back: its exit code and what it printed."""
-
-    line: str
-    code: int
-    output_text: str
-
-
 class Story:
     """One story on its own copy of the template database, the public entry a plugin's stories use: it loads the
     modules named, runs command lines as text through the same console, container and registry as a real run,

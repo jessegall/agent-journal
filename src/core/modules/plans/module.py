@@ -1,4 +1,5 @@
-from core.modules.plans.commands import PlanBlock, PlanCancel
+from core.modules.plans.plan_block import PlanBlock
+from core.modules.plans.plan_cancel import PlanCancel
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks import CancelOpenPlanTasks
@@ -7,9 +8,14 @@ from core.modules.plans.listeners.forget_place import ForgetPlace
 from core.modules.plans.listeners.next_plan_task_starter import NextPlanTaskStarter
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlocked
 from core.modules.plans.migrations.m001_plans import PlansTables
-from core.modules.plans.phase_handlers import PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler
-from core.modules.plans.phase_subcommands import PhaseMakeSubcommand, PhaseMoveSubcommand, PhasePlaceSubcommand
-from core.modules.plans.plan_progress import PlanProgress, PlanProgressSubcommand
+from core.modules.plans.phase_make_handler import PhaseMakeHandler
+from core.modules.plans.phase_move_handler import PhaseMoveHandler
+from core.modules.plans.phase_place_handler import PhasePlaceHandler
+from core.modules.plans.phase_make_subcommand import PhaseMakeSubcommand
+from core.modules.plans.phase_move_subcommand import PhaseMoveSubcommand
+from core.modules.plans.phase_place_subcommand import PhasePlaceSubcommand
+from core.modules.plans.plan_progress import PlanProgress
+from core.modules.plans.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.plan_task import PlanTask
 from core.modules.plans.plan_query import PlanQuery
 from core.base.module.module import Module

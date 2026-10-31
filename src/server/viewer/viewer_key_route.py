@@ -1,4 +1,4 @@
-from core.base.actor import ActorType
+from core.base.actor_type import ActorType
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.database.database import Database

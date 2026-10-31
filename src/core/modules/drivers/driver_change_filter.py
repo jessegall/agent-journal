@@ -1,4 +1,4 @@
-from core.base.actor import ActorType
+from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.guard.change_filter import ChangeFilter
 from core.base.model.model import Model

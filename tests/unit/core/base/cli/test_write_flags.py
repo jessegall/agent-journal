@@ -2,7 +2,8 @@ from argparse import ArgumentParser
 
 import pytest
 
-from core.base.actor import Actor, ActorType
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.cli.write_flags import WriteFlags

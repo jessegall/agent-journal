@@ -1,7 +1,6 @@
 from collections.abc import Iterator, Sequence
 from copy import copy
 from typing import Generic, Self, TypeVar
-
 from core.base.database.database import Database
 from core.base.missing_rows import MissingRows
 from core.base.model.model import Model
@@ -13,15 +12,11 @@ from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.page import Page
 from core.base.query.select import Select
+from core.base.query.unknown_column_error import UnknownColumnError
+
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 50
-
-
-class UnknownColumnError(Exception):
-    """Raised when a query filters on a column its model does not have."""
-
-
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time."""
 

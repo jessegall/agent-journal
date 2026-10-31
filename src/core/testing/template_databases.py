@@ -1,25 +1,17 @@
 import itertools
 import json
 import shutil
-from dataclasses import dataclass
 from pathlib import Path
-
 from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.journal_container import opened_container
 from core.base.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
 from core.testing.manual_clock import ManualClock
-from core.testing.story import Story, StoryState
+from core.testing.story import Story
+from core.testing.story_state import StoryState
 from core.testing.story_fixture import StoryFixture
-
-
-@dataclass(frozen=True)
-class Template:
-    """A built database a story is copied from, with what the story knows beside it."""
-
-    home: JournalHome
-    state: StoryState
+from core.testing.template import Template
 
 
 class TemplateDatabases:

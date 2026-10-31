@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.tasks.dependency_commands import TaskUndepend
+from core.modules.tasks.task_undepend import TaskUndepend
 from core.modules.tasks.task_dependency import TaskDependency
 
 

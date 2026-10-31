@@ -1,11 +1,12 @@
-from core.base.actor import ActorType
+from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.messages.commands import MessageRead, MessageSend
-from core.modules.messages.message import Message, MessageType
+from core.modules.messages.message_send import MessageSend
+from core.modules.messages.message import Message
+from core.modules.messages.message_type import MessageType
+
 
 ACTOR_MESSAGE_TYPES = {ActorType.USER: MessageType.USER, ActorType.AGENT: MessageType.AGENT}
 
@@ -27,18 +28,3 @@ class MessageSendHandler(Handler[MessageSend, Message]):
                           parent_id=command.parent_id, creator_id=actor.id, type=ACTOR_MESSAGE_TYPES.get(actor.type, MessageType.JOURNAL),
                           text=command.text)
         return self.repository.save(message, context)
-
-
-class MessageReadHandler(Handler[MessageRead, Message]):
-    """Marks a message read, once; reading it again changes nothing."""
-
-    command = MessageRead
-
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
-
-    def handle(self, command: MessageRead, context: Context) -> Message:
-        message = self.queries.query(Message).find(command.message_id)
-        if message.read_at is not None:
-            return message
-        return self.repository.save(message.changed(read_at=context.timestamp), context)

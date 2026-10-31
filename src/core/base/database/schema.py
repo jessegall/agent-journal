@@ -1,7 +1,6 @@
 from collections.abc import Sequence
-from dataclasses import dataclass, fields
+from dataclasses import fields
 from datetime import datetime, timezone
-
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
@@ -10,20 +9,12 @@ from core.base.model.view_model import ViewModel
 from core.base.database.statement import Statement
 from core.base.model.model import Model
 from core.base.model.tables import Tables
+from core.base.database.module_migrations import ModuleMigrations
+
 
 MIGRATIONS_TABLE = "CREATE TABLE IF NOT EXISTS migrations (module TEXT NOT NULL, number INTEGER NOT NULL, ran_at TEXT NOT NULL, PRIMARY KEY (module, number)) STRICT"
 LAST_NUMBERS = Statement("SELECT module, max(number) AS number FROM migrations GROUP BY module")
 VIEWS = Statement("SELECT name FROM sqlite_master WHERE type = 'view'")
-
-
-@dataclass(frozen=True)
-class ModuleMigrations:
-    """The migrations of one module."""
-
-    module: str
-    migrations: Sequence[Migration]
-
-
 class Schema:
     """Updates the database's tables, views and checks to match the code."""
 
