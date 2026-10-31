@@ -4,11 +4,12 @@ from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.reviews.commands.reviewer_listing import ReviewerListing
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
 
-class ReviewerListSubcommand(ReadSubcommand[tuple[str, ...]]):
+class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
     """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order, then how many of each."""
 
     cli_name = "reviewer"
@@ -20,15 +21,15 @@ class ReviewerListSubcommand(ReadSubcommand[tuple[str, ...]]):
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
-    def read(self, arguments: Namespace, caller: Caller) -> tuple[str, ...]:
+    def read(self, arguments: Namespace, caller: Caller) -> ReviewerListing:
         if caller.environment_id is None:
             raise Refusal("reviewers are listed for an environment", "name one with --environment")
         reviewers = tuple(self.reviewers.environment(caller.environment_id).out().oldest().all_rows())
         waiting = tuple(self.reviews.queued(caller.environment_id).all_rows())
-        return (*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
-                *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),
-                f"reviewers: {len(reviewers)}, reviews waiting: {len(waiting)}")
+        return ReviewerListing((*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
+                                *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),
+                                f"reviewers: {len(reviewers)}, reviews waiting: {len(waiting)}"))
 
     def write_output(self, value: object, output: Output) -> None:
-        lines = value if isinstance(value, tuple) else ()
-        output.write("\n".join(str(line) for line in lines), {"lines": list(lines)})
+        if isinstance(value, ReviewerListing):
+            output.write("\n".join(value.lines), {"lines": list(value.lines)})
