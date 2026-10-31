@@ -22,7 +22,7 @@ class MakeDumpHandler(Handler[MakeDump, Dump]):
         if not command.brief.strip():
             raise Refusal("a dump needs something in it", "give the notes as the first argument")
         dump = self.repository.save(Dump(environment_id=environment_id, creator_id=context.actor.id, brief=command.brief, files=command.files), context)
-        for position, text in enumerate(command.parts or [command.brief], 1):
+        for position, text in enumerate([*(command.parts or [command.brief]), *sorted(command.files)], 1):
             self.repository.save(DumpItem(dump_id=dump.id, creator_id=context.actor.id, position=position, text=text), context)
         return dump
 

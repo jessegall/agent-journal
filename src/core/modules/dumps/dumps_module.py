@@ -16,6 +16,7 @@ from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
 from core.modules.dumps.models.dump import Dump
 from core.modules.dumps.models.dump_item import DumpItem
+from core.modules.dumps.upgrade.dumps_move import DumpsMove
 from core.modules.dumps.seeders.dumps_seeder import DumpsSeeder
 from core.modules.dumps.support.dump_docks import DUMP_DOCKS
 
@@ -30,6 +31,7 @@ class DumpsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking"]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
     migrations = [DumpsTablesMigration]
+    moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     subcommands = (MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand)
     listeners = [DumpDockListener]
