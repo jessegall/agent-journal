@@ -12,5 +12,5 @@ class ButtonLine:
     template: str
 
     def allows(self, argv: list[str]) -> bool:
-        words = self.template.split()
-        return len(words) == len(argv) and all(argv[place] == word or (word == ROW_ID and argv[place].isdigit()) for place, word in enumerate(words))
+        parts = self.template.split()
+        return len(parts) == len(argv) and all(argv[place] == part or (part == ROW_ID and argv[place].isdigit()) for place, part in enumerate(parts))
