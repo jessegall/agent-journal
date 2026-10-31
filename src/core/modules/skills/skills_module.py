@@ -19,7 +19,7 @@ class SkillsModule(Module):
 
     name = "journal.core.skills"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings"]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill])]
     migrations = [SkillsTablesMigration]
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand]
