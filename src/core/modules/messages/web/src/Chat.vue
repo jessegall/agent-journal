@@ -1,11 +1,10 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, DockWrapper, MarkHost, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
+import {Btn, DockStack, MarkHost, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
 
 const {rows: messages, failure, load, context} = useRows("message list", ["message.*"]);
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
-const dockedNow = computed(() => docked.value.filter((item) => item.state === "docked"));
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const rows = computed(() => interleaved(messages.value, marks.value));
 onMounted(() => Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]));
@@ -22,9 +21,7 @@ async function send() {
 
 <template>
     <div class="chat">
-        <template v-for="item in dockedNow" :key="item.id">
-            <DockWrapper :item="item" />
-        </template>
+        <DockStack :items="docked" />
         <RowList :rows="rows" :failure="failure" empty="No messages yet">
             <template #default="{row}">
                 <template v-if="row.kind === 'mark'">

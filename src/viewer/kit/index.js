@@ -5,7 +5,7 @@ export {default as RowList} from "./RowList.vue";
 export {default as StateRows} from "./StateRows.vue";
 export {default as MarkHost} from "../src/chat/MarkHost.vue";
 export {fetchMarkDeclarations, markDeclaration} from "../src/domain/markRegistry.js";
-export {default as DockWrapper} from "../src/chat/DockWrapper.vue";
+export {default as DockStack} from "../src/chat/DockStack.vue";
 export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {interleaved} from "../src/domain/chatTimeline.js";

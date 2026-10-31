@@ -3,6 +3,7 @@ import {computed} from "vue";
 import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
+import DockLeave from "./DockLeave.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
 import {api} from "../api/client.js";
@@ -12,7 +13,7 @@ import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
 
 // one item docked above the chat, drawn as version 4 drew a docked card: the type's icon and title, its buttons, and the body its module gives it
-const props = defineProps({item: {type: Object, required: true}, folded: Boolean});
+const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean});
 const declaration = computed(() => dockDeclaration(props.item.type));
 const look = computed(() => dockLook(props.item, declaration.value));
 const press = (button) => (button.action === "open" ? peekRef(`${props.item.target_model}:${props.item.target_id}`) : pressButton(button, props.item, api.env()));
@@ -22,6 +23,11 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 
 <template>
     <ChatDock :label="look.title" :folded="folded">
+        <template #edge>
+            <template v-if="leaving">
+                <DockLeave :ends-at="item.leaves_at" />
+            </template>
+        </template>
         <template #head>
             <Icon :name="look.icon" class="dock-icon" />
             <span class="dock-title">{{ look.title }}</span>
