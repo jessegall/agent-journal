@@ -1,5 +1,8 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
 from core.modules.suggestions.commands.answer_suggestion_handler import AnswerSuggestionHandler
 from core.modules.suggestions.commands.answer_suggestion_subcommand import AnswerSuggestionSubcommand
 from core.modules.suggestions.commands.make_suggestions_handler import MakeSuggestionsHandler
@@ -21,6 +24,8 @@ class SuggestionsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Suggestion, excluded_subcommands=["make", "edit", "list", "delete"])]
     moves = [SuggestionsMove]
+    windows = [WindowDeclaration("suggestions.suggestions", "Suggestions", "suggestions.js", WindowLoading.COMPONENT, icon=WindowIcon.BULB, reads=["suggestion list"],
+                                 events=["suggestion.*"])]
     migrations = [SuggestionsTableMigration]
     handlers = [MakeSuggestionsHandler, AnswerSuggestionHandler]
     subcommands = (SuggestionListSubcommand, AnswerSuggestionSubcommand)

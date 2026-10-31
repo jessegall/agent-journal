@@ -1,5 +1,8 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
 from core.modules.plugins.commands.configure_plugin_handler import ConfigurePluginHandler
 from core.modules.plugins.commands.configure_plugin_subcommand import ConfigurePluginSubcommand
 from core.modules.plugins.commands.disable_plugin_subcommand import DisablePluginSubcommand
@@ -30,6 +33,8 @@ class PluginsModule(Module):
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT)]
     moves = [PluginsMove]
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, icon=WindowIcon.PLUGIN, reads=["plugin list"],
+                                 runs=["plugin enable", "plugin disable"], events=["plugin.*"])]
     migrations = [PluginsTablesMigration]
     handlers = [InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler]
     subcommands = (PluginListSubcommand, PluginSettingsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,

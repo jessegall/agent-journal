@@ -3417,7 +3417,13 @@ const nc = (e, t) => e >= Xl ? !0 : e <= 1 ? !1 : t, sc = ["onMouseenter", "onMo
 function gc(e, t) {
   return [...e.map((s) => ({ kind: "message", id: `message:${s.id}`, row: s })), ...t.map((s) => ({ kind: "mark", id: `mark:${s.id}`, row: s }))].sort((s, r) => s.row.created_at - r.row.created_at || (s.kind === r.kind ? s.row.id - r.row.id : s.kind === "message" ? -1 : 1));
 }
-const yc = "1.0.0", vc = "3.5";
+function yc() {
+  const e = y(null);
+  return { opened: e, toggle: (n) => {
+    e.value = e.value === n.id ? null : n.id;
+  } };
+}
+const vc = "1.0.0", wc = "3.5";
 export {
   ee as Btn,
   zs as CloseButton,
@@ -3425,8 +3431,8 @@ export {
   dn as EmptyState,
   oc as FoldGroup,
   Re as Icon,
-  yc as KIT_VERSION,
-  vc as KIT_VUE,
+  vc as KIT_VERSION,
+  wc as KIT_VUE,
   hc as MarkHost,
   Gs as RowList,
   lc as Segmented,
@@ -3439,6 +3445,7 @@ export {
   gc as interleaved,
   Sl as markDeclaration,
   mc as shownMarks,
+  yc as useOpenRow,
   Yi as useRows,
   hn as useWindow
 };
