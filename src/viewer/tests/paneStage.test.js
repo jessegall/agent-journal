@@ -325,10 +325,10 @@ const OPTIONS = [
 ];
 const menuOf = (element, id) => element.querySelector(`[data-tabs-of="${id}"] .pane-menu-button`);
 
-test("the reopen bar lists every offered window by module, a third party's too, and shows an unavailable window greyed with its reason", async () => {
+test("the reopen bar lists every offered window with its own label, a third party's too, and shows an unavailable window greyed with its reason", async () => {
     const extra = (name) => ({module: name === "a.spare" ? "thirdparty" : "mine", unavailable_reason: name === "a.spare" ? "Needs window kit 2." : ""});
     const {element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra});
-    expect([...element.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["Tasks, Notes", "Spare"]);
+    expect(element.querySelector(`[data-reopen="a.spare"]`).textContent).toContain("Spare");
     const unavailable = element.querySelector(`[data-reopen="a.spare"]`);
     expect(unavailable.classList.contains("unavailable")).toBe(true);
     expect(unavailable.textContent + unavailable.title).toContain("Needs window kit 2.");

@@ -42,6 +42,13 @@
         "version5Does": "Same: an agent bar and an information bar, and window buttons that each carry their own icon before their label. Better: the bars are drawn by the shell from what the modules declare, so a new module's figure needs no shell change."
     },
     {
+        "name": "top-bars-1024",
+        "report": "The bars at the top",
+        "version4": "top-bars-1024-v4.png",
+        "version5": "top-bars-1024-v5.png",
+        "version5Does": "Same: the bars fit at 1024 wide with nothing cut off. Better: the window buttons that do not fit fold into a More menu, so Presets and Full screen always stay on screen."
+    },
+    {
         "name": "side-panels-left",
         "report": "The side panels",
         "version4": "side-panels-left-v4.png",

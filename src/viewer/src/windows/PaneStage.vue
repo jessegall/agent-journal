@@ -22,6 +22,8 @@ import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
 import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
+import AgentBar from "../shell/AgentBar.vue";
+import InformationBar from "../shell/InformationBar.vue";
 
 const props = defineProps({
     store: {type: Object, required: true},
@@ -42,7 +44,22 @@ const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";
 const grid = ref(null);
 const narrow = ref(window.innerWidth < PHONE_WIDTH);
-const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
+const width = ref(window.innerWidth);
+const measure = () => {
+    narrow.value = window.innerWidth < PHONE_WIDTH;
+    width.value = window.innerWidth;
+};
+// the bar shows as many window buttons as fit beside its fixed buttons; the rest fold into a menu, so Presets never leaves the screen
+const BUTTON_WIDTH = 124;
+const FIXED_WIDTH = 330;
+const room = computed(() => Math.max(2, Math.floor((width.value - FIXED_WIDTH) / BUTTON_WIDTH)));
+const folded = ref(false);
+const agentRow = ref(null);
+async function readAgent() {
+    const answer = props.shellRead ? await props.shellRead(["agent", "list"]) : null;
+    const rows = answer?.ok ? answer.value.rows : [];
+    agentRow.value = rows.find((row) => row.role === "main" && !row.ended_at) ?? rows[0] ?? null;
+}
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 const phone = computed(() => props.face === "phone");
 const phoneNames = computed(() => {
@@ -65,6 +82,7 @@ onMounted(() => {
     window.addEventListener("resize", measure);
     navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
+    readAgent();
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
@@ -92,6 +110,7 @@ const guide = usePaneGuide(props.environment, {
 });
 followFullscreen();
 const groups = () => props.catalogue.group(closedWindows.value);
+const barWindows = () => groups().flatMap((group) => group.windows);
 const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </script>
 
@@ -119,22 +138,31 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <PhoneBar :windows="phoneWindows" :current="picked" :counts="counts" @pick="(name) => (chosen = name)" />
         </template>
         <template v-else>
+            <template v-if="shellRead">
+                <AgentBar :agent="agentRow" />
+                <InformationBar :agent="agentRow" />
+            </template>
             <nav class="pane-stage-bar agent-bar">
-                <template v-for="group in groups()" :key="group.module">
-                    <template v-if="!narrow">
-                        <span class="reopen-module">{{ group.title }}</span>
-                    </template>
-                    <template v-for="window in group.windows" :key="window.name">
-                        <Btn
-                            kind="icon"
-                            :data-reopen="window.name"
-                            :class="{unavailable: window.unavailable_reason}"
-                            :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
-                            @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
-                            @click="!window.unavailable_reason && openView(window.name)"
-                        >
-                            <MarkIcon :name="window.icon || 'window'" />
-                        </Btn>
+                <template v-for="window in barWindows().slice(0, room)" :key="window.name">
+                    <Btn
+                        small
+                        :data-reopen="window.name"
+                        :class="{unavailable: window.unavailable_reason}"
+                        :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
+                        @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
+                        @click="!window.unavailable_reason && openView(window.name)"
+                    >
+                        <MarkIcon :name="window.icon || 'window'" />{{ window.title }}
+                    </Btn>
+                </template>
+                <template v-if="barWindows().length > room">
+                    <Btn small data-bar-more aria-label="More windows" @click="folded = !folded">More</Btn>
+                    <template v-if="folded">
+                        <div class="bar-more" role="menu">
+                            <template v-for="window in barWindows().slice(room)" :key="window.name">
+                                <Btn small :data-reopen="window.name" :title="window.title" @click="openView(window.name)"><MarkIcon :name="window.icon || 'window'" />{{ window.title }}</Btn>
+                            </template>
+                        </div>
                     </template>
                 </template>
                 <span class="agent-bar-space" />
@@ -240,11 +268,25 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     flex: none;
 }
 
+.bar-more {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    background: var(--bg);
+}
+
 .agent-bar-space {
     flex: 1;
 }
 
 .pane-stage-bar {
+    position: relative;
     display: flex;
     flex: none;
     align-items: center;

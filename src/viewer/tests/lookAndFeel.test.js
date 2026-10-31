@@ -72,7 +72,7 @@ afterEach(() => {
 
 test("each difference of report 1147 has a screenshot pair of version 4 and version 5 and says what version 5 does better or the same", () => {
     expect(PAIRS.map((pair) => pair.report).sort()).toEqual(
-        ["The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pinned notices", "The chat: the composer", "The side panels", "The side panels"].sort(),
+        ["The bars at the top", "The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pinned notices", "The chat: the composer", "The side panels", "The side panels"].sort(),
     );
     for (const pair of PAIRS) {
         expect(existsSync(`${LOOK}${pair.version4}`), pair.version4).toBe(true);
