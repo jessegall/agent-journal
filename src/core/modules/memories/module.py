@@ -2,11 +2,14 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.memories.memory import Memory
 from core.modules.memories.memory_giving import MemoryGiving
+from core.modules.memories.memory_in_context import MemoryInContext
 from core.modules.memories.memory_keyword import MemoryKeyword
 from core.modules.memories.memory_mark import MemoryMark
 from core.modules.memories.memory_type import MemoryType
 from core.modules.memories.memory_type_switch import MemoryTypeSwitch
+from core.modules.memories.memory_word import MemoryWord
 from core.modules.memories.migrations.m001_memories import MemoriesTables
+from core.modules.memories.standing_memory import StandingMemory
 
 
 class MemoriesModule(Module):
@@ -19,3 +22,4 @@ class MemoriesModule(Module):
     models = [ModelDeclaration(Memory), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryGiving), ModelDeclaration(MemoryMark)]
     migrations = [MemoriesTables]
+    views = [StandingMemory, MemoryInContext, MemoryWord]

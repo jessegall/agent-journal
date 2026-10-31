@@ -28,7 +28,7 @@ def texts(query: StandingMemoryQuery) -> list[str]:
 
 def test_an_agent_stands_under_the_project_its_environment_and_its_own_memories_and_no_other_agents(tmp_path):
     journal, query = memories(tmp_path)
-    assert sorted(texts(query.for_agent(journal.first_agent, 1))) == ["due reminder", "environment fact", "own reminder", "project rule"]
+    assert sorted(texts(query.scope(journal.first_agent, 1))) == ["due reminder", "environment fact", "own reminder", "project rule"]
 
 
 def test_a_memory_at_weight_0_no_longer_stands(tmp_path):
@@ -38,14 +38,14 @@ def test_a_memory_at_weight_0_no_longer_stands(tmp_path):
 
 def test_the_giving_order_puts_rules_first_then_reminders_then_the_rest(tmp_path):
     journal, query = memories(tmp_path)
-    ordered = texts(query.for_agent(journal.first_agent, 1).in_giving_order())
+    ordered = texts(query.scope(journal.first_agent, 1).giving_order())
     assert ordered[0] == "project rule" and ordered[-1] == "environment fact"
 
 
 def test_a_memory_with_a_due_time_is_due_only_once_that_time_has_come(tmp_path):
     journal, query = memories(tmp_path)
-    assert texts(query.due_by(Timestamp.parsed(NOW))) == []
-    assert texts(query.due_by(Timestamp.parsed(LATER))) == ["due reminder"]
+    assert texts(query.due(Timestamp.parsed(NOW))) == []
+    assert texts(query.due(Timestamp.parsed(LATER))) == ["due reminder"]
 
 
 def test_only_fading_types_are_read_as_fading(tmp_path):
