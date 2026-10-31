@@ -19,7 +19,6 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
             raise Refusal("a question needs an environment", "name it with --environment")
         if command.recommended and command.recommended not in command.options:
             raise Refusal(f"the recommended choice is not one of the options: {command.recommended}", "write it word for word as one of --options")
-        others = tuple(option for option in command.options if option != command.recommended)
-        options = (command.recommended, *others) if command.recommended else tuple(command.options)
+        choices = [command.recommended, *(option for option in command.options if option != command.recommended)] if command.recommended else list(command.options)
         return self.repository.save(Question(environment_id=context.environment_id, agent_id=context.actor.id, creator_id=context.actor.id,
-                                             text=command.text, options=options, recommended=command.recommended), context)
+                                             text=command.text, options=tuple(choices), recommended=command.recommended), context)

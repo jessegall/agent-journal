@@ -11,7 +11,8 @@ OPTION_LIMIT_CHARACTERS = 120
 
 @dataclass(frozen=True, kw_only=True)
 class Question(Model):
-    """What an agent asks the user, with the options it offers and the one it recommends, until it is answered or closed."""
+    """What an agent asks the user, with the options it offers and the one it recommends, until it is answered
+    or closed."""
 
     model_name = "question"
     cli_name = "question"

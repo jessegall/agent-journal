@@ -20,7 +20,7 @@ def test_an_answered_question_cannot_be_answered_or_closed_again():
 
 
 def test_only_an_open_question_is_editable_and_only_a_finished_one_deletable():
-    assert QuestionLifecycle.editable == (QuestionState.OPEN,)
+    assert QuestionLifecycle.editable == [QuestionState.OPEN]
     assert QuestionLifecycle.deletable == (QuestionState.ANSWERED, QuestionState.CLOSED)
 
 

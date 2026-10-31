@@ -7,8 +7,8 @@ from core.modules.questions.commands.ask_question_subcommand import AskQuestionS
 from core.modules.questions.commands.question_list_subcommand import QuestionListSubcommand
 from core.modules.questions.commands.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.queries.question_query import QuestionQuery
-from core.modules.questions.guards.asked_by_the_main_agent_guard import AskedByTheMainAgentGuard
-from core.modules.questions.guards.options_name_the_actor_guard import OptionsNameTheActorGuard
+from core.modules.questions.guards.main_agent_guard import MainAgentGuard
+from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.models.question import Question
 
@@ -19,8 +19,8 @@ class QuestionsModule(Module):
     name = "journal.core.questions"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
-    models = (ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"]),)
+    models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration]
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
     handlers = [AskQuestionHandler]
-    guards = [AskedByTheMainAgentGuard, OptionsNameTheActorGuard]
+    guards = [MainAgentGuard, ActorOptionsGuard]

@@ -9,7 +9,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.questions.models.question import Question
 
 
-class AskedByTheMainAgentGuard(Guard):
+class MainAgentGuard(Guard):
     """Refuses a question asked by anyone but a main agent: nobody answers one asked by a worker, a subagent, a
     reviewer or a verifier, or by someone who is no agent."""
 

@@ -13,7 +13,7 @@ class QuestionQuery(Query[Question]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Question)
 
-    def in_environment(self, environment_id: int) -> Self:
+    def environment(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id)
 
     def open_ones(self) -> Self:

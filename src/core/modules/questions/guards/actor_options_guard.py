@@ -9,7 +9,7 @@ from core.modules.questions.models.question import Question
 PERSONAL = re.compile(r"\b(I|I'll|I'm|I've|me|my|we|us|our|you|your)\b", re.IGNORECASE)
 
 
-class OptionsNameTheActorGuard(Guard):
+class ActorOptionsGuard(Guard):
     """Refuses a question whose option says I, me, my, we, us, our, you or your instead of naming who acts: the
     agent or the user."""
 
