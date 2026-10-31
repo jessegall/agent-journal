@@ -7,6 +7,6 @@ class ChatMarkLifecycle(Lifecycle):
     states = ChatMarkState
     initial = [ChatMarkState.SHOWN, ChatMarkState.ENDED]
     editable = (ChatMarkState.SHOWN,)
-    deletable = ()
+    deletable = (ChatMarkState.SHOWN, ChatMarkState.ENDED)
 
     end = Move("end", [ChatMarkState.SHOWN], ChatMarkState.ENDED)

@@ -35,8 +35,3 @@ def test_a_key_is_used_once_in_an_environment(new_story):
     story.new_row_id(f"{MAKE} run:1 Weighed {SKIP}")
     story.expect_refusal(f"{MAKE} run:1 Weighed {SKIP}", "exists already")
 
-
-def test_a_mark_is_never_deleted(new_story):
-    story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} run:1 Weighed {SKIP}")
-    story.expect_refusal(f"chat-mark delete {mark_id}", "cannot be deleted")

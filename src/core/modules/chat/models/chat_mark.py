@@ -27,8 +27,8 @@ class ChatMark(Model):
     text: str
     detail: str = ""
     lines: str = ""
-    row_model: str = ""
-    row_id: int | None = None
+    target_model: str = ""
+    target_id: int | None = None
     outcome: MarkOutcome = MarkOutcome.NONE
     figure: str = ""
     fraction: float = 0.0
