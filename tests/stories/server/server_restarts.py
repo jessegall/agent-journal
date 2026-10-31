@@ -28,3 +28,9 @@ def test_a_second_server_process_beside_a_running_one_exits_at_once(new_story):
     with ServerProcess(new_story(fixture=ThreeTasks).home) as server:
         server.expect_health()
         server.expect_second_server_exits()
+
+
+def test_a_stop_ends_the_server_at_once_while_a_client_still_holds_its_connection_open(new_story):
+    with ServerProcess(new_story(fixture=ThreeTasks).home) as server:
+        server.expect_health()
+        server.expect_stop_with_an_idle_connection()

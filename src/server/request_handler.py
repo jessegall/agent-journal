@@ -102,14 +102,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         stale = self.journal_server().context.code_version.is_stale()
         self.timing.stamp("stale_checked")
         if stale:
-            self.answer_json(409, {"error": "newer code: the server restarts, send the request again"})
+            self.answer_json(409, {"error": "newer code: the server restarts, send the request again"}, closing=True)
             self.journal_server().release_files()
             return
         if self.path == "/viewer/key":
             self.answer_viewer_key(body)
             return
         if self.path == "/stop":
-            self.answer_json(200, {"status": "stopping"})
+            self.answer_json(200, {"status": "stopping"}, closing=True)
             self.journal_server().request_stop()
             return
         route, _, query = self.path.partition("?")
@@ -177,10 +177,13 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(f"{len(data):x}\r\n".encode() + data + b"\r\n")
         self.wfile.flush()
 
-    def answer_json(self, status: int, answer: dict[str, object]) -> None:
+    def answer_json(self, status: int, answer: dict[str, object], closing: bool = False) -> None:
         body = json.dumps(answer).encode()
         self.status = status
         self.send_response(status)
+        if closing or self.journal_server().stopping.is_set():
+            self.close_connection = True
+            self.send_header("Connection", "close")
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()

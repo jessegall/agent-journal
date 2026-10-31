@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 import signal
 import sys
 import threading
+import time
 from pathlib import Path
 
 if __name__ == "__main__":
@@ -21,7 +22,7 @@ from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
-from server.listener_thread import ListenerThread
+from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.listener_work import ListenerWork
 from server.tick_work import TickWork
 from server.viewer.viewer_listener import ViewerListener
@@ -90,11 +91,14 @@ def main(argv: list[str]) -> int:
         health_thread.stop()
         services_thread.stop()
         plugin_services.close()
-        tunnel_thread.stop()
+        threads = (tunnel_thread, ticker, listener_thread)
+        for thread in threads:
+            thread.signal_stop()
         tunnel.close()
         viewer.stop()
-        ticker.stop()
-        listener_thread.stop()
+        deadline = time.monotonic() + STOP_LIMIT_SECONDS
+        for thread in threads:
+            thread.join(deadline - time.monotonic())
         hook_database.close()
         files.remove_server_files()
         server.server_close()

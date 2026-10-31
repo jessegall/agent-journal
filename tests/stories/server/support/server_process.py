@@ -7,10 +7,12 @@ from pathlib import Path
 
 from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
+from install.unix_connection import UnixConnection
 from server.server_files import ServerFiles, socket_path
 from tests.stories.server.support.server_client import request_answer
 
 ROOT = Path(__file__).resolve().parents[4]
+STOP_SECONDS = 2.0
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
 
@@ -46,10 +48,26 @@ class ServerProcess:
     def expect_stop_on_sigterm(self) -> None:
         assert self.process is not None
         os.kill(self.process.pid, signal.SIGTERM)
+        started = time.monotonic()
         assert self.process.wait(TIMEOUT_SECONDS) == 0
+        assert time.monotonic() - started < STOP_SECONDS, "the server was slow to stop"
         files = ServerFiles(self.home)
         assert not self.socket.exists() and not files.pid_file.exists() and files.acquire_lock(), "the stopped server left its files"
         files.release_lock()
+
+    def expect_stop_with_an_idle_connection(self) -> None:
+        assert self.process is not None
+        connection = UnixConnection(str(self.socket))
+        try:
+            connection.request("GET", "/health")
+            connection.getresponse().read()
+            connection.request("POST", "/stop", body=b"{}", headers={"Content-Length": "2"})
+            connection.getresponse().read()
+            started = time.monotonic()
+            assert self.process.wait(TIMEOUT_SECONDS) == 0
+            assert time.monotonic() - started < STOP_SECONDS, "an idle connection held the stop"
+        finally:
+            connection.close()
 
     def expect_second_server_exits(self) -> None:
         second = self.started()

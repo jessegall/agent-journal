@@ -2,13 +2,13 @@ import threading
 from collections.abc import Callable
 
 LISTENER_PERIOD_SECONDS = 60.0
-STOP_LIMIT_SECONDS = 10.0
+STOP_LIMIT_SECONDS = 1.5
 
 
 class ListenerThread:
     """The server's one runner of commit listeners: a thread that runs a round when a write wakes it, and once
     a period besides, so events a direct run logged are handled too. An error in a round is reported and the
-    next round runs."""
+    next round runs. A stop signals the thread at once and never waits long for a round that is running."""
 
     def __init__(self, round_runner: Callable[[], None], error_reporter: Callable[[Exception], None], period_seconds: float = LISTENER_PERIOD_SECONDS,
                  name: str = "listeners") -> None:
@@ -33,8 +33,16 @@ class ListenerThread:
             except Exception as error:
                 self.error_reporter(error)
 
-    def stop(self) -> None:
+    def signal_stop(self) -> None:
         self.stop_event.set()
         self.wake_event.set()
+
+    def join(self, limit_seconds: float) -> None:
         if self.thread.is_alive():
-            self.thread.join(STOP_LIMIT_SECONDS)
+            self.thread.join(max(0.0, limit_seconds))
+
+    def stop(self) -> None:
+        """Ends the thread after the round it runs, waiting at most STOP_LIMIT_SECONDS for that round; a round still
+        running then is left to die with the server, whose writes SQLite rolls back."""
+        self.signal_stop()
+        self.join(STOP_LIMIT_SECONDS)
