@@ -14,9 +14,10 @@ def test_an_orchestrator_starts_no_task_of_its_own(new_story):
     story.expect_refusal(lines.TASK_START, "refused by coding.orchestrator-starts-no-task: task 1 goes to a worker", actor=story.agent)
 
 
-def test_a_person_still_starts_a_task_while_the_orchestrator_drives_the_agent(new_story):
+def test_the_agent_starts_its_task_again_once_the_builder_drives_it(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.expect_success(lines.TASK_START, "state: started")
+    story.run("driver choose coding.builder --environment main")
+    story.expect_success(lines.TASK_START, "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
 
 
 def test_an_orchestrator_with_nothing_open_stops(new_story):
