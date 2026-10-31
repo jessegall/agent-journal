@@ -3,7 +3,8 @@
 #
 #   sh /path/to/agent-journal/install.sh
 #
-# Python 3.14 or newer is found first and the code is copied into .journal/src, its own database .journal/version-5.db
+# Python 3.14 or newer is found first; the code, from the src beside this script or else the release's
+# agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
 # synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
 # is and told to run journal upgrade, and an install already made says so and changes nothing. Nothing is started.
 #
@@ -55,8 +56,8 @@ checksum() {
 
 fall_back() {
   mkdir -p "$ROOT/.journal/hooks"
-  cp "$HERE/src/install/hook.sh" "$ROOT/.journal/hooks/hook.sh"
-  PYTHONPATH="$HERE/src" "$python" -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
+  cp "$SOURCE/install/hook.sh" "$ROOT/.journal/hooks/hook.sh"
+  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
   echo "$1, so the hooks of Claude Code and Codex call $ROOT/.journal/hooks/hook.sh, which the server answers more slowly"
   exit 0
 }
@@ -71,9 +72,22 @@ find_python() {
   return 1
 }
 
+# the code is the src beside this script, or else the release's agent-journal.tar.gz, checked against checksums.txt
+SOURCE="$HERE/src"
+if [ ! -f "$SOURCE/core/journal.py" ]; then
+  archive=$(mktemp -d)
+  trap 'rm -rf "$archive"' EXIT
+  curl -fsSL "$RELEASE/agent-journal.tar.gz" -o "$archive/agent-journal.tar.gz" || fail "the release has no agent-journal.tar.gz"
+  curl -fsSL "$RELEASE/checksums.txt" -o "$archive/checksums.txt" || fail "the release has no checksums.txt"
+  expected=$(awk '$2 == "agent-journal.tar.gz" {print $1}' "$archive/checksums.txt")
+  [ -n "$expected" ] && [ "$(checksum "$archive/agent-journal.tar.gz")" = "$expected" ] || fail "the checksum of agent-journal.tar.gz does not match the release's, so it is not installed"
+  tar -xzf "$archive/agent-journal.tar.gz" -C "$archive"
+  SOURCE="$archive/src"
+fi
+
 python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14, or your system's package for python 3.14)"
 status=0
-PYTHONPATH="$HERE/src" "$python" -m install.install_journal "$ROOT" "$HERE/src" || status=$?
+PYTHONPATH="$SOURCE" "$python" -m install.install_journal "$ROOT" "$SOURCE" || status=$?
 case "$status" in
   0) ;;
   3) exit 0 ;;
@@ -88,7 +102,7 @@ esac
 name="journal-hook-${target%/*}-${target#*/}"
 
 download=$(mktemp -d)
-trap 'rm -rf "$download"' EXIT
+trap 'rm -rf "$download" "${archive:-}"' EXIT
 curl -fsSL "$RELEASE/$name" -o "$download/$name" || fall_back "the release has no $name"
 curl -fsSL "$RELEASE/checksums.txt" -o "$download/checksums.txt" || fall_back "the release has no checksums.txt"
 expected=$(awk -v name="$name" '$2 == name {print $1}' "$download/checksums.txt")
@@ -117,5 +131,5 @@ else
   echo "the release has no $runner, so shell lines run as the agent wrote them"
 fi
 
-PYTHONPATH="$HERE/src" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
+PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
 echo "the hooks of Claude Code and Codex call $BIN/journal-hook"
