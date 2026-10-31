@@ -59,6 +59,32 @@
                         ]
                     }
                 ]
+            },
+            {
+                "all": [
+                    {
+                        "fileMatches": "(^|/)tests/unit/core/modules/"
+                    },
+                    {
+                        "any": [
+                            {
+                                "nameMatches": "^core\\.modules(\\.|$)"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "kind": "alias"
+                                        },
+                                        {
+                                            "nameMatches": "^core\\.modules(\\.|$)"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
             }
         ]
     }

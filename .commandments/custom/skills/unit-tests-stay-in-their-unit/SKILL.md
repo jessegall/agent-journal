@@ -16,7 +16,8 @@ unit tests, the standard library, and its own samples.
 ## When it fires
 
 - **`test-unit-test-crosses-its-boundary`** - a file under `tests/unit/` imports `core.modules`, `core.testing` or
-  anything under `tests.stories`.
+  anything under `tests.stories`. A module's own unit tests under `tests/unit/core/modules/` may import
+  `core.modules`, to read the module's migrations, views and SQL; they still never import the story builder.
 
 ## How to fix it
 

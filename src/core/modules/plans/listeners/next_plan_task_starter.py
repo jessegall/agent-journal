@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.plans.plan import Plan, PlanState
-from core.modules.plans.plan_tasks import PlanTasks
+from core.modules.plans.plan_task import PlanTask
 from core.modules.tasks.commands import TaskStart
 from core.modules.tasks.task import TaskState
 
@@ -16,14 +16,13 @@ class NextPlanTaskStarter(CommitListener):
     name = "plans.next-plan-task-starter"
     event = "task.close"
 
-    def __init__(self, bus: Bus, queries: Queries, plan_tasks: PlanTasks) -> None:
-        self.bus, self.queries, self.plan_tasks = bus, queries, plan_tasks
+    def __init__(self, bus: Bus, queries: Queries) -> None:
+        self.bus, self.queries = bus, queries
 
     def handle(self, event: LoggedEvent) -> None:
-        plan_id = self.plan_tasks.plan_id(event.row_id)
-        if plan_id is None or self.queries.query(Plan).find(plan_id).state is not PlanState.STARTED:
+        places = self.queries.query(PlanTask).filter(task_id=event.row_id).page(1, 1).rows
+        if not places or self.queries.query(Plan).find(places[0].plan_id).state is not PlanState.STARTED:
             return
-        next_task = next((task for task in self.plan_tasks.ordered(plan_id) if task.state is TaskState.OPEN), None)
-        if next_task is None:
-            return
-        self.bus.run(TaskStart(next_task.id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
+        following = self.queries.query(PlanTask).filter(plan_id=places[0].plan_id, state=TaskState.OPEN).ordered("phase_position", "position").page(1, 1).rows
+        if following:
+            self.bus.run(TaskStart(following[0].task_id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
