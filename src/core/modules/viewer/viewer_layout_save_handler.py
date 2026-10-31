@@ -1,6 +1,3 @@
-from dataclasses import replace
-
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
@@ -11,8 +8,8 @@ from core.modules.viewer.viewer_layout_save import ViewerLayoutSave
 
 
 class ViewerLayoutSaveHandler(Handler[ViewerLayoutSave, ViewerLayout]):
-    """Writes the person's one layout row for the page, suite and driver in the environment: its layout anew, or a
-    new row; only a person keeps a layout."""
+    """Writes the person's one layout row for the page, suite and driver in the environment, over the row there
+    is or as a new one; the guard viewer.person-keeps-layouts refuses any caller but a person."""
 
     command = ViewerLayoutSave
 
@@ -20,13 +17,10 @@ class ViewerLayoutSaveHandler(Handler[ViewerLayoutSave, ViewerLayout]):
         self.queries, self.repository = queries, repository
 
     def handle(self, command: ViewerLayoutSave, context: Context) -> ViewerLayout:
-        if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person keeps a layout", "the viewer saves a layout when the person arranges a page")
         if context.environment_id is None:
             raise Refusal("a layout belongs to an environment", "name one with --environment")
         rows = self.queries.query(ViewerLayout).filter(environment_id=context.environment_id, person_id=context.actor.id, suite=command.suite,
                                                        page=command.page, driver=command.driver).page(1, 1).rows
-        if rows:
-            return self.repository.save(replace(rows[0], layout=command.layout), context)
-        return self.repository.save(ViewerLayout(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
-                                                 suite=command.suite, page=command.page, driver=command.driver, layout=command.layout), context)
+        layout = ViewerLayout(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,
+                              page=command.page, driver=command.driver, layout=command.layout)
+        return self.repository.save_over(rows[0] if rows else None, layout, context)

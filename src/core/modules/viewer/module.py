@@ -4,6 +4,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.viewer.migrations.m001_viewer import ViewerTables
 from core.modules.viewer.person_gives_permissions import PersonGivesPermissions
+from core.modules.viewer.person_keeps_layouts import PersonKeepsLayouts
 from core.modules.viewer.permission_pruner import PermissionPruner
 from core.modules.viewer.viewer_layout_save_handler import ViewerLayoutSaveHandler
 from core.modules.viewer.viewer_layout_save_subcommand import ViewerLayoutSaveSubcommand
@@ -35,6 +36,6 @@ class ViewerModule(Module):
     handlers = [ViewerLayoutSaveHandler, WindowAllowHandler, WindowTrustHandler, WindowPermissionPruneHandler, WindowSettingSaveHandler]
     subcommands = [ViewerLayoutSaveSubcommand, WindowAllowSubcommand, WindowTrustSubcommand, WindowPermissionsSubcommand, WindowSettingSaveSubcommand,
                    WindowSettingSubcommand]
-    guards = [PersonGivesPermissions]
+    guards = [PersonGivesPermissions, PersonKeepsLayouts]
     listeners = [PermissionPruner]
     windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.PAGE, reads=SHELL_READS, runs=SHELL_RUNS)]

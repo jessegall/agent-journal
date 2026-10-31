@@ -1,5 +1,4 @@
 import json
-from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -29,7 +28,6 @@ class WindowAllowHandler(Handler[WindowAllow, WindowPermission]):
         window = self.registry.window(command.window)
         declared = window.reads if command.type is WindowPermissionType.READS else window.runs
         permission = self.allowances.permission(context.actor.id, context.environment_id, command.window, command.type)
-        if permission is not None:
-            return self.repository.save(replace(permission, lines=json.dumps(sorted({*json.loads(permission.lines), *declared}))), context)
-        return self.repository.save(WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
-                                                     subject=command.window, type=command.type, lines=json.dumps(sorted(declared))), context)
+        allowed = self.allowances.allowed_lines(context.actor.id, context.environment_id, command.window, command.type)
+        return self.repository.save_over(permission, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
+                                                                      subject=command.window, type=command.type, lines=json.dumps(sorted({*allowed, *declared}))), context)

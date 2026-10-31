@@ -1,5 +1,3 @@
-from dataclasses import replace
-
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -27,7 +25,5 @@ class WindowTrustHandler(Handler[WindowTrust, WindowPermission]):
         if fingerprint is None:
             raise Refusal(f"no installed module is named {command.module}", "journal module list shows them")
         trust = self.allowances.permission(context.actor.id, context.environment_id, command.module, WindowPermissionType.PAGE)
-        if trust is not None:
-            return self.repository.save(replace(trust, fingerprint=fingerprint), context)
-        return self.repository.save(WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
-                                                     subject=command.module, type=WindowPermissionType.PAGE, fingerprint=fingerprint), context)
+        return self.repository.save_over(trust, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
+                                                                 subject=command.module, type=WindowPermissionType.PAGE, fingerprint=fingerprint), context)

@@ -1,9 +1,9 @@
 import sqlite3
 from collections.abc import Callable
-from dataclasses import replace
+from dataclasses import fields, replace
 from typing import TypeVar
 
-from core.base.change.change import Change
+from core.base.change.change import BOOKKEEPING_FIELDS, Change
 from core.base.change.event_log import EventLog
 from core.base.command.context import Context
 from core.base.database.constraint_refusals import ConstraintRefusals
@@ -18,6 +18,8 @@ from core.base.query.queries import Queries
 from core.base.repository.stale_row import StaleRow
 
 M = TypeVar("M", bound=Model)
+
+KEPT_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
 
 
 class Repository:
@@ -39,6 +41,11 @@ class Repository:
         self.log.write(saved_change, skipped)
         self.listeners.run_save_listeners(saved_change)
         return saved
+
+    def save_over(self, found: M | None, model: M, context: Context) -> M:
+        if found is None:
+            return self.save(model, context)
+        return self.save(replace(found, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in KEPT_FIELDS}), context)
 
     def delete(self, model: Model, context: Context) -> None:
         stored = self.stored(model)

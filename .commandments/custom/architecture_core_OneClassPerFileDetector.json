@@ -4,18 +4,39 @@
     "find": {
         "select": "type-declaration",
         "where": [
-            {"topLevel": true},
-            {"not": {"position": "first"}},
-            {"previous": {"any": [{"is": "type-declaration"}, {"descendant": {"is": "type-declaration"}}]}}
+            {
+                "topLevel": true
+            },
+            {
+                "count": {
+                    "child": {
+                        "is": "type-declaration"
+                    },
+                    "atLeast": 2
+                },
+                "of": "parent"
+            },
+            {
+                "any": [
+                    {
+                        "fileMatches": "(^|/)src/"
+                    },
+                    {
+                        "fileMatches": "samples/layout/"
+                    }
+                ]
+            }
         ],
         "reject": [
-            {"testCode": true}
+            {
+                "testCode": true
+            }
         ]
     },
     "sin": {
         "name": "second-class-in-a-file",
-        "description": "A module holds a second class, so a reader cannot find a class by its file name.",
-        "rule": "Every class, enum and dataclass has a file of its own, named after it in snake_case; move this one out and import it.",
+        "description": "A module holds two or more classes, so a reader cannot find a class by its file name.",
+        "rule": "Every class, enum and dataclass has a file of its own, named after it in snake_case; give each class of this module a file of its own and import it.",
         "skill": "plain-code-words"
     }
 }

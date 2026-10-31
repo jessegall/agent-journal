@@ -5,10 +5,8 @@ from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.model.model import Model
 from core.base.model.move import Move
+from core.base.change.missing_row_error import MissingRowError
 
-
-class MissingRowError(Exception):
-    """Raised when a change is made without any row, old or new."""
 
 M = TypeVar("M", bound=Model, covariant=True)
 METADATA = "metadata"
