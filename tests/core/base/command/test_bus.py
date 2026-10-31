@@ -65,7 +65,7 @@ class ItemPause(MoveCommand[Item]):
 
 
 class TryARefusedItem(SaveListener):
-    """After an item is item, tries a refused item and carries on when it is refused."""
+    """After an item is made, tries to make a refused one and carries on when it is refused."""
 
     name = "items.try-refused"
     event = "item.create"

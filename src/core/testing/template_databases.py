@@ -11,7 +11,7 @@ from core.base.clock import Clock
 
 
 class TemplateDatabases:
-    """One migrated and synced database per set of modules, item once and copied for every story that loads
+    """One migrated and synced database per set of modules, made once and copied for every story that loads
     the same modules."""
 
     def __init__(self, folder: Path) -> None:

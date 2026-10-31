@@ -36,8 +36,8 @@ class ItemPause(MoveCommand[Item]):
     move = ItemLifecycle.pause
 
 
-class MarkNewItemsPause(CommitListener):
-    """Moves every new item to pause, which raises an event of its own."""
+class NewItemPauser(CommitListener):
+    """Pauses every new item, which raises an event of its own."""
 
     name = "items.mark-pause"
     event = "item.create"
@@ -50,10 +50,10 @@ class MarkNewItemsPause(CommitListener):
         self.bus.run(ItemPause(row_id=event.row_id), Actor(event.actor_id, ActorType.MODULE), cause_id=event.id)
 
 
-class CountPause(CommitListener):
-    """Counts items that went pause."""
+class PausedItemCounter(CommitListener):
+    """Counts the items paused."""
 
-    name = "items.count-pause"
+    name = "items.paused-count"
     event = "item.pause"
 
     def handle(self, event: LoggedEvent) -> None:
@@ -88,14 +88,14 @@ def cursor(container, name: str) -> int:
 
 
 def test_a_new_listener_starts_at_the_newest_event_and_replays_nothing(tmp_path):
-    container = container_with(tmp_path, CountPause)
+    container = container_with(tmp_path, PausedItemCounter)
     container.get(Bus).run(ItemMake(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
-    assert (HANDLED, cursor(container, CountPause.name)) == ([], 1)
+    assert (HANDLED, cursor(container, PausedItemCounter.name)) == ([], 1)
 
 
 def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
-    container = container_with(tmp_path, MarkNewItemsPause, CountPause)
+    container = container_with(tmp_path, NewItemPauser, PausedItemCounter)
     container.get(CommitListenerRunner).run()
     container.get(Bus).run(ItemMake(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
@@ -118,7 +118,7 @@ def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp
 
 @pytest.mark.parametrize("runs", [1, 2])
 def test_running_again_with_nothing_new_handles_nothing(tmp_path, runs: int):
-    container = container_with(tmp_path, CountPause)
+    container = container_with(tmp_path, PausedItemCounter)
     for _ in range(runs):
         container.get(CommitListenerRunner).run()
     assert HANDLED == []

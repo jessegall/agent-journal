@@ -5,7 +5,7 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class TaskDependency(Model):
-    """One task waiting on another: the task cannot be closed before its dependency, and no loop is allowed."""
+    """One task waiting on another; a loop of tasks waiting on each other is refused."""
 
     model_name = "task_dependency"
     cli_noun = "task-dependency"

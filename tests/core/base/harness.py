@@ -20,7 +20,7 @@ ITEMS = ("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL UNIQUE
 
 
 def harness(folder: Path, registry: Registry) -> Container:
-    """A container wired around a scratch database with the core's tables and a items table, for unit tests of the machinery."""
+    """A container wired around a scratch database with the core's tables and an items table, for unit tests of the machinery."""
     database = Database.opened(JournalHome(folder))
     Schema(database, Tables()).migrate((CORE_MIGRATIONS,))
     database.update(Statement(ITEMS))

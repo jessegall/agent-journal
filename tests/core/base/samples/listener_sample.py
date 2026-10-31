@@ -4,7 +4,7 @@ from core.base.model.model import Model
 
 
 class ShelfCounter(SaveListener):
-    """Counts shelves; named by path in the listener tests to see it is never imported for second_connection events."""
+    """Counts shelves; named by path in the listener tests to see it is never imported for other events."""
 
     name = "shelves.count"
     event = "shelf.create"

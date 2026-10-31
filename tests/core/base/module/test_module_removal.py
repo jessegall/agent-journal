@@ -35,7 +35,7 @@ def test_a_module_with_a_removal_migration_is_removed_with_its_rows(tmp_path):
 def test_a_removed_module_takes_its_listener_cursors_with_it(tmp_path):
     container = synced(JournalHome(tmp_path), ITEMS, ITEM_COUNT)
     container.get(ModuleRemoval).remove("item-count")
-    assert container.get(Database).rows(Statement("SELECT * FROM listener_cursors WHERE listener = 'items.count-pause'")) == []
+    assert container.get(Database).rows(Statement("SELECT * FROM listener_cursors WHERE listener = 'items.paused-count'")) == []
 
 
 def test_a_default_or_unknown_module_cannot_be_removed(tmp_path):

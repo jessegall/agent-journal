@@ -22,7 +22,7 @@ class ItemCountModule(Module):
     name = "item-count"
     requires_core = ">=5,<6"
     dependencies = ("items",)
-    listeners = ("tests.core.base.listener.test_commit_listener_runner:CountPause",)
+    listeners = ("tests.core.base.listener.test_commit_listener_runner:PausedItemCounter",)
 
 
 class ItemsTableRemoval(Migration):

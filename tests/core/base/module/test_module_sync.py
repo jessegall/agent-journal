@@ -35,7 +35,7 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     assert {"core.base.command.make_command:MakeCommand", "core.base.command.move_command:MoveCommand"} <= set(registry.handlers)
     assert [guard.name for guard in registry.guards][:2] == ["core.lifecycle", "items.paused-only"]
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'item-count'"))[0]["id"]
-    assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.count-pause"] == [("items.count-pause", "commit", module_actor)]
+    assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.paused-count"] == [("items.paused-count", "commit", module_actor)]
     actors = [tuple(row) for row in database.rows(Statement("SELECT id, type, name FROM actors ORDER BY id"))]
     assert actors[0] == (1, "core", "core") and {(kind, name) for _, kind, name in actors[1:]} >= {("module", "items"), ("module", "item-count")}
 
@@ -67,4 +67,4 @@ def test_a_new_commit_listener_starts_at_the_newest_event(tmp_path):
     database.insert(EVENT)
     database.insert(EVENT)
     database = synced(home, ITEMS, ITEM_COUNT).get(Database)
-    assert database.rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = 'items.count-pause'"))[0][0] == 2
+    assert database.rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = 'items.paused-count'"))[0][0] == 2
