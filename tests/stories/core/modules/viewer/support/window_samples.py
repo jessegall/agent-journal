@@ -7,6 +7,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 
 NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
+GRANTING_NOTES = "tests.stories.core.modules.viewer.support.window_samples:GrantingNotesModule"
 WIDER_NOTES = "tests.stories.core.modules.viewer.support.window_samples:WiderNotesModule"
 
 
@@ -45,3 +46,10 @@ class WiderNotesModule(NotesModule):
 
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list", "plan list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"])]
+
+
+class GrantingNotesModule(NotesModule):
+    """The notes module with a board that declares the lines that give rights and change settings."""
+
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"],
+                                 runs=["window allow", "window trust", "setting make", "setting edit", "viewer-layout save"])]

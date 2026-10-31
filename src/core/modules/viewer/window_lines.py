@@ -10,6 +10,7 @@ from core.modules.viewer.window_permission_type import WindowPermissionType
 from core.modules.viewer.window_refusal import WindowRefusal
 
 WINDOW_SETTING_LINES = ("window save-setting", "window setting")
+PERSON_LINES = ("window allow", "window trust", "setting make", "setting edit", "setting delete", "viewer-layout save")
 
 
 class WindowLines:
@@ -26,6 +27,9 @@ class WindowLines:
         if not self.registry.has_window(window_name):
             raise WindowRefusal(f"no installed module declares the window {window_name}")
         window = self.registry.window(window_name)
+        subcommand_name = " ".join(argv[:2])
+        if not window.shipped and subcommand_name in PERSON_LINES:
+            raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
         skips_guard = not parsed.is_read and bool(self.flags.skipped_guards(parsed.arguments))
         if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment):
