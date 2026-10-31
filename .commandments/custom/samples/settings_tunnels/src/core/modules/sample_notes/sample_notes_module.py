@@ -6,6 +6,7 @@ from core.base.setting.setting_value import SettingValue
 class SampleNotesModule(Module):
     """A module sample that declares its settings."""
     move_reason = "it is a sample with no version 4 table"
+    seed_reason = "it is a sample with no rows to show"
 
     name = "journal.core.sample_notes"
     settings = [

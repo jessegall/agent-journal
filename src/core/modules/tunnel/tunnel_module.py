@@ -10,6 +10,7 @@ class TunnelModule(Module):
     """Chooses the tunnel through which a phone or a share link reaches this computer, and ships none by default."""
 
     name = "journal.core.tunnel"
+    seed_reason = "it keeps no rows, only a service the settings choose"
     move_reason = "version 4 kept its tunnel in settings, which the settings module moves"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.settings"]

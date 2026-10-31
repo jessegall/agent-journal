@@ -20,6 +20,7 @@ class SuggestionsModule(Module):
     chat mark the person accepts or declines."""
 
     name = "journal.core.suggestions"
+    seed_reason = "a suggestion is an agent's own offer, which a demo has none of"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Suggestion, excluded_subcommands=["make", "edit", "list", "delete"])]

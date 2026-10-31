@@ -52,6 +52,7 @@ class WorkersModule(Module):
     """Adds the coding suite's workers: the worktree each one writes in and the proofs it shows for its task."""
 
     name = "journal.suites.coding.workers"
+    seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins"]

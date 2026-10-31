@@ -70,6 +70,7 @@ class Module:
     seeders: ClassVar[Sequence[type[Seeder]]] = ()
     moves: ClassVar[Sequence[type[VersionFourMove]]] = ()
     move_reason: ClassVar[str] = ""
+    seed_reason: ClassVar[str] = ""
 
     @classmethod
     def folder(cls) -> Path:

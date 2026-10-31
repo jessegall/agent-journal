@@ -44,6 +44,7 @@ class ViewerModule(Module):
     person's layouts and the permissions each person gives a window."""
 
     name = "journal.core.viewer"
+    seed_reason = "a person's layouts and presets are made by using the viewer"
     requires_core = ">=5,<6"
     settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]

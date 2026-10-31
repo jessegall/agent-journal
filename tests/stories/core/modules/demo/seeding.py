@@ -28,6 +28,7 @@ SHOWN = {
     "sequences": ("sequence show 1", "Release steps", "Run the whole suite"),
     "notices": ("notice list --environment demo", "Design for the checkout", "Build 12 of the cart"),
     "templates": ("template list", "Find what is missing (for plan, critique)", "Full suite (for any, testing)"),
+    "share links": ("share list", "active", "plan"),
     "triggers": ("trigger list", "deploy, release", "Check the build"),
     "checks": ("check list", "passed", "failed", "Suite", "Lint"),
 }

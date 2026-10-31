@@ -9,6 +9,7 @@ from core.modules.sharing.commands.revoke_share_link import RevokeShareLink
 from core.modules.sharing.commands.share_session_subcommand import ShareSessionSubcommand
 from core.modules.sharing.guards.share_link_row_guard import ShareLinkRowGuard
 from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigration
+from core.modules.sharing.seeders.sharing_seeder import SharingSeeder
 from core.modules.sharing.upgrade.share_move import ShareMove
 from core.modules.sharing.models.share_link import ShareLink
 
@@ -26,5 +27,6 @@ class SharingModule(Module):
     subcommands = [MakeShareLinkSubcommand, ShareSessionSubcommand]
     handlers = [MakeShareLinkHandler]
     moves = [ShareMove]
+    seeders = [SharingSeeder]
     windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, icon=WindowIcon.SHARE,
                                  reads=["share list"], runs=["share make", "share revoke"])]

@@ -44,6 +44,7 @@ class PluginsModule(Module):
     agent may only propose."""
 
     name = "journal.core.plugins"
+    seed_reason = "a plugin is a program the person installs, which a demo has none of"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills"]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT),

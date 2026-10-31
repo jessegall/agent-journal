@@ -20,6 +20,7 @@ class ChatModule(Module):
     """Adds the marks in an environment's chat, of the types modules declare."""
 
     name = "journal.core.chat"
+    seed_reason = "its marks come from the rows of the other modules"
     move_reason = "version 4 kept its chat as messages, which the messages module moves"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]

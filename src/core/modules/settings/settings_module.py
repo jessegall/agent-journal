@@ -26,6 +26,7 @@ class SettingsModule(Module):
     declare, a secret kept apart from the event log."""
 
     name = "journal.core.settings"
+    seed_reason = "its rows are the settings the other modules declare"
     requires_core = ">=5,<6"
     settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]

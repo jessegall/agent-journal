@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "Module"
+            },
+            {
+                "fileMatches": "(^|/)src/(core/modules/[^/]+|suites/[^/]+(/modules/[^/]+)?)/[a-z_]+_module\\.py$"
+            },
+            {
+                "not": {
+                    "descendant": {
+                        "all": [
+                            {
+                                "is": "assignment"
+                            },
+                            {
+                                "nameIn": [
+                                    "seeders",
+                                    "seed_reason"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "module-without-seeder",
+        "description": "A module neither seeds demo rows of its own nor says why it seeds none, so the demo shows nothing of it.",
+        "rule": "Declare seeders = [XSeeder] for a module that owns rows a demo can show, or seed_reason = \"<why>\" for one that does not.",
+        "skill": "plain-code-words"
+    }
+}
