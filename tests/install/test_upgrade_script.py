@@ -38,19 +38,19 @@ def test_the_upgrade_of_a_version_4_project_makes_version_5_live_and_moves_versi
 
 def test_a_dry_run_prints_the_counts_and_changes_nothing(tmp_path):
     scratch = version_four_project(tmp_path)
-    starting_files = scratch.snapshot()
+    starting_files = scratch.file_contents()
     run = upgrade(scratch, "--dry-run")
     assert run.returncode == 0, run.stdout + run.stderr
     assert "dry run: nothing was changed" in run.stdout and "not claimed: aliases (1 rows)" in run.stdout
-    assert scratch.snapshot() == starting_files
+    assert scratch.file_contents() == starting_files
 
 
 def test_without_yes_it_prints_the_counts_asks_once_and_a_no_changes_nothing(tmp_path):
     scratch = version_four_project(tmp_path)
-    starting_files = scratch.snapshot()
+    starting_files = scratch.file_contents()
     run = upgrade(scratch, answer="n\n")
     assert run.returncode == 0 and "move these rows into version 5?" in run.stdout and "dry run: nothing was changed" in run.stdout
-    assert scratch.snapshot() == starting_files
+    assert scratch.file_contents() == starting_files
 
 
 def test_a_project_without_a_version_4_journal_is_told_so(tmp_path):
@@ -61,14 +61,14 @@ def test_a_project_without_a_version_4_journal_is_told_so(tmp_path):
 
 def test_the_upgrade_is_refused_while_a_server_answers_and_says_how_to_stop_it(tmp_path):
     from install.upgrade_journal import UpgradeJournal
-    from tests.install.support import LiveJournal
+    from tests.install.support import ServerScratch
 
-    live = LiveJournal(tmp_path)
+    server_scratch = ServerScratch(tmp_path)
     try:
-        version_four_fixture(live.home.folder / "journal.db")
-        live.start_server()
-        live.wait_healthy()
-        outcome = UpgradeJournal(live.home).run(confirmed=True)
+        version_four_fixture(server_scratch.home.folder / "journal.db")
+        server_scratch.start_server()
+        server_scratch.wait_healthy()
+        outcome = UpgradeJournal(server_scratch.home).run(confirmed=True)
         assert outcome.code == 1 and "a journal server answers" in outcome.text and "journal server stop" in outcome.text
     finally:
-        live.close()
+        server_scratch.close()

@@ -19,12 +19,12 @@ def journal_with_version_four(tmp_path, version: str | None = "4.28.0"):
 
 def test_the_backup_holds_every_table_with_its_rows_and_the_version_file_beside_it(tmp_path):
     journal = journal_with_version_four(tmp_path)
-    result = VersionFourBackup(journal).make()
-    assert result.path == journal / "version-4" / "4.28.0" / "journal.db" and not result.kept
+    backup = VersionFourBackup(journal).make()
+    assert backup.path == journal / "version-4" / "4.28.0" / "journal.db" and not backup.kept
     assert (journal / "version-4" / "4.28.0" / "version.py").read_text() == 'VERSION = "4.28.0"\n'
-    copy = sqlite3.connect(result.path)
-    assert copy.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4 and result.tables >= 8
-    copy.close()
+    backup_connection = sqlite3.connect(backup.path)
+    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4 and backup.tables >= 8
+    backup_connection.close()
 
 
 def test_a_database_in_wal_mode_is_copied_whole_with_the_changes_still_in_its_wal_file(tmp_path):
@@ -33,18 +33,18 @@ def test_a_database_in_wal_mode_is_copied_whole_with_the_changes_still_in_its_wa
     writer.execute("PRAGMA journal_mode = WAL")
     writer.execute("INSERT INTO tasks (title) VALUES ('Kept in the wal')")
     writer.commit()
-    result = VersionFourBackup(journal).make()
-    copy = sqlite3.connect(result.path)
-    assert copy.execute("SELECT count(*) FROM tasks WHERE title = 'Kept in the wal'").fetchone()[0] == 1
-    copy.close()
+    backup = VersionFourBackup(journal).make()
+    backup_connection = sqlite3.connect(backup.path)
+    assert backup_connection.execute("SELECT count(*) FROM tasks WHERE title = 'Kept in the wal'").fetchone()[0] == 1
+    backup_connection.close()
     writer.close()
 
 
 def test_the_original_is_not_changed_by_a_backup(tmp_path):
     journal = journal_with_version_four(tmp_path)
-    before = (journal / "journal.db").read_bytes()
+    starting_bytes = (journal / "journal.db").read_bytes()
     VersionFourBackup(journal).make()
-    assert (journal / "journal.db").read_bytes() == before
+    assert (journal / "journal.db").read_bytes() == starting_bytes
 
 
 def test_a_second_upgrade_keeps_the_first_backup(tmp_path):
@@ -54,11 +54,11 @@ def test_a_second_upgrade_keeps_the_first_backup(tmp_path):
     modified.execute("DELETE FROM tasks")
     modified.commit()
     modified.close()
-    again = VersionFourBackup(journal).make()
-    assert again.kept and again.path == first.path
-    copy = sqlite3.connect(first.path)
-    assert copy.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4
-    copy.close()
+    second_backup = VersionFourBackup(journal).make()
+    assert second_backup.kept and second_backup.path == first.path
+    backup_connection = sqlite3.connect(first.path)
+    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4
+    backup_connection.close()
 
 
 def test_the_backup_of_a_journal_without_version_4_code_is_stamped_unknown(tmp_path):

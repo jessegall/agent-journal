@@ -166,7 +166,7 @@ def version_four_fixture(path: Path, with_rows: bool = True) -> Path:
     connection = sqlite3.connect(path)
     for statement in TABLES:
         connection.execute(statement)
-    connection.execute("INSERT INTO migrations VALUES (1, ?)", (STAMP,))
+    connection.execute("INSERT INTO migrations VALUES (1, ?)", [STAMP])
     for table, columns, values in ROWS if with_rows else ():
         connection.execute(f"INSERT INTO {table} {columns} VALUES ({', '.join('?' for _ in values)})", values)
     connection.commit()
@@ -174,7 +174,7 @@ def version_four_fixture(path: Path, with_rows: bool = True) -> Path:
     return path
 
 
-def drop_later_columns(path: Path) -> None:
+def strip_release_columns(path: Path) -> None:
     """The shape an older version 4 release made: tables without the columns later releases added."""
     connection = sqlite3.connect(path)
     for table, column in (("tasks", "block_reason"), ("memories", "expiry_row"), ("messages", "data")):

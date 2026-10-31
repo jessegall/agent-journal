@@ -31,11 +31,11 @@ def test_install_starts_nothing_the_person_did_not_ask_for(tmp_path):
 def test_install_run_again_changes_nothing_and_says_so(tmp_path):
     scratch = Scratch(tmp_path)
     assert scratch.install().returncode == 0
-    before = scratch.snapshot()
-    again = scratch.install()
-    assert again.returncode == 0, again.stderr
-    assert "already installed" in again.stdout and "nothing changed" in again.stdout
-    assert scratch.snapshot() == before
+    starting_files = scratch.file_contents()
+    second_install = scratch.install()
+    assert second_install.returncode == 0, second_install.stderr
+    assert "already installed" in second_install.stdout and "nothing changed" in second_install.stdout
+    assert scratch.file_contents() == starting_files
 
 
 def test_python_older_than_3_14_is_refused_with_the_way_to_get_it(tmp_path):
@@ -55,8 +55,8 @@ def test_a_project_with_a_version_4_journal_is_not_touched_and_is_told_to_upgrad
     connection.execute("CREATE TABLE tasks (id INTEGER PRIMARY KEY, title TEXT)")
     connection.commit()
     connection.close()
-    before = scratch.snapshot()
+    starting_files = scratch.file_contents()
     run = scratch.install()
     assert run.returncode == 1
     assert "this project holds a version 4 journal: run journal upgrade" in run.stderr
-    assert scratch.snapshot() == before
+    assert scratch.file_contents() == starting_files

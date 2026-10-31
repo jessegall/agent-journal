@@ -97,10 +97,10 @@ def test_acquire_waiting_gives_up_at_its_limit_while_the_lock_is_held(tmp_path):
 
 
 def test_locked_releases_the_lock_when_its_block_ends_and_refuses_when_it_cannot_take_it(tmp_path):
-    files, other = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    files, second_files = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
     with files.locked(1):
         assert subprocess_lock_state(files.lock) == "held"
         with pytest.raises(ServerFilesError, match="was not free in 0.2 seconds"):
-            with other.locked(0.2):
+            with second_files.locked(0.2):
                 pytest.fail("the lock was taken twice")
     assert subprocess_lock_state(files.lock) == "taken"

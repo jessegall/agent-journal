@@ -23,7 +23,7 @@ while True:
     connection.close()
 """
 
-HOLD_THEN_WAIT = """
+LOCK_HOLDER_SCRIPT = """
 import sys, time
 from pathlib import Path
 from core.base.journal_home import JournalHome
@@ -75,17 +75,17 @@ def test_a_server_that_will_not_stop_in_the_limit_makes_the_helper_refuse_and_ch
 
 def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journal):
     environment = {**journal.environment(), "PYTHONPATH": str(SERVER_SOURCE)}
-    holder = subprocess.Popen([sys.executable, "-c", HOLD_THEN_WAIT, str(journal.home.folder)], env=environment, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-    journal.processes.append(holder)
-    assert holder.stdout is not None
-    said = holder.stdout.readline().strip()
-    if said != "held":
-        holder.kill()
-        said += holder.stdout.read()
-    assert said == "held", said
+    lock_process = subprocess.Popen([sys.executable, "-c", LOCK_HOLDER_SCRIPT, str(journal.home.folder)], env=environment, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    journal.processes.append(lock_process)
+    assert lock_process.stdout is not None
+    first_line = lock_process.stdout.readline().strip()
+    if first_line != "held":
+        lock_process.kill()
+        first_line += lock_process.stdout.read()
+    assert first_line == "held", first_line
     assert not journal.lock_is_free()
-    holder.kill()
-    holder.wait(timeout=10)
+    lock_process.kill()
+    lock_process.wait(timeout=10)
     assert journal.lock_is_free()
     journal.start_server()
     journal.wait_healthy()

@@ -22,11 +22,11 @@ def test_the_source_reads_the_rows_of_a_table_and_lists_the_tables(tmp_path):
 
 def test_the_source_never_writes_to_the_version_4_database(tmp_path):
     path = version_four(tmp_path)
-    before = path.read_bytes()
+    starting_bytes = path.read_bytes()
     with VersionFourSource(path) as source:
         with pytest.raises(sqlite3.OperationalError, match="readonly"):
             source.connection.execute("DELETE FROM tasks")
-    assert path.read_bytes() == before
+    assert path.read_bytes() == starting_bytes
 
 
 def test_a_missing_table_gives_no_rows(tmp_path):

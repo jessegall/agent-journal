@@ -12,9 +12,9 @@ TABLE = "plugins"
 
 
 class PluginsMove(TableCopyMove):
-    """Carries version 4's installed plugins with their names, sources, releases and on or off, and each setting the
-    person gave one as a plugin setting; the plugin's folders stay where both versions keep them, its files' digest
-    is taken from them, and a plugin whose folder is gone moves switched off."""
+    """Carries version 4's installed plugins with their names, sources, releases and on or off, and each
+    setting the person gave one as a plugin setting; the plugin's folders stay where both versions keep them,
+    its files' digest is taken from them, and a plugin whose folder is gone moves switched off."""
 
     name = "plugins"
     table = TABLE

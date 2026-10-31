@@ -1,13 +1,13 @@
 from install.upgrade_journal import UpgradeJournal
 from tests.stories.core.base.upgrade.upgrade import content, count
-from tests.stories.fixtures.version_four import version_four_fixture, with_message_rows, with_unknown_table, drop_later_columns
+from tests.stories.fixtures.version_four import version_four_fixture, with_message_rows, with_unknown_table, strip_release_columns
 
 MESSAGE_COUNT = 20000
 
 
 def test_a_journal_of_an_older_version_4_release_without_later_columns_upgrades_as_far_as_its_columns_go(new_story):
     story = new_story()
-    drop_later_columns(version_four_fixture(story.home.folder / "journal.db"))
+    strip_release_columns(version_four_fixture(story.home.folder / "journal.db"))
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
     story.expect_success("task show 3", "state: blocked")

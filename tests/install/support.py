@@ -18,9 +18,9 @@ SYSTEM_PATH = "/usr/bin:/bin"
 
 
 class Scratch:
-    """A scratch folder for one install test: an empty project, a home that is not the person's, an empty release
-    to download from and a folder of programs for the install's PATH, so nothing runs in a consumer project and
-    nothing touches the real ~/.claude."""
+    """A scratch folder for one install test: an empty project, a home that is not the person's, an empty
+    release to download from and a folder of programs for the install's PATH, so nothing runs in a consumer
+    project and nothing touches the real ~/.claude."""
 
     def __init__(self, folder: Path) -> None:
         self.project, self.home, self.release, self.programs = folder / "project", folder / "home", folder / "release", folder / "programs"
@@ -45,7 +45,7 @@ class Scratch:
         (self.programs / "python3").write_text(f'#!/bin/sh\n[ "$1" = "--version" ] && echo "Python {version}" && exit 0\nexit 1\n')
         (self.programs / "python3").chmod(0o755)
 
-    def snapshot(self) -> dict[str, tuple[int, bytes]]:
+    def file_contents(self) -> dict[str, tuple[int, bytes]]:
         return {str(path.relative_to(self.project)): (path.stat().st_mtime_ns, path.read_bytes()) for path in sorted(self.project.rglob("*")) if path.is_file()}
 
     def tables(self, database: Path) -> set[str]:
@@ -59,10 +59,10 @@ class Scratch:
 
 
 SERVER_SOURCE = INSTALL.parent / "src"
-GO_TOOLS = INSTALL.parent / "tools"
+TOOLS_FOLDER = INSTALL.parent / "tools"
 
 
-class LiveJournal:
+class ServerScratch:
     """A journal on a scratch home with the core's modules synced and, when asked, a real server: every wait and
     every process it starts is bounded, and the server is killed when the test ends."""
 
