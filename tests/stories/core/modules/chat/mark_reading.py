@@ -1,0 +1,28 @@
+from core.base.command.bus import Bus
+from core.modules.chat.commands.show_mark import ShowMark
+from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, module_actor
+from tests.stories.core.support.fixtures import UserJoined
+
+
+def story_with_marks(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
+    bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:1", "First mark"), actor)
+    bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:2", "Second mark", agent_id=story.agent.id), actor)
+    return story
+
+
+def test_an_environments_marks_are_listed_newest_last(new_story):
+    story = story_with_marks(new_story)
+    story.expect_ordered_lines("chat-mark list --environment 1 --oldest", "First mark", "Second mark")
+
+
+def test_the_marks_are_filtered_by_agent(new_story):
+    story = story_with_marks(new_story)
+    story.expect_success(f"chat-mark list --agent {story.agent.id}", "Second mark")
+    story.expect_absent(f"chat-mark list --agent {story.agent.id}", "First mark")
+
+
+def test_a_mark_is_shown_by_its_id(new_story):
+    story = story_with_marks(new_story)
+    story.expect_success("chat-mark show 1", "key: moment:1", "label: First mark")
