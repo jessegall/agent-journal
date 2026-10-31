@@ -123,13 +123,15 @@ test("an agent window opened on the home page is given the main agent's id and a
     SHAPES["coding:home:coding.builder"] = {windows: ["messages.chat"], active: "messages.chat"};
 });
 
-test("the agent bar of the home page shows an icon for each closed window, one group per module", async () => {
+// the bar is one row of window buttons, each with its icon; the grouping by module moved to the pane menu (task 5391)
+test("the agent bar of the home page shows an icon for each closed window", async () => {
     const {element} = await mount(HomePage);
     const bar = element.querySelector(".agent-bar");
-    expect([...bar.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["tasks.tasks", "agents.terminal, agents.notes, agents.briefing"]);
-    expect(bar.querySelector(`[data-reopen="tasks.tasks"]`)).not.toBeNull();
-    expect(bar.querySelector(`[data-reopen="messages.chat"]`)).toBeNull();
-    expect(bar.querySelector(`[data-reopen="agents.briefing"]`)).not.toBeNull();
+    const reopen = (name) => bar.querySelector(`[data-reopen="${name}"]`);
+    expect(reopen("tasks.tasks").querySelector("svg")).not.toBeNull();
+    expect(reopen("messages.chat")).toBeNull();
+    expect(reopen("agents.briefing").querySelector("svg")).not.toBeNull();
+    expect(bar.querySelector(".reopen-module")).toBeNull();
 });
 
 const STEPS = [
@@ -229,16 +231,14 @@ test("a refusal is shown by its words alone", async () => {
     expect(refusalWords("plain text")).toBe("plain text");
 });
 
-test("the full screen button draws the expand icon, not the plain dot, and at phone width the bar shows icons without labels", async () => {
+// task 5394: the button draws the expand icon; the bar keeps each window's icon beside its title at every width
+test("the full screen button draws the expand icon, not the plain dot, and the bar keeps icons beside titles at phone width", async () => {
     const wide = await mount(HomePage);
     expect(wide.element.querySelector("[data-fullscreen] svg").innerHTML).toContain("M6.2 2.6H2.6");
-    expect(wide.element.querySelector(".agent-bar .reopen-module")).not.toBeNull();
     vi.stubGlobal("innerWidth", 400);
     const narrow = await mount(HomePage);
     expect(narrow.element.querySelector(".agent-bar .reopen-module")).toBeNull();
-    expect(narrow.element.querySelectorAll(".agent-bar [data-reopen]").length).toBeGreaterThan(0);
-    const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(source).toMatch(/\.reopen-module \{[^}]*white-space: nowrap;/);
+    expect(narrow.element.querySelectorAll(".agent-bar [data-reopen] svg").length).toBeGreaterThan(0);
 });
 
 test("a journal that cannot run the shell's lines says why above the page", async () => {

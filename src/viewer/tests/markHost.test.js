@@ -3,7 +3,8 @@ import {markLook} from "../src/domain/markLook.js";
 
 vi.mock("../src/route.js", () => ({go: vi.fn(), peekRef: vi.fn()}));
 
-// the fields version 4's Turn.vue gave a card mark, for each kind of mark the modules declare today
+// the fields version 4's Turn.vue gave a card mark, for each kind of mark the modules declare today; none of these kinds is a
+// process, so a mark in state "ended" still draws as ended: false (only a process mark ends)
 const KINDS = [
     {type: "fault", family_icon: "fault", mark_icon: "fault", group: "journal", colouring: "group", click: "unfold"},
     {type: "memory", family_icon: "fact", mark_icon: "fact", group: "reminders", colouring: "group", click: "open row"},
@@ -24,7 +25,7 @@ for (const kind of KINDS) {
             detail: "more",
             figure: "2",
             fraction: 0.5,
-            ended: true,
+            ended: false,
             active: false,
             time: 11,
         });
