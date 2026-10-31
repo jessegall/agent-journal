@@ -3,6 +3,7 @@ from core.suites.coding.builder import Builder
 from core.suites.coding.coding_suite import CodingSuite
 from core.suites.coding.orchestrator import Orchestrator
 from core.suites.coding.orchestrator_start_guard import OrchestratorStartGuard
+from core.suites.coding.subagent import Subagent
 
 
 class CodingModule(Module):
@@ -13,4 +14,4 @@ class CodingModule(Module):
     dependencies = ["journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
-    drivers = [Builder, Orchestrator]
+    drivers = [Builder, Orchestrator, Subagent]
