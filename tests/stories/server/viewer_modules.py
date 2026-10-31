@@ -31,3 +31,12 @@ def test_a_document_window_is_offered_the_line_it_reads_and_the_lines_it_declare
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
         story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"entry_url": "", "line": "task list"')
         story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text='"reads": ["task list"], "runs": []')
+
+
+def test_a_frame_window_reads_nothing_until_the_person_allows_its_reads(new_story):
+    with server_story(new_story(NOTES, fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        line = {"window": "notes.board", "line": ["task", "list"], "environment": "main"}
+        story.expect_viewer_line(cookie, line, 200, "notes.board may run task list once you allow it")
+        story.story.run("window allow notes.board --type reads --environment main", actor=story.story.user)
+        story.expect_viewer_line(cookie, line, 200, '"code": 0')
