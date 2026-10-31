@@ -2,7 +2,7 @@
 import {computed} from "vue";
 import {RowList, useRows} from "@journal/window-kit";
 
-const {rows: waits, failure} = useRows("wait list", ["wait.*", "question.*"]);
+const {rows: waits, failure, loaded} = useRows("wait list", ["wait.*", "question.*"]);
 const {rows: targets} = useRows("wait-target list", ["wait_target.*"]);
 
 function waited(openedAt) {
@@ -25,7 +25,7 @@ const rows = computed(() => waits.value.filter((wait) => wait.state === "open" &
 <template>
     <div class="waiting">
         <h3 class="waiting-heading">What the agent is waiting on</h3>
-        <RowList :rows="rows" :failure="failure" empty="Nothing is waiting">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="Nothing is waiting">
             <template #default="{row}">
                 <span class="label">{{ row.label }}</span>
                 <template v-for="(detail, position) in [row.status, row.where, row.waited]" :key="position">

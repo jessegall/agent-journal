@@ -1,11 +1,11 @@
 <script setup>
 import {RowList, useRows, useWindow} from "@journal/window-kit";
 
-const {rows, failure} = useRows(`file-edit list --agent ${useWindow().agent}`, ["file_edit.create"]);
+const {rows, failure, loaded} = useRows(`file-edit list --agent ${useWindow().agent}`, ["file_edit.create"]);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" empty="No edits by this agent yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No edits by this agent yet">
         <template #default="{row}">
             <span class="main">{{ row.path }}</span>
             <span class="note">+{{ row.added }}</span>

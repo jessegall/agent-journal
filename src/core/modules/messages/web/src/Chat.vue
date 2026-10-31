@@ -2,7 +2,7 @@
 import {computed, onMounted, ref} from "vue";
 import {Btn, DockStack, MarkHost, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
 
-const {rows: messages, failure, load, context} = useRows("message list", ["message.*"]);
+const {rows: messages, failure, loaded, load, context} = useRows("message list", ["message.*"]);
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
@@ -22,7 +22,7 @@ async function send() {
 <template>
     <div class="chat">
         <DockStack :items="docked" />
-        <RowList class="history" :rows="rows" :failure="failure" empty="No messages yet">
+        <RowList class="history" :rows="rows" :failure="failure" :loaded="loaded" empty="No messages yet">
             <template #default="{row}">
                 <template v-if="row.kind === 'mark'">
                     <MarkHost :mark="row.row" />

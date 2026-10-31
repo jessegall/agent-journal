@@ -7,6 +7,7 @@ const POINT_PREFIX = "- ";
 const context = useWindow();
 const points = ref([]);
 const failure = ref("");
+const loaded = ref(false);
 
 // the points of the worker's task brief, its lines that start with "- ", or the whole brief as one point when it has none
 function briefPoints(task) {
@@ -23,14 +24,17 @@ async function load() {
     if (!worktree) {
         failure.value = worktrees.ok ? "" : worktrees.error;
         points.value = [];
+        loaded.value = true;
         return;
     }
     const [task, proofs] = await Promise.all([context.read(`task show ${worktree.task_id}`), context.read(`proof list --worktree ${worktree.id}`)]);
     if (!task.ok || !proofs.ok) {
         failure.value = task.ok ? proofs.error : task.error;
+        loaded.value = true;
         return;
     }
     failure.value = "";
+    loaded.value = true;
     points.value = briefPoints(task.value).map((text, index) => ({
         id: index + 1,
         text,
@@ -43,7 +47,7 @@ load();
 </script>
 
 <template>
-    <RowList :rows="points" :failure="failure" empty="This agent has no task brief to prove">
+    <RowList :rows="points" :failure="failure" :loaded="loaded" empty="This agent has no task brief to prove">
         <template #default="{row}">
             <span class="number">{{ row.id }}</span>
             <span class="main">

@@ -1,25 +1,26 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-264980fd187f")) { const style = document.createElement("style"); style.id = "window-styles-264980fd187f"; style.textContent = ".number[data-v-fa354fe6]{color:var(--text-3);font-size:12px}.main[data-v-fa354fe6]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-fa354fe6]{color:var(--text-3);font-size:12px}.main[data-v-2041751c]{flex:1}.note[data-v-2041751c]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as r, createBlock as _, unref as o, withCtx as c, createElementVNode as e, toDisplayString as s } from "vue";
-import { useRows as d, useWindow as p, RowList as l } from "@journal/window-kit";
-import { _ as m } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const f = { class: "main" }, u = { class: "note" }, g = {
+if (!document.getElementById("window-styles-61b1e590eacf")) { const style = document.createElement("style"); style.id = "window-styles-61b1e590eacf"; style.textContent = ".number[data-v-83085bb6]{color:var(--text-3);font-size:12px}.main[data-v-83085bb6]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-83085bb6]{color:var(--text-3);font-size:12px}.main[data-v-41c93352]{flex:1}.note[data-v-41c93352]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as r, createBlock as _, unref as t, withCtx as c, createElementVNode as e, toDisplayString as s } from "vue";
+import { useRows as l, useWindow as p, RowList as m } from "@journal/window-kit";
+import { _ as f } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const u = { class: "main" }, g = { class: "note" }, T = {
   __name: "Todos",
-  setup(T) {
-    const n = { pending: "to do", in_progress: "doing", completed: "done" }, { rows: a, failure: i } = d(`todo-item list --agent ${p().agent} --oldest`, ["todo_item.*"]);
-    return (h, w) => (r(), _(o(l), {
-      rows: o(a),
-      failure: o(i),
+  setup(h) {
+    const a = { pending: "to do", in_progress: "doing", completed: "done" }, { rows: n, failure: d, loaded: i } = l(`todo-item list --agent ${p().agent} --oldest`, ["todo_item.*"]);
+    return (w, x) => (r(), _(t(m), {
+      rows: t(n),
+      failure: t(d),
+      loaded: t(i),
       empty: "This agent has written no to-do list yet"
     }, {
-      default: c(({ row: t }) => [
-        e("span", f, s(t.text), 1),
-        e("span", u, s(n[t.state] || t.state), 1)
+      default: c(({ row: o }) => [
+        e("span", u, s(o.text), 1),
+        e("span", g, s(a[o.state] || o.state), 1)
       ]),
       _: 1
-    }, 8, ["rows", "failure"]));
+    }, 8, ["rows", "failure", "loaded"]));
   }
-}, k = /* @__PURE__ */ m(g, [["__scopeId", "data-v-2041751c"]]);
+}, B = /* @__PURE__ */ f(T, [["__scopeId", "data-v-41c93352"]]);
 export {
-  k as default
+  B as default
 };

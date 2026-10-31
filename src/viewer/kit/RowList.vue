@@ -5,6 +5,7 @@ defineProps({
     rows: {type: Array, required: true},
     failure: {type: String, default: ""},
     empty: {type: String, required: true},
+    loaded: {type: Boolean, required: true},
 });
 </script>
 
@@ -12,7 +13,7 @@ defineProps({
     <template v-if="failure">
         <p class="row-list-failure">{{ failure }}</p>
     </template>
-    <template v-else-if="!rows.length">
+    <template v-else-if="!rows.length && loaded">
         <EmptyState :title="empty" />
     </template>
     <template v-else>

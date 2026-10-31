@@ -7,11 +7,11 @@ const props = defineProps({
     events: {type: Array, required: true},
     empty: {type: String, required: true},
 });
-const {rows, failure} = useRows(props.line, props.events);
+const {rows, failure, loaded} = useRows(props.line, props.events);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :empty="empty">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" :empty="empty">
         <template #default="{row}">
             <span class="title">{{ row.title }}</span>
             <span class="state">{{ row.state }}</span>

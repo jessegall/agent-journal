@@ -2,7 +2,7 @@
 import {ref} from "vue";
 import {RowList, useRows} from "@journal/window-kit";
 
-const {rows, failure, load, context} = useRows("question list", ["question.*"]);
+const {rows, failure, loaded, load, context} = useRows("question list", ["question.*"]);
 const typed = ref({});
 const runFailure = ref("");
 
@@ -28,7 +28,7 @@ function choiceLabel(row, option) {
 
 <template>
     <div class="questions">
-        <RowList :rows="rows" :failure="failure" empty="No open questions">
+        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
                 <div class="question">
                     <p class="question-text">{{ row.text }}</p>

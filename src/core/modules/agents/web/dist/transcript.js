@@ -1,28 +1,29 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-c01ae8337e0c")) { const style = document.createElement("style"); style.id = "window-styles-c01ae8337e0c"; style.textContent = ".main[data-v-88fb5cd3]{flex:1}.note[data-v-88fb5cd3]{color:var(--text-3);font-size:12px}.author[data-v-e23d94c7]{color:var(--text-3);font-size:12px;min-width:72px}.text[data-v-e23d94c7]{flex:1;white-space:pre-wrap}\n"; document.head.appendChild(style); }
-import { openBlock as i, createBlock as p, unref as t, withCtx as u, createElementVNode as r, toDisplayString as o, h as _ } from "vue";
-import { useRows as l, RowList as f, useWindow as d } from "@journal/window-kit";
-import { _ as m } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const h = { class: "author" }, w = { class: "text" }, x = {
+if (!document.getElementById("window-styles-f6c6965e71fc")) { const style = document.createElement("style"); style.id = "window-styles-f6c6965e71fc"; style.textContent = ".main[data-v-3ba38727]{flex:1}.note[data-v-3ba38727]{color:var(--text-3);font-size:12px}.author[data-v-f34e0cbb]{color:var(--text-3);font-size:12px;min-width:72px}.text[data-v-f34e0cbb]{flex:1;white-space:pre-wrap}\n"; document.head.appendChild(style); }
+import { openBlock as p, createBlock as l, unref as t, withCtx as u, createElementVNode as o, toDisplayString as r, h as _ } from "vue";
+import { useRows as d, RowList as f, useWindow as m } from "@journal/window-kit";
+import { _ as h } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const w = { class: "author" }, x = { class: "text" }, g = {
   __name: "TranscriptRows",
   props: { line: { type: String, required: !0 } },
   setup(s) {
-    const n = s, { rows: a, failure: c } = l(n.line, ["hook_call.create"]);
-    return (y, R) => (i(), p(t(f), {
-      rows: t(a),
+    const a = s, { rows: n, failure: c, loaded: i } = d(a.line, ["hook_call.create"]);
+    return (R, k) => (p(), l(t(f), {
+      rows: t(n),
       failure: t(c),
+      loaded: t(i),
       empty: "No conversation yet"
     }, {
       default: u(({ row: e }) => [
-        r("span", h, o(e.author), 1),
-        r("span", w, o(e.text), 1)
+        o("span", w, r(e.author), 1),
+        o("span", x, r(e.text), 1)
       ]),
       _: 1
-    }, 8, ["rows", "failure"]));
+    }, 8, ["rows", "failure", "loaded"]));
   }
-}, g = /* @__PURE__ */ m(x, [["__scopeId", "data-v-e23d94c7"]]), N = {
+}, y = /* @__PURE__ */ h(g, [["__scopeId", "data-v-f34e0cbb"]]), N = {
   setup() {
-    return () => _(g, { line: `agent transcript ${d().agent}` });
+    return () => _(y, { line: `agent transcript ${m().agent}` });
   }
 };
 export {

@@ -2,11 +2,11 @@
 import {RowList, useRows} from "@journal/window-kit";
 
 const props = defineProps({line: {type: String, required: true}});
-const {rows, failure} = useRows(props.line, ["hook_call.create"]);
+const {rows, failure, loaded} = useRows(props.line, ["hook_call.create"]);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" empty="No conversation yet">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No conversation yet">
         <template #default="{row}">
             <span class="author">{{ row.author }}</span>
             <span class="text">{{ row.text }}</span>
