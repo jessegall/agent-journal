@@ -24,6 +24,6 @@ class ProcessesTablesMigration(Migration):
         "CREATE INDEX outputs_kept ON outputs (state, created_at)",
         "CREATE TABLE watches (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE RESTRICT,"
         " process_id INTEGER NOT NULL REFERENCES processes(id) ON DELETE CASCADE, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
-        " state TEXT NOT NULL DEFAULT 'open'," + COMMON + ") STRICT",
+        " seen_lines INTEGER NOT NULL DEFAULT 0, state TEXT NOT NULL DEFAULT 'open'," + COMMON + ") STRICT",
         "CREATE INDEX watches_open ON watches (agent_id) WHERE state = 'open'",
     )

@@ -7,6 +7,13 @@ from core.modules.processes.commands.end_process_subcommand import EndProcessSub
 from core.modules.processes.commands.read_output_handler import ReadOutputHandler
 from core.modules.processes.commands.read_output_subcommand import ReadOutputSubcommand
 from core.modules.processes.commands.show_output_status_subcommand import ShowOutputStatusSubcommand
+from core.modules.processes.commands.mark_watch_seen_handler import MarkWatchSeenHandler
+from core.modules.processes.commands.unwatch_output_handler import UnwatchOutputHandler
+from core.modules.processes.commands.unwatch_output_subcommand import UnwatchOutputSubcommand
+from core.modules.processes.commands.watch_output_handler import WatchOutputHandler
+from core.modules.processes.commands.watch_output_subcommand import WatchOutputSubcommand
+from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
+from core.modules.processes.rules.watch_lines import WatchLines
 from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
 from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
 from core.modules.processes.commands.lose_process import LoseProcess
@@ -47,7 +54,8 @@ class ProcessesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, ShippedReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler]
-    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler]
+    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines]
+    listeners = [EndedProcessWatchListener]

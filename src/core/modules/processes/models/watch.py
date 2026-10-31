@@ -19,6 +19,7 @@ class Watch(Model):
     agent_id: int
     process_id: int
     creator_id: int
+    seen_lines: int = 0
     state: WatchState = WatchState.OPEN
 
     def end(self, timestamp: Timestamp, actor: Actor) -> "Watch":

@@ -16,13 +16,13 @@ class ReaderRun:
     def __init__(self, limit_seconds: float = SCRIPT_SECONDS) -> None:
         self.limit_seconds = limit_seconds
 
-    def lines(self, reader: Reader, text: str, stage: str) -> list[str]:
+    def lines(self, reader: Reader, text: str, stage: str, first_number: int = 1) -> list[str]:
         if reader.type is ReaderType.SCRIPT:
             return self.script_lines(reader, text, stage)
         if not reader.lines_pattern:
             return []
         pattern = re.compile(reader.lines_pattern)
-        return [f"{number}: {line}" for number, line in enumerate(text.splitlines(), 1) if pattern.search(line)]
+        return [f"{number}: {line}" for number, line in enumerate(text.splitlines(), first_number) if pattern.search(line)]
 
     def summary(self, reader: Reader, text: str) -> str:
         if not reader.summary_pattern:
