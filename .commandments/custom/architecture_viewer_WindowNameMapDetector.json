@@ -1,0 +1,34 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^(${window_names})$"
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/viewer/src/windows/**"
+            },
+            {
+                "testCode": true
+            },
+            {
+                "inside": {
+                    "is": "import"
+                }
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-name-outside-host",
+        "description": "The shell names a window outside the window host, so a window is tied to the shell's code instead of loading from its module.",
+        "rule": "Only the window host and the window catalogue in src/viewer/src/windows handle window names; the rest of the shell takes them from a layout or /api/windows.",
+        "skill": "plain-code-words"
+    }
+}

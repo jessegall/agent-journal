@@ -534,7 +534,7 @@
         "\"<job>\"`; if not, repeat the command with `--why \"<why>\"`",
         "% of context: `journal memory weigh <numbers> <weights>` or `journal memory skip \"<why>\"`",
         "%: keep, raise or correct",
-        "&& … )` or pass the folder, such as `git -C`",
+        "&& \u2026 )` or pass the folder, such as `git -C`",
         "'[{\"ask\": \"<question>\", \"label\": \"<button>\"}]' --summary \"<what you filed and where>\"`, `'[]'` for no buttons",
         "'s and stays open",
         "'s queue: `journal worker queue",
@@ -984,5 +984,17 @@
         "Whatever",
         "Where",
         "Words"
+    ],
+    "window_names": [
+        "viewer.shell",
+        "messages.chat",
+        "tasks.tasks",
+        "plans.plans",
+        "agents.agents",
+        "agents.subagents",
+        "drivers.hook-calls",
+        "coding.file-feed",
+        "coding.file-edits",
+        "coding.terminal"
     ]
 }
