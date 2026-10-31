@@ -22,7 +22,9 @@ func TestARunPastTheLimitMovesToTheBackgroundAndExitsWithTheShellStillRunning(t 
 		t.Error("the run ended with its shell still running")
 	}
 	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
-	waitFor(t, 5*time.Second, "the report of the end", func() bool { return strings.Contains(strings.Join(client.reported(), "\n"), "process end 4 --exit-code 0") })
+	waitFor(t, 5*time.Second, "the report of the end", func() bool {
+		return strings.Contains(strings.Join(client.reported(), "\n"), "process end 4 --exit-code 0")
+	})
 	if !strings.Contains(strings.Join(client.reported(), "\n"), "process background 4") {
 		t.Errorf("reported %q", client.reported())
 	}
