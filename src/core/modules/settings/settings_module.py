@@ -18,6 +18,7 @@ from core.modules.settings.commands.switch_setting_group_subcommand import Switc
 from core.modules.settings.commands.setting_show_subcommand import SettingShowSubcommand
 from core.modules.settings.commands.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
+from core.modules.settings.upgrade.settings_move import SettingsMove
 
 
 class SettingsModule(Module):
@@ -35,3 +36,4 @@ class SettingsModule(Module):
                                  reads=["setting tree"], runs=["setting set", "setting switch"], events=["setting.*"])]
     subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]
+    moves = [SettingsMove]

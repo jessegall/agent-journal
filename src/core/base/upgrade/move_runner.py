@@ -8,6 +8,7 @@ from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.base.registry.move_entry import MoveEntry
+from core.base.registry.setting_entry import GROUP_TYPE
 from core.base.registry.registry import Registry
 from core.base.upgrade.dry_run_end import DryRunEnd
 from core.base.upgrade.move_context import MoveContext
@@ -29,7 +30,8 @@ class MoveRunner:
 
     def run(self, version_four: Path, dry_run: bool = False) -> UpgradeReport:
         report, moved = UpgradeReport(), MoveMap(self.database)
-        context = MoveContext(CORE_ACTOR_ID, self.clock.timestamp().text, str(self.home.project_folder))
+        context = MoveContext(CORE_ACTOR_ID, self.clock.timestamp().text, str(self.home.project_folder),
+                              tuple(entry.key for entry in self.registry.settings if entry.type != GROUP_TYPE))
         with VersionFourSource(version_four) as source:
             try:
                 if dry_run:

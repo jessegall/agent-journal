@@ -9,3 +9,4 @@ class MoveContext:
     core_actor_id: int
     timestamp: str
     project_folder: str = ""
+    setting_keys: tuple[str, ...] = ()

@@ -6,6 +6,8 @@ from core.base.database.migration import Migration
 from core.base.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.setting.setting_type import SettingType
+from core.base.setting.setting_value import SettingValue
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.upgrade.move_context import MoveContext
@@ -179,3 +181,10 @@ def version_four_database(folder: Path, name: str = "version-4.db", with_rows: b
     connection.commit()
     connection.close()
     return path
+
+
+class PrefsModule(Module):
+    name = "moveprefs"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.settings"]
+    settings = [SettingValue("limit", "Limit", "How many", SettingType.NUMBER, 5)]
