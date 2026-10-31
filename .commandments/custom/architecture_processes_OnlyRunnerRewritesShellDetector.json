@@ -18,14 +18,14 @@
                 "testCode": true
             },
             {
-                "fileMatches": "processes/rules/runner_rewrite\\.py$"
+                "fileMatches": "processes/rules/runner_rewrite_rule\\.py$"
             }
         ]
     },
     "sin": {
         "name": "shell-input-rewritten-outside-the-runner-rule",
-        "description": "A rule other than the processes module's RunnerRewrite gives the tool a new input, so two rules compete for a shell line and the line may skip the runner.",
-        "rule": "Only RunnerRewrite rewrites a shell line, into a call of the runner; every other rule answers with lines or a refusal.",
+        "description": "A rule other than the processes module's RunnerRewriteRule gives the tool a new input, so two rules compete for a shell line and the line may skip the runner.",
+        "rule": "Only RunnerRewriteRule rewrites a shell line, into a call of the runner; every other rule answers with lines or a refusal.",
         "skill": "processes-architecture"
     }
 }

@@ -14,7 +14,7 @@ from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
-class UnreadOutputReminder(DriverRule):
+class UnreadOutputReminderRule(DriverRule):
     """Tells an agent again, every few tool uses, of an output of a run it moved to the background that it has
     not read."""
 

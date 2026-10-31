@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.processes.commands.output_lines import OutputLines
+from core.modules.processes.commands.support.output_lines import OutputLines
 
 
 @dataclass(frozen=True)

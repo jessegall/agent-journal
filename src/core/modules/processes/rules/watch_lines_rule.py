@@ -9,7 +9,7 @@ from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.support.output_folder import OutputFolder
 
 
-class WatchLines(DriverRule):
+class WatchLinesRule(DriverRule):
     """After every tool use, gives an agent the lines its readers have kept of each run it watches, the ones it
     has not been given; it reads the lines file and runs no reader."""
 

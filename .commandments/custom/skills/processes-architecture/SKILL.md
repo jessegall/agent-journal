@@ -1,7 +1,7 @@
 ---
 name: ProcessesArchitecture
 description: Load it before writing code in the processes module of version 5 or in the Go runner, so every shell line runs through the one runner, the folder format has one owner and a rule only answers.
-summary: Only RunnerRewrite rewrites a shell line, only OutputFolder knows the files of a run's folder, the runner reports through the journal client and never to the database, a processes rule runs and writes nothing itself, and the hook holds each program's rewritten input in the program table.
+summary: Only RunnerRewriteRule rewrites a shell line, only OutputFolder knows the files of a run's folder, the runner reports through the journal client and never to the database, a processes rule runs and writes nothing itself, and the hook holds each program's rewritten input in the program table.
 tier: mandatory
 languages: [python, go]
 ---
@@ -12,7 +12,7 @@ A shell line of a main agent or a worker runs through `journal-run`, which keeps
 
 ## When it fires
 
-- **`shell-input-rewritten-outside-the-runner-rule`** - a rule other than `RunnerRewrite` calls `RuleAnswer.rewritten`.
+- **`shell-input-rewritten-outside-the-runner-rule`** - a rule other than `RunnerRewriteRule` calls `RuleAnswer.rewritten`.
   Only that rule gives a shell line a new input; the others answer with lines or a refusal.
 - **`process-folder-layout-outside-output-folder`** - Python names `heartbeat`, `run.sh`, `<n>.out` or `<n>.status`
   outside `support/output_folder.py`. Read and write a run's files through `OutputFolder`.

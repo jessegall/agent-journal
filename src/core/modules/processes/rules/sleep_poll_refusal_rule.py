@@ -13,7 +13,7 @@ LOOPS = ("until", "while")
 SLEEP = "sleep"
 
 
-class SleepPollRefusal(DriverRule):
+class SleepPollRefusalRule(DriverRule):
     """A line that only sleeps, or sleeps in a loop to check again, is refused: the agent watches the process
     or waits on it instead."""
 

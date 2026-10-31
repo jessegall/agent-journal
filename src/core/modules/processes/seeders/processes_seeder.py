@@ -3,7 +3,7 @@ from core.base.seed.demo import Demo
 from core.base.seed.seeder import Seeder
 from core.modules.processes.commands.end_process import EndProcess
 from core.modules.processes.commands.end_process_part import EndProcessPart
-from core.modules.processes.commands.part_spec import PartSpec
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.support.output_folder import OutputFolder
 

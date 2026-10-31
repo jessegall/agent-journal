@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.processes.commands.output_lines import OutputLines
-from core.modules.processes.commands.output_lines_writing import OutputLinesWriting
+from core.modules.processes.commands.support.output_lines import OutputLines
+from core.modules.processes.commands.support.output_lines_writing import OutputLinesWriting
 from core.modules.processes.commands.read_output import ReadOutput
-from core.modules.processes.commands.output_texts import OutputTexts
+from core.modules.processes.commands.support.output_texts import OutputTexts
 
 
 class PeekOutputSubcommand(OutputLinesWriting, ReadSubcommand[OutputLines]):

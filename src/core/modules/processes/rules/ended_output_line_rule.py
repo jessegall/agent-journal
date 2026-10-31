@@ -10,7 +10,7 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.ended_output_text import EndedOutputText
 
 
-class EndedOutputLine(DriverRule):
+class EndedOutputLineRule(DriverRule):
     """Tells an agent once, on its next hook that takes lines, that a run it moved to the background has ended."""
 
     name = "processes.ended-output-line"

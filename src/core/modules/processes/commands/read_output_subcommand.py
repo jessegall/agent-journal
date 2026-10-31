@@ -2,8 +2,8 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.processes.commands.output_lines import OutputLines
-from core.modules.processes.commands.output_lines_writing import OutputLinesWriting
+from core.modules.processes.commands.support.output_lines import OutputLines
+from core.modules.processes.commands.support.output_lines_writing import OutputLinesWriting
 from core.modules.processes.commands.read_output import ReadOutput
 
 

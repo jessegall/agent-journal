@@ -1,5 +1,5 @@
 from core.base.subcommand.output import Output
-from core.modules.processes.commands.output_lines import OutputLines
+from core.modules.processes.commands.support.output_lines import OutputLines
 
 
 class OutputLinesWriting:

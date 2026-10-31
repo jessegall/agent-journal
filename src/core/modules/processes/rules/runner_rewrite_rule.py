@@ -17,7 +17,7 @@ from core.modules.processes.support.runner_line import RunnerLine
 BACKGROUND_FLAG = "run_in_background"
 
 
-class RunnerRewrite(DriverRule):
+class RunnerRewriteRule(DriverRule):
     """Every shell line of a main agent or a worker runs through the journal's runner: the run is made a
     process, and the agent's command is rewritten to hand the runner its process, its limit and its line."""
 

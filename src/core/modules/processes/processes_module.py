@@ -17,7 +17,7 @@ from core.modules.processes.commands.unwatch_output_subcommand import UnwatchOut
 from core.modules.processes.commands.watch_output_handler import WatchOutputHandler
 from core.modules.processes.commands.watch_output_subcommand import WatchOutputSubcommand
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
-from core.modules.processes.rules.watch_lines import WatchLines
+from core.modules.processes.rules.watch_lines_rule import WatchLinesRule
 from core.modules.processes.commands.prune_outputs_handler import PruneOutputsHandler
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
@@ -36,10 +36,10 @@ from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.start_process_handler import StartProcessHandler
 from core.modules.processes.commands.stop_process_handler import StopProcessHandler
 from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
-from core.modules.processes.rules.ended_output_line import EndedOutputLine
-from core.modules.processes.rules.unread_output_reminder import UnreadOutputReminder
-from core.modules.processes.rules.runner_rewrite import RunnerRewrite
-from core.modules.processes.rules.sleep_poll_refusal import SleepPollRefusal
+from core.modules.processes.rules.ended_output_line_rule import EndedOutputLineRule
+from core.modules.processes.rules.unread_output_reminder_rule import UnreadOutputReminderRule
+from core.modules.processes.rules.runner_rewrite_rule import RunnerRewriteRule
+from core.modules.processes.rules.sleep_poll_refusal_rule import SleepPollRefusalRule
 from core.modules.processes.commands.add_reader_handler import AddReaderHandler
 from core.modules.processes.commands.add_reader_subcommand import AddReaderSubcommand
 from core.modules.processes.commands.choose_default_reader_handler import ChooseDefaultReaderHandler
@@ -80,7 +80,7 @@ class ProcessesModule(Module):
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, OrphanProcessRule, OutputReaderRule]
+    driver_rules = [SleepPollRefusalRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
     listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     docks = PROCESS_DOCKS

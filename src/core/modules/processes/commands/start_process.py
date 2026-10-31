@@ -5,7 +5,7 @@ from core.base.command.command import Command
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine
-from core.modules.processes.commands.part_spec import PartSpec
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_limit import ForegroundRun
 

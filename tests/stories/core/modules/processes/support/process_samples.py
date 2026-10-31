@@ -9,7 +9,7 @@ from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.end_process import EndProcess
 from core.modules.processes.commands.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process import MoveProcess
-from core.modules.processes.commands.part_spec import PartSpec
+from core.modules.processes.commands.support.part_spec import PartSpec
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery

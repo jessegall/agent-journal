@@ -3,11 +3,11 @@ from dataclasses import replace
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
-from core.modules.processes.commands.output_lines import OutputLines
+from core.modules.processes.commands.support.output_lines import OutputLines
 from core.modules.processes.commands.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.commands.output_texts import OutputTexts
+from core.modules.processes.commands.support.output_texts import OutputTexts
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
