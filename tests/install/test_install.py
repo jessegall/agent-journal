@@ -58,5 +58,5 @@ def test_a_project_with_a_version_4_journal_is_not_touched_and_is_told_to_upgrad
     before = scratch.snapshot()
     run = scratch.install()
     assert run.returncode == 1
-    assert "version 4" in run.stderr and "journal upgrade" in run.stderr
+    assert "this project holds a version 4 journal: run journal upgrade" in run.stderr
     assert scratch.snapshot() == before

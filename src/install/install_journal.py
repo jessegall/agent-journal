@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from install.version_four import ANSWER, VersionFour
 
 INSTALLED = 3
 REFUSED = 1
 SYNC_LIMIT_SECONDS = 120
-VERSION_4_DATABASE = "journal.db"
 HOME_VARIABLE = "JOURNAL_HOME"
 
 
@@ -22,9 +22,8 @@ class InstallJournal:
         self.home = JournalHome(project / ".journal")
 
     def run(self) -> int:
-        if (self.home.folder / VERSION_4_DATABASE).exists() and not self.home.database.exists():
-            print(f"this project holds a version 4 journal in {self.home.folder / VERSION_4_DATABASE}; install changed nothing: run 'journal upgrade' to move it to version 5",
-                  file=sys.stderr)
+        if VersionFour(self.home.folder).exists() and not self.home.database.exists():
+            print(ANSWER, file=sys.stderr)
             return REFUSED
         if self.home.database.exists() and self.code().joinpath("core", "journal.py").exists():
             print(f"version 5 is already installed in {self.home.folder}; nothing changed")
