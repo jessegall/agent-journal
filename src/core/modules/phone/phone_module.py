@@ -12,6 +12,8 @@ from core.modules.phone.commands.unpair_phone import UnpairPhone
 from core.modules.phone.migrations.m001_phones import PhonesTablesMigration
 from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.phone.models.phone import Phone
+from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
+from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
 from core.modules.phone.seeders.phone_seeder import PhoneSeeder
 
 
@@ -21,8 +23,9 @@ class PhoneModule(Module):
     name = "journal.core.phone"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
-    models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make"]),
-              ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show"])]
+    models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make", "edit"]),
+              ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
+    guards = [PhoneRowGuard, PhoneCodeRowGuard]
     migrations = [PhonesTablesMigration]
     subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand)
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler]

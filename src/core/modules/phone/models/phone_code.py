@@ -14,6 +14,7 @@ class PhoneCode(Model):
     model_name = "phone_code"
     cli_name = "phone-code"
     lifecycle = PhoneCodeLifecycle
+    hidden_fields = frozenset({"code_digest"})
 
     creator_id: int
     person_id: int

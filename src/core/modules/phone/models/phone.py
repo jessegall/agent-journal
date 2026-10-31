@@ -13,6 +13,7 @@ class Phone(Model):
     model_name = "phone"
     cli_name = "phone"
     lifecycle = PhoneLifecycle
+    hidden_fields = frozenset({"token_digest"})
 
     creator_id: int
     person_id: int
