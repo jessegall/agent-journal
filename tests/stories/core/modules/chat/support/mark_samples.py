@@ -46,3 +46,7 @@ def mark_count(story: Story) -> int:
 
 class StrangeVariant(StrEnum):
     STRANGE = "strange"
+
+
+def marks_text(story: Story) -> str:
+    return story.run("chat-mark list --environment 1 --oldest").output_text
