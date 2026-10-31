@@ -2,6 +2,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
 from core.modules.skills.models.agent_skill import AgentSkill
+from core.modules.skills.rules.keyword_skills_rule import KeywordSkillsRule
 from core.modules.skills.listeners.compaction_reset_listener import CompactionResetListener
 from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
 from core.modules.skills.listeners.skill_read_listener import SkillReadListener
@@ -26,3 +27,4 @@ class SkillsModule(Module):
     subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler]
     listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener]
+    driver_rules = [KeywordSkillsRule]

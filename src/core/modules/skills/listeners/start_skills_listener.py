@@ -33,10 +33,10 @@ class StartSkillsListener(SkillListener):
             self.run(event, RequireSkill(call.agent_id, skill))
 
     def skills(self, call: HookCall) -> list[str]:
-        if self.follows_compaction(call):
+        if self.compacted(call):
             return self.start.after_compaction(call.environment_id)
         return self.start.session_start(call.environment_id)
 
-    def follows_compaction(self, call: HookCall) -> bool:
-        before = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().page(1, 2).rows
-        return len(before) == 2 and before[1].hook == HookEventName.COMPACT
+    def compacted(self, call: HookCall) -> bool:
+        recent = self.queries.query(HookCall).filter(agent_id=call.agent_id).newest().page(1, 2).rows
+        return len(recent) == 2 and recent[1].hook == HookEventName.COMPACT
