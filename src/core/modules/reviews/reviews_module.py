@@ -8,6 +8,9 @@ from core.modules.reviews.commands.abandon_review import AbandonReview
 from core.modules.reviews.commands.end_reviewer import EndReviewer
 from core.modules.reviews.listeners.review_reported_step_listener import ReviewReportedStepListener
 from core.modules.reviews.listeners.review_started_step_listener import ReviewStartedStepListener
+from core.modules.reviews.listeners.review_reported_mark_listener import ReviewReportedMarkListener
+from core.modules.reviews.listeners.review_taken_mark_listener import ReviewTakenMarkListener
+from core.modules.reviews.support.review_marks import REVIEW_MARKS
 from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
 from core.modules.reviews.commands.reviewer_list_subcommand import ReviewerListSubcommand
 from core.modules.reviews.commands.add_reviewer_handler import AddReviewerHandler
@@ -38,10 +41,11 @@ class ReviewsModule(Module):
 
     name = "journal.core.reviews"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]
     models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
     subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
-    listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener]
+    listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewTakenMarkListener, ReviewReportedMarkListener]
+    marks = REVIEW_MARKS
