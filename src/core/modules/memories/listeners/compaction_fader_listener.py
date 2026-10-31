@@ -9,8 +9,9 @@ from core.modules.memories.commands.fade_memories import FadeMemories
 
 
 class CompactionFaderListener(CommitListener):
-    """When an agent's context window is compacted, its memories of a fading type each lose one weight; a listener
-    and not a driver rule, so an overlay that silences the rules, such as a wait, never stops the fading."""
+    """When an agent's context window is compacted, its memories of a fading type each lose one weight; a
+    listener and not a driver rule, so an overlay that silences the rules, such as a wait, never stops the
+    fading."""
 
     name = "memories.compaction-fader"
     event = "hook_call.create"

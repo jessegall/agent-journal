@@ -10,8 +10,8 @@ from core.modules.memories.commands.read_memory import ReadMemory
 
 
 class ReadMemoryHandler(Handler[ReadMemory, Memory]):
-    """Answers the memory, and keeps a delivery with cause read when an agent reads it, so it counts as in that
-    agent's context until its next compaction."""
+    """Answers the memory, and keeps a delivery with cause read when an agent reads it, so it counts as in
+    that agent's context until its next compaction."""
 
     command = ReadMemory
 

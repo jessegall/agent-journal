@@ -7,8 +7,8 @@ from core.modules.memories.rules.weigh_first_rule import WeighFirstRule
 
 
 class WeighingOverlay(Overlay):
-    """While an agent has an open memory mark, its writes and stops wait until it weighs, makes, corrects or removes
-    a memory, or skips with a reason."""
+    """While an agent has an open memory mark, its writes and stops wait until it weighs, makes, corrects
+    or removes a memory, or skips with a reason."""
 
     name = "memories.weighing"
     exclusive = True

@@ -9,8 +9,8 @@ from core.modules.memories.models.memory_type import MemoryType
 
 
 class FadingScope:
-    """The memories a compaction fades for an agent, at any weight: the environment's memories for a main agent,
-    its own for a helper, of the types that fade."""
+    """The memories a compaction fades for an agent, at any weight: the environment's memories for a main
+    agent, its own for a helper, of the types that fade."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

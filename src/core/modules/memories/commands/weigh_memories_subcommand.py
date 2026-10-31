@@ -8,7 +8,8 @@ from core.modules.memories.commands.weigh_memories import WeighMemories
 
 
 class WeighMemoriesSubcommand(Subcommand[WeighMemories, list[Memory]]):
-    """`journal memory weigh 3,7,9 5,8,2`: gives each memory its own weight, or `weigh 3,7,9 5` one weight to all."""
+    """`journal memory weigh 3,7,9 5,8,2`: gives each memory its own weight, or `weigh 3,7,9 5` one weight
+    to all."""
 
     cli_name = "memory"
     name = "weigh"

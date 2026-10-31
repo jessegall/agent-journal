@@ -11,8 +11,8 @@ BLOCKED_TASK_PAGE_SIZE = 10
 
 
 class BlockedWorkRule(DriverRule):
-    """A stop with nothing in hand and nothing open, while tasks of the environment are blocked, is refused once
-    to name them; the next stop goes through."""
+    """A stop with nothing in hand and nothing open, while tasks of the environment are blocked, is
+    refused once to name them; the next stop goes through."""
 
     name = "tasks.blocked-work-at-stop"
     hook = HookEventName.STOP

@@ -18,8 +18,9 @@ KEYWORD_LIMIT_DEFAULT = 3
 
 
 class KeywordDeliveryRule(DriverRule):
-    """When a prompt or a tool use names a keyword of a active memory the agent has not been given since its last
-    compaction, the agent is given that memory, at most memories.keyword-limit of them on one hook."""
+    """When a prompt or a tool use names a keyword of a active memory the agent has not been given since
+    its last compaction, the agent is given that memory, at most memories.keyword-limit of them on one
+    hook."""
 
     name = "memories.keyword-delivery"
     hook = HookWildcard.ALL_HOOKS

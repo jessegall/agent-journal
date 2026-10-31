@@ -50,8 +50,8 @@ from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARK
 
 
 class MemoriesModule(Module):
-    """Adds memories: what the journal gives back to an agent, typed, weighed and fading, with the keywords that
-    bring one back and the context marks that ask the agent to weigh them."""
+    """Adds memories: what the journal gives back to an agent, typed, weighed and fading, with the
+    keywords that bring one back and the context marks that ask the agent to weigh them."""
 
     name = "journal.core.memories"
     requires_core = ">=5,<6"

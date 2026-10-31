@@ -8,8 +8,8 @@ WEIGH_FIRST_LINE = "weigh your memories first: journal memory weigh <numbers> <w
 
 
 class WeighFirstRule(DriverRule):
-    """While a memory mark is open, a write or a stop is refused with the way to weigh or skip; reads and journal
-    commands go through, so the commands that close the mark always run."""
+    """While a memory mark is open, a write or a stop is refused with the way to weigh or skip; reads and
+    journal commands go through, so the commands that close the mark always run."""
 
     name = "memories.weigh-first"
     hook = HookWildcard.ALL_HOOKS

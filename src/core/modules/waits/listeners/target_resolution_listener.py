@@ -13,8 +13,8 @@ from core.modules.waits.models.wait_target import WaitTarget
 
 
 class TargetResolutionListener(SaveListener):
-    """A row a wait waits on resolves when it leaves its lifecycle's editable states; the wait ends once none of its
-    rows is left open."""
+    """A row a wait waits on resolves when it leaves its lifecycle's editable states; the wait ends once
+    none of its rows is left open."""
 
     name = "waits.end-when-resolved"
     event = "*.*"

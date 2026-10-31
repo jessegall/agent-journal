@@ -9,8 +9,8 @@ UNLOGGED_WRITES_CEILING = 50
 
 
 class UnloggedWriteRule(DriverRule):
-    """Once 50 writes have been made since the task in hand was last logged, every further write waits for a log
-    line; reads and journal commands go through."""
+    """Once 50 writes have been made since the task in hand was last logged, every further write waits for
+    a log line; reads and journal commands go through."""
 
     name = "tasks.log-before-more-writes"
     hook = HookEventName.PRE_TOOL_USE

@@ -8,8 +8,8 @@ from core.modules.plans.commands.move_phase import MovePhase
 
 
 class MovePhaseHandler(Handler[MovePhase, Phase]):
-    """Moves a phase to another place: it steps aside past the last place, the phases between shift by one, and it
-    takes its new place, so no two phases of a plan ever share a place."""
+    """Moves a phase to another place: it steps aside past the last place, the phases between shift by
+    one, and it takes its new place, so no two phases of a plan ever share a place."""
 
     command = MovePhase
 

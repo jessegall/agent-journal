@@ -10,9 +10,9 @@ from core.modules.chat.commands.show_mark import ShowMark
 
 
 class MarkListener(CommitListener):
-    """What every module's mark listener shares: showing one mark, as the module that declares its type, for the
-    event that caused it, keyed by the variant, the row and the event so a listener run twice for one event leaves
-    one mark."""
+    """What every module's mark listener shares: showing one mark, as the module that declares its type,
+    for the event that caused it, keyed by the variant, the row and the event so a listener run twice for
+    one event leaves one mark."""
 
     module_name: ClassVar[str]
 

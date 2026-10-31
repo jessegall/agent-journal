@@ -16,8 +16,8 @@ from core.modules.waits.overlays.wait_overlay import WaitOverlay
 
 
 class WaitsModule(Module):
-    """Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait is open it
-    takes control of the agent as an exclusive overlay."""
+    """Adds waits: an agent waits on rows it does not control or reports it is stuck, and while the wait
+    is open it takes control of the agent as an exclusive overlay."""
 
     name = "journal.core.waits"
     requires_core = ">=5,<6"

@@ -9,8 +9,8 @@ AGENTS_MODULE = "journal.core.agents"
 
 
 class SubagentMarkListener(MarkListener):
-    """When a subagent starts or ends, the chat shows a mark under that subagent's id, which the viewer reads to
-    fold a subagent's marks together."""
+    """When a subagent starts or ends, the chat shows a mark under that subagent's id, which the viewer
+    reads to fold a subagent's marks together."""
 
     name = "agents.subagent-mark"
     event = "agent.*"
@@ -22,5 +22,6 @@ class SubagentMarkListener(MarkListener):
             return
         if event.event == "agent.create":
             self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.STARTED, f"Subagent {agent.id} started", agent.environment_id, agent.id, "agent", agent.id)
-        if event.event == "agent.update" and "ended_at" in event.data and agent.ended_at is not None:
+        ended = event.event == "agent.update" and "ended_at" in event.data and agent.ended_at is not None
+        if ended:
             self.show(event, AgentMarkType.SUBAGENT, AgentMarkVariant.ENDED, f"Subagent {agent.id} ended", agent.environment_id, agent.id, "agent", agent.id)

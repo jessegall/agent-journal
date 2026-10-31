@@ -9,8 +9,8 @@ LOG_REQUEST_WRITES = 25
 
 
 class LogRequestRule(DriverRule):
-    """The write that reaches 25 writes since the task in hand was last logged names the task back and asks for
-    a log line."""
+    """The write that reaches 25 writes since the task in hand was last logged names the task back and
+    asks for a log line."""
 
     name = "tasks.log-request"
     hook = HookEventName.PRE_TOOL_USE

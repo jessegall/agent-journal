@@ -10,7 +10,8 @@ from core.modules.waits.rules.work_ends_wait_rule import WorkEndsWaitRule
 
 
 class WaitOverlay(Overlay):
-    """An open wait on rows: its rules come first, and while it is open the driver's ordinary rules are silent."""
+    """An open wait on rows: its rules come first, and while it is open the driver's ordinary rules are
+    silent."""
 
     name = "waits.wait"
     exclusive = True

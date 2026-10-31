@@ -34,8 +34,8 @@ TASK_COMMANDS = (BlockTask, CloseTask, CancelTask)
 
 
 class TasksModule(Module):
-    """Adds tasks, units of work current by an agent, with their log lines and dependencies, and the rules that keep
-    an agent at its task."""
+    """Adds tasks, units of work current by an agent, with their log lines and dependencies, and the rules
+    that keep an agent at its task."""
 
     name = "journal.core.tasks"
     requires_core = ">=5,<6"

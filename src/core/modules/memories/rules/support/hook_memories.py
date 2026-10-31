@@ -4,8 +4,8 @@ from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery
 
 
 class HookMemories:
-    """The active memories a hook's agent may be given: its scope's and the project's, of the types switched on
-    in its environment."""
+    """The active memories a hook's agent may be given: its scope's and the project's, of the types
+    switched on in its environment."""
 
     def __init__(self, active: ActiveMemoryQuery, choice: MemoryTypeChoice) -> None:
         self.active, self.choice = active, choice

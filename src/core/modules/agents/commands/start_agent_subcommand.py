@@ -9,8 +9,8 @@ from core.base.timestamp import Timestamp
 
 
 class StartAgentSubcommand(Subcommand[StartAgent, Agent]):
-    """`journal agent start <session> <program> <role> [--parent <id>] [--pid <pid> --process-started-at <time>]`,
-    run when a session of an agent program begins; agents have no make subcommand."""
+    """`journal agent start <session> <program> <role> [--parent <id>] [--pid <pid> --process-started-at
+    <time>]`, run when a session of an agent program begins; agents have no make subcommand."""
 
     cli_name = "agent"
     name = "start"

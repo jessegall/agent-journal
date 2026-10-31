@@ -12,8 +12,8 @@ from core.modules.memories.models.enums.memory_state import MemoryState
 
 
 class MemoryFadedSubcommand(ReadSubcommand[Page[FadedMemory]]):
-    """`journal memory faded [--environment <name>]`: the memories of the environment faded to weight 0, which a
-    raised weight brings back."""
+    """`journal memory faded [--environment <name>]`: the memories of the environment faded to weight 0,
+    which a raised weight brings back."""
 
     cli_name = "memory"
     name = "faded"

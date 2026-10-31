@@ -16,8 +16,9 @@ from core.modules.tasks.models.enums.task_state import TaskState
 
 
 class NextPlanTaskStarterListener(CommitListener):
-    """When an agent closes a task of a started plan, the plan's next open task that waits on nothing is started for
-    that agent, so a plan is followed task by task, never past a checkpoint phase that still has an open task."""
+    """When an agent closes a task of a started plan, the plan's next open task that waits on nothing is
+    started for that agent, so a plan is followed task by task, never past a checkpoint phase that still
+    has an open task."""
 
     name = "plans.next-plan-task-starter"
     event = "task.close"

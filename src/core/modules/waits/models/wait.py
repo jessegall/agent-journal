@@ -10,8 +10,8 @@ from core.modules.waits.models.enums.wait_type import WaitType
 
 @dataclass(frozen=True, kw_only=True)
 class Wait(Model):
-    """Something an agent waits for that it does not control, or a report that it is stuck; open until its rows
-    resolve, the agent works again, or it is ended, with the time it last became open."""
+    """Something an agent waits for that it does not control, or a report that it is stuck; open until its
+    rows resolve, the agent works again, or it is ended, with the time it last became open."""
 
     model_name = "wait"
     cli_name = "wait"

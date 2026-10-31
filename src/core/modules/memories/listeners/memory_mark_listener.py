@@ -10,8 +10,8 @@ MEMORIES_MODULE = "journal.core.memories"
 
 
 class MemoryMarkListener(MarkListener):
-    """What the memory mark listeners share: the memories module as the writer, memory as the default type and row,
-    and the memory's own environment for an event that carries none."""
+    """What the memory mark listeners share: the memories module as the writer, memory as the default type
+    and row, and the memory's own environment for an event that carries none."""
 
     module_name = MEMORIES_MODULE
 

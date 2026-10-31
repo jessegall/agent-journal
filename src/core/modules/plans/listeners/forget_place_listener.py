@@ -8,8 +8,8 @@ from core.modules.plans.support.positions import Positions
 
 
 class ForgetPlaceListener(DeletionListener):
-    """Removes a task's place in a phase before the task is deleted, so the deletion is logged and not refused, and
-    closes the gap it leaves."""
+    """Removes a task's place in a phase before the task is deleted, so the deletion is logged and not
+    refused, and closes the gap it leaves."""
 
     name = "plans.forget-place"
     event = "task.delete"

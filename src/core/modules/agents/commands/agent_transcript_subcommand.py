@@ -13,8 +13,8 @@ from core.modules.environments.models.environment import Environment
 
 
 class AgentTranscriptSubcommand(ReadSubcommand[Page[TranscriptRow]]):
-    """`journal agent transcript <agent>`: the agent program's conversation, from the session file its provider
-    names, the newest rows last."""
+    """`journal agent transcript <agent>`: the agent program's conversation, from the session file its
+    provider names, the newest rows last."""
 
     cli_name = "agent"
     name = "transcript"

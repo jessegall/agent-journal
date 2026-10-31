@@ -10,8 +10,8 @@ from core.modules.waits.rules.work_ends_wait_rule import WorkEndsWaitRule
 
 
 class HelpRequestOverlay(Overlay):
-    """An open stuck report: the agent is told nothing and its stop goes through, until it uses a tool outside the
-    journal or the report is ended."""
+    """An open stuck report: the agent is told nothing and its stop goes through, until it uses a tool
+    outside the journal or the report is ended."""
 
     name = "waits.stuck"
     exclusive = True

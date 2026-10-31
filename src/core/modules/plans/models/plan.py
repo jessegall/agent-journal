@@ -9,7 +9,8 @@ from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 
 @dataclass(frozen=True, kw_only=True)
 class Plan(Model):
-    """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then followed."""
+    """A goal reached by tasks placed in ordered phases; it is made ready, approved by a person, then
+    followed."""
 
     model_name = "plan"
     cli_name = "plan"

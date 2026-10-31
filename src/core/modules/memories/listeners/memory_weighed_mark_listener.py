@@ -5,8 +5,8 @@ from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVar
 
 
 class MemoryWeighedMarkListener(MemoryMarkListener):
-    """When a memory's weight is set, its chat shows a mark naming the memory and the new weight; a fade, which
-    lowers weights by itself, has its own mark."""
+    """When a memory's weight is set, its chat shows a mark naming the memory and the new weight; a fade,
+    which lowers weights by itself, has its own mark."""
 
     name = "memories.weighed-mark"
     event = "memory.update"

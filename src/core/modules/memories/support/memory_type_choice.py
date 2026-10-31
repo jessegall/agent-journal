@@ -8,8 +8,8 @@ ALL_SUITES = "*"
 
 
 class MemoryTypeChoice:
-    """Whether a memory type is on in an environment: its setting memories.type.<name> there, then the project's,
-    then the switch for the environment's suite, then the switch for every suite, else off."""
+    """Whether a memory type is on in an environment: its setting memories.type.<name> there, then the
+    project's, then the switch for the environment's suite, then the switch for every suite, else off."""
 
     def __init__(self, settings: SettingValues, suites: SuiteChoice, queries: Queries) -> None:
         self.settings, self.suites, self.queries = settings, suites, queries

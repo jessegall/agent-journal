@@ -8,8 +8,8 @@ from core.modules.plans.support.positions import Positions
 
 
 class PlacePhaseHandler(Handler[PlacePhase, PhaseTask]):
-    """Places a task in a phase: removes its place in another phase, if any, and adds one at the end of the new
-    phase; the one handler for a command that changes more than one row."""
+    """Places a task in a phase: removes its place in another phase, if any, and adds one at the end of
+    the new phase; the one handler for a command that changes more than one row."""
 
     command = PlacePhase
 

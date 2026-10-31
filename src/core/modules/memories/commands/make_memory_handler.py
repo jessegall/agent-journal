@@ -10,7 +10,8 @@ from core.modules.memories.models.memory_type import MemoryType
 
 
 class MakeMemoryHandler(Handler[MakeMemory, Memory]):
-    """Saves a memory in the scope asked, at its type's starting weight unless one is given, with its keywords."""
+    """Saves a memory in the scope asked, at its type's starting weight unless one is given, with its
+    keywords."""
 
     command = MakeMemory
 

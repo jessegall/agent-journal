@@ -7,8 +7,8 @@ from core.modules.tasks.models.task_log import TaskLog
 
 @dataclass(frozen=True)
 class CurrentTask:
-    """The started task an agent holds, with its newest log line; writes and stops are counted from the later of
-    the task's last change and that line."""
+    """The started task an agent holds, with its newest log line; writes and stops are counted from the
+    later of the task's last change and that line."""
 
     task: Task
     last_log: TaskLog | None

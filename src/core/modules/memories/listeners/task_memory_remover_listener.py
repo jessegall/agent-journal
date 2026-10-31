@@ -11,8 +11,8 @@ ENDING_MOVES = ("task.close", "task.cancel")
 
 
 class TaskMemoryRemoverListener(CommitListener):
-    """When a task is closed or cancelled, the memories kept for it are removed, each with the task named as the
-    reason."""
+    """When a task is closed or cancelled, the memories kept for it are removed, each with the task named
+    as the reason."""
 
     name = "memories.task-memory-remover"
     event = "task.*"

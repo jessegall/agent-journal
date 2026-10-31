@@ -11,8 +11,8 @@ SEPARATOR = "\t"
 
 
 class AgentTerminalSubcommand(ReadSubcommand[Page[TerminalLine]]):
-    """`journal agent terminal <agent> [--after <line>]`: what the agent program printed in its terminal, from the
-    launcher's log, the lines after the one named."""
+    """`journal agent terminal <agent> [--after <line>]`: what the agent program printed in its terminal,
+    from the launcher's log, the lines after the one named."""
 
     cli_name = "agent"
     name = "terminal"

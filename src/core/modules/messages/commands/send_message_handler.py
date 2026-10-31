@@ -12,8 +12,8 @@ ACTOR_MESSAGE_TYPES = {ActorType.USER: MessageType.USER, ActorType.AGENT: Messag
 
 
 class SendMessageHandler(Handler[SendMessage, Message]):
-    """Saves a message from the caller: a person's is a user message, an agent's an agent message, anything else
-    the journal's."""
+    """Saves a message from the caller: a person's is a user message, an agent's an agent message,
+    anything else the journal's."""
 
     command = SendMessage
 

@@ -5,8 +5,8 @@ from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 
 class TaskWriteCount:
-    """For a hook that writes files while its agent holds a task: the task, and how many writes this one makes since
-    the task was last logged."""
+    """For a hook that writes files while its agent holds a task: the task, and how many writes this one
+    makes since the task was last logged."""
 
     def __init__(self, current_tasks: CurrentTasks, calls: HookCallQuery) -> None:
         self.current_tasks, self.calls = current_tasks, calls

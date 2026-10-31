@@ -8,8 +8,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class StartAgent(Command[Agent]):
-    """Starts an agent session in the caller's environment: makes its actor and its agent row under one number, with
-    the pid and start time of the agent program's process when the caller knows them."""
+    """Starts an agent session in the caller's environment: makes its actor and its agent row under one
+    number, with the pid and start time of the agent program's process when the caller knows them."""
 
     session: str
     program: str

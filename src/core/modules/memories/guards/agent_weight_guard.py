@@ -7,7 +7,8 @@ from core.modules.memories.models.memory import Memory
 
 
 class AgentWeightGuard(Guard):
-    """An agent keeps or raises a memory's weight, never lowers it; a memory mostly true is corrected with edit."""
+    """An agent keeps or raises a memory's weight, never lowers it; a memory mostly true is corrected with
+    edit."""
 
     name = "memories.agent-weight"
     event = "memory.update"

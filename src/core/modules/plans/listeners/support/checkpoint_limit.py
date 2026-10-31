@@ -8,8 +8,8 @@ CHECKPOINT_LIMIT = ("phase_position <= coalesce((SELECT min(checkpoints.phase_po
 
 @dataclass(frozen=True)
 class CheckpointLimit:
-    """Matches a plan's places up to its first checkpoint phase that still has an open task, so no later phase is
-    started before the user has looked at that checkpoint's work."""
+    """Matches a plan's places up to its first checkpoint phase that still has an open task, so no later
+    phase is started before the user has looked at that checkpoint's work."""
 
     plan_id: int
 

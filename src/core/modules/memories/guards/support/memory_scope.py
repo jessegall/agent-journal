@@ -6,8 +6,8 @@ from core.modules.memories.models.memory import Memory
 
 
 class MemoryScope:
-    """Where an agent may write a memory: in its own environment, for the environment or for itself; never for the
-    whole project and never another helper's own."""
+    """Where an agent may write a memory: in its own environment, for the environment or for itself; never
+    for the whole project and never another helper's own."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

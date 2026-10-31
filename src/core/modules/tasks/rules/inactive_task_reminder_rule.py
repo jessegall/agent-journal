@@ -13,8 +13,8 @@ MINUTE_SECONDS = 60
 
 
 class InactiveTaskReminderRule(DriverRule):
-    """A tick that finds an agent quiet for 15 minutes or more with a task in hand tells it to carry on or log why
-    the task waits, once per quiet stretch."""
+    """A tick that finds an agent quiet for 15 minutes or more with a task in hand tells it to carry on or
+    log why the task waits, once per quiet stretch."""
 
     name = "tasks.quiet-task"
     hook = HookEventName.TICK

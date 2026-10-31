@@ -10,8 +10,8 @@ DEFAULT_MARKS = (50, 80, 90)
 
 
 class MarkTracker:
-    """An agent's context marks: the one open now, and the next mark its context passed that it has not reached
-    since its last compaction."""
+    """An agent's context marks: the one open now, and the next mark its context passed that it has not
+    reached since its last compaction."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

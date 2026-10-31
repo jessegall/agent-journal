@@ -4,8 +4,8 @@ from core.modules.memories.models.active_memory import ActiveMemory
 
 
 class MemoryLines:
-    """The one writer of the agent's lines about memories: one line per memory, and the line that asks the agent to
-    weigh them at a context mark."""
+    """The one writer of the agent's lines about memories: one line per memory, and the line that asks the
+    agent to weigh them at a context mark."""
 
     @staticmethod
     def listing(memories: Sequence[ActiveMemory]) -> tuple[str, ...]:

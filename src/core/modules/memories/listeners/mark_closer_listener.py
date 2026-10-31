@@ -7,7 +7,8 @@ from core.modules.memories.support.mark_tracker import MarkTracker
 
 
 class MarkCloserListener(SaveListener):
-    """An agent that makes, weighs, corrects or removes a memory while its mark is open closes the mark as weighed."""
+    """An agent that makes, weighs, corrects or removes a memory while its mark is open closes the mark as
+    weighed."""
 
     name = "memories.mark-closer"
     event = "memory.*"

@@ -9,7 +9,8 @@ MOVE_VARIANTS = {"create": PlanMarkVariant.MADE, "start": PlanMarkVariant.STARTE
 
 
 class PlanMoveMarkListener(MarkListener):
-    """When a plan is made, started, closed, blocked or cancelled, the chat shows a mark naming the plan and the move."""
+    """When a plan is made, started, closed, blocked or cancelled, the chat shows a mark naming the plan
+    and the move."""
 
     name = "plans.move-mark"
     event = "plan.*"

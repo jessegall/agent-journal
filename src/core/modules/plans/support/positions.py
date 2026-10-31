@@ -9,8 +9,9 @@ POSITION = "position"
 
 
 class Positions:
-    """Keeps the places of a plan's phases and of a phase's tasks without gaps: a new one takes the place after the
-    last, and when one leaves, every later one moves up by one, nearest first, so no two ever share a place."""
+    """Keeps the places of a plan's phases and of a phase's tasks without gaps: a new one takes the place
+    after the last, and when one leaves, every later one moves up by one, nearest first, so no two ever
+    share a place."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository

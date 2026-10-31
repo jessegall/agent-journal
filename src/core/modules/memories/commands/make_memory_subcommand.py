@@ -8,8 +8,9 @@ from core.modules.memories.commands.make_memory import MakeMemory
 
 
 class MakeMemorySubcommand(Subcommand[MakeMemory, Memory]):
-    """`journal memory make "<text>" --type <type>`, with a weight, keywords, a task and a due time if wanted: a
-    memory for your environment, with --project for the whole project, or with --own for yourself alone."""
+    """`journal memory make "<text>" --type <type>`, with a weight, keywords, a task and a due time if
+    wanted: a memory for your environment, with --project for the whole project, or with --own for
+    yourself alone."""
 
     cli_name = "memory"
     name = "make"

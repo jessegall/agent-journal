@@ -7,8 +7,8 @@ from core.modules.plans.models.phase import Phase
 
 
 class PhasePositionGuard(Guard):
-    """A phase changes its place only through journal phase move, which shifts the phases between; an edit of its
-    place alone would leave two phases on one place or a gap."""
+    """A phase changes its place only through journal phase move, which shifts the phases between; an edit
+    of its place alone would leave two phases on one place or a gap."""
 
     name = "plans.phase-position-by-move"
     event = "phase.update"

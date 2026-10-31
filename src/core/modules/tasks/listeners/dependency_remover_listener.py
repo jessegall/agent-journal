@@ -8,7 +8,8 @@ from core.modules.tasks.models.task_dependency import TaskDependency
 
 
 class DependencyRemoverListener(DeletionListener):
-    """Removes a task's dependencies, both ways, before the task is deleted, each removal logged as its own event."""
+    """Removes a task's dependencies, both ways, before the task is deleted, each removal logged as its
+    own event."""
 
     name = "tasks.dependency-remover"
     event = "task.delete"
