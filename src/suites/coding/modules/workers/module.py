@@ -1,9 +1,13 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from suites.coding.modules.workers.commands.worker_dispatch_handler import WorkerDispatchHandler
+from suites.coding.modules.workers.commands.worker_dispatch_subcommand import WorkerDispatchSubcommand
+from suites.coding.modules.workers.guards.dispatch_branch_guard import DispatchBranchGuard
+from suites.coding.modules.workers.guards.worker_dispatch_guard import WorkerDispatchGuard
 from suites.coding.modules.workers.migrations.m001_workers import WorkersTables
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.proof_query import ProofQuery
-from suites.coding.modules.workers.proof_short import ProofShort
+from suites.coding.modules.workers.commands.proof_short import ProofShort
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.worktree_query import WorktreeQuery
@@ -20,3 +24,6 @@ class WorkersModule(Module):
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ProofShort], excluded_subcommands=["make", "edit", "delete", "revise"])]
     migrations = [WorkersTables]
+    handlers = [WorkerDispatchHandler]
+    subcommands = [WorkerDispatchSubcommand]
+    guards = [DispatchBranchGuard, WorkerDispatchGuard]

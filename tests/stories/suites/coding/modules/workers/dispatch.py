@@ -24,7 +24,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
 def test_a_dispatch_in_an_environment_that_names_no_branch_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story, branch="")
-    story.expect_refusal(DISPATCH, "environment main names no branch: journal environment edit main --branch <branch>", actor=story.agent)
+    story.expect_refusal(DISPATCH, "environment main has no branch: journal environment edit main --branch <branch>", actor=story.agent)
     expect_clean_environment(story, repository)
 
 
