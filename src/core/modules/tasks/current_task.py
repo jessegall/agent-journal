@@ -6,7 +6,7 @@ from core.modules.tasks.task_log import TaskLog
 
 
 @dataclass(frozen=True)
-class TaskInHand:
+class CurrentTask:
     """The started task an agent holds, with its newest log line; writes and stops are counted from the later of
     the task's last change and that line."""
 

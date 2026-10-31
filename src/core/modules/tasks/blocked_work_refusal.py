@@ -21,7 +21,7 @@ class BlockedWorkRefusal(DriverRule):
         self.tasks, self.calls = tasks, calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.tasks.held_by(hook.agent_id).started().exists() or self.tasks.environment(hook.environment_id).filter(state=TaskState.OPEN).exists():
+        if self.tasks.holder(hook.agent_id).started().exists() or self.tasks.open_tasks(hook.environment_id).exists():
             return RuleAnswer.allowed()
         blocked = self.tasks.environment(hook.environment_id).filter(state=TaskState.BLOCKED).oldest().page(1, BLOCKED_TASKS_NAMED).rows
         if not blocked or self.calls.refused_stop_streak(hook.agent_id) > 0:

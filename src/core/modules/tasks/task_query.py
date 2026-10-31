@@ -19,8 +19,12 @@ class TaskQuery(Query[Task]):
     def unclosed(self) -> Self:
         return self.matching(IsNull("closed_at"))
 
-    def held_by(self, agent_id: int) -> Self:
+    def holder(self, agent_id: int) -> Self:
         return self.filter(holder_id=agent_id)
 
     def started(self) -> Self:
         return self.filter(state=TaskState.STARTED)
+
+    def open_tasks(self, environment_id: int) -> Self:
+        return self.environment(environment_id).filter(state=TaskState.OPEN)
+

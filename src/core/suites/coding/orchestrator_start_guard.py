@@ -5,7 +5,7 @@ from core.base.refusal import Refusal
 
 
 class OrchestratorStartGuard(Guard):
-    """An agent the orchestrator drives starts no task itself; every task goes to a worker. A person still may."""
+    """An agent the orchestrator drives starts no task itself; every task goes to a worker."""
 
     name = "coding.orchestrator-starts-no-task"
     event = "task.start"

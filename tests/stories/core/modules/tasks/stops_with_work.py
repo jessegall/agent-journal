@@ -27,7 +27,7 @@ def test_a_log_line_lets_the_carry_on_refusal_speak_again(new_story):
     story.expect_hook_refusal("s-1", HookSamples.stop(), "task 1, Fix the cart, is in hand: carry on")
 
 
-def test_a_builder_with_only_blocked_tasks_is_held_at_its_first_stop_and_not_its_second(new_story):
+def test_a_builder_with_only_blocked_tasks_is_refused_at_its_first_stop_and_not_its_second(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(lines.NEW_TASK)
     story.run("task block 1 --reason 'waits for the price list'")

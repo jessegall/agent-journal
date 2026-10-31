@@ -20,5 +20,5 @@ class WhereYouStand(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.regained_control:
             return RuleAnswer.allowed()
-        held = self.tasks.held_by(hook.agent_id).started().newest().page(1, 1).rows
-        return RuleAnswer.with_lines(f"back to task {held[0].id}, {held[0].title}") if held else RuleAnswer.allowed()
+        current = self.tasks.holder(hook.agent_id).started().newest().page(1, 1).rows
+        return RuleAnswer.with_lines(f"back to task {current[0].id}, {current[0].title}") if current else RuleAnswer.allowed()

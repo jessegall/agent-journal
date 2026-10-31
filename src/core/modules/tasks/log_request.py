@@ -1,8 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.drivers.hook_call_query import HookCallQuery
-from core.modules.tasks.tasks_in_hand import TasksInHand
+from core.modules.tasks.task_write_count import TaskWriteCount
 
 LOG_REQUEST_WRITES = 25
 
@@ -16,13 +15,14 @@ class LogRequest(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, held_tasks: TasksInHand, calls: HookCallQuery) -> None:
-        self.held_tasks, self.calls = held_tasks, calls
+    def __init__(self, task_writes: TaskWriteCount) -> None:
+        self.task_writes = task_writes
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool, held = hook.event.tool, self.held_tasks.of(hook.agent_id)
-        if tool is None or not tool.is_writing_files() or held is None:
+        counted = self.task_writes.count(hook)
+        if counted is None:
             return RuleAnswer.allowed()
-        if self.calls.writes_since(hook.agent_id, held.counted_from) + 1 != LOG_REQUEST_WRITES:
+        current, writes = counted
+        if writes != LOG_REQUEST_WRITES:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(f"{LOG_REQUEST_WRITES} writes since you logged {held.name}: log where it stands with journal task log {held.task.id} \"<where it stands>\"")
+        return RuleAnswer.with_lines(f"{LOG_REQUEST_WRITES} writes since you logged {current.name}: log where it stands with journal task log {current.task.id} \"<where it stands>\"")

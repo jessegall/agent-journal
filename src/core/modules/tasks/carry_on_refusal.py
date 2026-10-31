@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.hook_call_query import HookCallQuery
-from core.modules.tasks.tasks_in_hand import TasksInHand
+from core.modules.tasks.current_tasks import CurrentTasks
 
 STOP_REFUSALS_PER_LOG = 3
 
@@ -16,11 +16,11 @@ class CarryOnRefusal(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, held_tasks: TasksInHand, calls: HookCallQuery) -> None:
-        self.held_tasks, self.calls = held_tasks, calls
+    def __init__(self, current_tasks: CurrentTasks, calls: HookCallQuery) -> None:
+        self.current_tasks, self.calls = current_tasks, calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        held = self.held_tasks.of(hook.agent_id)
-        if held is None or self.calls.refused_stops_since(hook.agent_id, held.counted_from) >= STOP_REFUSALS_PER_LOG:
+        current = self.current_tasks.current(hook.agent_id)
+        if current is None or self.calls.refused_stops_since(hook.agent_id, current.counted_from) >= STOP_REFUSALS_PER_LOG:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"{held.name}, is in hand: carry on, or log why it waits with journal task log {held.task.id} \"<why>\"")
+        return RuleAnswer.refused(f"{current.name}, is in hand: carry on, or log why it waits with journal task log {current.task.id} \"<why>\"")

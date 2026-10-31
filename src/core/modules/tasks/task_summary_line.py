@@ -1,7 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.tasks_in_hand import TasksInHand
+from core.modules.tasks.current_tasks import CurrentTasks
 
 
 class TaskSummaryLine(DriverRule):
@@ -13,12 +13,12 @@ class TaskSummaryLine(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, held_tasks: TasksInHand) -> None:
-        self.held_tasks = held_tasks
+    def __init__(self, current_tasks: CurrentTasks) -> None:
+        self.current_tasks = current_tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        held = self.held_tasks.of(hook.agent_id)
-        if held is None:
+        current = self.current_tasks.current(hook.agent_id)
+        if current is None:
             return RuleAnswer.allowed()
-        logged = f"last log: {held.last_log.line}" if held.last_log is not None else "nothing logged yet"
-        return RuleAnswer.with_lines(f"{held.name}, is in hand; {logged}")
+        logged = f"last log: {current.last_log.line}" if current.last_log is not None else "nothing logged yet"
+        return RuleAnswer.with_lines(f"{current.name}, is in hand; {logged}")

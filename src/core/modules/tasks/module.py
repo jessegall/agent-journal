@@ -4,7 +4,7 @@ from core.modules.tasks.commands import TaskBlock, TaskCancel, TaskClose
 from core.modules.tasks.dependency_subcommands import TaskDependSubcommand, TaskUndependSubcommand
 from core.modules.tasks.guards.no_dependency_loop import NoDependencyLoop
 from core.modules.tasks.listeners.forget_dependencies import ForgetDependencies
-from core.modules.tasks.log_hold import LogHold
+from core.modules.tasks.unlogged_write_limit import UnloggedWriteLimit
 from core.modules.tasks.log_request import LogRequest
 from core.modules.tasks.migrations.m001_tasks import TasksTables
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlocked
@@ -24,7 +24,7 @@ TASK_COMMANDS = (TaskBlock, TaskClose, TaskCancel)
 
 
 class TasksModule(Module):
-    """Adds tasks, units of work held by an agent, with their log lines and dependencies, and the rules that keep
+    """Adds tasks, units of work current by an agent, with their log lines and dependencies, and the rules that keep
     an agent at its task."""
 
     name = "journal.core.tasks"
@@ -37,4 +37,4 @@ class TasksModule(Module):
     handlers = [TaskUndependHandler]
     guards = [NoDependencyLoop]
     listeners = [ForgetDependencies]
-    driver_rules = [LogRequest, LogHold, CarryOnRefusal, BlockedWorkRefusal, TaskSummaryLine, WhereYouStand, QuietTaskReminder]
+    driver_rules = [LogRequest, UnloggedWriteLimit, CarryOnRefusal, BlockedWorkRefusal, TaskSummaryLine, WhereYouStand, QuietTaskReminder]

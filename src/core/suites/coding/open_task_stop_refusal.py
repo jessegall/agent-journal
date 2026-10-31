@@ -1,8 +1,7 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
-from core.modules.tasks.task import Task, TaskState
+from core.modules.tasks.task_query import TaskQuery
 
 
 class OpenTaskStopRefusal(DriverRule):
@@ -12,9 +11,9 @@ class OpenTaskStopRefusal(DriverRule):
     name = "coding.orchestrator-open-tasks-at-stop"
     hook = "stop"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, tasks: TaskQuery) -> None:
+        self.tasks = tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        open_ids = [str(task.id) for task in self.queries.query(Task).filter(environment_id=hook.environment_id, state=TaskState.OPEN).oldest().page().rows]
+        open_ids = [str(task.id) for task in self.tasks.open_tasks(hook.environment_id).oldest().page().rows]
         return RuleAnswer.refused(f"open tasks wait for a worker: {', '.join(open_ids)}") if open_ids else RuleAnswer.allowed()
