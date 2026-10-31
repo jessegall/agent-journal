@@ -62,7 +62,8 @@ func codexTool(name string, input toolInput, runScript string) *event.Tool {
 		if words, ok := input.values["command"].([]any); ok {
 			command = words
 		}
-		tool.Shell = &event.ShellLine{Line: codexShellLine(command, runScript), Kind: "unknown"}
+		line := shell.Line(codexShellLine(command, runScript))
+		tool.Shell = &line
 	case "edit":
 		tool.Files = patchPaths(input.texts)
 	case "write", "read":

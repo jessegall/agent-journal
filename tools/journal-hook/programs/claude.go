@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/event"
+	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
 // The kind of each Claude tool, read from version 4's Claude.decoders; a tool not named here is other.
@@ -49,7 +50,8 @@ func claudeTool(name string, input map[string]any) *event.Tool {
 	tool := &event.Tool{Name: name, Kind: kind, Files: []string{}}
 	switch kind {
 	case "shell":
-		tool.Shell = &event.ShellLine{Line: pythonText(input, "command"), Kind: "unknown"}
+		line := shell.Line(pythonText(input, "command"))
+		tool.Shell = &line
 	case "edit", "write", "read":
 		tool.Files = filePaths(input)
 	}

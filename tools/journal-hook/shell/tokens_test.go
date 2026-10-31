@@ -6,7 +6,7 @@ import (
 )
 
 // Each line beside what Python's shlex.split gives for it, or nil where it raises.
-var splitSamples = []struct {
+var wordSamples = []struct {
 	line  string
 	words []string
 }{
@@ -23,17 +23,17 @@ var splitSamples = []struct {
 	{"", nil},
 }
 
-func TestSplitReadsWordsAsShlexDoes(t *testing.T) {
-	for _, sample := range splitSamples {
-		words, err := Split(sample.line)
+func TestWordsAreReadAsShlexReadsThem(t *testing.T) {
+	for _, sample := range wordSamples {
+		words, err := Words(sample.line)
 		if sample.words == nil && sample.line != "" {
 			if err == nil {
-				t.Errorf("split(%q) gave %q, shlex raises", sample.line, words)
+				t.Errorf("words(%q) gave %q, shlex raises", sample.line, words)
 			}
 			continue
 		}
 		if err != nil || !reflect.DeepEqual(words, sample.words) {
-			t.Errorf("split(%q) = %q, %v; want %q", sample.line, words, err, sample.words)
+			t.Errorf("words(%q) = %q, %v; want %q", sample.line, words, err, sample.words)
 		}
 	}
 }

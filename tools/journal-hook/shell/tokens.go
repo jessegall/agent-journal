@@ -12,7 +12,7 @@ import (
 // comment lines before it and the variable assignments in front of it left out; a line shlex cannot read (an unclosed
 // quote, a trailing backslash) is split at whitespace instead.
 func Tokens(text string) []string {
-	words, err := Split(commandText(text))
+	words, err := Words(commandText(text))
 	if err != nil {
 		words = strings.Fields(commandText(text))
 	}
@@ -40,9 +40,9 @@ var (
 
 const shlexWhitespace = " \t\r\n"
 
-// Split is Python's shlex.split(text) in POSIX mode: words split at whitespace, quotes taken off, a backslash keeping
+// Words is Python's shlex.split(text) in POSIX mode: words split at whitespace, quotes taken off, a backslash keeping
 // the next character, and inside double quotes only before a backslash or a double quote.
-func Split(text string) ([]string, error) {
+func Words(text string) ([]string, error) {
 	var words []string
 	var word strings.Builder
 	quoted, inWord := false, false
