@@ -51,6 +51,18 @@ class ThreeTasks(StoryFixture):
         story.expect_success("task list --oldest", "1  First  open  normal", "3  Third  open  normal")
 
 
+class TaskWaitingOnSecond(StoryFixture):
+    """Task 1, First, waits on task 2, Second, which is open."""
+
+    parent = ThreeTasks
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.FIRST_TASK_DEPENDENCY)
+
+    def expect(self, story: Story) -> None:
+        story.expect_text("task-dependency list --task 1", "2")
+
+
 class UserJoined(StoryFixture):
     """A person, Ada, beside the agent: story.user."""
 
@@ -173,6 +185,32 @@ class PlanFirstTaskClosed(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("task show 2", "state: completed")
+
+
+class PlanTaskWaiting(StoryFixture):
+    """In plan 1, task 3, Tax, the next by phase and place after Cart, waits on task 1, Release, which is open."""
+
+    parent = PlanAcrossPhases
+
+    def steps(self, story: Story) -> None:
+        story.run("task depend 3 --on 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("task show 3", "state: open")
+
+
+class PlanTasksWaitingOutside(StoryFixture):
+    """Tasks 1, Release, and 3, Tax, of plan 1 both wait on task 4, Outside, an open task in no plan."""
+
+    parent = PlanAcrossPhases
+
+    def steps(self, story: Story) -> None:
+        story.run('task make "Outside" --environment main')
+        story.run("task depend 3 --on 4")
+        story.run("task depend 1 --on 4")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("task show 4", "state: open")
 
 
 class MessageAnswered(StoryFixture):
