@@ -137,7 +137,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         context = self.journal_server().context
         try:
-            self.answer_json(200, {"key": ViewerKeyRoute(context.home, context.viewer.login).key(request)})
+            viewer_key = ViewerKeyRoute(context.home, context.viewer.login).key(request)
+            self.answer_json(200, {"key": viewer_key.key, "environment": viewer_key.environment})
         except Refusal as refusal:
             self.answer_json(403, {"error": refusal.reason})
 

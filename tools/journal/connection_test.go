@@ -160,3 +160,57 @@ func TestAMaintenanceMarkOfAProcessThatIsGoneIsIgnored(t *testing.T) {
 		t.Fatal("the mark of a process that is gone held the clients off")
 	}
 }
+
+func TestSourceFolderIsTheInstalledCodeInsideTheJournalWhenItHoldsTheServer(t *testing.T) {
+	project := shortHome(t)
+	home := filepath.Join(project, ".journal")
+	server := filepath.Join(home, "src", "server")
+	if err := os.MkdirAll(server, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(server, "server.py"), []byte(""), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if got := SourceFolder(home); got != filepath.Join(home, "src") {
+		t.Fatalf("an installed project's code is %s, not %s", filepath.Join(home, "src"), got)
+	}
+}
+
+func TestSourceFolderIsTheRepositorysSrcWhenTheJournalHoldsNoServer(t *testing.T) {
+	project := shortHome(t)
+	home := filepath.Join(project, ".journal")
+	if err := os.MkdirAll(filepath.Join(home, "src", "journal"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if got := SourceFolder(home); got != filepath.Join(project, "src") {
+		t.Fatalf("the repository's code is %s, not %s", filepath.Join(project, "src"), got)
+	}
+}
+
+func TestTheViewerLineAsksForAKeyAndPrintsTheLinkToItsEnvironmentOnTheViewersPort(t *testing.T) {
+	home := shortHome(t)
+	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == "/viewer/key" {
+			writer.Write([]byte(`{"key": "one-time", "environment": "main"}`))
+			return
+		}
+		writer.Write([]byte(`{"status": "up", "viewer_port": 51234}`))
+	}))
+	var stdout, stderr strings.Builder
+	code := ViewerLink(socket.Client(socket.Path(home)), NewCliRequest([]string{"viewer"}, os.LookupEnv, home), &stdout, &stderr)
+	if code != SuccessCode || stdout.String() != "http://127.0.0.1:51234/?key=one-time&environment=main\n" {
+		t.Fatalf("code %d, printed %q, %q", code, stdout.String(), stderr.String())
+	}
+}
+
+func TestTheViewerLineSaysWhyNoKeyIsGiven(t *testing.T) {
+	home := shortHome(t)
+	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte(`{"error": "only a person opens the viewer"}`))
+	}))
+	var stdout, stderr strings.Builder
+	code := ViewerLink(socket.Client(socket.Path(home)), NewCliRequest([]string{"viewer"}, os.LookupEnv, home), &stdout, &stderr)
+	if code != ErrorCode || !strings.Contains(stderr.String(), "only a person opens the viewer") {
+		t.Fatalf("code %d, printed %q", code, stderr.String())
+	}
+}

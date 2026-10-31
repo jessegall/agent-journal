@@ -71,6 +71,9 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 		return DirectRun(home, argv, stdout, stderr)
 	}
 	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder())
+	if len(argv) == 1 && argv[0] == "viewer" {
+		return ViewerLink(client, request, stdout, stderr)
+	}
 	code, status := SendCli(client, request, requestTiming, "go_sent", stdout, stderr)
 	if status != http.StatusConflict {
 		return code

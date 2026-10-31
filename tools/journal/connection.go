@@ -97,11 +97,16 @@ func StartServer(home string) (*os.Process, error) {
 	return command.Process, nil
 }
 
-// SourceFolder is the folder holding core and server: JOURNAL_SOURCE when set, else src beside the journal's
-// folder.
+// SourceFolder is the folder holding core and server: JOURNAL_SOURCE when set, else src inside the journal's
+// folder when it holds the server, as an installed project has it, else src beside the journal's folder, as the
+// journal's own repository has it.
 func SourceFolder(home string) string {
 	if source := os.Getenv("JOURNAL_SOURCE"); source != "" {
 		return source
+	}
+	installed := filepath.Join(home, "src")
+	if _, err := os.Stat(filepath.Join(installed, "server", "server.py")); err == nil {
+		return installed
 	}
 	return filepath.Join(filepath.Dir(home), "src")
 }
