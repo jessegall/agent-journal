@@ -27,6 +27,7 @@ from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
+from core.modules.drivers.rules.missing_process_rule import MissingProcessRule
 from core.modules.drivers.rules.opening_lines_rule import OpeningLinesRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
 from core.modules.drivers.models.rule_history import RuleHistory
@@ -55,7 +56,7 @@ class DriversModule(Module):
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
-    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule]
+    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,

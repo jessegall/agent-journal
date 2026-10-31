@@ -5,7 +5,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_history_key import RuleHistoryKey
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.rules.support.delivered_worktrees import DeliveredWorktrees
+from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 
 
 class DeliveredWorkStopRule(DriverRule):
@@ -16,7 +16,7 @@ class DeliveredWorkStopRule(DriverRule):
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = ["main"]
 
-    def __init__(self, delivered: DeliveredWorktrees, proofs: ProofQuery, history: HookHistory) -> None:
+    def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory) -> None:
         self.delivered, self.proofs, self.hook_history = delivered, proofs, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

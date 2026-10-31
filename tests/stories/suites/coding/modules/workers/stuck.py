@@ -1,8 +1,11 @@
+from datetime import timedelta
+
 from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment, worker_session
+from suites.coding.modules.workers.rules.inactive_worker_rule import INACTIVE_MINUTES
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 MAIN_SESSION = "s-1"
@@ -56,3 +59,19 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     story.expect_success("worktree show 2", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
     repository.expect_branch_tip(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))
     repository.expect_branch_tip(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))
+
+
+def test_a_worker_that_has_used_no_tool_for_five_minutes_is_named_to_its_main_agent_again_every_five_minutes(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository_environment(story)
+    worker = dispatched_worker(story)
+    story.hook(worker_session(story, worker), HookSamples.prompt("Fix the cart"))
+    inactive_line = f"worker {worker.id} has used no tool for {INACTIVE_MINUTES} minutes: its last hook was prompt"
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.advance(timedelta(minutes=INACTIVE_MINUTES))
+    story.tick(MAIN_SESSION)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(inactive_line) == 1)
+    story.advance(timedelta(minutes=INACTIVE_MINUTES))
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(inactive_line) == 2)

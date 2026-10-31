@@ -7,6 +7,10 @@ from suites.coding.modules.workers.commands.record_todo_list_handler import Reco
 from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
 from suites.coding.modules.workers.models.todo_item import TodoItem
 from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
+from suites.coding.modules.workers.rules.inactive_worker_rule import InactiveWorkerRule
+from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
+from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
+from suites.coding.modules.workers.listeners.released_stop_listener import ReleasedStopListener
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
 from suites.coding.modules.workers.commands.merge_worker_handler import MergeWorkerHandler
@@ -51,7 +55,8 @@ class WorkersModule(Module):
     handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler]
     subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule]
+    driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
+    listeners = [EndedWorkerListener, ReleasedStopListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
                                  reads=["worktree list", "task show", "proof list"], events=["proof.*", "worktree.*"]),
                WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["todo-item list"],

@@ -7,7 +7,7 @@ from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
-from suites.coding.modules.workers.rules.support.delivered_worktrees import DeliveredWorktrees
+from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 REMINDER_SECONDS = 3600
@@ -21,7 +21,7 @@ class MergeCheckoutRule(DriverRule):
     drivers = ["coding.builder", "coding.orchestrator"]
     roles = ["main"]
 
-    def __init__(self, queries: Queries, delivered: DeliveredWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:
+    def __init__(self, queries: Queries, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:
         self.queries, self.delivered, self.proofs, self.git, self.hook_history = queries, delivered, proofs, git, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

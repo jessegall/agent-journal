@@ -50,7 +50,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
         copies = (*self.settings.texts(LIBRARY_COPIES, environment.id, ()), *command.library_copies)
         self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
-        start = StartAgent(str(uuid4()), self.program(context.actor), AgentRole.WORKER, context.actor.id)
+        callers = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
+        program, parent_id = (callers[0].program, callers[0].id) if callers else (WORKER_PROGRAM, None)
+        start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
         worktree = self.repository.save(Worktree(agent_id=worker.id, environment_id=environment.id, task_id=task.id, creator_id=context.actor.id,
@@ -67,7 +69,3 @@ class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
             self.git.remove(environment.folder, worktree)
             raise
         return worker
-
-    def program(self, actor: Actor) -> str:
-        caller = self.queries.query(Agent).filter(id=actor.id).page(1, 1).rows
-        return caller[0].program if caller else WORKER_PROGRAM
