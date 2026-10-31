@@ -4,6 +4,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
+from core.modules.docking.commands.add_dock_item import AddDockItem
 from core.modules.docking.commands.keep_dock_item import KeepDockItem
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task
 from tests.stories.core.support.fixtures import UserJoined
@@ -63,3 +64,17 @@ def test_a_type_no_module_declares_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="no installed module declares the dock type docksample.ghost"):
         docked(story, ended_task(story, "Ghost"), SampleDockType.GHOST)
+
+
+def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.expect_success("setting make docking.most-items 1 --environment main")
+    docked(story, running_task(story, "First"))
+    with pytest.raises(Refusal, match="the dock holds at most 1 items"):
+        docked(story, running_task(story, "Second"))
+
+
+def test_a_type_that_reads_no_such_model_is_refused(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    with pytest.raises(Refusal, match="the dock type docksample.task reads no plan"):
+        story.container.get(Bus).run(AddDockItem(1, SampleDockType.TASK, "plan", 1), story.user)
