@@ -20,7 +20,7 @@ class WindowPermissionPruneHandler(Handler[WindowPermissionPrune, int]):
     def handle(self, command: WindowPermissionPrune, context: Context) -> int:
         modules = {window.module for window in self.registry.windows}
         orphan_permissions = [permission for permission in self.queries.query(WindowPermission).all_rows()
-                if (permission.subject not in modules if permission.type is WindowPermissionType.PAGE else not self.registry.has_window(permission.subject))]
+                if (permission.subject not in modules if permission.type is WindowPermissionType.COMPONENT else not self.registry.has_window(permission.subject))]
         for permission in orphan_permissions:
             self.repository.delete(permission, context)
         return len(orphan_permissions)

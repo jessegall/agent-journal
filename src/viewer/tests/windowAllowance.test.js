@@ -1,7 +1,7 @@
 import {expect, test} from "vitest";
 import {AllowancePrompts, promptText, windowPermissions} from "../src/windows/allowancePrompts.js";
 
-const access = {window: "notes.board", reads_allowed: "task list", reads_missing: "plan list", runs_allowed: "", runs_missing: "task start", page_trusted: false};
+const access = {window: "notes.board", reads_allowed: "task list", reads_missing: "plan list", runs_allowed: "", runs_missing: "task start", component_trusted: false};
 
 test("the prompt names the window and the lines it wants, reads and runs asked apart", () => {
     expect(promptText({title: "Notes board", type: "reads", lines: ["plan list"]})).toBe("Notes board wants to read: plan list. Allow?");

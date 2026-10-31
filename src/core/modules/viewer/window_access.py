@@ -11,4 +11,4 @@ class WindowAccess:
     reads_missing: str
     runs_allowed: str
     runs_missing: str
-    page_trusted: bool
+    component_trusted: bool

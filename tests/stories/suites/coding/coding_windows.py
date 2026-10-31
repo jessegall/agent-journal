@@ -8,7 +8,7 @@ def window_story(new_story) -> WindowStory:
 
 
 def test_the_file_feed_window_is_a_page_window_of_one_agent(new_story):
-    window_story(new_story).expect_declared_window("coding.file-feed", "page", "agent")
+    window_story(new_story).expect_declared_window("coding.file-feed", "component", "agent")
 
 
 def test_the_file_feed_window_reads_its_lines_with_no_allowance(new_story):
@@ -18,7 +18,7 @@ def test_the_file_feed_window_reads_its_lines_with_no_allowance(new_story):
 
 
 def test_the_file_edits_window_is_a_page_window_of_the_environment(new_story):
-    window_story(new_story).expect_declared_window("coding.file-edits", "page", "environment")
+    window_story(new_story).expect_declared_window("coding.file-edits", "component", "environment")
 
 
 def test_the_file_edits_window_reads_its_lines_with_no_allowance(new_story):
@@ -29,7 +29,7 @@ def test_the_file_edits_window_reads_its_lines_with_no_allowance(new_story):
 
 
 def test_the_terminal_window_is_a_page_window_of_one_agent_that_reads_nothing(new_story):
-    window_story(new_story).expect_declared_window("coding.terminal", "page", "agent")
+    window_story(new_story).expect_declared_window("coding.terminal", "component", "agent")
 
 
 def test_the_coding_suite_gives_the_orchestrator_its_own_home_layout_and_every_other_driver_the_plain_one(new_story):

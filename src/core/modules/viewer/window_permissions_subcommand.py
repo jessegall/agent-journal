@@ -35,4 +35,4 @@ class WindowPermissionsSubcommand(ReadSubcommand[WindowAccess]):
         reads = self.allowances.allowed_lines(person_id, environment_id, window.name, WindowPermissionType.READS)
         runs = self.allowances.allowed_lines(person_id, environment_id, window.name, WindowPermissionType.RUNS)
         return WindowAccess(window.name, ", ".join(reads), ", ".join(line for line in window.reads if line not in reads), ", ".join(runs),
-                            ", ".join(line for line in window.runs if line not in runs), self.allowances.page_trusted(person_id, environment_id, window.module))
+                            ", ".join(line for line in window.runs if line not in runs), self.allowances.component_trusted(person_id, environment_id, window.module))

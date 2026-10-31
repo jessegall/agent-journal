@@ -23,7 +23,7 @@ class WindowAllowHandler(Handler[WindowAllow, WindowPermission]):
     def handle(self, command: WindowAllow, context: Context) -> WindowPermission:
         if context.environment_id is None:
             raise Refusal("a window is allowed in an environment", "name one with --environment")
-        if not self.registry.has_window(command.window) or command.type is WindowPermissionType.PAGE:
+        if not self.registry.has_window(command.window) or command.type is WindowPermissionType.COMPONENT:
             raise Refusal(f"no installed module declares the window {command.window} with {command.type} to allow", "journal window trust <module> trusts a module's page code")
         window = self.registry.window(command.window)
         declared = window.reads if command.type is WindowPermissionType.READS else window.runs

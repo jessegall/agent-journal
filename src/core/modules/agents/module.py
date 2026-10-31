@@ -24,6 +24,6 @@ class AgentsModule(Module):
     handlers = [AgentStartHandler, AgentEndHandler]
     subcommands = [AgentStartSubcommand, AgentEndSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
-    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.PAGE, reads=["agent list", "agent show"], events=["agent.*"]),
-               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.PAGE, place=WindowPlace.AGENT, reads=["agent list"],
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, reads=["agent list", "agent show"], events=["agent.*"]),
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["agent list"],
                                  events=["agent.*"])]

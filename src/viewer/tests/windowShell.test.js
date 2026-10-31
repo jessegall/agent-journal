@@ -50,9 +50,9 @@ test("a hidden window's events wait, and it hears one refresh when it shows agai
 });
 
 test("a page window of a module the journal does not ship shows how to trust its module until the person trusts it", async () => {
-    const page = {name: "pages.board", module: "pages", title: "Board", entry_url: "/modules/pages/board.js?v=1", line: "", loading: "page", reads: [], runs: [], events: [], unavailable_reason: "", allowed: false};
+    const page = {name: "pages.board", module: "pages", title: "Board", entry_url: "/modules/pages/board.js?v=1", line: "", loading: "component", reads: [], runs: [], events: [], unavailable_reason: "", allowed: false};
     const catalogue = new WindowCatalogue(async () => [page]);
-    const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", page_trusted: false};
+    const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", component_trusted: false};
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: access, error: ""})}));
     const element = document.createElement("div");
     createApp(() => h(WindowShell, {environment: "main", layout: ["pages.board"], catalogue, events: () => () => {}})).mount(element);

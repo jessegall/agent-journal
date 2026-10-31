@@ -58,9 +58,9 @@ def test_a_module_that_declares_another_read_asks_only_for_that_line(new_story):
 def test_a_page_trust_stops_holding_when_the_module_code_changes(new_story):
     window = window_story(new_story)
     window.story.expect_success("window trust notes --environment main", actor=window.story.user)
-    window.story.expect_success(PERMISSIONS, "page_trusted: True", actor=window.story.user)
+    window.story.expect_success(PERMISSIONS, "component_trusted: True", actor=window.story.user)
     with window.module_code_changed():
-        window.story.expect_success(PERMISSIONS, "page_trusted: False", actor=window.story.user)
+        window.story.expect_success(PERMISSIONS, "component_trusted: False", actor=window.story.user)
 
 
 def test_removing_a_module_deletes_the_permissions_given_to_its_windows(new_story):

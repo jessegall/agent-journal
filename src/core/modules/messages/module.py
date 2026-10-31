@@ -24,5 +24,5 @@ class MessagesModule(Module):
     guards = [OneReplyPerMessage]
     handlers = (MessageSendHandler, MessageReadHandler)
     subcommands = (MessageSendSubcommand, MessageReplySubcommand, MessageReadSubcommand,)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.PAGE, reads=["message list", "message show"], runs=["message send"],
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, reads=["message list", "message show"], runs=["message send"],
                                  events=["message.*"])]

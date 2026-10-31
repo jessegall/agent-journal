@@ -50,10 +50,10 @@ watch(
 </script>
 
 <template>
-    <template v-if="entry && entry.loading === 'page' && !entry.allowed && !access?.page_trusted">
+    <template v-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">
         <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" :unavailable-reason="trustReason" />
     </template>
-    <template v-else-if="entry && entry.loading === 'page'">
+    <template v-else-if="entry && entry.loading === 'component'">
         <PageWindow
             :entry="entry"
             :subscriptions="subscriptions"

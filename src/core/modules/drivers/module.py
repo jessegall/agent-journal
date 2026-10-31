@@ -55,5 +55,5 @@ class DriversModule(Module):
     driver_rules = [RepeatedStopRelease, SessionEndRule, OpeningLinesRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
-    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.PAGE, place=WindowPlace.AGENT,
+    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
                                  reads=["hook-call list", "hook-call show"], events=["hook_call.create"])]

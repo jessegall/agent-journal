@@ -44,5 +44,5 @@ class PlansModule(Module):
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlace, PhaseRenumbering, CancelOpenPlanTasks,
                  NextPlanTaskStarter)
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.PAGE, reads=["plan list", "plan show", "plan progress", "phase list"],
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, reads=["plan list", "plan show", "plan progress", "phase list"],
                                  events=["plan.*", "phase.*"])]

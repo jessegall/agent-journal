@@ -21,6 +21,6 @@ class WindowAllowances:
         permission = self.permission(person_id, environment_id, window, permission_type)
         return json.loads(permission.lines) if permission is not None else []
 
-    def page_trusted(self, person_id: int, environment_id: int, module_name: str) -> bool:
-        trust = self.permission(person_id, environment_id, module_name, WindowPermissionType.PAGE)
+    def component_trusted(self, person_id: int, environment_id: int, module_name: str) -> bool:
+        trust = self.permission(person_id, environment_id, module_name, WindowPermissionType.COMPONENT)
         return trust is not None and trust.fingerprint == self.registry.module_fingerprints.get(module_name)

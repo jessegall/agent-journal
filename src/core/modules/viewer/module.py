@@ -40,4 +40,4 @@ class ViewerModule(Module):
                    WindowSettingSaveSubcommand, WindowSettingSubcommand]
     guards = [PersonGivesPermissions, PersonKeepsLayouts]
     listeners = [PermissionPruner]
-    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.PAGE, reads=SHELL_READS, runs=SHELL_RUNS)]
+    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, reads=SHELL_READS, runs=SHELL_RUNS)]

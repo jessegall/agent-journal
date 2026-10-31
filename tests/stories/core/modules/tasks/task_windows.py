@@ -7,7 +7,7 @@ def window_story(new_story) -> WindowStory:
 
 
 def test_the_tasks_window_is_a_page_window_of_the_environment(new_story):
-    window_story(new_story).expect_declared_window("tasks.tasks", "page", "environment")
+    window_story(new_story).expect_declared_window("tasks.tasks", "component", "environment")
 
 
 def test_the_tasks_window_reads_its_lines_with_no_allowance(new_story):

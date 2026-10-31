@@ -30,8 +30,8 @@ class CodingModule(Module):
     migrations = [FileEditsTable]
     handlers = [FileEditRecordHandler]
     driver_rules = [RecordFileEdit]
-    windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.PAGE, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
+    windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
-               WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.PAGE, reads=[*FILE_EDIT_READS, "agent list"],
+               WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),
-               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.PAGE, place=WindowPlace.AGENT)]
+               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT)]

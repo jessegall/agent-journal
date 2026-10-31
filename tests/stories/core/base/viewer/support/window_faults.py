@@ -64,7 +64,7 @@ class PageWindowModule(Module):
     name = "pages"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.PAGE)]
+    windows = [WindowDeclaration("pages.board", "Board", "board.html", WindowLoading.COMPONENT)]
 
 
 class NewerKitModule(Module):

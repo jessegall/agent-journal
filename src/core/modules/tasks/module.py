@@ -46,4 +46,4 @@ class TasksModule(Module):
     views = [OpenDependency]
     listeners = [ForgetDependencies]
     driver_rules = [LogRequest, UnloggedWriteLimit, TaskStopRefusal, BlockedWorkRefusal, TaskSummaryLine, TaskReturnLine, InactiveTaskReminder]
-    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.PAGE, reads=["task list", "task show", "task-log list"], events=["task.*"])]
+    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, reads=["task list", "task show", "task-log list"], events=["task.*"])]
