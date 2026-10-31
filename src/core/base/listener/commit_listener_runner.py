@@ -16,16 +16,16 @@ class CommitListenerError(Exception):
 
 
 class CommitListenerRunner:
-    """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped run
-    left undone is done by the next; an event that fails a listener three times is skipped for it."""
+    """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped
+    run left undone is done by the next. It claims each event before handling it, so a second runner never
+    handles the same one; an event that fails is given back to be tried again, and one that fails three
+    times is skipped."""
 
     def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable) -> None:
         self.registry, self.log, self.container, self.errors, self.cursors = registry, log, container, errors, cursors
 
     def run(self) -> None:
         entries = tuple(entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT)
-        for entry in entries:
-            self.cursors.start(entry.name)
         for _ in range(CHAIN_LIMIT_ROUNDS):
             if not self.cursors.has_gap():
                 return
@@ -34,13 +34,15 @@ class CommitListenerRunner:
                 return
 
     def run_listener(self, entry: ListenerEntry) -> bool:
-        cursor = self.cursors.position(entry.name)
+        position = self.cursors.position(entry.name)
         progress = False
-        for event in self.log.events_past(cursor):
-            if entry.event.matches(event.event) and not self.handle_event(entry, event):
+        for event in self.log.events_past(position):
+            if not self.cursors.claimed(entry.name, position, event.id):
                 return progress
-            self.cursors.move(entry.name, event.id)
-            progress = True
+            if entry.event.matches(event.event) and not self.handle_event(entry, event):
+                self.cursors.claimed(entry.name, event.id, position)
+                return progress
+            position, progress = event.id, True
         return progress
 
     def handle_event(self, entry: ListenerEntry, event: LoggedEvent) -> bool:

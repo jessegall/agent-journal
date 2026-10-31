@@ -16,6 +16,7 @@ from core.base.command.handlers.move_handler import MoveHandler
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import MoveCommand
 from core.base.database.database import Database
+from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.database.statement import Statement
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.commit_listener_runner import CommitListenerRunner
@@ -80,14 +81,17 @@ def container_with(tmp_path, *listeners: type[CommitListener]):
     pairs = ((MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (EditCommand, EditHandler), (DeleteCommand, DeleteHandler))
     handlers = {DottedPath.class_path(command).text: DottedPath.class_path(handler) for command, handler in pairs}
     registry = Registry("abc", {}, handlers, {}, (), tuple(entry(listener, position) for position, listener in enumerate(listeners, 1)))
-    return harness(tmp_path, registry)
+    container = harness(tmp_path, registry)
+    for listener in listeners:
+        container.get(ListenerCursorTable).start(listener.name)
+    return container
 
 
 def cursor(container, name: str) -> int:
     return container.get(Database).rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = ?", (name,)))[0][0]
 
 
-def test_a_new_listener_starts_at_the_newest_event_and_replays_nothing(tmp_path):
+def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
     container = container_with(tmp_path, PausedItemCounter)
     container.get(Bus).run(ItemMake(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
@@ -114,6 +118,15 @@ def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp
     assert HANDLED == ["failed", "failed", "failed"]
     assert cursor(container, FailingListener.name) == 1
     assert container.get(Database).rows(Statement("SELECT failures FROM listener_skips"))[0][0] == 3
+
+
+def test_a_runner_that_read_an_old_position_cannot_claim_an_event_another_runner_took(tmp_path):
+    container = container_with(tmp_path, PausedItemCounter)
+    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    cursors = container.get(ListenerCursorTable)
+    assert cursors.claimed(PausedItemCounter.name, 0, 1)
+    assert not cursors.claimed(PausedItemCounter.name, 0, 1)
+    assert cursor(container, PausedItemCounter.name) == 1
 
 
 @pytest.mark.parametrize("runs", [1, 2])

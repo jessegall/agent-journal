@@ -21,8 +21,10 @@ SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 
 
 class Console:
-    """Runs one `journal <noun> <subcommand>`: checks the registry is current, chooses the subcommand, reads or
-    runs its command, and turns a refusal, a usage error or an unexpected error into its line and exit code."""
+    """Runs one `journal <noun> <subcommand>`: checks the registry is current, chooses the subcommand,
+    reads or runs its command, and turns a refusal, a usage error or an unexpected error into its line
+    and exit code. A write runs the commit listeners before and after it; an error after the commit is
+    logged and never changes the exit code of a write that was saved."""
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, lookup: SubcommandLookup, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
@@ -60,15 +62,21 @@ class Console:
             arguments = parser.parse_args(argv[2:])
         except SystemExit as exit_request:
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
-        self.commit_listeners.run()
         if not isinstance(subcommand, Subcommand):
             subcommand.write_output(subcommand.read(arguments, caller), output)
             return SUCCESS_CODE
+        self.commit_listeners.run()
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
         subcommand.write_output(self.bus.run(command, caller.actor, skipped, environment_id=environment_id), output)
-        self.commit_listeners.run()
+        self.run_commit_listeners(argv)
         return SUCCESS_CODE
+
+    def run_commit_listeners(self, argv: list[str]) -> None:
+        try:
+            self.commit_listeners.run()
+        except Exception as error:
+            self.errors.reported(["after", *argv], error)

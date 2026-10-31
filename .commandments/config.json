@@ -14,26 +14,26 @@
         ]
     },
     "detectors": [
-        "PlainViewerTextDetector",
-        "PlainServerTextDetector",
-        "PlainJournalTextDetector",
-        "PlainViewerScriptTextDetector",
-        "PlainViewerPageTextDetector",
-        "SentenceLabelDetector",
-        "SentenceLabelScriptDetector",
-        "PoeticTypeNameDetector",
-        "SentenceTypeNameDetector",
-        "PoeticMethodNameDetector",
-        "SentenceMethodNameDetector",
-        "SentenceVariableNameDetector",
-        "SentenceParameterNameDetector",
-        "PoeticVariableNameDetector",
-        "PoeticParameterNameDetector",
-        "UnitlessQuantityNameDetector",
-        "LongDocstringLineDetector",
-        "PlainSettingsGroupTitleDetector",
-        "PlainSettingsTabTitleDetector",
-        "SqlOutsideDatabaseLayerDetector"
+        "naming_PlainViewerTextDetector",
+        "naming_PlainServerTextDetector",
+        "naming_PlainJournalTextDetector",
+        "naming_PlainViewerScriptTextDetector",
+        "naming_PlainViewerPageTextDetector",
+        "naming_SentenceLabelDetector",
+        "naming_SentenceLabelScriptDetector",
+        "naming_PoeticTypeNameDetector",
+        "naming_SentenceTypeNameDetector",
+        "naming_PoeticMethodNameDetector",
+        "naming_SentenceMethodNameDetector",
+        "naming_SentenceVariableNameDetector",
+        "naming_SentenceParameterNameDetector",
+        "naming_PoeticVariableNameDetector",
+        "naming_PoeticParameterNameDetector",
+        "naming_UnitlessQuantityNameDetector",
+        "naming_LongDocstringLineDetector",
+        "naming_PlainSettingsGroupTitleDetector",
+        "naming_PlainSettingsTabTitleDetector",
+        "architecture_core_SqlLayerDetector"
     ],
     "parallel": 2,
     "configure": {
@@ -139,35 +139,35 @@
                 ]
             }
         ],
-        "PoeticTypeNameDetector": [
+        "naming_PoeticTypeNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "PoeticMethodNameDetector": [
+        "naming_PoeticMethodNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "PoeticVariableNameDetector": [
+        "naming_PoeticVariableNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "PoeticParameterNameDetector": [
+        "naming_PoeticParameterNameDetector": [
             {
                 "judges": [
                     "tests"
                 ]
             }
         ],
-        "LongDocstringLineDetector": [
+        "naming_LongDocstringLineDetector": [
             {
                 "judges": [
                     "tests"

@@ -36,7 +36,7 @@ def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new
 def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stands(new_story):
     story = plan_with_placed_tasks(new_story, "tests.core.modules.plans.samples:FailingNoticeModule")
     story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
-    for _ in range(4):
-        story.run(lines.TASK_DETAILS)
+    for line_number in range(3):
+        story.run(f'task log 1 "checked {line_number}"')
     story.expect_success(lines.TASK_DETAILS, "state: cancelled")
     story.expect_rows(story.error_log_text().count("listener samples.failing-worker-notice") == 3 * 2)
