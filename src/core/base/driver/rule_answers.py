@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 from core.base.command.command import Command
@@ -19,7 +19,29 @@ class RuleAnswers:
 
     @property
     def refusal(self) -> str:
-        return next((rule.answer.refusal for rule in self.answered if rule.answer is not None and rule.answer.refusal), "")
+        refusal = next((rule.answer.refusal for rule in self.answered if rule.answer is not None and rule.answer.refusal), "")
+        return refusal or self.double_rewrite
+
+    @property
+    def rewriters(self) -> list[RuleRecord]:
+        return [rule for rule in self.answered if rule.answer is not None and rule.answer.updated_input]
+
+    @property
+    def double_rewrite(self) -> str:
+        names = [rule.name for rule in self.rewriters]
+        if len(names) < 2:
+            return ""
+        return f"{', '.join(names[:-1])} and {names[-1]} each rewrite the input of this tool, and only one rule may"
+
+    @property
+    def updated_input(self) -> Mapping[str, object]:
+        rewriters = self.rewriters
+        return rewriters[0].answer.updated_input if len(rewriters) == 1 and rewriters[0].answer is not None else {}
+
+    @property
+    def rewritten_by(self) -> str:
+        rewriters = self.rewriters
+        return rewriters[0].name if len(rewriters) == 1 else ""
 
     @property
     def lines(self) -> list[str]:

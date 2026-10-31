@@ -110,7 +110,7 @@ class ShellRewrite(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is not None and self.settings.project_value("samples.rewrite", False) is True:
-            return RuleAnswer.rewriting({"command": f"sample-run -- {shell.line}"})
+            return RuleAnswer.rewritten({"command": f"sample-run -- {shell.line}"})
         return RuleAnswer.allowed()
 
 
@@ -121,7 +121,7 @@ class SecondShellRewrite(ShellRewrite):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.settings.project_value("samples.rewrite-twice", False) is True and hook.event.tool is not None and hook.event.tool.shell is not None:
-            return RuleAnswer.rewriting({"command": "sample-run-again"})
+            return RuleAnswer.rewritten({"command": "sample-run-again"})
         return RuleAnswer.allowed()
 
 
