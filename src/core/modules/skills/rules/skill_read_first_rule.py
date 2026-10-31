@@ -27,7 +27,7 @@ class SkillReadFirstRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         folders = self.due.folders(hook.agent_id)
         tool = hook.event.tool
-        if not folders or tool is None or (tool.shell is not None and tool.shell.is_journal_line) or self.reads_due(tool, folders):
+        if not folders or tool is None or tool.runs_journal_line or self.reads_due(tool, folders):
             return RuleAnswer.allowed()
         return RuleAnswer.refused("; ".join(f"read {folder} first: {self.files.readable(folder)}" for folder in folders))
 

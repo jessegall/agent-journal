@@ -31,6 +31,10 @@ class Tool:
         return cls(text(fields, "name"), ToolType(category), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
                    DiffCount.parsed(diff) if diff is not None else None)
 
+    @property
+    def runs_journal_line(self) -> bool:
+        return self.shell is not None and self.shell.is_journal_line
+
     def is_writing_files(self) -> bool:
         if self.category in WRITING_CATEGORIES:
             return True
