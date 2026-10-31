@@ -59,6 +59,8 @@ type commonBody struct {
 	ToolInput     toolInput `json:"tool_input"`
 	Prompt        *string   `json:"prompt"`
 	AgentID       *string   `json:"agent_id"`
+	Cwd           string    `json:"cwd"`
+	ToolResponse  any       `json:"tool_response"`
 }
 
 // toolInput is a tool's input with its text values kept in the order the body gives them, which a Go map loses.

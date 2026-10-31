@@ -39,6 +39,7 @@ func claudeEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 		return prepared, skip, err
 	}
 	prepared.Tool = claudeTool(read.ToolName, read.ToolInput.values, context.Classifier)
+	prepared.Tool.Diff = claudeDiff(prepared.Event, read, prepared.Tool)
 	return prepared, false, nil
 }
 

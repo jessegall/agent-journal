@@ -47,6 +47,7 @@ func codexEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 		return prepared, skip, err
 	}
 	prepared.Tool = codexTool(read.ToolName, read.ToolInput, context)
+	prepared.Tool.Diff = codexDiff(prepared.Event, read, prepared.Tool)
 	return prepared, false, nil
 }
 
