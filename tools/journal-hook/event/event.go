@@ -11,21 +11,23 @@ import (
 //go:embed hook_event.schema.json
 var Schema []byte
 
-const Version = 1
+const Version = 2
 
 type HookEvent struct {
-	Version     int             `json:"version"`
-	Program     string          `json:"program"`
-	Event       string          `json:"event"`
-	Session     string          `json:"session"`
-	Firing      string          `json:"firing"`
-	FiredAtMs   int64           `json:"fired_at_ms"`
-	Actor       string          `json:"actor"`
-	Environment string          `json:"environment"`
-	Subagent    string          `json:"subagent"`
-	Tool        *Tool           `json:"tool"`
-	Prompt      *string         `json:"prompt"`
-	Raw         json.RawMessage `json:"raw"`
+	Version      int             `json:"version"`
+	Program      string          `json:"program"`
+	Event        string          `json:"event"`
+	Session      string          `json:"session"`
+	Firing       string          `json:"firing"`
+	FiredAtMs    int64           `json:"fired_at_ms"`
+	Actor        string          `json:"actor"`
+	Environment  string          `json:"environment"`
+	Subagent     string          `json:"subagent"`
+	AcceptsLines bool            `json:"accepts_lines"`
+	Launch       string          `json:"launch"`
+	Tool         *Tool           `json:"tool"`
+	Prompt       *string         `json:"prompt"`
+	Raw          json.RawMessage `json:"raw"`
 }
 
 type Tool struct {

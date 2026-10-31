@@ -1,132 +1,408 @@
 {
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://github.com/jessegall/agent-journal/tools/journal-hook/hook_event.schema.json",
-    "title": "HookEvent",
-    "description": "One hook as journal-hook prepared it for the Python server: what happened, to which tool, with the shell line split and classified and the edit's diff counted.",
-    "type": "object",
-    "additionalProperties": false,
-    "required": ["version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "subagent", "tool", "prompt", "raw"],
-    "properties": {
-        "version": {"const": 1},
-        "program": {"enum": ["claude", "codex"]},
-        "event": {
-            "enum": [
-                "pre_tool_use",
-                "post_tool_use",
-                "post_tool_use_failure",
-                "prompt",
-                "stop",
-                "stop_failure",
-                "session_start",
-                "session_end",
-                "compact",
-                "subagent_start",
-                "subagent_stop",
-                "message_display"
-            ]
-        },
-        "session": {"type": "string"},
-        "firing": {"type": "string"},
-        "fired_at_ms": {"type": "integer", "minimum": 0},
-        "actor": {"type": "string"},
-        "environment": {"type": "string"},
-        "subagent": {"type": "string"},
-        "tool": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/tool"}]},
-        "prompt": {"type": ["string", "null"]},
-        "raw": {"type": "object"}
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/jessegall/agent-journal/tools/journal-hook/hook_event.schema.json",
+  "title": "HookEvent",
+  "description": "One hook as journal-hook prepared it for the Python server: what happened, to which tool, with the shell line split and classified and the edit's diff counted.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "program",
+    "event",
+    "session",
+    "firing",
+    "fired_at_ms",
+    "actor",
+    "environment",
+    "subagent",
+    "tool",
+    "prompt",
+    "raw",
+    "accepts_lines",
+    "launch"
+  ],
+  "properties": {
+    "version": {
+      "const": 2
     },
-    "allOf": [
+    "program": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]*$"
+    },
+    "event": {
+      "enum": [
+        "pre_tool_use",
+        "post_tool_use",
+        "post_tool_use_failure",
+        "prompt",
+        "stop",
+        "stop_failure",
+        "session_start",
+        "session_end",
+        "compact",
+        "message_display"
+      ]
+    },
+    "session": {
+      "type": "string"
+    },
+    "firing": {
+      "type": "string"
+    },
+    "fired_at_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "actor": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "subagent": {
+      "type": "string"
+    },
+    "accepts_lines": {
+      "type": "boolean",
+      "description": "whether the agent program reads lines in its answer to this hook"
+    },
+    "launch": {
+      "type": "string",
+      "description": "the launch name the journal started the program under, or empty"
+    },
+    "tool": {
+      "oneOf": [
         {
-            "if": {"properties": {"event": {"enum": ["pre_tool_use", "post_tool_use", "post_tool_use_failure"]}}},
-            "then": {"properties": {"tool": {"$ref": "#/$defs/tool"}}},
-            "else": {"properties": {"tool": {"type": "null"}}}
+          "type": "null"
         },
         {
-            "if": {"properties": {"event": {"const": "prompt"}}},
-            "then": {"properties": {"prompt": {"type": "string"}}},
-            "else": {"properties": {"prompt": {"type": "null"}}}
+          "$ref": "#/$defs/tool"
         }
-    ],
-    "$defs": {
-        "kind": {
-            "enum": ["search", "read", "edit", "version control", "test run", "build", "check", "package", "network", "process", "journal", "unknown"]
-        },
-        "tool": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["name", "kind", "files", "diff"],
-            "properties": {
-                "name": {"type": "string", "minLength": 1},
-                "kind": {"enum": ["shell", "edit", "write", "read", "search", "agent", "other"]},
-                "shell": {"$ref": "#/$defs/shell_line"},
-                "files": {"type": "array", "items": {"type": "string"}},
-                "diff": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/diff"}]}
-            },
-            "allOf": [
-                {
-                    "if": {"properties": {"kind": {"const": "shell"}}},
-                    "then": {"required": ["shell"]},
-                    "else": {"not": {"required": ["shell"]}}
-                },
-                {
-                    "if": {"properties": {"kind": {"enum": ["edit", "write"]}}},
-                    "then": {"properties": {"files": {"minItems": 1}}},
-                    "else": {"properties": {"diff": {"type": "null"}}}
-                }
+      ]
+    },
+    "prompt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "enum": [
+              "pre_tool_use",
+              "post_tool_use",
+              "post_tool_use_failure"
             ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "tool": {
+            "$ref": "#/$defs/tool"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "tool": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "event": {
+            "const": "prompt"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "prompt": {
+            "type": "string"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "prompt": {
+            "type": "null"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "kind": {
+      "enum": [
+        "search",
+        "read",
+        "edit",
+        "version control",
+        "test run",
+        "build",
+        "check",
+        "package",
+        "network",
+        "process",
+        "journal",
+        "unknown"
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "kind",
+        "files",
+        "diff"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
         },
-        "shell_line": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["line", "parts", "redirects", "kind", "is_journal_only", "parse_error"],
-            "properties": {
-                "line": {"type": "string"},
-                "parts": {"type": "array", "items": {"$ref": "#/$defs/part"}},
-                "redirects": {"type": "array", "items": {"type": "string"}},
-                "kind": {"$ref": "#/$defs/kind"},
-                "is_journal_only": {"type": "boolean"},
-                "parse_error": {"type": "string"}
-            }
+        "kind": {
+          "enum": [
+            "shell",
+            "edit",
+            "write",
+            "read",
+            "search",
+            "agent",
+            "other"
+          ]
         },
-        "part": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["text", "program", "arguments", "classification"],
-            "properties": {
-                "text": {"type": "string"},
-                "program": {"type": "string"},
-                "subcommand": {"type": "string"},
-                "arguments": {"type": "array", "items": {"type": "string"}},
-                "classification": {"$ref": "#/$defs/classification"},
-                "read_paths": {"type": "array", "items": {"type": "string"}},
-                "write_paths": {"type": "array", "items": {"type": "string"}},
-                "joined_by": {"enum": ["&&", "||", ";", "&"]},
-                "piped_into": {"type": "integer", "minimum": 0}
-            }
+        "shell": {
+          "$ref": "#/$defs/shell_line"
         },
-        "classification": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["kind", "effects"],
-            "properties": {
-                "kind": {"$ref": "#/$defs/kind"},
-                "effects": {
-                    "type": "array",
-                    "uniqueItems": true,
-                    "items": {"enum": ["reads_files", "prints_files", "writes_files", "makes_files", "deletes_files", "reaches_network", "writes_network", "changes_version_control", "runs_long", "changes_folder"]}
-                }
-            }
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "diff": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["path", "existed", "lines_added", "lines_removed"],
-            "properties": {
-                "path": {"type": "string", "minLength": 1},
-                "existed": {"type": "boolean"},
-                "lines_added": {"type": "integer", "minimum": 0},
-                "lines_removed": {"type": "integer", "minimum": 0}
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/diff"
             }
+          ]
         }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "shell"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "shell"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "shell"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "edit",
+                  "write"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "files": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "diff": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "shell_line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line",
+        "parts",
+        "redirects",
+        "kind",
+        "is_journal_only",
+        "parse_error"
+      ],
+      "properties": {
+        "line": {
+          "type": "string"
+        },
+        "parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/part"
+          }
+        },
+        "redirects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "is_journal_only": {
+          "type": "boolean"
+        },
+        "parse_error": {
+          "type": "string"
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "program",
+        "arguments",
+        "classification"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "program": {
+          "type": "string"
+        },
+        "subcommand": {
+          "type": "string"
+        },
+        "arguments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "read_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "write_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "joined_by": {
+          "enum": [
+            "&&",
+            "||",
+            ";",
+            "&"
+          ]
+        },
+        "piped_into": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "effects"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/kind"
+        },
+        "effects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "reads_files",
+              "prints_files",
+              "writes_files",
+              "makes_files",
+              "deletes_files",
+              "reaches_network",
+              "writes_network",
+              "changes_version_control",
+              "runs_long",
+              "changes_folder"
+            ]
+          }
+        }
+      }
+    },
+    "diff": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "existed",
+        "lines_added",
+        "lines_removed"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "existed": {
+          "type": "boolean"
+        },
+        "lines_added": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lines_removed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
+  }
 }

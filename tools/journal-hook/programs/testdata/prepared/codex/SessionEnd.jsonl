@@ -1,1 +1,1 @@
-{"version":1,"program":"codex","event":"session_end","session":"01a15eb9-45d9-7e71-a609-7c4d85189b2d","firing":"7731-1793395000123","fired_at_ms":1793395000123,"actor":"agent","environment":"development","subagent":"","tool":null,"prompt":null}
+{"version":2,"program":"codex","event":"session_end","session":"01a15eb9-45d9-7e71-a609-7c4d85189b2d","firing":"7731-1793395000123","fired_at_ms":1793395000123,"actor":"agent","environment":"development","subagent":"","accepts_lines":false,"launch":"","tool":null,"prompt":null}

@@ -18,6 +18,7 @@ type Context struct {
 	RunScript   string
 	Classifier  *classify.Classifier
 	FiredAtMs   int64
+	Launch      string
 }
 
 // The event name of the prepared object for each hook event name the agent programs send.
@@ -31,8 +32,8 @@ var eventNames = map[string]string{
 	"SessionStart":       "session_start",
 	"SessionEnd":         "session_end",
 	"PreCompact":         "compact",
-	"SubagentStart":      "subagent_start",
-	"SubagentStop":       "subagent_stop",
+	"SubagentStart":      "session_start",
+	"SubagentStop":       "stop",
 	"MessageDisplay":     "message_display",
 }
 
@@ -106,6 +107,7 @@ func preparedFrom(program string, body []byte, read commonBody, context Context)
 		FiredAtMs:   context.FiredAtMs,
 		Actor:       context.Actor,
 		Environment: context.Environment,
+		Launch:      context.Launch,
 		Raw:         json.RawMessage(body),
 	}
 	if read.AgentID != nil {

@@ -36,8 +36,8 @@ def test_a_shell_line_is_read_with_its_parts_and_their_paths():
 
 def test_another_version_is_refused_with_both_versions_named():
     example = json.loads((HOOK_FOLDER / "event" / "testdata" / "schema" / "stop.json").read_text())
-    with pytest.raises(HookEventVersionError, match="version 2 .* reads version 1"):
-        HookEvent.parsed({**example, "version": 2})
+    with pytest.raises(HookEventVersionError, match="version 1 .* reads version 2"):
+        HookEvent.parsed({**example, "version": 1})
 
 
 def test_a_missing_field_is_refused_by_its_name():

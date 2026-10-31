@@ -36,6 +36,7 @@ func hookContext(getenv func(string) string, root, folder string, processID int,
 		FiredAtMs:   firedAtMs,
 		RunScript:   filepath.Join(root, ".journal", "src", "journal", "hooks", "run.sh"),
 		Classifier:  classify.NewClassifier(classify.LoadTable(filepath.Join(root, ".journal", "command_table.json"))),
+		Launch:      os.Getenv("JOURNAL_LAUNCH"),
 	}, false
 }
 

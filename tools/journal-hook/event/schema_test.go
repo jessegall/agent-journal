@@ -15,8 +15,8 @@ const documentExample = "testdata/schema/document_example.json"
 
 // Each wrong shape, made from the document's example by one change.
 var wrongShapes = map[string]func(prepared map[string]any){
-	"version 2":                           func(prepared map[string]any) { prepared["version"] = json.Number("2") },
-	"an unknown program":                  func(prepared map[string]any) { prepared["program"] = "cursor" },
+	"version 1":                           func(prepared map[string]any) { prepared["version"] = json.Number("1") },
+	"a program name in capitals":          func(prepared map[string]any) { prepared["program"] = "Cursor" },
 	"an agent program's own event name":   func(prepared map[string]any) { prepared["event"] = "PreToolUse" },
 	"no raw body":                         func(prepared map[string]any) { delete(prepared, "raw") },
 	"a field the schema does not name":    func(prepared map[string]any) { prepared["extra"] = true },

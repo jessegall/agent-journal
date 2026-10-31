@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "program": "claude",
   "event": "pre_tool_use",
   "session": "s-1",
@@ -8,6 +8,8 @@
   "actor": "agent",
   "environment": "main",
   "subagent": "",
+  "accepts_lines": true,
+  "launch": "",
   "tool": {
     "name": "Agent",
     "kind": "agent",

@@ -7,9 +7,9 @@ from core.base.driver.hook_event_version_error import HookEventVersionError
 from core.base.driver.hook_fields import mapping, number, text
 from core.base.driver.tool import Tool
 
-HOOK_EVENT_VERSION = 1
+HOOK_EVENT_VERSION = 2
 CONTEXT_PERCENT = "context_percent"
-REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw")
+REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch")
 
 
 @dataclass(frozen=True)
@@ -29,6 +29,8 @@ class HookEvent:
     tool: Tool | None
     prompt: str | None
     raw: Mapping[object, object]
+    accepts_lines: bool = False
+    launch: str = ""
 
     @property
     def context_percent(self) -> int | None:
@@ -49,10 +51,14 @@ class HookEvent:
         if version != HOOK_EVENT_VERSION:
             raise HookEventVersionError(f"the hook sent version {version!r} of the prepared object, and this server reads version {HOOK_EVENT_VERSION}")
         tool, prompt, event = fields.get("tool"), fields.get("prompt"), text(fields, "event")
+        accepts_lines = fields.get("accepts_lines")
+        if not isinstance(accepts_lines, bool):
+            raise HookEventError(f"accepts_lines is true or false, not {accepts_lines!r}")
         if event not in HookEventName:
             raise HookEventError(f"{event!r} names no hook event: {', '.join(HookEventName)}")
         if prompt is not None and not isinstance(prompt, str):
             raise HookEventError(f"prompt is a text, not {prompt!r}")
         return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
-                   Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"))
+                   Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
+                   text(fields, "launch"))
