@@ -60,16 +60,17 @@ class MoveRunner:
         if stored is not None:
             report.moved[entry.module], report.repeated[entry.module] = 0, sum(stored["moved"].values()) + sum(stored["repeated"].values())
             report.dropped[entry.module] = sum(stored["dropped"].values())
-            self.add_dropped(report, stored["dropped"])
+            self.add_dropped(report, entry.module, stored["dropped"])
             return
         outcome = self.transaction(entry, move, source, moved, context, scope)
         report.moved[entry.module], report.repeated[entry.module] = sum(outcome.moved.values()), sum(outcome.repeated.values())
         report.dropped[entry.module] = sum(outcome.dropped.values())
-        self.add_dropped(report, outcome.dropped)
+        self.add_dropped(report, entry.module, outcome.dropped)
         report.skipped.extend(outcome.skipped)
         report.notes.extend(outcome.notes)
 
-    def add_dropped(self, report: UpgradeReport, tables: dict[str, int]) -> None:
+    def add_dropped(self, report: UpgradeReport, module: str, tables: dict[str, int]) -> None:
+        report.module_tables[module] = dict(tables)
         for table, rows in tables.items():
             report.dropped_tables[table] = report.dropped_tables.get(table, 0) + rows
 
@@ -83,8 +84,12 @@ class MoveRunner:
                 moved.finish(entry.module, move.name, counts)
                 self.events.write_upgrade_moved(CORE_ACTOR_ID, entry.module, counts, context.timestamp)
         except Exception as error:
-            raise UpgradeFailed(f"the move of {entry.module} failed: {error}") from error
+            raise UpgradeFailed(f"the move of {entry.module} failed: {error}", entry.module, str(error), tuple(self.finished_modules())) from error
         return outcome
+
+    def finished_modules(self) -> list[str]:
+        moved = MoveMap(self.database)
+        return [entry.module for entry in self.registry.moves if moved.finished(entry.module, entry.path.checked_class(VersionFourMove).name) is not None]
 
     def claimed(self) -> set[str]:
         return {table for entry in self.registry.moves for table in (*entry.reads, *entry.drops)}

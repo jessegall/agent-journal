@@ -18,6 +18,7 @@ from install.install_journal import InstallJournal
 from install.server_wont_stop import ServerWontStop
 from install.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
+from install.upgrade_report_file import UpgradeReportFile
 from install.upgrade_text import UpgradeText
 from install.version_four_backup import BACKUP_FOLDER, DATABASE, VersionFourBackup
 from install.version_four_files import VersionFourFiles
@@ -25,6 +26,8 @@ from server.server_files import ServerFiles
 
 DRY_RUN_LINE = "dry run: nothing was changed"
 FINISHED_LINE = "nothing left to move"
+UNCHANGED_LINE = "nothing was written"
+FINISH_LINE = "run journal upgrade again to finish"
 QUESTION = "move these rows into version 5? [y/N] "
 AGREEMENTS = ("y", "yes")
 
@@ -37,6 +40,7 @@ class UpgradeJournal:
 
     def __init__(self, home: JournalHome, reply: Callable[[str], str] = input, source: Path | None = None) -> None:
         self.home, self.reply, self.source = home, reply, source
+        self.ran = False
 
     def run(self, dry_run: bool = False, confirmed: bool = False) -> UpgradeOutcome:
         files = VersionFourFiles(self.home.folder)
@@ -50,10 +54,25 @@ class UpgradeJournal:
             if dry_run or not confirmed:
                 self.preview(version_four, lines)
             if not dry_run and (confirmed or self.agreed()):
+                self.ran = True
                 CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines)])
-        except (UpgradeFailed, BackupMismatch, ServerWontStop) as error:
+        except UpgradeFailed as error:
+            return self.kept(UpgradeOutcome(1, "\n".join([*lines, str(error), *self.failure(error)])))
+        except (BackupMismatch, ServerWontStop) as error:
             return UpgradeOutcome(1, "\n".join([*lines, str(error)]))
-        return UpgradeOutcome(0, "\n".join(lines))
+        return self.kept(UpgradeOutcome(0, "\n".join(lines)), dry_run)
+
+    def failure(self, error: UpgradeFailed) -> list[str]:
+        standing = ", ".join(error.finished) or "nothing"
+        return [f"failed: {error.module} ({error.reason})", f"rolled back: {error.module}", f"stayed moved: {standing}", FINISH_LINE]
+
+    def kept(self, outcome: UpgradeOutcome, dry_run: bool = False) -> UpgradeOutcome:
+        if self.is_worth_saving(outcome, dry_run):
+            UpgradeReportFile(self.home.folder).save(outcome.text)
+        return outcome
+
+    def is_worth_saving(self, outcome: UpgradeOutcome, dry_run: bool) -> bool:
+        return self.ran and not dry_run and outcome.text != FINISHED_LINE and self.home.folder.is_dir()
 
     def has_answer(self) -> bool:
         connection = UnixConnection(str(ServerFiles(self.home).socket))
@@ -87,7 +106,8 @@ class UpgradeJournal:
             if self.is_finished(container.get(Database), container.get(Registry)):
                 lines.append(FINISHED_LINE)
                 return
-            lines.extend([DRY_RUN_LINE, *UpgradeText(container.get(MoveRunner).run(version_four, dry_run=True)).lines()])
+            text = UpgradeText(container.get(MoveRunner).run(version_four, dry_run=True))
+            lines.extend([*text.table("what would move"), DRY_RUN_LINE, *text.lines(), UNCHANGED_LINE])
         finally:
             container.get(Database).close()
 
@@ -99,7 +119,8 @@ class UpgradeJournal:
             if not finished:
                 backup = VersionFourBackup(self.home.folder).make()
                 lines.extend([f"backup: {backup.path}", f"backup checked: {backup.tables} tables"])
-                lines.extend(UpgradeText(container.get(MoveRunner).run(version_four)).lines())
+                text = UpgradeText(container.get(MoveRunner).run(version_four))
+                lines.extend([*text.table("what moved"), *text.lines()])
         finally:
             container.get(Database).close()
         retired = VersionFourFiles(self.home.folder).retire()

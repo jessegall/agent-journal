@@ -10,6 +10,7 @@ class UpgradeReport:
     repeated: dict[str, int] = field(default_factory=lambda: {})
     dropped: dict[str, int] = field(default_factory=lambda: {})
     dropped_tables: dict[str, int] = field(default_factory=lambda: {})
+    module_tables: dict[str, dict[str, int]] = field(default_factory=lambda: {})
     unclaimed: dict[str, int] = field(default_factory=lambda: {})
     skipped: list[str] = field(default_factory=lambda: [])
     notes: list[str] = field(default_factory=lambda: [])

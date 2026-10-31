@@ -29,7 +29,8 @@ def test_a_failed_upgrade_says_which_module_failed_what_rolled_back_what_stayed_
     outcome = upgrade(story)
     lines = outcome.text.splitlines()
     assert outcome.code == 1
-    assert "failed: movetags (the tags table could not be read)" in lines and "rolled back: movetags" in lines and "stayed moved: movenotes" in lines
+    assert "failed: movetags (the tags table could not be read)" in lines and "rolled back: movetags" in lines
+    assert any(line.startswith("stayed moved: ") and "movenotes" in line and "movetags" not in line for line in lines)
     assert lines[-1] == "run journal upgrade again to finish"
 
 
