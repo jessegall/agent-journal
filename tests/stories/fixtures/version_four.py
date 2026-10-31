@@ -61,6 +61,7 @@ ROWS = (
     ("memories", "(environment_id, text, weight, keywords, removed_at, created_at, creator)", (1, "A removed fact", 5, "[]", STAMP, STAMP, USER)),
     ("phone_codes", "(code, created_at)", ("123456", STAMP)),
     ("old_reports", "(body, created_at)", ("a report", STAMP)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 
 

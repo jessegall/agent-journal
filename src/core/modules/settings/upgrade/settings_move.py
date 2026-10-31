@@ -10,6 +10,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 
 TABLE = "settings"
+LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout")
 RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit"}
 
 
@@ -25,7 +26,7 @@ class SettingsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows, moved_scopes = MoveReport(), CreatorResolver(source, map), RowInsert(target), set[tuple[str, int | None]]()
-        for row in source.rows(TABLE):
+        for row in [row for row in source.rows(TABLE) if row["key"] not in LAYOUT_KEYS]:
             key = RENAMED.get(row["key"], row["key"])
             if key not in context.setting_keys:
                 report.skip(TABLE, row["id"], f"no module declares the key {row['key']} (value {row['value']})")

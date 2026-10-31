@@ -27,6 +27,6 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
-    assert "skipped settings 4: the key moveprefs.limit is already moved for that scope" in outcome.text
+    assert "skipped settings 5: the key moveprefs.limit is already moved for that scope" in outcome.text
     listing = story.run("setting list").output_text
     assert "moveprefs.limit" in listing and "7" in listing and "9" in listing and "8" not in listing.replace("moveprefs", "")
