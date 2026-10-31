@@ -57,6 +57,7 @@
         "syntax_OneElementTupleDetector",
         "architecture_chat_MarkShownByListenerDetector",
         "architecture_chat_NoRawMarkTypeDetector",
+        "architecture_chat_MarkEnumsInEnumsFolderDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
