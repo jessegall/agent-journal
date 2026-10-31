@@ -11,10 +11,14 @@ from core.base.model.model import Model
 from core.base.model.tables import Tables
 
 PAGE_SIZE_EVENTS = 100
+REGISTRY_SYNC_EVENT = "registry.sync"
+REGISTRY_TABLE = "registry"
+REGISTRY_ROW_ID = 1
+SYNC_COMMAND = "module sync"
 
 
 class EventLog:
-    """Writes every change to the event log and reads changes back from it."""
+    """Writes every change to the event log, and the sync that changes the registry, and reads them back."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         self.tables = tables
@@ -26,6 +30,12 @@ class EventLog:
             "actor_id": context.actor.id, "environment_id": context.environment_id, "row_id": change.row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
             "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
+        })
+
+    def write_registry_sync(self, actor_id: int, fingerprint: str, timestamp: str) -> int:
+        return self.table.insert({
+            "actor_id": actor_id, "environment_id": None, "row_id": REGISTRY_ROW_ID, "name": REGISTRY_SYNC_EVENT, "row_table": REGISTRY_TABLE,
+            "command": SYNC_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"fingerprint": [None, fingerprint]}), "created_at": timestamp,
         })
 
     def data(self, change: Change[Model]) -> dict[str, list[object]]:

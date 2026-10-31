@@ -38,3 +38,10 @@ def test_a_window_built_for_another_kit_is_recorded_as_unavailable_and_not_refus
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{PATH}:NewerKitModule")
     story.expect_registered_window("kits.board", "built for window kit >=2,<3; this viewer has kit 1")
+
+
+def test_a_sync_that_changes_the_registry_logs_one_registry_sync_event(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:NewerKitModule")
+    story.expect_logged_event("registry.sync")
+

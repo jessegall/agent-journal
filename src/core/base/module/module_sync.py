@@ -10,6 +10,8 @@ from core.base.command.handlers.move_handler import MoveHandler
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import MoveCommand
 from core.base.database.core_tables import CORE_MIGRATIONS
+from core.base.actor import CORE_ACTOR_ID
+from core.base.change.event_log import EventLog
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.schema import ModuleMigrations, Schema
@@ -61,12 +63,12 @@ class SyncReport:
 class ModuleSync:
     """Updates the database and the registry to match the installed modules: finds, orders and checks them,
     runs the schema, gives each module its actor and each new commit listener its cursor, and writes the
-    registry."""
+    registry, logging one registry.sync event when it changed."""
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
-                 entries: DriverEntries) -> None:
-        self.database, self.clock, self.finder, self.order, self.check = database, clock, finder, order, check
+                 entries: DriverEntries, events: EventLog) -> None:
+        self.database, self.clock, self.finder, self.order, self.check, self.events = database, clock, finder, order, check, events
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
         self.actors, self.registry_table, self.entries = actors, registry_table, entries
 
@@ -84,12 +86,14 @@ class ModuleSync:
             timestamp = self.clock.timestamp().text
             self.actors.core_actor(timestamp)
             actor_ids = {module.name: self.actors.module_actor(module.name, timestamp) for module in modules}
+            registry = self.registry(modules, rules, actor_ids)
+            registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
+            if registry_changed:
+                self.events.write_registry_sync(CORE_ACTOR_ID, registry.fingerprint, timestamp)
             for module in modules:
                 for listener in module.listeners:
                     if self.timing(listener) is ListenerTiming.COMMIT:
                         self.cursors.start(listener.name)
-            registry = self.registry(modules, rules, actor_ids)
-            registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:

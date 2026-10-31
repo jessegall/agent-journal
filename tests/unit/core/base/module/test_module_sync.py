@@ -68,4 +68,5 @@ def test_a_new_commit_listener_starts_at_the_newest_event(tmp_path):
     database.insert(EVENT)
     database.insert(EVENT)
     database = synced(home, ITEMS, ITEM_COUNT).get(Database)
-    assert database.rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = 'items.paused-count'"))[0][0] == 2
+    newest = database.rows(Statement("SELECT max(id) FROM events"))[0][0]
+    assert database.rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = 'items.paused-count'"))[0][0] == newest

@@ -16,7 +16,7 @@ HEARTBEAT = ": waiting\n\n"
 
 class EventStream:
     """Answers GET /api/events: the event log after a cursor, kept to one environment, written as server-sent events
-    whose ids are the log's, so a stream that reconnects after its last id loses nothing; a quiet stream sends a
+    whose ids are the log's, with the environment-wide events such as registry.sync, so a stream that reconnects after its last id loses nothing; a quiet stream sends a
     comment now and then, so one the browser has closed ends."""
 
     def __init__(self, home: JournalHome) -> None:
@@ -30,7 +30,7 @@ class EventStream:
             while True:
                 events = log.events_past(cursor_id)
                 for event in events:
-                    if event.environment_id == environment_id and not output(self.message(event)):
+                    if event.environment_id in (environment_id, None) and not output(self.message(event)):
                         return
                 if events:
                     cursor_id, quiet_seconds = events[-1].id, 0.0

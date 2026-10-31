@@ -20,10 +20,9 @@ from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread
 from server.listener_work import ListenerWork
 from server.tick_work import TickWork
-from server.viewer.event_stream import EventStream
-from server.viewer.line_route import LineRoute
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_login import ViewerLogin
+from server.viewer.viewer_routes import ViewerRoutes
 from server.request_handler import RequestHandler
 from server.server_files import ServerFiles
 
@@ -47,7 +46,7 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     tick_round = JournalRound(home, "ticker", TickWork())
     hook_database = HookDatabase(home)
-    viewer = ViewerListener(ViewerLogin(), LineRoute(home, listener_thread), EventStream(home))
+    viewer = ViewerListener(ViewerLogin(), ViewerRoutes(home, listener_thread))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer))
     files.restrict_socket()

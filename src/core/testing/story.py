@@ -10,6 +10,7 @@ from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.registry.registry import Registry
+from core.base.change.event_log import EventLog
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_table import ProcessRow, ProcessTable
 from core.base.clock import Clock
@@ -194,6 +195,10 @@ class Story:
     def expect_registered_window(self, name: str, text: str) -> None:
         windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
         assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
+
+    def expect_logged_event(self, name: str) -> None:
+        names = [event.event for event in self.container.get(EventLog).events_past(0)]
+        assert name in names, f"no {name} event among {names}"
 
     def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(self.home.module_list.read_text())

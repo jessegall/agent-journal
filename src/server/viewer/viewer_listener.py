@@ -1,10 +1,9 @@
 import threading
 from http.server import ThreadingHTTPServer
 
-from server.viewer.event_stream import EventStream
-from server.viewer.line_route import LineRoute
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_handler import ViewerRequestHandler
+from server.viewer.viewer_routes import ViewerRoutes
 
 VIEWER_ADDRESS = "127.0.0.1"
 STOP_LIMIT_SECONDS = 10.0
@@ -17,9 +16,9 @@ class ViewerListener(ThreadingHTTPServer):
 
     daemon_threads = True
 
-    def __init__(self, login: ViewerLogin, line_route: LineRoute, event_stream: EventStream) -> None:
+    def __init__(self, login: ViewerLogin, routes: ViewerRoutes) -> None:
         super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
-        self.login, self.line_route, self.event_stream = login, line_route, event_stream
+        self.login, self.routes = login, routes
         self.thread = threading.Thread(target=self.serve, name="viewer", daemon=True)
 
     @property

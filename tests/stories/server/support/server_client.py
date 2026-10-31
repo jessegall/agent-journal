@@ -29,10 +29,9 @@ from server.listener_thread import ListenerThread, ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
-from server.viewer.event_stream import EventStream
-from server.viewer.line_route import LineRoute
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_login import ViewerLogin
+from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report
 from tests.stories.server.support.hook_program import HookProgram
 
@@ -97,6 +96,10 @@ class ServerStory:
     def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
         answered, headers, body = viewer_answer(self.viewer_port(), path, cookie, host)
         assert answered == status and text in body, (answered, headers, body)
+
+    def expect_viewer_headers(self, path: str, cookie: str, headers: dict[str, str]) -> None:
+        status, answered, _ = viewer_answer(self.viewer_port(), path, cookie, "")
+        assert status == 200 and all(value in answered.get(name, "") for name, value in headers.items()), (status, answered)
 
     def expect_viewer_line(self, cookie: str, body: dict[str, object], status: int, text: str) -> None:
         answered, headers, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
@@ -227,7 +230,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(ViewerLogin(), LineRoute(home, listener_thread), EventStream(home)))
+                            HookDatabase(home), ViewerListener(ViewerLogin(), ViewerRoutes(home, listener_thread)))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
