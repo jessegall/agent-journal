@@ -1,8 +1,10 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
+from core.modules.processes.models.watch import Watch
 
 
 class ProcessesModule(Module):
@@ -11,5 +13,5 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits"]
-    models = (ModelDeclaration(Process), ModelDeclaration(ProcessPart))
+    models = (ModelDeclaration(Process), ModelDeclaration(ProcessPart), ModelDeclaration(Output), ModelDeclaration(Watch))
     migrations = [ProcessesTablesMigration]
