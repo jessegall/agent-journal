@@ -11,6 +11,7 @@ class SettingTreeRow:
     shown to a person, and where that came from; a secret's value is never in it."""
 
     key: str
+    module: str
     parent: str | None
     title: str
     description: str
@@ -27,5 +28,5 @@ class SettingTreeRow:
     @classmethod
     def listed(cls, setting: CurrentSetting) -> "SettingTreeRow":
         entry = setting.entry
-        return cls(entry.key, entry.parent, entry.title, entry.description, entry.type, None if entry.secret else setting.value, SettingLines.shown(setting),
+        return cls(entry.key, entry.module, entry.parent, entry.title, entry.description, entry.type, None if entry.secret else setting.value, SettingLines.shown(setting),
                    setting.source, entry.secret, entry.scope, entry.agent_writable, tuple(entry.choices), entry.toggleable)

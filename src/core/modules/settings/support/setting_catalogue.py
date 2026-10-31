@@ -24,7 +24,7 @@ class SettingCatalogue:
         for entry in self.registry.settings:
             group = entry.key.removesuffix(f".{ANY_KEY}")
             if entry.key.endswith(f".{ANY_KEY}") and key.startswith(f"{group}."):
-                return replace(entry, key=key)
+                return replace(entry, key=key, title=key.removeprefix(f"{group}."))
         raise Refusal(f"no module declares the setting {key}", "journal setting tree lists every setting")
 
     def value(self, key: str) -> SettingEntry:

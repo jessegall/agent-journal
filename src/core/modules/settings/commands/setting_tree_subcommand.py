@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_declaration import REFERENCE_TYPE
+from core.base.setting.setting_declaration import ANY_KEY, REFERENCE_TYPE
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
@@ -12,6 +12,7 @@ from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_lines import SettingLines
 from core.modules.settings.commands.setting_tree_row import SettingTreeRow
 from core.modules.settings.support.setting_reader import SettingReader
+from core.modules.settings.support.setting_rows import SettingRows
 from core.modules.settings.support.tree_line import TreeLine
 from core.modules.settings.support.undeclared_settings import UNDECLARED_TYPE, UndeclaredSettings
 
@@ -22,14 +23,15 @@ UNCOVERED_HEADING = "Not declared by any installed module"
 class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
     """`journal setting tree`: every declared setting and group in the order the modules declare them, each
     with what it holds here, a secret only as set or not set; a group another module places is drawn where
-    it is placed as well as in its own module, under its one key; rows no installed module declares come
-    last."""
+    it is placed as well as in its own module, under its one key; an open group lists the keys stored under
+    it; rows no installed module declares come last."""
 
     cli_name = "setting"
     name = "tree"
 
-    def __init__(self, declared: SettingCatalogue, values: SettingReader, environment_names: EnvironmentNames, undeclared: UndeclaredSettings) -> None:
-        self.declared, self.values, self.environment_names, self.undeclared = declared, values, environment_names, undeclared
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, environment_names: EnvironmentNames, undeclared: UndeclaredSettings,
+                 rows: SettingRows) -> None:
+        self.declared, self.values, self.environment_names, self.undeclared, self.rows = declared, values, environment_names, undeclared, rows
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -39,12 +41,21 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[TreeLine]]):
         lines: list[TreeLine] = []
         for entry in self.declared.all():
             depth = len(list(self.declared.enclosing_groups(entry)))
-            lines.extend(self.placed(entry.target, depth, environment_id) if entry.type == REFERENCE_TYPE else [self.line(entry, depth, environment_id)])
+            if entry.type == REFERENCE_TYPE:
+                lines.extend(self.placed(entry.target, depth, environment_id))
+            elif entry.key.endswith(f".{ANY_KEY}"):
+                lines.extend(self.stored(entry, depth, environment_id))
+            else:
+                lines.append(self.line(entry, depth, environment_id))
         kept = [self.undeclared.current(self.declared.all(), key, environment_id) for key in dict.fromkeys(report.key for report in self.undeclared.found(self.declared.all()))]
         return (*lines, *(TreeLine(setting, 0) for setting in kept if setting is not None))
 
     def line(self, entry: SettingEntry, depth: int, environment_id: int | None) -> TreeLine:
         return TreeLine(self.values.current(entry.key, environment_id), depth)
+
+    def stored(self, template: SettingEntry, depth: int, environment_id: int | None) -> list[TreeLine]:
+        prefix = template.key.removesuffix(ANY_KEY)
+        return [self.line(self.declared.entry(key), depth, environment_id) for key in sorted(self.rows.stored_keys()) if key.startswith(prefix)]
 
     def placed(self, key: str, depth: int, environment_id: int | None) -> list[TreeLine]:
         lines = [self.line(self.declared.entry(key), depth, environment_id)]

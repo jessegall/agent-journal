@@ -4,7 +4,7 @@ import {settled} from "./settled.js";
 import SettingsTree from "../../core/modules/settings/web/src/SettingsTree.vue";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
 
-const row = (fields) => ({parent: null, description: "", secret: false, scope: "both", agent_writable: false, choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
+const row = (fields) => ({module: "good", parent: null, description: "", secret: false, scope: "both", agent_writable: false, choices: [], toggleable: false, value: null, shown: "not set", source: "default", ...fields});
 const TREE = [
     row({key: "good.limit", title: "Limit", description: "How many rows a list shows.", type: "number", value: 50, shown: "50"}),
     row({key: "good.sharing", title: "Sharing", description: "Links that show one row.", type: "group", shown: "on"}),
@@ -86,4 +86,18 @@ test("on a phone every field is read-only and nothing runs", async () => {
     expect([...element.querySelectorAll("input")].every((input) => input.disabled)).toBe(true);
     expect(element.querySelector("[data-group-switch]")).toBeNull();
     expect(runs).toEqual([]);
+});
+
+test("each module's settings sit under one heading named for the module", async () => {
+    const rows = [
+        row({key: "journal.core.drivers.suite", module: "journal.core.drivers", title: "Suite", type: "text", shown: "coding"}),
+        row({key: "journal.core.drivers.driver", module: "journal.core.drivers", title: "Drivers", type: "group", shown: "on"}),
+        row({key: "journal.core.drivers.driver.builder", module: "journal.core.drivers", parent: "journal.core.drivers.driver", title: "builder", type: "text", shown: "coding.builder"}),
+        row({key: "journal.core.tunnel.service", module: "journal.core.tunnel", title: "Tunnel service", type: "text", shown: "none"}),
+    ];
+    const {element} = mounted({rows});
+    await settled();
+    const headings = [...element.querySelectorAll(".settings-module-heading")].map((heading) => heading.textContent);
+    expect(headings).toEqual(["Drivers", "Tunnel"]);
+    expect(node(element, "journal.core.drivers.driver").contains(node(element, "journal.core.drivers.driver.builder"))).toBe(true);
 });

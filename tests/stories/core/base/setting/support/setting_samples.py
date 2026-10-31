@@ -73,3 +73,10 @@ class LoopModule(Module):
     name = "loop"
     requires_core = ">=5,<6"
     settings = [SettingGroup("again", "Again", "A group that holds itself.", children=[SettingReference("loop.again")])]
+
+
+class OpenModule(Module):
+    name = "open"
+    requires_core = ">=5,<6"
+    settings = [SettingGroup("color", "Colours", "The colour each kind of agent is drawn in.",
+                             any_key=SettingValue("*", "Colour", "The colour this kind of agent is drawn in.", SettingType.TEXT, default="grey", scope=SettingScope.PROJECT))]

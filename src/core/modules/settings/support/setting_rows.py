@@ -8,7 +8,7 @@ SettingModel = type[Setting] | type[SecretSetting]
 
 class SettingRows:
     """Finds the one row of a key for an environment, or for the whole project with no environment, in the
-    settings table or the secret settings table."""
+    settings table or the secret settings table, and the keys either table stores."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -17,3 +17,6 @@ class SettingRows:
         query = self.queries.query(model).filter(key=key)
         rows = (query.matching(IsNull("environment_id")) if environment_id is None else query.filter(environment_id=environment_id)).page(1, 1).rows
         return rows[0] if rows else None
+
+    def stored_keys(self) -> list[str]:
+        return list(dict.fromkeys(row.key for model in (Setting, SecretSetting) for row in self.queries.query(model).oldest().all_rows()))
