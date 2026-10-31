@@ -15,6 +15,7 @@ LAYOUT_PAGES = {"layout": "home", "inspector_layout": "inspector", "worker_layou
 VIEW_WINDOWS = {"chat": "messages.chat", "tasks": "tasks.tasks", "plans": "plans.plans", "agents": "agents.agents", "subagents": "agents.subagents",
                 "transcript": "agents.transcript", "hooks": "drivers.hook-calls", "questions": "questions.questions", "skills": "skills.skills"}
 ABSENT_PREFIX = "gone."
+KEY_PREFIX = "viewer."
 SUITE = "coding"
 
 
@@ -32,7 +33,7 @@ class ViewerMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         person, environments = self.first_user(source, map), source.rows("environments")
-        for row in [row for row in source.rows("settings") if row["key"] in LAYOUT_PAGES]:
+        for row in [row for row in source.rows("settings") if row["key"].removeprefix(KEY_PREFIX) in LAYOUT_PAGES]:
             windows = self.windows(row["value"])
             if person is None or not environments or not windows:
                 report.skip("settings", row["id"], "there is no person, no environment or no view in the layout")
@@ -57,5 +58,5 @@ class ViewerMove(VersionFourMove):
     def insert(self, rows: RowInsert, row: sqlite3.Row, windows: list[str], person: int, environment_id: int, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         return rows.insert("viewer_layouts", {"environment_id": environment_id, "person_id": person, "creator_id": creator_id, "suite": SUITE,
-                                              "page": LAYOUT_PAGES[row["key"]], "driver": "", "layout": json.dumps(stored_layout(LayoutTabs(tuple(windows), windows[0]))),
+                                              "page": LAYOUT_PAGES[row["key"].removeprefix(KEY_PREFIX)], "driver": "", "layout": json.dumps(stored_layout(LayoutTabs(tuple(windows), windows[0]))),
                                               "created_at": created, "updated_at": row["updated_at"] or created})

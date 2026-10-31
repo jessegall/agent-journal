@@ -27,6 +27,24 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     connection.close()
     outcome = UpgradeJournal(story.home).run(confirmed=True)
     assert outcome.code == 0, outcome.text
-    assert "skipped settings 5: the key moveprefs.limit is already moved for that scope" in outcome.text
+    assert "skipped settings 9: the key moveprefs.limit is already moved for that scope" in outcome.text
     listing = story.run("setting list").output_text
     assert "moveprefs.limit" in listing and "7" in listing and "9" in listing and "8" not in listing.replace("moveprefs", "")
+
+
+def test_a_version_4_key_with_a_version_5_counterpart_moves_under_the_full_key(new_story):
+    story = upgraded_story(new_story)
+    shown = story.run("setting list").output_text
+    assert "journal.suites.coding.workers.most-out  3" in shown
+    assert "journal.suites.coding.workers.builder-dispatches-workers  false" in shown
+
+
+def test_a_version_4_text_of_kinds_becomes_the_list_version_5_declares(new_story):
+    story = upgraded_story(new_story)
+    assert "journal.suites.coding.worker-command-types  " in story.run("setting list").output_text
+    story.expect_text("setting show journal.suites.coding.worker-command-types", "read")
+
+
+def test_a_version_4_key_with_no_counterpart_is_listed_by_its_key_as_not_carried(new_story):
+    story = upgraded_story(new_story)
+    assert "skipped settings" in story.upgrade_text and "no module declares the key features.aliases" in story.upgrade_text

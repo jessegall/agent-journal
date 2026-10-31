@@ -136,6 +136,10 @@ ROWS = (
     ("notices", "(environment_id, title, label, created_at, creator)", (1, "Build is red", "build", STAMP, USER)),
     ("scheduled_jobs", "(environment_id, session, job_id, cron, prompt, recurring, ended, created_at, creator)", (1, "s-1", "job-1", "0 9 * * *", "stand up", 1, 0, STAMP, "agent:s-1")),
     ("statistics", "(key, value, created_at)", ("starts", 3, STAMP)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (0, "workers.most_out", "3", STAMP, USER)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (0, "workers.builder_may_dispatch", "false", STAMP, USER)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (0, "workers.command_kinds", '"read, search, edit"', STAMP, USER)),
+    ("settings", "(environment_id, key, value, created_at, creator)", (0, "features.aliases", "true", STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 

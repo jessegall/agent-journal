@@ -10,8 +10,11 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 
 TABLE = "settings"
-LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout")
-RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit"}
+LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout", "viewer.layout", "viewer.inspector_layout", "viewer.worker_layout")
+RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.most-out",
+           "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
+           "workers.command_kinds": "journal.suites.coding.worker-command-types"}
+LISTED = ("journal.suites.coding.worker-command-types",)
 
 
 class SettingsMove(VersionFourMove):
@@ -27,17 +30,27 @@ class SettingsMove(VersionFourMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows, moved_scopes = MoveReport(), CreatorResolver(target, map), RowInsert(target), set[tuple[str, int | None]]()
         for row in [row for row in source.rows(TABLE) if row["key"] not in LAYOUT_KEYS]:
-            key = RENAMED.get(row["key"], row["key"])
+            key = self.renamed(row["key"])
             if key not in context.setting_keys:
                 report.skip(TABLE, row["id"], f"no module declares the key {row['key']} (value {row['value']})")
-            elif (key, row["environment_id"]) in moved_scopes:
+            elif (key, row["environment_id"] or None) in moved_scopes:
                 report.skip(TABLE, row["id"], f"the key {key} is already moved for that scope")
             else:
-                moved_scopes.add((key, row["environment_id"]))
+                moved_scopes.add((key, row["environment_id"] or None))
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: rows.insert(TABLE, {
-                    "environment_id": row["environment_id"], "creator_id": creators.actor_id(row["creator"]), "key": key, "value": self.json_text(row["value"]),
+                    "environment_id": row["environment_id"] or None, "creator_id": creators.actor_id(row["creator"]), "key": key, "value": self.stored(key, row["value"]),
                     "created_at": row["created_at"] or context.timestamp, "updated_at": row["updated_at"] or row["created_at"] or context.timestamp})))
         return report
+
+    def renamed(self, key: str) -> str:
+        return RENAMED.get(key, key)
+
+    def stored(self, key: str, value: str) -> str:
+        text = self.json_text(value)
+        if key not in LISTED:
+            return text
+        loaded = json.loads(text)
+        return json.dumps([item.strip() for item in loaded.split(",") if item.strip()] if isinstance(loaded, str) else loaded)
 
     def json_text(self, value: str) -> str:
         try:

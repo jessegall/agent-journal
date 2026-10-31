@@ -70,3 +70,11 @@ def test_a_persons_dispatch_without_a_program_is_refused_naming_the_flag(new_sto
     person = story.new_row_id('actor make user "Ada"')
     story.expect_refusal(DISPATCH, "a person's dispatch needs the program the worker runs", actor=Actor(person, ActorType.USER))
     expect_clean_environment(story, repository)
+
+
+def test_a_dispatch_is_refused_while_the_environment_has_as_many_workers_out_as_workers_most_out_allows(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_success("setting make journal.suites.coding.workers.most-out 0 --environment main", "key: journal.suites.coding.workers.most-out")
+    story.expect_refusal(DISPATCH, "0 workers are out already", actor=story.agent)
+    expect_clean_environment(story, repository)
