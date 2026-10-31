@@ -7,7 +7,7 @@ from core.modules.drivers.agent_line_lifecycle import AgentLineLifecycle
 
 
 @dataclass(frozen=True)
-class AgentLineGive(MoveCommand[AgentLine]):
-    move = AgentLineLifecycle.give
+class AgentLineDelivery(MoveCommand[AgentLine]):
+    move = AgentLineLifecycle.deliver
     hook_call_id: int
-    given_at: Timestamp
+    delivered_at: Timestamp

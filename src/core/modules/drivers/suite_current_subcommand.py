@@ -24,10 +24,10 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
     def read(self, arguments: Namespace, caller: Caller) -> SuiteRun:
         environments = self.queries.query(Environment).filter(name=arguments.environment).page(1, 1).rows
         if not environments:
-            raise Refusal(f"no environment is called {arguments.environment}", "journal environment list names them")
+            raise Refusal(f"no environment is called {arguments.environment}", "see every environment with journal environment list")
         environment_id = environments[0].id
         suite = self.choice.suite(environment_id)
         if suite is None:
-            return SuiteRun(f"none, choose one with journal suite choose {self.choice.suite_names()}", "")
+            return SuiteRun.unchosen(self.choice.suite_names())
         drivers = [f"{role}: {driver.name}" for role in suite.defaults if (driver := self.choice.driver(environment_id, role)) is not None]
         return SuiteRun(suite.name, ", ".join(drivers))

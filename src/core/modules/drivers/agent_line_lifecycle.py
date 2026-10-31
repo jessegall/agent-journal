@@ -9,7 +9,7 @@ class AgentLineLifecycle(Lifecycle):
     states = AgentLineState
     initial = [AgentLineState.WAITING]
     editable = [AgentLineState.WAITING]
-    deletable = [AgentLineState.GIVEN, AgentLineState.TYPED]
+    deletable = [AgentLineState.DELIVERED, AgentLineState.ENTERED]
 
-    give = Move("give", [AgentLineState.WAITING], AgentLineState.GIVEN)
-    type = Move("type", [AgentLineState.WAITING], AgentLineState.TYPED)
+    deliver = Move("deliver", [AgentLineState.WAITING], AgentLineState.DELIVERED)
+    enter = Move("enter", [AgentLineState.WAITING], AgentLineState.ENTERED)

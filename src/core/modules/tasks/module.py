@@ -1,5 +1,5 @@
 from core.modules.tasks.blocked_work_refusal import BlockedWorkRefusal
-from core.modules.tasks.carry_on_refusal import CarryOnRefusal
+from core.modules.tasks.task_stop_refusal import TaskStopRefusal
 from core.modules.tasks.commands import TaskBlock, TaskCancel, TaskClose
 from core.modules.tasks.dependency_subcommands import TaskDependSubcommand, TaskUndependSubcommand
 from core.modules.tasks.guards.no_dependency_loop import NoDependencyLoop
@@ -8,9 +8,9 @@ from core.modules.tasks.unlogged_write_limit import UnloggedWriteLimit
 from core.modules.tasks.log_request import LogRequest
 from core.modules.tasks.migrations.m001_tasks import TasksTables
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlocked
-from core.modules.tasks.quiet_task_reminder import QuietTaskReminder
+from core.modules.tasks.inactive_task_reminder import InactiveTaskReminder
 from core.modules.tasks.task_summary_line import TaskSummaryLine
-from core.modules.tasks.where_you_stand import WhereYouStand
+from core.modules.tasks.task_return_line import TaskReturnLine
 from core.modules.tasks.task_log_subcommand import TaskLogSubcommand
 from core.modules.tasks.task_query import TaskQuery
 from core.modules.tasks.task_undepend_handler import TaskUndependHandler
@@ -37,4 +37,4 @@ class TasksModule(Module):
     handlers = [TaskUndependHandler]
     guards = [NoDependencyLoop]
     listeners = [ForgetDependencies]
-    driver_rules = [LogRequest, UnloggedWriteLimit, CarryOnRefusal, BlockedWorkRefusal, TaskSummaryLine, WhereYouStand, QuietTaskReminder]
+    driver_rules = [LogRequest, UnloggedWriteLimit, TaskStopRefusal, BlockedWorkRefusal, TaskSummaryLine, TaskReturnLine, InactiveTaskReminder]

@@ -120,7 +120,7 @@ class Switches(GuardSwitches):
 class RegainedHistory:
     """A history in which every history rule has regained control."""
 
-    def regained_control(self, agent_id: int, rule: str, layer: str) -> bool:
+    def regained_control(self, key: RuleHistoryKey) -> bool:
         return True
 
 

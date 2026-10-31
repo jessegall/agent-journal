@@ -5,7 +5,6 @@ from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
@@ -16,7 +15,7 @@ from core.modules.environments.environment import Environment
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)
-SECONDS_PER_MINUTE = 60
+MINUTE_SECONDS = 60
 MAIN_ACTOR = "agent"
 
 
@@ -28,17 +27,16 @@ class TickWork(RoundWork):
         self.pruned_at: Timestamp | None = None
 
     def run(self, container: Container) -> None:
-        now, queries, route = container.get(Clock).timestamp(), container.get(Queries), container.get(HookRoute)
+        clock_time, queries, route = container.get(Clock).timestamp(), container.get(Queries), container.get(HookRoute)
         for agent in tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows()):
             if agent.role != AgentRole.SUBAGENT:
-                route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, now))
-        if self.pruned_at is None or self.pruned_at.elapsed_seconds(now) >= PRUNE_PERIOD.total_seconds():
+                route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
+        if self.pruned_at is None or self.pruned_at.elapsed_seconds(clock_time) >= PRUNE_PERIOD.total_seconds():
             container.get(Bus).run(HookCallPrune(), Actor.core())
-            self.pruned_at = now
+            self.pruned_at = clock_time
 
     @staticmethod
-    def tick(agent: Agent, environment: str, now: Timestamp) -> HookEvent:
-        seconds = now.value.timestamp()
+    def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:
+        seconds = clock_time.value.timestamp()
         actor = MAIN_ACTOR if agent.role == AgentRole.MAIN else f"{agent.role}:{agent.id}"
-        return HookEvent(1, agent.program, HookEventName.TICK, agent.session, f"tick-{agent.id}-{int(seconds // SECONDS_PER_MINUTE)}",
-                         int(seconds * 1000), actor, environment, "", None, None, {})
+        return HookEvent.tick(agent.program, agent.session, f"tick-{agent.id}-{int(seconds // MINUTE_SECONDS)}", int(seconds * 1000), actor, environment)

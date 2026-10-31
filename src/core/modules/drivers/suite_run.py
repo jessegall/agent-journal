@@ -7,3 +7,8 @@ class SuiteRun:
 
     suite: str
     drivers: str
+
+    @classmethod
+    def unchosen(cls, suite_names: str) -> "SuiteRun":
+        return cls(f"none, choose one with journal suite choose {suite_names}", "")
+

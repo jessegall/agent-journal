@@ -4,10 +4,10 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.hook_call_query import HookCallQuery
 from core.modules.tasks.current_tasks import CurrentTasks
 
-STOP_REFUSALS_PER_LOG = 3
+LOG_STOP_REFUSAL_COUNT = 3
 
 
-class CarryOnRefusal(DriverRule):
+class TaskStopRefusal(DriverRule):
     """A stop with a task in hand is refused and told to carry on, three times since the task was last logged;
     the stop after that goes through."""
 
@@ -21,6 +21,6 @@ class CarryOnRefusal(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         current = self.current_tasks.current(hook.agent_id)
-        if current is None or self.calls.refused_stops_since(hook.agent_id, current.counted_from) >= STOP_REFUSALS_PER_LOG:
+        if current is None or self.calls.refused_stop_count(hook.agent_id, current.count_start) >= LOG_STOP_REFUSAL_COUNT:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(f"{current.name}, is in hand: carry on, or log why it waits with journal task log {current.task.id} \"<why>\"")

@@ -4,12 +4,12 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.hook_call_query import HookCallQuery
 
-STOP_REFUSAL_LIMIT = 5
+STOP_REFUSAL_COUNT = 5
 
 
 class RepeatedStopRelease(DriverRule):
-    """A stop refused five times in a row goes through the next time, with a line asking the agent to report what held
-    it, so no rule and no overlay holds an agent for ever."""
+    """A stop refused five times in a row goes through the next time, with a line asking the agent to report
+    what held it, so no rule and no overlay holds an agent for ever."""
 
     name = "drivers.repeated-stop-release"
     hook = HookEventName.STOP
@@ -20,6 +20,6 @@ class RepeatedStopRelease(DriverRule):
         self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.calls.refused_stop_streak(hook.agent_id) < STOP_REFUSAL_LIMIT:
+        if self.calls.refused_stop_streak(hook.agent_id) < STOP_REFUSAL_COUNT:
             return RuleAnswer.allowed()
         return RuleAnswer.final_allowance("your stop was refused five times in a row: report what held it with journal report create")

@@ -1,0 +1,62 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "resolvesLike": "*.Database",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*.Container",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*.Queries",
+                        "of": "child:func"
+                    },
+                    {
+                        "resolvesLike": "*Query",
+                        "of": "child:func"
+                    },
+                    {
+                        "nameIn": [
+                            "synced_container",
+                            "opened_container",
+                            "synced_database_container",
+                            "database_container",
+                            "opened",
+                            "shared"
+                        ]
+                    }
+                ]
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "DriverRule",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Overlay",
+                        "of": "enclosingType"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "rule-builds-its-reader",
+        "description": "A driver rule or an overlay builds its own database, container or query instead of being handed one, so it reads outside the hook's transaction and its connection.",
+        "rule": "Name the query the rule reads in its constructor; the container hands in the one the hook runs on.",
+        "skill": "drivers-architecture"
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "fileMatches": "(^|/)core/modules/agents/"
+            },
+            {
+                "nameIn": ["stack", "states", "state", "layers"]
+            },
+            {
+                "kind": "AnnAssign",
+                "of": "parent"
+            }
+        ]
+    },
+    "sin": {
+        "name": "agent-keeps-a-stack",
+        "description": "The agents module stores a stack, states or layers on a row, while version 5 works out what drives an agent from open rows on every hook.",
+        "rule": "Keep no stack on the agent: what holds it is an open row of an overlay's module, read on each hook.",
+        "skill": "drivers-architecture"
+    }
+}

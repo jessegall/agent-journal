@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.modules.tasks.unlogged_write_limit import UNLOGGED_WRITE_LIMIT
+from core.modules.tasks.unlogged_write_limit import UNLOGGED_WRITES_CEILING
 from core.modules.tasks.log_request import LOG_REQUEST_WRITES
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -31,8 +31,8 @@ def test_a_builder_that_logs_its_task_counts_its_writes_from_the_log(new_story):
 
 def test_a_builder_writes_nothing_more_past_the_hold_count_until_it_logs(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    edits(story, UNLOGGED_WRITE_LIMIT - 1)
-    story.expect_hook_refusal("s-1", CART_EDIT, f"{UNLOGGED_WRITE_LIMIT} writes since you logged task 1")
+    edits(story, UNLOGGED_WRITES_CEILING - 1)
+    story.expect_hook_refusal("s-1", CART_EDIT, f"{UNLOGGED_WRITES_CEILING} writes since you logged task 1")
     story.expect_hook_allowed("s-1", CART_SEARCH)
     story.advance(timedelta(minutes=1))
     story.run("task log 1 'the totals and the tax are done'", actor=story.agent)

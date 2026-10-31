@@ -14,17 +14,17 @@ from core.modules.environments.environment import Environment
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, or by the subagent the hook names,
-    starts the main agent at its session's first hook and a subagent at its first, gives back the stored answer of
-    a hook sent twice, and lets through, unkept, a hook from no agent it knows."""
+    """Answers a hook as the agent that sent it: finds its open agent by session, or by the subagent the hook
+    names, starts the main agent at its session's first hook and a subagent at its first, gives back the
+    stored answer of a hook sent twice, and lets through, unkept, a hook from no agent it knows."""
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries
 
     def answer(self, event: HookEvent) -> HookReply:
-        earlier = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
-        if earlier:
-            return HookReply.stored(earlier[0])
+        stored_calls = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
+        if stored_calls:
+            return HookReply.stored(stored_calls[0])
         agent = self.agent(event)
         if agent is None:
             return HookReply.allowed()

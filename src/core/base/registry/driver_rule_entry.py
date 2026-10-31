@@ -36,3 +36,7 @@ class DriverRuleEntry:
         if not self.drivers:
             return self.owner == driver
         return DriverPatterns(self.drivers).covers(driver) and (not self.roles or role in self.roles)
+
+    def is_driver_standing_rule(self, driver: str) -> bool:
+        return (self.essential and not self.limit) or (self.limit and self.owner == driver)
+

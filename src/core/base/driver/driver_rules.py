@@ -4,8 +4,8 @@ from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.essential_allowances import EssentialAllowances
-from core.base.driver.layer import Layer
 from core.base.driver.hook_history import HookHistory
+from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.layers import Layers
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answers import RuleAnswers
@@ -15,7 +15,6 @@ from core.base.error_log import ErrorLog
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.registry import Registry
-from core.base.registry.suite_entry import SuiteEntry
 
 
 class DriverRules:
@@ -30,10 +29,10 @@ class DriverRules:
 
     def ask(self, hook: AgentHook) -> RuleAnswers:
         suite = self.registry.suite(hook.suite)
-        active = [layer for layer in self.layers.active(hook.agent_id, hook.driver) if self.is_heard_layer(layer, suite)]
+        active = [layer for layer in self.layers.active(hook.agent_id, hook.driver) if suite is None or suite.is_overlay_included(layer.overlay.name)]
         patterned = self.registry.driver_rules(hook.driver, hook.role, hook.hook_name)
         allowed = [entry for entry in patterned if entry.claims_essential and self.allowances.allowed(entry.name)]
-        added = [entry for entry in patterned if entry not in allowed and self.is_heard_rule(entry, hook.driver, suite)]
+        added = [entry for entry in patterned if entry not in allowed and (suite is None or suite.is_rule_included(entry.owner, entry.drivers, hook.driver))]
         walk = Walk([layer.row.ref for layer in active])
         for entry in [*self.registry.essential_rules(hook.driver, hook.hook_name), *allowed]:
             if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
@@ -57,18 +56,10 @@ class DriverRules:
                 return walk.answers()
         return walk.answers()
 
-    def is_heard_layer(self, layer: Layer, suite: SuiteEntry | None) -> bool:
-        return suite is None or not suite.complete_control or layer.overlay.name in suite.included_overlays
-
-    def is_heard_rule(self, entry: DriverRuleEntry, driver: str, suite: SuiteEntry | None) -> bool:
-        if suite is None or not suite.complete_control or entry.owner == driver:
-            return True
-        return any(pattern.partition(".")[0] in (suite.name, *suite.requires) for pattern in entry.drivers)
-
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
             rule = self.container.get(entry.path.checked_class(DriverRule))
-            regained = rule.history and self.history.regained_control(hook.agent_id, entry.name, hook.layer_ref)
+            regained = rule.history and self.history.regained_control(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             answer = rule.answer(replace(hook, regained_control=regained))
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error)

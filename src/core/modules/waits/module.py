@@ -1,14 +1,14 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.waits.migrations.m001_waits import WaitsTables
-from core.modules.waits.stuck_overlay import StuckOverlay
+from core.modules.waits.impasse_overlay import ImpasseOverlay
 from core.modules.waits.target_resolution import TargetResolution
 from core.modules.waits.wait import Wait
 from core.modules.waits.wait_end import WaitEnd
-from core.modules.waits.wait_on_subcommand import WaitOnSubcommand
+from core.modules.waits.wait_rows_subcommand import WaitRowsSubcommand
 from core.modules.waits.wait_open_handler import WaitOpenHandler
 from core.modules.waits.wait_resume import WaitResume
-from core.modules.waits.wait_stuck_subcommand import WaitStuckSubcommand
+from core.modules.waits.impasse_report_subcommand import ImpasseReportSubcommand
 from core.modules.waits.wait_target import WaitTarget
 from core.modules.waits.wait_overlay import WaitOverlay
 
@@ -23,6 +23,6 @@ class WaitsModule(Module):
     models = [ModelDeclaration(Wait, commands=[WaitEnd, WaitResume], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
     migrations = [WaitsTables]
     handlers = [WaitOpenHandler]
-    subcommands = [WaitOnSubcommand, WaitStuckSubcommand]
+    subcommands = [WaitRowsSubcommand, ImpasseReportSubcommand]
     listeners = [TargetResolution]
-    overlays = [WaitOverlay, StuckOverlay]
+    overlays = [WaitOverlay, ImpasseOverlay]

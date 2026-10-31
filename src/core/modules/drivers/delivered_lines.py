@@ -12,14 +12,14 @@ LINELESS_HOOK = HookEventName.TICK
 
 
 @dataclass(frozen=True)
-class GivenLines:
+class DeliveredLines:
     """The waiting lines a hook gives the agent: none on a tick, which reaches no agent, or while the newest layer
     delays lines, three on a tool hook, all of them on any other; the rest stay waiting."""
 
     rows: Sequence[AgentLine]
 
     @classmethod
-    def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "GivenLines":
+    def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "DeliveredLines":
         if answers.delays_lines or event.event == LINELESS_HOOK:
             return cls([])
         return cls(list(waiting)[:TOOL_HOOK_LINES] if event.event in TOOL_HOOKS else list(waiting))

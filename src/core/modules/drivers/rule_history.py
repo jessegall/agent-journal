@@ -16,5 +16,5 @@ class RuleHistory(Model):
     creator_id: int
     rule: str
     layer: str = ""
-    last_seen: RuleSighting = RuleSighting.ASKED
-    last_spoke_at: Timestamp | None = None
+    last_sighting: RuleSighting = RuleSighting.CONSULTED
+    last_answer_at: Timestamp | None = None

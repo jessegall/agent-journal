@@ -5,7 +5,7 @@ from core.modules.drivers.hook_call_query import HookCallQuery
 from core.modules.tasks.task import TaskState
 from core.modules.tasks.task_query import TaskQuery
 
-BLOCKED_TASKS_NAMED = 10
+BLOCKED_TASK_PAGE_SIZE = 10
 
 
 class BlockedWorkRefusal(DriverRule):
@@ -23,7 +23,7 @@ class BlockedWorkRefusal(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.tasks.holder(hook.agent_id).started().exists() or self.tasks.open_tasks(hook.environment_id).exists():
             return RuleAnswer.allowed()
-        blocked = self.tasks.environment(hook.environment_id).filter(state=TaskState.BLOCKED).oldest().page(1, BLOCKED_TASKS_NAMED).rows
+        blocked = self.tasks.environment(hook.environment_id).filter(state=TaskState.BLOCKED).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked or self.calls.refused_stop_streak(hook.agent_id) > 0:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(f"blocked tasks: {', '.join(str(task.id) for task in blocked)}: unblock what can go on with journal task unblock <n>, or stop again to leave them")

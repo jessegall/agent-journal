@@ -9,7 +9,7 @@ from core.base.repository.repository import Repository
 from core.modules.drivers.rule_history import RuleHistory
 from core.modules.drivers.rule_sighting import RuleSighting
 
-SPOKEN_OUTCOMES = ("lines", "refused")
+ANSWERED_OUTCOMES = ("lines", "refused")
 
 
 class RuleHistoryWriter:
@@ -21,12 +21,12 @@ class RuleHistoryWriter:
 
     def record(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for record in answers.rules:
-            if record.history or record.outcome in SPOKEN_OUTCOMES:
+            if record.history or record.outcome in ANSWERED_OUTCOMES:
                 self.write(agent_id, record, context)
 
     def write(self, agent_id: int, record: RuleRecord, context: Context) -> None:
         rows = self.queries.query(RuleHistory).filter(agent_id=agent_id, rule=record.name, layer=record.layer).page(1, 1).rows
         current = rows[0] if rows else RuleHistory(agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
-        seen = RuleSighting.SILENCED if record.outcome == SILENCED else RuleSighting.ASKED
-        spoke_at = context.timestamp if record.outcome in SPOKEN_OUTCOMES else current.last_spoke_at
-        self.repository.save(replace(current, last_seen=seen, last_spoke_at=spoke_at), context)
+        sighting = RuleSighting.SILENCED if record.outcome == SILENCED else RuleSighting.CONSULTED
+        answer_at = context.timestamp if record.outcome in ANSWERED_OUTCOMES else current.last_answer_at
+        self.repository.save(replace(current, last_sighting=sighting, last_answer_at=answer_at), context)

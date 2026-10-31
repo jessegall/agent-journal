@@ -2,8 +2,8 @@ from enum import StrEnum
 
 
 class AgentLineState(StrEnum):
-    """Where a line for an agent is: waiting for a hook, given with one, or typed into the agent's terminal."""
+    """Where a line for an agent is: waiting for a hook, delivered with one, or entered into the agent's terminal."""
 
     WAITING = "waiting"
-    GIVEN = "given"
-    TYPED = "typed"
+    DELIVERED = "delivered"
+    ENTERED = "entered"

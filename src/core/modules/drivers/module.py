@@ -6,7 +6,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.drivers.agent_hook_route import AgentHookRoute
 from core.modules.drivers.agent_line import AgentLine
-from core.modules.drivers.agent_line_give import AgentLineGive
+from core.modules.drivers.agent_line_delivery import AgentLineDelivery
 from core.modules.drivers.driver_allow_essential_handler import DriverAllowEssentialHandler
 from core.modules.drivers.driver_allow_essential_subcommand import DriverAllowEssentialSubcommand
 from core.modules.drivers.driver_change_filter import DriverChangeFilter
@@ -41,7 +41,7 @@ class DriversModule(Module):
     name = "journal.core.drivers"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineGive]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineDelivery]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTables]
     handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler, DriverAllowEssentialHandler]
     subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand, DriverShowSubcommand,

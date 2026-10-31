@@ -14,4 +14,4 @@ class TaskWriteCount:
     def count(self, hook: AgentHook) -> tuple[CurrentTask, int] | None:
         tool = hook.event.tool
         current = self.current_tasks.current(hook.agent_id) if tool is not None and tool.is_writing_files() else None
-        return (current, self.calls.writes_since(hook.agent_id, current.counted_from) + 1) if current is not None else None
+        return (current, self.calls.write_count(hook.agent_id, current.count_start) + 1) if current is not None else None

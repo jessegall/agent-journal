@@ -27,7 +27,7 @@ class DriverShowSubcommand(ReadSubcommand[DriverDescription]):
         if driver is None:
             raise Refusal(f"no installed module ships driver {arguments.driver}", "journal suite show <name> lists a suite's drivers")
         rules = sorted(self.registry.rules, key=lambda rule: rule.position)
-        standing = [rule.name for rule in rules if (rule.essential and not rule.limit) or (rule.limit and rule.owner == driver.name)]
+        standing = [rule.name for rule in rules if rule.is_driver_standing_rule(driver.name)]
         overlays = [f"{rule.name} ({rule.owner})" for rule in rules for overlay in self.registry.driver_overlays(driver.name) if rule.owner == overlay.name]
         added = [self.label(rule) for rule in rules if not rule.essential and not rule.limit and rule.covers_driver(driver.name, driver.role)]
         return DriverDescription(driver.name, driver.suite, driver.role, ", ".join(standing), ", ".join(overlays), ", ".join(added))

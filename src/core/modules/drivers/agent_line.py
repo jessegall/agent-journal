@@ -21,4 +21,4 @@ class AgentLine(Model):
     text: str
     source: str = ""
     state: AgentLineState = AgentLineState.WAITING
-    given_at: Timestamp | None = None
+    delivered_at: Timestamp | None = None

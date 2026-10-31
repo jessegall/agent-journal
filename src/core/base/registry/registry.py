@@ -88,7 +88,7 @@ class Registry:
         return replace(self, rules=rules)
 
     def essential_rules(self, driver: str, hook_name: str) -> list[DriverRuleEntry]:
-        return [rule for rule in self.hook_rules(hook_name) if (rule.essential and not rule.limit) or (rule.limit and rule.owner == driver)]
+        return [rule for rule in self.hook_rules(hook_name) if rule.is_driver_standing_rule(driver)]
 
     def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:
         return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]

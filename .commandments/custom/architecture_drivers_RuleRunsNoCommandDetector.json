@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["run", "dispatch", "save", "delete", "execute", "update", "insert"]
+            },
+            {
+                "any": [
+                    {"extendsAny": "DriverRule", "of": "enclosingType"},
+                    {"extendsAny": "Overlay", "of": "enclosingType"}
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "rule-runs-a-command",
+        "description": "A driver rule or an overlay runs a command or writes a row itself, so the write skips the hook call's transaction, its savepoint and its record.",
+        "rule": "A rule only answers: it hands the commands it wants run to RuleAnswer with running() or ending_layer(), and the hook record runs each one alone.",
+        "skill": "drivers-architecture"
+    }
+}

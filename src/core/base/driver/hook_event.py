@@ -2,6 +2,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.hook_event_error import HookEventError
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_event_version_error import HookEventVersionError
 from core.base.driver.hook_fields import mapping, number, text
 from core.base.driver.tool import Tool
@@ -27,6 +28,10 @@ class HookEvent:
     tool: Tool | None
     prompt: str | None
     raw: Mapping[object, object]
+
+    @classmethod
+    def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":
+        return cls(HOOK_EVENT_VERSION, program, HookEventName.TICK, session, firing, hook_timestamp_ms, actor, environment, "", None, None, {})
 
     @classmethod
     def parsed(cls, data: object) -> "HookEvent":

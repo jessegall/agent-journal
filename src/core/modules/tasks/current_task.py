@@ -18,5 +18,5 @@ class CurrentTask:
         return f"task {self.task.id}, {self.task.title}"
 
     @property
-    def counted_from(self) -> Timestamp:
+    def count_start(self) -> Timestamp:
         return max(stamp for stamp in (self.task.updated_at, self.last_log.created_at if self.last_log is not None else None) if stamp is not None)

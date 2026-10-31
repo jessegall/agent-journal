@@ -5,7 +5,7 @@ from core.modules.agents.agent import AgentRole
 from core.modules.tasks.task_query import TaskQuery
 
 
-class WhereYouStand(DriverRule):
+class TaskReturnLine(DriverRule):
     """An agent that gets control back after an overlay silenced it is told which task it holds, if any."""
 
     name = "tasks.where-you-stand"

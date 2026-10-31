@@ -3,7 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.task_write_count import TaskWriteCount
 
-UNLOGGED_WRITE_LIMIT = 50
+UNLOGGED_WRITES_CEILING = 50
 
 
 class UnloggedWriteLimit(DriverRule):
@@ -23,6 +23,6 @@ class UnloggedWriteLimit(DriverRule):
         if counted is None:
             return RuleAnswer.allowed()
         current, writes = counted
-        if writes < UNLOGGED_WRITE_LIMIT:
+        if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"{UNLOGGED_WRITE_LIMIT} writes since you logged {current.name}: writes wait for journal task log {current.task.id} \"<what was done>\"")
+        return RuleAnswer.refused(f"{UNLOGGED_WRITES_CEILING} writes since you logged {current.name}: writes wait for journal task log {current.task.id} \"<what was done>\"")

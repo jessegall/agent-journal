@@ -17,10 +17,10 @@ class DriversTables(Migration):
         "CREATE INDEX hook_calls_created ON hook_calls (created_at)",
         "CREATE TABLE agent_lines (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE RESTRICT,"
         " hook_call_id INTEGER REFERENCES hook_calls(id) ON DELETE RESTRICT, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
-        " text TEXT NOT NULL, source TEXT NOT NULL DEFAULT '', state TEXT NOT NULL DEFAULT 'waiting', given_at TEXT," + COMMON,
+        " text TEXT NOT NULL, source TEXT NOT NULL DEFAULT '', state TEXT NOT NULL DEFAULT 'waiting', delivered_at TEXT," + COMMON,
         "CREATE INDEX agent_lines_waiting ON agent_lines (agent_id, state, id)",
         "CREATE TABLE rule_histories (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE RESTRICT,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, rule TEXT NOT NULL, layer TEXT NOT NULL DEFAULT '',"
-        " last_seen TEXT NOT NULL DEFAULT 'asked', last_spoke_at TEXT," + COMMON,
+        " last_sighting TEXT NOT NULL DEFAULT 'consulted', last_answer_at TEXT," + COMMON,
         "CREATE UNIQUE INDEX rule_histories_rule ON rule_histories (agent_id, rule, layer)",
     )

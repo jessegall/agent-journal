@@ -13,7 +13,7 @@ def test_a_tick_on_which_nothing_is_said_is_not_kept_but_its_history_is(new_stor
     story.expect_text(f"rule-history list --agent {story.agent.id}", "samples.return-line")
 
 
-def test_a_prune_keeps_rule_history_and_deletes_only_given_lines_with_their_hook_calls(new_story):
+def test_a_prune_keeps_rule_history_and_deletes_only_delivered_lines_with_their_hook_calls(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.run(f'agent-line make {story.agent.id} "an old line"')
     story.hook("s-1", HookSamples.prompt("go on"))
