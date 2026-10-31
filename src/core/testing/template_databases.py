@@ -6,7 +6,7 @@ from core.base.journal_container import opened_container
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
-from tests.stories.builder.manual_clock import ManualClock
+from core.testing.manual_clock import ManualClock
 from core.base.clock import Clock
 
 

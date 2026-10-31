@@ -1,5 +1,7 @@
 from core.base.change.change import Change
+from core.base.change.logged_event import LoggedEvent
 from core.base.guard.guard import Guard
+from core.base.listener.commit_listener import CommitListener
 from core.base.model.model import Model
 from core.base.module.module import Module
 from core.base.refusal import Refusal
@@ -22,3 +24,21 @@ class ProtectedTasksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ("tasks",)
     guards = ("tests.stories.plans.samples:ProtectedTaskGuard",)
+
+
+class FailingWorkerNotice(CommitListener):
+    """Stands in for telling a worker its task was cancelled, and always fails, so a story sees the event skipped
+    after three failures while the cancel stands."""
+
+    name = "samples.failing-worker-notice"
+    event = "task.cancel"
+
+    def handle(self, event: LoggedEvent) -> None:
+        raise ConnectionError(f"the worker on task {event.row_id} cannot be reached")
+
+
+class FailingNoticeModule(Module):
+    name = "failing-notice"
+    requires_core = ">=5,<6"
+    dependencies = ("tasks",)
+    listeners = ("tests.stories.plans.samples:FailingWorkerNotice",)
