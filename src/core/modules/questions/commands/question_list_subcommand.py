@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.questions.models.question import Question
 from core.modules.questions.queries.question_query import QuestionQuery
 
@@ -26,7 +27,7 @@ class QuestionListSubcommand(ReadSubcommand[tuple[Question, ...]]):
         return tuple(query.oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
-        if not isinstance(value, tuple):
+        if not is_tuple(value):
             return
         questions = [row for row in value if isinstance(row, Question)]
         for question in questions:
