@@ -16,10 +16,10 @@ def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
-    the server's whole life or, for a while, by a helper; its pid file; and the maintenance mark a change of
-    the code keeps while the server is stopped, which tells a client to start none. Only the server that
-    keeps the lock removes a leftover socket, and a stopping server removes the socket and pid file only
-    while the pid file still names it."""
+    the server's whole life or, for a while, by a helper; its pid file and the pid of the tunnel program it
+    started; and the maintenance mark a change of the code keeps while the server is stopped, which tells a
+    client to start none. Only the server that keeps the lock removes a leftover socket, and a stopping server
+    removes the socket and pid file only while the pid file still names it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)
@@ -27,6 +27,7 @@ class ServerFiles:
         self.pid_file = home.folder / "server.pid"
         self.log = home.folder / "runtime" / "server.log"
         self.maintenance = home.folder / "maintenance"
+        self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
 
     def acquire_lock(self) -> bool:
@@ -76,6 +77,16 @@ class ServerFiles:
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with self.log.open("a") as log:
             log.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} {text}\n")
+
+    def write_tunnel_pid(self, pid: int) -> None:
+        self.tunnel_pid_file.write_text(str(pid))
+
+    def tunnel_pid(self) -> int | None:
+        text = self.tunnel_pid_file.read_text().strip() if self.tunnel_pid_file.is_file() else ""
+        return int(text) if text.isdigit() else None
+
+    def clear_tunnel_pid(self) -> None:
+        self.tunnel_pid_file.unlink(missing_ok=True)
 
     def mark_maintenance(self) -> None:
         self.maintenance.write_text(str(os.getpid()))

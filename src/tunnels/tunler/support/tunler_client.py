@@ -1,15 +1,21 @@
 import json
+import os
 import shutil
+import signal
 import subprocess
+import time
 from pathlib import Path
 
 from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from core.base.tunnel.tunnel_state import TunnelState
+from server.server_files import ServerFiles
 from tunnels.tunler.support.tunler_status import TunlerStatus
 
 TUNLER_PATHS = (Path.home() / ".local" / "bin" / "tunler", Path.home() / "go" / "bin" / "tunler")
 STATUS_LIMIT_SECONDS = 10
+LEFTOVER_LIMIT_SECONDS = 5
+POLL_SECONDS = 0.05
 CONNECTED_PREFIX = "tunnel up: "
 
 
@@ -19,6 +25,7 @@ class TunlerClient:
 
     def __init__(self, home: JournalHome) -> None:
         self.log = home.status_folder / "tunler.log"
+        self.files = ServerFiles(home)
         self.process: ChildProcess | None = None
 
     def status(self) -> TunlerStatus:
@@ -36,10 +43,30 @@ class TunlerClient:
         command = self.command()
         if command is None:
             return
+        self.stop_leftover(command)
         self.stop()
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with self.log.open("wb") as log:
             self.process = ChildProcess(subprocess.Popen([command, str(port), f"--domain={subdomain}"], stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL))
+        self.files.write_tunnel_pid(self.process.pid)
+
+    def stop_leftover(self, command: str) -> None:
+        """Stops the tunler a server that was killed left running, found by the pid kept beside the server's, only when
+        that pid still runs the tunler program."""
+        pid = self.files.tunnel_pid()
+        self.files.clear_tunnel_pid()
+        if pid is None or command not in self.command_line(pid):
+            return
+        os.kill(pid, signal.SIGTERM)
+        deadline = time.monotonic() + LEFTOVER_LIMIT_SECONDS
+        while command in self.command_line(pid) and time.monotonic() < deadline:
+            time.sleep(POLL_SECONDS)
+        if command in self.command_line(pid):
+            os.kill(pid, signal.SIGKILL)
+
+    @staticmethod
+    def command_line(pid: int) -> str:
+        return subprocess.run(["ps", "-o", "command=", "-p", str(pid)], capture_output=True, text=True, check=False).stdout.strip()
 
     def state(self) -> TunnelState:
         if not self.running():
@@ -58,6 +85,7 @@ class TunlerClient:
         if self.process is not None:
             self.process.stop(STATUS_LIMIT_SECONDS)
         self.process = None
+        self.files.clear_tunnel_pid()
 
     def running(self) -> bool:
         return self.process is not None and self.process.running()
