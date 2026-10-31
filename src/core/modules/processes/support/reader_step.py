@@ -38,12 +38,12 @@ class ReaderStep:
         if reader.type is ReaderType.SCRIPT:
             return self.script_advance(process, output, reader, is_final)
         raw = self.folder.bytes_after(process.id, output.read_offset)
-        fresh = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
-        if not fresh:
+        ready_bytes = raw if is_final else raw[: raw.rfind(NEWLINE) + 1]
+        if not ready_bytes:
             return None
-        text = fresh.decode(errors="replace")
+        text = ready_bytes.decode(errors="replace")
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
-        return ReaderAdvance(self.run.lines(reader, text, process.state.value, output.read_lines + 1), output.read_offset + len(fresh), output.read_lines + counted,
+        return ReaderAdvance(self.run.lines(reader, text, process.state.value, output.read_lines + 1), output.read_offset + len(ready_bytes), output.read_lines + counted,
                              self.run.summary(reader, text) or output.reader_summary, self.run.progress(reader, text, output.progress))
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
