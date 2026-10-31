@@ -6,6 +6,7 @@ import subprocess
 from tests.install.support import INSTALL, TIMEOUT_SECONDS, Scratch
 from tests.install.test_release_archive import release_with_archive
 from tests.install.test_upgrade_script import content, upgrade, version_four_project
+from tests.stories.fixtures.version_four import version_four_fixture
 
 VERSION_FOUR_HOOK = "test -f {root}/.journal/src/journal/hooks/hook.sh && exec sh {root}/.journal/src/journal/hooks/hook.sh claude {root}; exit 0"
 HOOK_EVENTS = ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "Stop")
@@ -106,3 +107,14 @@ def test_the_messages_version_4_had_queued_are_in_version_5_after_the_switch(tmp
     finally:
         connection.close()
     assert moved == 2
+
+
+def test_a_version_4_journal_that_appears_again_after_the_upgrade_is_refused_plainly_and_the_backup_is_kept(tmp_path):
+    scratch = version_four_project(tmp_path)
+    assert upgrade(scratch, "--yes").returncode == 0
+    backup = next((scratch.journal / "version-4").rglob("journal.db"))
+    backup_content = content(backup)
+    version_four_fixture(scratch.journal / "journal.db", with_rows=False)
+    run = upgrade(scratch, "--yes")
+    assert run.returncode == 1 and "a version 4 journal.db is in" in run.stdout and "again after the upgrade finished" in run.stdout and "Nothing was changed" in run.stdout
+    assert content(backup) == backup_content and (scratch.journal / "journal.db").is_file()

@@ -24,6 +24,7 @@ from install.code_replacement import CodeReplacement
 from install.hook_switch import HookSwitch
 from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
+from install.stray_version_four_error import StrayVersionFourError
 from install.server_wont_stop_error import ServerWontStopError
 from install.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
@@ -69,7 +70,7 @@ class UpgradeJournal:
                 CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines)])
         except UpgradeFailedError as error:
             return self.kept(UpgradeOutcome(1, "\n".join([*lines, str(error), *self.failure(error)])))
-        except (BackupMismatchError, BackupWriteError, ServerWontStopError) as error:
+        except (BackupMismatchError, BackupWriteError, ServerWontStopError, StrayVersionFourError) as error:
             return UpgradeOutcome(1, "\n".join([*lines, str(error)]))
         return self.kept(UpgradeOutcome(0, "\n".join(lines)), dry_run)
 
@@ -127,6 +128,10 @@ class UpgradeJournal:
         container = synced_container(self.home)
         try:
             finished = self.is_finished(container.get(Database), container.get(Registry))
+            if finished and (self.home.folder / DATABASE).is_file():
+                raise StrayVersionFourError(f"a version 4 journal.db is in {self.home.folder} again after the upgrade finished: another machine or session still ran "
+                                            f"version 4 on this project. Its rows are not moved and the backup is kept as it is; stop version 4 there and move that "
+                                            f"journal.db aside, or run journal upgrade --restore to go back to version 4. Nothing was changed")
             if not finished:
                 backup = VersionFourBackup(self.home.folder).make()
                 lines.extend([f"backup: {backup.path}", f"backup checked: {backup.tables} tables"])
