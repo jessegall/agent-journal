@@ -42,11 +42,17 @@ class HookEndpoint:
         try:
             return container.get(HookRoute).answer(event)
         except sqlite3.OperationalError as error:
-            return HookReply.allowed(f"the journal let this through unchecked: {error}")
+            if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
+                return HookReply.allowed(f"the journal let this through unchecked: {error}")
+            return self.failure(error)
         except Exception as error:
-            self.context.files.log_line("".join(traceback.format_exception(error)))
-            return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
+            return self.failure(error)
         finally:
             database.close()
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
+
+    def failure(self, error: Exception) -> HookReply:
+        self.context.files.log_line("".join(traceback.format_exception(error)))
+        return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
+
