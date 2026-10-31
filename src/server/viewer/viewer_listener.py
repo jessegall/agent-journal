@@ -8,6 +8,7 @@ from server.viewer.viewer_request_handler import ViewerRequestHandler
 
 VIEWER_ADDRESS = "127.0.0.1"
 STOP_LIMIT_SECONDS = 10.0
+STOP_POLL_SECONDS = 0.05
 
 
 class ViewerListener(ThreadingHTTPServer):
@@ -19,7 +20,7 @@ class ViewerListener(ThreadingHTTPServer):
     def __init__(self, login: ViewerLogin, line_route: LineRoute, event_stream: EventStream) -> None:
         super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
         self.login, self.line_route, self.event_stream = login, line_route, event_stream
-        self.thread = threading.Thread(target=self.serve_forever, name="viewer", daemon=True)
+        self.thread = threading.Thread(target=self.serve, name="viewer", daemon=True)
 
     @property
     def port(self) -> int:
@@ -28,6 +29,9 @@ class ViewerListener(ThreadingHTTPServer):
     @property
     def host(self) -> str:
         return f"{VIEWER_ADDRESS}:{self.port}"
+
+    def serve(self) -> None:
+        self.serve_forever(STOP_POLL_SECONDS)
 
     def start(self) -> None:
         self.thread.start()
