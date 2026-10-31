@@ -5,6 +5,7 @@ from server.code_version import CodeVersion
 from server.hook.hook_database import HookDatabase
 from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
+from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_listener import ViewerListener
 
 HOOK_LIMIT_SECONDS = 3.0
@@ -23,4 +24,5 @@ class ServerContext:
     listener_thread: ListenerThread
     hook_database: HookDatabase
     viewer: ViewerListener
+    tunnel: ServerTunnel
     hook_limit_seconds: float = HOOK_LIMIT_SECONDS

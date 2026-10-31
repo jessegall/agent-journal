@@ -26,6 +26,7 @@ from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.setting.setting_group import SettingGroup
 from core.base.setting.setting_value import SettingValue
+from core.base.tunnel.tunnel import Tunnel
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -61,6 +62,7 @@ class Module:
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
     settings: ClassVar[Sequence[SettingGroup | SettingValue]] = ()
+    tunnels: ClassVar[Sequence[type[Tunnel]]] = ()
     skills: ClassVar[Sequence[SkillDeclaration]] = ()
     seeders: ClassVar[Sequence[type[Seeder]]] = ()
 

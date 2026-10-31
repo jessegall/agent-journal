@@ -16,6 +16,7 @@ from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.setting_entry import SettingEntry
+from core.base.registry.tunnel_entry import TunnelEntry
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
@@ -50,6 +51,7 @@ class Registry:
     docks: tuple[DockEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
+    tunnels: tuple[TunnelEntry, ...] = ()
     skills: tuple[SkillEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
@@ -90,6 +92,7 @@ class Registry:
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
+            tunnels=tuple(TunnelEntry(tunnel["name"], DottedPath(tunnel["path"]), tunnel["module"], tunnel["title"]) for tunnel in entries.get("tunnels", [])),
             skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
@@ -123,6 +126,7 @@ class Registry:
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
+            "tunnels": [{"name": tunnel.name, "path": tunnel.path.text, "module": tunnel.module, "title": tunnel.title} for tunnel in self.tunnels],
             "skills": [asdict(skill) for skill in self.skills],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)

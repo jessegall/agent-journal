@@ -48,6 +48,7 @@ from core.base.module.sync_report import SyncReport
 from core.base.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
 from core.base.registry.setting_tree import SettingTree
+from core.base.registry.tunnel_entry import TunnelEntry
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
@@ -117,6 +118,7 @@ class ModuleSync:
             docks=self.docks(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
+            tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),
             skills=self.skills(modules),
         )
 

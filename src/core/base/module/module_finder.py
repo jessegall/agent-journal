@@ -8,12 +8,13 @@ from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
 from core.base.type_guards import is_list, is_tuple
 
-DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES")]
+DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES"), DottedPath("tunnels:DEFAULT_TUNNELS")]
 
 
 class ModuleFinder:
-    """Finds the modules to load: the core's default modules, the suites shipped beside the core, then the plugins
-    the project's modules.json lists, each refused if it needs a core version this core is not."""
+    """Finds the modules to load: the core's default modules, the suites and the tunnels shipped beside the
+    core, then the plugins the project's modules.json lists, each refused if it needs a core version this
+    core is not."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

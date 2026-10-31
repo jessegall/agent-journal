@@ -5,12 +5,12 @@
         "select": "type-declaration",
         "where": [
             {
-                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/[^/]+\\.py$"
+                "fileMatches": "(^|/)src/(suites|tunnels|core/modules)/[^/]+/[^/]+\\.py$"
             }
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/[a-z_]+_(module|suite)\\.py$"
+                "fileMatches": "(^|/)src/(suites|tunnels|core/modules)/[^/]+/[a-z_]+_(module|suite)\\.py$"
             },
             {
                 "testCode": true
