@@ -12,11 +12,14 @@ from core.base.seed.demo_error import DemoError
 ID_LINE = re.compile(r"^id: (\d+)$", re.MULTILINE)
 
 
+DEMO_ENVIRONMENT = "demo"
+
+
 class Demo:
     """What a seeder is given: the lines it may run, as a person or an agent would type them, the people and
     rows the seeders before it kept under a name, and the container for a command that has no line."""
 
-    def __init__(self, container: Container, environment: str = "demo") -> None:
+    def __init__(self, container: Container, environment: str = DEMO_ENVIRONMENT) -> None:
         self.container, self.environment = container, environment
         self.people: dict[str, Actor] = {}
         self.ids: dict[str, int] = {}

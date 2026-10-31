@@ -13,6 +13,7 @@ from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.phone_module_error import PhoneModuleError
+from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
@@ -81,7 +82,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
         if route.path == WINDOWS_ROUTE:
-            windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
+            try:
+                windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
+            except UnknownEnvironmentError as error:
+                self.answer(404, {"error": str(error)})
+                return
             self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
             return
         if route.path == WAITING_ROUTE:

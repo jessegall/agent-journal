@@ -11,7 +11,7 @@ def test_a_demo_starts_with_a_server_and_a_login_link_on_a_port_of_its_own(tmp_p
     scratch = DemoScratch(tmp_path)
     session = scratch.start()
     try:
-        link = re.fullmatch(r"http://127\.0\.0\.1:(\d+)/\?key=(\S+)", session.link)
+        link = re.fullmatch(r"http://127\.0\.0\.1:(\d+)/\?key=(\S+)&environment=demo", session.link)
         assert link is not None and DemoLink.is_allowed(int(link[1]))
         assert scratch.ask("GET", "/health")["status"] == "ok"
     finally:

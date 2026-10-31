@@ -9,6 +9,7 @@ from pathlib import Path
 
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
+from core.base.seed.demo import DEMO_ENVIRONMENT
 from core.base.seed.demo_link import DemoLink
 from core.modules.demo.support.unix_connection import UnixConnection
 
@@ -48,7 +49,7 @@ class DemoScratch:
         if not DemoLink.is_allowed(port):
             server.terminate()
             raise Refusal(f"the demo's viewer came up on port {port}, which belongs to the journals the team runs", "start it again")
-        return DemoSession(self.folder, server.pid, DemoLink.build(port, self.login_key()))
+        return DemoSession(self.folder, server.pid, DemoLink.build(port, self.login_key(), DEMO_ENVIRONMENT))
 
     def journal(self, arguments: list[str]) -> None:
         outcome = subprocess.run([sys.executable, str(SOURCE / "core" / "journal.py"), *arguments], cwd=self.folder, capture_output=True, text=True, timeout=STEP_SECONDS,

@@ -2,9 +2,11 @@ from core.base.database.database import Database
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
+from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.viewer_window import ViewerWindow
 
 
@@ -19,7 +21,11 @@ class WindowsRoute:
         container = synced_container(self.home)
         try:
             registry = container.get(Registry)
-            suite = container.get(SuiteChoice).suite(container.get(EnvironmentNames).environment_id(environment))
+            try:
+                environment_id = container.get(EnvironmentNames).environment_id(environment)
+            except Refusal as refusal:
+                raise UnknownEnvironmentError(refusal.reason) from refusal
+            suite = container.get(SuiteChoice).suite(environment_id)
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
         finally:
             container.get(Database).close()
