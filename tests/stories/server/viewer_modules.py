@@ -63,3 +63,11 @@ def test_the_windows_on_offer_carry_their_icon_float_size_options_and_count(new_
                      '{"control": "toggle", "default": false, "key": "flush", "label": "Flush"}',
                      '{"choices": [["week", "Week"], ["month", "Month"]], "control": "choice", "default": "week", "key": "range", "label": "Range"}'):
             story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text=text)
+
+
+def test_the_shell_reads_the_suites_presets_and_the_persons_saved_layouts(new_story):
+    with server_story(new_story(NOTES, fixture=UserJoined)) as story:
+        story.story.run("suite choose notes --environment main")
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["suite", "presets", "main", "home"], "environment": "main"}, 200, '"code": 0')
+        story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["person-preset", "list", "--page", "home"], "environment": "main"}, 200, '"code": 0')

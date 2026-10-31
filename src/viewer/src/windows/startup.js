@@ -15,8 +15,9 @@ export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, l
 export const readSession = async () => (await fetch("/api/session")).json();
 
 // what a page of windows needs to run: the catalogue, the shared subscriptions, the shell's own line and allowance
-// prompts, the face its session asks for once `opened` answers, and the environment's event stream, which feeds the catalogue, any
-// `listeners` given later, and the windows; `stop` ends the stream
+// prompts, the face its session asks for once `opened` answers, the reason the journal cannot run the shell's lines when it
+// cannot (`problem`), and the environment's event stream, which feeds the catalogue, any `listeners` given later, and the
+// windows; `stop` ends the stream
 export function startWindows({environment, catalogue = null, events = followEvents, session = readSession}) {
     const offers = catalogue || new WindowCatalogue(() => fetchWindowCatalogue(environment), readMarkDeclarations);
     const subscriptions = new WindowSubscriptions();
@@ -35,6 +36,10 @@ export function startWindows({environment, catalogue = null, events = followEven
         if (answer.type === "phone") navigator.serviceWorker?.register(PHONE_WORKER, {scope: "/"}).catch(() => {});
         return answer;
     });
+    const problem = shallowRef("");
+    shellLine(["suite", "current", environment]).then((answer) => {
+        if (!answer.ok && answer.failure !== "refused") problem.value = answer.error;
+    });
     offers.load();
-    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face, opened};
+    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face, opened, problem};
 }

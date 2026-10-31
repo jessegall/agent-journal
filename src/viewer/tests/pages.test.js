@@ -240,3 +240,14 @@ test("the full screen button draws the expand icon, not the plain dot, and at ph
     const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
     expect(source).toMatch(/\.reopen-module \{[^}]*white-space: nowrap;/);
 });
+
+test("a journal that cannot run the shell's lines says why above the page", async () => {
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 2, value: null, error: "the journal's modules changed: journal module sync"})}));
+    const {element} = await mount(HomePage);
+    expect(element.querySelector(".home-problem").textContent).toContain("the journal's modules changed: journal module sync");
+});
+
+test("a page whose suite is simply not chosen shows no problem", async () => {
+    const {element} = await mount(HomePage);
+    expect(element.querySelector(".home-problem")).toBeNull();
+});

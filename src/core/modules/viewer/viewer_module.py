@@ -34,9 +34,9 @@ from core.modules.viewer.models.window_permission import WindowPermission
 from core.modules.viewer.commands.support.window_setting_keys import VIEWER_SETTINGS
 from core.modules.viewer.upgrade.viewer_move import ViewerMove
 
-SHELL_RUNS = ["setting make", "viewer-layout save", "window allow"]
+SHELL_RUNS = ["setting make", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove"]
 SHELL_READS = ["environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
-               "window permissions", "suite current", "suite layout"]
+               "window permissions", "suite current", "suite layout", "suite presets", "person-preset list"]
 
 
 class ViewerModule(Module):
