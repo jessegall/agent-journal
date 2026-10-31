@@ -1,10 +1,7 @@
 import os
-import shlex
 import subprocess
 from pathlib import Path
 
-from core.testing.story import Story
-from tests.stories.core.support import story_lines as lines
 
 GIT_TIMEOUT_SECONDS = 30
 CHECKOUT_BRANCH = "main"
@@ -49,6 +46,9 @@ class GitRepository:
     def tip(self, branch: str) -> str:
         return self.git("rev-parse", f"refs/heads/{branch}").stdout.strip()
 
+    def changed(self, worker_id: int, name: str, text: str) -> None:
+        (self.worktree_folder(worker_id) / name).write_text(text)
+
     def worktree_folder(self, worker_id: int) -> Path:
         return self.folder / ".journal" / "worktrees" / ENVIRONMENT / f"worker-{worker_id}"
 
@@ -57,6 +57,15 @@ class GitRepository:
 
     def expect_branch_at(self, branch: str, commit: str) -> None:
         assert self.tip(branch) == commit, f"branch {branch} is at {self.tip(branch)!r}, not {commit}"
+
+    def expect_commit(self, branch: str, *message_lines: str) -> None:
+        message = self.git("log", "-1", "--format=%B", f"refs/heads/{branch}").stdout.splitlines()
+        missing = [line for line in message_lines if line not in message]
+        assert not missing, f"the last commit of {branch} has no line {missing}: {message}"
+
+    def expect_clean(self, worker_id: int) -> None:
+        status = self.git("status", "--porcelain", folder=self.worktree_folder(worker_id)).stdout
+        assert status == "", f"the worktree of worker {worker_id} holds uncommitted changes: {status}"
 
     def expect_checked_out(self, branch: str, folder: Path | None = None) -> None:
         head = self.git("symbolic-ref", "--short", "HEAD", folder=folder).stdout.strip()
@@ -82,17 +91,3 @@ class GitRepository:
         library = self.worktree_folder(worker_id) / name
         assert library.is_dir() and not library.is_symlink(), f"{library} is no copied folder"
         assert (library / file_name).read_text() == text, f"{library / file_name} does not hold {text!r}"
-
-
-def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH) -> GitRepository:
-    repository = GitRepository.made(story.home.folder.parent / "project")
-    branch_flag = f" --branch {branch}" if branch else ""
-    story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}{branch_flag}", f"folder: {repository.folder}")
-    return repository
-
-
-def expect_nothing_dispatched(story: Story, repository: GitRepository) -> None:
-    story.expect_success("worktree list", "nothing found")
-    story.expect_success("agent list --role worker", "nothing found")
-    story.expect_success(lines.TASK_DETAILS, "state: open")
-    repository.expect_nothing_cut()

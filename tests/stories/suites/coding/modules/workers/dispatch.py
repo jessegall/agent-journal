@@ -2,9 +2,8 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH, expect_nothing_dispatched, repository_environment
-
-DISPATCH = "worker dispatch 1"
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_nothing_dispatched, repository_environment
+from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 WORKER_START = "agent start s-2 claude worker --environment main"
 
 
@@ -12,7 +11,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
-    worker_id = story.new_row_id(DISPATCH, actor=story.agent)
+    worker_id = dispatched_worker(story).id
     story.expect_success(f"agent show {worker_id}", "role: worker", f"parent_id: {story.agent.id}")
     story.expect_success("worktree show 1", "state: cut", f"agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
                          f"branch: {repository.worker_branch(worker_id)}", f"base_branch: {ENVIRONMENT_BRANCH}", f"base_commit: {base_commit}")
