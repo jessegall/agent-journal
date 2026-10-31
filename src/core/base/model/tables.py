@@ -3,7 +3,7 @@ from core.base.model.table import Table
 
 
 class Tables:
-    """The Table of each model, worked out once per run and kept."""
+    """Keeps one Table per model, so each is worked out only once."""
 
     def __init__(self) -> None:
         self.built: dict[type[Model], Table] = {}

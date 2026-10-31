@@ -17,15 +17,14 @@ VIEWS = Statement("SELECT name FROM sqlite_master WHERE type = 'view'")
 
 @dataclass(frozen=True)
 class ModuleMigrations:
-    """One module's migrations, in the order the modules depend on one another."""
+    """The migrations of one module."""
 
     module: str
     migrations: tuple[Migration, ...]
 
 
 class Schema:
-    """All the work on the database's shape: each module's migrations not yet run, by module and number, in the
-    order of the modules' dependencies."""
+    """Brings the database's tables, views and checks up to date with the code."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         self.database, self.tables = database, tables
@@ -33,7 +32,7 @@ class Schema:
     def migrate(self, ordered: tuple[ModuleMigrations, ...]) -> tuple[str, ...]:
         self.database.update(Statement(MIGRATIONS_TABLE))
         highest_numbers = {row["module"]: row["number"] for row in self.database.rows(LAST_NUMBERS)}
-        run_names = []
+        run_names: list[str] = []
         for module in ordered:
             pending = [migration for migration in sorted(module.migrations, key=lambda migration: migration.number) if migration.number > highest_numbers.get(module.module, 0)]
             for migration in pending:

@@ -36,3 +36,10 @@ else: no docstring inside a method, no comment inside a method, no docstring und
 
 Trace the name to where the thing is born and name it there for what it is. A docstring or a comment in a body goes;
 what it said goes into the name of the method, the field or a helper, or into the class's one line at the top.
+
+## Written for the reader
+
+A class's one line is written for a newcomer reading it cold: what the class is or does, in the words a person
+would use, never a summary of its fields. "A command that moves a row from one state to the next", not "A
+command that asks for one move of one row: the move, the row's id, and the move's own fields". A docstring line
+wraps at 110 characters (`long-docstring-line`). The same holds for every document written about the code.

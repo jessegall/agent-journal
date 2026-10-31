@@ -5,8 +5,7 @@ from core.base.database.statement import Statement
 
 
 class Migration:
-    """One change to the schema, run once by its module and number, statement by statement inside one transaction
-    with the row that records it."""
+    """One change to the database's tables, run once."""
 
     number: ClassVar[int]
     statements: ClassVar[tuple[str, ...]]

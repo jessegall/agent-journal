@@ -14,8 +14,7 @@ def listed(values: tuple[str, ...]) -> str:
 
 
 class Triggers:
-    """The triggers made from the models' own code: each lifecycle's inserts, moves and deletes, and each enum
-    column's values, dropped and made again at sync so the database holds the same rules as the code."""
+    """Creates the database triggers that enforce each model's lifecycle and allowed values."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         self.database, self.tables = database, tables
@@ -46,8 +45,8 @@ class Triggers:
 
     def enum_triggers(self, model: type[Model]) -> tuple[str, ...]:
         table = self.tables.table(model)
-        enums = {column: kind for column, kind in table.types.items() if isinstance(kind, type) and issubclass(kind, StrEnum) and column != STATE}
-        triggers = []
+        enums = {column: kind for column, kind in table.types.items() if issubclass(kind, StrEnum) and column != STATE}
+        triggers: list[str] = []
         for column, kind in enums.items():
             allowed = listed(tuple(member.value for member in kind))
             refusal = f"SELECT RAISE(ABORT, '{RULE_PREFIX}a {model.cli_noun}''s {column} is one of {', '.join(member.value for member in kind)}')"

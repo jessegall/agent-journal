@@ -5,8 +5,7 @@ from core.base.model.move import Move
 
 
 class Lifecycle:
-    """A model's states and the moves between them, the states a new row may start in, and the states in which it
-    may be edited or deleted. Each move is an attribute named as the move."""
+    """The states a row can be in and the moves allowed between them."""
 
     states: ClassVar[type[StrEnum]]
     initial: ClassVar[tuple[StrEnum, ...]]

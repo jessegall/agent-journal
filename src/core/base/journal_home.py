@@ -4,7 +4,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class JournalHome:
-    """The folder the journal keeps its own files in, and where each of them lives."""
+    """The folder where the journal keeps its files, and the paths inside it."""
 
     folder: Path
 

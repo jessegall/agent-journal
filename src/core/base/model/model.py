@@ -11,14 +11,12 @@ STATE = "state"
 
 
 class ModelFault(Exception):
-    """A model asked to change in a way its own code never may: a state set outside a move, or a move of another
-    lifecycle."""
+    """Raised when a model is changed in a way it never allows, such as setting its state directly."""
 
 
 @dataclass(frozen=True, kw_only=True)
 class Model:
-    """The base of every row: id, version, metadata and its two moments. A change is a copy with new values; a
-    state changes only through a move of the model's own lifecycle."""
+    """A row of the database as an object that cannot be changed in place; every change makes a copy."""
 
     name: ClassVar[str]
     cli_noun: ClassVar[str]

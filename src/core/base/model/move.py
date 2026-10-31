@@ -4,8 +4,7 @@ from enum import StrEnum
 
 @dataclass(frozen=True)
 class Move:
-    """One way a state may change: its name, which is its subcommand and its event, the states it starts from and
-    the state it leads to."""
+    """One step a row's state may take: from which states, to which state, and the name a person types for it."""
 
     name: str
     sources: tuple[StrEnum, ...]

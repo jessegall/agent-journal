@@ -1,10 +1,6 @@
-from typing import Generic, TypeVar
-
 import pytest
 
-from core.base.container import Container, MissingHint
-
-M = TypeVar("M")
+from core.base.container import Container, MissingHint, WrongInstance
 
 
 class Clockwork:
@@ -24,15 +20,6 @@ class Bell:
 class Unhinted:
     def __init__(self, something) -> None:
         self.something = something
-
-
-class Lookup(Generic[M]):
-    def __init__(self, model: type) -> None:
-        self.model = model
-
-
-class PlainLookup(Lookup[Clockwork]):
-    pass
 
 
 def test_each_class_is_built_once_with_what_its_constructor_asks_for():
@@ -63,8 +50,8 @@ def test_a_parameter_without_a_type_is_a_clear_fault():
         Container().get(Unhinted)
 
 
-def test_a_family_of_classes_is_built_by_its_provider_for_each_member_and_subclass():
+def test_a_value_bound_for_a_class_must_be_one_of_it():
     container = Container()
-    container.provide(Lookup, lambda built_by, kind: Lookup(kind))
-    assert container.get(Lookup[Clockwork]).model == Lookup[Clockwork]
-    assert container.get(PlainLookup).model is PlainLookup
+    container.instances[Clockwork] = "not a clockwork"
+    with pytest.raises(WrongInstance, match="Clockwork"):
+        container.get(Clockwork)

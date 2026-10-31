@@ -6,6 +6,8 @@ CORE_ACTOR_ID = 1
 
 
 class ActorType(StrEnum):
+    """The kinds of actor: a person, an agent, a module or the core."""
+
     USER = "user"
     AGENT = "agent"
     MODULE = "module"
@@ -14,7 +16,7 @@ class ActorType(StrEnum):
 
 @dataclass(frozen=True)
 class Actor:
-    """Who asks: a person, an agent, a module or the core, by the id of its row in actors."""
+    """Someone or something that makes a change: a person, an agent, a module or the core."""
 
     id: int
     type: ActorType

@@ -1,44 +1,44 @@
-from collections.abc import Callable
 from inspect import Parameter, signature
-from typing import TypeVar, get_origin, get_type_hints
+from typing import TypeVar, get_type_hints
 
 T = TypeVar("T")
 
 
+
 class MissingHint(Exception):
-    """A constructor parameter the container cannot build, because it names no type."""
+    """Raised when a class asks for something in its constructor without saying its type."""
 
     def __init__(self, kind: type, parameter: str) -> None:
         super().__init__(f"{kind.__name__}.__init__ gives no type for {parameter}, so the container cannot build it")
 
 
+class WrongInstance(Exception):
+    """Raised when the value stored for a class is not an instance of that class."""
+
+    def __init__(self, kind: type, instance: object) -> None:
+        super().__init__(f"the value bound for {kind.__name__} is a {type(instance).__name__}")
+
+
 class Container:
-    """Builds each class once from its constructor's type hints and keeps it; a parameter with a default is left
-    to it; a family of classes, such as every Query[M], is built by the provider registered for it."""
+    """Creates the objects the journal needs and hands each one out, creating it only once."""
 
     def __init__(self) -> None:
-        self.instances: dict[object, object] = {Container: self}
-        self.providers: dict[type, Callable[["Container", object], object]] = {}
+        self.instances: dict[type, object] = {Container: self}
 
-    def bind(self, kind: object, instance: object) -> None:
+    def bind(self, kind: type[T], instance: T) -> None:
         self.instances[kind] = instance
 
-    def provide(self, family: type, provider: Callable[["Container", object], object]) -> None:
-        self.providers[family] = provider
-
     def get(self, kind: type[T]) -> T:
-        if kind not in self.instances:
-            self.instances[kind] = self.built(kind)
-        return self.instances[kind]
+        instance = self.instances.get(kind)
+        if instance is None:
+            built = self.constructed(kind)
+            self.instances[kind] = built
+            return built
+        if isinstance(instance, kind):
+            return instance
+        raise WrongInstance(kind, instance)
 
-    def built(self, kind: object) -> object:
-        origin = get_origin(kind) or kind
-        family = next((family for family in getattr(origin, "__mro__", ()) if family in self.providers), None)
-        if family is not None:
-            return self.providers[family](self, kind)
-        return self.constructed(origin)
-
-    def constructed(self, kind: type) -> object:
+    def constructed(self, kind: type[T]) -> T:
         hints = get_type_hints(kind.__init__) if kind.__init__ is not object.__init__ else {}
         needed = [parameter.name for parameter in signature(kind.__init__).parameters.values()
                   if parameter.name != "self" and parameter.default is Parameter.empty and parameter.kind not in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD)]

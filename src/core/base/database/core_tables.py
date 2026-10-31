@@ -5,14 +5,13 @@ CORE_MODULE = "core"
 
 
 class CoreTables(Migration):
-    """The core's own bookkeeping, which no module owns: the event log, the commit listeners' cursors and skips,
-    the refusals, and the registry sync writes."""
+    """Creates the tables the core itself needs: the event log, listener bookkeeping, refusals and the registry."""
 
     number = 1
     statements = (
         "CREATE TABLE events (id INTEGER PRIMARY KEY, actor_id INTEGER NOT NULL, environment_id INTEGER, row_id INTEGER NOT NULL,"
         " name TEXT NOT NULL, row_table TEXT NOT NULL, command TEXT NOT NULL, cause_id INTEGER,"
-        " waivers TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(waivers)), data TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(data)),"
+        " skipped_guards TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(skipped_guards)), data TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(data)),"
         " created_at TEXT NOT NULL) STRICT",
         "CREATE INDEX events_row ON events (row_table, row_id, id)",
         "CREATE INDEX events_name ON events (name, id)",

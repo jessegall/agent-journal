@@ -5,8 +5,7 @@ from core.base.journal_home import JournalHome
 
 
 class FaultLog:
-    """Where a fault nobody expected is written whole, with its traceback, so the console can print one line that
-    names it."""
+    """Records unexpected errors in full, so the console can point to them in one line."""
 
     def __init__(self, home: JournalHome) -> None:
         self.path = home.fault_log

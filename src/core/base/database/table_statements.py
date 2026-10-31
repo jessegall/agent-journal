@@ -6,8 +6,7 @@ FIRST_VERSION = 1
 
 
 class TableStatements:
-    """The SQL of one model's table: insert a new row, update the changed fields of a row at the version it was
-    read at, delete it, and read it by id."""
+    """Writes the SQL to insert, update, delete and read the rows of one model's table."""
 
     def __init__(self, table: Table) -> None:
         self.table = table

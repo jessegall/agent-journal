@@ -1,5 +1,5 @@
 class Refusal(Exception):
-    """A command that cannot do what was asked: the reason, and the line that would work."""
+    """Raised when a command cannot be done, with the reason and what to do instead."""
 
     def __init__(self, reason: str, remedy: str = "") -> None:
         super().__init__(reason)

@@ -2,13 +2,13 @@ from core.base.refusal import Refusal
 
 
 class GuardRefusal(Refusal):
-    """A refusal a guard made, naming the guard and, when it has one, the flag that passes it knowingly."""
+    """A refusal from a guard, naming the guard and the flag that lets a person pass it."""
 
-    def __init__(self, guard: str, refusal: Refusal, waive_flag: str) -> None:
+    def __init__(self, guard: str, refusal: Refusal, skip_flag: str) -> None:
         super().__init__(refusal.reason, refusal.remedy)
-        self.guard, self.waive_flag = guard, waive_flag
+        self.guard, self.skip_flag = guard, skip_flag
 
     @property
     def text(self) -> str:
-        waive = f" (to pass it knowingly: {self.waive_flag})" if self.waive_flag else ""
-        return f"refused by {self.guard}: {super().text}{waive}"
+        skip = f" (to pass it knowingly: {self.skip_flag})" if self.skip_flag else ""
+        return f"refused by {self.guard}: {super().text}{skip}"

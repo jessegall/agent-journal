@@ -12,7 +12,7 @@ def test_not_found_names_the_noun_and_every_missing_id():
     assert MissingRows("task", (12, 14)).text == "no task 12, 14: journal task list shows what there is"
 
 
-def test_a_guard_refusal_names_its_guard_and_its_waiver_only_when_it_has_one():
+def test_a_guard_refusal_names_its_guard_and_its_skip_flag_only_when_it_has_one():
     reason = Refusal("message 5 already has your reply 9", "send it again only if it says something new")
     assert GuardRefusal("messages.one-reply-per-message", reason, "--confirm").text == (
         "refused by messages.one-reply-per-message: message 5 already has your reply 9: send it again only if it says something new (to pass it knowingly: --confirm)")

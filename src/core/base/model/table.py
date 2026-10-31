@@ -1,8 +1,8 @@
 import sqlite3
-import types
-from dataclasses import MISSING, Field, fields
+from dataclasses import MISSING, fields
+from types import NoneType, UnionType
 from enum import StrEnum
-from typing import Union, get_args, get_origin, get_type_hints
+from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from core.base.metadata import Metadata
 from core.base.model.model import Model
@@ -14,8 +14,7 @@ VOWELS = "aeiou"
 
 
 class Table:
-    """How a model is stored: each field one column of the same name, converted by its type, in the table named
-    for the model."""
+    """How a model maps to its database table and columns."""
 
     def __init__(self, model: type[Model], name: str, types: dict[str, type]) -> None:
         self.model, self.name, self.types = model, name, types
@@ -32,16 +31,15 @@ class Table:
         return tuple(self.types)
 
     @property
-    def model_fields(self) -> tuple[Field, ...]:
-        return tuple(field for field in fields(self.model) if field.name in self.types and field.name not in BASE_FIELDS)
-
-    @property
     def required_fields(self) -> tuple[str, ...]:
-        return tuple(field.name for field in self.model_fields if field.default is MISSING and field.default_factory is MISSING)
+        return tuple(field.name for field in fields(self.model) if self.is_model_field(field.name) and field.default is MISSING and field.default_factory is MISSING)
 
     @property
     def optional_fields(self) -> tuple[str, ...]:
-        return tuple(field.name for field in self.model_fields if field.name not in self.required_fields)
+        return tuple(field.name for field in fields(self.model) if self.is_model_field(field.name) and field.name not in self.required_fields)
+
+    def is_model_field(self, name: str) -> bool:
+        return name in self.types and name not in BASE_FIELDS
 
     def has_column(self, column: str) -> bool:
         return column in self.types
@@ -59,10 +57,16 @@ def plural(name: str) -> str:
     return name + ("es" if name.endswith(("s", "x", "sh", "ch")) else "s")
 
 
+class UnstorableType(Exception):
+    """Raised when a model has a field whose type cannot be stored in the database."""
+
+
 def plain_type(hint: object) -> type:
-    if get_origin(hint) in (Union, types.UnionType):
-        return next(arg for arg in get_args(hint) if arg is not type(None))
-    return hint
+    if get_origin(hint) in (Union, UnionType):
+        hint = next(arg for arg in get_args(hint) if arg is not NoneType)
+    if isinstance(hint, type):
+        return hint
+    raise UnstorableType(f"a field typed {hint} cannot be stored")
 
 
 def stored(value: object) -> object:
@@ -77,14 +81,14 @@ def stored(value: object) -> object:
     return value
 
 
-def loaded(kind: type, value: object) -> object:
+def loaded(kind: type, value: object) -> Any:
     if value is None:
         return None
-    if kind is Moment:
+    if kind is Moment and isinstance(value, str):
         return Moment.parsed(value)
-    if kind is Metadata:
+    if kind is Metadata and isinstance(value, str):
         return Metadata.parsed(value)
-    if isinstance(kind, type) and issubclass(kind, StrEnum):
+    if issubclass(kind, StrEnum) and isinstance(value, str):
         return kind(value)
     if kind is bool:
         return bool(value)

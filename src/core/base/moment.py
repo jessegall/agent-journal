@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 @dataclass(frozen=True, order=True)
 class Moment:
-    """A point in time, in UTC, to the microsecond; stored as text of one width, so it sorts as the time does."""
+    """A point in time, always in UTC and precise to the microsecond."""
 
     value: datetime
 

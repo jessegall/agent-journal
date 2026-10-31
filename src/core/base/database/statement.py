@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class Statement:
-    """SQL text and its parameters, in the order the text's placeholders take them."""
+    """A piece of SQL together with the values for its placeholders."""
 
     sql: str
     parameters: tuple[object, ...] = ()

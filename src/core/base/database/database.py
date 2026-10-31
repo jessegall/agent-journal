@@ -10,8 +10,7 @@ NESTING_LIMIT_LEVELS = 8
 
 
 class Database:
-    """The run's one SQLite connection: transactions that commit whole or roll back to the first error, and
-    savepoints for what is nested inside one."""
+    """The connection to the journal's database, with transactions that save everything or nothing."""
 
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
@@ -63,7 +62,10 @@ class Database:
         return statement.result(self.connection).fetchall()
 
     def insert(self, statement: Statement) -> int:
-        return statement.result(self.connection).lastrowid
+        row_id = statement.result(self.connection).lastrowid
+        if row_id is None:
+            raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
+        return row_id
 
     def update(self, statement: Statement) -> int:
         return statement.result(self.connection).rowcount

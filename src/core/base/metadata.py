@@ -8,7 +8,7 @@ EMPTY: Mapping[str, object] = MappingProxyType({})
 
 @dataclass(frozen=True)
 class Metadata:
-    """The metadata column of a row: what modules keep on it, each module under its own key, read-only."""
+    """Extra data modules attach to a row, each module under its own key."""
 
     values: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
 

@@ -12,8 +12,7 @@ REFERRERS = Statement("SELECT DISTINCT tables.name FROM sqlite_master AS tables,
 
 
 class ConstraintFault:
-    """Turns SQLite's constraint failures into refusals a person can act on; a failure it cannot read is raised
-    as the fault it is."""
+    """Turns a database rule violation into a refusal a person can understand."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
