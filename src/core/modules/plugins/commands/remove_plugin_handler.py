@@ -7,6 +7,7 @@ from core.modules.plugins.commands.remove_plugin import RemovePlugin
 from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class RemovePluginHandler(Handler[RemovePlugin, str]):
@@ -14,13 +15,14 @@ class RemovePluginHandler(Handler[RemovePlugin, str]):
 
     command = RemovePlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, repository: Repository) -> None:
-        self.plugins, self.folders, self.repository = plugins, folders, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository = plugins, folders, skill_files, repository
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
         UserActorCheck.check(context, "removes")
         plugin = self.plugins.find_name(command.name)
         self.repository.delete(plugin, context)
+        self.skill_files.withdraw(plugin.name)
         shutil.rmtree(self.folders.code(plugin.name), ignore_errors=True)
         if command.purge:
             shutil.rmtree(self.folders.data(plugin.name), ignore_errors=True)

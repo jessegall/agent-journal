@@ -10,4 +10,5 @@ class AddPluginOutput(Command[PluginOutput]):
 
     plugin_id: int
     environment_id: int
+    agent_id: int
     output: str

@@ -56,10 +56,10 @@ class PluginRule(DriverRule):
             if hook.event.accepts_lines:
                 for queued in PluginQueue(self.folders.data(plugin.name)).answers(hook.event.environment):
                     lines.extend([f"[plugin {plugin.name}] {queued.line}"] if queued.line else [])
-                    commands.extend([AddPluginOutput(plugin.id, hook.environment_id, queued.output)] if queued.has_output() else [])
+                    commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, queued.output)] if queued.has_output() else [])
             for event in [event for event in events if event.name in manifest.event_names]:
                 if event.name not in manifest.window_names():
-                    commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, event.name, json.dumps(dict(event.data))))
+                    commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, hook.agent_id, event.name, json.dumps(dict(event.data))))
                     continue
                 refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands)
                 if refusal:
@@ -78,7 +78,7 @@ class PluginRule(DriverRule):
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))
         if answer.has_output():
-            commands.append(AddPluginOutput(plugin.id, hook.environment_id, answer.output))
+            commands.append(AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
         if answer.is_refusal() and event.name in REFUSABLE_EVENTS and not journal_line:

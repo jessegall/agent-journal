@@ -1,13 +1,13 @@
 from typing import ClassVar
 
+from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.command.command import Command
-from core.base.change.logged_event import LoggedEvent
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.registry.registry import Registry
 from core.modules.drivers.models.hook_call import HookCall
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class SkillListener(CommitListener):
@@ -16,8 +16,8 @@ class SkillListener(CommitListener):
 
     module_name: ClassVar[str] = "journal.core.skills"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, registry: Registry) -> None:
-        self.bus, self.actors, self.queries, self.registry = bus, actors, queries, registry
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue) -> None:
+        self.bus, self.actors, self.queries, self.catalogue = bus, actors, queries, catalogue
 
     def call(self, event: LoggedEvent) -> HookCall:
         return self.queries.query(HookCall).find(event.row_id)

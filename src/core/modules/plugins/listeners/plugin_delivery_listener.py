@@ -57,7 +57,7 @@ class PluginDeliveryListener(CommitListener):
         if answer.line:
             PluginQueue(self.folders.data(plugin.name)).add(environment, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
-            self.record(event, delivery, AddPluginOutput(plugin.id, delivery.environment_id, answer.output))
+            self.record(event, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
 
     def record(self, event: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
         self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=delivery.environment_id)

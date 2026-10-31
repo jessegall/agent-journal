@@ -24,6 +24,6 @@ class KeywordSkillsListener(SkillListener):
         if self.queries.query(Agent).find(call.agent_id).role not in PROMPT_ROLES:
             return
         terms = text_keywords(call.summary)
-        for skill in self.registry.skills:
+        for skill in self.catalogue.skills():
             if any(keyword.lower() in terms for keyword in skill.keywords):
                 self.run(event, RequireSkill(call.agent_id, skill.folder))

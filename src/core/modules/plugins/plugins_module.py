@@ -45,7 +45,7 @@ class PluginsModule(Module):
 
     name = "journal.core.plugins"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills"]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT),
               ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT)]
     moves = [PluginsMove]

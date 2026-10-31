@@ -13,6 +13,7 @@ from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
@@ -21,8 +22,8 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
 
     command = InstallPlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, repository: Repository) -> None:
-        self.plugins, self.folders, self.repository = plugins, folders, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository = plugins, folders, skill_files, repository
 
     def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
         UserActorCheck.check(context, "installs")
@@ -33,6 +34,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             return PluginInstall(manifest, command.source, False)
         shutil.copytree(command.source, self.folders.code(manifest.name), dirs_exist_ok=True)
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
+        self.skill_files.publish(self.folders.code(manifest.name), manifest)
         self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source, release=manifest.version,
                                     files_digest=PluginDigest.digest(self.folders.code(manifest.name))), context)
         return PluginInstall(manifest, command.source, True)

@@ -2,11 +2,11 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.page import Page
-from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 class SkillListSubcommand(ReadSubcommand[tuple[SkillEntry, ...]]):
@@ -15,14 +15,14 @@ class SkillListSubcommand(ReadSubcommand[tuple[SkillEntry, ...]]):
     cli_name = "skill"
     name = "list"
 
-    def __init__(self, registry: Registry) -> None:
-        self.registry = registry
+    def __init__(self, catalogue: SkillCatalogue) -> None:
+        self.catalogue = catalogue
 
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> tuple[SkillEntry, ...]:
-        return self.registry.skills
+        return self.catalogue.skills()
 
     def write_output(self, value: object, output: Output) -> None:
         skills = [skill for skill in value if isinstance(skill, SkillEntry)] if is_tuple(value) else []

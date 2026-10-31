@@ -17,7 +17,7 @@ class SkillEventListener(SkillListener):
     def handle(self, event: LoggedEvent) -> None:
         if event.environment_id is None:
             return
-        called = [skill.folder for skill in self.registry.skills if any(EventPattern(pattern).matches(event.event) for pattern in skill.events)]
+        called = [skill.folder for skill in self.catalogue.skills() if any(EventPattern(pattern).matches(event.event) for pattern in skill.events)]
         for agent in self.queries.query(Agent).filter(environment_id=event.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows():
             for folder in called:
                 self.run(event, RequireSkill(agent.id, folder))

@@ -15,9 +15,11 @@ class PluginsTablesMigration(Migration):
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, key TEXT NOT NULL, value TEXT NOT NULL CHECK (json_valid(value)),"
         f" {ROW_COLUMNS}, UNIQUE (plugin_id, key)) STRICT",
         "CREATE TABLE plugin_deliveries (id INTEGER PRIMARY KEY, plugin_id INTEGER NOT NULL REFERENCES plugins(id) ON DELETE CASCADE,"
-        " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
+        " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,"
+        " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         f" event TEXT NOT NULL, data TEXT NOT NULL CHECK (json_valid(data)), {ROW_COLUMNS}) STRICT",
         "CREATE TABLE plugin_outputs (id INTEGER PRIMARY KEY, plugin_id INTEGER NOT NULL REFERENCES plugins(id) ON DELETE CASCADE,"
-        " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
+        " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,"
+        " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         f" output TEXT NOT NULL CHECK (json_valid(output)), {ROW_COLUMNS}) STRICT",
     )

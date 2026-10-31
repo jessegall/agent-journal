@@ -9,7 +9,7 @@ from core.modules.plugins.support.plugin_card import PluginCard
 @dataclass(frozen=True)
 class PluginAnswer:
     """What a plugin printed for an event, version 4's line out: allow, refuse with a reason, or tell a line, with
-    the cards it shows and the journal commands it runs; an empty output allows."""
+    the cards it shows, the journal commands it runs and the skills it requires; an empty output allows."""
 
     answer: str
     reason: str
@@ -17,6 +17,7 @@ class PluginAnswer:
     cards: tuple[PluginCard, ...]
     commands: tuple[str, ...]
     output: str
+    required_skills: tuple[str, ...]
 
     @classmethod
     def parsed(cls, output: str) -> "PluginAnswer":
@@ -27,9 +28,11 @@ class PluginAnswer:
             fields = {}
         cards: object = fields["cards"] if "cards" in fields else None
         commands: object = fields["commands"] if "commands" in fields else None
+        skills: object = fields["require_skills"] if "require_skills" in fields else None
         return cls(str(fields["answer"]) if "answer" in fields else "allow", cls.text(fields, "reason"), cls.text(fields, "tell"),
                    tuple(cls.card(entry) for entry in cards if is_mapping(entry)) if is_list(cards) else (),
-                   tuple(str(line) for line in commands) if is_list(commands) else (), last_line)
+                   tuple(str(line) for line in commands) if is_list(commands) else (), last_line,
+                   tuple(str(name) for name in skills) if is_list(skills) else ())
 
     @staticmethod
     def text(fields: Mapping[object, object], key: str) -> str:
@@ -40,7 +43,7 @@ class PluginAnswer:
         return PluginCard(cls.text(entry, "key"), cls.text(entry, "kind"), cls.text(entry, "label"), cls.text(entry, "tone"), cls.text(entry, "detail"))
 
     def has_output(self) -> bool:
-        return bool(self.cards or self.commands)
+        return bool(self.cards or self.commands or self.required_skills)
 
     def is_refusal(self) -> bool:
         return self.answer == "refuse"

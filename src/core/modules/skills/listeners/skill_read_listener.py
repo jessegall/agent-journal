@@ -18,6 +18,6 @@ class SkillReadListener(SkillListener):
         path = PurePath(call.summary)
         if call.tool == "" or path.name != SKILL_FILE:
             return
-        skill = next((entry for entry in self.registry.skills if entry.folder == path.parent.name), None)
+        skill = next((entry for entry in self.catalogue.skills() if entry.folder == path.parent.name), None)
         if skill is not None:
             self.run(event, LoadSkill(call.agent_id, skill.folder, skill.digest))

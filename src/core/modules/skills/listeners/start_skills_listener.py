@@ -4,11 +4,11 @@ from core.base.command.bus import Bus
 from core.base.driver.hook_event_name import HookEventName
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.registry.registry import Registry
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills
 
 START_ROLES = (AgentRole.MAIN, AgentRole.WORKER)
@@ -21,8 +21,8 @@ class StartSkillsListener(SkillListener):
     name = "skills.start"
     event = "hook_call.create"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, registry: Registry, start: StartSkills) -> None:
-        super().__init__(bus, actors, queries, registry)
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, catalogue: SkillCatalogue, start: StartSkills) -> None:
+        super().__init__(bus, actors, queries, catalogue)
         self.start = start
 
     def handle(self, event: LoggedEvent) -> None:

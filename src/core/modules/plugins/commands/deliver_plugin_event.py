@@ -10,5 +10,6 @@ class DeliverPluginEvent(Command[PluginDelivery]):
 
     plugin_id: int
     environment_id: int
+    agent_id: int
     event: str
     data: str

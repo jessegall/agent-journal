@@ -16,7 +16,7 @@ REQUIRED_FIELDS = ("name", "title", "version")
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
     version, the program run for each event, the events it takes and the ones it answers inside a window, the
-    settings its settings file lists, and the tone of each kind of card it shows."""
+    settings its settings file lists, the tone of each kind of card it shows, and the folder of its skills."""
 
     name: str
     title: str
@@ -27,6 +27,7 @@ class PluginManifest:
     settings: tuple[ManifestSetting, ...]
     files: tuple[str, ...]
     card_tones: Mapping[str, str]
+    skills_folder: str
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -43,7 +44,7 @@ class PluginManifest:
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
                    cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
-                   cls.read_card_tones(fields["cards"] if "cards" in fields else None))
+                   cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "")
 
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:

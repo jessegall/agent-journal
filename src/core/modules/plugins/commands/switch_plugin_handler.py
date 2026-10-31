@@ -7,6 +7,8 @@ from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
@@ -15,11 +17,16 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
 
     command = SwitchPlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, repository: Repository) -> None:
-        self.plugins, self.folders, self.repository = plugins, folders, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository = plugins, folders, skill_files, repository
 
     def handle(self, command: SwitchPlugin, context: Context) -> Plugin:
         UserActorCheck.check(context, "switches on" if command.enabled else "switches off")
         plugin = self.plugins.find_name(command.name)
-        digest = PluginDigest.digest(self.folders.code(plugin.name)) if command.enabled else plugin.files_digest
+        folder = self.folders.code(plugin.name)
+        if command.enabled:
+            self.skill_files.publish(folder, PluginManifest.read(folder))
+        else:
+            self.skill_files.withdraw(plugin.name)
+        digest = PluginDigest.digest(folder) if command.enabled else plugin.files_digest
         return self.repository.save(plugin.changed(enabled=command.enabled, files_digest=digest), context)

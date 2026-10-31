@@ -4,9 +4,9 @@ from pathlib import Path
 
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
-from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
 @dataclass(frozen=True)
@@ -25,14 +25,14 @@ class SkillShowSubcommand(ReadSubcommand[SkillText]):
     cli_name = "skill"
     name = "show"
 
-    def __init__(self, registry: Registry) -> None:
-        self.registry = registry
+    def __init__(self, catalogue: SkillCatalogue) -> None:
+        self.catalogue = catalogue
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("folder")
 
     def read(self, arguments: Namespace, caller: Caller) -> SkillText:
-        skill = next((entry for entry in self.registry.skills if entry.folder == arguments.folder), None)
+        skill = next((entry for entry in self.catalogue.skills() if entry.folder == arguments.folder), None)
         if skill is None:
             raise Refusal(f"no module declares the skill {arguments.folder}", "journal skill list shows the skills")
         return SkillText(skill.folder, skill.description, skill.digest, Path(skill.path).read_text())
