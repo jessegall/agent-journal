@@ -174,6 +174,22 @@ class ForegroundRun(DriverRule):
         return RuleAnswer.rewritten({str(field): value for field, value in tool_input.items() if field != "run_in_background"})
 
 
+class CodingRewrite(DriverRule):
+    """While samples.rewrite-coding is true, a second rule rewrites every shell line of the coding suite's agents."""
+
+    name = "samples.coding-rewrite"
+    hook = HookEventName.PRE_TOOL_USE
+    drivers = ["coding.*"]
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        if hook.event.tool is not None and hook.event.tool.shell is not None and self.settings.project_value("samples.rewrite-coding", False) is True:
+            return RuleAnswer.rewritten({"command": "sample-run"})
+        return RuleAnswer.allowed()
+
+
 class LockedEditRefusal(DriverRule):
     """An open edit lock refuses every edit."""
 
@@ -337,4 +353,4 @@ class SamplesModule(Module):
     suites = [SampleSuite, ControlSuite]
     drivers = [Lead, ControlLead]
     overlays = [EditLockOverlay]
-    driver_rules = [ReturnLine, FailingRule, EssentialClaim]
+    driver_rules = [ReturnLine, FailingRule, EssentialClaim, CodingRewrite]
