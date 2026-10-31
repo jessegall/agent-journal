@@ -2,6 +2,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.questions.commands.ask_question_handler import AskQuestionHandler
 from core.modules.questions.commands.ask_question_subcommand import AskQuestionSubcommand
+from core.modules.questions.guards.asked_by_the_main_agent_guard import AskedByTheMainAgentGuard
 from core.modules.questions.guards.options_name_the_actor_guard import OptionsNameTheActorGuard
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.models.question import Question
@@ -17,4 +18,4 @@ class QuestionsModule(Module):
     migrations = [QuestionsTablesMigration]
     subcommands = (AskQuestionSubcommand,)
     handlers = [AskQuestionHandler]
-    guards = [OptionsNameTheActorGuard]
+    guards = [AskedByTheMainAgentGuard, OptionsNameTheActorGuard]

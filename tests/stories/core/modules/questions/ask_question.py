@@ -25,4 +25,4 @@ def test_a_question_without_an_environment_is_refused(new_story):
 
 def test_the_user_cannot_ask(new_story):
     story = new_story(fixture=AgentStarted)
-    story.expect_refusal('question ask "Which database?" --environment main', "only an agent asks a question", actor=story.user)
+    story.expect_refusal('question ask "Which database?" --environment main', "nobody can answer a question asked from here", actor=story.user)

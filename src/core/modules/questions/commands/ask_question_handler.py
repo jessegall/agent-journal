@@ -1,4 +1,3 @@
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -16,8 +15,6 @@ class AskQuestionHandler(Handler[AskQuestion, Question]):
         self.repository = repository
 
     def handle(self, command: AskQuestion, context: Context) -> Question:
-        if context.actor.type is not ActorType.AGENT:
-            raise Refusal("only an agent asks a question", "an agent runs journal question ask")
         if context.environment_id is None:
             raise Refusal("a question needs an environment", "name it with --environment")
         if command.recommended and command.recommended not in command.options:
