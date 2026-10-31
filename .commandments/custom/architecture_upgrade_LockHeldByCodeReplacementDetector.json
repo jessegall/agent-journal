@@ -13,7 +13,7 @@
         ],
         "reject": [
             {
-                "fileMatches": "(^|/)src/install/(install_journal|version_four_files|version_four_backup|restore_version_four|upgrade_report_file|hook_writer)\\.py$"
+                "fileMatches": "(^|/)src/install/(install_journal|version_four_files|version_four_backup|restore_version_four|upgrade_report_file|hook_writer|hook_switch)\\.py$"
             },
             {
                 "testCode": true

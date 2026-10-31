@@ -5,6 +5,7 @@ from pathlib import Path
 
 from core.base.journal_home import JournalHome
 from install.code_replacement import CodeReplacement
+from install.hook_switch import HookSwitch
 from install.upgrade_outcome import UpgradeOutcome
 from install.version_four_backup import DATABASE, VersionFourBackup
 from install.version_four_files import CODE_FOLDER, VersionFourFiles
@@ -49,4 +50,5 @@ class RestoreVersionFour:
         retired = VersionFourFiles(self.home.folder).retired / CODE_FOLDER
         if retired.is_dir() and not (self.home.folder / CODE_FOLDER).exists():
             shutil.copytree(retired, self.home.folder / CODE_FOLDER)
-        lines.extend([f"version 5's database moved aside as version-5.{stamp}.db", f"version 4's journal.db restored from {backup}"])
+        lines.extend([f"version 5's database moved aside as version-5.{stamp}.db", f"version 4's journal.db restored from {backup}",
+                      *HookSwitch(self.home.folder.parent).restore()])

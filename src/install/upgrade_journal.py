@@ -21,6 +21,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch_error import BackupMismatchError
 from install.backup_write_error import BackupWriteError
 from install.code_replacement import CodeReplacement
+from install.hook_switch import HookSwitch
 from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
 from install.server_wont_stop_error import ServerWontStopError
@@ -138,6 +139,8 @@ class UpgradeJournal:
         retired = VersionFourFiles(self.home.folder).retire()
         if retired:
             lines.append(f"version 4's files moved into {self.home.folder / BACKUP_FOLDER}: {', '.join(retired)}")
+        if not finished:
+            lines.extend(HookSwitch(self.home.folder.parent).switch())
         lines.append(FINISHED_LINE if finished else "upgraded")
 
     def finish(self, container: Container, report: UpgradeReport, lines: list[str]) -> None:

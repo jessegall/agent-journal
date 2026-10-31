@@ -1,5 +1,6 @@
 import json
 import shutil
+import sqlite3
 import subprocess
 
 from tests.install.support import INSTALL, TIMEOUT_SECONDS, Scratch
@@ -12,7 +13,7 @@ SETTINGS = ".claude/settings.local.json"
 KEPT_SETTING = {"permissions": {"allow": ["Bash(ls:*)"]}}
 
 
-def hooked_version_four_project(tmp_path) -> Scratch:
+def version_four_project_with_hooks(tmp_path) -> Scratch:
     scratch = version_four_project(tmp_path)
     command = VERSION_FOUR_HOOK.format(root=scratch.project)
     settings = {**KEPT_SETTING, "hooks": {event: [{"hooks": [{"type": "command", "command": command}]}] for event in HOOK_EVENTS}}
@@ -50,7 +51,7 @@ def test_the_upgrade_of_a_copy_of_a_version_4_journal_moves_its_rows_and_keeps_t
 
 
 def test_the_upgrade_switches_the_hooks_to_version_5_and_keeps_the_rest_of_the_settings(tmp_path):
-    scratch = hooked_version_four_project(tmp_path)
+    scratch = version_four_project_with_hooks(tmp_path)
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
     commands = hook_commands(scratch)
@@ -60,7 +61,7 @@ def test_the_upgrade_switches_the_hooks_to_version_5_and_keeps_the_rest_of_the_s
 
 
 def test_the_restore_puts_version_4_and_its_hooks_back_and_sets_version_5_aside(tmp_path):
-    scratch = hooked_version_four_project(tmp_path)
+    scratch = version_four_project_with_hooks(tmp_path)
     original, hooks = content(scratch.journal / "journal.db"), hook_commands(scratch)
     assert upgrade(scratch, "--yes").returncode == 0
     run = upgrade(scratch, "--restore")
@@ -79,3 +80,29 @@ def test_the_upgrade_runs_from_the_release_package_with_no_code_beside_the_scrip
                          timeout=TIMEOUT_SECONDS)
     assert run.returncode == 0, run.stdout + run.stderr
     assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
+
+
+def run_hook(command: str, scratch: Scratch) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["sh", "-c", command], cwd=scratch.project, env={**scratch.environment(), "AGENT_JOURNAL_ACTIVE": "1"}, input="{}", capture_output=True,
+                          text=True, timeout=TIMEOUT_SECONDS)
+
+
+def test_a_hook_of_a_session_that_started_before_the_switch_and_one_after_it_both_end_quietly_with_no_server(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    old_commands = hook_commands(scratch)
+    assert upgrade(scratch, "--yes").returncode == 0
+    for command in (*old_commands, *hook_commands(scratch)):
+        finished = run_hook(command, scratch)
+        assert finished.returncode == 0 and finished.stdout == "" and finished.stderr == "", (command, finished.stdout, finished.stderr)
+    assert not (scratch.journal / "server.pid").exists()
+
+
+def test_the_messages_version_4_had_queued_are_in_version_5_after_the_switch(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    assert upgrade(scratch, "--yes").returncode == 0
+    connection = sqlite3.connect(f"{(scratch.journal / 'version-5.db').as_uri()}?mode=ro", uri=True)
+    try:
+        moved = connection.execute("SELECT count(*) FROM messages WHERE text IN ('Ship the cart today', 'Shipping it')").fetchone()[0]
+    finally:
+        connection.close()
+    assert moved == 2
