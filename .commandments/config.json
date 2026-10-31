@@ -58,6 +58,7 @@
         "architecture_chat_MarkShownByListenerDetector",
         "architecture_chat_NoRawMarkTypeDetector",
         "architecture_chat_MarkEnumsInEnumsFolderDetector",
+        "architecture_docking_DockOnlyByCommandDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
