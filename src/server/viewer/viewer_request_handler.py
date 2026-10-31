@@ -59,7 +59,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path == WINDOWS_ROUTE:
             windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
-            self.answer(200, {"windows": [asdict(window) for window in windows]})
+            self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
             return
         if route.path == EVENTS_ROUTE:
             self.answer_events(viewer.routes.event_stream, parse_qs(route.query))

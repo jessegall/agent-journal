@@ -1,8 +1,4 @@
-export const AGENT_VIEWS = ["chat", "feed", "terminal"];
-export const PANEL_VIEWS = ["waiting", "questions", "tasks", "plans"];
-export const VIEWS = [...AGENT_VIEWS, ...PANEL_VIEWS, "agents", "reviewer"];
 export const HEADER = 34;
-export const INSPECTOR_FEED = {lines: 5, flush: true, headers: false, collapse: false, editsOnly: false, removals: true, capped: false, columns: false};
 
 const WHOLE = {x: 0, y: 0, w: 1, h: 1};
 const EDGE_BAND = 0.25;
@@ -10,101 +6,13 @@ const EDGE_BAND = 0.25;
 const leaf = (id) => ({id});
 const split = (dir, r, a, b) => ({dir, r, a, b});
 
-export const fresh = () => ({
-    tree: split("row", 0.7, leaf(1), leaf(2)),
-    panes: {1: {tabs: ["chat"], active: "chat"}, 2: {tabs: [...PANEL_VIEWS], active: "waiting"}},
-    next: 3,
-});
+// one empty pane, which a suite's layout or a preset arranges
+export const fresh = () => ({tree: leaf(1), panes: {1: {tabs: [], active: ""}}, next: 2});
 
 const shaped = (tabs, active = tabs[0]) => ({tabs, active});
 
 export const FULL = "full";
 export const CONTAINED = "contained";
-
-export const DEFAULT_SHAPE = split("row", 0.7, shaped(["chat"]), shaped(PANEL_VIEWS));
-
-export const PRESETS = [
-    {key: "default", name: "Default", text: "Chat and side panels", shape: DEFAULT_SHAPE},
-    {
-        key: "jesse",
-        name: "Developer",
-        text: "A layout for developers",
-        shape: split(
-            "row",
-            0.62,
-            {...shaped(["chat"]), width: FULL, scheme: "journal"},
-            split(
-                "col",
-                0.74,
-                {
-                    ...shaped(["feed", "questions", "tasks"]),
-                    width: FULL,
-                    feed: {
-                        lines: 5,
-                        flush: true,
-                        headers: false,
-                        collapse: false,
-                        editsOnly: true,
-                        removals: true,
-                        capped: false,
-                        columns: false,
-                        size: 0,
-                    },
-                },
-                {...shaped(["terminal"]), width: FULL}
-            )
-        ),
-    },
-    {key: "zen", name: "Chat only", text: "Only the chat", shape: {...shaped(["chat"]), width: CONTAINED}},
-    {
-        key: "hacker",
-        name: "Terminal",
-        text: "Big terminal, small chat",
-        shape: split("row", 0.72, shaped(["terminal"]), shaped(["chat"])),
-    },
-    {key: "review", name: "Review", text: "Feed and chat", shape: split("row", 0.5, shaped(["feed"]), shaped(["chat"]))},
-    {
-        key: "watch",
-        name: "Monitor",
-        text: "Terminal, feed, notifications",
-        shape: split("row", 0.62, shaped(["terminal"]), split("col", 0.55, shaped(["feed"]), shaped(["waiting"]))),
-    },
-    {
-        key: "triage",
-        name: "Inbox",
-        text: "Chat, questions, tasks",
-        shape: split("row", 0.6, shaped(["chat"]), split("col", 0.5, shaped(["questions", "waiting"]), shaped(["tasks"]))),
-    },
-    {
-        key: "orchestrator",
-        name: "Agents",
-        text: "Agents",
-        shape: split("row", 0.34, shaped(["chat"]), shaped(["agents"])),
-    },
-];
-
-export const INSPECTOR_VIEWS = ["chat", "terminal", "transcript", "history", "feed", "tasks", "plan", "subagents", "skills"];
-
-const WORK_TABS = ["terminal", "feed", "tasks", "plan", "history", "subagents", "skills"];
-
-export const INSPECTOR_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(WORK_TABS));
-
-export const INSPECTOR_PRESETS = [
-    {key: "inspector-default", name: "Default", text: "The chat on the left, the rest on the right", shape: INSPECTOR_SHAPE},
-    {key: "inspector-chat", name: "Chat only", text: "One wide column", shape: shaped(["chat", "transcript", ...WORK_TABS])},
-    {
-        key: "inspector-terminal",
-        name: "Terminal",
-        text: "The terminal wide, the chat beside it",
-        shape: split("row", 0.62, shaped(["terminal", ...WORK_TABS.filter((v) => v !== "terminal")]), shaped(["chat", "transcript"])),
-    },
-    {
-        key: "inspector-review",
-        name: "File edits",
-        text: "What it changed, next to what it says",
-        shape: split("row", 0.5, shaped(["feed", ...WORK_TABS.filter((v) => v !== "feed")]), shaped(["chat", "transcript"])),
-    },
-];
 
 export function thumbnail(shape, box = {x: 0, y: 0, w: 1, h: 1}) {
     if (!shape.dir) return [{box, view: shape.active}];
@@ -221,32 +129,6 @@ export function wellShaped(layout) {
     if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return false;
     const tabs = leaves(layout.tree).flatMap((id) => (layout.panes[id] ? layout.panes[id].tabs : [null]));
     return tabs.every((window) => typeof window === "string") && new Set(tabs).size === tabs.length;
-}
-
-// a window added in a release, and the window whose pane it joins in a layout stored before it existed
-const JOINING_VIEWS = {plans: "tasks"};
-
-// a stored layout brought up to the views this release has: a view that no longer exists leaves its pane, and with whole a view the
-// layout does not yet place joins the first pane, so a release that adds or drops a view keeps the user's arrangement; a window new
-// since the layout was stored joins its neighbour's pane once, and the layout remembers the views it has known so a closed one stays closed
-export function adapted(layout, views, whole = false) {
-    if (!layout || !layout.tree || !layout.panes || !Number.isInteger(layout.next)) return layout;
-    const ids = leaves(layout.tree);
-    const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, pane]) => [id, {...pane, tabs: (pane.tabs || []).filter((view) => views.includes(view))}]));
-    const placed = [...ids.flatMap((id) => (panes[id] ? panes[id].tabs : [])), ...floating(layout).map((f) => f.view), ...elsewhere(layout).map((f) => f.view)];
-    const missing = whole ? views.filter((view) => !placed.includes(view)) : [];
-    if (missing.length && panes[ids[0]]) panes[ids[0]] = {...panes[ids[0]], tabs: [...panes[ids[0]].tabs, ...missing]};
-    joinNewViews(panes, ids, views, placed, layout.known || []);
-    return {...layout, panes, known: views, floats: floating(layout).filter((f) => views.includes(f.view)), away: elsewhere(layout).filter((f) => views.includes(f.view))};
-}
-
-function joinNewViews(panes, ids, views, placed, known) {
-    Object.entries(JOINING_VIEWS)
-        .filter(([view]) => views.includes(view) && !known.includes(view) && !placed.includes(view))
-        .forEach(([view, neighbour]) => {
-            const id = ids.find((each) => panes[each] && panes[each].tabs.includes(neighbour));
-            if (id) panes[id] = {...panes[id], tabs: [...panes[id].tabs, view]};
-        });
 }
 
 const kept = (layout, tree, panes, next) => ({
@@ -453,30 +335,3 @@ function zoneAt(box, x, y, filled) {
     const [side, gap] = Object.entries(near).sort((m, n) => m[1] - n[1])[0];
     return gap < EDGE_BAND ? side : "center";
 }
-
-export const WORKER_VIEWS = ["points", "transcript", "todos"];
-
-// the worker inspector's three columns, points, transcript and to-dos, a quarter of the room more for the points than the transcript
-export const WORKER_SHAPE = split("row", 0.44, shaped(["points"]), split("row", 0.62, shaped(["transcript"]), shaped(["todos"])));
-
-export const freshWorker = () => arranged({tree: leaf(1), panes: {1: {tabs: [], active: ""}}, next: 2}, WORKER_SHAPE).layout;
-
-export const freshInspector = () => arranged({tree: leaf(1), panes: {1: {tabs: [], active: ""}}, next: 2}, INSPECTOR_SHAPE).layout;
-
-export const WORKER_HOME_VIEWS = ["chat", "terminal", "feed", "transcript"];
-
-// a worker's home view: its chat and transcript on the left, its terminal and file edits on the right
-export const WORKER_HOME_SHAPE = split("row", 0.5, shaped(["chat", "transcript"]), shaped(["terminal", "feed"]));
-
-export const WORKER_HOME_PRESETS = [
-    {key: "worker-home-default", name: "Default", text: "Its chat on the left, its terminal and edits on the right", shape: WORKER_HOME_SHAPE},
-    {key: "worker-home-chat", name: "Chat only", text: "One wide column", shape: shaped(WORKER_HOME_VIEWS)},
-    {
-        key: "worker-home-review",
-        name: "File edits",
-        text: "What it changed, next to what it says",
-        shape: split("row", 0.5, shaped(["feed", "terminal"]), shaped(["chat", "transcript"])),
-    },
-];
-
-export const freshWorkerHome = () => arranged({tree: leaf(1), panes: {1: {tabs: [], active: ""}}, next: 2}, WORKER_HOME_SHAPE).layout;

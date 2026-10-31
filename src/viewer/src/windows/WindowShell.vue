@@ -22,7 +22,7 @@ const subscriptions = new WindowSubscriptions();
 const shellLine = (line) => lineResult(SHELL_WINDOW, line, props.environment);
 const prompts = new AllowancePrompts(shellLine);
 const listed = ref(props.layout ? [...props.layout] : []);
-const home = props.layout ? null : useHomeLayout(props.environment, shellLine);
+const home = props.layout ? null : useHomeLayout(props.environment, shellLine, catalogue);
 const panes = computed(() => {
     const layout = home?.layout.value;
     if (!layout) return listed.value.map((name, index) => ({id: index, tabs: [name], active: name}));

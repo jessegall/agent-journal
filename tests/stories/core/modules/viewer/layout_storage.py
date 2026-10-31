@@ -48,3 +48,10 @@ def test_another_person_reads_none_of_your_layouts(new_story):
     window = window_story(new_story)
     window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
     window.story.expect_refusal("viewer-layout current --suite notes --page home --environment main", "you saved no layout", actor=window.new_person("Bob"))
+
+
+def test_a_save_from_a_layout_loaded_at_an_older_version_is_refused_naming_the_newer_one(new_story):
+    window = window_story(new_story)
+    window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
+    window.story.expect_success(f"{SECOND_LAYOUT_SAVE} --base-version 1", "version: 2", actor=window.story.user)
+    window.story.expect_refusal(f"{LAYOUT_SAVE} --base-version 1", "the layout was saved again since version 1; it is at version 2", actor=window.story.user)

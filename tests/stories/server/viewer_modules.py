@@ -53,7 +53,7 @@ def test_the_windows_on_offer_carry_their_icon_float_size_options_and_count(new_
     with server_story(new_story(NOTES, fixture=UserJoined)) as story:
         story.story.run("suite choose notes --environment main")
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-        for text in ('"icon": "plan"', '"float_width": 440, "float_height": 380', '"count": "task list"',
+        for text in ('"person_id": ', '"icon": "plan"', '"float_width": 440, "float_height": 380', '"count": "task list"',
                      '{"control": "toggle", "default": false, "key": "flush", "label": "Flush"}',
                      '{"choices": [["week", "Week"], ["month", "Month"]], "control": "choice", "default": "week", "key": "range", "label": "Range"}'):
             story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text=text)

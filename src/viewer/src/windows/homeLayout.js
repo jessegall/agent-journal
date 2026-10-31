@@ -1,5 +1,4 @@
-import {ref} from "vue";
-import {LayoutStore} from "./layoutStore.js";
+import {paneLayout} from "./paneLayout.js";
 
 const HOME = "home";
 
@@ -17,36 +16,33 @@ export function mainDriver(drivers) {
 
 // the home page's layout for the environment's suite and main driver, read through the shell's own window line and
 // loaded again whenever a setting changes, so switching the suite or the driver brings that layout
-export function useHomeLayout(environment, shellLine) {
-    const layout = ref(null);
-    let key = null;
-    const store = new LayoutStore({
+export function useHomeLayout(environment, shellLine, catalogue) {
+    const store = paneLayout({
         saved: async ({suite, page, driver}) => {
             const answer = await shellLine(["viewer-layout", "current", "--suite", suite, "--page", page, "--driver", driver]);
-            return answer.ok ? JSON.parse(answer.value.layout) : null;
+            return answer.ok ? {layout: JSON.parse(answer.value.layout), version: answer.value.version} : null;
         },
         defaults: async ({page, driver}) => {
             const answer = await shellLine(["suite", "layout", environment, page, "--driver", driver]);
             return answer.ok ? arrangedShape(answer.value.shape) : null;
         },
-        save: (at, kept) => shellLine(["viewer-layout", "save", "--suite", at.suite, "--page", at.page, "--driver", at.driver, "--layout", JSON.stringify(kept)]),
+        save: async (at, kept, version) => {
+            const base = version === null ? [] : ["--base-version", String(version)];
+            const answer = await shellLine(["viewer-layout", "save", "--suite", at.suite, "--page", at.page, "--driver", at.driver, "--layout", JSON.stringify(kept), ...base]);
+            return answer.ok ? {ok: true, version: answer.value.version} : {ok: false, error: answer.error};
+        },
+        entry: (name) => catalogue.window(name),
     });
 
     async function load() {
         const run = await shellLine(["suite", "current", environment]);
         if (!run.ok) return;
-        key = {suite: run.value.suite, page: HOME, driver: mainDriver(run.value.drivers)};
-        layout.value = await store.layout(key);
+        await store.load({environment, person: catalogue.person, suite: run.value.suite, page: HOME, driver: mainDriver(run.value.drivers)});
     }
 
     function heard(event) {
-        if (event.event.startsWith("setting.")) load();
+        if (event.event.startsWith("setting.") || event.event.startsWith("viewer_layout.")) load();
     }
 
-    function keep(changed) {
-        layout.value = changed;
-        return store.keep(key, changed);
-    }
-
-    return {layout, load, heard, keep};
+    return {layout: store.layout, refusal: store.refusal, load, heard, keep: store.replace};
 }

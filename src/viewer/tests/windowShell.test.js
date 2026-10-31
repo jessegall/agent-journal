@@ -14,7 +14,7 @@ async function settled() {
 
 test("a registry sync asks for the windows again: a removed window shows as not installed and a new one joins the menu", async () => {
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "the line was refused"})}));
-    const answers = [[summary], [calendar]];
+    const answers = [{windows: [summary]}, {windows: [calendar]}];
     const catalogue = new WindowCatalogue(async () => answers.shift());
     let heard = null;
     const events = (environment, listener) => {
@@ -51,7 +51,7 @@ test("a hidden window's events wait, and it hears one refresh when it shows agai
 
 test("a page window of a module the journal does not ship shows how to trust its module until the person trusts it", async () => {
     const page = {name: "pages.board", module: "pages", title: "Board", entry_url: "/modules/pages/board.js?v=1", line: "", loading: "component", reads: [], runs: [], events: [], unavailable_reason: "", allowed: false};
-    const catalogue = new WindowCatalogue(async () => [page]);
+    const catalogue = new WindowCatalogue(async () => ({windows: [page]}));
     const access = {window: "pages.board", reads_allowed: "", reads_missing: "", runs_allowed: "", runs_missing: "", component_trusted: false};
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: access, error: ""})}));
     const element = document.createElement("div");
