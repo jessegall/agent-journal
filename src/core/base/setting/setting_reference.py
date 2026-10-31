@@ -1,4 +1,10 @@
+from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from core.base.module.setting_check import SettingCheck
+    from core.base.registry.setting_entry import SettingEntry
 
 
 @dataclass(frozen=True)
@@ -11,3 +17,12 @@ class SettingReference:
     @property
     def key(self) -> str:
         return self.group.rsplit(".", 1)[-1]
+
+    def declared(self, module_name: str, key: str, parent: str | None) -> Iterator["SettingEntry"]:
+        from core.base.registry.setting_entry import REFERENCE_TYPE, SettingEntry
+        from core.base.setting.setting_scope import SettingScope
+
+        yield SettingEntry(key, module_name, parent, self.key, self.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, False, (), False, True, self.group)
+
+    def checked(self, check: "SettingCheck", key: str) -> Iterator[str]:
+        return iter(())

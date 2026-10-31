@@ -1,9 +1,14 @@
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.type_guards import is_list, is_text_list, is_tuple
+
+if TYPE_CHECKING:
+    from core.base.module.setting_check import SettingCheck
+    from core.base.registry.setting_entry import SettingEntry
 
 SettingDefault = str | int | float | bool | tuple[str, ...] | tuple[int, ...] | None
 
@@ -41,3 +46,12 @@ class SettingValue:
             case SettingType.NUMBER_LIST:
                 items = list(value) if is_tuple(value) else value
                 return is_list(items) and all(isinstance(item, int) and not isinstance(item, bool) for item in items)
+
+    def declared(self, module_name: str, key: str, parent: str | None) -> Iterator["SettingEntry"]:
+        from core.base.registry.setting_entry import SettingEntry
+
+        yield SettingEntry(key, module_name, parent, self.title, self.description, self.type.value, None if self.secret else self.default, self.secret,
+                           self.scope.value, self.agent_writable, tuple(self.choices), False, True)
+
+    def checked(self, check: "SettingCheck", key: str) -> Iterator[str]:
+        return check.value_problems(self, key)
