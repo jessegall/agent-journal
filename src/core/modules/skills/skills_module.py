@@ -1,3 +1,7 @@
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.skills.migrations.m001_skills import SkillsTablesMigration
@@ -36,3 +40,5 @@ class SkillsModule(Module):
     listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener]
     marks = SKILL_MARKS
     driver_rules = [KeywordSkillsRule, SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
+                                 reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
