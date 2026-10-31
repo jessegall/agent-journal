@@ -25,6 +25,8 @@ type Options struct {
 	HeartbeatEvery time.Duration
 	CapCharacters  int
 	Detach         func(options Options)
+	// ShellAlive says whether the shell that started the runner still lives; when it is nil the runner watches its parent.
+	ShellAlive func() bool
 }
 
 // Run runs the line through the folder and returns the chain's exit code; a run that moves to the background
@@ -48,6 +50,10 @@ func Run(options Options, client Client, stdout io.Writer) int {
 	}
 	go waitForLeader(leader, folder)
 	go beat(folder, leader.Process.Pid, options.HeartbeatEvery)
+	if options.ShellAlive == nil {
+		parent := os.Getppid()
+		options.ShellAlive = func() bool { return os.Getppid() == parent }
+	}
 	follower := Follower{Options: options, Client: client, Folder: folder, Parts: len(parts), Reported: map[int]bool{}}
 	return follower.Run(stdout)
 }

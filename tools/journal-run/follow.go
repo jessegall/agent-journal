@@ -29,6 +29,9 @@ func (follower *Follower) Run(stdout io.Writer) int {
 		if code, ended := follower.Folder.End(); ended {
 			return follower.finish(stdout, code)
 		}
+		if !follower.Options.ShellAlive() {
+			return follower.lose(stdout)
+		}
 		limit := time.Duration(follower.Options.LimitSeconds) * time.Second
 		if limit > 0 && time.Since(started) >= limit {
 			return follower.move(stdout)
@@ -92,6 +95,23 @@ func (follower *Follower) finish(stdout io.Writer, code int) int {
 func (follower *Follower) startedOutput(position int) (string, bool) {
 	text := follower.Folder.Output(position)
 	return text, text != ""
+}
+
+// lose ends a run in the foreground whose own shell has died: its group is stopped and the process is lost, so nothing is
+// left running with no one to read it; the tick that finds a lost run late is only the backstop.
+func (follower *Follower) lose(stdout io.Writer) int {
+	if pid, known := follower.Folder.Pid(); known {
+		_ = syscall.Kill(-pid, syscall.SIGTERM)
+	}
+	for waited := time.Duration(0); waited < 2*time.Second; waited += pollInterval {
+		if _, ended := follower.Folder.End(); ended {
+			break
+		}
+		time.Sleep(pollInterval)
+	}
+	_ = follower.Client.Run("process", "lose", strconv.Itoa(follower.Options.Process))
+	fmt.Fprintf(stdout, "the shell of process %d is gone, so the run was stopped\n", follower.Options.Process)
+	return 1
 }
 
 // move leaves the shell running, tells the agent where its output will be and goes on in the background.
