@@ -7,6 +7,8 @@ from core.modules.agents.commands.start_agent_handler import StartAgentHandler
 from core.modules.agents.commands.start_agent_subcommand import StartAgentSubcommand
 from core.modules.agents.migrations.m001_agents import AgentsTableMigration
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
+from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -22,7 +24,7 @@ class AgentsModule(Module):
 
     name = "journal.core.agents"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     migrations = [AgentsTableMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler]
@@ -33,3 +35,5 @@ class AgentsModule(Module):
                                  events=["agent.*"]),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
                                  reads=["agent transcript", "hook-call list"], events=["hook_call.create"])]
+    listeners = [SubagentMarkListener]
+    marks = AGENT_MARKS
