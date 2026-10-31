@@ -2,6 +2,7 @@ package launch
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -46,6 +47,7 @@ type Journal interface {
 	Environments() ([]Environment, error)
 	Conversations(environment, program string) ([]Conversation, error)
 	MakeEnvironment(environment Environment) error
+	PrepareWorktree(folder, source string) error
 }
 
 // Request is what the command line asked for: the program, the project's folder, and a worktree when one is named.
@@ -173,8 +175,18 @@ func (menu *boot) useEnvironment(environment Environment) error {
 	if filepath.Dir(environment.Folder) != worktrees.Folder() {
 		return nil
 	}
-	_, err := worktrees.Prepare(filepath.Base(environment.Folder))
-	return err
+	return menu.prepared(worktrees, filepath.Base(environment.Folder))
+}
+
+// prepared cuts the launch worktree when it is missing and, once cut, has the journal give it the project's library
+// folders and run the worktree commands in it.
+func (menu *boot) prepared(worktrees Worktrees, name string) error {
+	_, missing := os.Stat(filepath.Join(worktrees.Folder(), name))
+	folder, err := worktrees.Prepare(name)
+	if err != nil || !os.IsNotExist(missing) {
+		return err
+	}
+	return menu.journal.PrepareWorktree(folder, menu.request.Root)
 }
 
 func (menu *boot) worktreeEnvironment(environments []Environment) error {
@@ -194,8 +206,8 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		name = worktrees.UnusedName(names)
 	}
 	name = UnheldName(name, working)
-	folder, err := worktrees.Prepare(name)
-	if err != nil {
+	folder := filepath.Join(worktrees.Folder(), name)
+	if err := menu.prepared(worktrees, name); err != nil {
 		return err
 	}
 	if indexOf(names, name) < 0 {

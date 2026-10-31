@@ -63,8 +63,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         base_commit = self.git.tip(environment.folder, environment.branch)
         try:
             self.git.cut(environment.folder, worktree)
-            self.libraries.place(environment.folder, worktree, links, copies)
-            self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id), (*links, *copies))
+            self.libraries.place(environment.folder, worktree.folder, links, copies)
+            self.commands.run(worktree.folder, worktree.branch, self.settings.texts(WORKTREE_COMMANDS, environment.id), (*links, *copies))
             worktree = self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
             self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Exception:

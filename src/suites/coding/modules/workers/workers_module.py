@@ -15,6 +15,8 @@ from suites.coding.modules.workers.listeners.released_stop_listener import Relea
 from suites.coding.modules.workers.listeners.worker_program_listener import WorkerProgramListener
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
+from suites.coding.modules.workers.commands.prepare_worktree_handler import PrepareWorktreeHandler
+from suites.coding.modules.workers.commands.prepare_worktree_subcommand import PrepareWorktreeSubcommand
 from suites.coding.modules.workers.commands.merge_worker_handler import MergeWorkerHandler
 from suites.coding.modules.workers.commands.merge_worker_subcommand import MergeWorkerSubcommand
 from suites.coding.modules.workers.commands.release_worker_handler import ReleaseWorkerHandler
@@ -58,8 +60,8 @@ class WorkersModule(Module):
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [WorkersTablesMigration, TodoItemsTableMigration]
     moves = [WorkersMove]
-    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler]
-    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
+    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler]
+    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
     listeners = [EndedWorkerListener, ReleasedStopListener, WorkerProgramListener]

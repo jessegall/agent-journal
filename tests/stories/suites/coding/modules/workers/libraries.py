@@ -43,3 +43,22 @@ def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
     (repository.folder / "vendor" / LIBRARY_FILE).chmod(0o644)
     story.expect_rows(outcome.code != 0)
     expect_clean_environment(story, repository)
+
+
+def test_a_launch_worktree_is_given_the_environments_library_folders_and_runs_the_worktree_commands(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
+    repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
+    story.expect_success("""setting make journal.suites.coding.workers.library-links '["node_modules"]' --environment main""", "key: journal.suites.coding.workers.library-links")
+    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
+    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo $JOURNAL_BRANCH > prepared.txt"]' --environment main""",
+                         "key: journal.suites.coding.workers.worktree-commands")
+    folder = repository.folder / ".claude" / "worktrees" / "cart"
+    repository.git("worktree", "add", "-b", "worktree-cart", str(folder))
+    story.expect_success(f"worktree prepare {folder} {repository.folder}", actor=story.user)
+    assert (folder / "node_modules").is_symlink() and (folder / "node_modules").resolve() == (repository.folder / "node_modules").resolve()
+    assert (folder / "vendor" / LIBRARY_FILE).read_text() == LIBRARY_TEXT and not (folder / "vendor").is_symlink()
+    assert (folder / "prepared.txt").read_text().strip() == "worktree-cart"
+    status = repository.git("status", "--porcelain", "--untracked-files=all", folder=folder).stdout
+    assert "node_modules" not in status and "vendor" not in status, status

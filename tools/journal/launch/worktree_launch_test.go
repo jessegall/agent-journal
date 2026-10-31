@@ -169,3 +169,22 @@ func TestTheWorktreeListMarksAWorktreeWhoseEnvironmentIsGoneAndRemoveIsRefusedWh
 		t.Fatal(err)
 	}
 }
+
+func TestAFreshLaunchWorktreeIsPreparedByTheJournalOnceAndAnExistingOneIsNot(t *testing.T) {
+	root := gitRepository(t)
+	journal := worktreeProject(root)
+	request := Request{Program: "claude", Root: root, Worktree: "cart", WorktreeGiven: true}
+	if _, err := Boot(journal, keys(enterPress, enterPress), request); err != nil {
+		t.Fatal(err)
+	}
+	want := [][2]string{{worktreeFolder(root, "cart"), root}}
+	if len(journal.prepared) != 1 || journal.prepared[0] != want[0] {
+		t.Fatalf("the journal was asked to prepare %v, not %v", journal.prepared, want)
+	}
+	if _, err := Boot(journal, keys(enterPress, enterPress), request); err != nil {
+		t.Fatal(err)
+	}
+	if len(journal.prepared) != 1 {
+		t.Fatalf("a worktree that was there already was prepared again: %v", journal.prepared)
+	}
+}

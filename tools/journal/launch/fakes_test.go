@@ -54,6 +54,7 @@ type fakeJournal struct {
 	environments  []Environment
 	conversations []Conversation
 	created       []Environment
+	prepared      [][2]string
 }
 
 func (journal *fakeJournal) Suites() ([]string, error) { return journal.suites, nil }
@@ -67,6 +68,11 @@ func (journal *fakeJournal) Conversations(environment, program string) ([]Conver
 func (journal *fakeJournal) MakeEnvironment(environment Environment) error {
 	journal.created = append(journal.created, environment)
 	journal.environments = append(journal.environments, environment)
+	return nil
+}
+
+func (journal *fakeJournal) PrepareWorktree(folder, source string) error {
+	journal.prepared = append(journal.prepared, [2]string{folder, source})
 	return nil
 }
 

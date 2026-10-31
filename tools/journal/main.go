@@ -52,7 +52,7 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 	if len(argv) > 0 && argv[0] == "launch" {
 		return LaunchProgram(home, argv[1:], stdout, stderr)
 	}
-	if len(argv) > 0 && argv[0] == "worktree" {
+	if len(argv) > 0 && argv[0] == "worktree" && !(len(argv) > 1 && argv[1] == "prepare") {
 		return WorktreeCommand(argv[1:], stdout, stderr)
 	}
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "stop" {

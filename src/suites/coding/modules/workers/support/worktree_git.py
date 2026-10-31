@@ -49,11 +49,11 @@ class WorktreeGit:
             self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
             raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
 
-    def exclude_file(self, worktree: Worktree) -> Path:
-        git_folder = Path(self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
+    def exclude_file(self, folder: str) -> Path:
+        git_folder = Path(self.checked(folder, GIT_LIMIT_SECONDS, "rev-parse", "--absolute-git-dir").stdout.strip())
         exclude_file = git_folder / WORKTREE_EXCLUDE_FILE
-        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
-        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
+        self.checked(folder, GIT_LIMIT_SECONDS, "config", "extensions.worktreeConfig", "true")
+        self.checked(folder, GIT_LIMIT_SECONDS, "config", "--worktree", "core.excludesFile", str(exclude_file))
         return exclude_file
 
     def remove(self, folder: str, worktree: Worktree) -> bool:
