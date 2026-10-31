@@ -36,8 +36,12 @@ var requiredTools = map[string][]string{
 	"claude": {"Bash", "Edit", "Write", "Read"},
 }
 
-// A home folder or an email address left in a body means it was not anonymised.
+// A home folder or an email address left in a text of a body means it was not anonymised.
 var personal = regexp.MustCompile(`/(?:Users|home)/[^/\s"]|[\w.+-]+@[\w-]+\.[a-z]{2,}`)
+
+// The private words the bodies were anonymised with, one a line; the file lives outside the repository, so the check
+// runs only on a machine that has it.
+const privateWordsFile = ".config/journal-hook/private-words"
 
 type corpusRow struct {
 	program string
@@ -52,16 +56,14 @@ type corpusSize struct {
 }
 
 func TestCorpusHasEveryEventAndTool(t *testing.T) {
-	if _, err := os.Stat(recordedFolder); os.IsNotExist(err) {
-		t.Skipf("%s is not recorded yet: task 4679 records it with cmd/anonymise once the port is checked", recordedFolder)
-	}
 	files, err := filepath.Glob(filepath.Join(recordedFolder, "*", "*.jsonl"))
 	if err != nil || len(files) == 0 {
 		t.Fatalf("no recorded bodies under %s", recordedFolder)
 	}
 	sizes := map[corpusRow]*corpusSize{}
+	words := privateWords(t)
 	for _, file := range files {
-		readRecording(t, file, sizes)
+		readRecording(t, file, sizes, words)
 	}
 	t.Log("\n" + sizeTable(sizes))
 	for program, events := range requiredEvents {
@@ -82,7 +84,44 @@ func TestCorpusHasEveryEventAndTool(t *testing.T) {
 	}
 }
 
-func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize) {
+func privateWords(t *testing.T) []string {
+	home, _ := os.UserHomeDir()
+	text, err := os.ReadFile(filepath.Join(home, privateWordsFile))
+	if err != nil {
+		t.Logf("no %s on this machine: the bodies are not checked for private words", privateWordsFile)
+		return nil
+	}
+	var words []string
+	for _, line := range strings.Split(string(text), "\n") {
+		if word := strings.TrimSpace(line); word != "" {
+			words = append(words, strings.ToLower(word))
+		}
+	}
+	return words
+}
+
+// texts gives every string value inside a decoded body.
+func texts(value any) []string {
+	switch value := value.(type) {
+	case string:
+		return []string{value}
+	case map[string]any:
+		var found []string
+		for _, inner := range value {
+			found = append(found, texts(inner)...)
+		}
+		return found
+	case []any:
+		var found []string
+		for _, inner := range value {
+			found = append(found, texts(inner)...)
+		}
+		return found
+	}
+	return nil
+}
+
+func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, words []string) {
 	t.Helper()
 	opened, err := os.Open(file)
 	if err != nil {
@@ -94,24 +133,30 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize) {
 	scanner.Buffer(make([]byte, 0, 1<<20), 64<<20)
 	for number := 1; scanner.Scan(); number++ {
 		line := scanner.Text()
-		var body struct {
-			HookEventName string `json:"hook_event_name"`
-			ToolName      string `json:"tool_name"`
-		}
+		var body map[string]any
 		if err := json.Unmarshal([]byte(line), &body); err != nil {
 			t.Errorf("%s:%d is not a JSON body: %v", file, number, err)
 			continue
 		}
-		for _, found := range personal.FindAllString(line, -1) {
-			if found != "someone@example.com" {
-				t.Errorf("%s:%d holds a personal path or address: %q", file, number, found)
+		for _, text := range texts(body) {
+			for _, found := range personal.FindAllString(text, -1) {
+				if found != "someone@example.com" {
+					t.Errorf("%s:%d holds a personal path or address: %q", file, number, found)
+				}
+			}
+			for _, word := range words {
+				if strings.Contains(strings.ToLower(text), word) {
+					t.Errorf("%s:%d holds a private word", file, number)
+				}
 			}
 		}
-		event, known := eventNames[body.HookEventName]
+		hookEventName, _ := body["hook_event_name"].(string)
+		toolName, _ := body["tool_name"].(string)
+		event, known := eventNames[hookEventName]
 		if !known {
-			event = body.HookEventName
+			event = hookEventName
 		}
-		row := corpusRow{program, event, body.ToolName}
+		row := corpusRow{program, event, toolName}
 		if sizes[row] == nil {
 			sizes[row] = &corpusSize{}
 		}
