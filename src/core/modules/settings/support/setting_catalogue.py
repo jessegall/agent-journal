@@ -3,19 +3,23 @@ from dataclasses import replace
 
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, SettingEntry
+from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE, SettingEntry
 
 
 class SettingCatalogue:
-    """The settings the installed modules declare, found by their full key, with the groups above each."""
+    """The settings the installed modules declare, found by their full key or by the key of a place a group is placed
+    at, with the groups above each."""
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry
 
     def entry(self, key: str) -> SettingEntry:
         for entry in self.registry.settings:
-            if entry.key == key:
+            if entry.key == key and entry.type != REFERENCE_TYPE:
                 return entry
+        for entry in self.registry.settings:
+            if entry.type == REFERENCE_TYPE and (key == entry.key or key.startswith(f"{entry.key}.")):
+                return self.entry(f"{entry.target}{key.removeprefix(entry.key)}")
         for entry in self.registry.settings:
             group = entry.key.removesuffix(f".{ANY_KEY}")
             if entry.key.endswith(f".{ANY_KEY}") and key.startswith(f"{group}."):
@@ -37,3 +41,6 @@ class SettingCatalogue:
 
     def all(self) -> tuple[SettingEntry, ...]:
         return self.registry.settings
+
+    def children(self, key: str) -> list[SettingEntry]:
+        return [entry for entry in self.registry.settings if entry.parent == key]

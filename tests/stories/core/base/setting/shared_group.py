@@ -17,7 +17,8 @@ def test_the_tree_shows_a_group_in_the_module_that_places_it_and_in_its_own(new_
     story = shared_story(new_story)
     shown = story.run("setting tree", actor=story.user).output_text
     assert shown.count(OWN_ADDRESS) == 2, shown
-    story.expect_ordered_lines("setting tree", "remote.access", "good.sharing.tunnel", OWN_ADDRESS, actor=story.user)
+    placed = shown.split("remote.access: ")[1]
+    assert placed.index("good.sharing.tunnel:") < placed.index(OWN_ADDRESS)
 
 
 def test_a_value_saved_through_the_place_shows_in_the_owners_group_with_one_key(new_story):
@@ -43,7 +44,7 @@ def test_a_reference_to_a_group_its_module_does_not_declare_is_refused_naming_th
 
 def test_a_reference_that_leads_back_to_its_own_group_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_sync_refusal(f"{PATH}:LoopModule", "loop.again places loop.again, which holds it")
+    story.expect_sync_refusal(f"{PATH}:LoopModule", "loop places loop.again, which holds it")
 
 
 def test_a_sync_keeps_working_when_the_module_that_owns_a_placed_group_is_removed(new_story):

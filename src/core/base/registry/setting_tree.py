@@ -1,8 +1,9 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import replace
 
-from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, SettingEntry
+from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, REFERENCE_TYPE, SettingEntry
 from core.base.setting.setting_group import SettingGroup
+from core.base.setting.setting_reference import SettingReference
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_value import SettingValue
 
@@ -12,13 +13,15 @@ class SettingTree:
     of short keys down to it, so journal.core.sharing declares tunnel.token and gets
     journal.core.sharing.tunnel.token."""
 
-    def entries(self, module_name: str, nodes: Sequence[SettingGroup | SettingValue]) -> Iterator[SettingEntry]:
+    def entries(self, module_name: str, nodes: Sequence[SettingGroup | SettingValue | SettingReference]) -> Iterator[SettingEntry]:
         yield from self.walked(module_name, module_name, None, nodes)
 
-    def walked(self, module_name: str, prefix: str, parent: str | None, nodes: Sequence[SettingGroup | SettingValue]) -> Iterator[SettingEntry]:
+    def walked(self, module_name: str, prefix: str, parent: str | None, nodes: Sequence[SettingGroup | SettingValue | SettingReference]) -> Iterator[SettingEntry]:
         for node in nodes:
             key = f"{prefix}.{node.key}"
-            if isinstance(node, SettingGroup):
+            if isinstance(node, SettingReference):
+                yield SettingEntry(key, module_name, parent, node.key, node.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, False, (), False, True, node.group)
+            elif isinstance(node, SettingGroup):
                 yield SettingEntry(key, module_name, parent, node.title, node.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, False, (),
                                    node.toggleable, node.enabled)
                 yield from self.walked(module_name, key, key, node.children)

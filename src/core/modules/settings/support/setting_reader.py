@@ -41,10 +41,10 @@ class SettingReader:
                 return CurrentSetting(entry, False, f"group {group.key} is off")
         model = SecretSetting if entry.secret else Setting
         if environment_id is not None:
-            stored = self.stored(model, key, environment_id)
+            stored = self.stored(model, entry.key, environment_id)
             if stored is not None:
                 return CurrentSetting(entry, stored, ENVIRONMENT_SOURCE)
-        stored = self.stored(model, key, None)
+        stored = self.stored(model, entry.key, None)
         if stored is not None:
             return CurrentSetting(entry, stored, PROJECT_SOURCE)
         return CurrentSetting(entry, self.default(entry), DEFAULT_SOURCE)

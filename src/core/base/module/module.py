@@ -25,6 +25,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.setting.setting_group import SettingGroup
+from core.base.setting.setting_reference import SettingReference
 from core.base.setting.setting_value import SettingValue
 from core.base.tunnel.tunnel import Tunnel
 
@@ -61,7 +62,7 @@ class Module:
     marks: ClassVar[Sequence[MarkDeclaration]] = ()
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
-    settings: ClassVar[Sequence[SettingGroup | SettingValue]] = ()
+    settings: ClassVar[Sequence[SettingGroup | SettingValue | SettingReference]] = ()
     tunnels: ClassVar[Sequence[type[Tunnel]]] = ()
     skills: ClassVar[Sequence[SkillDeclaration]] = ()
     seeders: ClassVar[Sequence[type[Seeder]]] = ()
