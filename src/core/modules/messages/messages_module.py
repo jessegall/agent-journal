@@ -12,6 +12,7 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.models.message import Message
+from core.modules.messages.upgrade.messages_move import MessagesMove
 from core.modules.messages.listeners.message_filed_mark_listener import MessageFiledMarkListener
 from core.modules.messages.listeners.message_thought_mark_listener import MessageThoughtMarkListener
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
@@ -25,6 +26,7 @@ class MessagesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
+    moves = [MessagesMove]
     migrations = [MessagesTableMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler)

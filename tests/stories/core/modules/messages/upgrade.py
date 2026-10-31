@@ -10,3 +10,15 @@ def test_a_message_keeps_its_number_text_and_type(new_story):
 def test_a_reply_names_the_message_it_answers(new_story):
     story = upgraded_story(new_story)
     story.expect_success("message show 2", "parent_id: 1")
+
+
+def test_a_chat_card_and_a_report_are_not_messages_and_are_counted_by_kind(new_story):
+    story = upgraded_story(new_story)
+    assert "Task 1 started" not in story.run("message list").output_text and "A report" not in story.run("message list").output_text
+    assert "dropped chat card task_card: 1 rows" in story.upgrade_text and "dropped chat card report: 1 rows" in story.upgrade_text
+
+
+def test_an_agents_message_names_the_agent_that_wrote_it(new_story):
+    story = upgraded_story(new_story)
+    agent = next(line.split()[0] for line in story.run("agent list").output_text.splitlines() if "s-1" in line)
+    story.expect_success("message show 2", f"agent_id: {agent}")
