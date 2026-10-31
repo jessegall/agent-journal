@@ -36,7 +36,7 @@ class WindowDeclaration:
     float_size: WindowSize = DEFAULT_FLOAT_SIZE
     options: Sequence[ToggleOption | ChoiceOption] = ()
     count: str = ""
-    shareable: Sequence[str] = ()
+    shared_reads: Sequence[str] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -54,7 +54,7 @@ class WindowDeclaration:
             problems.append(f"{self.name} floats at {self.float_size.width} by {self.float_size.height}, and a size is above 0")
         if self.count and self.count not in self.reads:
             problems.append(f"{self.name} counts with {self.count}, which is not one of its reads")
-        shared_lines = [line.rsplit(" ", 1)[0] for line in self.shareable]
+        shared_lines = [line.rsplit(" ", 1)[0] for line in self.shared_reads]
         problems += [f"{self.name} shares {line}, which is not one of its reads" for line in shared_lines if line not in self.reads]
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}
         problems += [f"{self.name} follows {pattern} but reads no {pattern.split('.', 1)[0]}" for pattern in self.events

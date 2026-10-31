@@ -54,5 +54,5 @@ class PlansModule(Module):
     marks = PLAN_MARKS
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list"],
-                                 events=["plan.*", "phase.*"], shareable=["plan show id", "plan progress plan_id", "phase list plan"])]
+                                 events=["plan.*", "phase.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan"])]
     seeders = [PlansSeeder]

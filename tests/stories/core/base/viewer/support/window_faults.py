@@ -87,6 +87,13 @@ class TwiceOptionModule(Module):
     windows = [WindowDeclaration("options.board", "Board", "board.html", WindowLoading.FRAME, options=[ToggleOption("flush", "Flush"), ToggleOption("flush", "Flush all")])]
 
 
+class UnreadShareModule(Module):
+    name = "shares"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    windows = [WindowDeclaration("shares.board", "Board", "board.html", WindowLoading.FRAME, reads=["task list"], shared_reads=["plan show id"])]
+
+
 class UnreadCountModule(Module):
     name = "counts"
     requires_core = ">=5,<6"

@@ -26,4 +26,4 @@ class WindowEntry:
     float_height: int
     options: Sequence[Mapping[str, object]]
     count: str
-    shareable: Sequence[str] = ()
+    shared_reads: Sequence[str] = ()

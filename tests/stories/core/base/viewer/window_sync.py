@@ -75,3 +75,7 @@ def test_a_sync_that_changes_the_registry_logs_one_registry_sync_event(new_story
     story.expect_sync_success(f"{PATH}:NewerKitModule")
     story.expect_logged_event("registry.sync")
 
+
+
+def test_a_window_sharing_a_read_it_does_not_have_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UnreadShareModule", "shares.board shares plan show, which is not one of its reads")
