@@ -25,5 +25,6 @@ from core.modules.documents.documents_module import DocumentsModule
 from core.modules.sequences.sequences_module import SequencesModule
 from core.modules.templates.templates_module import TemplatesModule
 from core.modules.notices.notices_module import NoticesModule
+from core.modules.suggestions.suggestions_module import SuggestionsModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TemplatesModule, NoticesModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TemplatesModule, NoticesModule, SuggestionsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)

@@ -20,6 +20,11 @@
                         "QuestionState"
                     ]
                 }
+            },
+            {
+                "descendant": {
+                    "nameMatches": "(?i)question"
+                }
             }
         ],
         "reject": [
