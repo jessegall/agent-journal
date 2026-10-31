@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["run", "dispatch"]
+            },
+            {
+                "argument": {"at": 0, "is": "call", "nameIn": ["ShowMark"]}
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "any": [
+                    {"extendsAny": "CommitListener", "of": "enclosingType"},
+                    {"extendsAny": "SaveListener", "of": "enclosingType"}
+                ]
+            }
+        ]
+    },
+    "sin": {
+        "name": "mark-shown-outside-a-listener",
+        "description": "A command handler, a rule or another class runs ShowMark itself, so the mark is written inside the command that caused it or at a place nothing can follow.",
+        "rule": "A mark is a consequence of a change: the module that declares the type shows it from a commit listener on its own event, after the commit, as MarkListener does.",
+        "skill": "chat-architecture"
+    }
+}

@@ -55,6 +55,7 @@
         "naming_GoSentenceParameterNameDetector",
         "naming_GoUnitlessQuantityNameDetector",
         "syntax_OneElementTupleDetector",
+        "architecture_chat_MarkShownByListenerDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
