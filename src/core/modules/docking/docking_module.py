@@ -7,6 +7,8 @@ from core.modules.docking.commands.add_dock_item_subcommand import AddDockItemSu
 from core.modules.docking.commands.keep_dock_item_subcommand import KeepDockItemSubcommand
 from core.modules.docking.commands.remove_dock_item_subcommand import RemoveDockItemSubcommand
 from core.modules.docking.commands.make_dock_handler import MakeDockHandler
+from core.modules.docking.guards.kept_item_guard import KeptItemGuard
+from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
 from core.modules.docking.guards.dock_limit_guard import DockLimitGuard
 from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
@@ -31,4 +33,4 @@ class DockingModule(Module):
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
-    guards = [DockTypeGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard]
+    guards = [DockTypeGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard, OwnEnvironmentGuard, KeptItemGuard]

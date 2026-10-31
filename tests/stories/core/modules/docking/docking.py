@@ -78,3 +78,18 @@ def test_a_type_that_reads_no_such_model_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="the dock type docksample.task reads no plan"):
         story.container.get(Bus).run(AddDockItem(1, SampleDockType.TASK, "plan", 1), story.user)
+
+
+def test_an_environment_cannot_act_on_another_environments_item(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run("environment make elsewhere /work/elsewhere")
+    item = docked(story, ended_task(story, "Mine"))
+    story.expect_refusal(f"dock keep {item.id} --environment elsewhere", "belongs to another environment's dock", actor=story.user)
+
+
+def test_an_agent_cannot_undock_or_unkeep_an_item_a_person_kept(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    item = docked(story, ended_task(story, "Kept"))
+    story.container.get(Bus).run(KeepDockItem(item.id), story.user)
+    story.expect_refusal(f"dock remove {item.id}", "was kept by a person", actor=story.agent)
+    story.expect_success(f"dock remove {item.id}", actor=story.user)

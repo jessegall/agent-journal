@@ -78,3 +78,10 @@ def test_a_listener_run_twice_for_one_event_leaves_one_mark(new_story):
     for _ in range(2):
         bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:event-7", "Event 7"), actor)
     assert mark_count(story) == 1
+
+
+def test_a_mark_for_an_agent_of_another_environment_is_refused(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    story.run("environment make elsewhere /work/elsewhere")
+    with pytest.raises(Refusal, match="works in another environment"):
+        story.container.get(Bus).run(ShowMark(2, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:3", "A mark", agent_id=story.agent.id), module_actor(story, "chatsample"))
