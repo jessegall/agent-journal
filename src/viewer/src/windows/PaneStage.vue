@@ -80,7 +80,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 <Btn data-menu="split-right" @click="split(id, 'right')">Split right</Btn>
                                 <Btn data-menu="split-below" @click="split(id, 'bottom')">Split below</Btn>
                             </template>
-                            <Btn v-if="floats" data-menu="detach" @click="detach(id)">Detach</Btn>
+                            <template v-if="floats">
+                                <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
+                            </template>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
                             <template v-for="group in catalogue.group()" :key="group.module">
                                 <span class="reopen-module" :data-open-module="group.module">{{ group.module }}</span>
@@ -139,16 +141,17 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 </template>
             </nav>
         </template>
-        <DetachedWindows
-            v-if="floats"
-            :detached="detached"
-            :catalogue="catalogue"
-            :subscriptions="subscriptions"
-            :environment="environment"
-            :agent="agent"
-            :prompts="prompts"
-            :shell-read="shellRead"
-        />
+        <template v-if="floats">
+            <DetachedWindows
+                :detached="detached"
+                :catalogue="catalogue"
+                :subscriptions="subscriptions"
+                :environment="environment"
+                :agent="agent"
+                :prompts="prompts"
+                :shell-read="shellRead"
+            />
+        </template>
         <template v-if="ghost">
             <DragGhost v-bind="ghost" />
         </template>
