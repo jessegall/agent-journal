@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 
 
 @dataclass(frozen=True)
@@ -9,3 +9,6 @@ class MarkButton:
     icon: str
     label: str
     runs: str
+
+    def listed(self) -> dict[str, str]:
+        return asdict(self)

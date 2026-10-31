@@ -1,5 +1,6 @@
 from core.base.journal_home import JournalHome
 from server.listener_thread import ListenerThread
+from server.viewer.chat_declarations_route import ChatDeclarationsRoute
 from server.viewer.event_stream import EventStream
 from server.viewer.line_route import LineRoute
 from server.viewer.module_files import ModuleFiles
@@ -7,9 +8,10 @@ from server.viewer.windows_route import WindowsRoute
 
 
 class ViewerRoutes:
-    """The routes of the viewer's listener behind its login: command lines, the event stream, module files and the
-    windows on offer."""
+    """The routes of the viewer's listener behind its login: command lines, the event stream, module files, the
+    windows on offer and the chat marks and docked items modules declare."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:
         self.line_route, self.event_stream = LineRoute(home, listener_thread), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
+        self.chat_declarations_route = ChatDeclarationsRoute(home)

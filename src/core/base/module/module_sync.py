@@ -29,6 +29,8 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
+from core.base.registry.dock_entry import DockEntry
+from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
@@ -107,6 +109,8 @@ class ModuleSync:
             suites=self.entries.suites(modules),
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
+            marks=self.marks(modules),
+            docks=self.docks(modules),
             providers=self.providers.providers(modules),
         )
 
@@ -116,6 +120,20 @@ class ModuleSync:
                                  tuple(window.reads), tuple(window.runs), tuple(window.events), module in shipped, unavailable_reason(window), window.icon.value,
                                  window.float_size.width, window.float_size.height, tuple(option.listed() for option in window.options), window.count)
                      for module in modules for window in module.windows)
+
+    def marks(self, modules: tuple[type[Module], ...]) -> tuple[MarkEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(MarkEntry(mark.type.value, module.name, mark.family.name, mark.family.title, mark.family.icon, mark.family.group.value, mark.family.colouring.value,
+                               tuple(variant.value for variant in mark.variants), mark.label, mark.mark_icon, mark.click.value, mark.grouping.value, mark.group_label,
+                               tuple(button.listed() for button in mark.group_buttons), tuple(button.listed() for button in mark.buttons), mark.body, mark.shown, mark.main,
+                               mark.process, module in shipped, "")
+                     for module in modules for mark in module.marks)
+
+    def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(DockEntry(dock.type.value, module.name, dock.icon, dock.title, dock.body, tuple(button.listed() for button in dock.buttons), dock.most,
+                               dock.leaves_after_seconds, tuple(dock.reads), module in shipped, "")
+                     for module in modules for dock in module.docks)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

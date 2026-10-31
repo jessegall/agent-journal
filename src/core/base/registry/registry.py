@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass, field, replace
+from dataclasses import asdict, dataclass, field, replace
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
@@ -11,6 +11,8 @@ from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
+from core.base.registry.dock_entry import DockEntry
+from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
@@ -40,6 +42,8 @@ class Registry:
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
+    marks: tuple[MarkEntry, ...] = ()
+    docks: tuple[DockEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
@@ -76,6 +80,8 @@ class Registry:
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
                                       window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""))
                           for window in entries.get("windows", [])),
+            marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
+            docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
@@ -105,6 +111,8 @@ class Registry:
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
                          "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count} for window in self.windows],
+            "marks": [asdict(mark) for mark in self.marks],
+            "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
