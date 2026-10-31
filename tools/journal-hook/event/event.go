@@ -68,3 +68,37 @@ type DiffCount struct {
 	LinesAdded   int    `json:"lines_added"`
 	LinesRemoved int    `json:"lines_removed"`
 }
+
+// The schema wants a list wherever it names one, so a list left empty is written [] and never null.
+
+func (tool Tool) MarshalJSON() ([]byte, error) {
+	type plain Tool
+	tool.Files = listed(tool.Files)
+	return json.Marshal(plain(tool))
+}
+
+func (line ShellLine) MarshalJSON() ([]byte, error) {
+	type plain ShellLine
+	line.Parts = listed(line.Parts)
+	line.Redirects = listed(line.Redirects)
+	return json.Marshal(plain(line))
+}
+
+func (part Part) MarshalJSON() ([]byte, error) {
+	type plain Part
+	part.Arguments = listed(part.Arguments)
+	return json.Marshal(plain(part))
+}
+
+func (classification Classification) MarshalJSON() ([]byte, error) {
+	type plain Classification
+	classification.Effects = listed(classification.Effects)
+	return json.Marshal(plain(classification))
+}
+
+func listed[Item any](items []Item) []Item {
+	if items == nil {
+		return []Item{}
+	}
+	return items
+}
