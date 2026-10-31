@@ -9,7 +9,8 @@ from core.modules.processes.models.process import Process
 
 
 class OutputPruneListener(SaveListener):
-    """An output that ends prunes the oldest ended ones past the number the settings keep, in the same transaction."""
+    """An output that ends prunes the oldest ended ones past the number the settings keep, in the same
+    transaction."""
 
     name = "processes.output-prune"
     event = "output.update"
@@ -19,5 +20,6 @@ class OutputPruneListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         old, output = change.old_row, change.row
-        if isinstance(output, Output) and isinstance(old, Output) and old.ended_at is None and output.ended_at is not None:
+        has_ended = isinstance(output, Output) and isinstance(old, Output) and old.ended_at is None and output.ended_at is not None
+        if has_ended and isinstance(output, Output):
             self.bus.dispatch(PruneOutputs(self.queries.query(Process).find(output.process_id).environment_id), change.context)

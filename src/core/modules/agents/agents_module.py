@@ -19,6 +19,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
 from core.base.module.model_declaration import ModelDeclaration
+from core.modules.agents.seeders.agents_seeder import AgentsSeeder
 
 
 class AgentsModule(Module):
@@ -39,3 +40,4 @@ class AgentsModule(Module):
                                  reads=["agent transcript", "hook-call list"], events=["hook_call.create"])]
     listeners = [SubagentMarkListener]
     marks = AGENT_MARKS
+    seeders = [AgentsSeeder]

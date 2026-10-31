@@ -5,6 +5,7 @@ from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.queries.environment_query import EnvironmentQuery
+from core.modules.environments.seeders.environments_seeder import EnvironmentsSeeder
 
 
 class EnvironmentsModule(Module):
@@ -16,3 +17,4 @@ class EnvironmentsModule(Module):
     models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
     migrations = [EnvironmentsTableMigration]
     bindings = [(EnvironmentNames, EnvironmentTableNames)]
+    seeders = [EnvironmentsSeeder]

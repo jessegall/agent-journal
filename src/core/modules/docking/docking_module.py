@@ -22,6 +22,7 @@ from core.modules.docking.migrations.m002_docks_of_existing_environments import 
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
+from core.modules.docking.seeders.docking_seeder import DockingSeeder
 
 
 class DockingModule(Module):
@@ -37,3 +38,4 @@ class DockingModule(Module):
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
     guards = [DockTypeGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard, OwnEnvironmentGuard, KeptItemGuard]
+    seeders = [DockingSeeder]

@@ -23,6 +23,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.models.question import Question
+from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 
 
 class QuestionsModule(Module):
@@ -44,3 +45,4 @@ class QuestionsModule(Module):
                                  reads=["question list", "question show"], runs=["question answer", "question close"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
                                  reads=["wait list", "wait-target list", "question list"], events=["wait.*", "wait_target.*", "question.*"])]
+    seeders = [QuestionsSeeder]

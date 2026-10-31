@@ -56,7 +56,7 @@ def test_only_the_bytes_past_an_offset_are_read_across_the_parts_and_the_readers
     processes.write_start(4, "a && b", ["a", "b"])
     processes.write_output(4, 1, "one\ntwo\n")
     processes.write_output(4, 2, "three\n")
-    assert (processes.total_bytes(4), processes.bytes_from(4, 0), processes.bytes_from(4, 4), processes.bytes_from(4, 8), processes.bytes_from(4, 14)) == (14, b"one\ntwo\nthree\n", b"two\nthree\n", b"three\n", b"")
+    assert (processes.total_bytes(4), processes.bytes_after(4, 0), processes.bytes_after(4, 4), processes.bytes_after(4, 8), processes.bytes_after(4, 14)) == (14, b"one\ntwo\nthree\n", b"two\nthree\n", b"three\n", b"")
     processes.append_reader_lines(4, ["1: one"])
     processes.append_reader_lines(4, ["3: three"])
     assert processes.reader_lines(4) == ["1: one", "3: three"]

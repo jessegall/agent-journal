@@ -38,6 +38,7 @@ from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.models.review_point import ReviewPoint
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.support.review_settings import REVIEW_SETTINGS
+from core.modules.reviews.seeders.reviews_seeder import ReviewsSeeder
 
 
 class ReviewsModule(Module):
@@ -56,3 +57,4 @@ class ReviewsModule(Module):
     marks = REVIEW_MARKS
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW,
                                  reads=["review list", "review show", "review-step list", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"])]
+    seeders = [ReviewsSeeder]

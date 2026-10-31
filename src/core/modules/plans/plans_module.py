@@ -29,6 +29,7 @@ from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
 from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
+from core.modules.plans.seeders.plans_seeder import PlansSeeder
 
 PLAN_COMMANDS = (BlockPlan, CancelPlan)
 
@@ -52,3 +53,4 @@ class PlansModule(Module):
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list"],
                                  events=["plan.*", "phase.*"])]
+    seeders = [PlansSeeder]

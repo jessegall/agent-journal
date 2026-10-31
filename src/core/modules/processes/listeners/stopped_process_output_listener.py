@@ -11,7 +11,8 @@ STOPPING_MOVES = ("stop", "orphan")
 
 
 class StoppedProcessOutputListener(SaveListener):
-    """A run that is stopped or orphaned has no end report, so its output is marked ended here, which lets it be pruned."""
+    """A run that is stopped or orphaned has no end report, so its output is marked ended here, which lets it
+    be pruned."""
 
     name = "processes.stopped-process-output"
     event = "process.*"

@@ -43,6 +43,7 @@ from core.modules.drivers.commands.suite_layout_subcommand import SuiteLayoutSub
 from core.modules.drivers.commands.suite_presets_subcommand import SuitePresetsSubcommand
 from core.modules.drivers.bindings.table_hook_history import TableHookHistory
 from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
+from core.modules.drivers.seeders.drivers_seeder import DriversSeeder
 
 
 class DriversModule(Module):
@@ -65,3 +66,4 @@ class DriversModule(Module):
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,
                                  reads=["hook-call list", "hook-call show"], events=["hook_call.create"])]
+    seeders = [DriversSeeder]

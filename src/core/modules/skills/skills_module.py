@@ -26,6 +26,7 @@ from core.modules.skills.commands.skill_list_subcommand import SkillListSubcomma
 from core.modules.skills.commands.skill_show_subcommand import SkillShowSubcommand
 from core.modules.skills.commands.skill_write_subcommand import SkillWriteSubcommand
 from core.modules.skills.support.start_skills import SKILL_SETTINGS
+from core.modules.skills.seeders.skills_seeder import SkillsSeeder
 
 
 class SkillsModule(Module):
@@ -45,3 +46,4 @@ class SkillsModule(Module):
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
     windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
                                  reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
+    seeders = [SkillsSeeder]

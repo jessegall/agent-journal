@@ -12,6 +12,7 @@ from core.modules.phone.commands.unpair_phone import UnpairPhone
 from core.modules.phone.migrations.m001_phones import PhonesTablesMigration
 from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.phone.models.phone import Phone
+from core.modules.phone.seeders.phone_seeder import PhoneSeeder
 
 
 class PhoneModule(Module):
@@ -27,3 +28,4 @@ class PhoneModule(Module):
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler]
     windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, icon=WindowIcon.PHONE,
                                  reads=["phone list"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
+    seeders = [PhoneSeeder]

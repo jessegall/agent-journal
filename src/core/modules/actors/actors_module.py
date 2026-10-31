@@ -2,6 +2,7 @@ from core.modules.actors.queries.actor_query import ActorQuery
 from core.modules.actors.models.actor_record import ActorRecord
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
+from core.modules.actors.seeders.actors_seeder import ActorsSeeder
 
 
 class ActorsModule(Module):
@@ -10,3 +11,4 @@ class ActorsModule(Module):
     name = "journal.core.actors"
     requires_core = ">=5,<6"
     models = [ModelDeclaration(ActorRecord, query=ActorQuery)]
+    seeders = [ActorsSeeder]

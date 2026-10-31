@@ -73,7 +73,7 @@ class OutputFolder:
     def output_paths(self, process_id: int) -> list[Path]:
         return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
 
-    def bytes_from(self, process_id: int, offset: int) -> bytes:
+    def bytes_after(self, process_id: int, offset: int) -> bytes:
         """The bytes of the parts' output, in order, from the offset on; only the part files that reach past it are opened."""
         passed, collected = 0, b""
         for path in self.output_paths(process_id):

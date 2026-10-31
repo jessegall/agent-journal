@@ -15,6 +15,7 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.listeners.message_filed_mark_listener import MessageFiledMarkListener
 from core.modules.messages.listeners.message_thought_mark_listener import MessageThoughtMarkListener
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
+from core.modules.messages.seeders.messages_seeder import MessagesSeeder
 
 
 class MessagesModule(Module):
@@ -32,3 +33,4 @@ class MessagesModule(Module):
                                  events=["message.*", "chat_mark.*", "dock_item.*"])]
     marks = MESSAGE_MARKS
     listeners = [MessageThoughtMarkListener, MessageFiledMarkListener]
+    seeders = [MessagesSeeder]

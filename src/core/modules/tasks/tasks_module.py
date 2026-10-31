@@ -29,6 +29,7 @@ from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
 from core.modules.tasks.support.task_marks import TASK_DOCKS, TASK_MARKS
+from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
 
 TASK_COMMANDS = (BlockTask, CloseTask, CancelTask)
 
@@ -52,3 +53,4 @@ class TasksModule(Module):
     docks = TASK_DOCKS
     driver_rules = [LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task list", "task show", "task-log list"], events=["task.*"])]
+    seeders = [TasksSeeder]

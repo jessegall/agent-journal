@@ -13,6 +13,7 @@ from core.modules.waits.commands.resume_wait import ResumeWait
 from core.modules.waits.commands.request_help_subcommand import RequestHelpSubcommand
 from core.modules.waits.models.wait_target import WaitTarget
 from core.modules.waits.overlays.wait_overlay import WaitOverlay
+from core.modules.waits.seeders.waits_seeder import WaitsSeeder
 
 
 class WaitsModule(Module):
@@ -29,3 +30,4 @@ class WaitsModule(Module):
     listeners = [TargetResolutionListener, ImpasseMarkListener]
     marks = WAIT_MARKS
     overlays = [WaitOverlay, HelpRequestOverlay]
+    seeders = [WaitsSeeder]

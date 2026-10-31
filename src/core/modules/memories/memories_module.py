@@ -48,6 +48,7 @@ from core.modules.memories.migrations.m001_memories import MemoriesTablesMigrati
 from core.modules.memories.models.active_memory import ActiveMemory
 from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARKS
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
+from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
 
 
 class MemoriesModule(Module):
@@ -74,3 +75,4 @@ class MemoriesModule(Module):
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
+    seeders = [MemoriesSeeder]

@@ -10,8 +10,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 
 
 class OutputReaderRule(DriverRule):
-    """On each tick, a run of the agent whose output gained bytes since the reader last looked has them passed through its
-    reader; this is the only place a reader runs while the run goes on."""
+    """On each tick, a run of the agent whose output gained bytes since the reader last looked has them passed
+    through its reader; this is the only place a reader runs while the run goes on."""
 
     name = "processes.output-reader"
     hook = HookEventName.TICK

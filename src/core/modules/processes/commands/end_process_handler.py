@@ -15,8 +15,8 @@ from core.modules.processes.support.process_settings import ProcessSettings
 
 
 class EndProcessHandler(Handler[EndProcess, Process]):
-    """Ends the process, passes the rest of its output through its reader, and keeps the output, except for a short run
-    whose line pipes nothing."""
+    """Ends the process, passes the rest of its output through its reader, and keeps the output, except for a
+    short run whose line pipes nothing."""
 
     command = EndProcess
 

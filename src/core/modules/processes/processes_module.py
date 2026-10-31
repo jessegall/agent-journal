@@ -60,6 +60,7 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
+from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 
 WINDOW_READS = ["output list", "process list", "process show", "output peek"]
 WINDOW_RUNS = ["output stop", "output watch"]
@@ -85,3 +86,4 @@ class ProcessesModule(Module):
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),
                WindowDeclaration("processes.output", "Output", "output.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS)]
+    seeders = [ProcessesSeeder]

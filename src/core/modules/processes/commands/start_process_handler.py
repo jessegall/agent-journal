@@ -13,8 +13,8 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 
 
 class StartProcessHandler(Handler[StartProcess, Process]):
-    """Saves a running process, its parts, one for each command of the line in order, and the output it will keep with the
-    reader chosen for the line."""
+    """Saves a running process, its parts, one for each command of the line in order, and the output it will
+    keep with the reader chosen for the line."""
 
     command = StartProcess
 

@@ -10,8 +10,8 @@ from core.modules.processes.support.output_folder import OutputFolder
 
 
 class WatchLines(DriverRule):
-    """After every tool use, gives an agent the lines its readers have kept of each run it watches, the ones it has not
-    been given; it reads the lines file and runs no reader."""
+    """After every tool use, gives an agent the lines its readers have kept of each run it watches, the ones it
+    has not been given; it reads the lines file and runs no reader."""
 
     name = "processes.watch-lines"
     hook = HookEventName.POST_TOOL_USE
