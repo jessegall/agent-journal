@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.page import Page
 from core.base.registry.registry import Registry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.subcommand.output import Output
@@ -23,6 +24,9 @@ class SkillListSubcommand(ReadSubcommand[tuple[SkillEntry, ...]]):
         return self.registry.skills
 
     def write_output(self, value: object, output: Output) -> None:
+        if output.json_output and isinstance(value, tuple):
+            output.page(Page(value, 1, max(len(value), 1), len(value)))
+            return
         for skill in value if isinstance(value, tuple) else ():
             if isinstance(skill, SkillEntry):
                 output.line(f"{skill.folder}  {skill.description}")

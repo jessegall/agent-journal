@@ -18,6 +18,7 @@ from core.modules.skills.commands.require_skill_handler import RequireSkillHandl
 from core.modules.skills.commands.require_skill_subcommand import RequireSkillSubcommand
 from core.modules.skills.commands.reset_skills_handler import ResetSkillsHandler
 from core.modules.skills.commands.skill_list_subcommand import SkillListSubcommand
+from core.modules.skills.commands.skill_show_subcommand import SkillShowSubcommand
 from core.modules.skills.commands.skill_write_subcommand import SkillWriteSubcommand
 
 
@@ -30,7 +31,7 @@ class SkillsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat"]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill])]
     migrations = [SkillsTablesMigration]
-    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand]
+    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler]
     listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener]
     marks = SKILL_MARKS

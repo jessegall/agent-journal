@@ -74,3 +74,20 @@ def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_
 def test_skill_list_prints_each_folder_with_its_description(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     story.expect_success("skill list", "journal-notes  How to take notes", "journal-tasks  How to work a task")
+
+
+def test_skill_show_prints_the_text_and_digest_of_one_skill(new_story):
+    story = new_story(GOOD, fixture=MainEnvironment)
+    story.expect_success("skill show journal-notes", "Write a note for every decision.")
+    assert "digest: " in story.run("skill show journal-notes").output_text
+
+
+def test_skill_show_of_a_skill_no_module_declares_is_refused(new_story):
+    story = new_story(GOOD, fixture=MainEnvironment)
+    story.expect_refusal("skill show journal-gone", "no module declares the skill journal-gone")
+
+
+def test_skill_show_and_skill_list_answer_json_rows_for_a_window(new_story):
+    story = new_story(GOOD, fixture=MainEnvironment)
+    assert '"text": "---' in story.run("skill show journal-notes --json").output_text
+    assert '"folder": "journal-notes"' in story.run("skill list --json").output_text
