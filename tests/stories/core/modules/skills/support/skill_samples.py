@@ -48,3 +48,13 @@ class PlanSkillsModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-plans", "How to follow a plan", keywords=["plan"])]
+
+
+class DueSkillsModule(Module):
+    name = "dueskills"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    skills = [SkillDeclaration("journal", "The journal"), SkillDeclaration("journal-etiquette", "How to behave"),
+              SkillDeclaration("journal-messages", "How to message"),
+              SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["note"]),
+              SkillDeclaration("journal-tasks", "How to work a task", keywords=["tasks"], commands=["task"], events=["task.start"])]
