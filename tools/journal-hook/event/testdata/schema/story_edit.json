@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "program": "claude",
+  "event": "pre_tool_use",
+  "session": "s-1",
+  "firing": "story-1",
+  "fired_at_ms": 1,
+  "actor": "agent",
+  "environment": "main",
+  "subagent": "",
+  "tool": {
+    "name": "Edit",
+    "kind": "edit",
+    "files": [
+      "src/cart.py"
+    ],
+    "diff": {
+      "path": "src/cart.py",
+      "existed": true,
+      "lines_added": 3,
+      "lines_removed": 1
+    }
+  },
+  "prompt": null,
+  "raw": {}
+}

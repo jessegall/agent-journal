@@ -4,17 +4,62 @@
     "sin": {
         "name": "test-unit-test-crosses-its-boundary",
         "description": "A unit test imports a module of core/modules, the story builder or a story helper.",
-        "rule": "A unit test imports only its own unit, core.base, server and the standard library; behaviour of a module is proved by a story.",
+        "rule": "A unit test imports only its own unit, core.base, server and the standard library; behaviour of a module is proved by a story. The unit tests of core.testing import core.testing, their own unit.",
         "skill": "unit-tests-stay-in-their-unit"
     },
     "find": {
         "select": "import",
         "where": [
-            {"fileMatches": "(^|/)tests/unit/"},
-            {"any": [
-                {"nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"},
-                {"descendant": {"all": [{"kind": "alias"}, {"nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"}]}}
-            ]}
+            {
+                "fileMatches": "(^|/)tests/unit/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"
+                    },
+                    {
+                        "descendant": {
+                            "all": [
+                                {
+                                    "kind": "alias"
+                                },
+                                {
+                                    "nameMatches": "^(core\\.modules|core\\.testing|tests\\.stories)(\\.|$)"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "all": [
+                    {
+                        "fileMatches": "(^|/)tests/unit/core/testing/"
+                    },
+                    {
+                        "any": [
+                            {
+                                "nameMatches": "^core\\.testing(\\.|$)"
+                            },
+                            {
+                                "descendant": {
+                                    "all": [
+                                        {
+                                            "kind": "alias"
+                                        },
+                                        {
+                                            "nameMatches": "^core\\.testing(\\.|$)"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
         ]
     }
 }

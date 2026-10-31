@@ -11,12 +11,16 @@ from core.base.caller.process_table import ProcessRow, ProcessTable
 from core.base.clock import Clock
 from core.base.container import Container
 from core.base.database.database import Database
+from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_reply import HookReply
+from core.base.driver.hook_route import HookRoute
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal_log import RecordedRefusal, RefusalLog
 from core.base.subcommand.caller import Caller
+from core.testing.hook_samples import HookSamples
 from core.testing.manual_clock import ManualClock
 
 M = TypeVar("M", bound=Model)
@@ -61,6 +65,7 @@ class Story:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
         self.agent, self.user = state.agent, state.user
+        self.hook_count = 0
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -100,6 +105,25 @@ class Story:
 
     def advance(self, duration: timedelta) -> None:
         self.clock.advance(duration)
+
+    def hook(self, session: str, sample: dict[str, object]) -> HookReply:
+        self.hook_count += 1
+        fired_at_ms = int(self.clock.timestamp().value.timestamp() * 1000)
+        event = HookEvent.parsed({**sample, "session": session, "firing": f"story-{self.hook_count}", "fired_at_ms": fired_at_ms})
+        return self.container.get(HookRoute).answer(event)
+
+    def tick(self, session: str) -> HookReply:
+        return self.hook(session, HookSamples.tick())
+
+    def expect_hook_through(self, session: str, sample: dict[str, object], *expected_lines: str) -> None:
+        reply = self.hook(session, sample)
+        assert reply.refusal == "", f"the hook was refused: {reply.refusal}"
+        missing = [line for line in expected_lines if not any(line in given for given in reply.lines)]
+        assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
+
+    def expect_hook_refusal(self, session: str, sample: dict[str, object], reason: str) -> None:
+        reply = self.hook(session, sample)
+        assert reason in reply.refusal, f"the hook's refusal {reply.refusal!r} does not say {reason!r}"
 
     def expect_success(self, line: str, *expected_lines: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)

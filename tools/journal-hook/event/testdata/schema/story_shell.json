@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "program": "claude",
+  "event": "pre_tool_use",
+  "session": "s-1",
+  "firing": "story-1",
+  "fired_at_ms": 1,
+  "actor": "agent",
+  "environment": "main",
+  "subagent": "",
+  "tool": {
+    "name": "Bash",
+    "kind": "shell",
+    "files": [],
+    "shell": {
+      "line": "git status && journal task show 1",
+      "parts": [
+        {
+          "text": "git status",
+          "program": "git",
+          "arguments": [
+            "status"
+          ],
+          "classification": {
+            "kind": "version control",
+            "effects": [
+              "reads_files"
+            ]
+          },
+          "subcommand": "status",
+          "joined_by": "&&"
+        },
+        {
+          "text": "journal task show 1",
+          "program": "journal",
+          "arguments": [
+            "task",
+            "show",
+            "1"
+          ],
+          "classification": {
+            "kind": "journal",
+            "effects": [
+              "reads_files"
+            ]
+          }
+        }
+      ],
+      "redirects": [],
+      "kind": "version control",
+      "is_journal_only": false,
+      "parse_error": ""
+    },
+    "diff": null
+  },
+  "prompt": null,
+  "raw": {}
+}

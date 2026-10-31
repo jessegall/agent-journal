@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "program": "claude",
+  "event": "pre_tool_use",
+  "session": "s-1",
+  "firing": "story-1",
+  "fired_at_ms": 1,
+  "actor": "agent",
+  "environment": "main",
+  "subagent": "",
+  "tool": {
+    "name": "Agent",
+    "kind": "agent",
+    "files": [],
+    "diff": null
+  },
+  "prompt": null,
+  "raw": {}
+}
