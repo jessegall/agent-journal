@@ -245,6 +245,12 @@ def server_story(story: Story, code_folders: CodeFolders | None = None, listener
 
 @contextmanager
 def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
+    with running_server(home, code_folders, listener_thread_started) as (_, socket_path, context):
+        yield socket_path, context
+
+
+@contextmanager
+def running_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
     files = ServerFiles(home)
     assert files.acquire_lock(), "a server already holds the lock of this journal"
     files.clear_leftover_socket()
@@ -262,7 +268,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     thread.start()
     context.viewer.start()
     try:
-        yield files.socket, context
+        yield server, files.socket, context
     finally:
         context.viewer.stop()
         listener_thread.stop()
