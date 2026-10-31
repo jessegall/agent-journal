@@ -7,6 +7,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 
 NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
+WIDER_NOTES = "tests.stories.core.modules.viewer.support.window_samples:WiderNotesModule"
 
 
 class NotesStartCheck(Guard):
@@ -36,4 +37,11 @@ class NotesModule(Module):
     guards = [NotesStartCheck]
     suites = [NotesSuite]
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"]),
+               WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"])]
+
+
+class WiderNotesModule(NotesModule):
+    """The notes module after an upgrade whose board also reads plans."""
+
+    windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list", "plan list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"])]
