@@ -17,6 +17,7 @@ from core.base.upgrade.version_four_source import VersionFourSource
 PATH = "tests.stories.core.upgrade.support.move_samples"
 STANDARD = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 ORDER: list[str] = []
+FAILURES = {"tags": 0}
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -80,6 +81,14 @@ class TagsMove(VersionFourMove):
         return report
 
 
+class FailsOnceTagsMove(TagsMove):
+    def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
+        if FAILURES["tags"] == 0:
+            FAILURES["tags"] = 1
+            raise RuntimeError("the tags table could not be read")
+        return super().move(source, target, map, context)
+
+
 class BrokenTagsMove(TagsMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         first = source.rows("tags")[0]
@@ -116,6 +125,15 @@ class BrokenTagsModule(Module):
     moves = [BrokenTagsMove]
 
 
+class FailsOnceTagsModule(Module):
+    name = "movetags"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors", "movenotes"]
+    models = [ModelDeclaration(Tag)]
+    migrations = [TagsMigration]
+    moves = [FailsOnceTagsMove]
+
+
 class GhostMove(NotesMove):
     reads = ["ghost_notes"]
     drops = []
@@ -142,19 +160,22 @@ class StrangerReaderModule(Module):
     moves = [StrangerMove]
 
 
-def version_four_database(folder: Path) -> Path:
-    path = folder / "version-4.db"
+def version_four_database(folder: Path, name: str = "version-4.db", with_rows: bool = True) -> Path:
+    path = folder / name
     connection = sqlite3.connect(path)
     connection.executescript("""
         CREATE TABLE notes (id INTEGER PRIMARY KEY, text TEXT);
         CREATE TABLE tags (id INTEGER PRIMARY KEY, note_id INTEGER, label TEXT);
         CREATE TABLE note_drafts (id INTEGER PRIMARY KEY, text TEXT);
         CREATE TABLE old_reports (id INTEGER PRIMARY KEY, body TEXT);
-        INSERT INTO notes VALUES (7, 'First'), (9, 'Second');
-        INSERT INTO tags VALUES (1, 7, 'red'), (2, 9, 'blue');
-        INSERT INTO note_drafts VALUES (1, 'unfinished');
-        INSERT INTO old_reports VALUES (1, 'a report');
     """)
+    if with_rows:
+        connection.executescript("""
+            INSERT INTO notes VALUES (7, 'First'), (9, 'Second');
+            INSERT INTO tags VALUES (1, 7, 'red'), (2, 9, 'blue');
+            INSERT INTO note_drafts VALUES (1, 'unfinished');
+            INSERT INTO old_reports VALUES (1, 'a report');
+        """)
     connection.commit()
     connection.close()
     return path
