@@ -63,3 +63,7 @@ func TestCodexSendsNoMessageOrFailureHooks(t *testing.T) {
 		}
 	}
 }
+
+func TestACodexSubagentsStartAndStopAreASessionStartAndAStopWithTheSubagentSet(t *testing.T) {
+	expectSubagentEvents(t, "codex")
+}

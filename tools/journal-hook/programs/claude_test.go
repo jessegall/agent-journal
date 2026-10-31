@@ -58,3 +58,7 @@ func TestEachClaudeToolHasItsCategoryAndFiles(t *testing.T) {
 		}
 	}
 }
+
+func TestAClaudeSubagentsStartAndStopAreASessionStartAndAStopWithTheSubagentSet(t *testing.T) {
+	expectSubagentEvents(t, "claude")
+}
