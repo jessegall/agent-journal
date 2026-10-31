@@ -160,3 +160,28 @@ def version_four_fixture(path: Path, with_rows: bool = True) -> Path:
     connection.commit()
     connection.close()
     return path
+
+
+def drop_later_columns(path: Path) -> None:
+    """The shape an older version 4 release made: tables without the columns later releases added."""
+    connection = sqlite3.connect(path)
+    for table, column in (("tasks", "block_reason"), ("memories", "expiry_row"), ("messages", "data")):
+        connection.execute(f"ALTER TABLE {table} DROP COLUMN {column}")
+    connection.commit()
+    connection.close()
+
+
+def with_unknown_table(path: Path) -> None:
+    connection = sqlite3.connect(path)
+    connection.execute("CREATE TABLE gadgets (id INTEGER PRIMARY KEY, name TEXT)")
+    connection.execute("INSERT INTO gadgets (name) VALUES ('a')")
+    connection.commit()
+    connection.close()
+
+
+def with_message_rows(path: Path, count: int) -> None:
+    connection = sqlite3.connect(path)
+    connection.executemany("INSERT INTO messages (environment_id, author, text, created_at, creator) VALUES (1, 'user', ?, ?, ?)",
+                           [(f"message {index}", STAMP, USER) for index in range(count)])
+    connection.commit()
+    connection.close()

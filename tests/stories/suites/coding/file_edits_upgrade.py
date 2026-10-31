@@ -1,5 +1,5 @@
 from install.upgrade_journal import FINISHED_LINE, UpgradeJournal
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_version_4_edit_moves_as_a_file_edit_of_the_agent_whose_session_made_it(new_story):

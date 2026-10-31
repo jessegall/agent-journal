@@ -1,3 +1,4 @@
+import os
 import sys
 import tempfile
 from collections.abc import Callable
@@ -55,6 +56,8 @@ class UpgradeJournal:
             return UpgradeOutcome(1, f"no version 4 journal: {DATABASE} is not in {self.home.folder}")
         if self.has_answer():
             return UpgradeOutcome(1, f"a journal server answers in {self.home.folder}: stop it with journal server stop, then run the upgrade again")
+        if not dry_run and not os.access(self.home.folder, os.W_OK):
+            return UpgradeOutcome(1, f"{self.home.folder} cannot be written to: make it writable, then run the upgrade again; nothing was changed")
         lines: list[str] = []
         try:
             if dry_run or not confirmed:

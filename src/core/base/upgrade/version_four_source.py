@@ -3,6 +3,7 @@ from pathlib import Path
 from types import TracebackType
 
 from core.base.database.version_four_tables import VersionFourTables
+from core.base.upgrade.source_row import SourceRow
 
 
 class VersionFourSource:
@@ -10,7 +11,7 @@ class VersionFourSource:
 
     def __init__(self, path: Path) -> None:
         self.connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
-        self.connection.row_factory = sqlite3.Row
+        self.connection.row_factory = SourceRow
         self.version_four = VersionFourTables(self.connection)
 
     def __enter__(self) -> "VersionFourSource":

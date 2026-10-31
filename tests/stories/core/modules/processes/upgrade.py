@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_finished_command_output_moves_as_a_finished_process_under_its_number_with_its_output(new_story):
