@@ -7,6 +7,7 @@ from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
+from core.modules.plugins.support.plugin_health import PluginHealth
 from core.modules.plugins.support.plugin_requirement import PluginRequirement
 from core.modules.plugins.support.setup_step import SetupStep
 from core.modules.plugins.support.event_window import EventWindow
@@ -20,7 +21,7 @@ class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
     version, the program run for each event, the events it takes and the ones it answers inside a window, the
     settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, the services it keeps running, and what its
-    install requires, sets up and reads back."""
+    install requires, sets up and reads back, and how its services answer a health check."""
 
     name: str
     title: str
@@ -36,6 +37,7 @@ class PluginManifest:
     requirements: tuple[PluginRequirement, ...]
     setup_steps: tuple[SetupStep, ...]
     installed_command: str
+    health: PluginHealth | None
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -54,7 +56,14 @@ class PluginManifest:
                    cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
-                   cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "")
+                   cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
+                   cls.read_health(fields["health"] if "health" in fields else None))
+
+    @staticmethod
+    def read_health(health: object) -> "PluginHealth | None":
+        if not is_mapping(health) or not all(key in health for key in ("socket_env", "request", "answer")):
+            return None
+        return PluginHealth(str(health["socket_env"]), str(health["request"]), str(health["answer"]))
 
     @staticmethod
     def read_requirements(requires: object) -> tuple[PluginRequirement, ...]:

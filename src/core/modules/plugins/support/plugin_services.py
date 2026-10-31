@@ -4,22 +4,28 @@ from pathlib import Path
 
 from core.base.child_process import ChildProcess
 from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.health_miss import HealthMiss
 from core.modules.plugins.support.manifest_service import ManifestService
+from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_health import PluginHealth
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
+from core.modules.plugins.support.plugin_socket import PluginSocket
 from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 from core.modules.plugins.support.service_processes import STOP_LIMIT_SECONDS, ServiceProcesses
 
 CONDITION_LIMIT_SECONDS = 10
 SOCKET_LIMIT_SECONDS = 5
 SOCKET_POLL_SECONDS = 0.02
+HEALTH_LIMIT_MS = 200
 
 
 class PluginServices:
     """Keeps the services of the plugins switched on running beside the journal: each started where its
     condition passes, started again by its restart rule once it ended, an answering one counted as started
-    once its socket is up, and each stopped once its plugin is switched off or removed."""
+    once its socket is up, and each stopped once its plugin is switched off or removed; a service that misses
+    its health check is started again and named."""
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, sockets: PluginSocketPaths) -> None:
         self.plugins, self.folders, self.program, self.sockets = plugins, folders, program, sockets
@@ -28,19 +34,20 @@ class PluginServices:
         wanted: set[tuple[str, str]] = set()
         for plugin in self.plugins.enabled_ones():
             folder = self.folders.code(plugin.name)
-            for service in PluginManifest.read(folder).services:
+            manifest = PluginManifest.read(folder)
+            for service in manifest.services:
                 key = (plugin.name, service.name)
                 wanted.add(key)
                 if key not in processes.skipped:
-                    self.keep(processes, key, folder, service)
+                    self.keep(processes, key, folder, service, manifest)
         for key in [key for key in processes.running if key not in wanted]:
             processes.running.pop(key).stop(STOP_LIMIT_SECONDS)
 
-    def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService) -> None:
+    def keep(self, processes: ServiceProcesses, key: tuple[str, str], folder: Path, service: ManifestService, manifest: PluginManifest) -> None:
         process = processes.running.get(key)
         if process is not None and (process.running() or service.restart == "never" or (service.restart == "on-failure" and process.exit_code() == 0)):
             return
-        environment = self.environment(key)
+        environment = self.environment(key, manifest)
         if process is None and service.condition and subprocess.run(["sh", "-c", service.condition], cwd=folder, env=environment, capture_output=True,
                                                                       timeout=CONDITION_LIMIT_SECONDS).returncode != 0:
             processes.skipped.add(key)
@@ -61,6 +68,30 @@ class PluginServices:
     def is_starting(path: Path, process: ChildProcess, deadline: float) -> bool:
         return not path.is_socket() and process.running() and time.monotonic() < deadline
 
-    def environment(self, key: tuple[str, str]) -> dict[str, str]:
+    def environment(self, key: tuple[str, str], manifest: PluginManifest) -> dict[str, str]:
         plugin_name, service = key
-        return {**self.program.environment(plugin_name, ""), "JOURNAL_PLUGIN_SOCKET": str(self.sockets.answers(plugin_name, service))}
+        health = {manifest.health.socket_variable: str(self.sockets.health(plugin_name, service))} if manifest.health else {}
+        return {**self.program.environment(plugin_name, ""), "JOURNAL_PLUGIN_SOCKET": str(self.sockets.answers(plugin_name, service)), **health}
+
+    def check_health(self, processes: ServiceProcesses) -> list[HealthMiss]:
+        misses: list[HealthMiss] = []
+        for plugin in self.plugins.enabled_ones():
+            folder = self.folders.code(plugin.name)
+            manifest = PluginManifest.read(folder)
+            for service in [service for service in manifest.services if (plugin.name, service.name) in processes.running]:
+                path = self.sockets.health(plugin.name, service.name)
+                if manifest.health is None or not path.is_socket():
+                    continue
+                if self.is_healthy(path, manifest.health):
+                    continue
+                processes.running.pop((plugin.name, service.name)).stop(STOP_LIMIT_SECONDS)
+                self.keep(processes, (plugin.name, service.name), folder, service, manifest)
+                misses.append(HealthMiss(plugin, f"its service {service.name} missed its health check"))
+        return misses
+
+    @staticmethod
+    def is_healthy(path: Path, health: PluginHealth) -> bool:
+        try:
+            return health.matches(PluginSocket(path).ask(health.request, HEALTH_LIMIT_MS))
+        except (PluginFaultError, OSError):
+            return False

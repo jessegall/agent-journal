@@ -36,6 +36,7 @@ SECOND_SERVER_CODE = 0
 
 TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
+HEALTH_CHECK_SECONDS = 60.0
 TICK_PERIOD_SECONDS = 60.0
 
 # How long a request may be answered on code that has changed since the last check of its files.
@@ -66,6 +67,8 @@ def main(argv: list[str]) -> int:
     plugin_services = ServerPluginServices(home)
     services_thread = ListenerThread(plugin_services.follow, lambda error: files.log_line(f"the plugin services could not be kept: {error}"), SERVICES_CHECK_SECONDS,
                                      "plugin services")
+    health_thread = ListenerThread(plugin_services.check_health, lambda error: files.log_line(f"the plugin services' health could not be checked: {error}"),
+                                   HEALTH_CHECK_SECONDS, "plugin health")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
     files.restrict_socket()
     files.write_pid()
@@ -79,10 +82,12 @@ def main(argv: list[str]) -> int:
     tunnel_thread.start()
     services_thread.wake()
     services_thread.start()
+    health_thread.start()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
+        health_thread.stop()
         services_thread.stop()
         plugin_services.close()
         tunnel_thread.stop()

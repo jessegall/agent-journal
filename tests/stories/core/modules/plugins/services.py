@@ -3,6 +3,7 @@ import signal
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
 from core.modules.plugins.support.plugin_services import PluginServices
 from core.modules.plugins.support.service_processes import ServiceProcesses
 from tests.stories.core.modules.plugins.hooks import REMOVAL_SAMPLE
@@ -49,5 +50,40 @@ def test_a_switched_off_plugins_services_are_stopped(new_story):
         story.services.follow(story.processes)
         process.wait(5)
         story.expect_rows(not process.running(), ("served", "answers") not in story.processes.running)
+    finally:
+        story.processes.close()
+
+
+def test_a_service_that_answers_its_health_check_leaves_the_plugin_without_a_fault(new_story):
+    story = served_story(new_story)
+    try:
+        story.container.get(PluginHealthCheck).run(story.processes)
+        story.run_listeners()
+        story.expect_absent("plugin list", "last fault", actor=story.user)
+    finally:
+        story.processes.close()
+
+
+def test_a_health_check_missed_is_the_plugins_fault_and_starts_the_service_again(new_story):
+    story = served_story(new_story)
+    try:
+        first = story.processes.running[("served", "answers")]
+        (story.home.folder / "plugin-data" / "served" / "unwell").write_text("")
+        story.container.get(PluginHealthCheck).run(story.processes)
+        story.run_listeners()
+        story.expect_text("plugin list", "last fault: its service answers missed its health check", actor=story.user)
+        story.expect_rows(story.processes.running[("served", "answers")].pid != first.pid)
+    finally:
+        story.processes.close()
+
+
+def test_five_health_checks_missed_in_a_row_show_the_plugin_failing(new_story):
+    story = served_story(new_story)
+    try:
+        (story.home.folder / "plugin-data" / "served" / "unwell").write_text("")
+        for _ in range(5):
+            story.container.get(PluginHealthCheck).run(story.processes)
+        story.run_listeners()
+        story.expect_text("chat-mark list --environment 1", "Plugin served is failing: its service answers missed its health check", actor=story.user)
     finally:
         story.processes.close()

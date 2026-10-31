@@ -2,13 +2,30 @@ import json
 from pathlib import Path
 
 SERVICE = """#!/usr/bin/env python3
-import json, os, socket
-path = os.environ["JOURNAL_PLUGIN_SOCKET"]
-if os.path.exists(path):
-    os.unlink(path)
-server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-server.bind(path)
-server.listen()
+import json, os, socket, threading
+
+
+def listening(path):
+    if os.path.exists(path):
+        os.unlink(path)
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server.bind(path)
+    server.listen()
+    return server
+
+
+def health():
+    server = listening(os.environ["SAMPLE_HEALTH_SOCKET"])
+    while True:
+        connection, _ = server.accept()
+        connection.makefile().readline()
+        state = "down" if os.path.exists(os.path.join(os.environ["JOURNAL_PLUGIN_DATA"], "unwell")) else "up"
+        connection.sendall((json.dumps({"health": state, "service": "answers"}) + "\\n").encode())
+        connection.close()
+
+
+threading.Thread(target=health, daemon=True).start()
+server = listening(os.environ["JOURNAL_PLUGIN_SOCKET"])
 while True:
     connection, _ = server.accept()
     line = connection.makefile().readline()
@@ -19,7 +36,8 @@ while True:
 PROGRAM = "#!/bin/sh\ncat > /dev/null\n"
 MANIFEST = {"name": "served", "title": "Served", "version": "1.0.0", "protocol": 1, "program": "run.sh", "hears": ["command_starting"],
             "holds": [{"event": "command_starting", "window_ms": 5000}],
-            "services": [{"name": "answers", "command": ["serve.py"], "answers": True, "restart": "always"}]}
+            "services": [{"name": "answers", "command": ["serve.py"], "answers": True, "restart": "always"}],
+            "health": {"socket_env": "SAMPLE_HEALTH_SOCKET", "request": "{\"health\": 1}", "answer": "{\"health\": \"up\", \"service\": \"<the service's own name>\"}"}}
 
 
 def service_plugin_folder(parent: Path) -> Path:
