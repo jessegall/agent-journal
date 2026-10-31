@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "build": "vite build && vite build --config kit/vite.config.js",
         "test": "vitest run"
     },
     "dependencies": {
