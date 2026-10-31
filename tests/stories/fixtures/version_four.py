@@ -38,6 +38,15 @@ TABLES = (
     f"CREATE TABLE rules ({COMMON}, text TEXT, reason TEXT, keywords TEXT, presence INTEGER, trigger TEXT, condition TEXT, is_single_use INTEGER)",
     f"CREATE TABLE reminders ({COMMON}, environment_id INTEGER, text TEXT, keywords TEXT, presence INTEGER, due_at TEXT, trigger TEXT, condition TEXT,"
     " is_single_use INTEGER)",
+    f"CREATE TABLE command_outputs ({COMMON}, environment_id INTEGER, chain TEXT, command TEXT, session TEXT, folder TEXT, moved INTEGER, ended INTEGER, status INTEGER, is_announced INTEGER, wait INTEGER, is_watched INTEGER, watch_reader TEXT, is_interrupted INTEGER, watch_title TEXT, is_read INTEGER, summary TEXT, ran_in TEXT, is_quiet_named INTEGER, is_total_asked INTEGER, is_complete_reported INTEGER, invalid_reason TEXT, reader_revision REAL)",
+    f"CREATE TABLE reactions ({COMMON}, environment_id INTEGER, emoji TEXT, author TEXT)",
+    f"CREATE TABLE dashboard_rows ({COMMON}, plugin TEXT, key TEXT, label TEXT, badge TEXT, tone TEXT, note TEXT, section TEXT)",
+    f"CREATE TABLE notices ({COMMON}, environment_id INTEGER, title TEXT, link TEXT, label TEXT, tone TEXT, closed_at TEXT)",
+    f"CREATE TABLE scheduled_jobs ({COMMON}, environment_id INTEGER, session TEXT, job_id TEXT, cron TEXT, prompt TEXT, recurring INTEGER, ended INTEGER)",
+    f"CREATE TABLE timings ({COMMON}, method TEXT, route TEXT, ms INTEGER, time REAL, loads TEXT)",
+    f"CREATE TABLE statistics ({COMMON}, key TEXT, value INTEGER)",
+    f"CREATE TABLE reader_reports ({COMMON}, environment_id INTEGER, reader TEXT, output INTEGER, command TEXT, session TEXT, findings TEXT, fixes TEXT, read_at TEXT, dismissal TEXT, is_refuted INTEGER, verdict TEXT, judged_at TEXT)",
+    f"CREATE TABLE reader_suggestions ({COMMON}, part TEXT, suggested_at REAL)",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
 USER = "user:1"
@@ -111,6 +120,22 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("reports:1", "tasks:77", "about", STAMP, USER)),
     ("rules", "(text, reason, keywords, trigger, condition, created_at, creator)", ("Always keep totals in cents", "rounding errors", '["totals"]', "", "{}", STAMP, USER)),
     ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "Run the cart tests before a commit", '["commit"]', None, "", "{}", STAMP, USER)),
+    ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, summary, created_at, updated_at, creator)",
+     (1, "chain-1", "pytest tests", "s-1", "/gone/outputs/chain-1", "/work/cart", 0, 1, 0, 0, 1, "12 passed", STAMP, JANUARY_2026, "agent:s-1")),
+    ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, created_at, creator)",
+     (1, "chain-2", "make build", "s-1", "/gone/outputs/chain-2", "/work/cart", 1, 1, 2, 0, 0, STAMP, "agent:s-1")),
+    ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, created_at, creator)",
+     (1, "chain-3", "sleep 900", "s-1", "/gone/outputs/chain-3", "/work/cart", 1, 0, 0, 0, 0, STAMP, "agent:s-1")),
+    ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, created_at, creator)",
+     (1, "chain-4", "tail -f log", "s-1", "/gone/outputs/chain-4", "/work/cart", 1, 1, 143, 1, 0, STAMP, "agent:s-1")),
+    ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, created_at, creator)",
+     (1, "chain-5", "ls", "unknown-session", "/gone/outputs/chain-5", "/work/cart", 0, 1, 0, STAMP, "agent:unknown-session")),
+    ("reader_reports", "(environment_id, reader, output, created_at)", (1, "pytest", 1, STAMP)),
+    ("reader_suggestions", "(part, created_at)", ("pytest", STAMP)),
+    ("reactions", "(environment_id, emoji, author, created_at, creator)", (1, "+1", "user", STAMP, USER)),
+    ("notices", "(environment_id, title, label, created_at, creator)", (1, "Build is red", "build", STAMP, USER)),
+    ("scheduled_jobs", "(environment_id, session, job_id, cron, prompt, recurring, ended, created_at, creator)", (1, "s-1", "job-1", "0 9 * * *", "stand up", 1, 0, STAMP, "agent:s-1")),
+    ("statistics", "(key, value, created_at)", ("starts", 3, STAMP)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 

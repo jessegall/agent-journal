@@ -3,6 +3,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.modules.processes.upgrade.processes_move import ProcessesMove
 from core.modules.processes.commands.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part_handler import EndProcessPartHandler
 from core.modules.processes.commands.end_process_part_subcommand import EndProcessPartSubcommand
@@ -74,6 +75,7 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     settings = PROCESS_SETTINGS
+    moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration]
