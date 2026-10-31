@@ -13,7 +13,7 @@ def test_an_item_goes_through_undock_and_dock(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()
     dock_id = 1
-    item_id = story.new_row_id(f"dock-item make {dock_id} docksample.task task 1")
+    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
     story.expect_text(f"dock-item undock {item_id}", "state: undocked")
     story.expect_text(f"dock-item dock {item_id}", "state: docked")
 
@@ -28,7 +28,7 @@ def test_deleting_a_dock_deletes_its_items(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()
     dock_id = 1
-    item_id = story.new_row_id(f"dock-item make {dock_id} docksample.task task 1")
+    item_id = story.new_row_id(f'dock-item make {dock_id} docksample.task task 1 --title "Task 1"')
     story.expect_success(f"dock delete {dock_id}")
     story.expect_refusal(f"dock-item show {item_id}", "no dock-item")
 
@@ -39,7 +39,7 @@ def test_docking_a_task_changes_no_task_row(new_story):
     starting_text = story.run(f"task show {task_id}").output_text
     story.run_listeners()
     dock_id = 1
-    story.new_row_id(f"dock-item make {dock_id} docksample.task task {task_id}")
+    story.new_row_id(f'dock-item make {dock_id} docksample.task task {task_id} --title "Fix it"')
     assert story.run(f"task show {task_id}").output_text == starting_text
 
 
@@ -58,7 +58,8 @@ def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_run
 
 def test_add_keep_and_remove_run_from_the_command_line(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
-    item_id = story.new_row_id("dock add docksample.task task 1 --environment main", actor=story.user)
+    task_id = story.new_row_id('task make "Fix it" --environment main', actor=story.user)
+    item_id = story.new_row_id(f"dock add docksample.task task {task_id} --environment main", actor=story.user)
     story.expect_text(f"dock keep {item_id}", "kept: True")
     story.expect_text(f"dock remove {item_id}", "state: undocked")
 
