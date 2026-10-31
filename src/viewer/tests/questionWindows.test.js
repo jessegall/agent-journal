@@ -81,3 +81,18 @@ test("the close button closes the question", async () => {
 test("an empty questions list shows an empty state", async () => {
     expect(await drawn(Questions, context({"question list": page([])}))).toContain("No open questions");
 });
+
+test("the waiting list shows only the waits on the user, not the agent's own waits on a task", async () => {
+    const opened_at = new Date().toISOString();
+    const text = await drawn(Waiting, context({
+        "wait list": page([
+            {id: 1, focus: "Which database?", type: "rows", state: "open", opened_at},
+            {id: 2, focus: "The review", type: "rows", state: "open", opened_at},
+            {id: 3, focus: "The build server is down", type: "help_request", state: "open", opened_at},
+        ]),
+        "wait-target list": page([{id: 1, wait_id: 1, row_table: "questions", row_id: 1}, {id: 2, wait_id: 2, row_table: "tasks", row_id: 4}]),
+    }));
+    expect(text).toContain("Which database?");
+    expect(text).toContain("The build server is down");
+    expect(text).not.toContain("The review");
+});

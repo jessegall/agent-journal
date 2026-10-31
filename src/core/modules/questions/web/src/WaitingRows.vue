@@ -10,7 +10,11 @@ function waited(openedAt) {
     return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 }
 
-const rows = computed(() => waits.value.filter((wait) => wait.state === "open").map((wait) => ({
+function waitsOnUser(wait) {
+    return wait.type === "help_request" || targets.value.some((target) => target.wait_id === wait.id && target.row_table === "questions");
+}
+
+const rows = computed(() => waits.value.filter((wait) => wait.state === "open" && waitsOnUser(wait)).map((wait) => ({
     id: wait.id,
     label: wait.focus,
     status: wait.state,
