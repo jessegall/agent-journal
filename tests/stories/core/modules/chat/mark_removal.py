@@ -12,4 +12,4 @@ def test_deleting_an_environment_deletes_its_marks(new_story):
     bus.run(ShowMark(2, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:1", "In elsewhere"), actor)
     story.expect_success("environment delete 2")
     assert mark_count(story) == 1
-    story.expect_success("chat-mark list --environment 1", "In main")
+    story.expect_text("chat-mark list --environment 1", "In main")
