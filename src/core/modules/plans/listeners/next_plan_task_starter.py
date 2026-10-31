@@ -2,12 +2,14 @@ from core.base.actor import Actor, ActorType
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
+from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
+from core.base.query.select import Select
 from core.modules.plans.conditions.checkpoint_limit import CheckpointLimit
-from core.modules.plans.conditions.no_open_dependency import NoOpenDependency
 from core.modules.plans.plan import Plan, PlanState
 from core.modules.plans.plan_task import PlanTask
 from core.modules.tasks.commands import TaskStart
+from core.modules.tasks.open_dependency import OpenDependency
 from core.modules.tasks.task import TaskState
 
 
@@ -26,8 +28,8 @@ class NextPlanTaskStarter(CommitListener):
         if not places or self.queries.query(Plan).find(places[0].plan_id).state is not PlanState.STARTED:
             return
         plan_id = places[0].plan_id
-        free_tasks = (self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.OPEN).matching(NoOpenDependency("task_id"))
-                      .matching(CheckpointLimit(plan_id)))
+        waiting = SubqueryMatch("task_id", Select(OpenDependency.view).column("task_id"), negated=True)
+        free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.OPEN).matching(waiting).matching(CheckpointLimit(plan_id))
         following = free_tasks.ordered("phase_position", "position").page(1, 1).rows
         if following:
             self.bus.run(TaskStart(following[0].task_id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
