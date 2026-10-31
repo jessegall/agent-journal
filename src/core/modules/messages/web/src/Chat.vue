@@ -1,11 +1,13 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, MarkHost, RowList, fetchMarkDeclarations, interleaved, useRows} from "@journal/window-kit";
+import {Btn, DockWrapper, MarkHost, RowList, fetchDockDeclarations, fetchMarkDeclarations, interleaved, useRows} from "@journal/window-kit";
 
 const {rows: messages, failure, load, context} = useRows("message list", ["message.*"]);
 const {rows: marks} = useRows("chat-mark list", ["chat_mark.*"]);
+const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
+const dockedNow = computed(() => docked.value.filter((item) => item.state === "docked"));
 const rows = computed(() => interleaved(messages.value, marks.value));
-onMounted(fetchMarkDeclarations);
+onMounted(() => Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]));
 const text = ref("");
 const sendFailure = ref("");
 
@@ -19,6 +21,9 @@ async function send() {
 
 <template>
     <div class="chat">
+        <template v-for="item in dockedNow" :key="item.id">
+            <DockWrapper :item="item" />
+        </template>
         <RowList :rows="rows" :failure="failure" empty="No messages yet">
             <template #default="{row}">
                 <template v-if="row.kind === 'mark'">
