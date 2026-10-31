@@ -23,13 +23,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return UsageCode
 	}
 	request.Answers = launch.LoadAnswers(home)
-	journal := launch.CommandJournal{Run: func(line ...string) (string, error) {
-		var output, errorOutput bytes.Buffer
-		if code := Run(timing.Started(), line, &output, &errorOutput); code != SuccessCode {
-			return output.String(), fmt.Errorf("journal %s: %s", strings.Join(line, " "), strings.TrimSpace(output.String()+errorOutput.String()))
-		}
-		return output.String(), nil
-	}}
+	journal := launchJournal()
 	terminal := launch.NewConsoleTerminal()
 	restore := terminal.Raw()
 	choice, err := launch.Boot(journal, terminal, request)
@@ -79,4 +73,15 @@ func launchRequest(argv []string) (launch.Request, error) {
 		}
 	}
 	return request, nil
+}
+
+// launchJournal reads the journal for the launcher through this client's own command lines.
+func launchJournal() launch.CommandJournal {
+	return launch.CommandJournal{Run: func(line ...string) (string, error) {
+		var output, errorOutput bytes.Buffer
+		if code := Run(timing.Started(), line, &output, &errorOutput); code != SuccessCode {
+			return output.String(), fmt.Errorf("journal %s: %s", strings.Join(line, " "), strings.TrimSpace(output.String()+errorOutput.String()))
+		}
+		return output.String(), nil
+	}}
 }

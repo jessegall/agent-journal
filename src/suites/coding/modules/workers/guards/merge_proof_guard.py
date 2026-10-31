@@ -9,7 +9,7 @@ class MergeProofGuard(Guard):
     """Refuses to merge a worktree while a proof of it is not checked."""
 
     name = "workers.merge-needs-checks"
-    event = "worktree.merge"
+    event = "worker_worktree.merge"
 
     def __init__(self, checks: MergeChecks) -> None:
         self.checks = checks

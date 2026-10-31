@@ -25,7 +25,7 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
     def handle(self, command: DeliverTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
-            raise Refusal("only a worker with a started task delivers", "journal worktree list shows the worktrees")
+            raise Refusal("only a worker with a started task delivers", "journal worker-worktree list shows the worktrees")
         task = self.queries.query(Task).find(worktree.task_id)
         proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows()}
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]

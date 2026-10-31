@@ -1,23 +1,15 @@
 import fcntl
-import hashlib
 import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
-from core.base.journal_home import JournalHome
+from core.base.journal_home import SERVER_SOCKET, JournalHome
 from server.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
-SOCKET_PATH_LIMIT_CHARACTERS = 100
-SHORT_SOCKET_FOLDER = Path("/tmp")
-SERVER_SOCKET = "server"
-LAUNCHER_SOCKET = "launcher"
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
-    path = home.folder.resolve() / f"{name}.sock"
-    if len(str(path)) <= SOCKET_PATH_LIMIT_CHARACTERS:
-        return path
-    return SHORT_SOCKET_FOLDER / f"journal-{hashlib.sha256(str(path).encode()).hexdigest()[:16]}.sock"
+    return home.socket(name)
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, held for the
     server's whole life; and its pid file. Only the server that holds the lock removes a leftover socket, and

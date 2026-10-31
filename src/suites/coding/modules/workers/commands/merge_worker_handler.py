@@ -30,7 +30,7 @@ class MergeWorkerHandler(Handler[MergeWorker, WorkerMerge]):
     def handle(self, command: MergeWorker, context: Context) -> WorkerMerge:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None or worktree.state is not WorktreeState.DELIVERED:
-            raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worktree list shows the worktrees")
+            raise Refusal(f"worker {command.worker_id} has delivered nothing to merge", "journal worker-worktree list shows the worktrees")
         environment = self.queries.query(Environment).find(worktree.environment_id)
         self.check(worktree, environment)
         task = self.queries.query(Task).find(worktree.task_id)

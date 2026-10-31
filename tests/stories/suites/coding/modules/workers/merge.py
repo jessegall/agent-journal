@@ -53,7 +53,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-    story.expect_success("worktree show 1", "state: cut")
+    story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_text(f"agent-line list --agent {worker.id}", "cart.py")
     repository.expect_no_rebase(worker.id)
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
@@ -67,7 +67,7 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
     story.expect_refusal(f"worker merge {worker.id}", "the checkout of environment main is on main, not on version-5; the merge waits until it is back", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: testing")
-    story.expect_success("worktree show 1", "state: delivered")
+    story.expect_success("worker-worktree show 1", "state: delivered")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     reminder = f"the merge of worker {worker.id} waits for the checkout of environment main to return to version-5"
     main_lines = f"agent-line list --agent {story.agent.id}"

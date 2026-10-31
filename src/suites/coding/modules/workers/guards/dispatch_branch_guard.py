@@ -11,7 +11,7 @@ class DispatchBranchGuard(Guard):
     """Refuses a worktree in an environment that names no branch to cut it from."""
 
     name = "workers.dispatch-needs-branch"
-    event = "worktree.create"
+    event = "worker_worktree.create"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

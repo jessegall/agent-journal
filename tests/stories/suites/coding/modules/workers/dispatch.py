@@ -13,7 +13,7 @@ def test_a_dispatch_cuts_the_worktree_from_the_environments_branch_while_the_che
     base_commit = repository.tip(ENVIRONMENT_BRANCH)
     worker_id = dispatched_worker(story).id
     story.expect_success(f"agent show {worker_id}", "role: worker", f"parent_id: {story.agent.id}")
-    story.expect_success("worktree show 1", "state: cut", f"agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
+    story.expect_success("worker-worktree show 1", "state: cut", f"agent_id: {worker_id}", "task_id: 1", f"folder: {repository.worktree_folder(worker_id)}",
                          f"branch: {repository.worker_branch(worker_id)}", f"base_branch: {ENVIRONMENT_BRANCH}", f"base_commit: {base_commit}")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker_id}")
     repository.expect_branch_tip(repository.worker_branch(worker_id), base_commit)
@@ -40,7 +40,7 @@ def test_a_worker_that_dispatches_a_worker_is_refused_and_makes_nothing(new_stor
     repository = repository_environment(story)
     worker = Actor(story.new_row_id(f"{WORKER_START} --parent {story.agent.id}"), ActorType.AGENT)
     story.expect_refusal(DISPATCH, "a worker dispatches no workers", actor=worker)
-    story.expect_success("worktree list", "nothing found")
+    story.expect_success("worker-worktree list", "nothing found")
     story.expect_success(f"agent list --parent {worker.id}", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: open")
     repository.expect_no_worktree()
@@ -58,7 +58,7 @@ def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_
     story = new_story(fixture=BuilderWithStartedTask)
     repository = repository_environment(story)
     story.expect_refusal(DISPATCH, "task 1 is started: a worker is dispatched to an open task", actor=story.agent)
-    story.expect_success("worktree list", "nothing found")
+    story.expect_success("worker-worktree list", "nothing found")
     story.expect_success("agent list --role worker", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
     repository.expect_no_worktree()

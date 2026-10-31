@@ -1,5 +1,11 @@
+import hashlib
 from dataclasses import dataclass
 from pathlib import Path
+
+SOCKET_PATH_LIMIT_CHARACTERS = 100
+SHORT_SOCKET_FOLDER = Path("/tmp")
+SERVER_SOCKET = "server"
+LAUNCHER_SOCKET = "launcher"
 
 
 @dataclass(frozen=True)
@@ -31,3 +37,9 @@ class JournalHome:
     @property
     def program_table(self) -> Path:
         return self.folder / "programs.json"
+
+    def socket(self, name: str) -> Path:
+        path = self.folder.resolve() / f"{name}.sock"
+        if len(str(path)) <= SOCKET_PATH_LIMIT_CHARACTERS:
+            return path
+        return SHORT_SOCKET_FOLDER / f"journal-{hashlib.sha256(str(path).encode()).hexdigest()[:16]}.sock"

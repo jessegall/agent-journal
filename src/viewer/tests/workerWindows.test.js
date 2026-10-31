@@ -6,7 +6,7 @@ import {context, drawn, page} from "./support/windowContext.js";
 test("the points window shows each point of the worker's brief with its proof", async () => {
     const windowContext = context(
         {
-            "worktree list": page([{id: 1, task_id: 4}]),
+            "worker-worktree list": page([{id: 1, task_id: 4}]),
             "task show": {ok: true, value: {id: 4, title: "Fix the cart", brief: "- the total adds the tax\n- the total rounds to cents"}},
             "proof list": page([{id: 1, point: 1, state: "checked", text: "cart.py:1, the tax story", shortfall: ""}]),
         },
@@ -16,12 +16,12 @@ test("the points window shows each point of the worker's brief with its proof", 
     expect(text).toContain("the total adds the tax");
     expect(text).toContain("checked: cart.py:1, the tax story");
     expect(text).toContain("no proof yet");
-    expect(windowContext.reads).toContain("worktree list --agent 2");
+    expect(windowContext.reads).toContain("worker-worktree list --agent 2");
     expect(windowContext.reads).toContain("proof list --worktree 1");
 });
 
 test("the points window of an agent with no worktree says so", async () => {
-    const text = await drawn(Points, context({"worktree list": page([])}, 2));
+    const text = await drawn(Points, context({"worker-worktree list": page([])}, 2));
     expect(text).toContain("This agent has no task brief to prove");
 });
 

@@ -23,7 +23,7 @@ class ReleaseWorkerHandler(Handler[ReleaseWorker, WorkerRelease]):
     def handle(self, command: ReleaseWorker, context: Context) -> WorkerRelease:
         worktree = self.worktrees.worker_worktree(command.worker_id)
         if worktree is None:
-            raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worktree list shows the worktrees")
+            raise Refusal(f"worker {command.worker_id} has no worktree out", "journal worker-worktree list shows the worktrees")
         task = self.queries.query(Task).find(worktree.task_id)
         self.repository.save(task.release(context.timestamp, context.actor, command.reason), context)
         abandoned = self.repository.save(worktree.moved(WorktreeLifecycle.abandon), context)

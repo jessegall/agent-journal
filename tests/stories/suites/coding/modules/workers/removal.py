@@ -12,7 +12,7 @@ def test_a_merged_worktree_is_removed_with_its_branch(new_story):
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
-    story.expect_success("worktree show 1", "state: removed")
+    story.expect_success("worker-worktree show 1", "state: removed")
     repository.expect_no_worktree()
 
 
@@ -23,7 +23,7 @@ def test_a_release_removes_the_folder_and_keeps_and_names_a_branch_that_holds_co
     worker_tip = repository.tip(repository.worker_branch(worker.id))
     story.expect_text(f'worker release {worker.id} "{RELEASE_REASON}"', repository.worker_branch(worker.id), actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: open")
-    story.expect_success("worktree show 1", "state: removed")
+    story.expect_success("worker-worktree show 1", "state: removed")
     repository.expect_no_folder(worker.id)
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
 
@@ -43,5 +43,5 @@ def test_a_worktree_folder_deleted_by_hand_is_pruned_from_git_at_its_removal(new
     worker = dispatched_worker(story)
     repository.folder_deleted(worker.id)
     story.expect_success(f'worker release {worker.id} "{RELEASE_REASON}"', actor=story.agent)
-    story.expect_success("worktree show 1", "state: removed")
+    story.expect_success("worker-worktree show 1", "state: removed")
     repository.expect_no_worktree()

@@ -148,3 +148,24 @@ func TestALaunchFromInsideAWorktreeUsesTheMainCheckoutsJournal(t *testing.T) {
 		t.Fatalf("a launch inside the cart worktree found the project at %q, not %q: %v", projectFolder, resolved, err)
 	}
 }
+
+func TestTheWorktreeListMarksAWorktreeWhoseEnvironmentIsGoneAndRemoveIsRefusedWhileItsSessionWorks(t *testing.T) {
+	root := gitRepository(t)
+	worktrees := Worktrees{Root: root}
+	for _, name := range []string{"cart", "till"} {
+		if _, err := worktrees.Prepare(name); err != nil {
+			t.Fatal(err)
+		}
+	}
+	environments := []Environment{{Name: "cart", Folder: worktreeFolder(root, "cart"), Working: true}}
+	lines := worktrees.ListLines(environments)
+	if len(lines) != 2 || lines[0] != "cart" || !strings.HasPrefix(lines[1], "till  its environment is gone") {
+		t.Fatalf("the worktree list is %v", lines)
+	}
+	if err := worktrees.DiscardNamed("cart", environments); err == nil {
+		t.Fatal("the cart worktree was removed while its session works in it")
+	}
+	if err := worktrees.DiscardNamed("till", environments); err != nil {
+		t.Fatal(err)
+	}
+}

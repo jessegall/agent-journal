@@ -9,7 +9,7 @@ class BaseBranchGuard(Guard):
     """Refuses to merge a worktree cut from a branch its environment no longer builds on."""
 
     name = "workers.base-branch-holds"
-    event = "worktree.merge"
+    event = "worker_worktree.merge"
 
     def __init__(self, checks: MergeChecks) -> None:
         self.checks = checks

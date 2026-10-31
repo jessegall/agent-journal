@@ -18,7 +18,7 @@ function briefPoints(task) {
 }
 
 async function load() {
-    const worktrees = await context.read(`worktree list --agent ${context.agent}`);
+    const worktrees = await context.read(`worker-worktree list --agent ${context.agent}`);
     const worktree = worktrees.ok ? worktrees.value.rows[0] : null;
     if (!worktree) {
         failure.value = worktrees.ok ? "" : worktrees.error;
@@ -38,7 +38,7 @@ async function load() {
     }));
 }
 
-context.follow(["proof.*", "worktree.*"], load);
+context.follow(["proof.*", "worker_worktree.*"], load);
 load();
 </script>
 

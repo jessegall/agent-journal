@@ -11,7 +11,7 @@ class DispatchWorkerGuard(Guard):
     """Refuses a worktree a worker asked for: a worker does its own task and dispatches no workers."""
 
     name = "workers.worker-runs-no-dispatch"
-    event = "worktree.create"
+    event = "worker_worktree.create"
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

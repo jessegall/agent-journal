@@ -43,7 +43,7 @@ def worker_session(story: Story, worker: Actor) -> str:
 
 
 def expect_clean_environment(story: Story, repository: GitRepository) -> None:
-    story.expect_success("worktree list", "nothing found")
+    story.expect_success("worker-worktree list", "nothing found")
     story.expect_success("agent list --role worker", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: open")
     repository.expect_no_worktree()

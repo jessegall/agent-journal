@@ -11,8 +11,8 @@ from suites.coding.modules.workers.models.enums.worktree_state import WorktreeSt
 class Worktree(Model):
     """The git worktree a worker writes in for its task: its folder and branch, cut from the environment's branch."""
 
-    model_name = "worktree"
-    cli_name = "worktree"
+    model_name = "worker_worktree"
+    cli_name = "worker-worktree"
     lifecycle = WorktreeLifecycle
 
     agent_id: int

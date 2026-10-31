@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.agents.models.agent import Agent
+from suites.coding.modules.workers.commands.worker_dispatch import WorkerDispatch
 
 
 @dataclass(frozen=True)
-class DispatchWorker(Command[Agent]):
+class DispatchWorker(Command[WorkerDispatch]):
     """Starts a worker on an open task, in a worktree cut from the environment's branch."""
 
     task_id: int

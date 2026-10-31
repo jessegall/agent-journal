@@ -43,8 +43,8 @@ def test_worktree_moves():
 
 def test_worktree_move_refusal():
     merged = replace(WORKTREE, state=WorktreeState.MERGED)
-    assert refusal(merged, merged.moved(WorktreeLifecycle.deliver)) == "worktree 1 is merged, so it cannot deliver: from merged it can only go on with journal worktree remove 1"
-    assert refusal(WORKTREE, WORKTREE.moved(WorktreeLifecycle.merge)) == "worktree 1 is new, so it cannot merge: from new it can only go on with journal worktree cut 1"
+    assert refusal(merged, merged.moved(WorktreeLifecycle.deliver)) == "worker-worktree 1 is merged, so it cannot deliver: from merged it can only go on with journal worker-worktree remove 1"
+    assert refusal(WORKTREE, WORKTREE.moved(WorktreeLifecycle.merge)) == "worker-worktree 1 is new, so it cannot merge: from new it can only go on with journal worker-worktree cut 1"
 
 
 def test_proof_move_refusal():

@@ -16,7 +16,7 @@ def window_story(new_story) -> WindowStory:
 def test_the_points_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
     window = window_story(new_story)
     window.expect_declared_window("workers.points", "component", "agent")
-    window.expect_window_allowed("workers.points", "worktree list --agent 2")
+    window.expect_window_allowed("workers.points", "worker-worktree list --agent 2")
     window.expect_window_allowed("workers.points", "task show 1")
     window.expect_window_allowed("workers.points", "proof list --worktree 1")
 

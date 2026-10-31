@@ -11,6 +11,7 @@ from suites.coding.modules.workers.rules.inactive_worker_rule import InactiveWor
 from suites.coding.modules.workers.rules.workers_out_rule import WorkersOutRule
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
 from suites.coding.modules.workers.listeners.released_stop_listener import ReleasedStopListener
+from suites.coding.modules.workers.listeners.worker_program_listener import WorkerProgramListener
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
 from suites.coding.modules.workers.commands.merge_worker_handler import MergeWorkerHandler
@@ -56,8 +57,8 @@ class WorkersModule(Module):
     subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
-    listeners = [EndedWorkerListener, ReleasedStopListener]
+    listeners = [EndedWorkerListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
-                                 reads=["worktree list", "task show", "proof list"], events=["proof.*", "worktree.*"]),
+                                 reads=["worker-worktree list", "task show", "proof list"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"])]

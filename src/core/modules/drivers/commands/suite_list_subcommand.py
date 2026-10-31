@@ -4,6 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 
 
 class SuiteListSubcommand(ReadSubcommand[tuple[str, ...]]):
@@ -22,5 +23,5 @@ class SuiteListSubcommand(ReadSubcommand[tuple[str, ...]]):
         return tuple(sorted(suite.name for suite in self.registry.top_suites()))
 
     def write_output(self, value: object, output: Output) -> None:
-        for name in value if isinstance(value, tuple) else ():
+        for name in value if is_tuple(value) else ():
             output.line(str(name))
