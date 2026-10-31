@@ -23,4 +23,4 @@ def test_commands_ride_on_an_answer_and_ending_a_layer_marks_it():
 
 
 def test_a_reply_that_lets_the_hook_through_has_no_refusal_and_reads_as_json():
-    assert HookReply.allowed("a line").json() == {"refusal": "", "lines": ["a line"], "hook_call_id": None}
+    assert HookReply.allowed("a line").json() == {"refusal": "", "lines": ["a line"], "hook_call_id": None, "updated_input": {}}

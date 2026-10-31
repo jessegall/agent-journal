@@ -98,6 +98,33 @@ class RemovalRule(DriverRule):
         return RuleAnswer.allowed()
 
 
+class ShellRewrite(DriverRule):
+    """While the project setting samples.rewrite is true, the lead's shell line runs through sample-run."""
+
+    name = "samples.shell-rewrite"
+    hook = HookEventName.PRE_TOOL_USE
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        shell = hook.event.tool.shell if hook.event.tool is not None else None
+        if shell is not None and self.settings.project_value("samples.rewrite", False) is True:
+            return RuleAnswer.rewriting({"command": f"sample-run -- {shell.line}"})
+        return RuleAnswer.allowed()
+
+
+class SecondShellRewrite(ShellRewrite):
+    """While samples.rewrite-twice is true as well, a second rule rewrites the same shell line."""
+
+    name = "samples.second-shell-rewrite"
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        if self.settings.project_value("samples.rewrite-twice", False) is True and hook.event.tool is not None and hook.event.tool.shell is not None:
+            return RuleAnswer.rewriting({"command": "sample-run-again"})
+        return RuleAnswer.allowed()
+
+
 class LockedEditRefusal(DriverRule):
     """An open edit lock refuses every edit."""
 
@@ -227,7 +254,7 @@ class Lead(Driver):
     suite = SampleSuite
     role = AgentRole.MAIN
     permanent_rules = [RemovalRule]
-    rules = [StopLine, StopRefusal]
+    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 

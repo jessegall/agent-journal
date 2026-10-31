@@ -69,3 +69,40 @@ func TestAnUnansweredCodexHookTellsTheAgentToo(t *testing.T) {
 		t.Fatalf("printed %q %d", stdout, code)
 	}
 }
+
+func TestARewrittenClaudeToolUseIsAllowedWithItsNewInputRunInTheForeground(t *testing.T) {
+	stdout, stderr, code := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{UpdatedInput: map[string]any{"command": "journal-run 4 -- ls"}})
+	want := `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","updatedInput":{"command":"journal-run 4 -- ls","run_in_background":false}}}` + "\n"
+	if code != 0 || stderr != "" || stdout != want {
+		t.Fatalf("printed %q %q %d, want %q", stdout, stderr, code, want)
+	}
+}
+
+func TestARewrittenCodexToolUseCarriesTheCommandOnly(t *testing.T) {
+	stdout, _, code := shippedAnswer("codex", "PreToolUse", "pre_tool_use", Reply{UpdatedInput: map[string]any{"command": "journal-run 4 -- ls"}})
+	want := `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow","updatedInput":{"command":"journal-run 4 -- ls"}}}` + "\n"
+	if code != 0 || stdout != want {
+		t.Fatalf("printed %q %d, want %q", stdout, code, want)
+	}
+}
+
+func TestARewriteWithLinesKeepsTheLines(t *testing.T) {
+	stdout, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{UpdatedInput: map[string]any{"command": "journal-run 4 -- ls"}, Lines: []string{"log your task"}})
+	if !strings.Contains(stdout, `"updatedInput"`) || !strings.Contains(stdout, `"additionalContext":"log your task"`) {
+		t.Fatalf("printed %q", stdout)
+	}
+}
+
+func TestARefusalPrintedThroughARewrittenCommandIsAllowedAndShowsTheRefusalAsOutput(t *testing.T) {
+	stdout, stderr, code := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Refusal: "no git here", UpdatedInput: map[string]any{"command": "printf '%s' 'no git here'"}})
+	if code != 0 || stderr != "" || strings.Contains(stdout, `"deny"`) || !strings.Contains(stdout, `"permissionDecision":"allow"`) || !strings.Contains(stdout, "no git here") {
+		t.Fatalf("printed %q %q %d", stdout, stderr, code)
+	}
+}
+
+func TestAReplyWithNoRewriteStaysAsItWas(t *testing.T) {
+	stdout, _, _ := shippedAnswer("claude", "PreToolUse", "pre_tool_use", Reply{Lines: []string{"log your task"}})
+	if strings.Contains(stdout, "updatedInput") {
+		t.Fatalf("printed %q", stdout)
+	}
+}
