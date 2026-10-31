@@ -44,7 +44,8 @@
         "naming_GoSentenceVariableNameDetector",
         "naming_GoSentenceParameterNameDetector",
         "naming_GoUnitlessQuantityNameDetector",
-        "syntax_OneElementTupleDetector"
+        "syntax_OneElementTupleDetector",
+        "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,
     "configure": {
@@ -194,6 +195,13 @@
             }
         ],
         "syntax_OneElementTupleDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "test_UnitTestBoundaryDetector": [
             {
                 "judges": [
                     "tests"
