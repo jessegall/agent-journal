@@ -23,6 +23,10 @@ class Trail:
         if self.stamps:
             self.stamps.append((name, time.time_ns() // 1000))
 
+    def request_id(self, sender_pid: int) -> str:
+        go_start = next((at for name, at in self.stamps if name == "go_start"), None)
+        return "" if go_start is None else f"{sender_pid}-{go_start}"
+
     def joined(self, later: "Trail") -> "Trail":
         return Trail((*self.stamps, *later.stamps))
 

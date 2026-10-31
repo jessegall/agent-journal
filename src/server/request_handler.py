@@ -38,6 +38,7 @@ class RequestHandler(BaseHTTPRequestHandler):
     def setup(self) -> None:
         super().setup()
         self.trail = Trail.started("server_accepted")
+        self.sender_pid = peer_pid(self.connection)
 
     def parse_request(self) -> bool:
         if not self.trail.stamps:
@@ -59,8 +60,8 @@ class RequestHandler(BaseHTTPRequestHandler):
     def write_trail_line(self) -> None:
         context = self.journal_server().context
         try:
-            TrailLog(context.home).write({"route": self.route, "line": self.line, "status": self.status, "exit_code": self.exit_code,
-                                          "code_version": context.code_version.text[:12], "trail": self.trail.text()})
+            TrailLog(context.home).write({"request_id": self.trail.request_id(self.sender_pid), "route": self.route, "line": self.line, "status": self.status,
+                                          "exit_code": self.exit_code, "code_version": context.code_version.text[:12], "trail": self.trail.text()})
         except OSError as error:
             context.files.log_line(f"trail line not written: {error}")
 
@@ -106,7 +107,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(404, {"error": f"no route {self.path}"})
             return
         try:
-            request = CliRequest.parsed(json.loads(body or b"{}"), peer_pid(self.connection), self.trail)
+            request = CliRequest.parsed(json.loads(body or b"{}"), self.sender_pid, self.trail)
         except (CliRequestError, CallerRequestError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return

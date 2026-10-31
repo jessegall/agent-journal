@@ -45,6 +45,11 @@ def test_a_header_with_a_malformed_pair_keeps_its_good_pairs():
     assert trail.stamps == [("go_start", 1761904800015012), ("server_received", 1761904800016000)]
 
 
+def test_a_request_id_pairs_the_senders_pid_with_its_go_start_and_is_empty_without_one():
+    assert Trail.parsed("go_start=1761904800015012;go_sent=1761904800015420").request_id(4321) == "4321-1761904800015012"
+    assert Trail.started("server_accepted").request_id(4321) == ""
+
+
 @pytest.fixture
 def container(tmp_path):
     return sample_container(tmp_path, Registry("abc", {}, handlers((MakeCommand, MakeHandler)), {}, (), []))

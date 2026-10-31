@@ -123,14 +123,18 @@ class ServerStory:
         self.send_with_trail(line, "go_start=1")
         assert "trail line not written" in ServerFiles(self.story.home).log.read_text()
 
+    def send_health_twice_on_one_connection(self) -> None:
+        kept, closed = b"GET /health HTTP/1.1\r\nHost: journal\r\n\r\n", b"GET /health HTTP/1.1\r\nHost: journal\r\nConnection: close\r\n\r\n"
+        assert raw_answer(self.socket_path, kept + closed).count(b"HTTP/1.1 200") == 2
+
     def send_with_trail(self, line: str, trail_text: str) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TRAIL_HEADER: trail_text})
         assert answer.exit_code == 0, answer
 
 
-def expect_trail_names(home: JournalHome, names: list[list[str]]) -> None:
-    lines = [json.loads(line) for line in TrailLog(home).path.read_text().splitlines()]
-    assert [[name for name, _ in Trail.parsed(line["trail"]).stamps] for line in lines] == names, lines
+def expect_trail_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
+    written = [json.loads(line) for line in TrailLog(home).path.read_text().splitlines()]
+    assert [(line["request_id"], [name for name, _ in Trail.parsed(line["trail"]).stamps]) for line in written] == lines, written
 
 
 @contextmanager

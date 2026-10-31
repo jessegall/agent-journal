@@ -1,7 +1,9 @@
+import os
+
 from core.base.cli.console import REFUSED_CODE
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from tests.stories.core.support.fixtures import ThreeTasks
-from tests.stories.server.support.server_client import expect_trail_names, server_story
+from tests.stories.server.support.server_client import expect_trail_lines, server_story
 
 
 def test_health_answers_with_the_servers_pid_and_code_version(new_story):
@@ -50,10 +52,17 @@ def test_a_write_sent_with_a_trail_leaves_one_log_line_with_every_stamp_in_order
     story = new_story(fixture=ThreeTasks)
     with server_story(story) as server:
         server.send_with_trail('task make "Fourth" --environment main', "go_start=1;go_sent=2")
-    expect_trail_names(story.home, [["go_start", "go_sent", "server_accepted", "server_received", "command_started", "write_started", "committed",
-                                     "command_done", "answered"]])
+    expect_trail_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "command_started", "write_started",
+                                                          "committed", "command_done", "answered"])])
 
 
 def test_a_trail_line_that_cannot_be_written_is_noted_and_the_request_still_answered(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
         story.expect_answer_with_unwritable_trail_log('task make "Fourth" --environment main')
+
+
+def test_each_request_on_a_kept_connection_leaves_its_own_line_from_its_own_acceptance(new_story):
+    story = new_story(fixture=ThreeTasks)
+    with server_story(story) as server:
+        server.send_health_twice_on_one_connection()
+    expect_trail_lines(story.home, [("", ["server_accepted", "server_received", "answered"])] * 2)
