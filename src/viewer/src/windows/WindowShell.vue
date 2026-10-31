@@ -1,10 +1,13 @@
 <script setup>
 import {computed, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
+import {AllowancePrompts} from "./allowancePrompts.js";
+import {lineResult} from "./windowContext.js";
 import {WindowOffers, fetchWindowOffers, followEvents} from "./windowOffers.js";
 import WindowPane from "./WindowPane.vue";
 import {WindowSubscriptions} from "./windowSubscriptions.js";
 
+const SHELL_WINDOW = "viewer.shell";
 const props = defineProps({
     environment: {type: String, required: true},
     layout: {type: Array, default: null},
@@ -14,6 +17,8 @@ const props = defineProps({
 
 const offers = props.offers || new WindowOffers(() => fetchWindowOffers(props.environment));
 const subscriptions = new WindowSubscriptions();
+const shellLine = (line) => lineResult(SHELL_WINDOW, line, props.environment);
+const prompts = new AllowancePrompts(shellLine);
 const panes = ref(props.layout ? [...props.layout] : []);
 const unopened = computed(() => offers.offers.value.filter((offer) => !panes.value.includes(offer.name)));
 
@@ -34,7 +39,16 @@ offers.load().then(() => {
             <Btn v-for="offer in unopened" :key="offer.name" @click="panes.push(offer.name)">Open {{ offer.title }}</Btn>
         </nav>
         <div class="window-shell-panes">
-            <WindowPane v-for="name in panes" :key="name" :name="name" :offers="offers" :subscriptions="subscriptions" :environment="environment" />
+            <WindowPane
+                v-for="name in panes"
+                :key="name"
+                :name="name"
+                :offers="offers"
+                :subscriptions="subscriptions"
+                :environment="environment"
+                :prompts="prompts"
+                :shell-read="shellLine"
+            />
         </div>
     </div>
 </template>

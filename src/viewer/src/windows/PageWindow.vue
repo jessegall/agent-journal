@@ -8,6 +8,8 @@ const props = defineProps({
     environment: {type: String, required: true},
     agent: {type: Number, default: null},
     visible: {type: Boolean, default: true},
+    permissions: {type: Object, required: true},
+    prompts: {type: Object, default: null},
 });
 const component = shallowRef(null);
 
@@ -30,7 +32,8 @@ watch(
         :environment="environment"
         :agent="agent"
         :visible="visible"
-        :declared="{reads: offer.reads || [], runs: offer.runs || []}"
+        :permissions="permissions"
+        :prompts="prompts"
         :unavailable-reason="offer.unavailable_reason"
     />
 </template>

@@ -1,6 +1,7 @@
 <script setup>
 import {h, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
 import {WINDOW_CONTEXT, windowContext} from "./windowContext.js";
+import AllowancePrompt from "./AllowancePrompt.vue";
 import WindowPlaceholder from "./WindowPlaceholder.vue";
 
 const props = defineProps({
@@ -10,7 +11,8 @@ const props = defineProps({
     environment: {type: String, default: ""},
     agent: {type: Number, default: null},
     visible: {type: Boolean, default: true},
-    declared: {type: Object, default: () => ({reads: [], runs: []})},
+    permissions: {type: Object, default: () => ({reads: [], runs: [], missing: [], ask: async () => true})},
+    prompts: {type: Object, default: null},
     unavailableReason: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
@@ -21,7 +23,7 @@ provide(WINDOW_CONTEXT, windowContext({
     environment: props.environment,
     agent: props.agent,
     visible: () => props.visible,
-    declared: props.declared,
+    permissions: props.permissions,
     subscriptions: props.subscriptions,
     open: (window, agent) => emit("open", window, agent),
 }));
@@ -36,10 +38,12 @@ onErrorCaptured((error) => {
 });
 
 const Hosted = () => h(props.component);
+const prompt = () => (props.prompts?.current.value?.window === props.name ? props.prompts.current.value : null);
 </script>
 
 <template>
     <section class="window" :data-window="name">
+        <AllowancePrompt v-if="prompt()" :request="prompt()" @answer="prompts.answer($event)" />
         <WindowPlaceholder v-if="unavailableReason" :name="name" :reason="unavailableReason" />
         <WindowPlaceholder v-else-if="failure" :name="name" :reason="`This window failed: ${failure}`" />
         <WindowPlaceholder v-else-if="!component" :name="name" reason="No installed module has this window." />

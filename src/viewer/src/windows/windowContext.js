@@ -5,9 +5,9 @@ const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
 const READ_COALESCE_MS = 100;
 const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
-// what every window is given: its name, environment and agent, whether it is shown, what it declared, its follows
+// what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
 // through the host, and read and run, which never throw and answer {ok, value} or {ok, failure, error}
-export function windowContext({window, environment, agent, visible, declared, subscriptions, open}) {
+export function windowContext({window, environment, agent, visible, permissions, subscriptions, open}) {
     const recent = new Map();
     const read = (line) => {
         const last = recent.get(line);
@@ -21,7 +21,7 @@ export function windowContext({window, environment, agent, visible, declared, su
         environment,
         agent,
         visible: computed(() => visible()),
-        permissions: {reads: declared.reads, runs: declared.runs, missing: [], ask: async () => true},
+        permissions,
         read,
         run: (line) => lineResult(window, line, environment),
         follow: (patterns, heard) => subscriptions.follow(window, patterns, heard, visible),
