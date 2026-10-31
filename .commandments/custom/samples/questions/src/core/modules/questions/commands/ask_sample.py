@@ -3,6 +3,7 @@ from core.modules.questions.models.lifecycles.question_lifecycle import Question
 from core.modules.waits.models.wait import Wait
 
 
+# @sin architecture_layout_KindFoldersHoldTheirKindDetector
 class AskSample:
     def handle(self, repository, question, context):
         # @sin architecture_questions_QuestionsAskedByCommandDetector

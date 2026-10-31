@@ -3,6 +3,7 @@ from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 
 
+# @sin naming_ClassNamedForItsBaseDetector
 class SampleDockWriter(CommitListener):
     name = "samples.dock-writer"
     event = "plan.start"

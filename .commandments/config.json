@@ -103,7 +103,12 @@
         "naming_PlainSettingTextDetector",
         "architecture_modules_ModuleMovesDetector",
         "architecture_modules_MoveInUpgradeFolderDetector",
-        "architecture_modules_ModuleSeedsDetector"
+        "architecture_modules_ModuleSeedsDetector",
+        "architecture_viewer_ChatMessageIsCardDetector",
+        "architecture_viewer_MarkEndsOnlyForProcessDetector",
+        "architecture_viewer_DockCardHasTitleDetector",
+        "architecture_install_NoVersionFourPathDetector",
+        "architecture_viewer_PanelFromWebFolderDetector"
     ],
     "parallel": 2,
     "configure": {

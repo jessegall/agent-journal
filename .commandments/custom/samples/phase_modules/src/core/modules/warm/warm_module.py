@@ -3,6 +3,7 @@ from core.base.module.module import Module
 
 # @righteous architecture_modules_ModuleSeedsDetector
 # @righteous architecture_modules_ModuleMovesDetector
+# @sin architecture_core_OneClassPerFileDetector
 class WarmModule(Module):
     """A module that seeds demo rows and carries its version 4 table."""
 
@@ -14,6 +15,7 @@ class WarmModule(Module):
 
 # @righteous architecture_modules_ModuleSeedsDetector
 # @righteous architecture_modules_ModuleMovesDetector
+# @sin architecture_core_OneClassPerFileDetector
 class ExplainedModule(Module):
     """A module that says why it seeds and moves nothing."""
 

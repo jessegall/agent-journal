@@ -1,6 +1,7 @@
 from core.base.driver.rule_answer import RuleAnswer
 
 
+# @sin architecture_layout_KindFoldersHoldTheirKindDetector
 class RuleSample:
     def answer(self, bus, repository, command, question):
         # @sin architecture_questions_RulesNeverAskDetector

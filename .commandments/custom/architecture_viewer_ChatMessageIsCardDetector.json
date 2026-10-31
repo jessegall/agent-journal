@@ -1,0 +1,41 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Element",
+        "where": [
+            {
+                "nameIn": [
+                    "span",
+                    "p"
+                ]
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "member-access"
+                        },
+                        {
+                            "name": "text"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/messages/web/src/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "chat-message-not-a-card",
+        "description": "The chat window writes a message's text in a plain element, so the message loses its card, its time and its markdown.",
+        "rule": "The chat window draws each message with MessageCard from the window kit.",
+        "skill": "plain-code-words"
+    }
+}

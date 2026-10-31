@@ -3,6 +3,7 @@ import re
 from core.modules.skills.commands.require_skill import RequireSkill
 
 
+# @sin architecture_layout_KindFoldersHoldTheirKindDetector
 class ListenerSample:
     def handle(self, event, call, text_keywords):
         # @sin architecture_skills_KeywordMatchInOnePlaceDetector

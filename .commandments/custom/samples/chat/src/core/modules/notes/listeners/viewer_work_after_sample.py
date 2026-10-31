@@ -11,6 +11,7 @@ from core.modules.notes.models.enums.note_mark_variant import NoteMarkVariant
 
 
 # @righteous architecture_chat_ViewerWorkAfterTheHookDetector
+# @sin naming_SentenceTypeNameDetector
 class NoteMarkAfterListener(CommitListener):
     """A sample that shows a note's mark after the commit, on the listener thread."""
 

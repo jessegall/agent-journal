@@ -9,4 +9,5 @@ class SampleMove:
         # @righteous architecture_upgrade_SourceReadOnlyDetector
         target.insert(rows)
         # @righteous architecture_upgrade_NoDirectOldTableSqlDetector
+        # @sin architecture_core_SqlLayerDetector
         return "SELECT * FROM users"

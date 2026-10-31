@@ -2,6 +2,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.skills.commands.require_skill import RequireSkill
 
 
+# @sin architecture_layout_KindFoldersHoldTheirKindDetector
 class RuleSample:
     def answer(self, bus, repository, hook, row):
         # @sin architecture_skills_SkillsDueByListenersDetector

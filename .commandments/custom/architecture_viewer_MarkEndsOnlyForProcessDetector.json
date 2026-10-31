@@ -1,0 +1,43 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "comparison",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "text": "ended"
+                        }
+                    ]
+                }
+            },
+            {
+                "of": "parent",
+                "not": {
+                    "descendant": {
+                        "name": "process"
+                    }
+                }
+            },
+            {
+                "file": "src/viewer/src/domain/markLook.js"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "event-mark-ends-with-a-tick",
+        "description": "A mark is shown as ended for any row that ended, so a quiet event of the journal gets the tick of a finished process.",
+        "rule": "Only a mark that follows a process ends: test the declaration's process first, as markLook does.",
+        "skill": "plain-code-words"
+    }
+}
