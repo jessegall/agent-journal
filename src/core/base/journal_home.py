@@ -20,7 +20,7 @@ class JournalHome:
 
     @property
     def database(self) -> Path:
-        return self.folder / "journal.db"
+        return self.folder / "version-5.db"
 
     @property
     def error_log(self) -> Path:

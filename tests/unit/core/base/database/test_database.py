@@ -52,7 +52,7 @@ def test_a_commit_that_fails_is_rolled_back(database):
 
 
 def test_a_second_connection_waits_for_the_write_lock_instead_of_writing_halfway(database, tmp_path):
-    second_connection = sqlite3.connect(tmp_path / "journal.db", autocommit=True, timeout=0.2)
+    second_connection = sqlite3.connect(tmp_path / "version-5.db", autocommit=True, timeout=0.2)
     with database.transaction():
         database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["first"]))
         with pytest.raises(sqlite3.OperationalError, match="locked"):

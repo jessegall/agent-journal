@@ -1,7 +1,11 @@
 #!/bin/sh
-# agent-journal, version 5: install the journal's hook into the project in the current directory.
+# agent-journal, version 5: install the journal into the project in the current directory.
 #
 #   sh /path/to/agent-journal/install.sh
+#
+# Python 3.14 or newer is found first and the code is copied into .journal/src, its own database .journal/version-5.db
+# synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
+# is and told to run journal upgrade, and an install already made says so and changes nothing. Nothing is started.
 #
 # The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
 # checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The hooks of
@@ -52,10 +56,29 @@ checksum() {
 fall_back() {
   mkdir -p "$ROOT/.journal/hooks"
   cp "$HERE/src/install/hook.sh" "$ROOT/.journal/hooks/hook.sh"
-  PYTHONPATH="$HERE/src" python3 -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
+  PYTHONPATH="$HERE/src" "$python" -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
   echo "$1, so the hooks of Claude Code and Codex call $ROOT/.journal/hooks/hook.sh, which the server answers more slowly"
   exit 0
 }
+
+find_python() {
+  for candidate in python3.14 python3.15 python3 python; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 14))' >/dev/null 2>&1; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14, or your system's package for python 3.14)"
+status=0
+PYTHONPATH="$HERE/src" "$python" -m install.install_journal "$ROOT" "$HERE/src" || status=$?
+case "$status" in
+  0) ;;
+  3) exit 0 ;;
+  *) exit "$status" ;;
+esac
 
 target=$(platform)
 case "$target" in
@@ -94,5 +117,5 @@ else
   echo "the release has no $runner, so shell lines run as the agent wrote them"
 fi
 
-PYTHONPATH="$HERE/src" python3 -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
+PYTHONPATH="$HERE/src" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
 echo "the hooks of Claude Code and Codex call $BIN/journal-hook"
