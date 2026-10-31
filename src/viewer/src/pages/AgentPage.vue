@@ -55,7 +55,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="agent-page">
+    <div class="agent-page" :data-face="started.face.value">
         <template v-if="failure">
             <p class="agent-page-failure" role="alert">Agent {{ agent }} could not be read: {{ failure }}</p>
         </template>

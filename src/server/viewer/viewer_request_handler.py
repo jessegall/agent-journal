@@ -23,6 +23,7 @@ EVENTS_ROUTE = "/api/events"
 WINDOWS_ROUTE = "/api/windows"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
+SESSION_ROUTE = "/api/session"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
@@ -62,6 +63,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == WINDOWS_ROUTE:
             windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
             self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
+            return
+        if route.path == SESSION_ROUTE:
+            self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
         if route.path == MARKS_ROUTE:
             self.answer(200, {"marks": viewer.routes.chat_declarations_route.marks()})

@@ -1,24 +1,33 @@
 import secrets
 import threading
 
+from server.viewer.session_type import SessionType
+from server.viewer.share_session_error import ShareSessionError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
+from server.viewer.viewer_session import ViewerSession
 
 KEY_BYTES = 24
 
 
 class ViewerLogin:
-    """The viewer's logins: a one-time key the person opens, spent on first use, and the session token it leaves in
-    a cookie, each naming the person the viewer acts for."""
+    """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, each naming
+    who the viewer acts for: a person, a person's phone, or one share."""
 
     def __init__(self) -> None:
         self.lock = threading.Lock()
-        self.keys: dict[str, int] = {}
-        self.sessions: dict[str, int] = {}
+        self.keys: dict[str, ViewerSession] = {}
+        self.sessions: dict[str, ViewerSession] = {}
 
-    def new_key(self, person_id: int) -> str:
+    def new_key(self, person_id: int, session_type: SessionType = SessionType.PERSON) -> str:
+        return self.session_key(ViewerSession(session_type, person_id=person_id))
+
+    def new_share_key(self, share_id: int) -> str:
+        return self.session_key(ViewerSession(SessionType.SHARE, share_id=share_id))
+
+    def session_key(self, session: ViewerSession) -> str:
         key = secrets.token_urlsafe(KEY_BYTES)
         with self.lock:
-            self.keys[key] = person_id
+            self.keys[key] = session
         return key
 
     def has_session(self, token: str) -> bool:
@@ -33,6 +42,12 @@ class ViewerLogin:
             self.sessions[token] = self.keys.pop(key)
         return token
 
-    def person_id(self, token: str) -> int:
+    def session(self, token: str) -> ViewerSession:
         with self.lock:
             return self.sessions[token]
+
+    def person_id(self, token: str) -> int:
+        session = self.session(token)
+        if session.person_id is None:
+            raise ShareSessionError("a share link opens only what was shared")
+        return session.person_id

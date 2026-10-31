@@ -231,8 +231,9 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     files.clear_leftover_socket()
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
+    login = ViewerLogin()
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(ViewerLogin(), ViewerRoutes(home, listener_thread)), STORY_HOOK_LIMIT_SECONDS)
+                            HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), STORY_HOOK_LIMIT_SECONDS)
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()

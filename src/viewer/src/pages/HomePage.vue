@@ -11,7 +11,7 @@ const props = defineProps({
     events: {type: Function, default: followEvents},
 });
 
-const {catalogue, subscriptions, shellLine, prompts, listeners, stop} = startWindows(props);
+const {catalogue, subscriptions, shellLine, prompts, listeners, stop, face} = startWindows(props);
 const home = useHomeLayout(props.environment, shellLine, catalogue);
 listeners.push(home.heard);
 // the main agent, whose id the agent windows opened on the home page are given
@@ -25,7 +25,7 @@ home.load();
 </script>
 
 <template>
-    <div class="home-page">
+    <div class="home-page" :data-face="face">
         <PaneStage page="home" :agent="mainAgent" :store="home.store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
     </div>
 </template>

@@ -16,7 +16,7 @@ const props = defineProps({
     events: {type: Function, default: followEvents},
 });
 
-const {catalogue, subscriptions, shellLine, prompts, stop} = startWindows(props);
+const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
 const {dock} = useViewTab(props.float);
 onUnmounted(stop);
 watchEffect(() => {
@@ -26,7 +26,7 @@ watchEffect(() => {
 </script>
 
 <template>
-    <div class="view-window">
+    <div class="view-window" :data-face="face">
         <template v-if="catalogue.windows.value.length">
             <div class="view-window-bar">
                 <MarkIcon :name="catalogue.window(view)?.icon || 'window'" />
