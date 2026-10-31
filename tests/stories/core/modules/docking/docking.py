@@ -41,7 +41,7 @@ def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(new
     kept, running, third = ended_task(story, "Kept"), running_task(story, "Running"), ended_task(story, "Third")
     story.container.get(Bus).run(KeepDockItem(docked(story, kept).id), story.user)
     docked(story, running)
-    with pytest.raises(Refusal, match="docksample.task holds at most 2 items"):
+    with pytest.raises(Refusal, match="docksample.task allows at most 2 items"):
         docked(story, third)
 
 
@@ -74,7 +74,7 @@ def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.expect_success("setting make docking.most-items 1 --environment main")
     docked(story, running_task(story, "First"))
-    with pytest.raises(Refusal, match="the dock holds at most 1 items"):
+    with pytest.raises(Refusal, match="the dock allows at most 1 items"):
         docked(story, running_task(story, "Second"))
 
 
@@ -95,7 +95,7 @@ def test_an_agent_cannot_undock_or_unkeep_an_item_a_person_kept(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     item = docked(story, ended_task(story, "Kept"))
     story.container.get(Bus).run(KeepDockItem(item.id), story.user)
-    story.expect_refusal(f"dock remove {item.id}", "was kept by a person", actor=story.agent)
+    story.expect_refusal(f"dock remove {item.id}", "stays because a person chose to keep it", actor=story.agent)
     story.expect_success(f"dock remove {item.id}", actor=story.user)
 
 

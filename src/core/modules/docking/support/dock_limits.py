@@ -8,8 +8,8 @@ DEFAULT_MOST_ITEMS = 6
 
 
 class DockLimits:
-    """How many items a dock holds in all, from the setting docking.most-items, and how many of one type, from the
-    type's declaration."""
+    """How many items a dock holds in all, from the setting docking.most-items, and how many of one type,
+    from the type's declaration."""
 
     def __init__(self, registry: Registry, queries: Queries, settings: SettingValues) -> None:
         self.registry, self.queries, self.settings = registry, queries, settings

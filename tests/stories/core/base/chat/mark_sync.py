@@ -47,7 +47,7 @@ def test_a_group_label_with_another_field_is_refused_at_sync(new_story):
 
 
 def test_a_dock_that_holds_no_item_is_refused_at_sync(new_story):
-    refused(new_story, "EmptyDockModule", "the dock good.note holds at most 0 items, and it holds at least 1")
+    refused(new_story, "EmptyDockModule", "the dock good.note allows at most 0 items, and it holds at least 1")
 
 
 def test_a_dock_reading_a_line_that_is_no_read_is_refused_at_sync(new_story):

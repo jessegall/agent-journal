@@ -6,8 +6,8 @@ from core.modules.docking.models.dock_item import DockItem
 
 
 class RowEnd:
-    """Whether the row an item points at has ended: it is gone, it has no lifecycle, or it stands in a state that only
-    moves back to a first state, such as a closed task that can be reopened."""
+    """Whether the row an item points at has ended: it is gone, it has no lifecycle, or it stands in a
+    state that only moves back to a first state, such as a closed task that can be reopened."""
 
     def __init__(self, registry: Registry, queries: Queries) -> None:
         self.registry, self.queries = registry, queries

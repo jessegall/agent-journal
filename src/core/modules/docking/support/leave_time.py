@@ -7,8 +7,8 @@ from core.modules.docking.support.row_end import RowEnd
 
 
 class LeaveTime:
-    """When an item leaves the dock by itself: its type's leaves_after_seconds after its row ended, never for a kept
-    item or a type that lets its items stay."""
+    """When an item leaves the dock by itself: its type's leaves_after_seconds after its row ended, never
+    for a kept item or a type that lets its items stay."""
 
     def __init__(self, registry: Registry, row_end: RowEnd) -> None:
         self.registry, self.row_end = registry, row_end

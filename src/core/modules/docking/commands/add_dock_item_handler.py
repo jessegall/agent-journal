@@ -13,9 +13,9 @@ from core.modules.docking.support.row_end import RowEnd
 
 
 class AddDockItemHandler(Handler[AddDockItem, DockItem]):
-    """Saves the item in the environment's dock, making the dock first when the environment has none. At a limit it
-    undocks the oldest item that is not kept and whose row has ended, and it refuses naming the limit when every item is
-    kept or still running."""
+    """Saves the item in the environment's dock, making the dock first when the environment has none. At a
+    limit it undocks the oldest item that is not kept and whose row has ended, and it refuses naming the
+    limit when every item is kept or still running."""
 
     command = AddDockItem
 
@@ -31,9 +31,9 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
         type_most = self.limits.type_most(command.type)
         if type_most is not None:
-            self.make_room(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} holds at most {type_most} items", context)
+            self.make_room(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} allows at most {type_most} items", context)
         dock_most = self.limits.dock_most(dock.id)
-        self.make_room(self.items.docked(dock.id), dock_most, f"the dock holds at most {dock_most} items", context)
+        self.make_room(self.items.docked(dock.id), dock_most, f"the dock allows at most {dock_most} items", context)
         item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id)
         return self.repository.save(item.changed(leaves_at=self.leave_time.at(item, context.timestamp)), context)
 
@@ -43,5 +43,5 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
             return
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None)
         if leaving is None:
-            raise Refusal(limit_text, f"every item is kept or still running: keep fewer, or raise {MOST_ITEMS_SETTING}")
+            raise Refusal(limit_text, f"every item is pinned or still running: pin fewer, or raise {MOST_ITEMS_SETTING}")
         self.repository.save(leaving.undock(context.timestamp, context.actor), context)

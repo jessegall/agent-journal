@@ -2,7 +2,8 @@ from core.base.database.migration import Migration
 
 
 class DocksTableMigration(Migration):
-    """Creates the docks table, one dock to an environment, and the dock items table, whose items go with their dock."""
+    """Creates the docks table, one dock to an environment, and the dock items table, whose items go with
+    their dock."""
 
     number = 1
     statements = (

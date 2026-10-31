@@ -11,9 +11,9 @@ from core.modules.docking.support.leave_time import LeaveTime
 
 
 class DockItemLeaveListener(CommitListener):
-    """Whenever a change is committed, the items whose row it ended get the time they leave at, and the items whose
-    time has come leave the dock. Time passing raises no event, so the next change of any kind is when the dock
-    is checked."""
+    """Whenever a change is committed, the items whose row it ended get the time they leave at, and the
+    items whose time has come leave the dock. Time passing raises no event, so the next change of any kind
+    is when the dock is checked."""
 
     name = "docking.item-leave"
     event = "*.*"

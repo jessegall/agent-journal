@@ -22,4 +22,4 @@ class DockLimitGuard(Guard):
             return
         most = self.limits.dock_most(item.dock_id)
         if len([other for other in self.items.docked(item.dock_id).all_rows() if other.id != item.id]) >= most:
-            raise Refusal(f"the dock holds at most {most} items", f"undock one, or raise the setting {MOST_ITEMS_SETTING}")
+            raise Refusal(f"the dock allows at most {most} items", f"undock one, or raise the setting {MOST_ITEMS_SETTING}")

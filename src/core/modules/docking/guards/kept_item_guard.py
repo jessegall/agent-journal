@@ -7,7 +7,8 @@ from core.modules.docking.models.dock_item import DockItem
 
 
 class KeptItemGuard(Guard):
-    """An item a person kept stays in the dock until a person undocks it: an agent neither undocks it nor unkeeps it."""
+    """An item a person kept stays in the dock until a person undocks it: an agent neither undocks it nor
+    unkeeps it."""
 
     name = "docking.kept-by-person"
     event = "dock_item.*"
@@ -17,4 +18,4 @@ class KeptItemGuard(Guard):
         if change.actor.type is not ActorType.AGENT or not isinstance(old, DockItem) or not old.kept or not isinstance(new, DockItem):
             return
         if new.state is not old.state or not new.kept:
-            raise Refusal(f"dock item {old.id} was kept by a person", "only a person undocks it")
+            raise Refusal(f"dock item {old.id} stays because a person chose to keep it", "only a person undocks it")

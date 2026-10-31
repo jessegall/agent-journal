@@ -25,7 +25,7 @@ class DockCheck:
                 if not dock.type.value.startswith(f"{short_name}."):
                     problems.append(f"{name} does not start with its module's name, {short_name}")
                 if dock.most < 1:
-                    problems.append(f"{name} holds at most {dock.most} items, and it holds at least 1")
+                    problems.append(f"{name} allows at most {dock.most} items, and it holds at least 1")
                 if dock.icon not in tuple(WindowIcon):
                     problems.append(f"{name} shows the icon {dock.icon}, which is not in the shell's icon set")
                 if not (module.web_folder() / dock.body).exists():
