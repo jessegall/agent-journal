@@ -13,6 +13,16 @@ from core.modules.processes.commands.stop_process_handler import StopProcessHand
 from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
 from core.modules.processes.rules.runner_rewrite import RunnerRewrite
 from core.modules.processes.rules.sleep_poll_refusal import SleepPollRefusal
+from core.modules.processes.commands.add_reader_handler import AddReaderHandler
+from core.modules.processes.commands.add_reader_subcommand import AddReaderSubcommand
+from core.modules.processes.commands.choose_default_reader_handler import ChooseDefaultReaderHandler
+from core.modules.processes.commands.choose_default_reader_subcommand import ChooseDefaultReaderSubcommand
+from core.modules.processes.commands.remove_reader_handler import RemoveReaderHandler
+from core.modules.processes.commands.remove_reader_subcommand import RemoveReaderSubcommand
+from core.modules.processes.guards.reader_owner_guard import ReaderOwnerGuard
+from core.modules.processes.migrations.m002_readers import ReadersTableMigration
+from core.modules.processes.models.reader import Reader
+from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -29,9 +39,9 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages"]
-    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery))
-    migrations = [ProcessesTablesMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler]
-    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand]
-    guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard]
+    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
+    migrations = [ProcessesTablesMigration, ReadersTableMigration]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler]
+    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand]
+    guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
     driver_rules = [SleepPollRefusal, RunnerRewrite]
