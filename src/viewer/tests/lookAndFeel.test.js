@@ -124,7 +124,7 @@ test("docked items: a card shows its title, a line of its text, and buttons to o
 });
 
 test("pinned notices: a strip above the chat holds each notice with its text, a button with its link and a close cross", async () => {
-    const notice = {id: 1, title: "Version 5 demo seeded", link: "http://127.0.0.1:8431/", label: "Open the demo", state: "open"};
+    const notice = {id: 1, title: "Version 5 demo seeded", link: "http://127.0.0.1:8431/", label: "Open the demo", closed_at: null};
     const element = await mountedChat({"notice list": [notice]});
     const strip = element.querySelector("[data-notices]");
     expect(strip?.textContent).toContain("Version 5 demo seeded");
@@ -140,7 +140,7 @@ test("composer: a tall box that says Message the agent, with an attach button an
 });
 
 test("composer: the running tool shows under the last message, and a button scrolls the chat to its top", async () => {
-    const element = await mountedChat({"agent-tool show": [{name: "mcp__playwright__browser_navigate"}]});
+    const element = await mountedChat({"hook-call list --limit 1": [{id: 9, hook: "pre_tool_use", tool: "mcp__playwright__browser_navigate"}]});
     expect(element.querySelector("[data-running-tool]")?.textContent).toContain("browser_navigate");
     expect(element.querySelector("[data-scroll-top]")).not.toBeNull();
 });
