@@ -93,11 +93,11 @@ def test_an_output_is_pruned_once(new_story):
 def test_a_watch_ends_once(new_story):
     story = new_story(fixture=BuilderStarted)
     start_process(story)
-    story.run("process watch 1", actor=story.agent)
+    story.run("output watch 1", actor=story.agent)
     story.expect_success("watch show 1", "state: open", "process_id: 1")
-    story.run("watch end 1", actor=story.agent)
+    story.run("output unwatch 1", actor=story.agent)
     story.expect_success("watch show 1", "state: ended")
-    story.expect_refusal("watch end 1", "ended")
+    story.expect_refusal("output unwatch 1", "no open watch", actor=story.agent)
 
 
 def test_the_parts_of_a_process_go_with_it(new_story):

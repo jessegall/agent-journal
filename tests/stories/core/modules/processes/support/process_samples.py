@@ -6,6 +6,7 @@ from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
 from core.modules.processes.commands.end_process import EndProcess
 from core.modules.processes.commands.end_process_part import EndProcessPart
+from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.part_spec import PartSpec
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
@@ -61,3 +62,18 @@ def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process
     bus.run(EndProcessPart(process.id, 1, exit_code), story.agent, environment_id=1)
     bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), story.agent, environment_id=1)
     return process
+
+
+def moved_run(story: Story, line: str = "make build") -> Process:
+    """A run of the builder that went to the background."""
+    process = start_process(story, line)
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    return process
+
+
+def end_run(story: Story, process: Process, text: str, exit_code: int = 0) -> None:
+    folder = story.container.get(OutputFolder)
+    folder.write_output(process.id, 1, text)
+    bus = story.container.get(Bus)
+    bus.run(EndProcessPart(process.id, 1, exit_code), story.agent, environment_id=1)
+    bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), story.agent, environment_id=1)

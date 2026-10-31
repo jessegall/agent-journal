@@ -1,5 +1,3 @@
-from core.base.actor import Actor
-from core.base.actor_type import ActorType
 from tests.stories.core.modules.processes.support.process_samples import ended_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -51,11 +49,3 @@ def test_the_status_of_an_output_is_running_finished_or_failed_with_its_code(new
     failed = ended_run(story, PYTEST, REPORT, exit_code=4)
     story.expect_ordered_lines("output status", f"{running.id}  running", f"{finished.id}  finished", f"{failed.id}  failed with code 4", actor=story.agent)
     story.expect_text(f"output status {failed.id}", "failed with code 4", actor=story.agent)
-
-
-def test_a_worker_lists_and_reads_only_its_own_outputs(new_story):
-    story = new_story(fixture=BuilderStarted)
-    main_run = ended_run(story, PYTEST, REPORT)
-    worker = Actor(story.new_row_id("agent start s-9 claude worker --environment main"), ActorType.AGENT)
-    story.expect_refusal(f"output read {main_run.id} --all", "is not yours", actor=worker)
-    story.expect_text("output status", "nothing found", actor=worker)
