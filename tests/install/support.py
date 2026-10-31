@@ -1,7 +1,13 @@
+import fcntl
+import http.client
+import socket
 import sqlite3
 import subprocess
 import sys
+import time
 from pathlib import Path
+
+from core.base.journal_home import JournalHome
 
 INSTALL = Path(__file__).resolve().parents[2] / "install.sh"
 TIMEOUT_SECONDS = 120
@@ -47,3 +53,75 @@ class Scratch:
             connection.close()
 
 
+
+
+SERVER_SOURCE = INSTALL.parent / "src"
+GO_TOOLS = INSTALL.parent / "tools"
+
+
+class LiveJournal:
+    """A journal on a scratch home with the core's modules synced and, when asked, a real server: every wait and
+    every process it starts is bounded, and the server is killed when the test ends."""
+
+    def __init__(self, folder: Path) -> None:
+        self.home = JournalHome(folder / "project" / ".journal")
+        self.home.folder.mkdir(parents=True)
+        self.processes: list[subprocess.Popen[str]] = []
+        self.sync()
+
+    def environment(self) -> dict[str, str]:
+        return {"PATH": f"{Path(sys.executable).parent}:{SYSTEM_PATH}", "JOURNAL_HOME": str(self.home.folder), "JOURNAL_SOURCE": str(SERVER_SOURCE),
+                "JOURNAL_PYTHON": sys.executable, "HOME": str(self.home.folder.parent)}
+
+    def sync(self) -> None:
+        finished = subprocess.run([sys.executable, str(SERVER_SOURCE / "core" / "journal.py"), "module", "sync"], cwd=self.home.folder.parent,
+                                  env=self.environment(), capture_output=True, text=True, timeout=TIMEOUT_SECONDS)
+        assert finished.returncode == 0, finished.stdout + finished.stderr
+
+    def start_server(self) -> subprocess.Popen[str]:
+        process = subprocess.Popen([sys.executable, str(SERVER_SOURCE / "server" / "server.py"), "--home", str(self.home.folder)], cwd=self.home.folder.parent,
+                                   env=self.environment(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True)
+        self.processes.append(process)
+        return process
+
+    def healthy(self) -> bool:
+        connection = UnixConnection(str(self.home.socket("server")))
+        try:
+            connection.request("GET", "/health")
+            return connection.getresponse().status == 200
+        except OSError:
+            return False
+        finally:
+            connection.close()
+
+    def wait_healthy(self, limit_seconds: float = 30) -> None:
+        deadline = time.monotonic() + limit_seconds
+        while not self.healthy():
+            assert time.monotonic() < deadline, "the server did not answer"
+            time.sleep(0.1)
+
+    def lock_is_free(self) -> bool:
+        with (self.home.folder / "server.lock").open("a") as lock_file:
+            try:
+                fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError:
+                return False
+            return True
+
+    def close(self) -> None:
+        for process in self.processes:
+            process.kill()
+            process.wait(timeout=10)
+
+
+class UnixConnection(http.client.HTTPConnection):
+    """An HTTP connection to a unix socket."""
+
+    def __init__(self, path: str) -> None:
+        super().__init__("journal", timeout=5)
+        self.path = path
+
+    def connect(self) -> None:
+        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self.sock.settimeout(5)
+        self.sock.connect(self.path)
