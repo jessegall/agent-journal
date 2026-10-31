@@ -6,7 +6,7 @@ import time
 import pytest
 
 from install.server_lock import ServerLock, ServerWontStop
-from tests.install.support import GO_TOOLS, SERVER_SOURCE, TIMEOUT_SECONDS, LiveJournal
+from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
 STUBBORN_SERVER = """
 import fcntl, socket, sys
@@ -32,21 +32,6 @@ with ServerLock(JournalHome(Path(sys.argv[1]))):
     print("held", flush=True)
     time.sleep(120)
 """
-
-
-@pytest.fixture
-def journal(tmp_path):
-    live = LiveJournal(tmp_path)
-    yield live
-    live.close()
-
-
-@pytest.fixture(scope="module")
-def client(tmp_path_factory):
-    binary = tmp_path_factory.mktemp("client") / "journal"
-    built = subprocess.run(["go", "build", "-o", str(binary), "./journal"], cwd=GO_TOOLS, capture_output=True, text=True, timeout=300)
-    assert built.returncode == 0, built.stderr
-    return binary
 
 
 def test_the_lock_helper_stops_a_running_server_waits_for_it_to_drain_and_holds_the_lock(journal):

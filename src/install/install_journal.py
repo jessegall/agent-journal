@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from install.code_replacement import CodeReplacement
 from install.version_four import ANSWER, VersionFour
 
 INSTALLED = 3
@@ -28,8 +29,8 @@ class InstallJournal:
         if self.home.database.exists() and self.code().joinpath("core", "journal.py").exists():
             print(f"version 5 is already installed in {self.home.folder}; nothing changed")
             return INSTALLED
-        self.copy_code()
-        self.sync()
+        self.home.folder.mkdir(parents=True, exist_ok=True)
+        CodeReplacement(self.home).run([self.copy_code, self.sync])
         print(f"version 5 is installed in {self.home.folder}: its code in {self.code()}, its database {self.home.database.name} synced from the core modules")
         return 0
 
