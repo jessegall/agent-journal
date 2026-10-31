@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "identifier",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/core/(base/chat|modules/(chat|docking))/"
+            },
+            {
+                "nameMatches": "(?i)^(shipped|is_core|is_third_party|third_party|core_module|module_kind)$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "module-kind-path",
+        "description": "Code that declares, stores or lists marks and docks reads whether a module is core, a suite's or a third party's, so a core module's mark takes another path than a third party's.",
+        "rule": "Every module declares marks and docks the same way; only the trust rule, which decides how a body file loads, may read whether the journal ships a module.",
+        "skill": "chat-architecture"
+    }
+}
