@@ -1,6 +1,4 @@
-import inspect
 import mimetypes
-from pathlib import Path
 
 from core.base.database.database import Database
 from core.base.journal_container import synced_container
@@ -11,7 +9,6 @@ from core.base.viewer.window_loading import WindowLoading
 from server.viewer.missing_module_file import MissingModuleFile
 from server.viewer.module_file import ModuleFile
 
-WEB_FOLDER = Path("web") / "dist"
 UNKNOWN_TYPE = "application/octet-stream"
 
 
@@ -26,7 +23,7 @@ class ModuleFiles:
         modules = [module for module in ModuleFinder(self.home).modules() if module.name == module_name]
         if not modules:
             raise MissingModuleFile(f"no installed module is named {module_name}")
-        folder = (Path(inspect.getfile(modules[0])).parent / WEB_FOLDER).resolve()
+        folder = modules[0].web_folder()
         target = (folder / path).resolve()
         if not target.is_relative_to(folder) or not target.is_file():
             raise MissingModuleFile(f"{module_name} has no file {path} in its web/dist")

@@ -35,7 +35,8 @@ from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
 from core.base.module.driver_entries import DriverEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
-from core.base.module.module_check import ModuleCheck, subcommand_line
+from core.base.module.module_check import ModuleCheck
+from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
 

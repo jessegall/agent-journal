@@ -1,4 +1,3 @@
-import inspect
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -17,7 +16,7 @@ class CodeFolders:
         self.finder = finder
 
     def folders(self) -> Sequence[Path]:
-        return [CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in self.finder.modules()), SERVER_FOLDER]
+        return [CORE_FOLDER, *(module.folder() for module in self.finder.modules()), SERVER_FOLDER]
 
 
 class CodeVersion:

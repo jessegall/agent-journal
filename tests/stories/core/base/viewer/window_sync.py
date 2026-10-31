@@ -3,7 +3,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 
 def test_a_window_name_used_twice_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:DuplicateWindowModule", "the window twice.board is declared twice")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:DuplicateWindowModule", "two windows named twice.board")
 
 
 def test_a_window_name_not_starting_with_its_module_is_refused_at_sync(new_story):

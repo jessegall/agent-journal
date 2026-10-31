@@ -1,20 +1,18 @@
-import inspect
 from collections.abc import Sequence
-from pathlib import Path
 
 from core.base.change.event_pattern import EventPattern
 from core.base.cli.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
+from core.base.cli.default_subcommands import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.module import Module
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.name_groups import NameGroups
+from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
 from core.base.subcommand.subcommand import ReadSubcommand
 from core.base.viewer.viewer_kit import VIEWER_KIT
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 
-READ_DEFAULTS = ("list", "show")
-COMMAND_DEFAULTS = ("make", "edit", "delete")
-WEB_FOLDER = Path("web") / "dist"
 
 
 class WindowCheck:
@@ -30,7 +28,7 @@ class WindowCheck:
         names = [window.name for module in modules for window in module.windows]
         shipped = set(self.finder.default_modules())
         reads, runs = self.lines(modules)
-        problems = [f"the window {name} is declared twice" for name in sorted({name for name in names if names.count(name) > 1})]
+        problems = list(NameGroups.duplicates([("windows", names)]))
         for module in modules:
             for window in module.windows:
                 problems += self.window_problems(module, window, module in shipped, (reads, runs), events)
@@ -41,7 +39,7 @@ class WindowCheck:
         reads, runs = lines
         short_name = module.name.rsplit(".", 1)[-1]
         problems = [f"the window {window.name} does not start with its module's name, {short_name}"] if not window.name.startswith(f"{short_name}.") else []
-        if window.loading is not WindowLoading.DOCUMENT and not (Path(inspect.getfile(module)).parent / WEB_FOLDER / window.entry).exists():
+        if window.loading is not WindowLoading.DOCUMENT and not (module.web_folder() / window.entry).exists():
             problems.append(f"{window.name} loads {window.entry}, which is not in its module's web/dist")
         problems += [f"{window.name} reads {line}, which is no read subcommand" for line in window.reads if line not in reads]
         problems += [f"{window.name} runs {line}, which is no command" for line in window.runs if line not in runs]
@@ -64,10 +62,10 @@ class WindowCheck:
             for declaration in module.models:
                 model, excluded = declaration.model, set(declaration.excluded_subcommands)
                 moves = tuple(move.name for move in model.lifecycle.moves()) if model.lifecycle else ()
-                reads |= {f"{model.cli_name} {name}" for name in READ_DEFAULTS if name not in excluded}
-                runs |= {f"{model.cli_name} {name}" for name in (*COMMAND_DEFAULTS, *moves) if name not in excluded}
+                reads |= {f"{model.cli_name} {name}" for name in READ_SUBCOMMANDS if name not in excluded}
+                runs |= {f"{model.cli_name} {name}" for name in (*COMMAND_SUBCOMMANDS, *moves) if name not in excluded}
             for subcommand in module.subcommands:
-                (reads if issubclass(subcommand, ReadSubcommand) else runs).add(f"{subcommand.cli_name} {subcommand.name}")
+                (reads if issubclass(subcommand, ReadSubcommand) else runs).add(subcommand_line(subcommand))
         return reads, runs
 
 

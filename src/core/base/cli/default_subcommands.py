@@ -163,6 +163,9 @@ class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
     def command_fields(self) -> tuple[Field[Any], ...]:
         return tuple(command_field for command_field in fields(self.command_class) if command_field.name != ROW_ID)
 
+READ_SUBCOMMANDS = ("show", "list")
+COMMAND_SUBCOMMANDS = ("make", "edit", "delete")
+
 
 class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""

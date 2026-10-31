@@ -1,4 +1,6 @@
+import inspect
 from collections.abc import Sequence
+from pathlib import Path
 from typing import ClassVar, Never
 
 from core.base.command.command import Command
@@ -20,6 +22,8 @@ from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
 HandlerClass = type[Handler[Never, object]]
+
+WEB_FOLDER = Path("web") / "dist"
 
 
 class Module:
@@ -45,3 +49,11 @@ class Module:
     overlays: ClassVar[Sequence[type[Overlay]]] = ()
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
     windows: ClassVar[Sequence[WindowDeclaration]] = ()
+
+    @classmethod
+    def folder(cls) -> Path:
+        return Path(inspect.getfile(cls)).resolve().parent
+
+    @classmethod
+    def web_folder(cls) -> Path:
+        return cls.folder() / WEB_FOLDER

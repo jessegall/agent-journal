@@ -3,9 +3,10 @@ from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.registry.dotted_path import DottedPath
-from core.base.module.module import Module, SubcommandClass
+from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.name_groups import NameGroups
+from core.base.module.subcommand_line import subcommand_line
 from core.base.module.suite_check import SuiteCheck
 from core.base.module.window_check import WindowCheck
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -78,6 +79,3 @@ class ModuleCheck:
         lines = [subcommand_line(subcommand) for module in modules for subcommand in module.subcommands]
         return tuple(f"two subcommands answer journal {line}" for line in sorted({line for line in lines if lines.count(line) > 1}))
 
-
-def subcommand_line(subcommand: SubcommandClass) -> str:
-    return f"{subcommand.cli_name} {subcommand.name}"

@@ -1,6 +1,5 @@
 import hashlib
 from collections.abc import Sequence
-import inspect
 from pathlib import Path
 
 from core.base.module.folder_listing import FolderListing
@@ -16,7 +15,7 @@ class CodeFingerprint:
     appears, changes or is gone is a change, never an error."""
 
     def text(self, modules: Sequence[type[Module]]) -> str:
-        return self.folder_text([CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in modules)])
+        return self.folder_text([CORE_FOLDER, *(module.folder() for module in modules)])
 
     def folder_text(self, folders: Sequence[Path]) -> str:
         return self.files_text(FolderListing(folders).files())
