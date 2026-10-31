@@ -47,7 +47,7 @@ type Journal interface {
 	Environments() ([]Environment, error)
 	Conversations(environment, program string) ([]Conversation, error)
 	MakeEnvironment(environment Environment) error
-	PrepareWorktree(folder, source string) error
+	PrepareWorktree(folder, source, environment string) error
 }
 
 // Request is what the command line asked for: the program, the project's folder, and a worktree when one is named.
@@ -175,18 +175,19 @@ func (menu *boot) useEnvironment(environment Environment) error {
 	if filepath.Dir(environment.Folder) != worktrees.Folder() {
 		return nil
 	}
-	return menu.prepared(worktrees, filepath.Base(environment.Folder))
-}
-
-// prepared cuts the launch worktree when it is missing and, once cut, has the journal give it the project's library
-// folders and run the worktree commands in it.
-func (menu *boot) prepared(worktrees Worktrees, name string) error {
-	_, missing := os.Stat(filepath.Join(worktrees.Folder(), name))
-	folder, err := worktrees.Prepare(name)
-	if err != nil || !os.IsNotExist(missing) {
+	folder, fresh, err := menu.cut(worktrees, filepath.Base(environment.Folder))
+	if err != nil || !fresh {
 		return err
 	}
-	return menu.journal.PrepareWorktree(folder, menu.request.Root)
+	return menu.journal.PrepareWorktree(folder, menu.request.Root, environment.Name)
+}
+
+// cut cuts the launch worktree when it is missing and says whether it was cut now, so the journal can then give it the
+// project's library folders and run the worktree commands of its environment.
+func (menu *boot) cut(worktrees Worktrees, name string) (string, bool, error) {
+	_, missing := os.Stat(filepath.Join(worktrees.Folder(), name))
+	folder, err := worktrees.Prepare(name)
+	return folder, err == nil && os.IsNotExist(missing), err
 }
 
 func (menu *boot) worktreeEnvironment(environments []Environment) error {
@@ -206,8 +207,8 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		name = worktrees.UnusedName(names)
 	}
 	name = UnheldName(name, working)
-	folder := filepath.Join(worktrees.Folder(), name)
-	if err := menu.prepared(worktrees, name); err != nil {
+	folder, fresh, err := menu.cut(worktrees, name)
+	if err != nil {
 		return err
 	}
 	if indexOf(names, name) < 0 {
@@ -217,7 +218,10 @@ func (menu *boot) worktreeEnvironment(environments []Environment) error {
 		}
 	}
 	menu.choice.Environment, menu.choice.Folder = name, folder
-	return nil
+	if !fresh {
+		return nil
+	}
+	return menu.journal.PrepareWorktree(folder, menu.request.Root, name)
 }
 
 func (menu *boot) conversation() (bool, error) {

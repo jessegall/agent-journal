@@ -45,20 +45,28 @@ def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
     expect_clean_environment(story, repository)
 
 
-def test_a_launch_worktree_is_given_the_environments_library_folders_and_runs_the_worktree_commands(new_story):
+def test_a_launch_worktree_is_given_the_libraries_and_commands_of_the_environment_named_not_of_another_in_its_folder(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     repository.library("node_modules", LIBRARY_FILE, LIBRARY_TEXT)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
-    story.expect_success("""setting make journal.suites.coding.workers.library-links '["node_modules"]' --environment main""", "key: journal.suites.coding.workers.library-links")
-    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
-    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo $JOURNAL_BRANCH > prepared.txt"]' --environment main""",
-                         "key: journal.suites.coding.workers.worktree-commands")
     folder = repository.folder / ".claude" / "worktrees" / "cart"
+    story.expect_success(f"environment make cart {repository.folder} --branch worktree-cart")
+    story.expect_success("""setting make journal.suites.coding.workers.library-links '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-links")
+    story.expect_success("""setting make journal.suites.coding.workers.library-links '["node_modules"]' --environment cart""", "key: journal.suites.coding.workers.library-links")
+    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment cart""", "key: journal.suites.coding.workers.library-copies")
+    story.expect_success("""setting make journal.suites.coding.workers.worktree-commands '["echo $JOURNAL_BRANCH > prepared.txt"]' --environment cart""",
+                         "key: journal.suites.coding.workers.worktree-commands")
     repository.git("worktree", "add", "-b", "worktree-cart", str(folder))
-    story.expect_success(f"worktree prepare {folder} {repository.folder}", actor=story.user)
+    story.expect_success(f"worktree prepare {folder} {repository.folder} cart", actor=story.user)
     assert (folder / "node_modules").is_symlink() and (folder / "node_modules").resolve() == (repository.folder / "node_modules").resolve()
     assert (folder / "vendor" / LIBRARY_FILE).read_text() == LIBRARY_TEXT and not (folder / "vendor").is_symlink()
     assert (folder / "prepared.txt").read_text().strip() == "worktree-cart"
     status = repository.git("status", "--porcelain", "--untracked-files=all", folder=folder).stdout
     assert "node_modules" not in status and "vendor" not in status, status
+
+
+def test_a_launch_worktree_of_an_environment_that_does_not_exist_is_refused(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    story.expect_refusal(f"worktree prepare {repository.folder} {repository.folder} nowhere", "no environment named nowhere", actor=story.user)

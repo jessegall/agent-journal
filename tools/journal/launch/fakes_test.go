@@ -1,6 +1,7 @@
 package launch
 
 import (
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -54,7 +55,7 @@ type fakeJournal struct {
 	environments  []Environment
 	conversations []Conversation
 	created       []Environment
-	prepared      [][2]string
+	prepared      [][3]string
 }
 
 func (journal *fakeJournal) Suites() ([]string, error) { return journal.suites, nil }
@@ -71,9 +72,14 @@ func (journal *fakeJournal) MakeEnvironment(environment Environment) error {
 	return nil
 }
 
-func (journal *fakeJournal) PrepareWorktree(folder, source string) error {
-	journal.prepared = append(journal.prepared, [2]string{folder, source})
-	return nil
+func (journal *fakeJournal) PrepareWorktree(folder, source, environment string) error {
+	for _, made := range journal.environments {
+		if made.Name == environment {
+			journal.prepared = append(journal.prepared, [3]string{folder, source, environment})
+			return nil
+		}
+	}
+	return fmt.Errorf("no environment named %s to prepare a worktree for", environment)
 }
 
 // gitRepository makes a git repository with one commit in a story's own folder.

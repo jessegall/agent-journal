@@ -6,7 +6,7 @@ from suites.coding.modules.workers.commands.prepare_worktree import PrepareWorkt
 
 
 class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
-    """`journal worktree prepare <folder> <source>`: the launcher's order for a freshly cut launch worktree."""
+    """`journal worktree prepare <folder> <source> <environment>`: the launcher's order for a freshly cut launch worktree."""
 
     cli_name = "worktree"
     name = "prepare"
@@ -14,6 +14,7 @@ class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("folder")
         parser.add_argument("source")
+        parser.add_argument("environment")
 
     def command(self, arguments: Namespace, caller: Caller) -> PrepareWorktree:
-        return PrepareWorktree(arguments.folder, arguments.source)
+        return PrepareWorktree(arguments.folder, arguments.source, arguments.environment)

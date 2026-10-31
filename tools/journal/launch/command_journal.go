@@ -94,9 +94,9 @@ func (journal CommandJournal) MakeEnvironment(environment Environment) error {
 	return err
 }
 
-// PrepareWorktree has the journal place the source folder's library folders in a freshly cut launch worktree and run the worktree commands there.
-func (journal CommandJournal) PrepareWorktree(folder, source string) error {
-	_, err := journal.Run("worktree", "prepare", folder, source)
+// PrepareWorktree has the journal place the source folder's library folders in a freshly cut launch worktree and run the worktree commands of its environment there.
+func (journal CommandJournal) PrepareWorktree(folder, source, environment string) error {
+	_, err := journal.Run("worktree", "prepare", folder, source, environment)
 	return err
 }
 

@@ -177,7 +177,7 @@ func TestAFreshLaunchWorktreeIsPreparedByTheJournalOnceAndAnExistingOneIsNot(t *
 	if _, err := Boot(journal, keys(enterPress, enterPress), request); err != nil {
 		t.Fatal(err)
 	}
-	want := [][2]string{{worktreeFolder(root, "cart"), root}}
+	want := [][3]string{{worktreeFolder(root, "cart"), root, "cart"}}
 	if len(journal.prepared) != 1 || journal.prepared[0] != want[0] {
 		t.Fatalf("the journal was asked to prepare %v, not %v", journal.prepared, want)
 	}
