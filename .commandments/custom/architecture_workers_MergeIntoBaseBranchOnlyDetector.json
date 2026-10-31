@@ -1,0 +1,52 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "file": "modules/workers/**"
+            },
+            {
+                "textMatches": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+            },
+            {
+                "not": {
+                    "textMatches": "^(merge|rebase)$"
+                }
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "literal"
+                                    },
+                                    {
+                                        "textMatches": "^(merge|rebase)$"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "merge-names-a-literal-branch",
+        "description": "A git merge or rebase of the workers module names HEAD or a written branch instead of the worktree's own branches.",
+        "rule": "Rebase onto worktree.base_branch and merge worktree.branch, read from the row, never HEAD or a branch written in the code.",
+        "skill": "workers-architecture"
+    }
+}

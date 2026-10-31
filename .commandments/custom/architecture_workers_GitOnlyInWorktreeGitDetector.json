@@ -1,0 +1,56 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "identifier"
+                        },
+                        {
+                            "resolves": "subprocess"
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "text": "git"
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "name": "WorktreeGit"
+                        }
+                    ]
+                }
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "git-outside-worktree-git",
+        "description": "A subprocess call runs git outside WorktreeGit, so a git call of the workers module escapes its time limits and its one place.",
+        "rule": "Run git only through WorktreeGit: add the step it needs there, with its time limit, and call it.",
+        "skill": "workers-architecture"
+    }
+}
