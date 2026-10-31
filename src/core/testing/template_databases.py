@@ -58,4 +58,5 @@ class TemplateDatabases:
         home.folder.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(template.home.database, home.database)
         shutil.copyfile(template.home.module_list, home.module_list)
+        shutil.copyfile(template.home.program_table, home.program_table)
         return home

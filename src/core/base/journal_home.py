@@ -23,3 +23,7 @@ class JournalHome:
     @property
     def module_list(self) -> Path:
         return self.folder / "modules.json"
+
+    @property
+    def program_table(self) -> Path:
+        return self.folder / "programs.json"

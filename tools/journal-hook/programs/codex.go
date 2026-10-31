@@ -1,7 +1,6 @@
 package programs
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -10,54 +9,29 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
-// The category of each Codex tool, read from version 4's Codex.decoders; a tool not named here is other.
-var codexToolCategories = map[string]string{
-	"Bash":                     "shell",
-	"apply_patch":              "edit",
-	"write_file":               "write",
-	"read_file":                "read",
-	"collaborationspawn_agent": "agent",
-}
-
-// The events Codex sends, version 4's Codex.hook_kinds: every hook but a message shown, a failed tool use and a failed stop.
-var codexEvents = map[string]bool{
-	"SessionStart": true, "UserPromptSubmit": true, "PreToolUse": true, "PostToolUse": true, "PreCompact": true,
-	"Stop": true, "SubagentStart": true, "SubagentStop": true, "SessionEnd": true,
-}
-
 // The flags a shell is handed a line with, as Codex names its shell: bash -lc '<line>'.
 var scriptFlags = map[string]bool{"-c": true, "-lc": true}
 
 // A file a patch adds, changes, deletes or moves to, as version 4's PatchPaths reads it.
 var patchHeader = regexp.MustCompile(`(?m)^\*\*\* (?:Add File|Update File|Delete File|Move to): (.+?)\s*$`)
 
-func codexEvent(body []byte, context Context) (event.HookEvent, bool, error) {
-	var read commonBody
-	if err := json.Unmarshal(body, &read); err != nil {
+func codexEvent(name string, body []byte, program Program, context Context) (event.HookEvent, bool, error) {
+	read, skip, err := readBody(body, program)
+	if skip || err != nil {
 		return event.HookEvent{}, true, err
 	}
-	if read.AgentID != nil && !hasPrefix(read.HookEventName, subagentEventPrefixes) {
-		return event.HookEvent{}, true, nil
-	}
-	if !codexEvents[read.HookEventName] {
-		return event.HookEvent{}, true, fmt.Errorf("Codex sends no %q hook", read.HookEventName)
-	}
-	prepared, skip, err := preparedFrom("codex", body, read, context)
+	prepared, skip, err := preparedFrom(name, program, body, read, context)
 	if skip || err != nil || !isToolEvent(prepared.Event) {
 		return prepared, skip, err
 	}
-	prepared.Tool = codexTool(read.ToolName, read.ToolInput, context)
+	prepared.Tool = codexTool(read.ToolName, read.ToolInput, program, context)
 	prepared.Tool.Diff = codexDiff(prepared.Event, read, prepared.Tool)
 	return prepared, false, nil
 }
 
-func codexTool(name string, input toolInput, context Context) *event.Tool {
-	category, listed := codexToolCategories[name]
-	if !listed {
-		category = "other"
-	}
-	tool := &event.Tool{Name: name, Category: category, Files: []string{}}
-	switch category {
+func codexTool(name string, input toolInput, program Program, context Context) *event.Tool {
+	tool := &event.Tool{Name: name, Category: toolCategory(program, name), Files: []string{}}
+	switch tool.Category {
 	case "shell":
 		var command any = pythonText(input.values, "command")
 		if items, present := input.values["command"].([]any); present {

@@ -40,21 +40,23 @@ from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
 from core.base.module.sync_report import SyncReport
+from core.base.journal_home import JournalHome
+from core.base.provider.program_table import ProgramTable
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
                     for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler))}
 class ModuleSync:
     """Updates the database and the registry to match the installed modules: finds, orders and checks them,
-    runs the schema, gives each module its actor and each new commit listener its cursor, and writes the
-    registry, logging one registry.sync event when it changed."""
+    runs the schema, gives each module its actor and each new commit listener its cursor, writes the
+    registry, logging one registry.sync event when it changed, and writes the program table the Go hook reads."""
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
-                 entries: DriverEntries, providers: ProviderEntries, events: EventLog) -> None:
+                 entries: DriverEntries, providers: ProviderEntries, events: EventLog, home: JournalHome) -> None:
         self.database, self.clock, self.finder, self.order, self.check, self.events = database, clock, finder, order, check, events
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
-        self.actors, self.registry_table, self.entries, self.providers = actors, registry_table, entries, providers
+        self.actors, self.registry_table, self.entries, self.providers, self.home = actors, registry_table, entries, providers, home
 
     def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
@@ -78,6 +80,7 @@ class ModuleSync:
                 for listener in module.listeners:
                     if self.timing(listener) is ListenerTiming.COMMIT:
                         self.cursors.start(listener.name)
+        self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:

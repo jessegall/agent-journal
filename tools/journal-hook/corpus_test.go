@@ -47,6 +47,8 @@ type corpusSize struct {
 	largest int
 }
 
+var shippedPrograms = programs.LoadTable("")
+
 func TestCorpusHasEveryEventAndTool(t *testing.T) {
 	files, err := filepath.Glob(filepath.Join(recordedFolder, "*", "*.jsonl"))
 	if err != nil || len(files) == 0 {
@@ -148,7 +150,7 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, i
 		}
 		hookEventName, _ := body["hook_event_name"].(string)
 		toolName, _ := body["tool_name"].(string)
-		event, frozen := programs.EventName(hookEventName)
+		event, frozen := shippedPrograms.Programs[program].Events[hookEventName]
 		if !frozen {
 			event = hookEventName
 		}

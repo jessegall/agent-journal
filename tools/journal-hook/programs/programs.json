@@ -1,0 +1,100 @@
+{
+  "events": [
+    "pre_tool_use",
+    "post_tool_use",
+    "post_tool_use_failure",
+    "prompt",
+    "stop",
+    "stop_failure",
+    "session_start",
+    "session_end",
+    "compact",
+    "message_display"
+  ],
+  "programs": {
+    "claude": {
+      "decoder": "common",
+      "events": {
+        "MessageDisplay": "message_display",
+        "PostToolUse": "post_tool_use",
+        "PostToolUseFailure": "post_tool_use_failure",
+        "PreCompact": "compact",
+        "PreToolUse": "pre_tool_use",
+        "SessionEnd": "session_end",
+        "SessionStart": "session_start",
+        "Stop": "stop",
+        "StopFailure": "stop_failure",
+        "SubagentStart": "session_start",
+        "SubagentStop": "stop",
+        "UserPromptSubmit": "prompt"
+      },
+      "line_events": [
+        "session_start",
+        "prompt",
+        "pre_tool_use",
+        "post_tool_use"
+      ],
+      "refusals": {
+        "pre_tool_use": "deny",
+        "prompt": "block",
+        "stop": "block"
+      },
+      "subagent_events": [
+        "SubagentStart",
+        "SubagentStop",
+        "PreToolUse",
+        "PostToolUse",
+        "PostToolUseFailure"
+      ],
+      "tool_categories": {
+        "Agent": "agent",
+        "Bash": "shell",
+        "Edit": "edit",
+        "Glob": "search",
+        "Grep": "search",
+        "Monitor": "shell",
+        "MultiEdit": "edit",
+        "NotebookEdit": "edit",
+        "Read": "read",
+        "Task": "agent",
+        "Write": "write"
+      }
+    },
+    "codex": {
+      "decoder": "codex",
+      "events": {
+        "PostToolUse": "post_tool_use",
+        "PreCompact": "compact",
+        "PreToolUse": "pre_tool_use",
+        "SessionEnd": "session_end",
+        "SessionStart": "session_start",
+        "Stop": "stop",
+        "SubagentStart": "session_start",
+        "SubagentStop": "stop",
+        "UserPromptSubmit": "prompt"
+      },
+      "line_events": [
+        "session_start",
+        "prompt",
+        "pre_tool_use",
+        "post_tool_use"
+      ],
+      "refusals": {
+        "stop": "block"
+      },
+      "subagent_events": [
+        "SubagentStart",
+        "SubagentStop",
+        "PreToolUse",
+        "PostToolUse"
+      ],
+      "tool_categories": {
+        "Bash": "shell",
+        "apply_patch": "edit",
+        "collaborationspawn_agent": "agent",
+        "read_file": "read",
+        "write_file": "write"
+      }
+    }
+  }
+}

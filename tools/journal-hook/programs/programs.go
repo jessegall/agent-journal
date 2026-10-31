@@ -19,37 +19,39 @@ type Context struct {
 	Classifier  *classify.Classifier
 	FiredAtMs   int64
 	Launch      string
-}
-
-// The event name of the prepared object for each hook event name the agent programs send.
-var eventNames = map[string]string{
-	"PreToolUse":         "pre_tool_use",
-	"PostToolUse":        "post_tool_use",
-	"PostToolUseFailure": "post_tool_use_failure",
-	"UserPromptSubmit":   "prompt",
-	"Stop":               "stop",
-	"StopFailure":        "stop_failure",
-	"SessionStart":       "session_start",
-	"SessionEnd":         "session_end",
-	"PreCompact":         "compact",
-	"SubagentStart":      "session_start",
-	"SubagentStop":       "stop",
-	"MessageDisplay":     "message_display",
+	Programs    Table
 }
 
 // The keys a tool's input names its file by, as version 4's Provider.PATH_KEYS.
 var pathKeys = []string{"file_path", "path", "notebook_path"}
 
-// Prepared reads the body of one hook of the program; skip says the hook goes to no one, as the hook script lets a
-// subagent's own hooks go by.
-func Prepared(program string, body []byte, context Context) (prepared event.HookEvent, skip bool, err error) {
-	switch program {
-	case "claude":
-		return claudeEvent(body, context)
-	case "codex":
-		return codexEvent(body, context)
+type decoder func(name string, body []byte, program Program, context Context) (event.HookEvent, bool, error)
+
+// The decoders a program row may name: common reads the fields every program shares, codex adds Codex's shell list
+// and patch files.
+var decoders = map[string]decoder{"common": commonEvent, "codex": codexEvent}
+
+// Prepared reads the body of one hook of the program through the decoder its table row names; skip says the hook goes
+// to no one, as a subagent's own hooks outside its program's subagent events go by.
+func Prepared(name string, body []byte, context Context) (prepared event.HookEvent, skip bool, err error) {
+	program, listed := context.Programs.Programs[name]
+	if !listed {
+		return event.HookEvent{}, true, fmt.Errorf("unknown agent program %q", name)
 	}
-	return event.HookEvent{}, true, fmt.Errorf("unknown agent program %q", program)
+	decode, present := decoders[program.Decoder]
+	if !present {
+		return event.HookEvent{}, true, fmt.Errorf("agent program %q names the decoder %q, which this journal-hook does not have", name, program.Decoder)
+	}
+	return decode(name, body, program, context)
+}
+
+// readBody reads the fields every program sends, and skips a subagent's hook its program does not pass on.
+func readBody(body []byte, program Program) (commonBody, bool, error) {
+	var read commonBody
+	if err := json.Unmarshal(body, &read); err != nil {
+		return read, true, err
+	}
+	return read, read.AgentID != nil && !program.IsSubagentEvent(read.HookEventName), nil
 }
 
 // The fields of a hook body both programs send.
@@ -93,22 +95,23 @@ func (input *toolInput) UnmarshalJSON(text []byte) error {
 	return nil
 }
 
-func preparedFrom(program string, body []byte, read commonBody, context Context) (event.HookEvent, bool, error) {
-	name, listed := eventNames[read.HookEventName]
+func preparedFrom(programName string, program Program, body []byte, read commonBody, context Context) (event.HookEvent, bool, error) {
+	name, listed := program.Events[read.HookEventName]
 	if !listed {
-		return event.HookEvent{}, true, fmt.Errorf("unknown hook event %q", read.HookEventName)
+		return event.HookEvent{}, true, fmt.Errorf("%s sends no %q hook", programName, read.HookEventName)
 	}
 	prepared := event.HookEvent{
-		Version:     event.Version,
-		Program:     program,
-		Event:       name,
-		Session:     read.SessionID,
-		Firing:      context.Firing,
-		FiredAtMs:   context.FiredAtMs,
-		Actor:       context.Actor,
-		Environment: context.Environment,
-		Launch:      context.Launch,
-		Raw:         json.RawMessage(body),
+		Version:      event.Version,
+		Program:      programName,
+		AcceptsLines: program.AcceptsLines(name),
+		Event:        name,
+		Session:      read.SessionID,
+		Firing:       context.Firing,
+		FiredAtMs:    context.FiredAtMs,
+		Actor:        context.Actor,
+		Environment:  context.Environment,
+		Launch:       context.Launch,
+		Raw:          json.RawMessage(body),
 	}
 	if read.AgentID != nil {
 		prepared.Subagent = *read.AgentID
@@ -152,8 +155,10 @@ func pythonText(input map[string]any, key string) string {
 	return fmt.Sprint(value)
 }
 
-// EventName is the prepared object's name for a hook event name an agent program sends.
-func EventName(hookEventName string) (string, bool) {
-	name, listed := eventNames[hookEventName]
-	return name, listed
+// toolCategory is the category the program's row gives the tool, other for a tool it does not name.
+func toolCategory(program Program, name string) string {
+	if category, listed := program.ToolCategories[name]; listed {
+		return category
+	}
+	return "other"
 }
