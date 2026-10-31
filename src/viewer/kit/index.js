@@ -3,6 +3,9 @@ export {default as Btn} from "../src/kit/Btn.vue";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as RowList} from "./RowList.vue";
 export {default as StateRows} from "./StateRows.vue";
+export {default as MarkHost} from "../src/chat/MarkHost.vue";
+export {fetchMarkDeclarations} from "../src/domain/markRegistry.js";
+export {interleaved} from "../src/domain/chatTimeline.js";
 export {useRows} from "./useRows.js";
 export {WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 

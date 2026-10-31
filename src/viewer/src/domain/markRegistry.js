@@ -1,10 +1,15 @@
-// The chat mark types the modules declare, read once from /api/marks and found by type
-const declarations = new Map();
+import {shallowRef} from "vue";
+
+// The chat mark types the modules declare, read from /api/marks and found by type
+const declarations = shallowRef(new Map());
 
 export function loadMarkDeclarations(list) {
-    declarations.clear();
-    for (const declaration of list) declarations.set(declaration.type, declaration);
+    declarations.value = new Map(list.map((declaration) => [declaration.type, declaration]));
+}
+
+export async function fetchMarkDeclarations() {
+    loadMarkDeclarations(await (await fetch("/api/marks")).json());
 }
 
 // a mark whose type no module declares any more is drawn as a quiet line
-export const markDeclaration = (type) => declarations.get(type) || null;
+export const markDeclaration = (type) => declarations.value.get(type) || null;

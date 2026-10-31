@@ -1,8 +1,11 @@
 <script setup>
-import {ref} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {computed, onMounted, ref} from "vue";
+import {Btn, MarkHost, RowList, fetchMarkDeclarations, interleaved, useRows} from "@journal/window-kit";
 
-const {rows, failure, load, context} = useRows("message list", ["message.*"]);
+const {rows: messages, failure, load, context} = useRows("message list", ["message.*"]);
+const {rows: marks} = useRows("chat-mark list", ["chat_mark.*"]);
+const rows = computed(() => interleaved(messages.value, marks.value));
+onMounted(fetchMarkDeclarations);
 const text = ref("");
 const sendFailure = ref("");
 
@@ -18,8 +21,13 @@ async function send() {
     <div class="chat">
         <RowList :rows="rows" :failure="failure" empty="No messages yet">
             <template #default="{row}">
-                <span class="from">{{ row.type }}</span>
-                <span class="text">{{ row.text }}</span>
+                <template v-if="row.kind === 'mark'">
+                    <MarkHost :mark="row.row" />
+                </template>
+                <template v-else>
+                    <span class="from">{{ row.row.type }}</span>
+                    <span class="text">{{ row.row.text }}</span>
+                </template>
             </template>
         </RowList>
         <form class="composer" @submit.prevent="send">
