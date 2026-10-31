@@ -7,6 +7,9 @@ from core.modules.memories.guards.type_makers_guard import TypeMakersGuard
 from core.modules.memories.guards.type_availability_guard import TypeAvailabilityGuard
 from core.modules.memories.guards.type_change_guard import TypeChangeGuard
 from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
+from core.modules.memories.listeners.memory_made_mark_listener import MemoryMadeMarkListener
+from core.modules.memories.listeners.memory_removed_mark_listener import MemoryRemovedMarkListener
+from core.modules.memories.listeners.memory_weighed_mark_listener import MemoryWeighedMarkListener
 from core.modules.memories.listeners.compaction_fader_listener import CompactionFaderListener
 from core.modules.memories.listeners.task_memory_remover_listener import TaskMemoryRemoverListener
 from core.modules.memories.models.memory import Memory
@@ -59,6 +62,7 @@ class MemoriesModule(Module):
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, DueDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
-    listeners = [CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener]
+    listeners = [CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
+                 MemoryRemovedMarkListener]
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
