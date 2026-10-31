@@ -14,10 +14,10 @@ class DockLimits:
     def __init__(self, registry: Registry, queries: Queries, settings: SettingValues) -> None:
         self.registry, self.queries, self.settings = registry, queries, settings
 
-    def dock_most(self, dock_id: int) -> int:
-        most = self.settings.value(MOST_ITEMS_SETTING, self.queries.query(Dock).find(dock_id).environment_id, DEFAULT_MOST_ITEMS)
-        return most if isinstance(most, int) else DEFAULT_MOST_ITEMS
+    def dock_capacity(self, dock_id: int) -> int:
+        value = self.settings.value(MOST_ITEMS_SETTING, self.queries.query(Dock).find(dock_id).environment_id, DEFAULT_MOST_ITEMS)
+        return value if isinstance(value, int) else DEFAULT_MOST_ITEMS
 
-    def type_most(self, type: str) -> int | None:
+    def type_capacity(self, type: str) -> int | None:
         declared = next((entry for entry in self.registry.docks if entry.type == type), None)
         return declared.most if declared is not None else None

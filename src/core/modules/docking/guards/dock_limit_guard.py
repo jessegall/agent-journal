@@ -20,6 +20,6 @@ class DockLimitGuard(Guard):
         item = DockingArrival.item(change)
         if item is None:
             return
-        most = self.limits.dock_most(item.dock_id)
-        if len([sibling for sibling in self.items.docked(item.dock_id).all_rows() if sibling.id != item.id]) >= most:
-            raise Refusal(f"the dock allows at most {most} items", f"undock one, or raise the setting {MOST_ITEMS_SETTING}")
+        capacity = self.limits.dock_capacity(item.dock_id)
+        if len([sibling for sibling in self.items.docked(item.dock_id).all_rows() if sibling.id != item.id]) >= capacity:
+            raise Refusal(f"the dock allows at most {capacity} items", f"undock one, or raise the setting {MOST_ITEMS_SETTING}")

@@ -18,10 +18,10 @@ class DockItemQuery(Query[DockItem]):
     def docked(self, dock_id: int) -> Self:
         return self.filter(dock_id=dock_id, state=DockItemState.DOCKED)
 
-    def of_type(self, type: str) -> Self:
+    def type_items(self, type: str) -> Self:
         return self.filter(type=type)
 
-    def pointing_at(self, target_model: str, target_id: int) -> Self:
+    def row_items(self, target_model: str, target_id: int) -> Self:
         return self.filter(target_model=target_model, target_id=target_id)
 
     def waiting(self) -> Self:

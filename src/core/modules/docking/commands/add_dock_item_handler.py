@@ -29,17 +29,17 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
             raise Refusal("an item is docked in an environment", "name it with --environment")
         dock = next(self.queries.query(Dock).filter(environment_id=environment_id).all_rows(), None)
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
-        type_most = self.limits.type_most(command.type)
-        if type_most is not None:
-            self.free_place(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} allows at most {type_most} items", context)
-        dock_most = self.limits.dock_most(dock.id)
-        self.free_place(self.items.docked(dock.id), dock_most, f"the dock allows at most {dock_most} items", context)
+        type_capacity = self.limits.type_capacity(command.type)
+        if type_capacity is not None:
+            self.free_place(self.items.docked(dock.id).type_items(command.type), type_capacity, f"{command.type} allows at most {type_capacity} items", context)
+        dock_capacity = self.limits.dock_capacity(dock.id)
+        self.free_place(self.items.docked(dock.id), dock_capacity, f"the dock allows at most {dock_capacity} items", context)
         item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id)
-        return self.repository.save(item.changed(leaves_at=self.leave_time.at(item, context.timestamp)), context)
+        return self.repository.save(item.changed(leaves_at=self.leave_time.moment(item, context.timestamp)), context)
 
-    def free_place(self, docked_items: DockItemQuery, most: int, limit_text: str, context: Context) -> None:
+    def free_place(self, docked_items: DockItemQuery, capacity: int, limit_text: str, context: Context) -> None:
         docked = list(docked_items.oldest().all_rows())
-        if len(docked) < most:
+        if len(docked) < capacity:
             return
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None)
         if leaving is None:

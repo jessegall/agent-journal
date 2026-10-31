@@ -8,7 +8,7 @@ from core.modules.docking.support.dock_limits import DockLimits
 
 
 class TypeLimitGuard(Guard):
-    """A dock holds no more items of a type than the type's most."""
+    """A dock holds no more items of a type than the type's capacity."""
 
     name = "docking.type-limit"
     event = "dock_item.*"
@@ -18,9 +18,9 @@ class TypeLimitGuard(Guard):
 
     def check(self, change: Change[Model]) -> None:
         item = DockingArrival.item(change)
-        most = self.limits.type_most(item.type) if item is not None else None
-        if item is None or most is None:
+        capacity = self.limits.type_capacity(item.type) if item is not None else None
+        if item is None or capacity is None:
             return
-        docked_items = [sibling for sibling in self.items.docked(item.dock_id).of_type(item.type).all_rows() if sibling.id != item.id]
-        if len(docked_items) >= most:
-            raise Refusal(f"{item.type} allows at most {most} items", "undock one, or keep fewer items of this type")
+        docked_items = [sibling for sibling in self.items.docked(item.dock_id).type_items(item.type).all_rows() if sibling.id != item.id]
+        if len(docked_items) >= capacity:
+            raise Refusal(f"{item.type} allows at most {capacity} items", "undock one, or keep fewer items of this type")
