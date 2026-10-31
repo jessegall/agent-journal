@@ -1,0 +1,58 @@
+package shell
+
+import (
+	"reflect"
+	"testing"
+)
+
+// Each line beside what Python's shlex.split gives for it, or nil where it raises.
+var splitSamples = []struct {
+	line  string
+	words []string
+}{
+	{"git status --short", []string{"git", "status", "--short"}},
+	{`grep -n "a b" 'c d' e\ f`, []string{"grep", "-n", "a b", "c d", "e f"}},
+	{`echo "x\"y" "a\$b" "c\\d"`, []string{"echo", `x"y`, `a\$b`, `c\d`}},
+	{`echo 'it'"'"'s'`, []string{"echo", "it's"}},
+	{`printf "" ''`, []string{"printf", "", ""}},
+	{"a\tb\nc  ", []string{"a", "b", "c"}},
+	{"echo \\\nx", []string{"echo", "\nx"}},
+	{"echo # not a comment", []string{"echo", "#", "not", "a", "comment"}},
+	{`echo "open`, nil},
+	{`echo end\`, nil},
+	{"", nil},
+}
+
+func TestSplitReadsWordsAsShlexDoes(t *testing.T) {
+	for _, sample := range splitSamples {
+		words, err := Split(sample.line)
+		if sample.words == nil && sample.line != "" {
+			if err == nil {
+				t.Errorf("split(%q) gave %q, shlex raises", sample.line, words)
+			}
+			continue
+		}
+		if err != nil || !reflect.DeepEqual(words, sample.words) {
+			t.Errorf("split(%q) = %q, %v; want %q", sample.line, words, err, sample.words)
+		}
+	}
+}
+
+func TestTokensLeaveOutCommentLinesAndLeadingAssignments(t *testing.T) {
+	cases := map[string][]string{
+		"# note\n  # more\nFOO=1 BAR=x git log": {"git", "log"},
+		"A=1 -x=2 cmd":                          {"-x=2", "cmd"},
+		`echo "open`:                            {"echo", `"open`},
+	}
+	for line, want := range cases {
+		if got := Tokens(line); !reflect.DeepEqual(got, want) {
+			t.Errorf("tokens(%q) = %q, want %q", line, got, want)
+		}
+	}
+}
+
+func TestJoinQuotesAsShlexDoes(t *testing.T) {
+	if got := Join([]string{"bash", "-lc", "ls -la", "", "it's", "a/b.c=1:@%+,"}); got != `bash -lc 'ls -la' '' 'it'"'"'s' a/b.c=1:@%+,` {
+		t.Errorf("join gave %s", got)
+	}
+}

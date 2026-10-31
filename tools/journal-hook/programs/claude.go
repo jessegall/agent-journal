@@ -37,7 +37,7 @@ func claudeEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 	if skip || err != nil || !isToolEvent(prepared.Event) {
 		return prepared, skip, err
 	}
-	prepared.Tool = claudeTool(read.ToolName, read.ToolInput)
+	prepared.Tool = claudeTool(read.ToolName, read.ToolInput.values)
 	return prepared, false, nil
 }
 
@@ -49,8 +49,7 @@ func claudeTool(name string, input map[string]any) *event.Tool {
 	tool := &event.Tool{Name: name, Kind: kind, Files: []string{}}
 	switch kind {
 	case "shell":
-		command, _ := input["command"].(string)
-		tool.Shell = &event.ShellLine{Line: command, Kind: "unknown"}
+		tool.Shell = &event.ShellLine{Line: pythonText(input, "command"), Kind: "unknown"}
 	case "edit", "write", "read":
 		tool.Files = filePaths(input)
 	}

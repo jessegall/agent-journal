@@ -2,6 +2,7 @@
 package programs
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -13,6 +14,7 @@ type Context struct {
 	Environment string
 	Actor       string
 	Firing      string
+	RunScript   string
 	FiredAtMs   int64
 }
 
@@ -41,18 +43,49 @@ func Prepared(program string, body []byte, context Context) (prepared event.Hook
 	switch program {
 	case "claude":
 		return claudeEvent(body, context)
+	case "codex":
+		return codexEvent(body, context)
 	}
 	return event.HookEvent{}, true, fmt.Errorf("unknown agent program %q", program)
 }
 
 // The fields of a hook body both programs send.
 type commonBody struct {
-	HookEventName string         `json:"hook_event_name"`
-	SessionID     string         `json:"session_id"`
-	ToolName      string         `json:"tool_name"`
-	ToolInput     map[string]any `json:"tool_input"`
-	Prompt        *string        `json:"prompt"`
-	AgentID       *string        `json:"agent_id"`
+	HookEventName string    `json:"hook_event_name"`
+	SessionID     string    `json:"session_id"`
+	ToolName      string    `json:"tool_name"`
+	ToolInput     toolInput `json:"tool_input"`
+	Prompt        *string   `json:"prompt"`
+	AgentID       *string   `json:"agent_id"`
+}
+
+// toolInput is a tool's input with its text values kept in the order the body gives them, which a Go map loses.
+type toolInput struct {
+	values map[string]any
+	texts  []string
+}
+
+func (input *toolInput) UnmarshalJSON(text []byte) error {
+	input.values = map[string]any{}
+	decoder := json.NewDecoder(bytes.NewReader(text))
+	if opening, err := decoder.Token(); err != nil || opening != json.Delim('{') {
+		return err
+	}
+	for decoder.More() {
+		key, err := decoder.Token()
+		if err != nil {
+			return err
+		}
+		var value any
+		if err := decoder.Decode(&value); err != nil {
+			return err
+		}
+		input.values[key.(string)] = value
+		if text, ok := value.(string); ok {
+			input.texts = append(input.texts, text)
+		}
+	}
+	return nil
 }
 
 func preparedFrom(program string, body []byte, read commonBody, context Context) (event.HookEvent, bool, error) {
@@ -96,4 +129,25 @@ func filePaths(input map[string]any) []string {
 		}
 	}
 	return paths
+}
+
+// pythonText is str(input.get(key, "")) as version 4 reads a tool's input: no key gives "", a null gives "None".
+func pythonText(input map[string]any, key string) string {
+	value, present := input[key]
+	switch {
+	case !present:
+		return ""
+	case value == nil:
+		return "None"
+	}
+	if text, ok := value.(string); ok {
+		return text
+	}
+	return fmt.Sprint(value)
+}
+
+// EventName is the prepared object's name for a hook event name an agent program sends.
+func EventName(hookEventName string) (string, bool) {
+	name, known := eventNames[hookEventName]
+	return name, known
 }

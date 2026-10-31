@@ -1,0 +1,2 @@
+{"version":1,"program":"codex","event":"session_start","session":"01a15eb9-45d9-7e71-a609-7c4d85189b2d","firing":"7731-1793395000123","fired_at_ms":1793395000123,"actor":"agent","environment":"development","subagent":"","tool":null,"prompt":null}
+{"version":1,"program":"codex","event":"session_start","session":"01a15edf-b9eb-7752-9501-55ee3c1ba775","firing":"7731-1793395000123","fired_at_ms":1793395000123,"actor":"agent","environment":"development","subagent":"","tool":null,"prompt":null}

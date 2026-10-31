@@ -10,30 +10,22 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
 )
 
 // The recorded hook bodies: testdata/recorded/<program>/<hook event name>.jsonl, one body a line.
 const recordedFolder = "testdata/recorded"
 
-// The event name of the prepared object for each hook event name an agent program sends.
-var eventNames = map[string]string{
-	"PreToolUse":         "pre_tool_use",
-	"PostToolUse":        "post_tool_use",
-	"PostToolUseFailure": "post_tool_use",
-	"UserPromptSubmit":   "prompt",
-	"Stop":               "stop",
-	"SessionStart":       "session_start",
-	"SessionEnd":         "session_end",
-	"PreCompact":         "compact",
-}
-
 // The events and tools each program's recordings must hold at least one body of.
 var requiredEvents = map[string][]string{
 	"claude": {"pre_tool_use", "post_tool_use", "prompt", "stop", "session_start", "session_end", "compact"},
+	"codex":  {"pre_tool_use", "post_tool_use", "prompt", "stop", "session_start", "session_end"},
 }
 
 var requiredTools = map[string][]string{
 	"claude": {"Bash", "Edit", "Write", "Read"},
+	"codex":  {"Bash", "apply_patch"},
 }
 
 // A home folder or an email address left in a text of a body means it was not anonymised.
@@ -152,7 +144,7 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, w
 		}
 		hookEventName, _ := body["hook_event_name"].(string)
 		toolName, _ := body["tool_name"].(string)
-		event, known := eventNames[hookEventName]
+		event, known := programs.EventName(hookEventName)
 		if !known {
 			event = hookEventName
 		}
