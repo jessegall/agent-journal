@@ -19,6 +19,8 @@ from core.modules.tasks.task_log_subcommand import TaskLogSubcommand
 from core.modules.tasks.task_query import TaskQuery
 from core.modules.tasks.task_undepend_handler import TaskUndependHandler
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.tasks.open_dependency import OpenDependency
 from core.modules.tasks.task import Task
@@ -44,3 +46,4 @@ class TasksModule(Module):
     views = [OpenDependency]
     listeners = [ForgetDependencies]
     driver_rules = [LogRequest, UnloggedWriteLimit, TaskStopRefusal, BlockedWorkRefusal, TaskSummaryLine, TaskReturnLine, InactiveTaskReminder]
+    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.PAGE, reads=["task list", "task show", "task-log list"], events=["task.*"])]

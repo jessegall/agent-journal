@@ -19,6 +19,8 @@ from core.modules.plans.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.plan_task import PlanTask
 from core.modules.plans.plan_query import PlanQuery
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.phase import Phase
 from core.modules.plans.phase_task import PhaseTask
@@ -42,3 +44,5 @@ class PlansModule(Module):
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlace, PhaseRenumbering, CancelOpenPlanTasks,
                  NextPlanTaskStarter)
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.PAGE, reads=["plan list", "plan show", "plan progress", "phase list"],
+                                 events=["plan.*", "phase.*"])]

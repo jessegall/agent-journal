@@ -1,0 +1,68 @@
+<script setup>
+import {ref} from "vue";
+import {Btn, RowList, useRows} from "@journal/window-kit";
+
+const {rows, failure, load, context} = useRows("message list", ["message.*"]);
+const text = ref("");
+const sendFailure = ref("");
+
+async function send() {
+    const result = await context.run(["message", "send", text.value]);
+    sendFailure.value = result.ok ? "" : result.error;
+    if (result.ok) text.value = "";
+    load();
+}
+</script>
+
+<template>
+    <div class="chat">
+        <RowList :rows="rows" :failure="failure" empty="No messages yet">
+            <template #default="{row}">
+                <span class="from">{{ row.type }}</span>
+                <span class="text">{{ row.text }}</span>
+            </template>
+        </RowList>
+        <form class="composer" @submit.prevent="send">
+            <input v-model="text" class="composer-input" placeholder="Write a message" />
+            <Btn kind="primary" :disabled="!text.trim()" @click="send">Send</Btn>
+        </form>
+        <p v-if="sendFailure" class="composer-failure">{{ sendFailure }}</p>
+    </div>
+</template>
+
+<style scoped>
+.chat {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.from {
+    min-width: 56px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.text {
+    white-space: pre-wrap;
+}
+
+.composer {
+    display: flex;
+    gap: 8px;
+}
+
+.composer-input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--text);
+    background: transparent;
+}
+
+.composer-failure {
+    margin: 0;
+    color: var(--text-2);
+}
+</style>

@@ -1,39 +1,39 @@
-import { openBlock as e, createElementBlock as i, renderSlot as g, createElementVNode as d, normalizeClass as u, Fragment as c, renderList as n, normalizeStyle as x, defineComponent as z, Comment as H, h as L, cloneVNode as S, createBlock as M, withCtx as s, unref as k, createVNode as v, toDisplayString as $, resolveDynamicComponent as C, createCommentVNode as B, inject as A } from "vue";
-const b = (t, h) => {
-  const l = t.__vccOpts || t;
-  for (const [r, o] of h)
-    l[r] = o;
-  return l;
-}, E = { class: "skeleton-line" }, _ = {
+import { openBlock as e, createElementBlock as h, renderSlot as g, createElementVNode as c, normalizeClass as v, Fragment as d, renderList as s, normalizeStyle as b, defineComponent as S, Comment as H, h as $, cloneVNode as C, createBlock as M, withCtx as o, unref as k, createVNode as f, toDisplayString as L, resolveDynamicComponent as _, createCommentVNode as A, ref as V, inject as B } from "vue";
+const x = (t, a) => {
+  const i = t.__vccOpts || t;
+  for (const [l, n] of a)
+    i[l] = n;
+  return i;
+}, E = { class: "skeleton-line" }, I = {
   __name: "SkeletonLine",
   props: { filled: Boolean, still: Boolean, bars: { type: Array, default: () => [] } },
   setup(t) {
-    return (h, l) => (e(), i("span", E, [
-      g(h.$slots, "default", {}, void 0, !0),
-      d("span", {
-        class: u(["bars", { faded: t.filled }])
+    return (a, i) => (e(), h("span", E, [
+      g(a.$slots, "default", {}, void 0, !0),
+      c("span", {
+        class: v(["bars", { faded: t.filled }])
       }, [
-        (e(!0), i(c, null, n(t.bars, (r) => (e(), i("span", {
-          key: r.width,
-          class: u(["bar", { still: t.still }]),
-          style: x({ width: r.width, height: `${r.height}px`, borderRadius: `${r.height / 2}px` })
+        (e(!0), h(d, null, s(t.bars, (l) => (e(), h("span", {
+          key: l.width,
+          class: v(["bar", { still: t.still }]),
+          style: b({ width: l.width, height: `${l.height}px`, borderRadius: `${l.height / 2}px` })
         }, null, 6))), 128))
       ], 2)
     ]));
   }
-}, p = /* @__PURE__ */ b(_, [["__scopeId", "data-v-0ebb6933"]]), I = z({
+}, u = /* @__PURE__ */ x(I, [["__scopeId", "data-v-0ebb6933"]]), N = S({
   props: { value: { type: [String, Number], default: "" } },
-  setup(t, { slots: h }) {
+  setup(t, { slots: a }) {
     return () => {
-      const l = h[String(t.value)] ? String(t.value) : "default", r = (h[l] ? h[l]() : []).filter((o) => o.type !== H);
-      return r.length !== 1 ? L(c, { key: l }, r) : r[0].key == null ? S(r[0], { key: l }) : r[0];
+      const i = a[String(t.value)] ? String(t.value) : "default", l = (a[i] ? a[i]() : []).filter((n) => n.type !== H);
+      return l.length !== 1 ? $(d, { key: i }, l) : l[0].key == null ? C(l[0], { key: i }) : l[0];
     };
   }
-}), N = ["aria-label"], T = ["aria-label"], Z = ["aria-label"], D = ["aria-label"], O = ["aria-label"], R = ["aria-label"], W = ["aria-label"], q = {
+}), R = ["aria-label"], T = ["aria-label"], Z = ["aria-label"], q = ["aria-label"], D = ["aria-label"], O = ["aria-label"], W = ["aria-label"], j = {
   __name: "Skeleton",
   props: { shape: { type: String, default: "rows" }, count: { type: Number, default: 4 }, label: { type: String, default: "Loading" } },
   setup(t) {
-    const h = [
+    const a = [
       { id: "shape-1", width: 46, height: 38, mine: !1 },
       { id: "shape-2", width: 30, height: 22, mine: !0 },
       { id: "shape-3", width: 58, height: 64, mine: !1 },
@@ -48,166 +48,166 @@ const b = (t, h) => {
       { id: "shape-12", width: 44, height: 38, mine: !1 },
       { id: "shape-13", width: 60, height: 72, mine: !1 },
       { id: "shape-14", width: 36, height: 30, mine: !0 }
-    ], l = [
+    ], i = [
       { id: "kind", bars: [{ width: "64px", height: 8 }] },
       { id: "title", bars: [{ width: "70%", height: 12 }] },
       { id: "line", bars: [{ width: "45%", height: 9 }] }
-    ], r = [
+    ], l = [
       { width: "46%", height: 12 },
       { width: "52px", height: 9 }
-    ], o = [
+    ], n = [
       { id: "first", bars: [{ width: "88%", height: 9 }] },
       { id: "second", bars: [{ width: "64%", height: 9 }] },
       { id: "third", bars: [{ width: "76%", height: 9 }] }
-    ], f = [
+    ], y = [
       { width: "58%", height: 11 },
       { width: "32%", height: 9 }
-    ], w = ["94%", "88%", "91%", "62%"].map((m) => ({ width: m, height: 10 })), V = [
+    ], p = ["94%", "88%", "91%", "62%"].map((m) => ({ width: m, height: 10 })), z = [
       { width: "110px", height: 12 },
       { width: "86%", height: 24 },
       { width: "52%", height: 24 }
     ];
-    return (m, at) => (e(), M(I, { value: t.shape }, {
-      messages: s(() => [
-        d("div", {
+    return (m, nt) => (e(), M(N, { value: t.shape }, {
+      messages: o(() => [
+        c("div", {
           class: "skeleton-messages",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(), i(c, null, n(h, (a) => d("div", {
-            key: a.id,
-            class: u(["skeleton-message", { mine: a.mine }]),
-            style: x({ width: `${a.width}%`, height: `${a.height}px` })
+          (e(), h(d, null, s(a, (r) => c("div", {
+            key: r.id,
+            class: v(["skeleton-message", { mine: r.mine }]),
+            style: b({ width: `${r.width}%`, height: `${r.height}px` })
           }, null, 6)), 64))
-        ], 8, N)
+        ], 8, R)
       ]),
-      older: s(() => [
-        d("div", {
+      older: o(() => [
+        c("div", {
           class: "skeleton-messages skeleton-older",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), i(c, null, n(h.slice(0, 3), (a) => (e(), i("div", {
-            key: a.id,
-            class: u(["skeleton-message", { mine: a.mine }]),
-            style: x({ width: `${a.width}%`, height: `${a.height}px` })
+          (e(!0), h(d, null, s(a.slice(0, 3), (r) => (e(), h("div", {
+            key: r.id,
+            class: v(["skeleton-message", { mine: r.mine }]),
+            style: b({ width: `${r.width}%`, height: `${r.height}px` })
           }, null, 6))), 128))
         ], 8, T)
       ]),
-      cards: s(() => [
-        d("div", {
+      cards: o(() => [
+        c("div", {
           class: "skeleton-cards",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), i(c, null, n(t.count, (a) => (e(), i("div", {
-            key: a,
+          (e(!0), h(d, null, s(t.count, (r) => (e(), h("div", {
+            key: r,
             class: "skeleton-card"
           }, [
-            (e(), i(c, null, n(l, (y) => v(p, {
-              key: y.id,
-              bars: y.bars
+            (e(), h(d, null, s(i, (w) => f(u, {
+              key: w.id,
+              bars: w.bars
             }, null, 8, ["bars"])), 64))
           ]))), 128))
         ], 8, Z)
       ]),
-      file: s(() => [
-        d("div", {
+      file: o(() => [
+        c("div", {
           class: "skeleton-files",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), i(c, null, n(t.count, (a) => (e(), i("div", {
-            key: a,
+          (e(!0), h(d, null, s(t.count, (r) => (e(), h("div", {
+            key: r,
             class: "skeleton-file"
           }, [
-            v(p, {
+            f(u, {
               class: "skeleton-file-head",
-              bars: r
+              bars: l
             }),
-            (e(), i(c, null, n(o, (y) => v(p, {
-              key: y.id,
-              bars: y.bars
+            (e(), h(d, null, s(n, (w) => f(u, {
+              key: w.id,
+              bars: w.bars
             }, null, 8, ["bars"])), 64))
           ]))), 128))
-        ], 8, D)
+        ], 8, q)
       ]),
-      page: s(() => [
-        d("div", {
+      page: o(() => [
+        c("div", {
           class: "skeleton-text",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          v(p, {
+          f(u, {
             class: "skeleton-heading",
-            bars: V
+            bars: z
           }),
-          (e(!0), i(c, null, n(t.count, (a) => (e(), M(p, {
-            key: a,
-            bars: k(w)
+          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+            key: r,
+            bars: k(p)
+          }, null, 8, ["bars"]))), 128))
+        ], 8, D)
+      ]),
+      text: o(() => [
+        c("div", {
+          class: "skeleton-text",
+          "aria-busy": "true",
+          "aria-label": t.label
+        }, [
+          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+            key: r,
+            bars: k(p)
           }, null, 8, ["bars"]))), 128))
         ], 8, O)
       ]),
-      text: s(() => [
-        d("div", {
-          class: "skeleton-text",
-          "aria-busy": "true",
-          "aria-label": t.label
-        }, [
-          (e(!0), i(c, null, n(t.count, (a) => (e(), M(p, {
-            key: a,
-            bars: k(w)
-          }, null, 8, ["bars"]))), 128))
-        ], 8, R)
-      ]),
-      default: s(() => [
-        d("div", {
+      default: o(() => [
+        c("div", {
           class: "skeleton-rows",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), i(c, null, n(t.count, (a) => (e(), M(p, {
-            key: a,
+          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+            key: r,
             class: "skeleton-row",
-            bars: f
+            bars: y
           }))), 128))
         ], 8, W)
       ]),
       _: 1
     }, 8, ["value"]));
   }
-}, j = /* @__PURE__ */ b(q, [["__scopeId", "data-v-c687fb85"]]), F = {
+}, F = /* @__PURE__ */ x(j, [["__scopeId", "data-v-c687fb85"]]), G = {
   key: 1,
   class: "empty-state titled"
-}, G = { class: "empty-state-title" }, K = { class: "empty-state-text" }, U = {
+}, K = { class: "empty-state-title" }, U = { class: "empty-state-text" }, X = {
   key: 2,
   class: "empty-state"
-}, X = {
+}, J = {
   __name: "EmptyState",
   props: { title: { type: String, default: "" }, loading: Boolean, shape: { type: String, default: "rows" } },
   setup(t) {
-    return (h, l) => t.loading ? (e(), M(j, {
+    return (a, i) => t.loading ? (e(), M(F, {
       key: 0,
       shape: t.shape
-    }, null, 8, ["shape"])) : t.title ? (e(), i("div", F, [
-      d("p", G, $(t.title), 1),
-      d("p", K, [
-        g(h.$slots, "default", {}, void 0, !0)
+    }, null, 8, ["shape"])) : t.title ? (e(), h("div", G, [
+      c("p", K, L(t.title), 1),
+      c("p", U, [
+        g(a.$slots, "default", {}, void 0, !0)
       ])
-    ])) : (e(), i("p", U, [
-      g(h.$slots, "default", {}, void 0, !0)
+    ])) : (e(), h("p", X, [
+      g(a.$slots, "default", {}, void 0, !0)
     ]));
   }
-}, lt = /* @__PURE__ */ b(X, [["__scopeId", "data-v-b27e89b0"]]), J = {
+}, P = /* @__PURE__ */ x(J, [["__scopeId", "data-v-b27e89b0"]]), Q = {
   __name: "Spinner",
   props: { size: { type: Number, default: 9 } },
   setup(t) {
-    return (h, l) => (e(), i("span", {
+    return (a, i) => (e(), h("span", {
       class: "spinner",
-      style: x({ width: `${t.size}px`, height: `${t.size}px`, borderWidth: t.size > 14 ? "2px" : "1px" })
+      style: b({ width: `${t.size}px`, height: `${t.size}px`, borderWidth: t.size > 14 ? "2px" : "1px" })
     }, null, 4));
   }
-}, P = /* @__PURE__ */ b(J, [["__scopeId", "data-v-eb453d6f"]]), Q = {
+}, Y = /* @__PURE__ */ x(Q, [["__scopeId", "data-v-eb453d6f"]]), tt = {
   __name: "Btn",
   props: {
     kind: { type: String, default: "ghost" },
@@ -219,28 +219,28 @@ const b = (t, h) => {
     href: { type: String, default: "" }
   },
   setup(t) {
-    return (h, l) => (e(), M(C(t.href ? "a" : "button"), {
+    return (a, i) => (e(), M(_(t.href ? "a" : "button"), {
       type: t.href ? void 0 : "button",
       href: t.href || void 0,
-      class: u(["btn", t.kind, { small: t.small, large: t.large, busy: t.busy, fill: t.fill }]),
+      class: v(["btn", t.kind, { small: t.small, large: t.large, busy: t.busy, fill: t.fill }]),
       "aria-busy": t.busy,
       disabled: t.busy || t.disabled
     }, {
-      default: s(() => [
-        d("span", {
-          class: u(["btn-label", { hidden: t.busy }])
+      default: o(() => [
+        c("span", {
+          class: v(["btn-label", { hidden: t.busy }])
         }, [
-          g(h.$slots, "default", {}, void 0, !0)
+          g(a.$slots, "default", {}, void 0, !0)
         ], 2),
-        t.busy ? (e(), M(P, {
+        t.busy ? (e(), M(Y, {
           key: 0,
           class: "btn-spinner"
-        })) : B("", !0)
+        })) : A("", !0)
       ]),
       _: 3
     }, 8, ["type", "href", "class", "aria-busy", "disabled"]));
   }
-}, Y = /* @__PURE__ */ b(Q, [["__scopeId", "data-v-30ec20fe"]]), tt = ["stroke-width", "innerHTML"], et = {
+}, et = /* @__PURE__ */ x(tt, [["__scopeId", "data-v-30ec20fe"]]), at = ["stroke-width", "innerHTML"], ht = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -249,7 +249,7 @@ const b = (t, h) => {
     bold: Boolean
   },
   setup(t) {
-    const h = t, l = { right: 0, down: 90, left: 180, up: 270 }, r = {
+    const a = t, i = { right: 0, down: 90, left: 180, up: 270 }, l = {
       mail: "inbox",
       circle: "todos",
       play: "work",
@@ -273,7 +273,7 @@ const b = (t, h) => {
       send: "arrow",
       more: "dots",
       chevron: "arrow"
-    }, o = {
+    }, n = {
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
       key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
       terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
@@ -377,11 +377,11 @@ const b = (t, h) => {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (f, w) => (e(), i("svg", {
+    return (y, p) => (e(), h("svg", {
       class: "ico",
-      style: x({
+      style: b({
         ...t.size ? { "--icon-size": `${t.size}px` } : {},
-        ...h.facing === "right" ? {} : { transform: `rotate(${l[h.facing]}deg)` }
+        ...a.facing === "right" ? {} : { transform: `rotate(${i[a.facing]}deg)` }
       }),
       viewBox: "0 0 16 16",
       fill: "none",
@@ -390,35 +390,71 @@ const b = (t, h) => {
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
       "aria-hidden": "true",
-      innerHTML: o[r[t.name] || t.name] || o.dot
-    }, null, 12, tt));
+      innerHTML: n[l[t.name] || t.name] || n.dot
+    }, null, 12, at));
   }
-}, rt = {
+}, ot = {
   __name: "CloseButton",
   props: { title: { type: String, default: "Close" } },
   setup(t) {
-    return (h, l) => (e(), M(Y, {
+    return (a, i) => (e(), M(et, {
       kind: "icon",
       "aria-label": t.title
     }, {
-      default: s(() => [
-        v(et, { name: "x" })
+      default: o(() => [
+        f(ht, { name: "x" })
       ]),
       _: 1
     }, 8, ["aria-label"]));
   }
-}, dt = "1.0.0", ct = "3.5", ht = Symbol.for("journal.window-context");
-function nt() {
-  const t = A(ht, null);
+}, lt = {
+  key: 0,
+  class: "row-list-failure"
+}, it = {
+  key: 2,
+  class: "row-list"
+}, rt = {
+  __name: "RowList",
+  props: {
+    rows: { type: Array, required: !0 },
+    failure: { type: String, default: "" },
+    empty: { type: String, required: !0 }
+  },
+  setup(t) {
+    return (a, i) => t.failure ? (e(), h("p", lt, L(t.failure), 1)) : t.rows.length ? (e(), h("ul", it, [
+      (e(!0), h(d, null, s(t.rows, (l) => (e(), h("li", {
+        key: l.id,
+        class: "row-list-row"
+      }, [
+        g(a.$slots, "default", { row: l }, void 0, !0)
+      ]))), 128))
+    ])) : (e(), M(P, {
+      key: 1,
+      title: t.empty
+    }, null, 8, ["title"]));
+  }
+}, Mt = /* @__PURE__ */ x(rt, [["__scopeId", "data-v-d1eccf64"]]), pt = "1.0.0", ut = "3.5", dt = Symbol.for("journal.window-context");
+function ct() {
+  const t = B(dt, null);
   if (!t) throw new Error("useWindow is called only inside a window the viewer hosts");
   return t;
 }
+function yt(t, a) {
+  const i = ct(), l = V([]), n = V("");
+  async function y() {
+    const p = await i.read(t);
+    l.value = p.ok ? p.value.rows : [], n.value = p.ok ? "" : p.error;
+  }
+  return i.follow(a, y), y(), { rows: l, failure: n, load: y, context: i };
+}
 export {
-  Y as Btn,
-  rt as CloseButton,
-  lt as EmptyState,
-  dt as KIT_VERSION,
-  ct as KIT_VUE,
-  ht as WINDOW_CONTEXT,
-  nt as useWindow
+  et as Btn,
+  ot as CloseButton,
+  P as EmptyState,
+  pt as KIT_VERSION,
+  ut as KIT_VUE,
+  Mt as RowList,
+  dt as WINDOW_CONTEXT,
+  yt as useRows,
+  ct as useWindow
 };

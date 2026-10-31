@@ -7,6 +7,8 @@ from core.modules.messages.message_read_subcommand import MessageReadSubcommand
 from core.modules.messages.message_reply_subcommand import MessageReplySubcommand
 from core.modules.messages.message_send_subcommand import MessageSendSubcommand
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.message import Message
 
@@ -22,3 +24,5 @@ class MessagesModule(Module):
     guards = [OneReplyPerMessage]
     handlers = (MessageSendHandler, MessageReadHandler)
     subcommands = (MessageSendSubcommand, MessageReplySubcommand, MessageReadSubcommand,)
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.PAGE, reads=["message list", "message show"], runs=["message send"],
+                                 events=["message.*"])]
