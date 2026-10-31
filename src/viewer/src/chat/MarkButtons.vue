@@ -1,10 +1,11 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 import {api} from "../api/client.js";
-import {pressButton} from "./markButtons.js";
+import {pressable, pressButton} from "./markButtons.js";
 
-const props = defineProps({buttons: {type: Array, default: () => []}, mark: {type: Object, required: true}});
+const props = defineProps({buttons: {type: Array, default: () => []}, mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
+const offered = computed(() => pressable(props.buttons, props.allowedRuns));
 const refusal = ref("");
 
 // a button the server refuses shows the refusal beside it, until the next press
@@ -15,7 +16,7 @@ async function press(button) {
 </script>
 
 <template>
-    <template v-for="button in buttons" :key="button.runs">
+    <template v-for="button in offered" :key="button.runs">
         <button type="button" class="mark-button" :title="button.label" :aria-label="button.label" @click.stop="press(button)">
             <MarkIcon :name="button.icon" />
         </button>

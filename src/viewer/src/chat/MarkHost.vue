@@ -7,7 +7,7 @@ import {markDeclaration} from "../domain/markRegistry.js";
 import {markLook} from "../domain/markLook.js";
 
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
-const props = defineProps({mark: {type: Object, required: true}});
+const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
 const declaration = computed(() => markDeclaration(props.mark.type));
 const look = computed(() => markLook(props.mark, declaration.value));
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
@@ -23,7 +23,7 @@ const opened = ref(false);
                     <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                 </template>
             </ChatMark>
-            <MarkButtons :buttons="declaration?.buttons" :mark="mark" />
+            <MarkButtons :buttons="declaration?.buttons" :mark="mark" :allowed-runs="allowedRuns" />
         </span>
     </div>
 </template>
