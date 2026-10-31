@@ -1,0 +1,4934 @@
+{
+ "forms": [
+  {
+   "program": "awk",
+   "subcommand": "(no subcommand)",
+   "form": "awk [<code>]"
+  },
+  {
+   "program": "awk",
+   "subcommand": "(no subcommand)",
+   "form": "awk [<json>]"
+  },
+  {
+   "program": "awk",
+   "subcommand": "(no subcommand)",
+   "form": "awk [<code>] [<path>]"
+  },
+  {
+   "program": "awk",
+   "subcommand": "(no subcommand)",
+   "form": "awk [<pattern>] [<path>]"
+  },
+  {
+   "program": "cat",
+   "subcommand": "(no subcommand)",
+   "form": "cat"
+  },
+  {
+   "program": "cat",
+   "subcommand": "(no subcommand)",
+   "form": "cat [<path>]"
+  },
+  {
+   "program": "cat",
+   "subcommand": "(no subcommand)",
+   "form": "cat [<path>...]"
+  },
+  {
+   "program": "cat",
+   "subcommand": "(no subcommand)",
+   "form": "cat [<pattern>]"
+  },
+  {
+   "program": "cd",
+   "subcommand": "(no subcommand)",
+   "form": "cd [<path>]"
+  },
+  {
+   "program": "cd",
+   "subcommand": "(no subcommand)",
+   "form": "cd [<word>]"
+  },
+  {
+   "program": "cd",
+   "subcommand": "(no subcommand)",
+   "form": "cd [<variable>]"
+  },
+  {
+   "program": "cd",
+   "subcommand": "(no subcommand)",
+   "form": "cd [<glob>]"
+  },
+  {
+   "program": "chmod",
+   "subcommand": "(no subcommand)",
+   "form": "chmod [<pattern>] [<path>]"
+  },
+  {
+   "program": "chmod",
+   "subcommand": "(no subcommand)",
+   "form": "chmod [<pattern>...]"
+  },
+  {
+   "program": "chmod",
+   "subcommand": "(no subcommand)",
+   "form": "chmod [<number>] [<path>]"
+  },
+  {
+   "program": "chmod",
+   "subcommand": "(no subcommand)",
+   "form": "chmod [<pattern>] [<word>]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "test",
+   "form": "composer test [<code>...]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "test",
+   "form": "composer test"
+  },
+  {
+   "program": "composer",
+   "subcommand": "test",
+   "form": "composer test [<code>]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "test",
+   "form": "composer test [<path>]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "install",
+   "form": "composer install [--no-interaction] [--no-scripts] [-q]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "install",
+   "form": "composer install [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "install",
+   "form": "composer install [--no-interaction] [--no-scripts]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "install",
+   "form": "composer install [--no-dev] [--no-scripts] [--prefer-dist] [--no-interaction] [-q]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "dump-autoload",
+   "form": "composer dump-autoload [-q]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "dump-autoload",
+   "form": "composer dump-autoload [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "dump-autoload",
+   "form": "composer dump-autoload [-q] [--no-scripts]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "(no subcommand)",
+   "form": "composer [<word>]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "(no subcommand)",
+   "form": "composer [--version]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "(no subcommand)",
+   "form": "composer [<word>...] [-q]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "(no subcommand)",
+   "form": "composer [<word>] [<path>]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "require",
+   "form": "composer require [<path>] [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "require",
+   "form": "composer require [--dev] [<pattern>...] [--no-update] [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "require",
+   "form": "composer require [--dev] [<pattern>] [-W] [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "require",
+   "form": "composer require [<path>...] [--no-interaction]"
+  },
+  {
+   "program": "composer",
+   "subcommand": "types",
+   "form": "composer types"
+  },
+  {
+   "program": "composer",
+   "subcommand": "dev",
+   "form": "composer dev"
+  },
+  {
+   "program": "cp",
+   "subcommand": "(no subcommand)",
+   "form": "cp [<path>...]"
+  },
+  {
+   "program": "cp",
+   "subcommand": "(no subcommand)",
+   "form": "cp [-R <path>] [<path>]"
+  },
+  {
+   "program": "cp",
+   "subcommand": "(no subcommand)",
+   "form": "cp [<path>] [<pattern>]"
+  },
+  {
+   "program": "cp",
+   "subcommand": "(no subcommand)",
+   "form": "cp [<pattern>...]"
+  },
+  {
+   "program": "curl",
+   "subcommand": "(no subcommand)",
+   "form": "curl [-s <url>]"
+  },
+  {
+   "program": "curl",
+   "subcommand": "(no subcommand)",
+   "form": "curl [-s <string>] [<path>] [-w <code>] [<url>]"
+  },
+  {
+   "program": "curl",
+   "subcommand": "(no subcommand)",
+   "form": "curl [-s <string>] [<number>] [-o <path>] [-w <code>] [<url>]"
+  },
+  {
+   "program": "curl",
+   "subcommand": "(no subcommand)",
+   "form": "curl [-s <string>] [<number>] [<url>]"
+  },
+  {
+   "program": "cut",
+   "subcommand": "(no subcommand)",
+   "form": "cut [-c <number range>]"
+  },
+  {
+   "program": "cut",
+   "subcommand": "(no subcommand)",
+   "form": "cut [<string>] [-f <number range>]"
+  },
+  {
+   "program": "cut",
+   "subcommand": "(no subcommand)",
+   "form": "cut [-c <number range>] [<path>]"
+  },
+  {
+   "program": "cut",
+   "subcommand": "(no subcommand)",
+   "form": "cut [-c <number range>] [<pattern>]"
+  },
+  {
+   "program": "date",
+   "subcommand": "(no subcommand)",
+   "form": "date [<pattern>]"
+  },
+  {
+   "program": "date",
+   "subcommand": "(no subcommand)",
+   "form": "date [-u <pattern>]"
+  },
+  {
+   "program": "date",
+   "subcommand": "(no subcommand)",
+   "form": "date"
+  },
+  {
+   "program": "date",
+   "subcommand": "(no subcommand)",
+   "form": "date [<text>]"
+  },
+  {
+   "program": "diff",
+   "subcommand": "(no subcommand)",
+   "form": "diff [<substitution>...]"
+  },
+  {
+   "program": "diff",
+   "subcommand": "(no subcommand)",
+   "form": "diff [<path>...]"
+  },
+  {
+   "program": "diff",
+   "subcommand": "(no subcommand)",
+   "form": "diff [<pattern>...]"
+  },
+  {
+   "program": "diff",
+   "subcommand": "(no subcommand)",
+   "form": "diff [<substitution>] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "compose",
+   "form": "docker compose [<word>] [-T <word>] [<word>] [-l <path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "compose",
+   "form": "docker compose [<word>] [-T <word>] [<path>] [--dirty] [--format <word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "compose",
+   "form": "docker compose [<word>] [-T <word>] [<word>...] [--compact] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "compose",
+   "form": "docker compose [<word>] [-T <word>] [<word>...] [<string>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "run",
+   "form": "docker run [--rm] [--network <word>] [-v] [<pattern>] [-w <path>] [--entrypoint <word>] [<string>] [-c <text>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "run",
+   "form": "docker run [--rm] [--memory <string>] [--memory-swap <string>] [--cpus <number>] [-v] [<pattern>] [-w <pattern>] [<string>] [<word>] [-c <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "run",
+   "form": "docker run [--rm] [-d] [--name <word>] [-p <string>] [<string>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "run",
+   "form": "docker run [--rm] [--network <word>] [--env-file <pattern>] [-v] [<pattern>] [-v] [<pattern>] [-v] [<pattern>] [-v] [<pattern>] [-w <path>] [<word>...] [--filter] [<pattern>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "ps",
+   "form": "docker ps [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "ps",
+   "form": "docker ps [--filter] [<assignment>] [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "ps",
+   "form": "docker ps [-a <string>] [<code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "ps",
+   "form": "docker ps"
+  },
+  {
+   "program": "docker",
+   "subcommand": "logs",
+   "form": "docker logs [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "logs",
+   "form": "docker logs [--tail <number>] [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "logs",
+   "form": "docker logs [--since <duration>] [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "logs",
+   "form": "docker logs [<variable>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "build",
+   "form": "docker build [-q] [-f <path>] [-t] [<string>] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "build",
+   "form": "docker build [-t] [<path>...]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "build",
+   "form": "docker build [-q] [-t] [<string>] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "build",
+   "form": "docker build [-t] [<word>] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "stats",
+   "form": "docker stats [--no-stream] [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "stats",
+   "form": "docker stats [--no-stream] [--format <code>] [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "stats",
+   "form": "docker stats [--no-stream] [--format <code>] [<word>...]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "stats",
+   "form": "docker stats [--no-stream] [--format <code>] [<variable>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "inspect",
+   "form": "docker inspect [<word>] [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "inspect",
+   "form": "docker inspect [<variable>] [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "inspect",
+   "form": "docker inspect [--format <code>] [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "inspect",
+   "form": "docker inspect [-f <code>] [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "cp",
+   "form": "docker cp [<path>] [<pattern>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "cp",
+   "form": "docker cp [<pattern>] [<path>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "cp",
+   "form": "docker cp [<path>...]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "cp",
+   "form": "docker cp [<pattern>...]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "info",
+   "form": "docker info"
+  },
+  {
+   "program": "docker",
+   "subcommand": "info",
+   "form": "docker info [--format <code>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "rm",
+   "form": "docker rm [-f <word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "rm",
+   "form": "docker rm [<word>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "rm",
+   "form": "docker rm [-f <variable>]"
+  },
+  {
+   "program": "docker",
+   "subcommand": "rm",
+   "form": "docker rm [-f <word>] [<word>]"
+  },
+  {
+   "program": "du",
+   "subcommand": "(no subcommand)",
+   "form": "du [-sh] [<path>]"
+  },
+  {
+   "program": "du",
+   "subcommand": "(no subcommand)",
+   "form": "du [-sh] [<pattern>]"
+  },
+  {
+   "program": "du",
+   "subcommand": "(no subcommand)",
+   "form": "du [-sh] [<glob>]"
+  },
+  {
+   "program": "du",
+   "subcommand": "(no subcommand)",
+   "form": "du [-sh] [<path>...]"
+  },
+  {
+   "program": "echo",
+   "subcommand": "(no subcommand)",
+   "form": "echo [<text>]"
+  },
+  {
+   "program": "echo",
+   "subcommand": "(no subcommand)",
+   "form": "echo [<word>]"
+  },
+  {
+   "program": "echo",
+   "subcommand": "(no subcommand)",
+   "form": "echo [<string>]"
+  },
+  {
+   "program": "echo",
+   "subcommand": "(no subcommand)",
+   "form": "echo [<variable>]"
+  },
+  {
+   "program": "export",
+   "subcommand": "(no subcommand)",
+   "form": "export [<assignment>]"
+  },
+  {
+   "program": "export",
+   "subcommand": "(no subcommand)",
+   "form": "export [<assignment>] [<pattern>] [<path>]"
+  },
+  {
+   "program": "export",
+   "subcommand": "(no subcommand)",
+   "form": "export [<assignment>] [-E <pattern>] [<path>]"
+  },
+  {
+   "program": "export",
+   "subcommand": "(no subcommand)",
+   "form": "export [<substitution>]"
+  },
+  {
+   "program": "find",
+   "subcommand": "(no subcommand)",
+   "form": "find [<path>] [-name] [<glob>]"
+  },
+  {
+   "program": "find",
+   "subcommand": "(no subcommand)",
+   "form": "find [<path>] [-type <word>]"
+  },
+  {
+   "program": "find",
+   "subcommand": "(no subcommand)",
+   "form": "find [<path>] [-name] [<file>]"
+  },
+  {
+   "program": "find",
+   "subcommand": "(no subcommand)",
+   "form": "find [<path>] [-name] [<file>] [-not] [-path <glob>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "api",
+   "form": "gh api [<path>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "api",
+   "form": "gh api [<code>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "api",
+   "form": "gh api [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "api",
+   "form": "gh api [-X <word>] [<path>] [-F <assignment>] [--jq] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run view",
+   "form": "gh run view [<number>] [--repo <path>] [--json <string>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run view",
+   "form": "gh run view [<number>] [--repo <path>] [--json <string>] [--jq] [<json>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run view",
+   "form": "gh run view [<number>] [--json <string>] [-q] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run view",
+   "form": "gh run view [<number>] [--json <word>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run list",
+   "form": "gh run list [--repo <path>] [--workflow] [<text>] [--limit <number>] [--json <string>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run list",
+   "form": "gh run list [--workflow <file>] [--limit <number>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run list",
+   "form": "gh run list [--repo <path>] [--workflow] [<text>] [--limit <number>] [--json <string>] [--jq] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run list",
+   "form": "gh run list [--limit <number>] [--json <string>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release create",
+   "form": "gh release create [<version>] [--target <branch>] [--title] [<version>] [--notes-file <path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release create",
+   "form": "gh release create [<version>] [--target <branch>] [--title] [<version>] [--notes <text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release create",
+   "form": "gh release create [<version>] [-R <path>] [--title] [<version>] [--notes-file <pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release create",
+   "form": "gh release create [<version>] [--title] [<version>] [--notes-file <path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr create",
+   "form": "gh pr create [--title] [<text>] [--body] [<substitution>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr create",
+   "form": "gh pr create [--base <branch>] [--title] [<text>] [--body] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr create",
+   "form": "gh pr create [--repo <path>] [--base <branch>] [--head <branch>] [--title] [<text>] [--body-file] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr create",
+   "form": "gh pr create [--title] [<text>] [--body-file] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr view",
+   "form": "gh pr view [<number>] [--json <word>] [--jq] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr view",
+   "form": "gh pr view [<number>] [--repo <path>] [--json <string>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr view",
+   "form": "gh pr view [<number>] [--json <string>] [-q] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr view",
+   "form": "gh pr view [<number>] [--json <string>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr merge",
+   "form": "gh pr merge [<number>] [--merge]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr merge",
+   "form": "gh pr merge [<number>] [--repo <path>] [--merge]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr merge",
+   "form": "gh pr merge [<number>] [--merge] [--delete-branch]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "pr merge",
+   "form": "gh pr merge [--merge] [--delete-branch]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release view",
+   "form": "gh release view [<version>] [--json <word>] [--jq] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release view",
+   "form": "gh release view [<version>] [--json <word>] [--jq] [<pattern>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release view",
+   "form": "gh release view [<version>] [--json <string>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "release view",
+   "form": "gh release view [<version>] [--json <string>] [--jq] [<text>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "issue view",
+   "form": "gh issue view [<number>] [--json <word>] [--jq] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "issue view",
+   "form": "gh issue view [<number>] [--json <word>] [-q] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "issue view",
+   "form": "gh issue view [<number>] [--comments]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "issue view",
+   "form": "gh issue view [<variable>] [--json <word>] [--jq] [<path>]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run watch",
+   "form": "gh run watch [<variable>] [--exit-status]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run watch",
+   "form": "gh run watch [<variable>] [--exit-status] [--interval]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run watch",
+   "form": "gh run watch [<number>] [--exit-status]"
+  },
+  {
+   "program": "gh",
+   "subcommand": "run watch",
+   "form": "gh run watch [<number>] [--exit-status] [--interval]"
+  },
+  {
+   "program": "git",
+   "subcommand": "log",
+   "form": "git log [--oneline] [-<number>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "log",
+   "form": "git log [--oneline] [<range>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "log",
+   "form": "git log [--oneline] [-<number>] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "log",
+   "form": "git log [--oneline] [-<number>] [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "commit",
+   "form": "git commit [-q] [-m <text>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "commit",
+   "form": "git commit [-qm <text>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "commit",
+   "form": "git commit [-q] [-F <stdin>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "commit",
+   "form": "git commit [-q] [-m <code>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "add",
+   "form": "git add [-A]"
+  },
+  {
+   "program": "git",
+   "subcommand": "add",
+   "form": "git add [<path>...]"
+  },
+  {
+   "program": "git",
+   "subcommand": "add",
+   "form": "git add [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "add",
+   "form": "git add [-A] [<word>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "status",
+   "form": "git status [--short]"
+  },
+  {
+   "program": "git",
+   "subcommand": "status",
+   "form": "git status [-sb]"
+  },
+  {
+   "program": "git",
+   "subcommand": "status",
+   "form": "git status [--porcelain]"
+  },
+  {
+   "program": "git",
+   "subcommand": "status",
+   "form": "git status [--short] [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "diff",
+   "form": "git diff [--stat]"
+  },
+  {
+   "program": "git",
+   "subcommand": "diff",
+   "form": "git diff [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "diff",
+   "form": "git diff [--stat] [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "diff",
+   "form": "git diff [--name-only] [--diff-filter <word>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "push",
+   "form": "git push [-q] [<word>] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "push",
+   "form": "git push [-q] [<word>] [<version>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "push",
+   "form": "git push [-q]"
+  },
+  {
+   "program": "git",
+   "subcommand": "push",
+   "form": "git push [-q] [<word>] [<string>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "show",
+   "form": "git show [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "show",
+   "form": "git show [--stat] [<revision>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "show",
+   "form": "git show [<pattern>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "show",
+   "form": "git show [<revision>] [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "rebase",
+   "form": "git rebase [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "rebase",
+   "form": "git rebase [<word>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "rebase",
+   "form": "git rebase [--continue]"
+  },
+  {
+   "program": "git",
+   "subcommand": "rebase",
+   "form": "git rebase [-q] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "checkout",
+   "form": "git checkout [<path>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "checkout",
+   "form": "git checkout [-q] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "checkout",
+   "form": "git checkout [-q] [-b <word>] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "checkout",
+   "form": "git checkout [-q] [--detach] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "fetch",
+   "form": "git fetch [-q] [<word>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "fetch",
+   "form": "git fetch [-q]"
+  },
+  {
+   "program": "git",
+   "subcommand": "fetch",
+   "form": "git fetch [-q] [<word>] [<branch>]"
+  },
+  {
+   "program": "git",
+   "subcommand": "fetch",
+   "form": "git fetch [<word>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "test",
+   "form": "go test [<code>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "test",
+   "form": "go test [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "test",
+   "form": "go test [-race] [<code>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "test",
+   "form": "go test [<path>] [-run] [<pattern>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "build",
+   "form": "go build [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "build",
+   "form": "go build [-o <path>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "build",
+   "form": "go build [-o <pattern>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "build",
+   "form": "go build [-ldflags] [<variable>] [-o <code>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "run",
+   "form": "go run [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "run",
+   "form": "go run [<path>] [<word>...]"
+  },
+  {
+   "program": "go",
+   "subcommand": "run",
+   "form": "go run [<path>...]"
+  },
+  {
+   "program": "go",
+   "subcommand": "run",
+   "form": "go run [<path>] [<word>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "(no subcommand)",
+   "form": "go [<string>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "(no subcommand)",
+   "form": "go [-C <path>] [<word>] [<path>] [<word>] [<code>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "(no subcommand)",
+   "form": "go"
+  },
+  {
+   "program": "go",
+   "subcommand": "(no subcommand)",
+   "form": "go [-C <substitution>] [<word>] [<code>] [<path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "version",
+   "form": "go version"
+  },
+  {
+   "program": "go",
+   "subcommand": "version",
+   "form": "go version [-m <path>]"
+  },
+  {
+   "program": "go",
+   "subcommand": "version",
+   "form": "go version [-m <substitution>]"
+  },
+  {
+   "program": "grep",
+   "subcommand": "(no subcommand)",
+   "form": "grep [-n <pattern>] [<path>]"
+  },
+  {
+   "program": "grep",
+   "subcommand": "(no subcommand)",
+   "form": "grep [-v] [<pattern>]"
+  },
+  {
+   "program": "grep",
+   "subcommand": "(no subcommand)",
+   "form": "grep [-E <pattern>]"
+  },
+  {
+   "program": "grep",
+   "subcommand": "(no subcommand)",
+   "form": "grep [-n <code>] [-A <number>] [<path>]"
+  },
+  {
+   "program": "head",
+   "subcommand": "(no subcommand)",
+   "form": "head [-<number>]"
+  },
+  {
+   "program": "head",
+   "subcommand": "(no subcommand)",
+   "form": "head"
+  },
+  {
+   "program": "head",
+   "subcommand": "(no subcommand)",
+   "form": "head [-<number>] [<path>]"
+  },
+  {
+   "program": "head",
+   "subcommand": "(no subcommand)",
+   "form": "head [-c <number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "output read",
+   "form": "journal output read [<number>] [--all]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "output read",
+   "form": "journal output read [<number>] [--tail <number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "output read",
+   "form": "journal output read [<number>] [--grep <pattern>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "output read",
+   "form": "journal output read [<number>] [--reader <word>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message read",
+   "form": "journal message read [<number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message read",
+   "form": "journal message read"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message read",
+   "form": "journal message read [<variable>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message read",
+   "form": "journal message read [--help]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message send",
+   "form": "journal message send [<text>] [--reply-to <number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message send",
+   "form": "journal message send [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message send",
+   "form": "journal message send [<text>] [--reply-to <number>] [--confirm]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message send",
+   "form": "journal message send [<code>] [--reply-to <number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "await",
+   "form": "journal await [<text>] [--output <number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "await",
+   "form": "journal await [<text>] [--output <number>] [--reader <word>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "await",
+   "form": "journal await [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "await",
+   "form": "journal await [<text>] [--until <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work log",
+   "form": "journal work log [<number>] [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work log",
+   "form": "journal work log [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work log",
+   "form": "journal work log [<number>] [<code>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work log",
+   "form": "journal work log [<text>] [--n]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo start",
+   "form": "journal todo start [<number>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo start",
+   "form": "journal todo start"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo start",
+   "form": "journal todo start [<number>] [--force <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo start",
+   "form": "journal todo start [<variable>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work end",
+   "form": "journal work end [<number>] [--how <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work end",
+   "form": "journal work end [<variable>] [--how <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work end",
+   "form": "journal work end [<number>] [--how <text>] [--set <assignment>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "work end",
+   "form": "journal work end [<number>] [--how <word>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo create",
+   "form": "journal todo create [<text>] [--brief <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo create",
+   "form": "journal todo create [<text>] [--brief <text>] [--set <assignment>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo create",
+   "form": "journal todo create [<text>] [--brief <code>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo create",
+   "form": "journal todo create [<text>] [--brief <code>] [--set <assignment>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message reply",
+   "form": "journal message reply [<number>] [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message reply",
+   "form": "journal message reply [<number range>] [<text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message reply",
+   "form": "journal message reply [<number>] [<code>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "message reply",
+   "form": "journal message reply [<number>] [<text>] [--file <path>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo done",
+   "form": "journal todo done [<number>] [--how <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo done",
+   "form": "journal todo done [<variable>] [--how <text>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo done",
+   "form": "journal todo done [<number>] [--how <code>]"
+  },
+  {
+   "program": "journal",
+   "subcommand": "todo done",
+   "form": "journal todo done [<number>] [--how <substitution>]"
+  },
+  {
+   "program": "jq",
+   "subcommand": "(no subcommand)",
+   "form": "jq [-r <text>]"
+  },
+  {
+   "program": "jq",
+   "subcommand": "(no subcommand)",
+   "form": "jq [-r <pattern>]"
+  },
+  {
+   "program": "jq",
+   "subcommand": "(no subcommand)",
+   "form": "jq [-e] [<text>]"
+  },
+  {
+   "program": "jq",
+   "subcommand": "(no subcommand)",
+   "form": "jq [<code>] [<pattern>]"
+  },
+  {
+   "program": "kill",
+   "subcommand": "(no subcommand)",
+   "form": "kill [<variable>]"
+  },
+  {
+   "program": "kill",
+   "subcommand": "(no subcommand)",
+   "form": "kill [<substitution>]"
+  },
+  {
+   "program": "kill",
+   "subcommand": "(no subcommand)",
+   "form": "kill [<number>]"
+  },
+  {
+   "program": "kill",
+   "subcommand": "(no subcommand)",
+   "form": "kill [<number>...]"
+  },
+  {
+   "program": "ln",
+   "subcommand": "(no subcommand)",
+   "form": "ln [-s <path>] [<path>]"
+  },
+  {
+   "program": "ln",
+   "subcommand": "(no subcommand)",
+   "form": "ln [-s <path>] [<word>]"
+  },
+  {
+   "program": "ln",
+   "subcommand": "(no subcommand)",
+   "form": "ln [-sf <path>] [<path>]"
+  },
+  {
+   "program": "ln",
+   "subcommand": "(no subcommand)",
+   "form": "ln [-s <path>] [<pattern>]"
+  },
+  {
+   "program": "ls",
+   "subcommand": "(no subcommand)",
+   "form": "ls [<path>]"
+  },
+  {
+   "program": "ls",
+   "subcommand": "(no subcommand)",
+   "form": "ls [<word>]"
+  },
+  {
+   "program": "ls",
+   "subcommand": "(no subcommand)",
+   "form": "ls [<path>...]"
+  },
+  {
+   "program": "ls",
+   "subcommand": "(no subcommand)",
+   "form": "ls [<pattern>]"
+  },
+  {
+   "program": "lsof",
+   "subcommand": "(no subcommand)",
+   "form": "lsof [-nP] [<address>] [<string>]"
+  },
+  {
+   "program": "lsof",
+   "subcommand": "(no subcommand)",
+   "form": "lsof [-nP] [-iTCP] [<string>]"
+  },
+  {
+   "program": "lsof",
+   "subcommand": "(no subcommand)",
+   "form": "lsof [<path>]"
+  },
+  {
+   "program": "lsof",
+   "subcommand": "(no subcommand)",
+   "form": "lsof [-p] [<number>]"
+  },
+  {
+   "program": "make",
+   "subcommand": "(no subcommand)",
+   "form": "make [<word>...] [<assignment>]"
+  },
+  {
+   "program": "make",
+   "subcommand": "(no subcommand)",
+   "form": "make [<word>...]"
+  },
+  {
+   "program": "make",
+   "subcommand": "(no subcommand)",
+   "form": "make [<word>]"
+  },
+  {
+   "program": "make",
+   "subcommand": "(no subcommand)",
+   "form": "make [<word>] [<assignment>]"
+  },
+  {
+   "program": "mkdir",
+   "subcommand": "(no subcommand)",
+   "form": "mkdir [-p] [<path>]"
+  },
+  {
+   "program": "mkdir",
+   "subcommand": "(no subcommand)",
+   "form": "mkdir [-p] [<pattern>]"
+  },
+  {
+   "program": "mkdir",
+   "subcommand": "(no subcommand)",
+   "form": "mkdir [-p] [<variable>]"
+  },
+  {
+   "program": "mkdir",
+   "subcommand": "(no subcommand)",
+   "form": "mkdir [-p] [<word>]"
+  },
+  {
+   "program": "mv",
+   "subcommand": "(no subcommand)",
+   "form": "mv [<path>...]"
+  },
+  {
+   "program": "mv",
+   "subcommand": "(no subcommand)",
+   "form": "mv [<pattern>...]"
+  },
+  {
+   "program": "mv",
+   "subcommand": "(no subcommand)",
+   "form": "mv [<glob>] [<path>]"
+  },
+  {
+   "program": "mv",
+   "subcommand": "(no subcommand)",
+   "form": "mv [<file>...]"
+  },
+  {
+   "program": "node",
+   "subcommand": "(no subcommand)",
+   "form": "node [-e <code>]"
+  },
+  {
+   "program": "node",
+   "subcommand": "(no subcommand)",
+   "form": "node [-e <substitution>]"
+  },
+  {
+   "program": "node",
+   "subcommand": "(no subcommand)",
+   "form": "node [--input-type <word>] [-e <code>]"
+  },
+  {
+   "program": "node",
+   "subcommand": "(no subcommand)",
+   "form": "node [--version]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run build",
+   "form": "npm run build"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run build",
+   "form": "npm run build [--silent]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run build",
+   "form": "npm run build [--prefix <word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run build",
+   "form": "npm run build [<string>] [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "install",
+   "form": "npm install [-g] [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "install",
+   "form": "npm install"
+  },
+  {
+   "program": "npm",
+   "subcommand": "install",
+   "form": "npm install [-g] [<path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "install",
+   "form": "npm install [-g] [<email>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run",
+   "form": "npm run [<string>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run",
+   "form": "npm run [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run",
+   "form": "npm run [<string>...]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run",
+   "form": "npm run [<word>] [--workspaces] [--if-present]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "ci",
+   "form": "npm ci"
+  },
+  {
+   "program": "npm",
+   "subcommand": "ci",
+   "form": "npm ci [--no-audit] [--no-fund]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "ci",
+   "form": "npm ci [--silent]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "ci",
+   "form": "npm ci [--prefix <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "(no subcommand)",
+   "form": "npm [--version]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "(no subcommand)",
+   "form": "npm [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "(no subcommand)",
+   "form": "npm [-v]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "(no subcommand)",
+   "form": "npm [<word>...]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "view",
+   "form": "npm view [<path>] [<word>] [--json]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "view",
+   "form": "npm view [<pattern>] [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "view",
+   "form": "npm view [<word>...]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "view",
+   "form": "npm view [<code>] [<word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run test",
+   "form": "npm run test"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run test",
+   "form": "npm run test [-w <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run test",
+   "form": "npm run test [<string>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run test",
+   "form": "npm run test [--prefix <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run lint",
+   "form": "npm run lint"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run lint",
+   "form": "npm run lint [--prefix <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run lint",
+   "form": "npm run lint [--prefix <word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run lint",
+   "form": "npm run lint [--workspaces] [--if-present]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run check",
+   "form": "npm run check"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run check",
+   "form": "npm run check [--prefix <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run deploy",
+   "form": "npm run deploy [--prefix <path>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run deploy",
+   "form": "npm run deploy [--prefix <word>]"
+  },
+  {
+   "program": "npm",
+   "subcommand": "run deploy",
+   "form": "npm run deploy"
+  },
+  {
+   "program": "perl",
+   "subcommand": "(no subcommand)",
+   "form": "perl [-pi] [-e <pattern>] [<path>]"
+  },
+  {
+   "program": "perl",
+   "subcommand": "(no subcommand)",
+   "form": "perl"
+  },
+  {
+   "program": "perl",
+   "subcommand": "(no subcommand)",
+   "form": "perl [-pi] [-e <code>] [<path>]"
+  },
+  {
+   "program": "perl",
+   "subcommand": "(no subcommand)",
+   "form": "perl [-pi] [-e <pattern>] [<path>...]"
+  },
+  {
+   "program": "pgrep",
+   "subcommand": "(no subcommand)",
+   "form": "pgrep [-f] [<text>]"
+  },
+  {
+   "program": "pgrep",
+   "subcommand": "(no subcommand)",
+   "form": "pgrep [-fl] [<word>]"
+  },
+  {
+   "program": "pgrep",
+   "subcommand": "(no subcommand)",
+   "form": "pgrep [-fl] [<text>]"
+  },
+  {
+   "program": "pgrep",
+   "subcommand": "(no subcommand)",
+   "form": "pgrep [-f] [<path>]"
+  },
+  {
+   "program": "php",
+   "subcommand": "(no subcommand)",
+   "form": "php [-l <path>]"
+  },
+  {
+   "program": "php",
+   "subcommand": "(no subcommand)",
+   "form": "php [-l <variable>]"
+  },
+  {
+   "program": "php",
+   "subcommand": "(no subcommand)",
+   "form": "php [-l <pattern>]"
+  },
+  {
+   "program": "php",
+   "subcommand": "(no subcommand)",
+   "form": "php [-l <file>]"
+  },
+  {
+   "program": "printf",
+   "subcommand": "(no subcommand)",
+   "form": "printf [<string>] [<text>]"
+  },
+  {
+   "program": "printf",
+   "subcommand": "(no subcommand)",
+   "form": "printf [<code>]"
+  },
+  {
+   "program": "printf",
+   "subcommand": "(no subcommand)",
+   "form": "printf [<text>] [<variable>]"
+  },
+  {
+   "program": "printf",
+   "subcommand": "(no subcommand)",
+   "form": "printf [<text>]"
+  },
+  {
+   "program": "ps",
+   "subcommand": "(no subcommand)",
+   "form": "ps [<word>]"
+  },
+  {
+   "program": "ps",
+   "subcommand": "(no subcommand)",
+   "form": "ps [-eo <string>]"
+  },
+  {
+   "program": "ps",
+   "subcommand": "(no subcommand)",
+   "form": "ps [-Ao <string>]"
+  },
+  {
+   "program": "ps",
+   "subcommand": "(no subcommand)",
+   "form": "ps [-axo <string>]"
+  },
+  {
+   "program": "pytest",
+   "subcommand": "(no subcommand)",
+   "form": "pytest [-q] [--timeout <number>] [-n <word>]"
+  },
+  {
+   "program": "pytest",
+   "subcommand": "(no subcommand)",
+   "form": "pytest [-q] [--timeout <number>] [<path>]"
+  },
+  {
+   "program": "pytest",
+   "subcommand": "(no subcommand)",
+   "form": "pytest [-q] [<path>] [-k <word>]"
+  },
+  {
+   "program": "pytest",
+   "subcommand": "(no subcommand)",
+   "form": "pytest [-q] [<path>]"
+  },
+  {
+   "program": "python",
+   "subcommand": "(no subcommand)",
+   "form": "python [-c <code>]"
+  },
+  {
+   "program": "python",
+   "subcommand": "(no subcommand)",
+   "form": "python [<stdin>]"
+  },
+  {
+   "program": "python",
+   "subcommand": "(no subcommand)",
+   "form": "python"
+  },
+  {
+   "program": "python",
+   "subcommand": "(no subcommand)",
+   "form": "python [-c <substitution>]"
+  },
+  {
+   "program": "python3",
+   "subcommand": "(no subcommand)",
+   "form": "python3 [<stdin>]"
+  },
+  {
+   "program": "python3",
+   "subcommand": "(no subcommand)",
+   "form": "python3 [-c <code>]"
+  },
+  {
+   "program": "python3",
+   "subcommand": "(no subcommand)",
+   "form": "python3 [-I] [<stdin>]"
+  },
+  {
+   "program": "python3",
+   "subcommand": "(no subcommand)",
+   "form": "python3 [-I] [-c <code>]"
+  },
+  {
+   "program": "rm",
+   "subcommand": "(no subcommand)",
+   "form": "rm [-rf] [<path>]"
+  },
+  {
+   "program": "rm",
+   "subcommand": "(no subcommand)",
+   "form": "rm [<path>]"
+  },
+  {
+   "program": "rm",
+   "subcommand": "(no subcommand)",
+   "form": "rm [-f] [<path>]"
+  },
+  {
+   "program": "rm",
+   "subcommand": "(no subcommand)",
+   "form": "rm [-rf] [<pattern>]"
+  },
+  {
+   "program": "sed",
+   "subcommand": "(no subcommand)",
+   "form": "sed [-n <number range>] [<path>]"
+  },
+  {
+   "program": "sed",
+   "subcommand": "(no subcommand)",
+   "form": "sed [-n <number range>]"
+  },
+  {
+   "program": "sed",
+   "subcommand": "(no subcommand)",
+   "form": "sed [-i <empty>] [<code>] [<path>]"
+  },
+  {
+   "program": "sed",
+   "subcommand": "(no subcommand)",
+   "form": "sed [-n <pattern>]"
+  },
+  {
+   "program": "sleep",
+   "subcommand": "(no subcommand)",
+   "form": "sleep [<number>]"
+  },
+  {
+   "program": "sleep",
+   "subcommand": "(no subcommand)",
+   "form": "sleep [<variable>]"
+  },
+  {
+   "program": "sleep",
+   "subcommand": "(no subcommand)",
+   "form": "sleep [<substitution>]"
+  },
+  {
+   "program": "sleep",
+   "subcommand": "(no subcommand)",
+   "form": "sleep [<duration>]"
+  },
+  {
+   "program": "sort",
+   "subcommand": "(no subcommand)",
+   "form": "sort"
+  },
+  {
+   "program": "sort",
+   "subcommand": "(no subcommand)",
+   "form": "sort [-rn]"
+  },
+  {
+   "program": "sort",
+   "subcommand": "(no subcommand)",
+   "form": "sort [-u]"
+  },
+  {
+   "program": "sort",
+   "subcommand": "(no subcommand)",
+   "form": "sort [-n]"
+  },
+  {
+   "program": "sqlite3",
+   "subcommand": "(no subcommand)",
+   "form": "sqlite3 [<path>] [<text>]"
+  },
+  {
+   "program": "sqlite3",
+   "subcommand": "(no subcommand)",
+   "form": "sqlite3 [<path>] [<code>]"
+  },
+  {
+   "program": "sqlite3",
+   "subcommand": "(no subcommand)",
+   "form": "sqlite3 [-readonly <path>] [<text>]"
+  },
+  {
+   "program": "sqlite3",
+   "subcommand": "(no subcommand)",
+   "form": "sqlite3 [-readonly <path>] [<code>]"
+  },
+  {
+   "program": "ssh",
+   "subcommand": "(no subcommand)",
+   "form": "ssh [-o <assignment>] [<email>] [<text>]"
+  },
+  {
+   "program": "ssh",
+   "subcommand": "(no subcommand)",
+   "form": "ssh [-o <assignment>] [<email>] [<code>]"
+  },
+  {
+   "program": "ssh",
+   "subcommand": "(no subcommand)",
+   "form": "ssh [<email>] [<text>]"
+  },
+  {
+   "program": "ssh",
+   "subcommand": "(no subcommand)",
+   "form": "ssh [-o <assignment>] [<email>] [<substitution>]"
+  },
+  {
+   "program": "tail",
+   "subcommand": "(no subcommand)",
+   "form": "tail [-<number>]"
+  },
+  {
+   "program": "tail",
+   "subcommand": "(no subcommand)",
+   "form": "tail [-<number>] [<path>]"
+  },
+  {
+   "program": "tail",
+   "subcommand": "(no subcommand)",
+   "form": "tail [-n <pattern>]"
+  },
+  {
+   "program": "tail",
+   "subcommand": "(no subcommand)",
+   "form": "tail [-c <number>] [<path>]"
+  },
+  {
+   "program": "touch",
+   "subcommand": "(no subcommand)",
+   "form": "touch [<path>]"
+  },
+  {
+   "program": "touch",
+   "subcommand": "(no subcommand)",
+   "form": "touch [<path>...]"
+  },
+  {
+   "program": "touch",
+   "subcommand": "(no subcommand)",
+   "form": "touch [<pattern>]"
+  },
+  {
+   "program": "touch",
+   "subcommand": "(no subcommand)",
+   "form": "touch [<file>]"
+  },
+  {
+   "program": "tr",
+   "subcommand": "(no subcommand)",
+   "form": "tr [<string>] [<text>]"
+  },
+  {
+   "program": "tr",
+   "subcommand": "(no subcommand)",
+   "form": "tr [-d <string>]"
+  },
+  {
+   "program": "tr",
+   "subcommand": "(no subcommand)",
+   "form": "tr [<string>...]"
+  },
+  {
+   "program": "tr",
+   "subcommand": "(no subcommand)",
+   "form": "tr [-s <text>]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "run",
+   "form": "vitest run [<path>]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "run",
+   "form": "vitest run"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "run",
+   "form": "vitest run [<path>...]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "run",
+   "form": "vitest run [<path>] [-t <text>] [--reporter <word>]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "(no subcommand)",
+   "form": "vitest"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "(no subcommand)",
+   "form": "vitest [--project <word>]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "(no subcommand)",
+   "form": "vitest [--no-cache] [--no-coverage]"
+  },
+  {
+   "program": "vitest",
+   "subcommand": "(no subcommand)",
+   "form": "vitest [--no-watch] [--no-cache] [--coverage]"
+  },
+  {
+   "program": "wc",
+   "subcommand": "(no subcommand)",
+   "form": "wc [-l]"
+  },
+  {
+   "program": "wc",
+   "subcommand": "(no subcommand)",
+   "form": "wc [-l] [<path>]"
+  },
+  {
+   "program": "wc",
+   "subcommand": "(no subcommand)",
+   "form": "wc [-l] [<path>...]"
+  },
+  {
+   "program": "wc",
+   "subcommand": "(no subcommand)",
+   "form": "wc [-l] [<glob>]"
+  },
+  {
+   "program": "which",
+   "subcommand": "(no subcommand)",
+   "form": "which [<word>]"
+  },
+  {
+   "program": "which",
+   "subcommand": "(no subcommand)",
+   "form": "which [<word>...]"
+  },
+  {
+   "program": "which",
+   "subcommand": "(no subcommand)",
+   "form": "which [-a <word>]"
+  },
+  {
+   "program": "which",
+   "subcommand": "(no subcommand)",
+   "form": "which [<variable>]"
+  }
+ ],
+ "chains": [
+  [
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "||",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "||",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "||",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART",
+   "|",
+   "PART"
+  ],
+  [
+   "PART",
+   "&&",
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART"
+  ],
+  [
+   "PART",
+   "2>&1",
+   "|",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   ";",
+   "PART",
+   "|",
+   "PART"
+  ]
+ ]
+}

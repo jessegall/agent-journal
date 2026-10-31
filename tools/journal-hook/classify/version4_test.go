@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jessegall/agent-journal/tools/journal-hook/internal/pyre"
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
@@ -38,7 +37,7 @@ func (classifier *Classifier) version4Parts(line string) []version4Part {
 	}
 	var parts []version4Part
 	for _, run := range Runs(commands) {
-		text := pyre.Strip(line[run[0].Start:run[len(run)-1].End])
+		text := runText(run)
 		var classifications []Classification
 		files := []string{}
 		for _, command := range run {
