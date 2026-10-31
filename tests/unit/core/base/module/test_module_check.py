@@ -1,4 +1,7 @@
 from core.base.module.window_check import WindowCheck
+from core.base.module.mark_check import MarkCheck
+from core.base.module.dock_check import DockCheck
+from core.base.module.button_check import ButtonCheck
 from dataclasses import dataclass
 
 import pytest
@@ -118,5 +121,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck())
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()))
 
