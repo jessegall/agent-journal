@@ -34,3 +34,13 @@ def test_the_chat_window_reads_marks_and_follows_their_events(new_story):
     story = new_story(fixture=UserJoined)
     window = Registry.read(story.container.get(Database)).window("messages.chat")
     assert {"chat-mark list", "chat-mark show"} <= set(window.reads) and "chat_mark.*" in window.events
+
+
+def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
+    for number in range(1, 56):
+        bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor)
+    story.expect_success("chat-mark list --environment 1", "Mark 55", "page 1, 50 of 55 rows: --page 2 for the next")
+    story.expect_absent("chat-mark list --environment 1", "Mark 5  ")
+    story.expect_success("chat-mark list --environment 1 --page 2", "Mark 5")
