@@ -4,6 +4,7 @@ from core.modules.environments.migrations.m001_environments import EnvironmentsT
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.environments.environment import Environment
+from core.modules.environments.environment_query import EnvironmentQuery
 
 
 class EnvironmentsModule(Module):
@@ -12,6 +13,6 @@ class EnvironmentsModule(Module):
     name = "environments"
     requires_core = ">=5,<6"
     dependencies = ["actors"]
-    models = [ModelDeclaration(Environment)]
+    models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
     migrations = [EnvironmentsTable]
     bindings = [(EnvironmentNames, EnvironmentTableNames)]

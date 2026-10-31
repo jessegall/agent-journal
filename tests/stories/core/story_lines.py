@@ -1,5 +1,6 @@
 NEW_ENVIRONMENT = "environment make main /work/journal"
 AGENT_START = "agent start s-1 claude main --environment main"
+AGENT_START_WITH_PROCESS = "agent start s-7 claude main --pid 700 --process-started-at 2026-10-31T09:00:00+00:00 --environment main"
 NEW_TASK = 'task make "Fix the cart" --environment main'
 TASK_START = "task start 1"
 TASK_CLOSE = 'task close 1 --outcome "done"'

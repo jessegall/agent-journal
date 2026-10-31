@@ -5,6 +5,7 @@ def test_a_session_start_makes_one_actor_and_one_agent_under_one_number(new_stor
     agent_id = story.new_row_id(lines.AGENT_START)
     story.expect_success(f"agent show {agent_id}", "session: s-1", "role: main", "environment_id: 1")
     story.expect_success(f"actor show {agent_id}", "type: agent", "name: s-1")
+    story.expect_absent(f"agent show {agent_id}", "pid:", "process_started_at:")
 
 
 def test_a_session_starts_only_once(new_story):
@@ -25,3 +26,10 @@ def test_an_agent_starts_only_in_an_environment_and_is_never_made_by_hand(new_st
     story = new_story()
     story.expect_refusal("agent start s-1 claude main", "an agent starts in an environment")
     story.expect_usage_error("agent make s-1 claude main")
+
+
+def test_a_session_start_records_the_agent_programs_pid_and_process_start(new_story):
+    story = new_story(fixture=MainEnvironment)
+    agent_id = story.new_row_id("agent start s-1 claude main --pid 4321 --process-started-at 2026-10-31T09:00:00+00:00 --environment main")
+    story.expect_success(f"agent show {agent_id}", "pid: 4321", "process_started_at: 2026-10-31T09:00:00.000000+00:00")
+

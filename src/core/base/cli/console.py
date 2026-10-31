@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 from typing import TextIO
 
+from core.base.caller.caller_request import CallerRequest
+from core.base.caller.caller_resolver import CallerResolver
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
@@ -28,10 +30,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, lookup: SubcommandLookup, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver) -> None:
         self.registry, self.finder, self.fingerprint, self.lookup, self.bus = registry, finder, fingerprint, lookup, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
-        self.environment_names = environment_names
+        self.environment_names, self.resolver = environment_names, resolver
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO) -> int:
         output = Output(self.tables, "--json" in argv, stream)
@@ -50,6 +52,14 @@ class Console:
         except Exception as error:
             output.error(self.errors.reported(argv, error))
             return ERROR_CODE
+
+    def requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int:
+        try:
+            caller = self.resolver.caller(request)
+        except UsageError as error:
+            Output(self.tables, "--json" in argv, stream).error(str(error))
+            return USAGE_CODE
+        return self.run(argv, caller, stream)
 
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand = self.lookup.subcommand(argv[0], argv[1])

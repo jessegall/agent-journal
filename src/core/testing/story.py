@@ -6,6 +6,8 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.cli.console import Console
+from core.base.caller.caller_request import CallerRequest
+from core.base.caller.process_table import ProcessRow, ProcessTable
 from core.base.clock import Clock
 from core.base.container import Container
 from core.base.database.database import Database
@@ -29,6 +31,17 @@ class StoryState:
     user: Actor = field(default_factory=Actor.core)
 
 
+class FixedProcessTable(ProcessTable):
+    """A process table a story writes itself, empty until it does, so a story never reads the machine's
+    processes."""
+
+    def __init__(self, rows: list[ProcessRow]) -> None:
+        self.fixed_rows = rows
+
+    def rows(self) -> list[ProcessRow]:
+        return self.fixed_rows
+
+
 @dataclass(frozen=True)
 class LineOutcome:
     """What one command line gave back: its exit code and what it printed."""
@@ -44,17 +57,18 @@ class Story:
     moves its clock by hand, reads rows and refusals, and checks what came back. It knows no model of the
     core."""
 
-    def __init__(self, home: JournalHome, container: Container, clock: ManualClock, state: StoryState) -> None:
-        self.home, self.container, self.clock = home, container, clock
+    def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
+        self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
         self.agent, self.user = state.agent, state.user
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
-        clock = ManualClock()
+        clock, process_table = ManualClock(), FixedProcessTable([])
         container = synced_container(home)
         container.bind(Clock, clock)
-        return cls(home, container, clock, state)
+        container.bind(ProcessTable, process_table)
+        return cls(home, container, clock, process_table, state)
 
     @property
     def state(self) -> StoryState:
@@ -68,6 +82,15 @@ class Story:
         code = self.container.get(Console).run(shlex.split(line), Caller(actor or Actor.core(), environment_id), stream)
         self.results.append(LineOutcome(line, code, stream.getvalue()))
         return self.results[-1]
+
+    def run_requested(self, line: str, request: CallerRequest) -> LineOutcome:
+        stream = io.StringIO()
+        code = self.container.get(Console).requested_run(shlex.split(line), request, stream)
+        self.results.append(LineOutcome(line, code, stream.getvalue()))
+        return self.results[-1]
+
+    def use_processes(self, *rows: ProcessRow) -> None:
+        self.process_table.fixed_rows = list(rows)
 
     def row(self, model: type[M], row_id: int) -> M:
         return self.container.get(Queries).query(model).find(row_id)
@@ -98,6 +121,16 @@ class Story:
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
         for absent_line in absent_lines:
             assert absent_line not in outcome.output_text.splitlines(), f"{line} printed {absent_line!r}:\n{outcome.output_text}"
+
+    def expect_requested_success(self, line: str, request: CallerRequest, *expected_lines: str) -> None:
+        outcome = self.run_requested(line, request)
+        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        for expected_line in expected_lines:
+            assert expected_line in outcome.output_text.splitlines(), f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+
+    def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
+        outcome = self.run_requested(line, request)
+        assert outcome.code == code and text in outcome.output_text, f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}"
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
         outcome = self.run(line, actor)

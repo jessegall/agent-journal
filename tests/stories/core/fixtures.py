@@ -26,6 +26,18 @@ class AgentStarted(StoryFixture):
         story.expect_success(f"agent show {story.agent.id}", "session: s-1", "environment_id: 1")
 
 
+class AgentWithProcess(StoryFixture):
+    """An agent session s-7 started in main by the agent program running as pid 700: story.agent."""
+
+    parent = MainEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.agent = Actor(story.new_row_id(lines.AGENT_START_WITH_PROCESS), ActorType.AGENT)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(f"agent show {story.agent.id}", "session: s-7", "pid: 700")
+
+
 class ThreeTasks(StoryFixture):
     """Three open tasks in main: First (1), Second (2) and Third (3)."""
 

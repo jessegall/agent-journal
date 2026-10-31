@@ -1,3 +1,4 @@
+from core.modules.actors.actor_query import ActorQuery
 from core.modules.actors.actor_record import ActorRecord
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
@@ -8,4 +9,4 @@ class ActorsModule(Module):
 
     name = "actors"
     requires_core = ">=5,<6"
-    models = [ModelDeclaration(ActorRecord)]
+    models = [ModelDeclaration(ActorRecord, query=ActorQuery)]
