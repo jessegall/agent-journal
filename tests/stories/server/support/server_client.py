@@ -14,8 +14,8 @@ from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
 from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.timestamp import Timestamp
-from core.base.trail import TRAIL_HEADER, Trail
-from core.base.trail_log import TrailLog
+from core.base.timing import TIMING_HEADER, Timing
+from core.base.timing_log import TimingLog
 from core.testing.story import Story
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
@@ -24,7 +24,7 @@ from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerCont
 from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
-from scripts.trail_report import report
+from scripts.timing_report import report
 
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
@@ -119,28 +119,28 @@ class ServerStory:
         answer = request_answer(self.socket_path, method, route, body)
         assert answer.status == status, answer
 
-    def expect_answer_with_unwritable_trail_log(self, line: str) -> None:
-        TrailLog(self.story.home).path.mkdir(parents=True)
-        self.send_with_trail(line, "go_start=1")
-        assert "trail line not written" in ServerFiles(self.story.home).log.read_text()
+    def expect_answer_with_unwritable_timing_log(self, line: str) -> None:
+        TimingLog(self.story.home).path.mkdir(parents=True)
+        self.post_timed_line(line, "go_start=1")
+        assert "timing line not written" in ServerFiles(self.story.home).log.read_text()
 
     def send_health_twice_on_one_connection(self) -> None:
-        kept, closed = b"GET /health HTTP/1.1\r\nHost: journal\r\n\r\n", b"GET /health HTTP/1.1\r\nHost: journal\r\nConnection: close\r\n\r\n"
-        assert raw_answer(self.socket_path, kept + closed).count(b"HTTP/1.1 200") == 2
+        first_request, last_request = b"GET /health HTTP/1.1\r\nHost: journal\r\n\r\n", b"GET /health HTTP/1.1\r\nHost: journal\r\nConnection: close\r\n\r\n"
+        assert raw_answer(self.socket_path, first_request + last_request).count(b"HTTP/1.1 200") == 2
 
-    def send_with_trail(self, line: str, trail_text: str) -> None:
-        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TRAIL_HEADER: trail_text})
+    def post_timed_line(self, line: str, timing_text: str) -> None:
+        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TIMING_HEADER: timing_text})
         assert answer.exit_code == 0, answer
 
 
-def expect_trail_report_steps(home: JournalHome, route_line: str, steps: list[str]) -> None:
-    printed = report(TrailLog(home).path.read_text().splitlines()).splitlines()
-    assert printed[0] == f"{route_line}  (1 requests)" and [row.split("  ")[1].strip() for row in printed[2:]] == steps, printed
+def expect_timing_report_steps(home: JournalHome, route_line: str, steps: list[str]) -> None:
+    rows = report(TimingLog(home).path.read_text().splitlines()).splitlines()
+    assert rows[0] == f"{route_line}  (1 requests)" and [row.split("  ")[1].strip() for row in rows[2:]] == steps, rows
 
 
-def expect_trail_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
-    written = [json.loads(line) for line in TrailLog(home).path.read_text().splitlines()]
-    assert [(line["request_id"], [name for name, _ in Trail.parsed(line["trail"]).stamps]) for line in written] == lines, written
+def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
+    log_lines = [json.loads(line) for line in TimingLog(home).path.read_text().splitlines()]
+    assert [(line["request_id"], [name for name, _ in Timing.parsed(line["timing"]).stamps]) for line in log_lines] == lines, log_lines
 
 
 @contextmanager

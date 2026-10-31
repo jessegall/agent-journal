@@ -8,7 +8,7 @@ from core.base.cli.line_run import LineRun
 from core.base.deadline import Deadline
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
-from core.base.trail import Trail
+from core.base.timing import Timing
 from core.base.type_guards import is_mapping, is_text_list
 
 
@@ -22,15 +22,15 @@ class CliRequestError(Exception):
 @dataclass(frozen=True)
 class CliRequest:
     """One /cli request: the command line's words, what the server knows of its caller, the pid read from the
-    socket rather than sent, how long the caller waits, when it says, and the request's trail."""
+    socket rather than sent, how long the caller waits, when it says, and the request's timing."""
 
     argv: list[str]
     caller: CallerRequest
     deadline: Deadline | None = None
-    trail: Trail = field(default_factory=Trail)
+    timing: Timing = field(default_factory=Timing)
 
     @classmethod
-    def parsed(cls, data: object, pid: int, trail: Trail) -> "CliRequest":
+    def parsed(cls, data: object, pid: int, timing: Timing) -> "CliRequest":
         if not is_mapping(data):
             raise CliRequestError("a /cli request is an object with argv, variables and folder")
         argv = data.get("argv")
@@ -40,7 +40,7 @@ class CliRequest:
         if deadline_seconds is not None and not isinstance(deadline_seconds, (int, float)):
             raise CliRequestError("deadline_seconds is a number of seconds")
         caller = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": pid})
-        return cls(argv, caller, Deadline.timeout(deadline_seconds) if deadline_seconds is not None else None, trail)
+        return cls(argv, caller, Deadline.timeout(deadline_seconds) if deadline_seconds is not None else None, timing)
 
 
 class ChunkStream(io.StringIO):
@@ -64,4 +64,4 @@ class CliEndpoint:
         self.line_run = LineRun(home, CLI_LIMIT_SECONDS, listener_runner)
 
     def answer(self, request: CliRequest, stream: TextIO) -> int:
-        return self.line_run.run(request.argv, request.caller, stream, request.deadline, request.trail)
+        return self.line_run.run(request.argv, request.caller, stream, request.deadline, request.timing)

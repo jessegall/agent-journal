@@ -5,8 +5,8 @@ import subprocess
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
-from core.base.trail import Trail
-from core.base.trail_log import TrailLog
+from core.base.timing import Timing
+from core.base.timing_log import TimingLog
 from server.server_files import ServerFiles, socket_path
 from tests.stories.server.support.server_client import request_answer
 
@@ -47,11 +47,11 @@ class ClientBinary:
     def expect_server_pid(self, pid: object) -> None:
         assert self.server_pid() == pid
 
-    def expect_trail_names(self, line: str, names: list[str]) -> None:
-        written = [json.loads(raw) for raw in TrailLog(self.home).path.read_text().splitlines()]
-        trails = [(entry["request_id"], Trail.parsed(entry["trail"]).stamps) for entry in written if entry["line"] == line]
-        assert [[name for name, _ in stamps] for _, stamps in trails] == [names], written
-        assert trails[0][0].endswith(f"-{trails[0][1][0][1]}"), written
+    def expect_timing_names(self, line: str, names: list[str]) -> None:
+        log_lines = [json.loads(raw) for raw in TimingLog(self.home).path.read_text().splitlines()]
+        timings = [(entry["request_id"], Timing.parsed(entry["timing"]).stamps) for entry in log_lines if entry["line"] == line]
+        assert [[name for name, _ in stamps] for _, stamps in timings] == [names], log_lines
+        assert timings[0][0].endswith(f"-{timings[0][1][0][1]}"), log_lines
 
     def expect_no_server(self) -> None:
         files = ServerFiles(self.home)

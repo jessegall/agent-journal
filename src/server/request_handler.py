@@ -7,8 +7,8 @@ from http.server import BaseHTTPRequestHandler
 
 from core.base.caller.caller_request import CallerRequestError
 from core.base.cli.console import ERROR_CODE
-from core.base.trail import TRAIL_HEADER, Trail
-from core.base.trail_log import TrailLog
+from core.base.timing import TIMING_HEADER, Timing
+from core.base.timing_log import TimingLog
 from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
@@ -25,45 +25,45 @@ class RequestHandler(BaseHTTPRequestHandler):
     """Reads one HTTP request on the journal's socket and sends it to its endpoint: GET /health, POST /cli,
     POST /hook and POST /stop; a request the server's code is older than is answered 409 and runs nothing,
     and the server releases its files at once so a new one can start while it finishes its open requests.
-    Each request's trail starts with the sender's stamps from its Journal-Trail header, and once its answer
-    is flushed one line goes to the trail log; a line that cannot be written is noted in server.log and never
+    Each request's timing starts with the sender's stamps from its Journal-Timing header, and once its answer
+    is flushed one line goes to the timing log; a line that cannot be written is noted in server.log and never
     fails the request."""
 
     protocol_version = "HTTP/1.1"
-    route: str = ""
+    route: str | None = None
     line: str = ""
     status: int = 0
     exit_code: int | None = None
 
     def setup(self) -> None:
         super().setup()
-        self.trail = Trail.started("server_accepted")
+        self.timing = Timing.started("server_accepted")
         self.sender_pid = peer_pid(self.connection)
 
     def parse_request(self) -> bool:
-        if not self.trail.stamps:
-            self.trail = Trail.started("server_accepted")
+        if not self.timing.stamps:
+            self.timing = Timing.started("server_accepted")
         parsed = super().parse_request()
         if parsed:
-            self.trail = Trail.parsed(self.headers.get(TRAIL_HEADER, "")).joined(self.trail)
-            self.trail.stamp("server_received")
+            self.timing = Timing.parsed(self.headers.get(TIMING_HEADER, "")).joined(self.timing)
+            self.timing.stamp("server_received")
             self.route = self.path
         return parsed
 
     def handle_one_request(self) -> None:
         super().handle_one_request()
-        if self.route:
-            self.trail.stamp("answered")
-            self.write_trail_line()
-        self.route, self.line, self.status, self.exit_code, self.trail = "", "", 0, None, Trail()
+        if self.route is not None:
+            self.timing.stamp("answered")
+            self.write_timing_line()
+        self.route, self.line, self.status, self.exit_code, self.timing = None, "", 0, None, Timing()
 
-    def write_trail_line(self) -> None:
+    def write_timing_line(self) -> None:
         context = self.journal_server().context
         try:
-            TrailLog(context.home).write({"request_id": self.trail.request_id(self.sender_pid), "route": self.route, "line": self.line, "status": self.status,
-                                          "exit_code": self.exit_code, "code_version": context.code_version.text[:12], "trail": self.trail.text()})
+            TimingLog(context.home).write({"request_id": self.timing.request_id(self.sender_pid), "route": self.route, "line": self.line, "status": self.status,
+                                          "exit_code": self.exit_code, "code_version": context.code_version.text[:12], "timing": self.timing.text()})
         except OSError as error:
-            context.files.log_line(f"trail line not written: {error}")
+            context.files.log_line(f"timing line not written: {error}")
 
     def journal_server(self) -> JournalServer:
         if not isinstance(self.server, JournalServer):
@@ -107,7 +107,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(404, {"error": f"no route {self.path}"})
             return
         try:
-            request = CliRequest.parsed(json.loads(body or b"{}"), self.sender_pid, self.trail)
+            request = CliRequest.parsed(json.loads(body or b"{}"), self.sender_pid, self.timing)
         except (CliRequestError, CallerRequestError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
@@ -142,7 +142,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())
             code = ERROR_CODE
-        self.trail.stamp("command_done")
+        self.timing.stamp("command_done")
         self.exit_code = code
         self.wfile.write(f"0\r\n{EXIT_CODE_TRAILER}: {code}\r\n\r\n".encode())
         self.wfile.flush()

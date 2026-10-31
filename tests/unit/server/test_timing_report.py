@@ -1,10 +1,10 @@
 import json
 
-from scripts.trail_report import report
+from scripts.timing_report import report
 
 
-def log_line(trail: str) -> str:
-    return json.dumps({"request_id": "", "route": "/cli", "line": "task start", "status": 200, "exit_code": 0, "code_version": "a41c9e0f12ab", "trail": trail})
+def log_line(timing: str) -> str:
+    return json.dumps({"request_id": "", "route": "/cli", "line": "task start", "status": 200, "exit_code": 0, "code_version": "a41c9e0f12ab", "timing": timing})
 
 
 def test_each_step_and_the_whole_request_print_their_median_90th_percentile_and_maximum():

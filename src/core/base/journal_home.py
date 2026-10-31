@@ -17,8 +17,8 @@ class JournalHome:
         return self.folder / "runtime" / "errors.log"
 
     @property
-    def trail_log(self) -> Path:
-        return self.folder / "runtime" / "trail.log"
+    def timing_log(self) -> Path:
+        return self.folder / "runtime" / "timing.log"
 
     @property
     def module_list(self) -> Path:

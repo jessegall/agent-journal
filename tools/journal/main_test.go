@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jessegall/agent-journal/tools/journal-hook/trail"
+	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 )
 
 func noVariables(string) (string, bool) { return "", false }
@@ -32,7 +32,7 @@ func cliServer(t *testing.T, status int, body string, exitCode string) *http.Cli
 
 func TestAnAnswerIsPrintedAsItStreamsAndEndsWithItsExitCode(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code, status := SendCli(cliServer(t, 200, "1  First  open  normal\n", "1"), NewCliRequest([]string{"task", "list"}, noVariables, "/"), trail.Started(), "go_sent", &stdout, &stderr)
+	code, status := SendCli(cliServer(t, 200, "1  First  open  normal\n", "1"), NewCliRequest([]string{"task", "list"}, noVariables, "/"), timing.Started(), "go_sent", &stdout, &stderr)
 	if code != 1 || status != 200 || stdout.String() != "1  First  open  normal\n" {
 		t.Fatalf("code %d status %d output %q", code, status, stdout.String())
 	}
@@ -40,7 +40,7 @@ func TestAnAnswerIsPrintedAsItStreamsAndEndsWithItsExitCode(t *testing.T) {
 
 func TestANewerCodeAnswerIsReturnedAsAConflictForTheOneResend(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	_, status := SendCli(cliServer(t, 409, `{"error": "newer code"}`, ""), NewCliRequest(nil, noVariables, ""), trail.Started(), "go_sent", &stdout, &stderr)
+	_, status := SendCli(cliServer(t, 409, `{"error": "newer code"}`, ""), NewCliRequest(nil, noVariables, ""), timing.Started(), "go_sent", &stdout, &stderr)
 	if status != http.StatusConflict {
 		t.Fatalf("status %d", status)
 	}
@@ -48,18 +48,18 @@ func TestANewerCodeAnswerIsReturnedAsAConflictForTheOneResend(t *testing.T) {
 
 func TestABadRequestIsAUsageErrorAndAServerErrorIsAnErrorWithItsOneLine(t *testing.T) {
 	var stdout, stderr bytes.Buffer
-	code, _ := SendCli(cliServer(t, 400, `{"error": "argv is the list of the command line's words"}`, ""), NewCliRequest(nil, noVariables, ""), trail.Started(), "go_sent", &stdout, &stderr)
+	code, _ := SendCli(cliServer(t, 400, `{"error": "argv is the list of the command line's words"}`, ""), NewCliRequest(nil, noVariables, ""), timing.Started(), "go_sent", &stdout, &stderr)
 	if code != UsageCode || stderr.String() != "argv is the list of the command line's words\n" {
 		t.Fatalf("code %d stderr %q", code, stderr.String())
 	}
 	stderr.Reset()
-	code, _ = SendCli(cliServer(t, 500, `{"error": "ValueError: many"}`, ""), NewCliRequest(nil, noVariables, ""), trail.Started(), "go_sent", &stdout, &stderr)
+	code, _ = SendCli(cliServer(t, 500, `{"error": "ValueError: many"}`, ""), NewCliRequest(nil, noVariables, ""), timing.Started(), "go_sent", &stdout, &stderr)
 	if code != ErrorCode || stderr.String() != "ValueError: many\n" {
 		t.Fatalf("code %d stderr %q", code, stderr.String())
 	}
 }
 
-func trailNames(header string) []string {
+func timingNames(header string) []string {
 	var names []string
 	for _, pair := range strings.Split(header, ";") {
 		name, _, _ := strings.Cut(pair, "=")
@@ -68,11 +68,11 @@ func trailNames(header string) []string {
 	return names
 }
 
-func trailServer(t *testing.T, status int, headers *[]string) *http.Client {
+func timingServer(t *testing.T, status int, headers *[]string) *http.Client {
 	t.Helper()
 	home := shortHome(t)
 	listening(t, SocketPath(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
-		*headers = append(*headers, request.Header.Get(trail.Header))
+		*headers = append(*headers, request.Header.Get(timing.Header))
 		writer.Header().Set("Trailer", ExitCodeTrailer)
 		writer.WriteHeader(status)
 		writer.Header().Set(ExitCodeTrailer, "0")
@@ -80,14 +80,14 @@ func trailServer(t *testing.T, status int, headers *[]string) *http.Client {
 	return SocketClient(SocketPath(home))
 }
 
-func TestTheRequestCarriesItsTrailAndAResendAfterNewerCodeAddsGoResent(t *testing.T) {
+func TestTheRequestCarriesItsTimingAndAResendAfterNewerCodeAddsGoResent(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 	var headers []string
-	requestTrail := trail.Started()
-	SendCli(trailServer(t, http.StatusConflict, &headers), NewCliRequest([]string{"task", "list"}, noVariables, "/"), requestTrail, "go_sent", &stdout, &stderr)
-	SendCli(trailServer(t, http.StatusOK, &headers), NewCliRequest([]string{"task", "list"}, noVariables, "/"), requestTrail, "go_resent", &stdout, &stderr)
-	want := [][]string{{"go_start", "go_sent"}, {"go_start", "go_sent", "go_resent"}}
-	if got := [][]string{trailNames(headers[0]), trailNames(headers[1])}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("trail names %v, want %v", got, want)
+	requestTiming := timing.Started()
+	SendCli(timingServer(t, http.StatusConflict, &headers), NewCliRequest([]string{"task", "list"}, noVariables, "/"), requestTiming, "go_sent", &stdout, &stderr)
+	SendCli(timingServer(t, http.StatusOK, &headers), NewCliRequest([]string{"task", "list"}, noVariables, "/"), requestTiming, "go_resent", &stdout, &stderr)
+	expected := [][]string{{"go_start", "go_sent"}, {"go_start", "go_sent", "go_resent"}}
+	if actual := [][]string{timingNames(headers[0]), timingNames(headers[1])}; !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("timing names %v, want %v", actual, expected)
 	}
 }
