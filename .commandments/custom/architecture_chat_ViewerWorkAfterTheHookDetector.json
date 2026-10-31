@@ -1,0 +1,42 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "SaveListener"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameIn": [
+                                "ShowMark",
+                                "AddDockItem",
+                                "KeepDockItem",
+                                "RemoveDockItem",
+                                "ChatMark",
+                                "DockItem"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "viewer-work-inside-the-hook",
+        "description": "A save listener shows a chat mark or changes the dock, so work that only updates the viewer runs inside the writing transaction and holds the hook up.",
+        "rule": "Show marks and change the dock from a commit listener, which runs on the listener thread after the hook answers.",
+        "skill": "plain-code-words"
+    }
+}
