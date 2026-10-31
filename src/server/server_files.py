@@ -17,8 +17,8 @@ def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
     the server's whole life or, for a while, by a helper; and its pid file. Only the server that keeps the
-    lock removes a leftover socket, and a stopping server removes the socket and pid file only while the pid file
-    still names it."""
+    lock removes a leftover socket, and a stopping server removes the socket and pid file only while the
+    pid file still names it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)

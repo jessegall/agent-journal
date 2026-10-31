@@ -25,6 +25,7 @@ while True:
 
 HOLD_THEN_WAIT = """
 import sys, time
+from pathlib import Path
 from core.base.journal_home import JournalHome
 from install.server_lock import ServerLock
 with ServerLock(JournalHome(Path(sys.argv[1]))):
@@ -52,7 +53,7 @@ def test_the_lock_helper_stops_a_running_server_waits_for_it_to_drain_and_holds_
     server = journal.start_server()
     journal.wait_healthy()
     with ServerLock(journal.home):
-        assert server.poll() is not None and not journal.healthy()
+        assert server.wait(timeout=10) == 0 and not journal.healthy()
         assert not journal.lock_is_free()
     assert journal.lock_is_free()
 
@@ -89,9 +90,14 @@ def test_a_server_that_will_not_stop_in_the_limit_makes_the_helper_refuse_and_ch
 
 def test_releasing_after_a_crash_of_the_holder_lets_the_next_start_proceed(journal):
     environment = {**journal.environment(), "PYTHONPATH": str(SERVER_SOURCE)}
-    holder = subprocess.Popen([sys.executable, "-c", HOLD_THEN_WAIT, str(journal.home.folder)], env=environment, stdout=subprocess.PIPE, text=True)
+    holder = subprocess.Popen([sys.executable, "-c", HOLD_THEN_WAIT, str(journal.home.folder)], env=environment, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     journal.processes.append(holder)
-    assert holder.stdout is not None and holder.stdout.readline().strip() == "held"
+    assert holder.stdout is not None
+    said = holder.stdout.readline().strip()
+    if said != "held":
+        holder.kill()
+        said += holder.stdout.read()
+    assert said == "held", said
     assert not journal.lock_is_free()
     holder.kill()
     holder.wait(timeout=10)
@@ -104,7 +110,7 @@ def test_two_installs_at_once_take_the_lock_in_turn(journal):
     spans: list[tuple[float, float]] = []
 
     def install() -> None:
-        with ServerLock(journal.home, hold_limit_seconds=30):
+        with ServerLock(journal.home, lock_limit_seconds=30):
             started = time.monotonic()
             time.sleep(0.5)
             spans.append((started, time.monotonic()))
