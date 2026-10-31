@@ -1,19 +1,16 @@
-from typing import TypeIs, TypeVar
+from typing import TypeVar
 
 from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.command.command import Command
 from core.base.command.context import Context
-from core.base.command.handler import Handler
+from core.base.command.handler import Handler, is_handler_class
 from core.base.container import Container
 from core.base.database.database import Database
 from core.base.module.registry import Registry
 
 R = TypeVar("R")
 
-
-def is_handler_class(kind: type) -> TypeIs[type[Handler[Command[object], object]]]:
-    return issubclass(kind, Handler)
 
 
 class MissingHandlerError(Exception):

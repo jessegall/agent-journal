@@ -5,6 +5,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.error_log import ErrorLog
 from core.base.listener.commit_listener import CommitListener
+from core.base.listener.listener_cursors import ListenerCursors
 from core.base.module.listener_entry import ListenerEntry, ListenerTiming
 from core.base.module.registry import Registry
 
@@ -12,7 +13,6 @@ FAILURE_LIMIT_ATTEMPTS = 3
 CHAIN_LIMIT_ROUNDS = 50
 CURSOR_GAP = Statement("SELECT (SELECT coalesce(min(event_id), 0) FROM listener_cursors) < (SELECT coalesce(max(id), 0) FROM events)")
 CURSOR = Statement("SELECT event_id FROM listener_cursors WHERE listener = ?")
-START_CURSOR = Statement("INSERT OR IGNORE INTO listener_cursors (listener, event_id) VALUES (?, (SELECT coalesce(max(id), 0) FROM events))")
 MOVE_CURSOR = Statement("UPDATE listener_cursors SET event_id = ? WHERE listener = ?")
 COUNT_FAILURE = Statement("INSERT INTO listener_skips (listener, event_id, failures) VALUES (?, ?, 1)"
                           " ON CONFLICT (listener, event_id) DO UPDATE SET failures = failures + 1 RETURNING failures")
@@ -26,13 +26,13 @@ class CommitListenerRunner:
     """Runs the commit listeners on every logged event they have not handled yet, in order, so work a stopped run
     left undone is done by the next; an event that fails a listener three times is skipped for it."""
 
-    def __init__(self, database: Database, registry: Registry, log: EventLog, container: Container, errors: ErrorLog) -> None:
-        self.database, self.registry, self.log, self.container, self.errors = database, registry, log, container, errors
+    def __init__(self, database: Database, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursors) -> None:
+        self.database, self.registry, self.log, self.container, self.errors, self.cursors = database, registry, log, container, errors, cursors
 
     def run(self) -> None:
         entries = tuple(entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT)
         for entry in entries:
-            self.database.update(Statement(START_CURSOR.sql, (entry.name,)))
+            self.cursors.start(entry.name)
         for _ in range(CHAIN_LIMIT_ROUNDS):
             if not self.database.rows(CURSOR_GAP)[0][0]:
                 return

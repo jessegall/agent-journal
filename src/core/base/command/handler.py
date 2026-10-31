@@ -1,4 +1,4 @@
-from typing import ClassVar, Generic, TypeVar
+from typing import ClassVar, Generic, TypeIs, TypeVar
 
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -14,3 +14,7 @@ class Handler(Generic[C, R]):
 
     def handle(self, command: C, context: Context) -> R:
         raise NotImplementedError(f"{type(self).__name__} carries out nothing")
+
+
+def is_handler_class(kind: type) -> TypeIs[type[Handler[Command[object], object]]]:
+    return issubclass(kind, Handler)

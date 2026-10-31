@@ -5,10 +5,14 @@ CORE_MODULE = "core"
 
 
 class CoreTables(Migration):
-    """Creates the tables the core itself needs: the event log, listener bookkeeping, refusals and the registry."""
+    """Creates the tables the core itself needs: the actors, the event log, listener bookkeeping, refusals and the
+    registry."""
 
     number = 1
     statements = (
+        "CREATE TABLE actors (id INTEGER PRIMARY KEY, created_by INTEGER REFERENCES actors(id) ON DELETE RESTRICT, type TEXT NOT NULL,"
+        " name TEXT NOT NULL, version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
+        " created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (type, name)) STRICT",
         "CREATE TABLE events (id INTEGER PRIMARY KEY, actor_id INTEGER NOT NULL, environment_id INTEGER, row_id INTEGER NOT NULL,"
         " name TEXT NOT NULL, row_table TEXT NOT NULL, command TEXT NOT NULL, cause_id INTEGER,"
         " skipped_guards TEXT NOT NULL DEFAULT '[]' CHECK (json_valid(skipped_guards)), data TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(data)),"
