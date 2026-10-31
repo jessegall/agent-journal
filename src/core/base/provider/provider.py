@@ -34,6 +34,7 @@ class Provider(ABC):
     line_events: ClassVar[Sequence[HookEventName]]
     refusals: ClassVar[Mapping[HookEventName, RefusalStyle]] = {}
     tool_categories: ClassVar[Mapping[str, ToolType]]
+    rewrites: ClassVar[Mapping[HookEventName, Mapping[str, object]]] = {}
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
     hook_file: ClassVar[HookFile]
     session_variable: ClassVar[str]

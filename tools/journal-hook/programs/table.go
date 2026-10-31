@@ -13,14 +13,15 @@ var shippedTable []byte
 
 // Program is one agent program's row of the program table: its hook names under the journal's event names, the hooks
 // a subagent's run still sends, the events whose answer takes lines, how a refusal is printed, its tools' categories,
-// and the decoder that reads its body.
+// the fields its rewritten tool input must carry, and the decoder that reads its body.
 type Program struct {
-	Events         map[string]string `json:"events"`
-	SubagentEvents []string          `json:"subagent_events"`
-	LineEvents     []string          `json:"line_events"`
-	Refusals       map[string]string `json:"refusals"`
-	ToolCategories map[string]string `json:"tool_categories"`
-	Decoder        string            `json:"decoder"`
+	Events         map[string]string         `json:"events"`
+	SubagentEvents []string                  `json:"subagent_events"`
+	LineEvents     []string                  `json:"line_events"`
+	Refusals       map[string]string         `json:"refusals"`
+	ToolCategories map[string]string         `json:"tool_categories"`
+	Decoder        string                    `json:"decoder"`
+	Rewrites       map[string]map[string]any `json:"rewrites"`
 }
 
 // Table is every agent program the hook knows: the shipped ones, with the project's own laid over them.

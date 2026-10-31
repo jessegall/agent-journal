@@ -15,8 +15,9 @@ import (
 
 // Reply is the server's HookReply: a refusal's reason, or the lines for the agent.
 type Reply struct {
-	Refusal string   `json:"refusal"`
-	Lines   []string `json:"lines"`
+	Refusal      string         `json:"refusal"`
+	Lines        []string       `json:"lines"`
+	UpdatedInput map[string]any `json:"updated_input"`
 }
 
 // Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
@@ -36,6 +37,9 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 // name the program gave the hook, which its answer repeats.
 func ProgramAnswer(program programs.Program, hookName, event string, reply Reply) (string, string, int) {
 	lines := strings.Join(reply.Lines, "\n")
+	if len(reply.UpdatedInput) > 0 {
+		return rewritten(program.Rewrites[event], hookName, reply.UpdatedInput, lines), "", 0
+	}
 	if reply.Refusal != "" {
 		return refused(program.Refusals[event], hookName, joined(reply.Refusal, lines))
 	}
@@ -43,6 +47,23 @@ func ProgramAnswer(program programs.Program, hookName, event string, reply Reply
 		return "", "", 0
 	}
 	return jsonText(map[string]any{"hookSpecificOutput": map[string]any{"hookEventName": hookName, "additionalContext": lines}}), "", 0
+}
+
+// rewritten is the answer that lets the tool run with the new input, which carries the fields the program asks for in a
+// rewrite of this event, and keeps the lines.
+func rewritten(extras map[string]any, hookName string, input map[string]any, lines string) string {
+	updated := map[string]any{}
+	for field, value := range input {
+		updated[field] = value
+	}
+	for field, value := range extras {
+		updated[field] = value
+	}
+	output := map[string]any{"hookEventName": hookName, "permissionDecision": "allow", "updatedInput": updated}
+	if lines != "" {
+		output["additionalContext"] = lines
+	}
+	return jsonText(map[string]any{"hookSpecificOutput": output})
 }
 
 func refused(style, hookName, reason string) (string, string, int) {
