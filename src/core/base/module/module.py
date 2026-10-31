@@ -3,6 +3,8 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
 
+from core.base.chat.dock_declaration import DockDeclaration
+from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.command.command import Command
 from core.base.command.handler import Handler
 from core.base.database.migration import Migration
@@ -32,7 +34,7 @@ class Module:
     """What a module adds to the journal, named by the classes themselves: its models, the modules it builds on,
     the core version it needs, its migrations and views, its handlers, subcommands, guards and listeners, the
     classes it binds in place of the core's interfaces, the migration that removes its tables, and the suites,
-    drivers, overlays, driver rules, windows and agent programs it adds."""
+    drivers, overlays, driver rules, windows, chat marks, docked items and agent programs it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -51,6 +53,8 @@ class Module:
     overlays: ClassVar[Sequence[type[Overlay]]] = ()
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
     windows: ClassVar[Sequence[WindowDeclaration]] = ()
+    marks: ClassVar[Sequence[MarkDeclaration]] = ()
+    docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
 
     @classmethod
