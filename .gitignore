@@ -85,3 +85,5 @@ src/viewer/tests/sample-window/web/
 
 # code-commandments checklists of sin runs
 /.commandments/sessions/
+
+!src/viewer/tests/look/**/*.png
