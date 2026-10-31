@@ -19,6 +19,7 @@ from core.modules.tasks.tasks_module import TasksModule
 from core.modules.waits.waits_module import WaitsModule
 from core.modules.viewer.viewer_module import ViewerModule
 from core.modules.phone.phone_module import PhoneModule
+from core.modules.sharing.sharing_module import SharingModule
 from core.modules.tunnel.tunnel_module import TunnelModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, TunnelModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)

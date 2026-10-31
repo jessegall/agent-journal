@@ -1,6 +1,6 @@
 import secrets
 
-from core.modules.phone.support.text_digest import TextDigest
+from core.base.text_digest import TextDigest
 
 CODE_LETTERS = "ABCDEFGHJKLMNPQRSTUVWXYZ"
 HALF_LETTERS = 4

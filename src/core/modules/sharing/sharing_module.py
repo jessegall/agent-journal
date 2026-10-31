@@ -1,0 +1,22 @@
+from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.module import Module
+from core.modules.sharing.commands.make_share_link_handler import MakeShareLinkHandler
+from core.modules.sharing.commands.make_share_link_subcommand import MakeShareLinkSubcommand
+from core.modules.sharing.commands.revoke_share_link import RevokeShareLink
+from core.modules.sharing.guards.share_link_row_guard import ShareLinkRowGuard
+from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigration
+from core.modules.sharing.models.share_link import ShareLink
+
+
+class SharingModule(Module):
+    """Lets a person share a plan as a read-only link, kept by the digest of its token until it expires or is
+    revoked."""
+
+    name = "journal.core.sharing"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.plans"]
+    models = [ModelDeclaration(ShareLink, commands=[RevokeShareLink], excluded_subcommands=["make", "edit"])]
+    guards = [ShareLinkRowGuard]
+    migrations = [ShareLinksTableMigration]
+    subcommands = [MakeShareLinkSubcommand]
+    handlers = [MakeShareLinkHandler]

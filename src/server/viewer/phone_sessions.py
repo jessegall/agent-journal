@@ -13,7 +13,7 @@ from server.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit
-from core.modules.phone.support.text_digest import TextDigest
+from core.base.text_digest import TextDigest
 
 TOKEN_BYTES = 24
 
