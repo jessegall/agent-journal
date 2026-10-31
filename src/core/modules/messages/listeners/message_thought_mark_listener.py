@@ -18,4 +18,4 @@ class MessageThoughtMarkListener(MarkListener):
     def handle(self, event: LoggedEvent) -> None:
         message = self.queries.query(Message).find(event.row_id)
         if message.type is MessageType.AGENT:
-            self.show(event, MessageMarkType.THOUGHT, MessageMarkVariant.SAID, message.text, message.environment_id, message.agent_id, "message", message.id)
+            self.show(event, MessageMarkType.THOUGHT, MessageMarkVariant.SUMMARY, message.text, message.environment_id, message.agent_id, "message", message.id)

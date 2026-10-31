@@ -47,7 +47,7 @@ def test_a_refused_move_shows_no_task_mark(new_story):
 def test_the_tasks_module_writes_only_its_own_marks(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     with pytest.raises(Refusal, match="only journal.core.messages writes a mark of messages.thought"):
-        story.container.get(Bus).run(ShowMark(1, MessageMarkType.THOUGHT, MessageMarkVariant.SAID, "thought:9", "A mark"), module_actor(story, "journal.core.tasks"))
+        story.container.get(Bus).run(ShowMark(1, MessageMarkType.THOUGHT, MessageMarkVariant.SUMMARY, "thought:9", "A mark"), module_actor(story, "journal.core.tasks"))
 
 
 def test_the_task_mark_is_declared_as_version_4_showed_it(new_story):

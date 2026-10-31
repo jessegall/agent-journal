@@ -18,4 +18,4 @@ class ImpasseMarkListener(MarkListener):
         wait = self.queries.query(Wait).find(event.row_id)
         if wait.type is WaitType.HELP_REQUEST:
             environment_id = self.queries.query(Agent).find(wait.agent_id).environment_id
-            self.show(event, WaitMarkType.IMPASSE, WaitMarkVariant.STUCK, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)
+            self.show(event, WaitMarkType.IMPASSE, WaitMarkVariant.REPORTED, f"Stuck: {wait.focus}", environment_id, wait.agent_id, "wait", wait.id)
