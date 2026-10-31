@@ -14,7 +14,7 @@ class SamplesChosen(StoryFixture):
         story.run("suite choose samples --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("suite show samples", "main: samples.lead")
+        story.expect_success("suite current main", "suite: samples", "drivers: main: samples.lead")
 
 
 class LeadStarted(StoryFixture):

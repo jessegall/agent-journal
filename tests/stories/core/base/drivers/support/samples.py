@@ -214,6 +214,7 @@ class ControlLead(Driver):
     name = "control.lead"
     suite = "control"
     role = "main"
+    opening_lines = ["You are the control lead"]
 
 
 class SamplesModule(Module):

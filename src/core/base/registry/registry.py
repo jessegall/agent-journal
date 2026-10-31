@@ -119,3 +119,17 @@ class Registry:
 
     def command_handler(self, command: type) -> DottedPath:
         return self.handlers[DottedPath.class_path(command).text]
+
+    def suite(self, name: str) -> SuiteEntry | None:
+        return next((suite for suite in self.suites if suite.name == name), None)
+
+    def driver(self, name: str) -> DriverEntry | None:
+        return next((driver for driver in self.drivers if driver.name == name), None)
+
+    def top_suites(self) -> list[SuiteEntry]:
+        required = {name for suite in self.suites for name in suite.requires}
+        return [suite for suite in self.suites if suite.name not in required]
+
+    def suite_drivers(self, suite: SuiteEntry) -> list[DriverEntry]:
+        return [driver for driver in self.drivers if driver.suite in (suite.name, *suite.requires)]
+
