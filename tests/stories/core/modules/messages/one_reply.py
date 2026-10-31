@@ -1,4 +1,4 @@
-from tests.stories.core.fixtures import MessageAnswered
+from tests.stories.core.support.fixtures import MessageAnswered
 from tests.stories.core.modules.messages.chat_messages import user_story
 
 

@@ -1,4 +1,4 @@
-from tests.stories.core.fixtures import PlanWithPhases
+from tests.stories.core.support.fixtures import PlanWithPhases
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
 
 

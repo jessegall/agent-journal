@@ -1,7 +1,7 @@
-from tests.stories.core import story_lines as lines
-from tests.stories.core.fixtures import PlanTasksPlaced
+from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.fixtures import PlanTasksPlaced
 
-PROTECTED_TASKS = "tests.stories.core.modules.plans.samples:ProtectedTasksModule"
+PROTECTED_TASKS = "tests.stories.core.support.plans_samples:ProtectedTasksModule"
 
 
 def plan_with_placed_tasks(new_story, *modules: str):
@@ -34,7 +34,7 @@ def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new
 
 
 def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stands(new_story):
-    story = plan_with_placed_tasks(new_story, "tests.stories.core.modules.plans.samples:FailingNoticeModule")
+    story = plan_with_placed_tasks(new_story, "tests.stories.core.support.plans_samples:FailingNoticeModule")
     story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
     for line_number in range(3):
         story.run(f'task log 1 "checked {line_number}"')

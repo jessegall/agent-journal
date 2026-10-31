@@ -1,4 +1,4 @@
-from tests.core.base.module.test_module_sync import ITEMS
+from tests.unit.core.base.module.test_module_sync import ITEMS
 
 
 def test_a_small_modules_row_is_made_and_shown_through_the_command_line(new_story):

@@ -1,4 +1,4 @@
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_dependencies import three_tasks
 
 

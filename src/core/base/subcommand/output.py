@@ -1,7 +1,6 @@
 import json
-from collections.abc import Mapping
 from dataclasses import fields, is_dataclass
-from typing import TextIO, TypeIs
+from typing import TextIO
 
 from core.base.guard.explanation import Explanation
 from core.base.guard_refusal import GuardRefusal
@@ -11,6 +10,7 @@ from core.base.model.table import stored
 from core.base.model.tables import Tables
 from core.base.page import Page
 from core.base.refusal import Refusal
+from core.base.type_guards import is_frozenset, is_mapping, is_tuple
 
 LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")
 
@@ -74,13 +74,3 @@ def is_shown(value: object) -> bool:
     return value is not None and value is not False and value != "" and value != {}
 
 
-def is_frozenset(value: object) -> TypeIs[frozenset[object]]:
-    return isinstance(value, frozenset)
-
-
-def is_mapping(value: object) -> TypeIs[Mapping[object, object]]:
-    return isinstance(value, Mapping)
-
-
-def is_tuple(value: object) -> TypeIs[tuple[object, ...]]:
-    return isinstance(value, tuple)

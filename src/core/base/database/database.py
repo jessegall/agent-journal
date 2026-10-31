@@ -5,7 +5,8 @@ from core.base.database.nesting_error import NestingError
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 
-PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL", "busy_timeout = 5000")
+PRAGMAS = ("foreign_keys = ON", "journal_mode = WAL", "synchronous = NORMAL")
+BUSY_TIMEOUT_SECONDS = 5.0
 NESTING_LIMIT_LEVELS = 8
 
 
@@ -23,7 +24,15 @@ class Database:
         connection.row_factory = sqlite3.Row
         for pragma in PRAGMAS:
             connection.execute(f"PRAGMA {pragma}")
-        return cls(connection)
+        database = cls(connection)
+        database.set_busy_timeout(BUSY_TIMEOUT_SECONDS)
+        return database
+
+    def set_busy_timeout(self, seconds: float) -> None:
+        self.connection.execute(f"PRAGMA busy_timeout = {int(seconds * 1000)}")
+
+    def busy_timeout_seconds(self) -> float:
+        return int(self.connection.execute("PRAGMA busy_timeout").fetchone()[0]) / 1000
 
     @property
     def has_transaction(self) -> bool:

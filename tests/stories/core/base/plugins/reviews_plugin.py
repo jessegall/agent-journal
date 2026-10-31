@@ -1,11 +1,11 @@
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support import story_lines as lines
 from core.modules.tasks.task import Task, TaskState
-from tests.stories.core.base.plugins.samples import Review, ReviewState
+from tests.stories.core.support.reviews_samples import Review, ReviewState
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.fixtures import AssignedTask
+from tests.stories.core.support.fixtures import AssignedTask
 
-REVIEWS = "tests.stories.core.base.plugins.samples:ReviewsModule"
+REVIEWS = "tests.stories.core.support.reviews_samples:ReviewsModule"
 
 
 class ReviewRequested(StoryFixture):

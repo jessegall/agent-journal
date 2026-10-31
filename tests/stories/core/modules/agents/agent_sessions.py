@@ -1,5 +1,5 @@
-from tests.stories.core.fixtures import MainEnvironment
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support.fixtures import MainEnvironment
+from tests.stories.core.support import story_lines as lines
 def test_a_session_start_makes_one_actor_and_one_agent_under_one_number(new_story):
     story = new_story(fixture=MainEnvironment)
     agent_id = story.new_row_id(lines.AGENT_START)

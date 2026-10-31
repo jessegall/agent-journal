@@ -1,5 +1,5 @@
-from tests.stories.core.fixtures import OpenTask
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support.fixtures import OpenTask
+from tests.stories.core.support import story_lines as lines
 from tests.stories.core.modules.tasks.task_lifecycle import started_story
 
 

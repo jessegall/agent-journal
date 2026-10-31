@@ -1,5 +1,4 @@
 import json
-from typing import TypeIs
 
 from core.base.journal_home import JournalHome
 from core.base.registry.dotted_path import DottedPath
@@ -7,16 +6,9 @@ from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
+from core.base.type_guards import is_list, is_tuple
 
 DEFAULT_MODULE_LIST = DottedPath("core.modules:DEFAULT_MODULES")
-
-
-def is_list(value: object) -> TypeIs[list[object]]:
-    return isinstance(value, list)
-
-
-def is_tuple(value: object) -> TypeIs[tuple[object, ...]]:
-    return isinstance(value, tuple)
 
 
 class ModuleFinder:

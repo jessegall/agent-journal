@@ -1,4 +1,4 @@
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support import story_lines as lines
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 

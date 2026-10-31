@@ -3,7 +3,7 @@ from core.base.caller.caller_request import CallerRequest
 from core.base.cli.console import REFUSED_CODE, USAGE_CODE
 from core.base.caller.process_table import ProcessRow
 from core.base.timestamp import Timestamp
-from tests.stories.core.fixtures import AgentWithProcess, MainEnvironment
+from tests.stories.core.support.fixtures import AgentWithProcess, MainEnvironment
 
 AGENT_START_TIME = Timestamp.parsed("2026-10-31T09:00:00+00:00")
 REUSED_START_TIME = Timestamp.parsed("2026-10-31T11:00:00+00:00")

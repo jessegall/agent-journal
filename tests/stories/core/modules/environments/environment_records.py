@@ -1,4 +1,4 @@
-from tests.stories.core import story_lines as lines
+from tests.stories.core.support import story_lines as lines
 def test_an_environment_is_made_with_its_folder_and_branch_and_its_maker(new_story):
     story = new_story()
     story.expect_success('environment make main /work/journal --branch version-5', "name: main", "folder: /work/journal", "branch: version-5", "creator_id: 1")
