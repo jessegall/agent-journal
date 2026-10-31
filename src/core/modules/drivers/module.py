@@ -4,6 +4,9 @@ from core.base.guard.change_filter import ChangeFilter
 from core.base.driver.hook_route import HookRoute
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.agent_hook_route import AgentHookRoute
 from core.modules.drivers.agent_line import AgentLine
 from core.modules.drivers.agent_line_delivery import AgentLineDelivery
@@ -51,3 +54,5 @@ class DriversModule(Module):
     driver_rules = [RepeatedStopRelease, SessionEndRule, OpeningLinesRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
+    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.PAGE, place=WindowPlace.AGENT,
+                                 reads=["hook-call list", "hook-call show"], events=["hook_call.create"])]
