@@ -1,0 +1,19 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "nameMatches": "(^|[a-z])(The|A|An|Of|On|At|When|Its|To|In|By|For|With|From|Into|Over|Under|After|Before|Still|Again|Until|About|Without)([A-Z]|$)"
+            }
+        ],
+        "reject": []
+    },
+    "sin": {
+        "name": "go-sentence-type-name",
+        "description": "A class is named as a sentence: an article, a preposition or an adverb sits inside its name, as in SuggestOnTheHour, EndRunsOfADeletedRow or AfterAClose.",
+        "rule": "Name a class for what it is, in nouns: HourlySuggestion, DeletedRowRuns, NextOpenTask.",
+        "skill": "plain-code-words"
+    }
+}

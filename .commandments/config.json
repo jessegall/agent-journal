@@ -2,15 +2,15 @@
     "$schema": "./config.schema.json",
     "paths": [
         "src/core",
-        "tests"
+        "tests",
+        "tools/journal-hook"
     ],
     "base": "main",
     "disable": {
         "languages": [
             "php",
             "csharp",
-            "typescript",
-            "go"
+            "typescript"
         ]
     },
     "detectors": [
@@ -33,7 +33,16 @@
         "naming_LongDocstringLineDetector",
         "naming_PlainSettingsGroupTitleDetector",
         "naming_PlainSettingsTabTitleDetector",
-        "architecture_core_SqlLayerDetector"
+        "architecture_core_SqlLayerDetector",
+        "naming_GoPoeticTypeNameDetector",
+        "naming_GoPoeticMethodNameDetector",
+        "naming_GoPoeticVariableNameDetector",
+        "naming_GoPoeticParameterNameDetector",
+        "naming_GoSentenceTypeNameDetector",
+        "naming_GoSentenceMethodNameDetector",
+        "naming_GoSentenceVariableNameDetector",
+        "naming_GoSentenceParameterNameDetector",
+        "naming_GoUnitlessQuantityNameDetector"
     ],
     "parallel": 2,
     "configure": {
@@ -176,6 +185,7 @@
         ]
     },
     "exclude": [
-        "tests"
+        "tests",
+        "tools/journal-hook/testdata"
     ]
 }
