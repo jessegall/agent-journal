@@ -5,6 +5,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.modules.plans.migrations.m001_plans import PlansTables
+from core.modules.plans.plan_progress import PlanProgress
+from core.modules.plans.plan_task import PlanTask
 from core.modules.tasks.migrations.m001_tasks import TasksTables
 
 PLAN_COUNT = 2000
@@ -14,18 +16,9 @@ READ_COUNT = 300
 STAMP = "2026-10-31T09:00:00.000000+00:00"
 STATES = ("open", "started", "completed", "cancelled")
 
-PROPOSED_VIEWS = (
-    "CREATE VIEW open_dependencies AS SELECT task_dependencies.id, task_dependencies.task_id, task_dependencies.dependency_id"
-    " FROM task_dependencies JOIN tasks ON tasks.id = task_dependencies.dependency_id WHERE tasks.closed_at IS NULL",
-    "CREATE VIEW plan_tasks AS SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position AS phase_position,"
-    " phases.checkpoint, phase_tasks.position, tasks.state, tasks.closed_at FROM phase_tasks"
-    " JOIN phases ON phases.id = phase_tasks.phase_id JOIN tasks ON tasks.id = phase_tasks.task_id",
-    "CREATE VIEW plan_progress AS SELECT plans.id AS plan_id,"
-    " (SELECT count(*) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state != 'cancelled') AS task_count,"
-    " (SELECT count(*) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.state = 'completed') AS completed_count,"
-    " coalesce((SELECT min(plan_tasks.phase_position) FROM plan_tasks WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL), 0)"
-    " AS current_phase FROM plans",
-)
+OPEN_DEPENDENCIES_SELECT = ("SELECT task_dependencies.id, task_dependencies.task_id, task_dependencies.dependency_id"
+                            " FROM task_dependencies JOIN tasks ON tasks.id = task_dependencies.dependency_id WHERE tasks.closed_at IS NULL")
+VIEWS = (("open_dependencies", OPEN_DEPENDENCIES_SELECT), (PlanTask.view, PlanTask.select), (PlanProgress.view, PlanProgress.select))
 
 
 @dataclass(frozen=True)
@@ -42,11 +35,12 @@ class ReadTiming:
 
 
 class ViewTiming:
-    """A scratch database of plans, phases and tasks with doc 1097's proposed views, on which a read by key is timed."""
+    """A scratch database of plans, phases and tasks with the plans module's views and the open dependencies view, on
+    which a read by key is timed."""
 
     def __init__(self) -> None:
         self.connection = sqlite3.connect(":memory:")
-        for statement in (*TasksTables.statements, *PlansTables.statements, *PROPOSED_VIEWS):
+        for statement in (*TasksTables.statements, *PlansTables.statements, *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
             self.connection.execute(statement)
         self.fill()
 
