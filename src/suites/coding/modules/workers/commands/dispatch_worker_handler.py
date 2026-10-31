@@ -21,12 +21,11 @@ from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.support.worker_launch import WorkerLaunch
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
-from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
+from suites.coding.modules.workers.commands.prepare_worktree import PrepareWorktree
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKER_LIMIT, WORKTREE_COMMANDS
+from suites.coding.modules.workers.support.worker_settings import WORKER_LIMIT
 
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
@@ -36,10 +35,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
 
     command = DispatchWorker
 
-    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit, libraries: LibraryFolders,
-                 commands: WorktreeCommands, worker_command: WorkerCommand, worktrees: WorktreeQuery) -> None:
+    def __init__(self, queries: Queries, repository: Repository, bus: Bus, settings: SettingValues, git: WorktreeGit,
+                 worker_command: WorkerCommand, worktrees: WorktreeQuery) -> None:
         self.queries, self.repository, self.bus, self.settings = queries, repository, bus, settings
-        self.git, self.libraries, self.commands, self.worker_command, self.worktrees = git, libraries, commands, worker_command, worktrees
+        self.git, self.worker_command, self.worktrees = git, worker_command, worktrees
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         task = self.queries.query(Task).find(command.task_id)
@@ -49,9 +48,6 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         worker_limit = self.settings.number(WORKER_LIMIT, environment.id)
         if len(self.worktrees.environment_worktrees(environment.id)) >= worker_limit:
             raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
-        links = (*self.settings.texts(LIBRARY_LINKS, environment.id), *command.library_links)
-        copies = (*self.settings.texts(LIBRARY_COPIES, environment.id), *command.library_copies)
-        self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
         callers = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
         program = command.program or (callers[0].program if callers else "")
@@ -67,8 +63,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         base_commit = self.git.tip(environment.folder, environment.branch)
         try:
             self.git.cut(environment.folder, worktree)
-            self.libraries.place(environment.folder, worktree.folder, links, copies)
-            self.commands.run(worktree.folder, worktree.branch, self.settings.texts(WORKTREE_COMMANDS, environment.id), (*links, *copies))
+            self.bus.dispatch(PrepareWorktree(worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), worker_context)
             worktree = self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
             self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Exception:

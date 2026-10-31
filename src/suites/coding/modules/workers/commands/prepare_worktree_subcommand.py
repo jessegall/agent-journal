@@ -15,6 +15,8 @@ class PrepareWorktreeSubcommand(Subcommand[PrepareWorktree, None]):
         parser.add_argument("folder")
         parser.add_argument("source")
         parser.add_argument("environment")
+        parser.add_argument("--library-link", action="append", default=[], help="a folder of the source to link into the worktree as well")
+        parser.add_argument("--library-copy", action="append", default=[], help="a folder of the source to copy into the worktree as well")
 
     def command(self, arguments: Namespace, caller: Caller) -> PrepareWorktree:
-        return PrepareWorktree(arguments.folder, arguments.source, arguments.environment)
+        return PrepareWorktree(arguments.folder, arguments.source, arguments.environment, tuple(arguments.library_link), tuple(arguments.library_copy))
