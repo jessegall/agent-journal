@@ -52,10 +52,10 @@ TABLES = (
     f"CREATE TABLE timings ({COMMON}, method TEXT, route TEXT, ms INTEGER, time REAL, loads TEXT)",
     f"CREATE TABLE statistics ({COMMON}, key TEXT, value INTEGER)",
     f"CREATE TABLE reader_reports ({COMMON}, environment_id INTEGER, reader TEXT, output INTEGER, command TEXT, session TEXT, findings TEXT, fixes TEXT, read_at TEXT, dismissal TEXT, is_refuted INTEGER, verdict TEXT, judged_at TEXT)",
-    f"CREATE TABLE triggers ({COMMON}, phrases TEXT, action TEXT, text TEXT, is_scheduled INTEGER, next_at TEXT, interval_minutes INTEGER, cron_line TEXT, end_at TEXT,"
+    f"CREATE TABLE triggers ({COMMON}, action TEXT, text TEXT, phrases TEXT, is_scheduled INTEGER, next_at TEXT, interval_minutes INTEGER, cron_line TEXT, end_at TEXT,"
     " fire_limit INTEGER, fired_count INTEGER)",
-    f"CREATE TABLE checks ({COMMON}, title TEXT, brief TEXT, command TEXT, interval REAL, last_passed INTEGER, last_output TEXT, last_run_at TEXT, wait_target INTEGER,"
-    " is_retired INTEGER, failure_reported_at REAL)",
+    f"CREATE TABLE checks ({COMMON}, title TEXT, command TEXT, interval INTEGER, last_passed INTEGER, last_output TEXT, last_run_at TEXT, brief TEXT, last_duration REAL,"
+    " last_report TEXT, progress TEXT, last_fault TEXT, wait_target INTEGER, is_retired INTEGER, failure_reported_at REAL, last_stopped INTEGER)",
     f"CREATE TABLE reader_suggestions ({COMMON}, part TEXT, suggested_at REAL)",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
