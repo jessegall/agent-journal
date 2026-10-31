@@ -6,9 +6,7 @@ from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
 
 
 class HookEndpoint:
-    """Answers POST /hook: reads the object a hook sends, prepared by the Go program or raw, and answers what the
-    agent program is to do, stamping the request's timing at each step. Until the drivers decide, every hook is
-    let through with an empty answer."""
+    """Answers POST /hook: reads a hook's object, prepared or raw, stamps each step, and lets the hook through."""
 
     def __init__(self, timing: Timing) -> None:
         self.timing = timing
