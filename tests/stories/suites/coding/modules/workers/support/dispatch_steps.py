@@ -31,6 +31,17 @@ def delivered_worker(story: Story, repository: GitRepository) -> Actor:
     return worker
 
 
+def checked_worker(story: Story, repository: GitRepository) -> Actor:
+    worker = delivered_worker(story, repository)
+    story.expect_success("proof check 1", "state: checked", actor=story.agent)
+    return worker
+
+
+def worker_session(story: Story, worker: Actor) -> str:
+    details = story.run(f"agent show {worker.id}").output_text.splitlines()
+    return next(line for line in details if line.startswith("session: ")).removeprefix("session: ")
+
+
 def expect_nothing_dispatched(story: Story, repository: GitRepository) -> None:
     story.expect_success("worktree list", "nothing found")
     story.expect_success("agent list --role worker", "nothing found")

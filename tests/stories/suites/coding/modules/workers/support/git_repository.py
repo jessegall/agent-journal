@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -39,6 +40,15 @@ class GitRepository:
         self.git("add", name)
         self.git("commit", "-m", message)
 
+    def checkout(self, branch: str) -> None:
+        self.git("checkout", branch)
+
+    def uncommitted(self, name: str, text: str) -> None:
+        (self.folder / name).write_text(text)
+
+    def folder_deleted(self, worker_id: int) -> None:
+        shutil.rmtree(self.worktree_folder(worker_id))
+
     def library(self, name: str, file_name: str, text: str) -> None:
         (self.folder / name).mkdir()
         (self.folder / name / file_name).write_text(text)
@@ -49,14 +59,29 @@ class GitRepository:
     def changed(self, worker_id: int, name: str, text: str) -> None:
         (self.worktree_folder(worker_id) / name).write_text(text)
 
-    def worktree_folder(self, worker_id: int) -> Path:
-        return self.folder / ".journal" / "worktrees" / ENVIRONMENT / f"worker-{worker_id}"
+    def worktree_folder(self, worker_id: int, environment: str = ENVIRONMENT) -> Path:
+        return self.folder / ".journal" / "worktrees" / environment / f"worker-{worker_id}"
 
-    def worker_branch(self, worker_id: int) -> str:
-        return f"journal/{ENVIRONMENT}/worker-{worker_id}"
+    def worker_branch(self, worker_id: int, environment: str = ENVIRONMENT) -> str:
+        return f"journal/{environment}/worker-{worker_id}"
 
     def expect_branch_at(self, branch: str, commit: str) -> None:
         assert self.tip(branch) == commit, f"branch {branch} is at {self.tip(branch)!r}, not {commit}"
+
+    def expect_file(self, branch: str, name: str, text: str) -> None:
+        held = self.git("show", f"refs/heads/{branch}:{name}").stdout
+        assert held == text, f"{name} on {branch} holds {held!r}, not {text!r}"
+
+    def expect_merge_commit(self, branch: str) -> None:
+        parents = self.git("log", "-1", "--format=%P", f"refs/heads/{branch}").stdout.split()
+        assert len(parents) == 2, f"the last commit of {branch} is no merge: its parents are {parents}"
+
+    def expect_no_rebase(self, worker_id: int) -> None:
+        status = self.git("status", folder=self.worktree_folder(worker_id)).stdout
+        assert "rebase" not in status, f"a rebase is left in the worktree of worker {worker_id}: {status}"
+
+    def expect_no_folder(self, worker_id: int) -> None:
+        assert not self.worktree_folder(worker_id).exists(), f"the worktree folder of worker {worker_id} is still there"
 
     def expect_commit(self, branch: str, *message_lines: str) -> None:
         message = self.git("log", "-1", "--format=%B", f"refs/heads/{branch}").stdout.splitlines()
@@ -74,7 +99,7 @@ class GitRepository:
     def expect_nothing_cut(self) -> None:
         branches = self.git("branch", "--list", WORKER_BRANCHES).stdout.split()
         worktrees = [line for line in self.git("worktree", "list", "--porcelain").stdout.splitlines() if line.startswith("worktree ")]
-        folders = list((self.folder / ".journal" / "worktrees").rglob("*"))
+        folders = list((self.folder / ".journal" / "worktrees").glob("*/*"))
         assert (branches, len(worktrees), folders) == ([], 1, []), f"a worktree was left: branches {branches}, worktrees {worktrees}, folders {folders}"
 
     def expect_excluded(self, worker_id: int, name: str) -> None:
