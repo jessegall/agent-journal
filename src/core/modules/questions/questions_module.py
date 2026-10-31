@@ -13,6 +13,10 @@ from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolR
 from core.modules.questions.rules.question_closed_rule import QuestionClosedRule
 from core.modules.questions.guards.main_agent_guard import MainAgentGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
+from core.modules.questions.listeners.question_answered_mark_listener import QuestionAnsweredMarkListener
+from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
+from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
+from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.models.question import Question
@@ -23,7 +27,7 @@ class QuestionsModule(Module):
 
     name = "journal.core.questions"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration, AnswerMessageMigration]
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
@@ -31,3 +35,4 @@ class QuestionsModule(Module):
     guards = [MainAgentGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
     marks = QUESTION_MARKS
+    listeners = [QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]

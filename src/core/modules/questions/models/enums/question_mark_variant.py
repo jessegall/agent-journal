@@ -2,8 +2,8 @@ from enum import StrEnum
 
 
 class QuestionMarkVariant(StrEnum):
-    """What a question mark says: the question is asked and waits, was answered, or was closed unanswered."""
+    """What a question mark says: the question is open and waits, was answered, or was closed unanswered."""
 
-    ASKED = "asked"
+    OPEN = "open"
     ANSWERED = "answered"
     CLOSED = "closed"
