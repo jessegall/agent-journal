@@ -2,12 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 )
+
+// ViewerLimit is how long journal viewer waits for each of the server's two answers.
+var ViewerLimit = 10 * time.Second
 
 // ViewerAnswer is what the server answers when asked for a viewer key: the key with the environment it opens, or
 // why none is given.
@@ -50,7 +55,14 @@ func ViewerLink(client *http.Client, request CliRequest, stdout, stderr io.Write
 }
 
 func postJSON(client *http.Client, address string, body []byte, target any) error {
-	response, err := client.Post(address, "application/json", bytes.NewReader(body))
+	limit, cancel := context.WithTimeout(context.Background(), ViewerLimit)
+	defer cancel()
+	request, err := http.NewRequestWithContext(limit, http.MethodPost, address, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}
@@ -59,7 +71,13 @@ func postJSON(client *http.Client, address string, body []byte, target any) erro
 }
 
 func getJSON(client *http.Client, address string, target any) error {
-	response, err := client.Get(address)
+	limit, cancel := context.WithTimeout(context.Background(), ViewerLimit)
+	defer cancel()
+	request, err := http.NewRequestWithContext(limit, http.MethodGet, address, nil)
+	if err != nil {
+		return err
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return err
 	}

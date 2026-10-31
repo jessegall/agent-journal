@@ -1,5 +1,7 @@
 import json
+import re
 import time
+from collections.abc import Collection
 from pathlib import Path
 
 from core.base.type_guards import is_mapping
@@ -9,6 +11,7 @@ from core.modules.plugins.support.plugin_queue_read import PluginQueueRead
 RESERVED_SUFFIX = ".reserved"
 UNREADABLE_SUFFIX = ".bad"
 RESERVATION_LIMIT_SECONDS = 60
+FIRING_UNSAFE = r"[^A-Za-z0-9-]"
 
 
 class PluginQueue:
@@ -20,12 +23,16 @@ class PluginQueue:
     def __init__(self, data_folder: Path) -> None:
         self.folder = data_folder / "queue"
 
-    def reserve(self, environment: str, agent_id: int) -> PluginQueueRead:
+    def reserved_names(self) -> list[str]:
+        return [path.name for path in self.folder.glob(f"*{RESERVED_SUFFIX}")] if self.folder.is_dir() else []
+
+    def reserve(self, environment: str, agent_id: int, firing: str, committed_names: Collection[str]) -> PluginQueueRead:
         read = PluginQueueRead([], [])
         if not self.folder.is_dir():
             return read
-        for expired in [path for path in self.folder.glob(f"*{RESERVED_SUFFIX}") if time.time() - path.stat().st_mtime > RESERVATION_LIMIT_SECONDS]:
-            expired.rename(expired.with_suffix(".json"))
+        for expired in [path for path in self.folder.glob(f"*{RESERVED_SUFFIX}")
+                        if path.name not in committed_names and time.time() - path.stat().st_mtime > RESERVATION_LIMIT_SECONDS]:
+            expired.rename(self.folder / expired.name.rsplit(".", 2)[0])
         for path in sorted(self.folder.glob("*.json"), key=lambda path: path.stat().st_mtime_ns):
             text = path.read_text()
             try:
@@ -36,7 +43,7 @@ class PluginQueue:
                 continue
             if is_mapping(fields) and (("env" in fields and fields["env"] != environment) or ("agent" in fields and fields["agent"] != agent_id)):
                 continue
-            reserved_file = path.with_suffix(RESERVED_SUFFIX)
+            reserved_file = self.folder / f"{path.name}.{re.sub(FIRING_UNSAFE, '-', firing)}{RESERVED_SUFFIX}"
             path.rename(reserved_file)
             read.answers.append((reserved_file.name, PluginAnswer.parsed(text)))
         return read

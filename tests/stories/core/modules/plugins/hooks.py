@@ -82,10 +82,21 @@ def test_a_line_reserved_by_a_hook_that_never_committed_is_offered_again(new_sto
     story = installed_story(new_story)
     queue = story.home.folder / "plugin-data" / "sample" / "queue"
     queue.mkdir(parents=True, exist_ok=True)
-    reserved_file = queue / "1.reserved"
+    reserved_file = queue / "1.json.rolled-back.reserved"
     reserved_file.write_text(json.dumps({"v": 1, "env": "main", "tell": "three sins in d.py"}))
     os.utime(reserved_file, (0, 0))
     story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] three sins in d.py")
+
+
+def test_a_line_whose_hook_committed_is_never_offered_again_though_its_file_waits_to_be_deleted(new_story):
+    story = installed_story(new_story)
+    queue = story.home.folder / "plugin-data" / "sample" / "queue"
+    queue.mkdir(parents=True, exist_ok=True)
+    (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "five sins in f.py"}))
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] five sins in f.py")
+    for reserved_file in queue.glob("*.reserved"):
+        os.utime(reserved_file, (0, 0))
+    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "five sins in f.py")
 
 
 def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story):

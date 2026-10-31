@@ -6,6 +6,8 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.query.conditions.among import Among
+from core.base.query.queries import Queries
 from core.modules.plugins.commands.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.clear_plugin_queue_file import ClearPluginQueueFile
@@ -14,6 +16,7 @@ from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.models.enums.refusable_event import RefusableEvent
 from core.modules.plugins.models.plugin import Plugin
+from core.modules.plugins.models.plugin_queue_file import PluginQueueFile
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_digest import PluginDigest
@@ -42,8 +45,10 @@ class PluginRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues) -> None:
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues,
+                 queries: Queries) -> None:
         self.plugins, self.folders, self.program, self.settings, self.setting_values = plugins, folders, program, settings, setting_values
+        self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         lines: list[str] = []
@@ -67,7 +72,9 @@ class PluginRule(DriverRule):
         return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
 
     def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
-        read = PluginQueue(self.folders.data(plugin.name)).reserve(hook.event.environment, hook.agent_id)
+        queue = PluginQueue(self.folders.data(plugin.name))
+        committed = {row.name for row in self.queries.query(PluginQueueFile).filter(plugin_id=plugin.id).matching(Among("name", queue.reserved_names())).all_rows()}
+        read = queue.reserve(hook.event.environment, hook.agent_id, hook.event.firing, committed)
         for name, answer in read.answers:
             lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
             commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output)] if answer.has_output() else [])

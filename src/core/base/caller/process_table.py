@@ -8,6 +8,7 @@ from core.base.caller.process_row import ProcessRow
 
 
 PS_TIMEOUT_SECONDS = 5
+PS_ENVIRONMENT = {"LC_ALL": "C", "PATH": "/bin:/usr/bin"}
 PS_LINE = ["ps", "-A", "-o", "pid=,ppid=,lstart="]
 LSTART_FORMAT = "%a %b %d %H:%M:%S %Y"
 PROC_FOLDER = Path("/proc")
@@ -32,7 +33,7 @@ class ProcessTable:
     def rows(self) -> list[ProcessRow]:
         if sys.platform.startswith("linux"):
             return self.proc_rows()
-        finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env={"LC_ALL": "C", "PATH": "/bin:/usr/bin"})
+        finished = subprocess.run(PS_LINE, capture_output=True, text=True, timeout=PS_TIMEOUT_SECONDS, env=PS_ENVIRONMENT)
         return ps_rows(finished.stdout)
 
     def proc_rows(self) -> list[ProcessRow]:

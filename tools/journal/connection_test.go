@@ -214,3 +214,19 @@ func TestTheViewerLineSaysWhyNoKeyIsGiven(t *testing.T) {
 		t.Fatalf("code %d, printed %q", code, stderr.String())
 	}
 }
+
+func TestTheViewerLineStopsWaitingForAServerThatNeverAnswers(t *testing.T) {
+	home := shortHome(t)
+	released := make(chan struct{})
+	t.Cleanup(func() { close(released) })
+	listening(t, socket.Path(home), http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) { <-released }))
+	previous := ViewerLimit
+	ViewerLimit = 100 * time.Millisecond
+	t.Cleanup(func() { ViewerLimit = previous })
+	var stdout, stderr strings.Builder
+	started := time.Now()
+	code := ViewerLink(socket.Client(socket.Path(home)), NewCliRequest([]string{"viewer"}, os.LookupEnv, home), &stdout, &stderr)
+	if code != ErrorCode || time.Since(started) > 2*time.Second {
+		t.Fatalf("code %d after %s, printed %q", code, time.Since(started), stderr.String())
+	}
+}
