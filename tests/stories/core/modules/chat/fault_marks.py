@@ -7,15 +7,15 @@ from core.base.registry.registry import Registry
 from tests.stories.core.support.fixtures import UserJoined
 
 
-def test_the_chat_module_declares_the_fault_mark_under_the_journal_group(new_story):
+def test_the_chat_module_declares_the_fault_and_upgrade_marks_under_the_journal_group(new_story):
     story = new_story(fixture=UserJoined)
     marks = [mark for mark in Registry.read(story.container.get(Database)).marks if mark.module == "journal.core.chat"]
-    assert [(mark.type, mark.family, mark.group, mark.shipped) for mark in marks] == [("chat.fault", "chat.faults", "journal", True)]
+    assert [(mark.type, mark.family, mark.group, mark.shipped) for mark in marks] == [("chat.fault", "chat.faults", "journal", True), ("chat.upgrade", "chat.upgrade", "journal", True)]
 
 
 def test_a_failing_command_shows_one_fault_mark_and_the_file_keeps_the_trace(new_story):
     story = new_story(FAULT_SAMPLE, fixture=UserJoined)
-    story.run("chat-mark boom", environment_id=1)
+    story.run("chat-mark fail", environment_id=1)
     story.run_listeners()
     assert marks_text(story).count("RuntimeError: the sample command broke") == 1, marks_text(story) + story.error_log_text()
     assert "the sample command broke" in story.error_log_text() and "Traceback" in story.error_log_text()

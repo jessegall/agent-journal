@@ -22,7 +22,7 @@ class ChooseDefaultReaderHandler(Handler[ChooseDefaultReader, Reader]):
         matching = self.readers.with_name(command.name).page(1, 1).rows
         if not matching:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        for rival in tuple(self.readers.filter(commands=matching[0].commands).defaults().all_rows()):
-            if rival.id != matching[0].id:
-                self.repository.save(replace(rival, is_default=False), context)
+        for previous_default in tuple(self.readers.filter(commands=matching[0].commands).defaults().all_rows()):
+            if previous_default.id != matching[0].id:
+                self.repository.save(replace(previous_default, is_default=False), context)
         return self.repository.save(replace(matching[0], is_default=True), context)

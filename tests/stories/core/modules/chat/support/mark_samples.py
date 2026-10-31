@@ -65,30 +65,30 @@ FAULT_SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:FaultSample
 
 
 @dataclass(frozen=True)
-class Boom(Command[ChatMark]):
+class FailingCommand(Command[ChatMark]):
     """A sample command whose handler always fails."""
 
 
-class BoomHandler(Handler[Boom, ChatMark]):
+class FailingCommandHandler(Handler[FailingCommand, ChatMark]):
     """A sample handler that raises an error nobody expects."""
 
-    command = Boom
+    command = FailingCommand
 
-    def handle(self, command: Boom, context: Context) -> ChatMark:
+    def handle(self, command: FailingCommand, context: Context) -> ChatMark:
         raise RuntimeError("the sample command broke")
 
 
-class BoomSubcommand(Subcommand[Boom, ChatMark]):
-    """`journal chat-mark boom`: runs the failing sample command."""
+class FailingCommandSubcommand(Subcommand[FailingCommand, ChatMark]):
+    """`journal chat-mark fail`: runs the failing sample command."""
 
     cli_name = "chat-mark"
-    name = "boom"
+    name = "fail"
 
     def arguments(self, parser: ArgumentParser) -> None:
         return
 
-    def command(self, arguments: Namespace, caller: Caller) -> Boom:
-        return Boom()
+    def command(self, arguments: Namespace, caller: Caller) -> FailingCommand:
+        return FailingCommand()
 
 
 class FaultSampleModule(Module):
@@ -97,5 +97,5 @@ class FaultSampleModule(Module):
     name = "faultsample"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.chat"]
-    handlers = [BoomHandler]
-    subcommands = [BoomSubcommand]
+    handlers = [FailingCommandHandler]
+    subcommands = [FailingCommandSubcommand]

@@ -23,29 +23,29 @@ def append(story, process_id: int, text: str) -> None:
     folder.write_output(process_id, 1, folder.output(process_id, 1) + text)
 
 
-def reader_texts(spy) -> list[str]:
-    return [call.args[2] for call in spy.call_args_list]
+def reader_texts(reader_mock) -> list[str]:
+    return [call.args[2] for call in reader_mock.call_args_list]
 
 
 def test_a_long_run_read_twice_runs_the_reader_once_for_each_new_chunk(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run(READER, actor=story.agent)
     process = start_process(story, "make test")
-    with patch.object(ReaderRun, "lines", autospec=True, side_effect=ReaderRun.lines) as spy:
+    with patch.object(ReaderRun, "lines", autospec=True, side_effect=ReaderRun.lines) as reader_mock:
         append(story, process.id, FIRST)
         story.hook("s-1", AFTER)
-        assert reader_texts(spy) == []
+        assert reader_texts(reader_mock) == []
         tick(story)
         story.hook("s-1", AFTER)
-        assert reader_texts(spy) == [FIRST]
+        assert reader_texts(reader_mock) == [FIRST]
         story.run(f"output read {process.id} --summary", actor=story.agent)
         story.run(f"output read {process.id} --summary", actor=story.agent)
-        assert reader_texts(spy) == [FIRST]
+        assert reader_texts(reader_mock) == [FIRST]
         append(story, process.id, SECOND)
         story.hook("s-1", AFTER)
-        assert reader_texts(spy) == [FIRST]
+        assert reader_texts(reader_mock) == [FIRST]
         tick(story)
-        assert reader_texts(spy) == [FIRST, SECOND]
+        assert reader_texts(reader_mock) == [FIRST, SECOND]
 
 
 def test_the_readers_lines_are_kept_in_a_file_of_the_outputs_folder_with_their_numbers(new_story):
@@ -97,11 +97,11 @@ def test_a_script_reader_runs_once_when_the_output_ends(new_story, tmp_path):
     story.run(f'reader add scripted --commands "make*" --script {script}', actor=story.agent)
     process = start_process(story, "make test")
     append(story, process.id, "ok\nFAILED a\n")
-    with patch.object(ReaderRun, "script_lines", autospec=True, side_effect=ReaderRun.script_lines) as spy:
+    with patch.object(ReaderRun, "script_lines", autospec=True, side_effect=ReaderRun.script_lines) as reader_mock:
         tick(story)
-        assert spy.call_count == 0
+        assert reader_mock.call_count == 0
         bus = story.container.get(Bus)
         bus.run(EndProcessPart(process.id, 1, 0), story.agent, environment_id=1)
         bus.run(EndProcess(process.id, 0, BYTES_LONG, 2), story.agent, environment_id=1)
-        assert spy.call_count == 1
+        assert reader_mock.call_count == 1
     assert story.container.get(OutputFolder).reader_lines(process.id) == ["2:FAILED a"]

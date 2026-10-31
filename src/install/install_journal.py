@@ -1,9 +1,9 @@
 import os
-import shutil
 import subprocess
 import sys
 from pathlib import Path
 
+from core.base.code_copy import CodeCopy
 from core.base.journal_home import JournalHome
 from install.code_replacement import CodeReplacement
 from install.version_four import ANSWER, VersionFour
@@ -35,11 +35,10 @@ class InstallJournal:
         return 0
 
     def code(self) -> Path:
-        return self.home.folder / "src"
+        return CodeCopy(self.source, self.home).folder()
 
     def copy_code(self) -> None:
-        ignored = shutil.ignore_patterns("__pycache__", "node_modules", "*.pyc", ".venv")
-        shutil.copytree(self.source, self.code(), ignore=ignored, dirs_exist_ok=True)
+        CodeCopy(self.source, self.home).make()
 
     def sync(self) -> None:
         environment = {**os.environ, HOME_VARIABLE: str(self.home.folder)}

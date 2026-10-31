@@ -100,7 +100,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         build = rewriter.answer.input_after_commands if rewriter is not None and rewriter.answer is not None else None
         if rewriter is None or build is None or any(rule == rewriter.name and line for rule, line, _ in outcomes):
             return answers.updated_input
-        return build([made for rule, _, made in outcomes if rule == rewriter.name])
+        return build([command_value for rule, _, command_value in outcomes if rule == rewriter.name])
 
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool

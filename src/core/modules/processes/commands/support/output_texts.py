@@ -21,8 +21,8 @@ class OutputTexts:
         self.access, self.folder, self.outputs, self.readers = access, folder, outputs, readers
 
     def lines(self, actor: Actor, command: ReadOutput) -> list[str]:
-        ways = {"summary": command.summary, "all": command.all, "lines": command.lines, "tail": command.tail, "reader": command.reader}
-        wanted = [way for way, given in ways.items() if given]
+        read_options = {"summary": command.summary, "all": command.all, "lines": command.lines, "tail": command.tail, "reader": command.reader}
+        wanted = [option for option, value in read_options.items() if value]
         if len(wanted) != 1:
             raise Refusal(f"output {command.process_id} is read with one of {FLAGS}", f"journal output read {command.process_id} --summary")
         process = self.access.process(actor, command.process_id)

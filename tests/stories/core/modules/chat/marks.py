@@ -67,9 +67,9 @@ def test_the_detail_is_cut_to_80_characters_and_the_lines_keep_all_of_it(new_sto
 
 def test_a_mark_naming_a_variant_its_type_does_not_list_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
-    strange = ShowMark(1, SampleMarkType.EVENT_TYPE, StrangeVariant.STRANGE, "moment:2", "A mark")
+    unknown_variant = ShowMark(1, SampleMarkType.EVENT_TYPE, StrangeVariant.STRANGE, "moment:2", "A mark")
     with pytest.raises(Refusal, match="the mark chatsample.moment has no variant strange"):
-        story.container.get(Bus).run(strange, module_actor(story, "chatsample"))
+        story.container.get(Bus).run(unknown_variant, module_actor(story, "chatsample"))
 
 
 def test_a_listener_run_twice_for_one_event_leaves_one_mark(new_story):

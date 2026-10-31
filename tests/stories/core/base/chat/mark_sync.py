@@ -39,7 +39,7 @@ def test_a_mark_body_missing_from_web_dist_is_refused_at_sync(new_story):
 
 
 def test_a_click_opening_a_row_with_no_row_model_is_refused_at_sync(new_story):
-    refused(new_story, "LonelyRowModule", "the mark good.note opens a row, and good declares and depends on no row model")
+    refused(new_story, "RowMarkWithoutModelModule", "the mark good.note opens a row, and good declares and depends on no row model")
 
 
 def test_a_group_label_with_another_field_is_refused_at_sync(new_story):

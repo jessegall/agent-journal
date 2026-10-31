@@ -24,8 +24,8 @@ class ReviewQueuedListener(SaveListener):
         if not isinstance(review, Review):
             return
         reviewers = self.reviewers.environment(review.environment_id)
-        has_room = reviewers.active().count() < self.settings.limit(review.environment_id)
+        slots_available = reviewers.active().count() < self.settings.limit(review.environment_id)
         needs_reviewer = self.settings.enabled(review.environment_id) and not reviewers.idle().exists()
-        if needs_reviewer and has_room:
+        if needs_reviewer and slots_available:
             self.bus.dispatch(AddReviewer(), change.context)
         self.bus.dispatch(AssignNextReview(review.environment_id), change.context)

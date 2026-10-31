@@ -19,7 +19,7 @@ class StateWalk:
             route = queue.popleft()
             if route[-1] == target:
                 return route[1:]
-            onward = [move.target for move in self.lifecycle.outgoing_moves(route[-1]) if move.target not in visited]
-            visited.update(onward)
-            queue.extend([*route, state] for state in onward)
+            next_states = [move.target for move in self.lifecycle.outgoing_moves(route[-1]) if move.target not in visited]
+            visited.update(next_states)
+            queue.extend([*route, state] for state in next_states)
         return None

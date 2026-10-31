@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
+from core.base.code_copy import CodeCopy
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.base.seed.demo import DEMO_ENVIRONMENT
@@ -31,20 +32,22 @@ class DemoSession:
 
 
 class DemoScratch:
-    """A scratch journal in a folder of its own: modules synced, the demo seeded by `journal demo seed`, and a
-    server started on it; its viewer listens on a port the system picks, which is checked to be none of 8420
-    to 8429."""
+    """A scratch journal in a folder of its own with its own copy of the code: modules synced, the demo
+    seeded by `journal demo seed`, and a server started on it; its viewer listens on a port the system
+    picks, which is checked to be none of 8420 to 8429."""
 
     def __init__(self, parent: Path | None = None) -> None:
         self.folder = Path(tempfile.mkdtemp(prefix="journal-demo-", dir=parent))
         self.home = JournalHome(self.folder / ".journal")
+        self.code = CodeCopy(SOURCE, self.home)
 
     def start(self) -> DemoSession:
         self.home.folder.mkdir(parents=True, exist_ok=True)
+        self.code.make()
         self.journal(["module", "sync"])
         self.journal(["demo", "seed"])
         server = subprocess.Popen([sys.executable, "-m", "server.server", "--home", str(self.home.folder)], cwd=self.folder, start_new_session=True,
-                                  env={**os.environ, "PYTHONPATH": str(SOURCE)}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                                  env={**os.environ, "PYTHONPATH": str(self.code.folder())}, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         port = self.viewer_port(server)
         if not DemoLink.is_allowed(port):
             server.terminate()
@@ -52,7 +55,7 @@ class DemoScratch:
         return DemoSession(self.folder, server.pid, DemoLink.build(port, self.login_key(), DEMO_ENVIRONMENT))
 
     def journal(self, arguments: list[str]) -> None:
-        outcome = subprocess.run([sys.executable, str(SOURCE / "core" / "journal.py"), *arguments], cwd=self.folder, capture_output=True, text=True, timeout=STEP_SECONDS,
+        outcome = subprocess.run([sys.executable, str(self.code.folder() / "core" / "journal.py"), *arguments], cwd=self.folder, capture_output=True, text=True, timeout=STEP_SECONDS,
                               env={**os.environ, "JOURNAL_HOME": str(self.home.folder), "USER": PERSON}, check=False)
         if outcome.returncode != 0:
             raise Refusal(f"journal {' '.join(arguments)} gave {outcome.returncode} in the demo's folder: {(outcome.stdout + outcome.stderr).strip()[:300]}", "start it again")
