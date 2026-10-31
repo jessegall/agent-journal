@@ -156,6 +156,24 @@ class NumberedRewrite(DriverRule):
         return RuleAnswer.allowed().running(SampleNumber()).rewriting_after_commands(lambda results: {"command": f"sample-run --process {results[0]} -- {line}"})
 
 
+class ForegroundRun(DriverRule):
+    """While samples.foreground is true, a shell line the agent program would run in its own background is asked for in the foreground."""
+
+    name = "samples.foreground-run"
+    hook = HookEventName.PRE_TOOL_USE
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        tool_input = hook.event.tool_input()
+        if hook.event.tool is None or hook.event.tool.shell is None or tool_input.get("run_in_background") is not True:
+            return RuleAnswer.allowed()
+        if self.settings.project_value("samples.foreground", False) is not True:
+            return RuleAnswer.allowed()
+        return RuleAnswer.rewritten({str(field): value for field, value in tool_input.items() if field != "run_in_background"})
+
+
 class LockedEditRefusal(DriverRule):
     """An open edit lock refuses every edit."""
 
@@ -285,7 +303,7 @@ class Lead(Driver):
     suite = SampleSuite
     role = AgentRole.MAIN
     permanent_rules = [RemovalRule]
-    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite]
+    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite, ForegroundRun]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 

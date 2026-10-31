@@ -56,3 +56,7 @@ class HookEvent:
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
                    text(fields, "launch"))
+
+    def tool_input(self) -> Mapping[object, object]:
+        value = self.raw.get("tool_input")
+        return value if isinstance(value, Mapping) else {}

@@ -41,3 +41,12 @@ def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
     sent = LISTING.with_fields(firing="sent-twice")
     first = story.hook("s-1", sent)
     assert dict(story.hook("s-1", sent).updated_input) == dict(first.updated_input) == {"command": "sample-run --process 7 -- ls build"}
+
+
+def test_a_shell_line_the_agent_would_run_in_its_own_background_is_asked_for_without_the_flag(new_story):
+    story = new_story(SAMPLES, fixture=LeadStarted)
+    story.run("setting make samples.foreground true")
+    background = LISTING.with_fields(raw={"tool_input": {"command": "ls build", "run_in_background": True, "description": "list"}})
+    assert dict(story.hook("s-1", background).updated_input) == {"command": "ls build", "description": "list"}
+    foreground = LISTING.with_fields(raw={"tool_input": {"command": "ls build", "run_in_background": False}})
+    assert dict(story.hook("s-1", foreground).updated_input) == {}
