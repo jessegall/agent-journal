@@ -4,6 +4,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.database.database import Database
+from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from core.base.refusal import Refusal
@@ -16,7 +17,7 @@ from tests.stories.core.support.fixtures import UserJoined
 def test_an_environment_has_one_dock_made_with_it(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     story.run_listeners()
-    story.expect_text("dock list", "1  1")
+    assert story.container.get(Database).rows(Statement("SELECT count(*) FROM docks"))[0][0] == 1
     story.expect_refusal("dock make --environment main", "exists already")
 
 

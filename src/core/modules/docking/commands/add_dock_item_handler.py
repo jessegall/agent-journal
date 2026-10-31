@@ -24,8 +24,11 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         self.queries, self.repository, self.items, self.limits, self.row_end, self.leave_time = queries, repository, items, limits, row_end, leave_time
 
     def handle(self, command: AddDockItem, context: Context) -> DockItem:
-        dock = next(self.queries.query(Dock).filter(environment_id=command.environment_id).all_rows(), None)
-        dock = dock or self.repository.save(Dock(environment_id=command.environment_id, creator_id=context.actor.id), context)
+        environment_id = command.environment_id or context.environment_id
+        if environment_id is None:
+            raise Refusal("an item is docked in an environment", "name it with --environment")
+        dock = next(self.queries.query(Dock).filter(environment_id=environment_id).all_rows(), None)
+        dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
         type_most = self.limits.type_most(command.type)
         if type_most is not None:
             self.make_room(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} holds at most {type_most} items", context)
