@@ -3,7 +3,7 @@ import pytest
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.modules.chat.commands.show_mark import ShowMark
-from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, mark_count, module_actor
+from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, StrangeVariant, mark_count, module_actor
 from tests.stories.core.support.fixtures import UserJoined
 
 MEMORY_LINE = 'memory make "Fact" --type fact --weight 3 --environment main'
@@ -41,7 +41,7 @@ def test_a_mark_of_a_type_no_module_declares_is_refused(new_story):
 def test_a_mark_written_by_another_modules_actor_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="only chatsample writes a mark of chatsample.moment"):
-        story.container.get(Bus).run(show(SampleMarkType.MOMENT, "moment:1"), module_actor(story, "memories"))
+        story.container.get(Bus).run(show(SampleMarkType.MOMENT, "moment:1"), module_actor(story, "journal.core.memories"))
     assert mark_count(story) == 0
 
 
@@ -82,3 +82,10 @@ def test_the_detail_is_cut_to_80_characters_and_the_lines_keep_all_of_it(new_sto
     text = "first line " + "x" * 100 + "\nsecond line"
     mark = story.container.get(Bus).run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:9", "A mark", detail=text), module_actor(story, "chatsample"))
     assert (len(mark.detail), mark.lines) == (80, text)
+
+
+def test_a_mark_naming_a_variant_its_type_does_not_list_is_refused(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    strange = ShowMark(1, SampleMarkType.MOMENT, StrangeVariant.STRANGE, "moment:2", "A mark")
+    with pytest.raises(Refusal, match="the mark chatsample.moment has no variant strange"):
+        story.container.get(Bus).run(strange, module_actor(story, "chatsample"))

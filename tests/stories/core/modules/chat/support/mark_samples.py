@@ -42,3 +42,7 @@ def module_actor(story: Story, name: str) -> Actor:
 
 def mark_count(story: Story) -> int:
     return story.container.get(Database).rows(Statement("SELECT count(*) FROM chat_marks"))[0][0]
+
+
+class StrangeVariant(StrEnum):
+    STRANGE = "strange"

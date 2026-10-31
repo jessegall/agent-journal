@@ -1,41 +1,42 @@
 from tests.stories.core.support.fixtures import UserJoined
 
+SKIP = "--skip-guard chat.declared-type"
 MAKE = "chat-mark make --environment main --type memories.memory --variant weighed --label Weighed --key"
 
 
 def test_a_process_mark_is_made_shown_and_edited_while_it_is_shown(new_story):
     story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} run:1")
+    mark_id = story.new_row_id(f"{MAKE} run:1 {SKIP}")
     story.expect_success(f"chat-mark show {mark_id}", "state: shown")
-    story.expect_success(f"chat-mark edit {mark_id} --label Later", "label: Later")
+    story.expect_success(f"chat-mark edit {mark_id} --label Later {SKIP}", "label: Later")
 
 
 def test_ending_a_process_mark_sets_when_it_ended_and_closes_it_to_edits(new_story):
     story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} run:1")
+    mark_id = story.new_row_id(f"{MAKE} run:1 {SKIP}")
     story.expect_success(f"chat-mark end {mark_id}", "state: ended")
-    story.expect_refusal(f"chat-mark edit {mark_id} --label Again", "is ended, so it cannot be edited")
+    story.expect_refusal(f"chat-mark edit {mark_id} --label Again {SKIP}", "is ended, so it cannot be edited")
 
 
 def test_a_moment_mark_is_made_ended(new_story):
     story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} moment:1 --state ended")
+    mark_id = story.new_row_id(f"{MAKE} moment:1 --state ended {SKIP}")
     story.expect_success(f"chat-mark show {mark_id}", "state: ended")
 
 
 def test_an_ended_mark_cannot_be_ended_again(new_story):
     story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} moment:1 --state ended")
+    mark_id = story.new_row_id(f"{MAKE} moment:1 --state ended {SKIP}")
     story.expect_refusal(f"chat-mark end {mark_id}", "is ended")
 
 
 def test_a_key_is_used_once_in_an_environment(new_story):
     story = new_story(fixture=UserJoined)
-    story.new_row_id(f"{MAKE} run:1")
-    story.expect_refusal(f"{MAKE} run:1", "exists already")
+    story.new_row_id(f"{MAKE} run:1 {SKIP}")
+    story.expect_refusal(f"{MAKE} run:1 {SKIP}", "exists already")
 
 
 def test_a_mark_is_never_deleted(new_story):
     story = new_story(fixture=UserJoined)
-    mark_id = story.new_row_id(f"{MAKE} run:1")
+    mark_id = story.new_row_id(f"{MAKE} run:1 {SKIP}")
     story.expect_refusal(f"chat-mark delete {mark_id}", "cannot be deleted")
