@@ -9,6 +9,7 @@ from datetime import timedelta
 from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
+from core.base.registry.registry import Registry
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_table import ProcessRow, ProcessTable
 from core.base.clock import Clock
@@ -183,11 +184,22 @@ class Story:
         return self.home.error_log.read_text() if self.home.error_log.exists() else ""
 
     def expect_sync_refusal(self, module: str, text: str) -> None:
+        code, output_text = self.synced_with(module)
+        assert code != 0 and text in output_text, f"module sync with {module} gave {code}: {output_text}"
+
+    def expect_sync_success(self, module: str) -> None:
+        code, output_text = self.synced_with(module)
+        assert code == 0, f"module sync with {module} gave {code}: {output_text}"
+
+    def expect_registered_window(self, name: str, text: str) -> None:
+        windows = [window for window in Registry.read(self.container.get(Database)).windows if window.name == name]
+        assert windows and text in windows[0].unavailable_reason, f"window {name} is registered as {windows}"
+
+    def synced_with(self, module: str) -> tuple[int, str]:
         modules = json.loads(self.home.module_list.read_text())
         self.home.module_list.write_text(json.dumps([*modules, module]))
         stream = io.StringIO()
-        code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
-        assert code != 0 and text in stream.getvalue(), f"module sync with {module} gave {code}: {stream.getvalue()}"
+        return self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream), stream.getvalue()
 
     def expect_rows(self, *checks: bool) -> None:
         assert all(checks), f"a row check failed: {checks}"
