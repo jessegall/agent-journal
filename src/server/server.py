@@ -15,8 +15,10 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
-from server.listener_thread import ListenerRound, ListenerThread
-from server.tick_round import TickRound
+from server.journal_round import JournalRound
+from server.listener_thread import ListenerThread
+from server.listener_work import ListenerWork
+from server.tick_work import TickWork
 from server.request_handler import RequestHandler
 from server.server_files import ServerFiles
 
@@ -36,9 +38,9 @@ def main(argv: list[str]) -> int:
         return SECOND_SERVER_CODE
     TimingLog(home).rotate()
     files.clear_leftover_socket()
-    listener_round = ListenerRound(home)
+    listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
-    tick_round = TickRound(home)
+    tick_round = JournalRound(home, "ticker", TickWork())
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread))
     files.restrict_socket()

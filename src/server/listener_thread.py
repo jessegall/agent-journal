@@ -1,10 +1,6 @@
 import threading
 from collections.abc import Callable
 
-from core.base.database.database import Database
-from core.base.error_log import ErrorLog
-from core.base.journal_container import synced_container
-from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 
 LISTENER_PERIOD_SECONDS = 60.0
@@ -55,21 +51,3 @@ class ListenerWake(CommitListenerRunner):
 
     def run(self) -> None:
         self.listener_thread.wake()
-
-
-class ListenerRound:
-    """One round of the listener thread on a journal: a fresh synced container, its commit listeners run, its
-    database closed."""
-
-    def __init__(self, home: JournalHome) -> None:
-        self.home = home
-
-    def run(self) -> None:
-        container = synced_container(self.home)
-        try:
-            container.get(CommitListenerRunner).run()
-        finally:
-            container.get(Database).close()
-
-    def report(self, error: Exception) -> None:
-        ErrorLog(self.home).reported(["listener thread"], error)

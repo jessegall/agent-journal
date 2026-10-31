@@ -1,0 +1,44 @@
+from datetime import timedelta
+
+from core.base.actor import Actor
+from core.base.clock import Clock
+from core.base.command.bus import Bus
+from core.base.container import Container
+from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.hook_route import HookRoute
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
+from core.modules.agents.agent import Agent, AgentRole
+from core.modules.drivers.hook_call_prune import HookCallPrune
+from core.modules.environments.environment import Environment
+from server.round_work import RoundWork
+
+PRUNE_PERIOD = timedelta(days=1)
+SECONDS_PER_MINUTE = 60
+MAIN_ACTOR = "agent"
+
+
+class TickWork(RoundWork):
+    """The ticker's round, once a minute: each open agent other than a subagent gets a tick hook through the hook
+    route, so rules that keep time speak on their own, and once a day the old hook calls are pruned."""
+
+    def __init__(self) -> None:
+        self.pruned_at: Timestamp | None = None
+
+    def run(self, container: Container) -> None:
+        now, queries, route = container.get(Clock).timestamp(), container.get(Queries), container.get(HookRoute)
+        for agent in tuple(queries.query(Agent).matching(IsNull("ended_at")).all_rows()):
+            if agent.role != AgentRole.SUBAGENT:
+                route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, now))
+        if self.pruned_at is None or self.pruned_at.elapsed_seconds(now) >= PRUNE_PERIOD.total_seconds():
+            container.get(Bus).run(HookCallPrune(), Actor.core())
+            self.pruned_at = now
+
+    @staticmethod
+    def tick(agent: Agent, environment: str, now: Timestamp) -> HookEvent:
+        seconds = now.value.timestamp()
+        actor = MAIN_ACTOR if agent.role == AgentRole.MAIN else f"{agent.role}:{agent.id}"
+        return HookEvent(1, agent.program, HookEventName.TICK, agent.session, f"tick-{agent.id}-{int(seconds // SECONDS_PER_MINUTE)}",
+                         int(seconds * 1000), actor, environment, "", None, None, {})

@@ -23,7 +23,9 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
-from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
+from server.journal_round import JournalRound
+from server.listener_thread import ListenerThread, ListenerWake
+from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
 from scripts.timing_report import logged_timings, report
@@ -180,7 +182,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     files = ServerFiles(home)
     assert files.acquire_lock(), "a server already holds the lock of this journal"
     files.clear_leftover_socket()
-    listener_round = ListenerRound(home)
+    listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread)
     server = JournalServer(str(files.socket), RequestHandler, context)

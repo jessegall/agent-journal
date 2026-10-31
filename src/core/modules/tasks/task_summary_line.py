@@ -13,11 +13,11 @@ class TaskSummaryLine(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, in_hand: TasksInHand) -> None:
-        self.in_hand = in_hand
+    def __init__(self, held_tasks: TasksInHand) -> None:
+        self.held_tasks = held_tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        held = self.in_hand.of(hook.agent_id)
+        held = self.held_tasks.of(hook.agent_id)
         if held is None:
             return RuleAnswer.allowed()
         logged = f"last log: {held.last_log.line}" if held.last_log is not None else "nothing logged yet"

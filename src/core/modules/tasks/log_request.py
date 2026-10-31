@@ -16,11 +16,11 @@ class LogRequest(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, in_hand: TasksInHand, calls: HookCallQuery) -> None:
-        self.in_hand, self.calls = in_hand, calls
+    def __init__(self, held_tasks: TasksInHand, calls: HookCallQuery) -> None:
+        self.held_tasks, self.calls = held_tasks, calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool, held = hook.event.tool, self.in_hand.of(hook.agent_id)
+        tool, held = hook.event.tool, self.held_tasks.of(hook.agent_id)
         if tool is None or not tool.is_writing_files() or held is None:
             return RuleAnswer.allowed()
         if self.calls.writes_since(hook.agent_id, held.counted_from) + 1 != LOG_REQUEST_WRITES:

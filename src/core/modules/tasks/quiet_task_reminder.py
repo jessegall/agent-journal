@@ -18,15 +18,15 @@ class QuietTaskReminder(DriverRule):
     drivers = ["*"]
     roles = ["main"]
 
-    def __init__(self, in_hand: TasksInHand, calls: HookCallQuery, history: HookHistory) -> None:
-        self.in_hand, self.calls, self.history = in_hand, calls, history
+    def __init__(self, held_tasks: TasksInHand, calls: HookCallQuery, history: HookHistory) -> None:
+        self.held_tasks, self.calls, self.hook_history = held_tasks, calls, history
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        held, newest = self.in_hand.of(hook.agent_id), self.calls.newest_agent_hook(hook.agent_id)
+        held, newest = self.held_tasks.of(hook.agent_id), self.calls.newest_agent_hook(hook.agent_id)
         if held is None or newest is None or newest.created_at is None:
             return RuleAnswer.allowed()
-        spoke_at = self.history.last_spoke_at(hook.agent_id, self.name, hook.layer_ref)
-        if spoke_at is not None and spoke_at >= newest.created_at:
+        reminded_at = self.hook_history.last_spoke_at(hook.agent_id, self.name, hook.layer_ref)
+        if reminded_at is not None and reminded_at >= newest.created_at:
             return RuleAnswer.allowed()
         if newest.created_at.elapsed_seconds(hook.timestamp) < QUIET_MINUTES * SECONDS_PER_MINUTE:
             return RuleAnswer.allowed()
