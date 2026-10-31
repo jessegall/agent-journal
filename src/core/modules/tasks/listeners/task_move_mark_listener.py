@@ -4,11 +4,11 @@ from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.modules.tasks.models.task import Task
 
-MOVE_VARIANTS = {"start": TaskMarkVariant.STARTED, "close": TaskMarkVariant.CLOSED, "block": TaskMarkVariant.BLOCKED}
+MOVE_VARIANTS = {"create": TaskMarkVariant.MADE, "start": TaskMarkVariant.STARTED, "close": TaskMarkVariant.CLOSED, "block": TaskMarkVariant.BLOCKED}
 
 
 class TaskMoveMarkListener(MarkListener):
-    """When a task is started, closed or blocked, the chat shows a mark naming the task and the move."""
+    """When a task is made, started, closed or blocked, the chat shows a mark naming the task and the move."""
 
     name = "tasks.move-mark"
     event = "task.*"

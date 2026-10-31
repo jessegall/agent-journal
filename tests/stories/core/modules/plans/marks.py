@@ -1,3 +1,5 @@
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 from tests.stories.core.modules.chat.support.v4_looks import PLAN, expect_declared_look
 import pytest
@@ -59,3 +61,11 @@ def test_a_started_plan_is_docked_and_undocked_when_it_ends(new_story):
     story.expect_text("dock-item list", "plans.started", "docked")
     story.run("plan close 1", actor=story.agent)
     story.expect_text("dock-item show 1", "state: undocked")
+
+
+def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
+    story = started_story(new_story)
+    story.run(lines.NEW_PLAN)
+    story.run_listeners()
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "plans.plan")
+    assert "Plan 1 made" in marks_text(story) and mark.click == "open row", marks_text(story)

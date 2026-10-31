@@ -1,3 +1,5 @@
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_look
 import pytest
 
@@ -57,3 +59,10 @@ def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
     before = story.run("task show 1").output_text
     story.expect_success("dock add tasks.task task 1 --environment main", actor=story.user)
     assert story.run("task show 1").output_text == before
+
+
+def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    story.run_listeners()
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
+    assert "Task 1 made" in marks_text(story) and mark.click == "open row", marks_text(story)
