@@ -109,7 +109,7 @@ test("a share page shows no visitor comments", async () => {
 });
 
 test("the plans window mounted as a share has no control that can be used", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {rows: [{id: 1, title: "Version 5 core", state: "started"}], total: 1}, error: ""})}));
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})}));
     const controls = {render: () => h("div", [h(Btn, null, () => "Start"), h(plans)])};
     const element = document.createElement("div");
     document.body.append(element);
@@ -120,4 +120,19 @@ test("the plans window mounted as a share has no control that can be used", asyn
     const buttons = [...element.querySelectorAll(".window button, .window a, .window input, .window textarea")];
     expect(buttons.length).toBeGreaterThan(0);
     expect(buttons.every((control) => control.disabled)).toBe(true);
+});
+
+test("the plans window mounted as a share reads the shared plan alone, never the plan list", async () => {
+    const asked = [];
+    vi.stubGlobal("fetch", async (url, init) => {
+        asked.push(JSON.parse(init.body).line);
+        return {json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})};
+    });
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp(() => h(ShareFace, {session: SESSION, read: reads(), entry: ENTRY, subscriptions: new WindowSubscriptions(), load: async () => ({default: plans})})).mount(element);
+    mounted.push(element);
+    await settled();
+    expect(asked).toEqual([["plan", "show", "1"]]);
+    expect(element.querySelector(".window").textContent).toContain("Version 5 core");
 });

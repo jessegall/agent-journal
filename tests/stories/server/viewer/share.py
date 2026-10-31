@@ -104,8 +104,27 @@ def test_a_revoked_link_is_gone_and_a_made_up_one_is_unknown(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         cookie, share = shared_link(story)
         revoke(story, share)
-        story.expect_viewer_status(share.path, 410, text='<div id="app">')
-        story.expect_viewer_status("/viewer/share/not-a-link", 404, text='<div id="app">')
+        story.expect_viewer_status(share.path, 410, text='<meta name="journal-share" content="gone">')
+        story.expect_viewer_status("/viewer/share/not-a-link", 404, text='<meta name="journal-share" content="gone">')
+
+
+def test_the_plans_window_of_a_share_loads_and_reads_the_shared_plan_with_only_the_share_cookie(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        _, _, session = viewer_answer(story.viewer_port(), "/api/session", visitor, "")
+        entry = json.loads(session)["share"]["window"]["entry_url"]
+        story.expect_viewer_status(entry, 200, visitor, text="plans")
+        story.expect_viewer_line(visitor, {"window": "plans.plans", "line": ["plan", "show", "1"], "environment": "main"}, 200, '"code": 0')
+        story.expect_viewer_line(visitor, {"window": "plans.plans", "line": ["plan", "progress", "1"], "environment": "main"}, 200, '"code": 0')
+        story.expect_viewer_line(visitor, {"window": "plans.plans", "line": ["phase", "list", "--plan", "1", "--oldest"], "environment": "main"}, 200, '"code": 0')
+
+
+def test_a_live_link_page_carries_no_gone_mark(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        _, _, page = viewer_answer(story.viewer_port(), share.path, "", "")
+        assert "journal-share" not in page, page
 
 
 def test_a_revoked_link_ends_the_sessions_it_opened(new_story):
@@ -214,7 +233,7 @@ def test_a_person_lists_and_revokes_their_links(new_story):
         listed = story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})
         assert [row["id"] for row in listed["rows"]] == [share.id], listed
         story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "revoke", str(share.id)], "environment": "main"})
-        assert story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})["rows"] == []
+        assert [row["state"] for row in story.viewer_line_value(cookie, {"window": SHARE_WINDOW, "line": ["share", "list"], "environment": "main"})["rows"]] == ["revoked"]
 
 
 def test_a_link_stays_open_when_the_server_restarts(new_story):

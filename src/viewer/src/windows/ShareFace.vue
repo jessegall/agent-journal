@@ -74,7 +74,7 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
             <ShareStrip :icon="look.icon" :noun="look.noun" :facts="facts" :ends="ends" :read="readProgress" />
             <div class="share-body" data-share-body :data-arrangement="arrangement">
                 <div class="share-part" data-share-part="plan">
-                    <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" read-only />
+                    <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" :shared="{model: share.row_model, id: share.row_id}" read-only />
                 </div>
                 <ShareTimeline :phases="phases" />
             </div>

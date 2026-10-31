@@ -23,11 +23,10 @@ class ViewerMove(VersionFourMove):
     """Carries the layouts version 4 kept as viewer settings (its home, inspector and worker layouts) as
     layouts of the first person for the first environment, the views of the panes in their order as the tabs
     of one pane, each view named as the window that replaces it and a view with no window kept in place as a
-    gone window. The pairing codes of version 4 are dropped and counted."""
+    gone window."""
 
     name = "viewer"
     reads = ["settings (layouts)"]
-    drops = ["phone_codes"]
     id_modules = ["journal.core.actors", "journal.core.environments"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
@@ -40,7 +39,6 @@ class ViewerMove(VersionFourMove):
                 continue
             report.count("viewer_layouts", map.transfer("settings", row["id"], "viewer_layouts", lambda: self.insert(
                 rows, row, windows, person, environments[0]["id"], creators.actor_id(row["creator"]), context)))
-        report.drop("phone_codes", len(source.rows("phone_codes")))
         return report
 
     def first_user(self, source: VersionFourSource, map: MoveMap) -> int | None:

@@ -49,6 +49,7 @@ class WindowIcon(StrEnum):
     BRANCH = "branch"
     PLUGIN = "plugin"
     PHONE = "phone"
+    SHARE = "share"
     SEARCH = "search"
     UPDATE = "update"
     BULB = "bulb"

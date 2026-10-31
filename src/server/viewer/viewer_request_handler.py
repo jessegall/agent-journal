@@ -26,6 +26,7 @@ from server.viewer.viewer_server import ViewerServer
 COOKIE_NAME = "journal_viewer"
 SHARE_COOKIE_NAME = "journal_share"
 SHARE_ROUTE = "/viewer/share/"
+ENDED_LINK_MARK = b'<meta name="journal-share" content="gone">'
 VIEWER_ROOT = "/viewer/"
 VIEWER_MODULE = "journal.core.viewer"
 KIT_ROUTE = "/viewer/kit/"
@@ -190,17 +191,18 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     def answer_share(self, viewer: ViewerServer, token: str) -> None:
         status = viewer.routes.share_route.status(token)
         cookie = {"Set-Cookie": f"{SHARE_COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"} if status == OPEN else {}
-        self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status)
+        self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status, ENDED_LINK_MARK if status != OPEN else b"")
 
-    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({}), status: int = 200) -> None:
+    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({}), status: int = 200, head_mark: bytes = b"") -> None:
         try:
             module_file = viewer.routes.module_files.file(module_name, path)
         except MissingModuleFileError as error:
             self.answer(404, {"error": str(error)})
             return
+        content = module_file.content.replace(b"</head>", head_mark + b"</head>", 1) if head_mark else module_file.content
         self.send_response(status)
         self.send_header("Content-Type", module_file.content_type)
-        self.send_header("Content-Length", str(len(module_file.content)))
+        self.send_header("Content-Length", str(len(content)))
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Access-Control-Allow-Origin", "*")
         if module_file.frame:
@@ -208,7 +210,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         for name, value in headers.items():
             self.send_header(name, value)
         self.end_headers()
-        self.wfile.write(module_file.content)
+        self.wfile.write(content)
 
     def stream_message(self, message: str) -> bool:
         try:

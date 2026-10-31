@@ -14,6 +14,7 @@ from core.modules.phone.models.phone_code import PhoneCode
 from core.modules.phone.models.phone import Phone
 from core.modules.phone.guards.phone_row_guard import PhoneRowGuard
 from core.modules.phone.guards.phone_code_row_guard import PhoneCodeRowGuard
+from core.modules.phone.upgrade.phone_move import PhoneMove
 from core.modules.phone.seeders.phone_seeder import PhoneSeeder
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
@@ -51,3 +52,4 @@ class PhoneModule(Module):
     windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, icon=WindowIcon.PHONE,
                                  reads=["phone list"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
+    moves = [PhoneMove]

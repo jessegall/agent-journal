@@ -18,6 +18,7 @@ const props = defineProps({
     options: {type: Object, default: () => ({})},
     declared: {type: Array, default: () => []},
     readOnly: Boolean,
+    shared: {type: Object, default: null},
 });
 const emit = defineEmits(["open", "remove"]);
 const failure = ref("");
@@ -39,6 +40,7 @@ provide(WINDOW_CONTEXT, windowContext({
     options: computed(() => props.options),
     declared: props.declared,
     readOnly: props.readOnly,
+    shared: props.shared,
     open: (window, agent) => emit("open", window, agent),
 }));
 
