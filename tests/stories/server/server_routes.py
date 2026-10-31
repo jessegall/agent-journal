@@ -56,8 +56,8 @@ def test_a_write_sent_with_a_timing_leaves_one_log_line_with_every_stamp_in_orde
     expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "body_read", "stale_checked", "command_started", "write_started",
                                                           "handled", "committed", "command_done", "answered"])])
     expect_timing_report_steps(story.home, "/cli task make", ["go_start -> go_sent", "go_sent -> server_accepted", "server_accepted -> server_received",
-                                                             "server_received -> command_started", "command_started -> write_started",
-                                                             "write_started -> committed", "committed -> command_done", "command_done -> answered",
+                                                             "server_received -> body_read", "body_read -> stale_checked", "stale_checked -> command_started",
+                                                             "command_started -> write_started", "write_started -> handled", "handled -> committed", "committed -> command_done", "command_done -> answered",
                                                              "whole request"])
 
 

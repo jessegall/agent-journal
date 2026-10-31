@@ -17,4 +17,4 @@ def test_the_first_command_starts_the_server_the_next_reuses_it_each_leaves_a_ti
         client.expect_server_pid(first_server)
         client.expect_answer("server stop", "the server stopped")
         client.expect_no_server()
-        client.expect_timing_names("task list", ["go_start", "go_sent", "server_accepted", "server_received", "command_started", "command_done", "answered"])
+        client.expect_timing_names("task list", ["go_start", "go_sent", "server_accepted", "server_received", "body_read", "stale_checked", "command_started", "command_done", "answered"])
