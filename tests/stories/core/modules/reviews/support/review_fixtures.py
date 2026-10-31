@@ -12,6 +12,11 @@ REVIEW_SHOW = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 
 
+def reviewer_of(story: Story) -> Actor:
+    """The reviewer agent ReviewTaken started: the agent after the main one."""
+    return Actor(story.agent.id + 1, ActorType.AGENT)
+
+
 class ReviewersOn(StoryFixture):
     """Three open tasks, and the reviewers switched on."""
 
@@ -21,7 +26,7 @@ class ReviewersOn(StoryFixture):
         story.run(REVIEWERS_ON)
 
     def expect(self, story: Story) -> None:
-        story.expect_success("setting list", "reviews.reviewer")
+        story.expect_text("setting list", "reviews.reviewer  true")
 
 
 class NoReviewersAllowed(StoryFixture):
@@ -33,7 +38,7 @@ class NoReviewersAllowed(StoryFixture):
         story.run(NO_REVIEWERS)
 
     def expect(self, story: Story) -> None:
-        story.expect_success("setting list", "reviews.reviewers-most")
+        story.expect_text("setting list", "reviews.reviewers-most  0")
 
 
 class ReviewRequested(StoryFixture):
@@ -49,13 +54,13 @@ class ReviewRequested(StoryFixture):
 
 
 class ReviewTaken(StoryFixture):
-    """Review 1 given to a reviewer agent: story.reviewer."""
+    """Review 1 given to a reviewer agent: reviewer_of(story)."""
 
     parent = ReviewRequested
 
     def steps(self, story: Story) -> None:
-        story.reviewer = Actor(story.new_row_id(REVIEWER_START), ActorType.AGENT)
-        story.run(f"review assign 1 --reviewer-id {story.reviewer.id}", actor=story.agent)
+        story.new_row_id(REVIEWER_START)
+        story.run(f"review assign 1 --reviewer-id {reviewer_of(story).id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {story.reviewer.id}")
+        story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {reviewer_of(story).id}")

@@ -4,7 +4,6 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.model.model_error import ModelError
 from core.base.timestamp import Timestamp
 from core.modules.reviews.models.enums.review_state import ReviewState
 from core.modules.reviews.models.lifecycles.review_lifecycle import ReviewLifecycle
@@ -31,9 +30,9 @@ def test_a_report_ends_the_review_and_keeps_its_text(method: str, state: ReviewS
     assert (reported.state, reported.report, reported.reported_at) == (state, "1 passed", NOW)
 
 
-def test_a_queued_review_cannot_be_reported():
-    with pytest.raises(ModelError):
-        QUEUED.moved(ReviewLifecycle.approve)
+def test_only_a_review_being_reviewed_can_be_reported():
+    for move in (ReviewLifecycle.approve, ReviewLifecycle.send_back, ReviewLifecycle.leave_undecided):
+        assert tuple(move.sources) == (ReviewState.REVIEWING,)
 
 
 def test_a_review_is_abandoned_while_queued_or_reviewing():

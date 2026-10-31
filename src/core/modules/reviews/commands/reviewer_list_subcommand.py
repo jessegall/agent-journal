@@ -19,13 +19,14 @@ class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
         self.reviewers, self.reviews = reviewers, reviews
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        parser.add_argument("--environment", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> ReviewerListing:
-        if caller.environment_id is None:
-            raise Refusal("reviewers are listed for an environment", "name one with --environment")
-        reviewers = tuple(self.reviewers.environment(caller.environment_id).out().oldest().all_rows())
-        waiting = tuple(self.reviews.queued(caller.environment_id).all_rows())
+        environment_id = arguments.environment or caller.environment_id
+        if environment_id is None:
+            raise Refusal("reviewers are listed for an environment", "name one with --environment <id>")
+        reviewers = tuple(self.reviewers.environment(environment_id).out().oldest().all_rows())
+        waiting = tuple(self.reviews.queued(environment_id).all_rows())
         return ReviewerListing((*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
                                 *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),
                                 f"reviewers: {len(reviewers)}, reviews waiting: {len(waiting)}"))
