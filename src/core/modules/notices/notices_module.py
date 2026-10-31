@@ -8,6 +8,7 @@ from core.modules.notices.commands.notice_list_subcommand import NoticeListSubco
 from core.modules.notices.migrations.m001_notices import NoticesTableMigration
 from core.modules.notices.models.notice import Notice
 from core.modules.notices.queries.notice_query import NoticeQuery
+from core.modules.notices.seeders.notices_seeder import NoticesSeeder
 from core.modules.notices.upgrade.notices_move import NoticesMove
 
 
@@ -17,6 +18,7 @@ class NoticesModule(Module):
     name = "journal.core.notices"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
+    seeders = [NoticesSeeder]
     models = [ModelDeclaration(Notice, query=NoticeQuery, excluded_subcommands=["make", "edit", "list", "delete"])]
     migrations = [NoticesTableMigration]
     moves = [NoticesMove]
