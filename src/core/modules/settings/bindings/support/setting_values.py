@@ -13,7 +13,7 @@ T = TypeVar("T")
 
 class SettingValues:
     """The one reader of the settings table: a key's value for an environment, else for the whole project, else
-    the default the caller gives. Inside remembered(), a row is read once and kept, for a stretch in which
+    the default the caller gives. Inside keep_rows(), a row is read once and kept, for a stretch in which
     nothing writes a setting."""
 
     def __init__(self, queries: Queries) -> None:

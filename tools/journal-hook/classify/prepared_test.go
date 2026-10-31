@@ -18,8 +18,8 @@ func equalValues(first, second reflect.Value) bool {
 			return false
 		}
 		for _, key := range first.MapKeys() {
-			other := second.MapIndex(key)
-			if !other.IsValid() || !equalValues(first.MapIndex(key), other) {
+			second_entry := second.MapIndex(key)
+			if !second_entry.IsValid() || !equalValues(first.MapIndex(key), second_entry) {
 				return false
 			}
 		}
@@ -51,14 +51,14 @@ func TestTheTableBuiltAtReleaseIsTheTableFile(t *testing.T) {
 		t.Fatal("command_table.gob is empty: run go generate ./classify")
 	}
 	form := func(table *Table) preparedForm {
-		var written preparedForm
+		var flattened preparedForm
 		for _, script := range table.scripts {
-			written.ScriptPatterns = append(written.ScriptPatterns, script.pattern.String())
-			written.ScriptRows = append(written.ScriptRows, script.row)
+			flattened.ScriptPatterns = append(flattened.ScriptPatterns, script.pattern.String())
+			flattened.ScriptRows = append(flattened.ScriptRows, script.row)
 		}
-		written.Version, written.Programs, written.Wrappers = table.Version, table.Programs, table.Wrappers
-		written.RedirectOperators, written.RedirectTargetsKept, written.Redirection = table.redirectOperators, table.redirectTargetsKept, table.redirection.String()
-		return written
+		flattened.Version, flattened.Programs, flattened.Wrappers = table.Version, table.Programs, table.Wrappers
+		flattened.RedirectOperators, flattened.RedirectTargetsKept, flattened.Redirection = table.redirectOperators, table.redirectTargetsKept, table.redirection.String()
+		return flattened
 	}
 	if !equalValues(reflect.ValueOf(form(built)), reflect.ValueOf(form(prepared))) {
 		t.Fatal("command_table.gob differs from command_table.json: run go generate ./classify")
