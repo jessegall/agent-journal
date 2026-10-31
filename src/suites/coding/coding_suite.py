@@ -15,7 +15,7 @@ class CodingSuite(Suite):
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
-               "coding.file-edits", "coding.terminal", "workers.points", "workers.todos"]
+               "coding.file-edits", "coding.terminal", "workers.points", "workers.todos", "phone.phones"]
     layouts = {
         "home": split("row", 0.62, tabs("messages.chat"), tabs("tasks.tasks", "plans.plans", "agents.agents")),
         "home@coding.orchestrator": split("row", 0.5, tabs("agents.agents", "coding.file-edits"),

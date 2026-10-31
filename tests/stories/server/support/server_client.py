@@ -33,6 +33,7 @@ from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
 from server.viewer.viewer_listener import ViewerListener
+from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report
@@ -106,6 +107,22 @@ class ServerStory:
     def expect_viewer_line(self, cookie: str, body: dict[str, object], status: int, text: str) -> None:
         answered, headers, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
         assert answered == status and text in answer, (answered, headers, answer)
+
+    def viewer_line_value(self, cookie: str, body: dict[str, object]) -> dict[str, object]:
+        status, _, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
+        answered = json.loads(answer)
+        assert status == 200 and answered["code"] == 0, (status, answer)
+        return answered["value"]
+
+    def expect_phone_paired(self, code: str) -> str:
+        status, headers, body = viewer_answer(self.viewer_port(), "/viewer/pair", "", "", {"code": code})
+        cookie = headers.get("Set-Cookie", "")
+        assert status == 200 and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers, body)
+        return cookie.split(";", 1)[0]
+
+    def expect_pairing_refusal(self, code: str, text: str) -> None:
+        status, headers, body = viewer_answer(self.viewer_port(), "/viewer/pair", "", "", {"code": code})
+        assert status == 400 and text in body and "Set-Cookie" not in headers, (status, headers, body)
 
     def viewer_event_ids(self, cookie: str, cursor_id: int, count: int) -> list[int]:
         port = self.viewer_port()
@@ -231,7 +248,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     files.clear_leftover_socket()
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
-    login = ViewerLogin()
+    login = ViewerLogin(PhoneSessions(home, listener_thread))
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                             HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), STORY_HOOK_LIMIT_SECONDS)
     server = JournalServer(str(files.socket), RequestHandler, context)

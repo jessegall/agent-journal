@@ -9,6 +9,8 @@ from server.viewer.event_stream import EventStream
 from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
+from server.viewer.pairing_request import PairingRequest
+from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
@@ -17,6 +19,7 @@ COOKIE_NAME = "journal_viewer"
 VIEWER_ROOT = "/viewer/"
 VIEWER_MODULE = "journal.core.viewer"
 KIT_ROUTE = "/viewer/kit/"
+SHELL_ASSETS_ROUTE = "/viewer/assets/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 EVENTS_ROUTE = "/api/events"
@@ -24,6 +27,8 @@ WINDOWS_ROUTE = "/api/windows"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
+PAIRING_PAGE = "/pair"
+PAIRING_ROUTE = "/viewer/pair"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
@@ -31,7 +36,8 @@ FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
     """Answers the viewer's requests: refuses one whose Host is not the listener's own address, turns a login key
-    into a session cookie once, serves module and window kit files, which hold code and no data, to any origin
+    into a session cookie once, serves module, window kit and shell asset files, which hold code and no data, to any origin, and the phone's
+    pairing page and its POST to anyone,
     so a frame with no origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:
@@ -53,8 +59,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
             self.answer_module_file(viewer, module_name, path)
             return
-        if route.path.startswith(KIT_ROUTE):
+        if route.path.startswith(KIT_ROUTE) or route.path.startswith(SHELL_ASSETS_ROUTE):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT))
+            return
+        if route.path == PAIRING_PAGE:
+            self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE)
             return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
@@ -86,6 +95,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if self.headers.get("Host") != viewer.host:
             self.answer(403, {"error": "this listener answers only its own address"})
+            return
+        if urlsplit(self.path).path == PAIRING_ROUTE:
+            self.answer_pairing(viewer, body)
             return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
@@ -139,6 +151,28 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Location", f"{VIEWER_ROOT}?{urlencode(kept_query)}" if kept_query else VIEWER_ROOT)
         self.send_header("Content-Length", "0")
         self.end_headers()
+
+    def answer_pairing(self, viewer: ViewerServer, body: bytes) -> None:
+        limit = viewer.login.phones.wrong_codes
+        if not limit.allows():
+            self.answer(429, {"error": "too many wrong codes: wait a minute and try again"})
+            return
+        try:
+            token = viewer.login.phones.paired_token(PairingRequest.parsed(body).code)
+        except PhoneModuleError as error:
+            limit.counted()
+            self.answer(400, {"error": str(error)})
+            return
+        except ViewerRequestError as error:
+            self.answer(400, {"error": str(error)})
+            return
+        payload = json.dumps({"paired": True}).encode()
+        self.send_response(200)
+        self.send_header("Set-Cookie", f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/")
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
 
     def cookie_token(self) -> str:
         cookie = SimpleCookie(self.headers.get("Cookie", ""))

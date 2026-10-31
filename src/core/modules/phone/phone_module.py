@@ -1,0 +1,29 @@
+from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
+from core.modules.phone.commands.pair_phone_handler import PairPhoneHandler
+from core.modules.phone.commands.pair_phone_subcommand import PairPhoneSubcommand
+from core.modules.phone.commands.phone_session_subcommand import PhoneSessionSubcommand
+from core.modules.phone.commands.redeem_phone_code_handler import RedeemPhoneCodeHandler
+from core.modules.phone.commands.redeem_phone_code_subcommand import RedeemPhoneCodeSubcommand
+from core.modules.phone.commands.unpair_phone import UnpairPhone
+from core.modules.phone.migrations.m001_phones import PhonesTablesMigration
+from core.modules.phone.models.phone_code import PhoneCode
+from core.modules.phone.models.phone import Phone
+
+
+class PhoneModule(Module):
+    """Pairs a person's phone with the viewer by a short code, and keeps each paired phone until it is unpaired."""
+
+    name = "journal.core.phone"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors"]
+    models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make"]),
+              ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show"])]
+    migrations = [PhonesTablesMigration]
+    subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand)
+    handlers = [PairPhoneHandler, RedeemPhoneCodeHandler]
+    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, icon=WindowIcon.PHONE,
+                                 reads=["phone list"], runs=["phone pair", "phone unpair"], events=["phone.*"])]

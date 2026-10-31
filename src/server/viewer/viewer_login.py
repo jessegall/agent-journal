@@ -1,6 +1,7 @@
 import secrets
 import threading
 
+from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_type import SessionType
 from server.viewer.share_session_error import ShareSessionError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
@@ -11,9 +12,11 @@ KEY_BYTES = 24
 
 class ViewerLogin:
     """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, each naming
-    who the viewer acts for: a person, a person's phone, or one share."""
+    who the viewer acts for: a person, a person's phone, or one share; a paired phone's token is not held here
+    but asked of the phone module, so it outlives a restart and ends when the phone is unpaired."""
 
-    def __init__(self) -> None:
+    def __init__(self, phones: PhoneSessions) -> None:
+        self.phones = phones
         self.lock = threading.Lock()
         self.keys: dict[str, ViewerSession] = {}
         self.sessions: dict[str, ViewerSession] = {}
@@ -32,7 +35,9 @@ class ViewerLogin:
 
     def has_session(self, token: str) -> bool:
         with self.lock:
-            return token in self.sessions
+            if token in self.sessions:
+                return True
+        return bool(token) and self.phones.person_id(token) is not None
 
     def session_token(self, key: str) -> str:
         token = secrets.token_urlsafe(KEY_BYTES)
@@ -44,7 +49,12 @@ class ViewerLogin:
 
     def session(self, token: str) -> ViewerSession:
         with self.lock:
-            return self.sessions[token]
+            if token in self.sessions:
+                return self.sessions[token]
+        person_id = self.phones.person_id(token)
+        if person_id is None:
+            raise UnknownLoginKeyError("this session is unknown: open the address journal viewer prints to log in")
+        return ViewerSession(SessionType.PHONE, person_id=person_id)
 
     def person_id(self, token: str) -> int:
         session = self.session(token)

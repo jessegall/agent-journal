@@ -15,6 +15,7 @@ from core.modules.settings.settings_module import SettingsModule
 from core.modules.tasks.tasks_module import TasksModule
 from core.modules.waits.waits_module import WaitsModule
 from core.modules.viewer.viewer_module import ViewerModule
+from core.modules.phone.phone_module import PhoneModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, QuestionsModule, ReviewsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, QuestionsModule, ReviewsModule, PhoneModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
 
