@@ -6,14 +6,14 @@ import SkillCatalogue from "./SkillCatalogue.vue";
 import SkillText from "./SkillText.vue";
 
 const context = useWindow();
-const {rows: loaded, failure} = useRows(`agent-skill list --agent ${context.agent}`, ["agent_skill.*"]);
+const {rows: loaded, failure, loaded: answered} = useRows(`agent-skill list --agent ${context.agent}`, ["agent_skill.*"]);
 const view = ref("loaded");
 const catalogue = ref([]);
 const opened = ref(null);
 const openFailure = ref("");
 const screens = {loaded: LoadedSkills, catalogue: SkillCatalogue, text: SkillText};
 const props = computed(() => ({
-    loaded: {rows: loaded.value, failure: failure.value, onOpen: open, onBrowse: browse},
+    loaded: {rows: loaded.value, failure: failure.value, answered: answered.value, onOpen: open, onBrowse: browse},
     catalogue: {rows: catalogue.value, onOpen: open, onBack: back},
     text: {skill: opened.value, failure: openFailure.value, onBack: back},
 })[view.value]);

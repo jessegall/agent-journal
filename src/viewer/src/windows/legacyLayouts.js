@@ -51,7 +51,7 @@ export function renamedLayout(layout, declarations = []) {
 // then notes that it has moved them
 export async function moveLegacyLayouts(shellLine, environment) {
     const moved = await shellLine(["window", "setting", SHELL_WINDOW, MOVED]);
-    if (moved.ok && JSON.parse(moved.value.value)) return;
+    if (moved.ok && moved.value.value) return;
     const run = await shellLine(["suite", "current", environment]);
     if (!run.ok) return;
     const drivers = {main: mainDriver(run.value.drivers), worker: workerDriver(run.value.drivers)};
@@ -61,7 +61,7 @@ export async function moveLegacyLayouts(shellLine, environment) {
         if (!old.ok || !old.value.value || !drivers[driver]) continue;
         let layout = null;
         try {
-            layout = renamedLayout(JSON.parse(JSON.parse(old.value.value)), marks);
+            layout = renamedLayout(JSON.parse(old.value.value), marks);
         } catch (error) {
             layout = null;
         }

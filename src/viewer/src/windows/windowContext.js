@@ -30,7 +30,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         option: (key) => computed(() => options.value[key] ?? declared.find((option) => option.key === key)?.default),
         setting: async (key, fallback) => {
             const answer = await read(`window setting ${window} ${key}`);
-            return answer.ok ? JSON.parse(answer.value.value) : fallback;
+            return answer.ok ? answer.value.value : fallback;
         },
         keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment),
     };

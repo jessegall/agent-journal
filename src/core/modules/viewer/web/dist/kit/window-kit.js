@@ -2783,7 +2783,7 @@ function Fo({ window: e, environment: t, agent: n, visible: s, permissions: r, e
     }),
     setting: async (b, $) => {
       const j = await w(`window setting ${e} ${b}`);
-      return j.ok ? JSON.parse(j.value.value) : $;
+      return j.ok ? j.value.value : $;
     },
     keep: (b, $) => Me(e, ["window", "save-setting", e, b, JSON.stringify($)], t)
   };

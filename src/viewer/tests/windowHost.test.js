@@ -50,8 +50,8 @@ test("a window keeps a setting of its own and reads it back, or its fallback whe
     globalThis.fetch = async (url, request) => {
         const {line} = JSON.parse(request.body);
         if (line[1] === "save-setting") kept.set(line[3], line[4]);
-        const value = kept.get(line[3]);
-        return {json: async () => (line[1] === "save-setting" || value ? {code: 0, value: {value}, error: ""} : {code: 1, value: null, error: "kept no setting"})};
+        const value = kept.has(line[3]) ? JSON.parse(kept.get(line[3])) : undefined;
+        return {json: async () => (line[1] === "save-setting" || value !== undefined ? {code: 0, value: {value}, error: ""} : {code: 1, value: null, error: "kept no setting"})};
     };
     const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, subscriptions: new WindowSubscriptions(), open: () => {}});
     expect(await context.setting("zoom", 1)).toBe(1);

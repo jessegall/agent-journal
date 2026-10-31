@@ -28,7 +28,7 @@ function journal(settings, saved = {}) {
         lines.push(line);
         const words = line.join(" ");
         if (words.startsWith("suite current")) return {ok: true, value: {suite: "coding", drivers: "main: coding.builder, worker: coding.worker"}};
-        if (line[0] === "window" && line[1] === "setting") return line[3] in settings ? {ok: true, value: {value: JSON.stringify(settings[line[3]])}} : {ok: false, error: "none"};
+        if (line[0] === "window" && line[1] === "setting") return line[3] in settings ? {ok: true, value: {value: settings[line[3]]}} : {ok: false, error: "none"};
         if (line[0] === "viewer-layout" && line[1] === "current") return line[line.indexOf("--page") + 1] in saved ? {ok: true, value: {layout: "{}", version: 1}} : {ok: true, value: null};
         return {ok: true, value: {}};
     };
