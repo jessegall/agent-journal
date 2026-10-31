@@ -1,5 +1,6 @@
 import {leaves, wellShaped} from "../domain/panes.js";
 import {mainDriver} from "./homeLayout.js";
+import {optionsFromHidden} from "../domain/markFamilies.js";
 
 const SHELL_WINDOW = "viewer.shell";
 const MOVED = "layouts_moved";
@@ -26,13 +27,17 @@ const workerDriver = (drivers) => drivers.split(", ").find((driver) => driver.st
 
 // a version 4 layout with every tab, float and away window named by its window; views no window replaces are dropped,
 // and a layout that is not well shaped once they are gone is null
-export function renamedLayout(layout) {
+// a pane holding the chat keeps the list of marks it hid as the chat window's family switches, unless it already has switches
+const withFamilySwitches = (pane, declarations) =>
+    pane.hide && declarations.length && !pane.options ? {...pane, options: optionsFromHidden(pane.hide, declarations)} : pane;
+
+export function renamedLayout(layout, declarations = []) {
     if (!layout?.tree || !layout.panes) return null;
     const panes = Object.fromEntries(
         Object.entries(layout.panes).map(([id, pane]) => {
             const tabs = (pane.tabs || []).map((view) => WINDOW_OF[view]).filter(Boolean);
             const active = WINDOW_OF[pane.active] && tabs.includes(WINDOW_OF[pane.active]) ? WINDOW_OF[pane.active] : tabs[0] ?? null;
-            return [id, {...pane, tabs, active}];
+            return [id, withFamilySwitches({...pane, tabs, active}, tabs.includes(WINDOW_OF.chat) ? declarations : [])];
         }),
     );
     const named = (list) => (list || []).filter((one) => WINDOW_OF[one.view]).map((one) => ({...one, view: WINDOW_OF[one.view]}));
@@ -49,12 +54,13 @@ export async function moveLegacyLayouts(shellLine, environment) {
     const run = await shellLine(["suite", "current", environment]);
     if (!run.ok) return;
     const drivers = {main: mainDriver(run.value.drivers), worker: workerDriver(run.value.drivers)};
+    const marks = await fetch("/api/marks").then((response) => response.json()).catch(() => []);
     for (const {setting, page, driver} of OLD) {
         const old = await shellLine(["window", "setting", SHELL_WINDOW, setting]);
         if (!old.ok || !old.value.value || !drivers[driver]) continue;
         let layout = null;
         try {
-            layout = renamedLayout(JSON.parse(JSON.parse(old.value.value)));
+            layout = renamedLayout(JSON.parse(JSON.parse(old.value.value)), marks);
         } catch (error) {
             layout = null;
         }

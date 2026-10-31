@@ -30,3 +30,33 @@ test("the catalogue lists the chat window with the families' switches, so the pa
     expect(catalogue.window("notes.board").options).toEqual([]);
     expect(withFamilyOptions([], declarations)).toEqual([]);
 });
+
+import {familyPresets, mainOnlyOptions, optionsFromHidden, presetOfOptions} from "../src/domain/markFamilies.js";
+import {renamedLayout} from "../src/windows/legacyLayouts.js";
+
+const kinds = [
+    {type: "memory", family: "memories.memories", family_title: "Memories", group: "reminders", shown: true, main: true},
+    {type: "reminder", family: "memories.reminders", family_title: "Reminders", group: "reminders", shown: false, main: false},
+    {type: "compaction", family: "memories.context", family_title: "Context", group: "agent", shown: true, main: true},
+];
+
+test("Only chat hides every family and Chat with context shows those shown by default", () => {
+    const [chat, context] = familyPresets(kinds);
+    expect(Object.values(chat.options)).toEqual([false, false, false]);
+    expect(context.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
+    const option = (key) => context.options[key];
+    expect(presetOfOptions(kinds, option)).toBe("context");
+    expect(presetOfOptions(kinds, () => undefined)).toBe("");
+});
+
+test("main only for a group switches off its families without a main mark, and flipping it again switches them on", () => {
+    const first = mainOnlyOptions(kinds, "reminders", () => undefined);
+    expect(first).toEqual({"show-memories.memories": true, "show-memories.reminders": false});
+    expect(mainOnlyOptions(kinds, "reminders", (key) => first[key])).toEqual({"show-memories.memories": true, "show-memories.reminders": true});
+});
+
+test("a saved list of hidden version 4 kinds becomes the family switches at first load", () => {
+    expect(optionsFromHidden(["reminder", "context"], kinds)).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": false});
+    const layout = {tree: {id: "a"}, panes: {a: {tabs: ["chat"], active: "chat", hide: ["reminder"]}}, next: 2};
+    expect(renamedLayout(layout, kinds)?.panes.a.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
+});
