@@ -4,6 +4,9 @@ from core.modules.reviews.commands.assign_next_review_handler import AssignNextR
 from core.modules.reviews.commands.take_reviewer import TakeReviewer
 from core.modules.reviews.listeners.review_queued_listener import ReviewQueuedListener
 from core.modules.reviews.listeners.reviewer_idle_listener import ReviewerIdleListener
+from core.modules.reviews.commands.abandon_review import AbandonReview
+from core.modules.reviews.commands.end_reviewer import EndReviewer
+from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
 from core.modules.reviews.commands.add_reviewer_handler import AddReviewerHandler
 from core.modules.reviews.commands.add_reviewer_subcommand import AddReviewerSubcommand
 from core.modules.reviews.commands.retire_reviewer_handler import RetireReviewerHandler
@@ -31,9 +34,9 @@ class ReviewsModule(Module):
     name = "journal.core.reviews"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview,)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer,), excluded_subcommands=["make", "edit", "delete"]))
+    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration]
     subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
-    listeners = [ReviewQueuedListener, ReviewerIdleListener]
+    listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener]
