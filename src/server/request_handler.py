@@ -116,18 +116,12 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answer_hook(self, body: bytes, program: str) -> None:
         try:
-            endpoint = HookEndpoint(self.timing)
-            answer = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
+            endpoint = HookEndpoint(self.timing, self.journal_server().context)
+            reply = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
         except (HookEventError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
-        data = answer.encode()
-        self.status = 200
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
+        self.answer_json(200, reply.json())
 
     def answer_cli(self, request: CliRequest) -> None:
         self.status = 200
