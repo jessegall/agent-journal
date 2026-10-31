@@ -32,8 +32,8 @@ class Review(Model):
     def approve(self, timestamp: Timestamp, actor: Actor, report: str) -> "Review":
         return self.moved(ReviewLifecycle.approve, report=report, reported_at=timestamp)
 
-    def send_back(self, timestamp: Timestamp, actor: Actor, report: str) -> "Review":
-        return self.moved(ReviewLifecycle.send_back, report=report, reported_at=timestamp)
+    def reject(self, timestamp: Timestamp, actor: Actor, report: str) -> "Review":
+        return self.moved(ReviewLifecycle.reject, report=report, reported_at=timestamp)
 
     def leave_undecided(self, timestamp: Timestamp, actor: Actor, report: str) -> "Review":
         return self.moved(ReviewLifecycle.leave_undecided, report=report, reported_at=timestamp)

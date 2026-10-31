@@ -6,5 +6,5 @@ from core.modules.reviews.models.reviewer import Reviewer
 
 
 @dataclass(frozen=True)
-class TakeReviewer(MoveCommand[Reviewer]):
-    move = ReviewerLifecycle.take
+class StartReviewer(MoveCommand[Reviewer]):
+    move = ReviewerLifecycle.start

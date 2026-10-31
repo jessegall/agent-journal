@@ -23,7 +23,7 @@ def test_an_approving_report_shows_one_mark_for_the_agent_that_asked_with_the_ou
     story.expect_text(f"chat-mark list --environment 1 --agent {story.agent.id}", "reports on task 1")
 
 
-def test_a_report_sent_back_shows_a_mark_with_the_outcome_failed(new_story):
+def test_a_report_rejected_shows_a_mark_with_the_outcome_failed(new_story):
     story = new_story(fixture=ReviewTaken)
     reported_in_the_chat(story, "1 passed. 2 short: wrong total", "reports on task 1: 1 passed. 2 short: wrong total")
     story.expect_text("chat-mark list --environment 1 --outcome failed", "reports on task 1")

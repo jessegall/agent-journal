@@ -9,7 +9,7 @@ class ReviewerLifecycle(Lifecycle):
     editable = (ReviewerState.IDLE, ReviewerState.REVIEWING)
     deletable = ()
 
-    take = Move("take", [ReviewerState.IDLE], ReviewerState.REVIEWING)
+    start = Move("start", [ReviewerState.IDLE], ReviewerState.REVIEWING)
     finish = Move("finish", [ReviewerState.REVIEWING], ReviewerState.IDLE)
     end = Move("end", (ReviewerState.IDLE, ReviewerState.REVIEWING), ReviewerState.ENDED)
     retire = Move("retire", [ReviewerState.IDLE], ReviewerState.RETIRED)

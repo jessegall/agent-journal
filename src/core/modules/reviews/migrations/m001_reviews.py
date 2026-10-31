@@ -17,7 +17,7 @@ class ReviewsTablesMigration(Migration):
         "CREATE INDEX reviews_subject ON reviews (subject_model, subject_id)",
         "CREATE TABLE review_points (id INTEGER PRIMARY KEY, review_id INTEGER NOT NULL REFERENCES reviews(id) ON DELETE CASCADE,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, number INTEGER NOT NULL CHECK (number >= 1),"
-        " verdict TEXT NOT NULL CHECK (verdict IN ('passed', 'short', 'undecided')), reason TEXT NOT NULL DEFAULT '',"
+        " finding TEXT NOT NULL CHECK (finding IN ('passed', 'short', 'undecided')), reason TEXT NOT NULL DEFAULT '',"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
         " created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (review_id, number)) STRICT",
     )

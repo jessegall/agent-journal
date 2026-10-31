@@ -7,7 +7,8 @@ from core.modules.reviews.models.review import Review
 
 
 class RecordReviewSubcommand(Subcommand[RecordReview, Review]):
-    """`journal review record "<report>"`: a reviewer's one report on its review, one line per point: passed, short with why, or undecided with why."""
+    """`journal review record "<report>"`: a reviewer's one report on its review, one line per point: passed,
+    short with why, or undecided with why."""
 
     cli_name = "review"
     name = "record"

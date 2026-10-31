@@ -7,7 +7,8 @@ from core.modules.reviews.models.review import Review
 
 
 class RequestReviewSubcommand(Subcommand[RequestReview, Review]):
-    """`journal review request <model> <id> --points <count>`: queues a review of the work on a row, checked point by point."""
+    """`journal review request <model> <id> --points <count>`: queues a review of the work on a row, checked
+    point by point."""
 
     cli_name = "review"
     name = "request"

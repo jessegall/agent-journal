@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class StepOutcome(StrEnum):
-    """How a step of a review ended: none for a step that is no verdict."""
+    """How a step of a review ended: none for a step that is no finding."""
 
     NONE = "none"
     PASSED = "passed"

@@ -4,7 +4,7 @@ from enum import StrEnum
 class ReviewMarkVariant(StrEnum):
     """What a review mark tells of."""
 
-    TAKEN = "taken"
+    STARTED = "started"
     APPROVED = "approved"
-    SENT_BACK = "sent_back"
+    REJECTED = "rejected"
     UNDECIDED = "undecided"

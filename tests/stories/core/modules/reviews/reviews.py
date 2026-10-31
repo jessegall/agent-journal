@@ -27,7 +27,7 @@ def test_a_report_that_passes_every_point_approves_the_review(new_story):
 def test_a_point_short_sends_the_review_back_with_the_reason(new_story):
     story = new_story(fixture=ReviewTaken)
     story.run('review record "1 passed\n2 short: the total is in dollars"', actor=reviewer_of(story))
-    story.expect_success(REVIEW_SHOW, "state: sent_back")
+    story.expect_success(REVIEW_SHOW, "state: rejected")
     story.expect_text(REVIEW_POINTS, "short", "the total is in dollars")
 
 

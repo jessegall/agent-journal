@@ -24,14 +24,14 @@ def test_assigning_a_queued_review_names_its_reviewer():
     assert (reviewing.state, reviewing.reviewer_id) == (ReviewState.REVIEWING, 5)
 
 
-@pytest.mark.parametrize(("method", "state"), [("approve", ReviewState.APPROVED), ("send_back", ReviewState.SENT_BACK), ("leave_undecided", ReviewState.UNDECIDED)])
+@pytest.mark.parametrize(("method", "state"), [("approve", ReviewState.APPROVED), ("reject", ReviewState.REJECTED), ("leave_undecided", ReviewState.UNDECIDED)])
 def test_a_report_ends_the_review_and_keeps_its_text(method: str, state: ReviewState):
     reported = getattr(QUEUED.assign(NOW, ACTOR, 5), method)(NOW, ACTOR, "1 passed")
     assert (reported.state, reported.report, reported.reported_at) == (state, "1 passed", NOW)
 
 
 def test_only_a_review_being_reviewed_can_be_reported():
-    for move in (ReviewLifecycle.approve, ReviewLifecycle.send_back, ReviewLifecycle.leave_undecided):
+    for move in (ReviewLifecycle.approve, ReviewLifecycle.reject, ReviewLifecycle.leave_undecided):
         assert tuple(move.sources) == (ReviewState.REVIEWING,)
 
 

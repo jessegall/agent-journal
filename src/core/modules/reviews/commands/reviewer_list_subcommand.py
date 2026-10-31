@@ -10,7 +10,8 @@ from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
 
 class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
-    """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order, then how many of each."""
+    """`journal reviewer list`: each reviewer out with its state, then the waiting reviews in queue order, then
+    how many of each."""
 
     cli_name = "reviewer"
     name = "list"
@@ -25,7 +26,7 @@ class ReviewerListSubcommand(ReadSubcommand[ReviewerListing]):
         environment_id = arguments.environment or caller.environment_id
         if environment_id is None:
             raise Refusal("reviewers are listed for an environment", "name one with --environment <id>")
-        reviewers = tuple(self.reviewers.environment(environment_id).out().oldest().all_rows())
+        reviewers = tuple(self.reviewers.environment(environment_id).active().oldest().all_rows())
         waiting = tuple(self.reviews.queued(environment_id).all_rows())
         return ReviewerListing((*(f"reviewer {reviewer.id}: {reviewer.state}" for reviewer in reviewers),
                                 *(f"waiting {place}: review {review.id}" for place, review in enumerate(waiting, 1)),

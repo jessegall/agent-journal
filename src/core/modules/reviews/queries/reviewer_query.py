@@ -7,7 +7,7 @@ from core.base.query.query import Query
 from core.modules.reviews.models.enums.reviewer_state import ReviewerState
 from core.modules.reviews.models.reviewer import Reviewer
 
-OUT = (ReviewerState.IDLE, ReviewerState.REVIEWING)
+ACTIVE = (ReviewerState.IDLE, ReviewerState.REVIEWING)
 
 
 class ReviewerQuery(Query[Reviewer]):
@@ -19,8 +19,8 @@ class ReviewerQuery(Query[Reviewer]):
     def environment(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id)
 
-    def out(self) -> Self:
-        return self.matching(Among("state", OUT))
+    def active(self) -> Self:
+        return self.matching(Among("state", ACTIVE))
 
     def idle(self) -> Self:
         return self.filter(state=ReviewerState.IDLE)

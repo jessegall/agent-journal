@@ -11,7 +11,8 @@ MODULE_NAME = "journal.core.reviews"
 
 
 class ReviewerEndedListener(CommitListener):
-    """When the session of a reviewer ends, the reviewer ends and a review it was still reviewing is abandoned, which gives the work back to the agent that asked."""
+    """When the session of a reviewer ends, the reviewer ends and a review it was still reviewing is abandoned,
+    which gives the work back to the agent that asked."""
 
     name = "reviews.reviewer-ended"
     event = "agent.update"
@@ -21,9 +22,9 @@ class ReviewerEndedListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         ended = event.data.get("ended_at")
-        if ended is None or ended[1] is None or not self.reviewers.filter(id=event.row_id).out().exists():
+        if ended is None or ended[1] is None or not self.reviewers.filter(id=event.row_id).active().exists():
             return
         actor = self.actors.actor(MODULE_NAME)
-        for review in tuple(self.reviews.of_reviewer(event.row_id).reviewing().all_rows()):
+        for review in tuple(self.reviews.reviewer(event.row_id).reviewing().all_rows()):
             self.bus.run(AbandonReview(review.id), actor, cause_id=event.id, environment_id=event.environment_id)
         self.bus.run(EndReviewer(event.row_id), actor, cause_id=event.id, environment_id=event.environment_id)

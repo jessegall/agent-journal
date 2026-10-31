@@ -6,10 +6,10 @@ from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.support.review_settings import REVIEWER_SETTING, ReviewSettings
 
 
-class ReviewerIsOnGuard(Guard):
+class ReviewersEnabledGuard(Guard):
     """Refuses a new reviewer while reviewers are switched off."""
 
-    name = "reviews.reviewer-is-on"
+    name = "reviews.reviewers-enabled"
     event = "reviewer.create"
 
     def __init__(self, settings: ReviewSettings) -> None:
@@ -17,5 +17,5 @@ class ReviewerIsOnGuard(Guard):
 
     def check(self, change: Change[Model]) -> None:
         reviewer = change.row
-        if isinstance(reviewer, Reviewer) and not self.settings.is_on(reviewer.environment_id):
+        if isinstance(reviewer, Reviewer) and not self.settings.enabled(reviewer.environment_id):
             raise Refusal("reviewers are switched off", f"turn them on with journal setting make {REVIEWER_SETTING} true")

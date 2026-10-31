@@ -10,7 +10,8 @@ from core.modules.reviews.support.review_settings import ReviewSettings
 
 
 class ReviewQueuedListener(SaveListener):
-    """A queued review goes to an idle reviewer at once; with none idle and room under the limit, a reviewer is added for it."""
+    """A queued review goes to an idle reviewer at once; with none idle and room under the limit, a reviewer is
+    added for it."""
 
     name = "reviews.review-queued"
     event = "review.create"
@@ -23,6 +24,8 @@ class ReviewQueuedListener(SaveListener):
         if not isinstance(review, Review):
             return
         reviewers = self.reviewers.environment(review.environment_id)
-        if self.settings.is_on(review.environment_id) and not reviewers.idle().exists() and reviewers.out().count() < self.settings.most(review.environment_id):
+        has_room = reviewers.active().count() < self.settings.limit(review.environment_id)
+        needs_reviewer = self.settings.enabled(review.environment_id) and not reviewers.idle().exists()
+        if needs_reviewer and has_room:
             self.bus.dispatch(AddReviewer(), change.context)
         self.bus.dispatch(AssignNextReview(review.environment_id), change.context)

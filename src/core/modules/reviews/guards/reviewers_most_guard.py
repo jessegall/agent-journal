@@ -20,6 +20,6 @@ class ReviewersMostGuard(Guard):
         reviewer = change.row
         if not isinstance(reviewer, Reviewer):
             return
-        out = self.reviewers.environment(reviewer.environment_id).out().count()
-        if out >= self.settings.most(reviewer.environment_id):
-            raise Refusal(f"{out} reviewers are out, the limit {REVIEWERS_MOST_SETTING} sets", f"retire one with journal reviewer retire, or raise the limit with journal setting make {REVIEWERS_MOST_SETTING} <count>")
+        active = self.reviewers.environment(reviewer.environment_id).active().count()
+        if active >= self.settings.limit(reviewer.environment_id):
+            raise Refusal(f"{active} reviewers are out, the limit {REVIEWERS_MOST_SETTING} sets", f"retire one with journal reviewer retire, or raise the limit with journal setting make {REVIEWERS_MOST_SETTING} <count>")

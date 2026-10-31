@@ -28,5 +28,5 @@ class ReviewQuery(Query[Review]):
     def reviewing(self) -> Self:
         return self.filter(state=ReviewState.REVIEWING)
 
-    def of_reviewer(self, reviewer_id: int) -> Self:
+    def reviewer(self, reviewer_id: int) -> Self:
         return self.filter(reviewer_id=reviewer_id)

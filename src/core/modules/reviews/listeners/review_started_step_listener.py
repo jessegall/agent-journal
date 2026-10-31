@@ -9,7 +9,7 @@ from core.modules.reviews.models.review import Review
 
 
 class ReviewStartedStepListener(CommitListener):
-    """When a reviewer takes a review, its steps start with a line saying so."""
+    """When a reviewer starts a review, its steps start with a line saying so."""
 
     name = "reviews.review-started-step"
     event = "review.assign"

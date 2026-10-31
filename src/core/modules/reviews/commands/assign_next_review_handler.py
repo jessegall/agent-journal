@@ -3,7 +3,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.modules.reviews.commands.assign_next_review import AssignNextReview
 from core.modules.reviews.commands.assign_review import AssignReview
-from core.modules.reviews.commands.take_reviewer import TakeReviewer
+from core.modules.reviews.commands.start_reviewer import StartReviewer
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 
@@ -21,4 +21,4 @@ class AssignNextReviewHandler(Handler[AssignNextReview, None]):
         idle = self.reviewers.environment(command.environment_id).idle().oldest().page(1, 1).rows
         if queued and idle:
             self.bus.dispatch(AssignReview(queued[0].id, idle[0].id), context)
-            self.bus.dispatch(TakeReviewer(idle[0].id), context)
+            self.bus.dispatch(StartReviewer(idle[0].id), context)

@@ -11,6 +11,6 @@ class ReviewLifecycle(Lifecycle):
 
     assign = Move("assign", [ReviewState.QUEUED], ReviewState.REVIEWING)
     approve = Move("approve", [ReviewState.REVIEWING], ReviewState.APPROVED)
-    send_back = Move("send_back", [ReviewState.REVIEWING], ReviewState.SENT_BACK)
+    reject = Move("reject", [ReviewState.REVIEWING], ReviewState.REJECTED)
     leave_undecided = Move("leave_undecided", [ReviewState.REVIEWING], ReviewState.UNDECIDED)
     abandon = Move("abandon", (ReviewState.QUEUED, ReviewState.REVIEWING), ReviewState.ABANDONED)

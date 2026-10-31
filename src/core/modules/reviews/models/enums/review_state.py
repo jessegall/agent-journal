@@ -7,6 +7,6 @@ class ReviewState(StrEnum):
     QUEUED = "queued"
     REVIEWING = "reviewing"
     APPROVED = "approved"
-    SENT_BACK = "sent_back"
+    REJECTED = "rejected"
     UNDECIDED = "undecided"
     ABANDONED = "abandoned"

@@ -41,6 +41,30 @@ class NoReviewersAllowed(StoryFixture):
         story.expect_text("setting list", "reviews.reviewers-most  0")
 
 
+class OneReviewerAllowed(StoryFixture):
+    """Reviewers on, and room for one in the project."""
+
+    parent = ReviewersOn
+
+    def steps(self, story: Story) -> None:
+        story.run("setting make reviews.reviewers-most 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_text("setting list", "reviews.reviewers-most  1")
+
+
+class ReviewWithReviewer(StoryFixture):
+    """Review 1 of task 1 requested while reviewers are allowed, so a reviewer was added and holds it."""
+
+    parent = OneReviewerAllowed
+
+    def steps(self, story: Story) -> None:
+        story.run(REVIEW_REQUEST, actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(REVIEW_SHOW, "state: reviewing")
+
+
 class ReviewRequested(StoryFixture):
     """Review 1 of task 1, with two points, requested by the main agent and waiting queued."""
 

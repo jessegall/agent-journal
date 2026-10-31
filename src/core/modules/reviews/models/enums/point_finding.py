@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class PointVerdict(StrEnum):
+class PointFinding(StrEnum):
     """What a reviewer found of one point of the brief."""
 
     PASSED = "passed"

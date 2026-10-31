@@ -9,15 +9,16 @@ DEFAULT_PROGRAM = "claude"
 
 
 class ReviewSettings:
-    """What the settings say about reviewers: whether they are on, how many may be out and which program and model they run."""
+    """What the settings say about reviewers: whether they are on, how many may be out and which program and
+    model they run."""
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
 
-    def is_on(self, environment_id: int) -> bool:
+    def enabled(self, environment_id: int) -> bool:
         return self.settings.value(REVIEWER_SETTING, environment_id, False) is True
 
-    def most(self, environment_id: int) -> int:
+    def limit(self, environment_id: int) -> int:
         value = self.settings.value(REVIEWERS_MOST_SETTING, environment_id, DEFAULT_REVIEWERS_MOST)
         return value if isinstance(value, int) and not isinstance(value, bool) else DEFAULT_REVIEWERS_MOST
 

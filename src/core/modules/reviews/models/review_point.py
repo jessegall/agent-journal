@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.reviews.models.enums.point_verdict import PointVerdict
+from core.modules.reviews.models.enums.point_finding import PointFinding
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -15,7 +15,7 @@ class ReviewPoint(Model):
     review_id: int
     creator_id: int
     number: int
-    verdict: PointVerdict
+    finding: PointFinding
     reason: str = ""
 
     def __post_init__(self) -> None:
