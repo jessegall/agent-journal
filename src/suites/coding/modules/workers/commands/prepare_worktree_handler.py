@@ -10,7 +10,8 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class PrepareWorktreeHandler(Handler[PrepareWorktree, None]):
-    """Places the project folder's library folders in a launch worktree and runs the named environment's worktree commands there."""
+    """Places the project folder's library folders in a launch worktree and runs the named environment's
+    worktree commands there."""
 
     command = PrepareWorktree
 

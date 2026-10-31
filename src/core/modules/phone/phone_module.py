@@ -26,6 +26,9 @@ from core.modules.phone.commands.subscribe_phone_subcommand import SubscribePhon
 from core.modules.phone.listeners.plan_notice_listener import PlanNoticeListener
 from core.modules.phone.listeners.question_notice_listener import QuestionNoticeListener
 from core.modules.phone.migrations.m002_phone_subscription import PhoneSubscriptionMigration
+from core.modules.phone.migrations.m003_phone_notice_waiting import PhoneNoticeWaitingMigration
+from core.modules.phone.commands.note_phone_notice_handler import NotePhoneNoticeHandler
+from core.modules.phone.commands.send_phone_notices_handler import SendPhoneNoticesHandler
 from core.modules.phone.support.push_service import PushService
 from core.modules.phone.support.push_transport import PushTransport
 from core.modules.phone.push.web_push import WebPush
@@ -40,9 +43,9 @@ class PhoneModule(Module):
     models = [ModelDeclaration(Phone, commands=[UnpairPhone], excluded_subcommands=["make", "edit"]),
               ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]
-    migrations = [PhonesTablesMigration, PhoneSubscriptionMigration]
+    migrations = [PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
     subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, PushKeySubcommand, SubscribePhoneSubcommand)
-    handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler]
+    handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]
     listeners = [QuestionNoticeListener, PlanNoticeListener]
     bindings = [(PushService, WebPush), (PushTransport, PushTransport)]
     settings = [SettingValue("push-private-key", "Push signing key", "The secret half of the key pair the journal signs phone notices with.", SettingType.TEXT,

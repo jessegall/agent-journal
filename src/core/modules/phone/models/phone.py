@@ -23,6 +23,7 @@ class Phone(Model):
     token_digest: str
     state: PhoneState = PhoneState.PAIRED
     subscription: str | None = None
+    notice_waiting: bool = False
 
     @property
     def endpoint(self) -> str | None:

@@ -2,6 +2,7 @@ import base64
 import json
 
 from core.base.actor import Actor
+from server.tick_work import TickWork
 from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.modules.phone.support.push_keys import PushKeys
@@ -36,9 +37,9 @@ class FakeTransport(PushTransport):
         return 201
 
 
-def subscribed_story(new_story, push: FakePush | None = None):
+def subscribed_story(new_story, service: FakePush | None = None):
     story = paired_story(new_story)
-    story.container.bind(PushService, push or FakePush())
+    story.container.bind(PushService, service or FakePush())
     story.expect_success(f"phone subscribe {TOKEN_DIGEST} '{SUBSCRIPTION}'", actor=Actor.core())
     return story
 
@@ -46,6 +47,10 @@ def subscribed_story(new_story, push: FakePush | None = None):
 def ask(story) -> None:
     story.run('question ask "Which database?" --environment main', actor=story.agent)
     story.run_listeners()
+
+
+def tick(story) -> None:
+    TickWork().run(story.container)
 
 
 def test_the_key_pair_is_made_on_first_need_and_kept_as_two_secret_settings(new_story):
@@ -73,57 +78,78 @@ def test_a_phone_subscription_is_kept_and_never_shown(new_story):
     assert ENDPOINT not in story.run("event list --json", actor=story.user).output_text
 
 
-def test_a_question_asked_pushes_the_subscribed_phone_once(new_story):
-    push = FakePush()
-    story = subscribed_story(new_story, push)
+def test_a_question_asked_only_records_the_notice_and_the_ticker_round_pushes_the_subscribed_phone_once(new_story):
+    service = FakePush()
+    story = subscribed_story(new_story, service)
     ask(story)
-    assert push.sent == [ENDPOINT]
     story.run_listeners()
-    assert push.sent == [ENDPOINT]
+    assert service.sent == []
+    tick(story)
+    assert service.sent == [ENDPOINT]
+    tick(story)
+    assert service.sent == [ENDPOINT]
 
 
-def test_a_plan_made_ready_pushes_the_subscribed_phone(new_story):
-    push = FakePush()
-    story = subscribed_story(new_story, push)
+def test_two_notices_before_a_round_make_one_push(new_story):
+    service = FakePush()
+    story = subscribed_story(new_story, service)
+    ask(story)
+    ask(story)
+    tick(story)
+    assert service.sent == [ENDPOINT]
+
+
+def test_a_plan_made_ready_is_pushed_by_the_ticker_round(new_story):
+    service = FakePush()
+    story = subscribed_story(new_story, service)
     story.run('plan make "Checkout" --environment main', actor=story.user)
     story.run_listeners()
-    assert push.sent == []
+    tick(story)
+    assert service.sent == []
     story.expect_success("plan ready 1", actor=story.user)
     story.run_listeners()
-    assert push.sent == [ENDPOINT]
+    assert service.sent == []
+    tick(story)
+    assert service.sent == [ENDPOINT]
 
 
 def test_a_phone_that_never_subscribed_is_not_pushed(new_story):
-    push = FakePush()
+    service = FakePush()
     story = paired_story(new_story)
-    story.container.bind(PushService, push)
+    story.container.bind(PushService, service)
     ask(story)
-    assert push.sent == []
+    tick(story)
+    assert service.sent == []
 
 
 def test_an_unpaired_phone_is_not_pushed(new_story):
-    push = FakePush()
-    story = subscribed_story(new_story, push)
+    service = FakePush()
+    story = subscribed_story(new_story, service)
     story.expect_success("phone unpair 1", actor=story.user)
     ask(story)
-    assert push.sent == []
+    tick(story)
+    assert service.sent == []
 
 
 def test_a_push_service_that_no_longer_knows_the_phone_clears_its_subscription(new_story):
-    push = FakePush(status=410)
-    story = subscribed_story(new_story, push)
+    service = FakePush(status=410)
+    story = subscribed_story(new_story, service)
     ask(story)
-    assert push.sent == [ENDPOINT]
+    tick(story)
+    assert service.sent == [ENDPOINT]
     ask(story)
-    assert push.sent == [ENDPOINT]
+    tick(story)
+    assert service.sent == [ENDPOINT]
 
 
 def test_a_failed_push_keeps_the_subscription_for_the_next_notice(new_story):
-    push = FakePush(status=500)
-    story = subscribed_story(new_story, push)
+    service = FakePush(status=500)
+    story = subscribed_story(new_story, service)
     ask(story)
+    tick(story)
     ask(story)
-    assert push.sent == [ENDPOINT, ENDPOINT]
+    tick(story)
+    assert service.sent == [ENDPOINT, ENDPOINT]
 
 
 class FakeTunnel:
@@ -142,7 +168,7 @@ class FakeTunnels(Tunnels):
         return self.tunnel
 
 
-def real_push(story, address: str | None):
+def built_service(story, address: str | None):
     from core.modules.phone.push.web_push import WebPush
 
     transport = FakeTransport()
@@ -153,9 +179,9 @@ def real_push(story, address: str | None):
 
 def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_tunnels_address(new_story):
     story = paired_story(new_story)
-    transport, push = real_push(story, "journal.example.test")
-    assert push.send(ENDPOINT) == 201
-    (endpoint, headers), = transport.posts
+    requests, service = built_service(story, "journal.example.test")
+    assert service.send(ENDPOINT) == 201
+    [(endpoint, headers)] = requests.posts
     public = story.run("phone push-key", actor=Actor.core()).output_text.strip()
     authorization = headers["Authorization"]
     token = authorization.split("vapid t=", 1)[1].split(",", 1)[0]
@@ -168,7 +194,7 @@ def test_the_real_push_sends_an_empty_request_signed_with_the_kept_keys_and_the_
 
 def test_the_real_push_sends_only_to_a_known_push_service_and_only_with_a_tunnel_address(new_story):
     story = paired_story(new_story)
-    transport, push = real_push(story, "journal.example.test")
-    assert push.send("https://evil.example.test/push") == 0 and push.send("http://fcm.googleapis.com/x") == 0 and transport.posts == []
-    transport, push = real_push(story, None)
-    assert push.send(ENDPOINT) == 0 and transport.posts == []
+    requests, service = built_service(story, "journal.example.test")
+    assert service.send("https://evil.example.test/push") == 0 and service.send("http://fcm.googleapis.com/x") == 0 and requests.posts == []
+    requests, service = built_service(story, None)
+    assert service.send(ENDPOINT) == 0 and requests.posts == []

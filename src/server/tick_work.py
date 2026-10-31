@@ -13,6 +13,7 @@ from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.drivers.commands.prune_hook_calls import PruneHookCalls
 from core.modules.environments.models.environment import Environment
+from core.modules.phone.commands.send_phone_notices import SendPhoneNotices
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)
@@ -22,7 +23,8 @@ MAIN_ACTOR = "agent"
 
 class TickWork(RoundWork):
     """The ticker's round, once a minute: each open agent other than a subagent gets a tick hook through the hook
-    route, so rules that keep time speak on their own, and once a day the old hook calls are pruned."""
+    route, so rules that keep time speak on their own; once a day the old hook calls are pruned; and the
+    notices that wait on paired phones are pushed."""
 
     def __init__(self) -> None:
         self.pruned_at: Timestamp | None = None
@@ -35,6 +37,7 @@ class TickWork(RoundWork):
         if self.pruned_at is None or self.pruned_at.elapsed_seconds(clock_time) >= PRUNE_PERIOD.total_seconds():
             container.get(Bus).run(PruneHookCalls(), Actor.core())
             self.pruned_at = clock_time
+        container.get(Bus).run(SendPhoneNotices(), Actor.core())
 
     @staticmethod
     def tick(agent: Agent, environment: str, clock_time: Timestamp) -> HookEvent:
