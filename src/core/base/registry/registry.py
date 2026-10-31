@@ -58,7 +58,7 @@ class Registry:
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
-                                        rule["limit"], rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
+                                        rule["permanent"], rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
                         for rule in entries.get("rules", [])),
             suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
                                     tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()})
@@ -85,7 +85,7 @@ class Registry:
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
-                       "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential, "history": rule.history,
+                       "roles": list(rule.roles), "permanent": rule.permanent, "essential": rule.essential, "history": rule.history,
                        "claims_essential": rule.claims_essential} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
@@ -112,7 +112,7 @@ class Registry:
         return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]
 
     def driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
-        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.limit and rule.covers_driver(driver, role)]
+        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.permanent and rule.covers_driver(driver, role)]
 
     def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
         return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)

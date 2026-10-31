@@ -20,4 +20,4 @@ def test_a_rule_another_module_marks_essential_is_ordinary_until_a_person_allows
     story.run("driver allow-essential samples.essential-claim", actor=story.user)
     story.hook("s-1", HookSamples.stop())
     story.expect_text(lines.SECOND_HOOK_CALL, "samples.essential-claim: lines")
-    story.expect_rows(story.hook("s-1", HookSamples.stop()).lines[0] == "the sample rule speaks first")
+    story.expect_rows(story.hook("s-1", HookSamples.stop()).lines[0] == "the sample rule answers first")

@@ -26,7 +26,7 @@ def test_a_switched_off_type_s_rows_stay_but_are_not_given_and_come_back_when_sw
 def test_a_rule_switched_off_by_its_full_name_gives_nothing(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(FACT_COMMAND, actor=story.agent)
-    story.run("setting make memories.start-giving false")
+    story.run("setting make memories.start-delivery false")
     reply = story.hook("s-1", SESSION_START)
     story.expect_rows(not any("The cart total is in cents" in line for line in reply.lines))
 

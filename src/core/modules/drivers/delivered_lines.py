@@ -8,7 +8,6 @@ from core.modules.drivers.agent_line import AgentLine
 
 TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 TOOL_HOOK_LINES = 3
-LINELESS_HOOK = HookEventName.TICK
 
 
 @dataclass(frozen=True)
@@ -20,7 +19,7 @@ class DeliveredLines:
 
     @classmethod
     def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "DeliveredLines":
-        if answers.delays_lines or event.event == LINELESS_HOOK:
+        if answers.delays_lines or event.event == HookEventName.TICK:
             return cls([])
         return cls(list(waiting)[:TOOL_HOOK_LINES] if event.event in TOOL_HOOKS else list(waiting))
 

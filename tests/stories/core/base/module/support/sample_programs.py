@@ -4,10 +4,10 @@ from tests.unit.core.base.samples.program_sample import SampleProgram
 PATH = "tests.stories.core.base.module.support.sample_programs"
 
 
-class TwinProgram(SampleProgram):
-    """A second program under the sample program's name."""
+class SecondProgram(SampleProgram):
+    """A second program under the sample program's name, for the sync check."""
 
-    title = "Twin program"
+    title = "Second program"
 
 
 class SampleProgramModule(Module):
@@ -18,9 +18,9 @@ class SampleProgramModule(Module):
     providers = [SampleProgram]
 
 
-class TwinProgramModule(Module):
+class SecondProgramModule(Module):
     """Adds a second program named sample."""
 
-    name = "twin.program"
+    name = "second.program"
     requires_core = ">=5,<6"
-    providers = [TwinProgram]
+    providers = [SecondProgram]

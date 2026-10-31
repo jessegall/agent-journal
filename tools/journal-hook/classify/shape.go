@@ -66,13 +66,13 @@ func shapeCommands(text string) []string {
 		index++
 	}
 	commands = append(commands, command.String())
-	retained := []string{}
+	strippedCommands := []string{}
 	for _, entry := range commands {
 		if stripped := pyre.Strip(entry); stripped != "" {
-			retained = append(retained, stripped)
+			strippedCommands = append(strippedCommands, stripped)
 		}
 	}
-	return retained
+	return strippedCommands
 }
 
 func isSetup(command string) bool {
@@ -102,12 +102,12 @@ func pastSetup(chain string) string {
 
 // shapeInner is CommandShape.inner: the command a loop's or a branch's line runs, or nothing for its own words.
 func (classifier *Classifier) shapeInner(part string) string {
-	unlooped := replaceFirst(controlPattern, part, "")
-	if headerPattern.MatchString(unlooped) {
+	controlFree := replaceFirst(controlPattern, part, "")
+	if headerPattern.MatchString(controlFree) {
 		return ""
 	}
-	command := unlooped
-	if captured := capturePattern.FindStringSubmatch(unlooped); captured != nil {
+	command := controlFree
+	if captured := capturePattern.FindStringSubmatch(controlFree); captured != nil {
 		command = pastSetup(captured[1])
 	}
 	return withoutGitOptions(replaceFirst(containerPattern, classifier.unwrappedAll(replaceFirst(variablePattern, command, "")), ""))
@@ -134,7 +134,7 @@ func withoutGitOptions(command string) string {
 	if start == nil {
 		return command
 	}
-	position, retained := start[1], -1
+	position, tailStart := start[1], -1
 	for {
 		option := gitOption.FindStringIndex(command[position:])
 		if option == nil {
@@ -142,13 +142,13 @@ func withoutGitOptions(command string) string {
 		}
 		position += option[1]
 		if position < len(command) && pyre.IsSpace([]rune(command[position:])[0]) {
-			retained = position
+			tailStart = position
 		}
 	}
-	if retained < 0 {
+	if tailStart < 0 {
 		return command
 	}
-	return command[:start[1]] + command[retained:]
+	return command[:start[1]] + command[tailStart:]
 }
 
 func replaceFirst(pattern *regexp.Regexp, text, replacement string) string {

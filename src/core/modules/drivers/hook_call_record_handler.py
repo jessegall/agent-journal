@@ -14,7 +14,8 @@ from core.modules.agents.agent import Agent
 from core.modules.drivers.agent_line import AgentLine
 from core.modules.drivers.agent_line_delivery import AgentLineDelivery
 from core.modules.drivers.agent_line_state import AgentLineState
-from core.modules.drivers.delivered_lines import LINELESS_HOOK, DeliveredLines
+from core.base.driver.hook_event_name import HookEventName
+from core.modules.drivers.delivered_lines import DeliveredLines
 from core.modules.drivers.hook_answer import HookAnswer
 from core.modules.drivers.hook_call import HookCall
 from core.modules.drivers.hook_call_record import HookCallRecord
@@ -44,7 +45,7 @@ class HookCallRecordHandler(Handler[HookCallRecord, HookReply]):
                          suite=suite.name if suite is not None else "")
         answers = self.rules.ask(hook)
         self.history.record(agent.id, answers, context)
-        if command.event.event == LINELESS_HOOK and not (answers.refusal or answers.lines or answers.commands):
+        if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
         handed_lines = DeliveredLines.chosen(command.event, answers, tuple(waiting))
@@ -59,7 +60,7 @@ class HookCallRecordHandler(Handler[HookCallRecord, HookReply]):
         for row in handed_lines.rows:
             self.bus.dispatch(AgentLineDelivery(row.id, call.id, context.timestamp), context)
         refused = [(rule, line) for rule, rule_command in moves.runnable if (line := self.refusal_line(rule_command, context))]
-        if command.event.event == LINELESS_HOOK:
+        if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
         return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id)
 

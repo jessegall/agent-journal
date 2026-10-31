@@ -82,13 +82,13 @@ class EndsItsLayer(DriverRule):
         return RuleAnswer.allowed().ending_layer(SampleEnd(1))
 
 
-class TellsOnRegainedControl(DriverRule):
+class ControlReturnLine(DriverRule):
     """AddsLine the agent when it has control again."""
 
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("control regained") if hook.regained_control else RuleAnswer.allowed()
+        return RuleAnswer.with_lines("control regained") if hook.control_return else RuleAnswer.allowed()
 
 
 class OldWait(Overlay):
@@ -120,12 +120,12 @@ class Switches(GuardSwitches):
 class RegainedHistory:
     """A history in which every history rule has regained control."""
 
-    def regained_control(self, key: RuleHistoryKey) -> bool:
+    def control_return(self, key: RuleHistoryKey) -> bool:
         return True
 
 
-def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, limit: bool = False, essential: bool = False) -> DriverRuleEntry:
-    return DriverRuleEntry(name, DottedPath.class_path(rule_class), "stop", position, owner, (), (), limit, essential)
+def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, permanent: bool = False, essential: bool = False) -> DriverRuleEntry:
+    return DriverRuleEntry(name, DottedPath.class_path(rule_class), "stop", position, owner, (), (), permanent, essential)
 
 
 def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type[Overlay]] = (), off: Sequence[str] = (), history=None) -> list[tuple[str, str, str]]:
@@ -139,12 +139,12 @@ def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type
 
 def test_essential_rules_and_limits_come_first_then_layers_newest_first_then_the_driver_rules(tmp_path):
     rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("o.new", AddsLine, 3, "samples.NewRun"),
-             rule("d.limit", Allows, 4, DRIVER, limit=True), rule("drivers.essential", Allows, 5, "drivers", essential=True)]
+             rule("d.limit", Allows, 4, DRIVER, permanent=True), rule("drivers.essential", Allows, 5, "drivers", essential=True)]
     assert outcomes(tmp_path, rules, [NewRun]) == [("d.limit", "", "allowed"), ("drivers.essential", "", "allowed"), ("o.new", "sequence_run:2", "lines"), ("d.driver", "", "lines")]
 
 
 def test_an_exclusive_layer_passes_over_the_ordinary_rules_beneath_it_but_never_a_limit(tmp_path):
-    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.limit", AddsLine, 3, DRIVER, limit=True)]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.limit", AddsLine, 3, DRIVER, permanent=True)]
     assert outcomes(tmp_path, rules, [OldWait]) == [("d.limit", "", "lines"), ("o.old", "wait:1", "lines"), ("d.driver", "", "silenced")]
 
 
@@ -175,7 +175,7 @@ def test_an_ordinary_rule_that_lets_the_hook_through_at_once_is_recorded_as_rais
 
 
 def test_a_limit_that_lets_the_hook_through_at_once_ends_the_walk(tmp_path):
-    rules = [rule("d.limit", AllowsNow, 1, DRIVER, limit=True), rule("d.second", AddsLine, 2, DRIVER)]
+    rules = [rule("d.limit", AllowsNow, 1, DRIVER, permanent=True), rule("d.second", AddsLine, 2, DRIVER)]
     assert outcomes(tmp_path, rules) == [("d.limit", "", "lines")]
 
 
@@ -185,7 +185,7 @@ def test_a_switched_off_rule_is_neither_asked_nor_passed_over(tmp_path):
 
 
 def test_a_history_rule_is_told_when_it_has_control_again(tmp_path):
-    assert outcomes(tmp_path, [rule("d.back", TellsOnRegainedControl, 1, DRIVER)]) == [("d.back", "", "lines")]
+    assert outcomes(tmp_path, [rule("d.back", ControlReturnLine, 1, DRIVER)]) == [("d.back", "", "lines")]
 
 
 def test_a_registered_class_of_the_wrong_base_is_refused_by_the_one_loader():

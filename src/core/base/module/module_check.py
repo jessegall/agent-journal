@@ -63,7 +63,7 @@ class ModuleCheck:
             problems.extend(f"{model.__name__}'s move {move.name} names a state outside {lifecycle.states.__name__}"
                             for move in moves if not all(isinstance(state, lifecycle.states) for state in (*move.sources, move.target)))
             problems.extend(f"{model.__name__}'s move {move.name} is named like a standard change" for move in moves if move.name in STANDARD_CHANGES)
-            problems.extend(f"{model.__name__}'s move {name} is named unlike its attribute" for name in lifecycle.misnamed_moves())
+            problems.extend(f"{model.__name__}'s move {name} is named unlike its attribute" for name in lifecycle.attribute_name_mismatches())
             reachable = {move.target for move in moves} | set(lifecycle.initial)
             problems.extend(f"{model.__name__}'s state {state.value} is no move's target and not a first state" for state in lifecycle.states if state not in reachable)
         return tuple(problems)

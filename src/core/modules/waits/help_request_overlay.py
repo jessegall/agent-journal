@@ -9,7 +9,7 @@ from core.modules.waits.wait_type import WaitType
 from core.modules.waits.work_ends_wait import WorkEndsWait
 
 
-class ImpasseOverlay(Overlay):
+class HelpRequestOverlay(Overlay):
     """An open stuck report: the agent is told nothing and its stop goes through, until it uses a tool outside the
     journal or the report is ended."""
 
@@ -22,5 +22,5 @@ class ImpasseOverlay(Overlay):
         self.queries = queries
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:
-        waits = self.queries.query(Wait).filter(agent_id=agent_id, state=WaitState.OPEN, type=WaitType.IMPASSE).all_rows()
+        waits = self.queries.query(Wait).filter(agent_id=agent_id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).all_rows()
         return [OpenRow("wait", wait.id, wait.opened_at) for wait in waits]

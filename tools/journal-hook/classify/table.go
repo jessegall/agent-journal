@@ -170,10 +170,10 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 	row := &Row{Subcommands: map[string]*Row{}, Modifiers: map[string]*Row{}, ValueFlags: set(stringsOf(data["value_flags"]))}
 	row.Category = textOf(base["kind"])
 	row.Effects = stringsOf(base["effects"])
-	row.Uncertain = truthOf(base["uncertain"])
-	row.Interpreted = truthOf(base["interpreted"])
-	row.RunsScriptFile = truthOf(base["runs_script_file"])
-	row.StartsProcesses = truthOf(base["starts_processes"])
+	row.Uncertain = boolOf(base["uncertain"])
+	row.Interpreted = boolOf(base["interpreted"])
+	row.RunsScriptFile = boolOf(base["runs_script_file"])
+	row.StartsProcesses = boolOf(base["starts_processes"])
 	row.RedirectedLabel = textOf(base["redirected_label"])
 	row.Label = textOf(base["label"])
 	row.BareLabel = textOf(base["bare_label"])
@@ -195,14 +195,14 @@ func parsedWrapper(rows map[string]json.RawMessage, name string) *Wrapper {
 		Subcommands:    stringsOf(data["subcommands"]),
 		ValueFlags:     set(stringsOf(data["value_flags"])),
 		LeadingValues:  leading,
-		Assignments:    truthOf(data["assignments"]),
+		Assignments:    boolOf(data["assignments"]),
 		OptionsEnd:     textOf(data["until"]),
 		CodeContains:   textOf(data["code_contains"]),
 		LookupFlags:    set(stringsOf(data["lookup_flags"])),
-		LimitsTime:     truthOf(data["limits_time"]),
-		ShapeSkipped:   truthOf(data["dropped_from_shape"]),
-		RunsScriptFile: truthOf(data["runs_script_file"]),
-		FollowsScripts: truthOf(data["may_follow_a_script"]),
+		LimitsTime:     boolOf(data["limits_time"]),
+		ShapeSkipped:   boolOf(data["dropped_from_shape"]),
+		RunsScriptFile: boolOf(data["runs_script_file"]),
+		FollowsScripts: boolOf(data["may_follow_a_script"]),
 	}
 }
 
@@ -255,7 +255,7 @@ func (table *Table) TimeLimitRemoved(tokens []string) []string {
 // ShapeUnwrapped takes off the wrappers a run's shape is named past, after a project script that may stand before one.
 func (table *Table) ShapeUnwrapped(tokens []string) []string {
 	if len(tokens) > 1 && strings.Contains(tokens[0], "/") {
-		if follower := table.Wrappers[tokens[1]]; follower != nil && follower.FollowsScripts {
+		if wrapper := table.Wrappers[tokens[1]]; wrapper != nil && wrapper.FollowsScripts {
 			tokens = tokens[1:]
 		}
 	}
@@ -389,8 +389,8 @@ func stringsOf(raw json.RawMessage) []string {
 	return texts
 }
 
-// truthOf is Python's bool() of a JSON value.
-func truthOf(raw json.RawMessage) bool {
+// boolOf is Python's bool() of a JSON value.
+func boolOf(raw json.RawMessage) bool {
 	var value any
 	if json.Unmarshal(raw, &value) != nil {
 		return false
@@ -419,15 +419,15 @@ func set(items []string) map[string]bool {
 }
 
 func unique(items []string) []string {
-	visited, retained := map[string]bool{}, []string{}
+	visited, uniqueWords := map[string]bool{}, []string{}
 	for _, word := range items {
 		if visited[word] {
 			continue
 		}
 		visited[word] = true
-		retained = append(retained, word)
+		uniqueWords = append(uniqueWords, word)
 	}
-	return retained
+	return uniqueWords
 }
 
 func contains(items []string, word string) bool {

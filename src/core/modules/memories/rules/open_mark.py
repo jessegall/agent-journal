@@ -29,5 +29,5 @@ class OpenMark(DriverRule):
         reached = self.marks.next_reached(hook.agent_id, percent, self.settings.numbers(MARKS_SETTING, hook.environment_id, DEFAULT_MARKS))
         if reached is None:
             return RuleAnswer.allowed()
-        memories = list(self.memories.query(hook).mark_memories().heaviest_first().all_rows())
+        memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
         return RuleAnswer.with_lines(*MemoryLines.weigh(reached, memories)).running(MemoryMarkOpen(hook.agent_id, reached))

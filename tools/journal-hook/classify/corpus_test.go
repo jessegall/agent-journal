@@ -18,7 +18,7 @@ const corpusVariable = "JOURNAL_CORPUS"
 // How long one line may take to be read before it counts as too slow.
 const slowLine = time.Second
 
-type corpusTally struct {
+type corpusCount struct {
 	lines, parseErrors, unknownLines, parts, unknownParts, slow int
 	panics                                                      []string
 }
@@ -36,16 +36,16 @@ func TestEveryCorpusLineGetsAReading(t *testing.T) {
 	}
 	defer opened.Close()
 	lines := make(chan string, 1024)
-	tallies := make([]corpusTally, runtime.NumCPU())
+	counts := make([]corpusCount, runtime.NumCPU())
 	var workers sync.WaitGroup
-	for index := range tallies {
+	for index := range counts {
 		workers.Add(1)
-		go func(tally *corpusTally) {
+		go func(count *corpusCount) {
 			defer workers.Done()
 			for line := range lines {
-				tally.read(line)
+				count.read(line)
 			}
-		}(&tallies[index])
+		}(&counts[index])
 	}
 	scanner := bufio.NewScanner(opened)
 	scanner.Buffer(make([]byte, 0, 1<<20), 64<<20)
@@ -57,15 +57,15 @@ func TestEveryCorpusLineGetsAReading(t *testing.T) {
 	}
 	close(lines)
 	workers.Wait()
-	var total corpusTally
-	for _, tally := range tallies {
-		total.lines += tally.lines
-		total.parseErrors += tally.parseErrors
-		total.unknownLines += tally.unknownLines
-		total.parts += tally.parts
-		total.unknownParts += tally.unknownParts
-		total.slow += tally.slow
-		total.panics = append(total.panics, tally.panics...)
+	var total corpusCount
+	for _, count := range counts {
+		total.lines += count.lines
+		total.parseErrors += count.parseErrors
+		total.unknownLines += count.unknownLines
+		total.parts += count.parts
+		total.unknownParts += count.unknownParts
+		total.slow += count.slow
+		total.panics = append(total.panics, count.panics...)
 	}
 	for _, line := range total.panics {
 		t.Errorf("reading panicked on %q", line)
@@ -78,28 +78,28 @@ func TestEveryCorpusLineGetsAReading(t *testing.T) {
 		total.parts, total.unknownParts, percent(total.unknownParts, total.parts))
 }
 
-func (tally *corpusTally) read(line string) {
+func (count *corpusCount) read(line string) {
 	defer func() {
 		if recovered := recover(); recovered != nil {
-			tally.panics = append(tally.panics, fmt.Sprint(line, ": ", recovered))
+			count.panics = append(count.panics, fmt.Sprint(line, ": ", recovered))
 		}
 	}()
 	started := time.Now()
 	shellLine := shippedClassifier.Line(line)
 	if time.Since(started) > slowLine {
-		tally.slow++
+		count.slow++
 	}
-	tally.lines++
+	count.lines++
 	if shellLine.ParseError != "" {
-		tally.parseErrors++
+		count.parseErrors++
 	}
 	if shellLine.Category == unknown {
-		tally.unknownLines++
+		count.unknownLines++
 	}
 	for _, part := range shellLine.Parts {
-		tally.parts++
+		count.parts++
 		if part.Classification.Category == unknown {
-			tally.unknownParts++
+			count.unknownParts++
 		}
 	}
 }

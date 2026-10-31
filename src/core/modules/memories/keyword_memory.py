@@ -7,7 +7,7 @@ from core.modules.memories.views import KEYWORD_MEMORIES_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class KeywordMemory(ViewModel):
-    """A keyword of a standing memory that is given by keyword."""
+    """A keyword of a active memory that is given by keyword."""
 
     cli_name = "memory-word"
     view = "keyword_memories"
@@ -24,7 +24,7 @@ class KeywordMemory(ViewModel):
     weight: int
     due_at: Timestamp | None
     fades: bool
-    start_giving: bool
-    mark_giving: bool
-    keyword_giving: bool
-    giving_order: int
+    start_delivery: bool
+    mark_delivery: bool
+    keyword_delivery: bool
+    delivery_order: int

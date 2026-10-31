@@ -21,6 +21,6 @@ class DriversTables(Migration):
         "CREATE INDEX agent_lines_waiting ON agent_lines (agent_id, state, id)",
         "CREATE TABLE rule_histories (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE RESTRICT,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, rule TEXT NOT NULL, layer TEXT NOT NULL DEFAULT '',"
-        " last_sighting TEXT NOT NULL DEFAULT 'consulted', last_answer_at TEXT," + COMMON,
+        " last_due_outcome TEXT NOT NULL DEFAULT 'consulted', last_answer_at TEXT," + COMMON,
         "CREATE UNIQUE INDEX rule_histories_rule ON rule_histories (agent_id, rule, layer)",
     )

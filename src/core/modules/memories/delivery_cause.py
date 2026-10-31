@@ -1,7 +1,7 @@
 from enum import StrEnum
 
 
-class GivingCause(StrEnum):
+class DeliveryCause(StrEnum):
     """Why a memory was given to an agent."""
 
     START = "start"

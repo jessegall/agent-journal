@@ -7,10 +7,10 @@ from core.base.repository.repository import Repository
 from core.modules.tasks.task_dependency import TaskDependency
 
 
-class ForgetDependencies(DeletionListener):
+class DependencyRemover(DeletionListener):
     """Removes a task's dependencies, both ways, before the task is deleted, each removal logged as its own event."""
 
-    name = "tasks.forget-dependencies"
+    name = "tasks.dependency-remover"
     event = "task.delete"
 
     def __init__(self, queries: Queries, repository: Repository) -> None:

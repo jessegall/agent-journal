@@ -17,7 +17,7 @@ class AgentHook:
     timestamp: Timestamp
     layer: OpenRow | None = None
     suite: str = ""
-    regained_control: bool = False
+    control_return: bool = False
 
     @property
     def hook_name(self) -> str:

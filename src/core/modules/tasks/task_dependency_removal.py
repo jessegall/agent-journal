@@ -3,7 +3,7 @@ from core.base.command.command import Command
 
 
 @dataclass(frozen=True)
-class TaskUndepend(Command[None]):
+class TaskDependencyRemoval(Command[None]):
     """Removes the dependency of one task on another."""
 
     task_id: int

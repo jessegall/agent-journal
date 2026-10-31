@@ -1,12 +1,12 @@
 from core.base.database.statement import Statement
 from core.base.timestamp import Timestamp
-from core.modules.memories.standing_memory_query import StandingMemoryQuery
+from core.modules.memories.active_memory_query import ActiveMemoryQuery
 from tests.unit.core.modules.memories.support.memory_journal import NOW, MemoryJournal
 
 LATER = "2026-11-01T09:00:00+00:00"
 
 
-def memories(tmp_path) -> tuple[MemoryJournal, StandingMemoryQuery]:
+def memories(tmp_path) -> tuple[MemoryJournal, ActiveMemoryQuery]:
     journal = MemoryJournal.synced(tmp_path)
 
     def make(text: str, environment_id: int | None, agent_id: int | None, memory_type: str = "fact", weight: int = 5, due_at: str | None = None) -> None:
@@ -19,10 +19,10 @@ def memories(tmp_path) -> tuple[MemoryJournal, StandingMemoryQuery]:
     make("second agent's fact", 1, journal.second_agent)
     make("faded fact", 1, None, weight=0)
     make("due reminder", 1, None, memory_type="reminder", due_at=LATER)
-    return journal, journal.container.get(StandingMemoryQuery)
+    return journal, journal.container.get(ActiveMemoryQuery)
 
 
-def texts(query: StandingMemoryQuery) -> list[str]:
+def texts(query: ActiveMemoryQuery) -> list[str]:
     return [memory.text for memory in query.all_rows()]
 
 
@@ -36,9 +36,9 @@ def test_a_memory_at_weight_0_no_longer_stands(tmp_path):
     assert "faded fact" not in texts(query)
 
 
-def test_the_giving_order_puts_rules_first_then_reminders_then_the_rest(tmp_path):
+def test_the_delivery_order_puts_rules_first_then_reminders_then_the_rest(tmp_path):
     journal, query = memories(tmp_path)
-    ordered = texts(query.scope(journal.first_agent, 1).giving_order())
+    ordered = texts(query.scope(journal.first_agent, 1).delivery_order())
     assert ordered[0] == "project rule" and ordered[-1] == "environment fact"
 
 

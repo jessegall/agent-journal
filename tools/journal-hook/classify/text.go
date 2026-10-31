@@ -18,7 +18,7 @@ var (
 )
 
 // The operators that join the commands of one part: a pipe, a pipe of both outputs, and an or.
-var joints = []string{"||", "|&", "|"}
+var pipeSymbols = []string{"||", "|&", "|"}
 
 // blanked is Part.blanked: the text past its leading comment lines, each quoted word made an empty pair of quotes.
 func blanked(text string) string {
@@ -30,14 +30,14 @@ func unexpanded(text string) string {
 	return singleQuoted.ReplaceAllLiteralString(text, " ")
 }
 
-type joint struct {
+type pipeMark struct {
 	position int
 	symbol   string
 }
 
-// jointsAt is Part.joints: the pipes and ors outside quotes at the given depth of brackets.
-func jointsAt(characters []rune, level int) []joint {
-	var positions []joint
+// pipesAt is Part.pipeSymbols: the pipes and ors outside quotes at the given depth of brackets.
+func pipesAt(characters []rune, level int) []pipeMark {
+	var positions []pipeMark
 	quote, depth, passed := rune(0), 0, -1
 	for index, character := range characters {
 		if index <= passed || index > 0 && characters[index-1] == '\\' && quote != '\'' {
@@ -56,11 +56,11 @@ func jointsAt(characters []rune, level int) []joint {
 			depth = max(depth-1, 0)
 		case character == '|' && depth == level:
 			remainder := string(characters[index:])
-			for _, symbol := range joints {
+			for _, symbol := range pipeSymbols {
 				if !strings.HasPrefix(remainder, symbol) {
 					continue
 				}
-				positions = append(positions, joint{index, symbol})
+				positions = append(positions, pipeMark{index, symbol})
 				passed = index + len([]rune(symbol)) - 1
 				break
 			}
@@ -73,7 +73,7 @@ func jointsAt(characters []rune, level int) []joint {
 func commands(text string) []string {
 	characters := []rune(text)
 	starts, ends := []int{0}, []int{}
-	for _, entry := range jointsAt(characters, 0) {
+	for _, entry := range pipesAt(characters, 0) {
 		if entry.position > 0 && characters[entry.position-1] == '>' {
 			continue
 		}
@@ -91,17 +91,17 @@ func commands(text string) []string {
 // stages is Part.stages: the commands of the text's pipe, its || alternatives kept together.
 func stages(text string) []string {
 	characters := []rune(text)
-	cuts := []int{-1}
-	for _, entry := range jointsAt(characters, 0) {
+	splitPositions := []int{-1}
+	for _, entry := range pipesAt(characters, 0) {
 		if entry.symbol == "||" {
 			continue
 		}
-		cuts = append(cuts, entry.position)
+		splitPositions = append(splitPositions, entry.position)
 	}
-	cuts = append(cuts, len(characters))
-	parts := make([]string, len(cuts)-1)
+	splitPositions = append(splitPositions, len(characters))
+	parts := make([]string, len(splitPositions)-1)
 	for index := range parts {
-		parts[index] = pyre.Strip(strings.TrimLeft(string(characters[cuts[index]+1:cuts[index+1]]), "&"))
+		parts[index] = pyre.Strip(strings.TrimLeft(string(characters[splitPositions[index]+1:splitPositions[index+1]]), "&"))
 	}
 	return parts
 }

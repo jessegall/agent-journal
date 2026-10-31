@@ -3,7 +3,7 @@ from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.rule_history import RuleHistory
-from core.modules.drivers.rule_sighting import RuleSighting
+from core.modules.drivers.rule_due_outcome import RuleDueOutcome
 
 
 class TableHookHistory(HookHistory):
@@ -13,9 +13,9 @@ class TableHookHistory(HookHistory):
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
-    def regained_control(self, key: RuleHistoryKey) -> bool:
+    def control_return(self, key: RuleHistoryKey) -> bool:
         history = self.history(key)
-        return history is not None and history.last_sighting == RuleSighting.SILENCED
+        return history is not None and history.last_due_outcome == RuleDueOutcome.SILENCED
 
     def answer_time(self, key: RuleHistoryKey) -> Timestamp | None:
         history = self.history(key)

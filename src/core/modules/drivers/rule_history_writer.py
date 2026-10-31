@@ -7,7 +7,7 @@ from core.base.driver.rule_record import RuleRecord
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.rule_history import RuleHistory
-from core.modules.drivers.rule_sighting import RuleSighting
+from core.modules.drivers.rule_due_outcome import RuleDueOutcome
 
 ANSWERED_OUTCOMES = ("lines", "refused")
 
@@ -27,6 +27,6 @@ class RuleHistoryWriter:
     def write(self, agent_id: int, record: RuleRecord, context: Context) -> None:
         rows = self.queries.query(RuleHistory).filter(agent_id=agent_id, rule=record.name, layer=record.layer).page(1, 1).rows
         current = rows[0] if rows else RuleHistory(agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
-        sighting = RuleSighting.SILENCED if record.outcome == SILENCED else RuleSighting.CONSULTED
+        due_outcome = RuleDueOutcome.SILENCED if record.outcome == SILENCED else RuleDueOutcome.CONSULTED
         answer_at = context.timestamp if record.outcome in ANSWERED_OUTCOMES else current.last_answer_at
-        self.repository.save(replace(current, last_sighting=sighting, last_answer_at=answer_at), context)
+        self.repository.save(replace(current, last_due_outcome=due_outcome, last_answer_at=answer_at), context)

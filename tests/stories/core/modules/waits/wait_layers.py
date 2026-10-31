@@ -12,7 +12,7 @@ def test_a_wait_on_a_task_takes_control_and_the_drivers_ordinary_rules_go_quiet(
     story.expect_text(lines.SECOND_HOOK_CALL, "layers: wait:1", "samples.stop-line: silenced")
 
 
-def test_a_wait_ends_when_its_task_closes_and_the_history_rule_speaks_once_after_it(new_story):
+def test_a_wait_ends_when_its_task_closes_and_the_history_rule_answers_once_after_it(new_story):
     story = new_story(SAMPLES, fixture=LeadWaiting)
     story.hook("s-1", HookSamples.stop())
     story.expect_success(lines.TASK_START, "state: started", actor=story.agent)

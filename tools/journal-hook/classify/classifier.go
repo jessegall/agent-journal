@@ -193,14 +193,14 @@ func (classifier *Classifier) arguments(text string) []string {
 		return []string{}
 	}
 	_, _, items := classifier.walked(row, tokens[1:])
-	retained := []string{}
+	remainingWords := []string{}
 	for _, word := range items {
 		if word == "" || strings.HasPrefix(word, "<") || strings.HasPrefix(word, "|") {
 			continue
 		}
-		retained = append(retained, word)
+		remainingWords = append(remainingWords, word)
 	}
-	return retained
+	return remainingWords
 }
 
 // redirectTargets are the files a command's redirects write.

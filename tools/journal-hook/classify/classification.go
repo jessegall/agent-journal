@@ -15,7 +15,7 @@ const (
 	printsFiles     = "prints_files"
 )
 
-// CategoryOrder names a line by its weightiest part: a test run over the tee that keeps its log, an edit over a read, a
+// CategoryOrder names a line by its heaviest part: a test run over the tee that keeps its log, an edit over a read, a
 // journal command or a program the table does not know over a read. It is version 4's KIND_ORDER, kept in the table's
 // category_order, the one place Go and Python both read it from.
 var CategoryOrder = shippedCategoryOrder()
@@ -53,7 +53,7 @@ func categoryRank(category string) int {
 	return len(CategoryOrder)
 }
 
-// Union is the classification of commands taken together: the weightiest category, every effect, uncertain when any is,
+// Union is the classification of commands taken together: the heaviest category, every effect, uncertain when any is,
 // and the label of the first command of that category that has one, else of any.
 func Union(classifications []Classification) Classification {
 	if len(classifications) == 0 {
@@ -62,19 +62,19 @@ func Union(classifications []Classification) Classification {
 	category := slices.MinFunc(classifications, func(first, second Classification) int {
 		return cmp.Compare(categoryRank(first.Category), categoryRank(second.Category))
 	}).Category
-	united := Classification{Category: category}
+	combined := Classification{Category: category}
 	var effects []string
 	for _, entry := range classifications {
 		effects = append(effects, entry.Effects...)
-		united.Uncertain = united.Uncertain || entry.Uncertain
+		combined.Uncertain = combined.Uncertain || entry.Uncertain
 	}
-	united.Effects = sortedUnique(effects)
+	combined.Effects = sortedUnique(effects)
 	ordered := append([]Classification{}, classifications...)
 	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Category == category && ordered[j].Category != category })
 	if labelled := slices.IndexFunc(ordered, func(entry Classification) bool { return entry.Label != "" }); labelled >= 0 {
-		united.Label = ordered[labelled].Label
+		combined.Label = ordered[labelled].Label
 	}
-	return united
+	return combined
 }
 
 // withRow is the classification a row gives: a row that names a category replaces the effects, one that names none adds
@@ -110,7 +110,7 @@ func (classification Classification) IsWrite() bool {
 }
 
 func sortedUnique(items []string) []string {
-	retained := unique(items)
-	sort.Strings(retained)
-	return retained
+	uniqueItems := unique(items)
+	sort.Strings(uniqueItems)
+	return uniqueItems
 }

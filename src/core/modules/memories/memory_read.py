@@ -6,6 +6,6 @@ from core.modules.memories.memory import Memory
 
 @dataclass(frozen=True)
 class MemoryRead(Command[Memory]):
-    """Reads one memory whole, kept as a giving to the agent that reads it."""
+    """Reads one memory whole, kept as a delivery to the agent that reads it."""
 
     memory_id: int

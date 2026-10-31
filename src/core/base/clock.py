@@ -4,7 +4,7 @@ from core.base.timestamp import Timestamp
 
 
 class Clock:
-    """Tells the current time; tests replace it with a clock they set by hand."""
+    """Gives the current time; tests replace it with a clock they set by hand."""
 
     def timestamp(self) -> Timestamp:
         return Timestamp(datetime.now(timezone.utc))

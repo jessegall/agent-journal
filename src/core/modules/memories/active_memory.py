@@ -2,17 +2,17 @@ from dataclasses import dataclass
 
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
-from core.modules.memories.views import STANDING_MEMORIES_SELECT
+from core.modules.memories.views import ACTIVE_MEMORIES_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class StandingMemory(ViewModel):
+class ActiveMemory(ViewModel):
     """An active memory above weight 0 with what its type says about giving it."""
 
-    cli_name = "standing-memory"
-    view = "standing_memories"
+    cli_name = "active-memory"
+    view = "active_memories"
     key = "memory_id"
-    select = STANDING_MEMORIES_SELECT
+    select = ACTIVE_MEMORIES_SELECT
 
     memory_id: int
     environment_id: int | None
@@ -22,7 +22,7 @@ class StandingMemory(ViewModel):
     weight: int
     due_at: Timestamp | None
     fades: bool
-    start_giving: bool
-    mark_giving: bool
-    keyword_giving: bool
-    giving_order: int
+    start_delivery: bool
+    mark_delivery: bool
+    keyword_delivery: bool
+    delivery_order: int

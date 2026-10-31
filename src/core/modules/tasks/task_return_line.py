@@ -18,5 +18,5 @@ class TaskReturnLine(DriverRule):
         self.current_tasks = current_tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        current = self.current_tasks.current(hook.agent_id) if hook.regained_control else None
+        current = self.current_tasks.current(hook.agent_id) if hook.control_return else None
         return RuleAnswer.with_lines(f"back to {current.name}") if current is not None else RuleAnswer.allowed()

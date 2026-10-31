@@ -13,14 +13,14 @@ from core.base.timestamp import Timestamp
 from core.modules.memories.conditions.agent_scope import AgentScope
 from core.modules.memories.conditions.due_memory import DueMemory
 from core.modules.memories.context_memory import ContextMemory
-from core.modules.memories.standing_memory import StandingMemory
+from core.modules.memories.active_memory import ActiveMemory
 
 
-class StandingMemoryQuery(Query[StandingMemory]):
+class ActiveMemoryQuery(Query[ActiveMemory]):
     """Reads the memories that stand, with the filters the memory rules, guards and handlers use by name."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
-        super().__init__(database, tables, StandingMemory)
+        super().__init__(database, tables, ActiveMemory)
 
     def scope(self, agent_id: int, environment_id: int) -> Self:
         return self.matching(AgentScope(agent_id, environment_id))
@@ -35,10 +35,10 @@ class StandingMemoryQuery(Query[StandingMemory]):
         return self.filter(fades=True)
 
     def start_memories(self) -> Self:
-        return self.filter(start_giving=True)
+        return self.filter(start_delivery=True)
 
     def mark_memories(self) -> Self:
-        return self.filter(mark_giving=True)
+        return self.filter(mark_delivery=True)
 
     def due(self, timestamp: Timestamp) -> Self:
         return self.matching(DueMemory(timestamp))
@@ -52,11 +52,11 @@ class StandingMemoryQuery(Query[StandingMemory]):
     def among(self, memory_ids: Sequence[int]) -> Self:
         return self.matching(Among("memory_id", memory_ids))
 
-    def heaviest_first(self) -> Self:
+    def weight_order(self) -> Self:
         return self.descending("weight")
 
-    def giving_order(self) -> Self:
-        return self.ordered("giving_order").descending("weight")
+    def delivery_order(self) -> Self:
+        return self.ordered("delivery_order").descending("weight")
 
     def absent_memories(self, agent_id: int) -> Self:
         context_memory_ids = Select(ContextMemory.view).matching(Equal("agent_id", agent_id)).column("memory_id")

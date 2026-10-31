@@ -18,6 +18,6 @@ class MemoryType(Model):
     agent_writable: bool
     fades: bool
     starting_weight: int = 5
-    start_giving: bool = True
-    mark_giving: bool = False
-    keyword_giving: bool = True
+    start_delivery: bool = True
+    mark_delivery: bool = False
+    keyword_delivery: bool = True

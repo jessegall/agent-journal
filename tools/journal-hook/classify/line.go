@@ -7,7 +7,7 @@ import (
 
 // Line reads a shell line into the prepared object's shell line: each command a part with its program, subcommand,
 // arguments, classification and the files it reads and writes, and how it joins the next; the line is named by its
-// weightiest part, as version 4 names it. A line no shell can read has no parts, says why in parse_error and is
+// heaviest part, as version 4 names it. A line no shell can read has no parts, says why in parse_error and is
 // unknown.
 func (classifier *Classifier) Line(line string) event.ShellLine {
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}, Category: unknown}

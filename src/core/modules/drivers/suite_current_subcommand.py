@@ -28,6 +28,6 @@ class SuiteCurrentSubcommand(ReadSubcommand[SuiteRun]):
         environment_id = environments[0].id
         suite = self.choice.suite(environment_id)
         if suite is None:
-            return SuiteRun.unchosen(self.choice.suite_names())
+            return SuiteRun.unset(self.choice.suite_names())
         drivers = [f"{role}: {driver.name}" for role in suite.defaults if (driver := self.choice.driver(environment_id, role)) is not None]
         return SuiteRun(suite.name, ", ".join(drivers))

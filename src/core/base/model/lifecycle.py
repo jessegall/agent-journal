@@ -18,7 +18,7 @@ class Lifecycle:
         return tuple(value for value in vars(cls).values() if isinstance(value, Move))
 
     @classmethod
-    def misnamed_moves(cls) -> list[str]:
+    def attribute_name_mismatches(cls) -> list[str]:
         return [attribute for attribute, value in vars(cls).items() if isinstance(value, Move) and value.name != attribute]
 
     @classmethod

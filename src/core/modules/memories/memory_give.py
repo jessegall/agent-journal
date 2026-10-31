@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.memories.giving_cause import GivingCause
+from core.modules.memories.delivery_cause import DeliveryCause
 
 
 @dataclass(frozen=True)
@@ -10,4 +10,4 @@ class MemoryGive(Command[None]):
 
     agent_id: int
     memory_ids: tuple[int, ...]
-    cause: GivingCause
+    cause: DeliveryCause

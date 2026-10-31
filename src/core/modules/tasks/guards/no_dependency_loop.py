@@ -22,4 +22,4 @@ class NoDependencyLoop(Guard):
             return
         if self.tasks.matching(DependencyChain(dependency.dependency_id)).filter(id=dependency.task_id).exists():
             raise Refusal(f"task {dependency.dependency_id} already waits on task {dependency.task_id}, so this would be a loop",
-                          f"stop that wait first with journal task undepend {dependency.dependency_id} --on {dependency.task_id}")
+                          f"stop that wait first with journal task remove-dependency {dependency.dependency_id} --on {dependency.task_id}")

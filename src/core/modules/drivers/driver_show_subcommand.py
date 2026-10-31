@@ -29,7 +29,7 @@ class DriverShowSubcommand(ReadSubcommand[DriverDescription]):
         rules = sorted(self.registry.rules, key=lambda rule: rule.position)
         standing = [rule.name for rule in rules if rule.is_driver_standing_rule(driver.name)]
         overlays = [f"{rule.name} ({rule.owner})" for rule in rules for overlay in self.registry.driver_overlays(driver.name) if rule.owner == overlay.name]
-        added = [self.label(rule) for rule in rules if not rule.essential and not rule.limit and rule.covers_driver(driver.name, driver.role)]
+        added = [self.label(rule) for rule in rules if not rule.essential and not rule.permanent and rule.covers_driver(driver.name, driver.role)]
         return DriverDescription(driver.name, driver.suite, driver.role, ", ".join(standing), ", ".join(overlays), ", ".join(added))
 
     def label(self, rule: DriverRuleEntry) -> str:

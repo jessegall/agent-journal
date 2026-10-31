@@ -120,7 +120,7 @@ func formClassification(table map[string]json.RawMessage, form generatedForm) (C
 	}
 	for _, level := range levels[categoryLevel:] {
 		expected.Effects = append(expected.Effects, stringsOf(level["effects"])...)
-		expected.Uncertain = expected.Uncertain || truthOf(level["uncertain"])
+		expected.Uncertain = expected.Uncertain || boolOf(level["uncertain"])
 	}
 	modifiers := map[string]json.RawMessage{}
 	for _, level := range append([]map[string]json.RawMessage{row}, levels[1:]...) {
@@ -136,7 +136,7 @@ func formClassification(table map[string]json.RawMessage, form generatedForm) (C
 		} else {
 			expected.Effects = append(expected.Effects, stringsOf(modifier["effects"])...)
 		}
-		expected.Uncertain = expected.Uncertain || truthOf(modifier["uncertain"])
+		expected.Uncertain = expected.Uncertain || boolOf(modifier["uncertain"])
 	}
 	expected.Effects = sortedUnique(expected.Effects)
 	return expected, false

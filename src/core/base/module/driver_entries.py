@@ -14,7 +14,7 @@ DRIVERS_MODULE = "journal.core.drivers"
 
 class DriverEntries:
     """The registry entries of the modules' suites, drivers, overlays and driver rules, in sync order: per module,
-    each driver's limits and rules, each overlay's rules, then the rules the module adds."""
+    each driver's permanent rules and rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), dict(suite.defaults), suite.complete_control, tuple(suite.included_overlays),
@@ -34,13 +34,13 @@ class DriverEntries:
         declared: list[DriverRuleEntry] = []
         for module in modules:
             for driver in module.drivers:
-                declared += [self.entry(rule, driver.name, limit=True) for rule in driver.limits]
+                declared += [self.entry(rule, driver.name, permanent=True) for rule in driver.permanent_rules]
                 declared += [self.entry(rule, driver.name) for rule in driver.rules]
             for overlay in module.overlays:
                 declared += [self.entry(rule, overlay.name) for rule in overlay.rules]
             declared += [self.entry(rule, module.name, essential=rule.essential and module.name == DRIVERS_MODULE) for rule in module.driver_rules]
         return tuple(replace(entry, position=position) for position, entry in enumerate(declared, 1))
 
-    def entry(self, rule: type[DriverRule], owner: str, limit: bool = False, essential: bool = False) -> DriverRuleEntry:
-        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), limit, essential, rule.history,
+    def entry(self, rule: type[DriverRule], owner: str, permanent: bool = False, essential: bool = False) -> DriverRuleEntry:
+        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), permanent, essential, rule.history,
                                rule.essential)

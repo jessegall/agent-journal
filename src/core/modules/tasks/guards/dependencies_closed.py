@@ -19,4 +19,4 @@ class DependenciesClosed(Guard):
         waiting = self.queries.query(OpenDependency).filter(task_id=change.row.id).ordered("dependency_id").page(1, 1).rows
         if waiting:
             raise Refusal(f"task {change.row.id} waits on open task {waiting[0].dependency_id}",
-                          f"finish task {waiting[0].dependency_id} first, or stop waiting with journal task undepend {change.row.id} --on {waiting[0].dependency_id}")
+                          f"finish task {waiting[0].dependency_id} first, or stop waiting with journal task remove-dependency {change.row.id} --on {waiting[0].dependency_id}")

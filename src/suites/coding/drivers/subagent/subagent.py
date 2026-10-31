@@ -1,5 +1,5 @@
 from core.base.driver.driver import Driver
-from suites.coding.drivers.subagent.limits.subagent_write_limit import SubagentWriteLimit
+from suites.coding.drivers.subagent.rules.subagent_write_rule import SubagentWriteRule
 
 
 class Subagent(Driver):
@@ -8,4 +8,4 @@ class Subagent(Driver):
     name = "coding.subagent"
     suite = "coding"
     role = "subagent"
-    limits = [SubagentWriteLimit]
+    permanent_rules = [SubagentWriteRule]

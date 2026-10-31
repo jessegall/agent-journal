@@ -28,18 +28,18 @@ def test_a_bound_journal_home_is_handed_out_as_bound(tmp_path):
     assert container.get(JournalHome).error_log == tmp_path / "runtime" / "errors.log"
 
 
-class Clockwork:
+class Motor:
     pass
 
 
-class Tower:
-    def __init__(self, clockwork: Clockwork, floors: int = 3) -> None:
-        self.clockwork, self.floors = clockwork, floors
+class Pump:
+    def __init__(self, motor: Motor, litres_per_minute: int = 3) -> None:
+        self.motor, self.litres_per_minute = motor, litres_per_minute
 
 
-class Bell:
-    def __init__(self, tower: Tower) -> None:
-        self.tower = tower
+class Fountain:
+    def __init__(self, pump: Pump) -> None:
+        self.pump = pump
 
 
 class UntypedParameter:
@@ -49,20 +49,20 @@ class UntypedParameter:
 
 def test_each_class_is_built_once_with_what_its_constructor_asks_for():
     container = Container()
-    bell = container.get(Bell)
-    assert bell.tower is container.get(Tower)
-    assert bell.tower.clockwork is container.get(Clockwork)
+    bell = container.get(Fountain)
+    assert bell.pump is container.get(Pump)
+    assert bell.pump.motor is container.get(Motor)
 
 
 def test_a_parameter_with_a_default_is_left_to_its_default():
-    assert Container().get(Tower).floors == 3
+    assert Container().get(Pump).litres_per_minute == 3
 
 
 def test_a_bound_value_is_given_instead_of_built():
     container = Container()
-    clockwork = Clockwork()
-    container.bind(Clockwork, clockwork)
-    assert container.get(Tower).clockwork is clockwork
+    motor = Motor()
+    container.bind(Motor, motor)
+    assert container.get(Pump).motor is motor
 
 
 def test_the_container_gives_itself():
@@ -77,6 +77,6 @@ def test_a_parameter_without_a_type_is_a_clear_fault():
 
 def test_a_value_bound_for_a_class_must_be_one_of_it():
     container = Container()
-    container.instances[Clockwork] = "not a clockwork"
-    with pytest.raises(WrongInstanceError, match="Clockwork"):
-        container.get(Clockwork)
+    container.instances[Motor] = "not a motor"
+    with pytest.raises(WrongInstanceError, match="Motor"):
+        container.get(Motor)

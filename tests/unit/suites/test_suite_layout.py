@@ -13,7 +13,7 @@ def driver_folder_problems() -> list[str]:
             folder = module.folder() / "drivers" / driver.name.split(".", 1)[1].replace("-", "_")
             if Path(inspect.getfile(driver)).resolve() != folder / f"{folder.name}.py":
                 problems.append(f"{driver.name} is not in {folder.relative_to(SUITES_FOLDER)}/{folder.name}.py")
-            parts = [("rules", driver.rules), ("limits", driver.limits), ("guards", driver.guards)]
+            parts = [("rules", driver.rules), ("rules", driver.permanent_rules), ("guards", driver.guards)]
             problems += [f"{part.__name__} of {driver.name} is not in {folder.relative_to(SUITES_FOLDER)}/{part_folder}"
                          for part_folder, declared in parts for part in declared if Path(inspect.getfile(part)).resolve().parent != folder / part_folder]
     return problems

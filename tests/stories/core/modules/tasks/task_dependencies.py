@@ -10,8 +10,8 @@ def three_tasks(new_story):
 def test_a_task_waits_on_another_and_stops_waiting(new_story):
     story = three_tasks(new_story)
     story.expect_success(lines.FIRST_TASK_DEPENDENCY, "task_id: 1", "dependency_id: 2")
-    story.expect_success("task undepend 1 --on 2", "the dependency is removed")
-    story.expect_refusal("task undepend 1 --on 2", "task 1 does not wait on task 2")
+    story.expect_success("task remove-dependency 1 --on 2", "the dependency is removed")
+    story.expect_refusal("task remove-dependency 1 --on 2", "task 1 does not wait on task 2")
 
 
 def test_a_task_cannot_wait_on_itself(new_story):

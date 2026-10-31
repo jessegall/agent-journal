@@ -3,7 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
 
 
-class SubagentWriteLimit(DriverRule):
+class SubagentWriteRule(DriverRule):
     """A subagent reads and searches only: an edit, a write or a shell line that writes files is refused, under
     every overlay."""
 

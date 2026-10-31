@@ -57,7 +57,7 @@ class Builder(Driver):
     name = "coding.builder"
     suite = "coding"
     role = "main"
-    limits = [NoGit]
+    permanent_rules = [NoGit]
     rules = [StopThrough]
 
 
@@ -124,7 +124,7 @@ def test_a_rule_a_driver_lists_may_not_name_patterns_and_a_rule_a_module_adds_mu
 
 def test_the_entries_keep_sync_order_limits_and_rules_then_overlay_rules_then_added_rules():
     entries = DriverEntries().rules([module("coding", suites=[Coding], drivers=[Builder], overlays=[Wait], driver_rules=[AnyMain])])
-    assert [(entry.name, entry.owner, entry.limit, entry.position) for entry in entries] == [
+    assert [(entry.name, entry.owner, entry.permanent, entry.position) for entry in entries] == [
         ("coding.no-git", "coding.builder", True, 1), ("coding.carry-on", "coding.builder", False, 2), ("coding.carry-on", "waits.wait", False, 3),
         ("safety.any-main", "coding", False, 4)]
 

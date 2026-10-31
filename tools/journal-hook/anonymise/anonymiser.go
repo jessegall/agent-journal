@@ -91,7 +91,7 @@ func (anonymiser Anonymiser) Replaced(text string) string {
 // on from the next character.
 func (secret rule) apply(text string) string {
 	var replaced []byte
-	retained, searchStart := 0, 0
+	copyStart, searchStart := 0, 0
 	for searchStart <= len(text) {
 		span := secret.pattern.FindStringSubmatchIndex(text[searchStart:])
 		if span == nil {
@@ -114,11 +114,11 @@ func (secret rule) apply(text string) string {
 			searchStart = start + max(size, 1)
 			continue
 		}
-		replaced = append(replaced, text[retained:start]...)
+		replaced = append(replaced, text[copyStart:start]...)
 		replaced = secret.pattern.ExpandString(replaced, secret.template, text, span)
-		retained, searchStart = end, end
+		copyStart, searchStart = end, end
 	}
-	return string(append(replaced, text[retained:]...))
+	return string(append(replaced, text[copyStart:]...))
 }
 
 // A long run counts as a key only when it holds a lowercase letter, an uppercase letter and a digit.

@@ -59,7 +59,7 @@ class EditLockEnd(MoveCommand[EditLock]):
 
 
 @dataclass(frozen=True)
-class EditLockReopening(MoveCommand[EditLock]):
+class EditLockReopen(MoveCommand[EditLock]):
     move = EditLockLifecycle.reopening
 
 
@@ -81,7 +81,7 @@ class StopLine(DriverRule):
         return RuleAnswer.with_lines("the lead stops here")
 
 
-class RemovalLimit(DriverRule):
+class RemovalRule(DriverRule):
     """The lead removes no folder with rm -rf."""
 
     name = "samples.removal-limit"
@@ -115,7 +115,7 @@ class ReturnLine(DriverRule):
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("you are back at your own work") if hook.regained_control else RuleAnswer.allowed()
+        return RuleAnswer.with_lines("you are back at your own work") if hook.control_return else RuleAnswer.allowed()
 
 
 class FailingRule(DriverRule):
@@ -138,7 +138,7 @@ class EssentialClaim(DriverRule):
     essential = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("the sample rule speaks first")
+        return RuleAnswer.with_lines("the sample rule answers first")
 
 
 class LockRelease(DriverRule):
@@ -181,7 +181,7 @@ class ReopeningClaim(DriverRule):
     hook = "compact"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(EditLockReopening(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
+        return RuleAnswer.allowed().running(EditLockReopen(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
 
 
 class EditLockOverlay(Overlay):
@@ -222,7 +222,7 @@ class Lead(Driver):
     name = LEAD
     suite = "samples"
     role = "main"
-    limits = [RemovalLimit]
+    permanent_rules = [RemovalRule]
     rules = [StopLine, StopRefusal]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
@@ -250,7 +250,7 @@ class SamplesModule(Module):
     name = "samples"
     requires_core = ">=5.0,<6"
     dependencies = ["journal.core.agents", "journal.core.drivers"]
-    models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopening])]
+    models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]
     migrations = [EditLocksTable]
     guards = [LeadLockGuard]
     suites = [SampleSuite, ControlSuite]

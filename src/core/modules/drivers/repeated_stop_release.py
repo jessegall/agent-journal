@@ -20,6 +20,6 @@ class RepeatedStopRelease(DriverRule):
         self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.calls.refused_stop_streak(hook.agent_id) < STOP_REFUSAL_COUNT:
+        if self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT:
             return RuleAnswer.allowed()
         return RuleAnswer.final_allowance("your stop was refused five times in a row: report what held it with journal report create")

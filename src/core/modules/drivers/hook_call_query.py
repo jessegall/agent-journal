@@ -22,7 +22,7 @@ class HookCallQuery(Query[HookCall]):
     def agent(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
 
-    def refused_stop_streak(self, agent_id: int) -> int:
+    def stop_refusal_count(self, agent_id: int) -> int:
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().page(1, STOPS_READ).rows
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)

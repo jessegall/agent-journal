@@ -16,9 +16,10 @@ from core.modules.environments.environment import Environment
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, or by the subagent the hook
-    names, starts the main agent at its session's first hook and a subagent at its first, gives back the
-    stored answer of a hook sent twice, and lets through, unkept, a hook from no agent it knows."""
+    """Answers a hook as the agent that sent it: finds its open agent by session, or by the subagent the
+    hook names, starts the main agent at its session's first hook and a subagent at its first, gives
+    back the stored answer of a hook sent twice, and lets through, without a record, a hook from an
+    agent it does not know."""
 
     def __init__(self, bus: Bus, queries: Queries) -> None:
         self.bus, self.queries = bus, queries
