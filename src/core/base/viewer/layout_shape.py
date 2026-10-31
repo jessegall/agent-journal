@@ -15,6 +15,12 @@ def split(direction: str, share: float, first: LayoutShape, second: LayoutShape)
     return LayoutSplit(direction, share, first, second)
 
 
+def layout_windows(shape: LayoutShape) -> tuple[str, ...]:
+    if isinstance(shape, LayoutTabs):
+        return shape.windows
+    return layout_windows(shape.first) + layout_windows(shape.second)
+
+
 def stored_layout(shape: LayoutShape) -> object:
     return asdict(shape)
 

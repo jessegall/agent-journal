@@ -1,6 +1,8 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.toggle_option import ToggleOption
+from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from suites.coding.drivers.builder.builder_driver import BuilderDriver
@@ -30,8 +32,8 @@ class CodingModule(Module):
     migrations = [FileEditsTableMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule]
-    windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
+    windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
-               WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, reads=[*FILE_EDIT_READS, "agent list"],
+               WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),
-               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT)]
+               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, place=WindowPlace.AGENT)]

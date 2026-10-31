@@ -123,6 +123,11 @@ class Story:
         for expected_line in expected_lines:
             assert expected_line in outcome.output_text.splitlines(), f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
 
+    def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        outcome = self.run(line, actor)
+        places = [outcome.output_text.find(text) for text in texts]
+        assert outcome.code == 0 and -1 not in places and places == sorted(places), f"{line} did not name {texts} in order: {outcome.output_text}"
+
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"

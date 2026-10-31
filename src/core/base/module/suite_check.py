@@ -5,15 +5,18 @@ from core.base.driver.suite import Suite
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry
+from core.base.viewer.layout_shape import layout_windows
 
 
 class SuiteCheck:
     """Checks the suites, drivers and driver rules before a sync writes: names, requirements, suites reached
-    through dependencies, defaults that fit their role and suite, and who owns each rule."""
+    through dependencies, defaults that fit their role and suite, presets that show only the suite's windows under keys of their own,
+    and who owns each rule."""
 
     def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)
-                + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules) + self.rule_owners(modules, rules) + self.unknown_hooks(rules))
+                + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules) + self.preset_problems(modules) + self.rule_owners(modules, rules)
+                + self.unknown_hooks(rules))
 
     def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:
         return {suite.name: module.name for module in modules for suite in module.suites}
@@ -67,6 +70,18 @@ class SuiteCheck:
             yield f"suite {suite.name} gives role {role} driver {driver}, of a suite it does not require"
         elif driver in roles and roles[driver] != role:
             yield f"suite {suite.name} gives role {role} driver {driver}, which drives role {roles[driver]}"
+
+    def preset_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+        suites = {suite.name: suite for module in modules for suite in module.suites}
+        problems: list[str] = []
+        for suite in suites.values():
+            offered = {window for name in (suite.name, *suite.requires) if name in suites for window in suites[name].windows}
+            for page, presets in suite.presets.items():
+                keys = [preset.key for preset in presets]
+                problems += [f"suite {suite.name} offers two presets keyed {key} for {page}" for key in dict.fromkeys(keys) if keys.count(key) > 1]
+                problems += [f"suite {suite.name}'s preset {preset.key} for {page} shows {window}, which the suite does not offer"
+                             for preset in presets for window in dict.fromkeys(layout_windows(preset.shape)) if window not in offered]
+        return tuple(problems)
 
     def rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         module_names = {module.name for module in modules}

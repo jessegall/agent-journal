@@ -2,16 +2,23 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.registry_lines import RegistryLines
+from core.base.viewer.toggle_option import ToggleOption
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
+
+DEFAULT_FLOAT_SIZE = WindowSize(400, 340)
 
 
 @dataclass(frozen=True)
 class WindowDeclaration:
     """A window a module adds to the viewer: its name and title, the file the viewer loads from the module's
     web folder and how, where it belongs and for which agent roles, the window kit versions it was built for,
-    the read lines and commands it may run, and the events it follows."""
+    the read lines and commands it may run, the events it follows, its icon, the size it floats at, the
+    options of its pane menu and the read line its tab counts with."""
 
     name: str
     title: str
@@ -23,6 +30,10 @@ class WindowDeclaration:
     reads: Sequence[str] = ()
     runs: Sequence[str] = ()
     events: Sequence[str] = ()
+    icon: WindowIcon = WindowIcon.WINDOW
+    float_size: WindowSize = DEFAULT_FLOAT_SIZE
+    options: Sequence[ToggleOption | ChoiceOption] = ()
+    count: str = ""
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         short_name = module_name.rsplit(".", 1)[-1]
@@ -32,6 +43,16 @@ class WindowDeclaration:
         problems += [f"{self.name} reads {line}, which is no read subcommand" for line in self.reads if line not in provided.reads]
         problems += [f"{self.name} runs {line}, which is no command" for line in self.runs if line not in provided.runs]
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
+        keys = [option.key for option in self.options]
+        problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
+        if self.icon not in tuple(WindowIcon):
+            problems.append(f"{self.name} shows the icon {self.icon}, which is not in the shell's icon set")
+        problems += [f"{self.name} starts its option {option.key} at {option.default}, which is none of its choices" for option in self.options
+                     if isinstance(option, ChoiceOption) and option.default not in (value for value, _ in option.choices)]
+        if self.float_size.width <= 0 or self.float_size.height <= 0:
+            problems.append(f"{self.name} floats at {self.float_size.width} by {self.float_size.height}, and a size is above 0")
+        if self.count and self.count not in self.reads:
+            problems.append(f"{self.name} counts with {self.count}, which is not one of its reads")
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}
         problems += [f"{self.name} follows {pattern} but reads no {pattern.split('.', 1)[0]}" for pattern in self.events
                      if provided.matches(pattern) and pattern.split(".", 1)[0] not in read_models]

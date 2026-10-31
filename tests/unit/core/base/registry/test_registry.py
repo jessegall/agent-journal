@@ -87,3 +87,18 @@ def test_a_class_named_by_its_path_is_imported_only_when_asked_for(database):
     assert DottedPath(SAMPLE).loaded().__name__ == "SampleGuard"
     with pytest.raises(DottedPathError):
         DottedPath("tests.unit.core.base.samples.registry_sample:Nothing").loaded()
+
+
+def test_a_window_and_a_suite_saved_before_icons_options_counts_and_presets_read_with_their_defaults(tmp_path):
+    opened = Database.opened(JournalHome(tmp_path))
+    Schema(opened, Tables()).migrate([CORE_MIGRATIONS])
+    window = {"name": "notes.board", "module": "notes", "title": "Board", "entry": "board.html", "loading": "frame", "place": "environment", "roles": [],
+              "reads": [], "runs": [], "events": [], "shipped": False, "unavailable_reason": ""}
+    suite = {"name": "notes", "module": "notes", "requires": [], "defaults": {}, "complete_control": False, "included_overlays": [], "windows": ["notes.board"]}
+    entries = {**ENTRIES, "windows": [window], "suites": [suite]}
+    opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", [json.dumps(entries)]))
+    registry = Registry.read(opened)
+    opened.close()
+    read_window = registry.windows[0]
+    assert (read_window.icon, read_window.float_width, read_window.float_height, read_window.options, read_window.count, registry.suites[0].presets) == (
+        "window", 400, 340, (), "", {})

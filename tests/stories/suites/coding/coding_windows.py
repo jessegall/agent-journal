@@ -41,3 +41,14 @@ def test_the_coding_suite_gives_the_orchestrator_its_own_home_layout_and_every_o
 
 def test_a_page_the_coding_suite_lays_out_nothing_for_is_refused(new_story):
     new_story(fixture=CodingEnvironment).expect_refusal("suite layout main settings", "no suite layout for the page settings in main")
+
+
+def test_the_coding_suite_offers_version_4s_home_presets_in_their_order(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_ordered_lines("suite presets main home", "default  Default", "developer  Developer", "chat  Chat only", "terminal  Terminal",
+                               "review  Review", "monitor  Monitor", "inbox  Inbox", "agents  Agents")
+
+
+def test_the_coding_suite_offers_version_4s_agent_page_presets_in_their_order(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_ordered_lines("suite presets main agent", "default  Default", "chat  Chat only", "terminal  Terminal", "file-edits  File edits")

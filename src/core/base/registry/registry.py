@@ -17,6 +17,9 @@ from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.registry.window_entry import WindowEntry
+from core.base.viewer.layout_preset import LayoutPreset
+from core.base.viewer.window_declaration import DEFAULT_FLOAT_SIZE
+from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.layout_shape import loaded_layout, stored_layout
 
 
@@ -61,13 +64,17 @@ class Registry:
                                         rule["permanent"], rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
                         for rule in entries.get("rules", [])),
             suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
-                                    tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()})
+                                    tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()},
+                                    {page: tuple(LayoutPreset(preset["key"], preset["name"], preset["text"], loaded_layout(preset["shape"])) for preset in presets)
+                                     for page, presets in suite.get("presets", {}).items()})
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
-                                      tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"])
+                                      tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
+                                      window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""))
                           for window in entries.get("windows", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
@@ -89,12 +96,15 @@ class Registry:
                        "claims_essential": rule.claims_essential} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
-                        "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()}} for suite in self.suites],
+                        "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()},
+                        "presets": {page: [{"key": preset.key, "name": preset.name, "text": preset.text, "shape": stored_layout(preset.shape)} for preset in presets]
+                                    for page, presets in suite.presets.items()}} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
                          "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
-                         "shipped": window.shipped, "unavailable_reason": window.unavailable_reason} for window in self.windows],
+                         "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
+                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count} for window in self.windows],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)

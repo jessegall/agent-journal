@@ -3,7 +3,13 @@ from core.base.driver.suite import Suite
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.module.module import Module
+from core.base.viewer.layout_preset import LayoutPreset
+from core.base.viewer.layout_shape import split, tabs
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.choice_option import ChoiceOption
+from core.base.viewer.toggle_option import ToggleOption
+from core.base.viewer.window_size import WindowSize
 from core.base.viewer.window_loading import WindowLoading
 
 NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
@@ -26,7 +32,9 @@ class NotesSuite(Suite):
     """A sample suite that offers the notes board."""
 
     name = "notes"
-    windows = ["notes.board", "notes.summary"]
+    windows = ["notes.board", "notes.summary", "notes.planner"]
+    presets = {"home": [LayoutPreset("board", "Board", "The notes board alone", tabs("notes.board")),
+                        LayoutPreset("both", "Both", "Board and summary", split("row", 0.5, tabs("notes.board"), tabs("notes.summary")))]}
 
 
 class NotesModule(Module):
@@ -38,7 +46,10 @@ class NotesModule(Module):
     guards = [NotesStartCheck]
     suites = [NotesSuite]
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"]),
-               WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"])]
+               WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"]),
+               WindowDeclaration("notes.planner", "Notes planner", "board.html", WindowLoading.FRAME, reads=["task list"], icon=WindowIcon.PLAN,
+                                 float_size=WindowSize(440, 380), count="task list",
+                                 options=[ToggleOption("flush", "Flush"), ChoiceOption("range", "Range", (("week", "Week"), ("month", "Month")), "week")])]
 
 
 class WiderNotesModule(NotesModule):

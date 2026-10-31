@@ -47,3 +47,13 @@ def test_a_frame_loads_its_own_files_and_the_bridge_without_the_session_cookie_f
         story.expect_viewer_headers("/modules/notes/board.html", "", {"Content-Type": "text/html", "Access-Control-Allow-Origin": "*"})
         story.expect_viewer_headers("/viewer/kit/frame-bridge.js", "", {"Content-Type": "text/javascript", "Access-Control-Allow-Origin": "*"})
         story.expect_viewer_status("/viewer/", 401)
+
+
+def test_the_windows_on_offer_carry_their_icon_float_size_options_and_count(new_story):
+    with server_story(new_story(NOTES, fixture=UserJoined)) as story:
+        story.story.run("suite choose notes --environment main")
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        for text in ('"icon": "plan"', '"float_width": 440, "float_height": 380', '"count": "task list"',
+                     '{"control": "toggle", "default": false, "key": "flush", "label": "Flush"}',
+                     '{"choices": [["week", "Week"], ["month", "Month"]], "control": "choice", "default": "week", "key": "range", "label": "Range"}'):
+            story.expect_viewer_status("/api/windows?environment=main", 200, cookie, text=text)

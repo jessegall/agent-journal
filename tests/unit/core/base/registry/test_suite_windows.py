@@ -9,11 +9,11 @@ ORCHESTRATOR_HOME = split("row", 0.5, tabs("notes.board"), tabs("notes.list"))
 
 
 def window(name: str, unavailable_reason: str = "") -> WindowEntry:
-    return WindowEntry(name, "notes", name, "board.html", "frame", "environment", (), (), (), (), False, unavailable_reason)
+    return WindowEntry(name, "notes", name, "board.html", "frame", "environment", (), (), (), (), False, unavailable_reason, "window", 400, 340, (), "")
 
 
 def suite(name: str, windows: tuple[str, ...], requires: tuple[str, ...] = (), layouts: dict[str, LayoutShape] | None = None) -> SuiteEntry:
-    return SuiteEntry(name, "notes", requires, {}, False, (), windows, dict(layouts or {}))
+    return SuiteEntry(name, "notes", requires, {}, False, (), windows, dict(layouts or {}), {})
 
 
 REGISTRY = Registry("", {}, {}, {}, (), (),

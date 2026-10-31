@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
 
@@ -6,7 +6,8 @@ from dataclasses import dataclass
 class WindowEntry:
     """A registered window: its name, the module that declares it, its title, entry file, loading and place,
     the agent roles it is for, the read lines, commands and events it may use, whether the journal ships its
-    module, and why it is unavailable when its kit does not fit this viewer (empty when it does)."""
+    module, why it is unavailable when its kit does not fit this viewer (empty when it does), and its icon,
+    float size, pane menu options and count line."""
 
     name: str
     module: str
@@ -20,3 +21,8 @@ class WindowEntry:
     events: Sequence[str]
     shipped: bool
     unavailable_reason: str
+    icon: str
+    float_width: int
+    float_height: int
+    options: Sequence[Mapping[str, object]]
+    count: str

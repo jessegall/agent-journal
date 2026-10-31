@@ -18,7 +18,7 @@ class DriverEntries:
 
     def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
         return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {role.value: driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
-                                      tuple(suite.windows), dict(suite.layouts))
+                                      tuple(suite.windows), dict(suite.layouts), {page: tuple(presets) for page, presets in suite.presets.items()})
                      for module in modules for suite in module.suites)
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:

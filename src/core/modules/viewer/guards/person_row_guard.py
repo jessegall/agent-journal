@@ -5,15 +5,16 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
+from core.modules.viewer.models.person_preset import PersonPreset
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
 
 
 class PersonRowGuard(Guard):
-    """Refuses a viewer row of a person's own, a layout or a window permission, written by anyone but the person
-    it is for; each subclass names its model and its refusal."""
+    """Refuses a viewer row of a person's own, a layout, a person's preset or a window permission, written by
+    anyone but the person it is for; each subclass names its model and its refusal."""
 
-    model: ClassVar[type[ViewerLayout] | type[WindowPermission]]
+    model: ClassVar[type[ViewerLayout] | type[PersonPreset] | type[WindowPermission]]
     refusal: ClassVar[Refusal]
 
     def check(self, change: Change[Model]) -> None:

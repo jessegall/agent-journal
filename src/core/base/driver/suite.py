@@ -1,6 +1,7 @@
 from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
+from core.base.viewer.layout_preset import LayoutPreset
 from core.base.viewer.layout_shape import LayoutShape
 from core.base.agent_role import AgentRole
 
@@ -8,8 +9,8 @@ from core.base.agent_role import AgentRole
 class Suite:
     """The base of every suite: a swappable set of drivers above the core, with the suites it requires, a
     default driver per role, whether it takes complete control, the other modules' overlays it then includes,
-    the viewer windows its environments show, and the default layout of each viewer page, per driver where one
-    is named."""
+    the viewer windows its environments show, the default layout of each viewer page, per driver where one
+    is named, and the layouts it offers per page in the picker."""
 
     name: ClassVar[str]
     requires: ClassVar[Sequence[str]] = []
@@ -18,3 +19,4 @@ class Suite:
     included_overlays: ClassVar[Sequence[str]] = []
     windows: ClassVar[Sequence[str]] = []
     layouts: ClassVar[Mapping[str, LayoutShape]] = {}
+    presets: ClassVar[Mapping[str, Sequence[LayoutPreset]]] = {}

@@ -1039,6 +1039,7 @@
         "coding.terminal"
     ],
     "command_verbs": [
+        "Rename",
         "Bind",
         "Allow",
         "Block",

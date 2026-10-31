@@ -30,6 +30,34 @@ def test_a_window_following_events_of_a_model_it_does_not_read_is_refused_at_syn
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UncoveredEventModule", "uncovered.board follows plan.* but reads no plan")
 
 
+def test_a_window_naming_one_option_key_twice_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:TwiceOptionModule", "options.board names the option flush twice")
+
+
+def test_a_window_counting_with_a_line_it_does_not_read_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UnreadCountModule", "counts.board counts with plan list, which is not one of its reads")
+
+
+def test_a_window_showing_an_icon_outside_the_shells_set_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UnknownIconModule", "icons.board shows the icon rocket, which is not in the shell's icon set")
+
+
+def test_a_choice_option_starting_outside_its_choices_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:OutsideChoiceModule", "choices.board starts its option range at year, which is none of its choices")
+
+
+def test_a_window_floating_at_no_size_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:FlatFloatModule", "floats.board floats at 0 by 300, and a size is above 0")
+
+
+def test_a_suite_preset_showing_a_window_the_suite_does_not_offer_is_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetModule", "suite presets's preset chat for home shows messages.chat, which the suite does not offer")
+
+
+def test_two_presets_of_a_page_under_one_key_are_refused_at_sync(new_story):
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:ForeignPresetModule", "suite presets offers two presets keyed board for home")
+
+
 def test_a_page_window_of_a_module_the_journal_does_not_ship_is_recorded_for_the_people_who_trust_it(new_story):
     story = new_story(fixture=MainEnvironment)
     story.expect_sync_success(f"{PATH}:PageWindowModule")

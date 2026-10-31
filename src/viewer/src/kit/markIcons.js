@@ -71,4 +71,5 @@ export const MARK_ICONS = {
     file: '<path d="M4.5 2.5h4.5l2.5 2.5v8.5h-7z"/>',
     hash: '<line x1="6" y1="3" x2="5" y2="13"/><line x1="11" y1="3" x2="10" y2="13"/><line x1="3" y1="6.5" x2="13" y2="6.5"/><line x1="3" y1="10" x2="13" y2="10"/>',
     dot: '<circle class="f" cx="8" cy="8" r="2.5"/>',
+    window: '<rect x="2.5" y="3" width="11" height="10" rx="1.5"/><line x1="2.5" y1="6" x2="13.5" y2="6"/>',
 };

@@ -5,6 +5,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
@@ -36,6 +37,7 @@ from core.modules.drivers.commands.choose_suite_subcommand import ChooseSuiteSub
 from core.modules.drivers.commands.suite_current_subcommand import SuiteCurrentSubcommand
 from core.modules.drivers.commands.suite_show_subcommand import SuiteShowSubcommand
 from core.modules.drivers.commands.suite_layout_subcommand import SuiteLayoutSubcommand
+from core.modules.drivers.commands.suite_presets_subcommand import SuitePresetsSubcommand
 from core.modules.drivers.bindings.table_hook_history import TableHookHistory
 
 
@@ -49,12 +51,12 @@ class DriversModule(Module):
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTablesMigration]
     handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
     driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
-    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
+    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,
                                  reads=["hook-call list", "hook-call show"], events=["hook_call.create"])]

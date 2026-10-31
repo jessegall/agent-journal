@@ -3,6 +3,16 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.viewer.migrations.m001_viewer import ViewerTablesMigration
+from core.modules.viewer.migrations.m002_person_presets import PersonPresetsMigration
+from core.modules.viewer.commands.person_preset_list_subcommand import PersonPresetListSubcommand
+from core.modules.viewer.commands.remove_person_preset_handler import RemovePersonPresetHandler
+from core.modules.viewer.commands.remove_person_preset_subcommand import RemovePersonPresetSubcommand
+from core.modules.viewer.commands.rename_person_preset_handler import RenamePersonPresetHandler
+from core.modules.viewer.commands.rename_person_preset_subcommand import RenamePersonPresetSubcommand
+from core.modules.viewer.commands.save_person_preset_handler import SavePersonPresetHandler
+from core.modules.viewer.commands.save_person_preset_subcommand import SavePersonPresetSubcommand
+from core.modules.viewer.guards.person_preset_owner_guard import PersonPresetOwnerGuard
+from core.modules.viewer.models.person_preset import PersonPreset
 from core.modules.viewer.guards.permission_owner_guard import PermissionOwnerGuard
 from core.modules.viewer.guards.layout_owner_guard import LayoutOwnerGuard
 from core.modules.viewer.listeners.permission_pruner_listener import PermissionPrunerListener
@@ -33,11 +43,11 @@ class ViewerModule(Module):
     name = "journal.core.viewer"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
-    models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
-    migrations = [ViewerTablesMigration]
-    handlers = [SaveViewerLayoutHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]
-    subcommands = [SaveViewerLayoutSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,
+    models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
+    migrations = [ViewerTablesMigration, PersonPresetsMigration]
+    handlers = [SaveViewerLayoutHandler, SavePersonPresetHandler, RenamePersonPresetHandler, RemovePersonPresetHandler, AllowWindowHandler, TrustWindowHandler, PruneWindowPermissionsHandler, SaveWindowSettingHandler]
+    subcommands = [SaveViewerLayoutSubcommand, SavePersonPresetSubcommand, RenamePersonPresetSubcommand, RemovePersonPresetSubcommand, PersonPresetListSubcommand, ViewerLayoutCurrentSubcommand, AllowWindowSubcommand, TrustWindowSubcommand, WindowPermissionsSubcommand,
                    SaveWindowSettingSubcommand, WindowSettingSubcommand]
-    guards = [PermissionOwnerGuard, LayoutOwnerGuard]
+    guards = [PermissionOwnerGuard, LayoutOwnerGuard, PersonPresetOwnerGuard]
     listeners = [PermissionPrunerListener]
     windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, reads=SHELL_READS, runs=SHELL_RUNS)]
