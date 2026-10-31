@@ -4,8 +4,8 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.giving_cause import GivingCause
 from core.modules.memories.memory_give import MemoryGive
 from core.modules.memories.memory_lines import MemoryLines
+from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_remove import MemoryRemove
-from core.modules.memories.standing_memory_query import StandingMemoryQuery
 
 DUE_REASON = "given at its due time"
 
@@ -19,11 +19,11 @@ class GiveWhenDue(DriverRule):
     drivers = ["*"]
     roles = ["main", "worker"]
 
-    def __init__(self, standing: StandingMemoryQuery) -> None:
-        self.standing = standing
+    def __init__(self, memories: HookMemories) -> None:
+        self.memories = memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        memories = list(self.standing.scope(hook.agent_id, hook.environment_id).due(hook.timestamp).giving_order().all_rows())
+        memories = list(self.memories.query(hook).due(hook.timestamp).giving_order().all_rows())
         if not memories:
             return RuleAnswer.allowed()
         removals = (MemoryRemove(row.memory_id, DUE_REASON) for row in memories)

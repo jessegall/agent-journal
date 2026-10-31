@@ -2,9 +2,9 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.memory_lines import MemoryLines
+from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_mark_open import MemoryMarkOpen
 from core.modules.memories.memory_marks import DEFAULT_MARKS, MemoryMarks
-from core.modules.memories.standing_memory_query import StandingMemoryQuery
 from core.modules.settings.setting_values import SettingValues
 
 MARKS_SETTING = "memories.marks"
@@ -19,8 +19,8 @@ class OpenMark(DriverRule):
     drivers = ["*"]
     roles = ["main", "worker"]
 
-    def __init__(self, marks: MemoryMarks, standing: StandingMemoryQuery, settings: SettingValues) -> None:
-        self.marks, self.standing, self.settings = marks, standing, settings
+    def __init__(self, marks: MemoryMarks, settings: SettingValues, memories: HookMemories) -> None:
+        self.marks, self.settings, self.memories = marks, settings, memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         percent = hook.event.context_percent
@@ -29,5 +29,5 @@ class OpenMark(DriverRule):
         reached = self.marks.next_reached(hook.agent_id, percent, self.settings.numbers(MARKS_SETTING, hook.environment_id, DEFAULT_MARKS))
         if reached is None:
             return RuleAnswer.allowed()
-        memories = list(self.standing.scope(hook.agent_id, hook.environment_id).mark_memories().heaviest_first().all_rows())
+        memories = list(self.memories.query(hook).mark_memories().heaviest_first().all_rows())
         return RuleAnswer.with_lines(*MemoryLines.weigh(reached, memories)).running(MemoryMarkOpen(hook.agent_id, reached))

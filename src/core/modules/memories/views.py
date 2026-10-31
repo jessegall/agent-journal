@@ -1,7 +1,7 @@
 STANDING_MEMORIES_SELECT = (
     "SELECT memories.id AS memory_id, memories.environment_id, memories.agent_id, memories.type, memories.text,"
     " memories.weight, memories.due_at, memory_types.fades, memory_types.given_at_start, memory_types.given_at_mark,"
-    " memory_types.given_by_keyword, CASE memories.type WHEN 'rule' THEN 0 WHEN 'reminder' THEN 1 ELSE 2 END AS giving_order"
+    " memory_types.given_by_keyword, CASE memories.type WHEN 'rule' THEN 0 WHEN 'reminder' THEN 1 WHEN 'fact' THEN 2 ELSE 3 END AS giving_order"
     " FROM memories JOIN memory_types ON memory_types.name = memories.type"
     " WHERE memories.state = 'active' AND memories.weight > 0"
 )

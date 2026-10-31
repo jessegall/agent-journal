@@ -43,6 +43,9 @@ class StandingMemoryQuery(Query[StandingMemory]):
     def due(self, timestamp: Timestamp) -> Self:
         return self.matching(DueMemory(timestamp))
 
+    def types(self, type_names: Sequence[str]) -> Self:
+        return self.matching(Among("type", type_names))
+
     def undated(self) -> Self:
         return self.matching(IsNull("due_at"))
 
