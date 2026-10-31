@@ -9,6 +9,7 @@ from core.modules.environments.environments_module import EnvironmentsModule
 from core.modules.memories.memories_module import MemoriesModule
 from core.modules.messages.messages_module import MessagesModule
 from core.modules.plans.plans_module import PlansModule
+from core.modules.processes.processes_module import ProcessesModule
 from core.modules.questions.questions_module import QuestionsModule
 from core.modules.reviews.reviews_module import ReviewsModule
 from core.modules.settings.settings_module import SettingsModule
@@ -18,4 +19,4 @@ from core.modules.waits.waits_module import WaitsModule
 from core.modules.viewer.viewer_module import ViewerModule
 from core.modules.phone.phone_module import PhoneModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, QuestionsModule, ReviewsModule, PhoneModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
