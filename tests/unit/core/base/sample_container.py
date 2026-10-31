@@ -21,10 +21,12 @@ ITEMS = ("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL UNIQUE
 
 def sample_container(folder: Path, registry: Registry) -> Container:
     """A container on a temporary database with the core's tables and an items table, for unit tests of the core."""
-    database = Database.opened(JournalHome(folder))
+    home = JournalHome(folder)
+    database = Database.opened(home)
     Schema(database, Tables()).migrate([CORE_MIGRATIONS])
     database.update(Statement(ITEMS))
     container = Container()
+    container.bind(JournalHome, home)
     container.bind(Database, database)
     container.bind(Registry, registry)
     return container

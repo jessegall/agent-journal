@@ -1,3 +1,4 @@
+import sys
 from inspect import Parameter, signature
 from typing import TypeVar, get_type_hints
 
@@ -10,6 +11,13 @@ class MissingHintError(Exception):
 
     def __init__(self, class_type: type, parameter: str) -> None:
         super().__init__(f"{class_type.__name__}.__init__ gives no type for {parameter}, so the container cannot build it")
+
+
+class UnboundValueError(Exception):
+    """Raised when the container is asked to make a standard library value, such as a path."""
+
+    def __init__(self, class_type: type) -> None:
+        super().__init__(f"{class_type.__name__} is a value the container never makes up: bind it, or bind the class that asks for it")
 
 
 class WrongInstanceError(Exception):
@@ -46,6 +54,8 @@ class Container:
         raise WrongInstanceError(class_type, instance)
 
     def constructed(self, class_type: type[T]) -> T:
+        if class_type.__module__.partition(".")[0] in sys.stdlib_module_names | {"builtins"}:
+            raise UnboundValueError(class_type)
         hints = get_type_hints(class_type.__init__) if class_type.__init__ is not object.__init__ else {}
         needed = [parameter.name for parameter in signature(class_type.__init__).parameters.values()
                   if parameter.name != "self" and parameter.default is Parameter.empty and parameter.kind not in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD)]
