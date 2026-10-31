@@ -54,3 +54,9 @@ def test_a_closed_question_is_told_to_the_agent_once(new_story):
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_hook_refusal("s-1", OWN_QUESTION_TOOL, "journal question ask")
+
+
+def test_a_refused_ask_leaves_no_wait(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
+    story.expect_refusal("wait show 1", "does not exist")
