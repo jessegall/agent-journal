@@ -1,16 +1,12 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
+from core.base.setting.setting_declaration import SettingDeclaration, SettingDefault, SettingNode
+from core.base.setting.setting_limits import length_problems
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.type_guards import is_list, is_text_list, is_tuple
 
-if TYPE_CHECKING:
-    from core.base.module.setting_check import SettingCheck
-    from core.base.registry.setting_entry import SettingEntry
-
-SettingDefault = str | int | float | bool | tuple[str, ...] | tuple[int, ...] | None
 
 
 @dataclass(frozen=True)
@@ -47,11 +43,16 @@ class SettingValue:
                 items = list(value) if is_tuple(value) else value
                 return is_list(items) and all(isinstance(item, int) and not isinstance(item, bool) for item in items)
 
-    def declared(self, module_name: str, key: str, parent: str | None) -> Iterator["SettingEntry"]:
-        from core.base.registry.setting_entry import SettingEntry
+    def declaration(self) -> SettingDeclaration:
+        return SettingDeclaration(self.title, self.description, self.type.value, None if self.secret else self.default, self.secret, self.scope.value,
+                                  self.agent_writable, tuple(self.choices), False, True)
 
-        yield SettingEntry(key, module_name, parent, self.title, self.description, self.type.value, None if self.secret else self.default, self.secret,
-                           self.scope.value, self.agent_writable, tuple(self.choices), False, True)
+    def members(self) -> Sequence[SettingNode]:
+        return ()
 
-    def checked(self, check: "SettingCheck", key: str) -> Iterator[str]:
-        return check.value_problems(self, key)
+    def problems(self, key: str) -> Iterator[str]:
+        yield from length_problems(self.title, self.description, key)
+        if self.secret and self.default is not None:
+            yield f"the secret {key} has a default; a secret is set by the person, never written in code"
+        elif self.default is not None and not self.accepts(self.default):
+            yield f"the setting {key} is a {self.type.value}, but its default is {self.default!r}"

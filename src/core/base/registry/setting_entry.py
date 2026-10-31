@@ -2,12 +2,9 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from core.base.setting.setting_declaration import GROUP_TYPE, SettingDefault
 from core.base.setting.setting_type import SettingType
-from core.base.setting.setting_value import SettingDefault, SettingValue
-
-GROUP_TYPE = "group"
-ANY_KEY = "*"
-REFERENCE_TYPE = "reference"
+from core.base.setting.setting_value import SettingValue
 
 
 @dataclass(frozen=True)

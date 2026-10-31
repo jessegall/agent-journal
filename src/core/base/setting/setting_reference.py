@@ -1,10 +1,8 @@
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from core.base.module.setting_check import SettingCheck
-    from core.base.registry.setting_entry import SettingEntry
+from core.base.setting.setting_declaration import REFERENCE_TYPE, SettingDeclaration, SettingNode
+from core.base.setting.setting_scope import SettingScope
 
 
 @dataclass(frozen=True)
@@ -18,11 +16,11 @@ class SettingReference:
     def key(self) -> str:
         return self.group.rsplit(".", 1)[-1]
 
-    def declared(self, module_name: str, key: str, parent: str | None) -> Iterator["SettingEntry"]:
-        from core.base.registry.setting_entry import REFERENCE_TYPE, SettingEntry
-        from core.base.setting.setting_scope import SettingScope
+    def declaration(self) -> SettingDeclaration:
+        return SettingDeclaration(self.key, self.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, False, (), False, True, self.group)
 
-        yield SettingEntry(key, module_name, parent, self.key, self.group, REFERENCE_TYPE, None, False, SettingScope.LAYERED.value, False, (), False, True, self.group)
+    def members(self) -> Sequence[SettingNode]:
+        return ()
 
-    def checked(self, check: "SettingCheck", key: str) -> Iterator[str]:
+    def problems(self, key: str) -> Iterator[str]:
         return iter(())

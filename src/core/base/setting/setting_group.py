@@ -1,13 +1,11 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field, replace
-from typing import TYPE_CHECKING
 
+from core.base.setting.setting_declaration import ANY_KEY, GROUP_TYPE, SettingDeclaration, SettingNode
+from core.base.setting.setting_limits import length_problems
 from core.base.setting.setting_reference import SettingReference
+from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_value import SettingValue
-
-if TYPE_CHECKING:
-    from core.base.module.setting_check import SettingCheck
-    from core.base.registry.setting_entry import SettingEntry
 
 
 @dataclass(frozen=True)
@@ -25,15 +23,16 @@ class SettingGroup:
     enabled: bool = True
     any_key: SettingValue | None = None
 
-    def declared(self, module_name: str, key: str, parent: str | None) -> Iterator["SettingEntry"]:
-        from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, SettingEntry
-        from core.base.setting.setting_scope import SettingScope
+    def declaration(self) -> SettingDeclaration:
+        return SettingDeclaration(self.title, self.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, False, (), self.toggleable, self.enabled)
 
-        yield SettingEntry(key, module_name, parent, self.title, self.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, False, (), self.toggleable, self.enabled)
+    def members(self) -> Sequence[SettingNode]:
+        any_key = [] if self.any_key is None else [replace(self.any_key, key=ANY_KEY)]
+        return [*self.children, *any_key]
+
+    def problems(self, key: str) -> Iterator[str]:
+        yield from length_problems(self.title, self.description, key)
+        if not self.children and self.any_key is None:
+            yield f"the setting group {key} holds no setting"
         for child in self.children:
-            yield from child.declared(module_name, f"{key}.{child.key}", key)
-        if self.any_key is not None:
-            yield from replace(self.any_key, key=ANY_KEY).declared(module_name, f"{key}.{ANY_KEY}", key)
-
-    def checked(self, check: "SettingCheck", key: str) -> Iterator[str]:
-        return check.group_problems(self, key)
+            yield from child.problems(f"{key}.{child.key}")

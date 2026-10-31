@@ -2,7 +2,7 @@ from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
-from core.base.registry.setting_entry import GROUP_TYPE
+from core.base.setting.setting_declaration import GROUP_TYPE
 from core.modules.settings.commands.switch_setting_group import SwitchSettingGroup
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.support.setting_catalogue import SettingCatalogue

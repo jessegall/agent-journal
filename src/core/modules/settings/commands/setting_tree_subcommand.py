@@ -3,7 +3,8 @@ from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
-from core.base.registry.setting_entry import REFERENCE_TYPE, SettingEntry
+from core.base.registry.setting_entry import SettingEntry
+from core.base.setting.setting_declaration import REFERENCE_TYPE
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple

@@ -3,7 +3,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.base.query.queries import Queries
-from core.base.registry.setting_entry import ANY_KEY, SettingEntry
+from core.base.registry.setting_entry import SettingEntry
+from core.base.setting.setting_declaration import ANY_KEY
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.current_setting import CurrentSetting
