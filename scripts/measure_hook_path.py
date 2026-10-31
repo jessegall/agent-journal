@@ -2,10 +2,12 @@
 on a journal folder that is the .journal of a scratch project root, replays the recorded Claude bodies through the
 built binary as journal-hook claude <root> with AGENT_JOURNAL_ACTIVE=1, and prints the median and 95th percentile of
 each step per event from the server's runtime/timing.log. Run with PYTHONPATH=src:. python3 scripts/measure_hook_path.py;
-it is a measurement, never part of the test run. Every subprocess has a time limit, and the server is stopped by the
+it is a measurement, never part of the test run. With MEASURE_UPGRADED_JOURNAL naming the .journal folder of an upgraded
+project, its version-5.db replaces the scratch one, to measure a large journal. Every subprocess has a time limit, and the server is stopped by the
 process that holds its socket, never by name."""
 import json
 import os
+import shutil
 import signal
 import statistics
 import subprocess
@@ -25,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 RECORDED = ROOT / "tools" / "journal-hook" / "testdata" / "recorded" / "claude"
 EVENTS = ("SessionStart", "UserPromptSubmit", "PreToolUse", "PostToolUse", "PostToolUseFailure", "MessageDisplay", "Stop", "SubagentStop", "PreCompact", "SessionEnd")
 BODIES_PER_EVENT = 40
+UPGRADED_JOURNAL = "MEASURE_UPGRADED_JOURNAL"
 BUILD_TIMEOUT_SECONDS = 180
 HOOK_TIMEOUT_SECONDS = 20
 SERVER_WAIT_SECONDS = 30
@@ -62,6 +65,9 @@ def project(scratch: Path) -> Path:
     """The project root whose .journal is a journal made by the coding stories' builder with a task in hand."""
     root = scratch / "project"
     TemplateDatabases(scratch / "templates").story(root / ".journal", (), BuilderWithStartedTask).close()
+    upgraded = os.environ.get(UPGRADED_JOURNAL)
+    if upgraded:
+        shutil.copy2(Path(upgraded) / "version-5.db", root / ".journal" / "version-5.db")
     (root / ".journal" / "port").write_text("1\n")
     (root / ".journal" / "hooks-on-socket").write_text("")
     return root
