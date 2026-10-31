@@ -47,7 +47,8 @@ class ClaudeCodeProvider(Provider):
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     tool_categories = {"Bash": ToolType.SHELL, "Monitor": ToolType.SHELL, "Edit": ToolType.EDIT, "MultiEdit": ToolType.EDIT,
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Grep": ToolType.SEARCH,
-                       "Glob": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT}
+                       "Glob": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
+                       "AskUserQuestion": ToolType.ASK_USER}
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     session_variable = "CLAUDE_CODE_SESSION_ID"
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]

@@ -1,10 +1,26 @@
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import BuilderStarted
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
+from tests.stories.core.base.driver.support.hook_agents import hook_agent
+from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnvironment
 from core.base.driver.tool_type import ToolType
 
 ASK = 'question ask "Which database?" --options sqlite postgres --environment main'
-OWN_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.UNCATEGORISED, "files": [], "diff": None})
+OWN_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.ASK_USER, "files": [], "diff": None})
+CODEX_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "request_user_input", "category": ToolType.ASK_USER, "files": [], "diff": None}).with_fields(program="codex")
+
+
+class CodexBuilderStarted(StoryFixture):
+    """Session s-1 sent its first hook as a Codex program, which started story.agent under the builder."""
+
+    parent = CodingEnvironment
+
+    def steps(self, story: Story) -> None:
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(program="codex")))
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(f"agent show {story.agent.id}", "session: s-1", "role: main")
 
 
 def test_asking_opens_a_wait_whose_one_target_is_the_question(new_story):
@@ -53,10 +69,15 @@ def test_a_closed_question_is_told_to_the_agent_once(new_story):
 
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", OWN_QUESTION_TOOL, "journal question ask")
+    story.expect_hook_refusal("s-1", OWN_QUESTION_TOOL, "ask with journal question ask")
 
 
 def test_a_refused_ask_leaves_no_wait(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
     story.expect_refusal("wait show 1", "does not exist")
+
+
+def test_the_codex_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
+    story = new_story(fixture=CodexBuilderStarted)
+    story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "ask with journal question ask")

@@ -8,6 +8,7 @@ from core.modules.questions.commands.question_list_subcommand import QuestionLis
 from core.modules.questions.commands.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.questions.rules.question_answered_rule import QuestionAnsweredRule
+from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
 from core.modules.questions.rules.question_closed_rule import QuestionClosedRule
 from core.modules.questions.guards.main_agent_guard import MainAgentGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
@@ -27,4 +28,4 @@ class QuestionsModule(Module):
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]
-    driver_rules = [QuestionAnsweredRule, QuestionClosedRule]
+    driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]

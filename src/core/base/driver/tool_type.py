@@ -10,4 +10,5 @@ class ToolType(StrEnum):
     READ = "read"
     SEARCH = "search"
     AGENT = "agent"
+    ASK_USER = "ask_user"
     UNCATEGORISED = "other"
