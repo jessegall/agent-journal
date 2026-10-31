@@ -34,4 +34,7 @@ class MarkEntry:
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "MarkEntry":
-        return cls(**{**stored, "variants": tuple(stored["variants"]), "group_buttons": tuple(stored["group_buttons"]), "buttons": tuple(stored["buttons"])})
+        return cls(stored["type"], stored["module"], stored["family"], stored["family_title"], stored["family_icon"], stored["group"], stored["colouring"],
+                   tuple(stored["variants"]), stored["label"], stored["mark_icon"], stored["click"], stored["grouping"], stored["group_label"],
+                   tuple(stored["group_buttons"]), tuple(stored["buttons"]), stored["body"], stored["shown"], stored["main"], stored["process"],
+                   stored["shipped"], stored["unavailable_reason"])

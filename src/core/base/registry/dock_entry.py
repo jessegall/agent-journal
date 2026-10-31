@@ -23,4 +23,5 @@ class DockEntry:
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "DockEntry":
-        return cls(**{**stored, "buttons": tuple(stored["buttons"]), "reads": tuple(stored["reads"])})
+        return cls(stored["type"], stored["module"], stored["icon"], stored["title"], stored["body"], tuple(stored["buttons"]), stored["most"],
+                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"])

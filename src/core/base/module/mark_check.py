@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 
 from core.base.chat.mark_click import MarkClick
+from core.base.chat.mark_family import MarkFamily
 from core.base.module.button_check import ButtonCheck
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
@@ -48,7 +49,7 @@ class MarkCheck:
         return problems
 
     def family_problems(self, modules: Sequence[type[Module]]) -> list[str]:
-        declared: dict[str, tuple[str, object]] = {}
+        declared: dict[str, tuple[str, MarkFamily]] = {}
         problems: list[str] = []
         for module in modules:
             for mark in module.marks:
