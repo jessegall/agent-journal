@@ -1,0 +1,58 @@
+[
+    {
+        "name": "messages",
+        "report": "The chat: messages",
+        "version4": "messages-v4.png",
+        "version5": "messages-v5.png",
+        "version5Does": "Same: a rounded card per message with the time under it, markdown in the text, the user's cards set apart from the agent's. Better: a card also shows who the message is for when it is a reply."
+    },
+    {
+        "name": "marks",
+        "report": "The chat: marks",
+        "version4": "marks-v4.png",
+        "version5": "marks-v5.png",
+        "version5Does": "Same: one muted line of about 28 pixels with the row's own title, no check mark. Better: the line's icon takes its tone from the mark's outcome, and a mark with detail opens in place."
+    },
+    {
+        "name": "docked",
+        "report": "The chat: docked items",
+        "version4": "docked-v4.png",
+        "version5": "docked-v5.png",
+        "version5Does": "Same: a bordered card with the row's icon, title, a line of its text, and open, dock and close buttons. Better: the card counts down its own leaving time and holds while the pointer is on it."
+    },
+    {
+        "name": "notices",
+        "report": "The chat: pinned notices",
+        "version4": "notices-v4.png",
+        "version5": "notices-v5.png",
+        "version5Does": "Same: a strip above the chat with a dot, the text, a button with the link and a close cross. Better: a notice belongs to the notices module, so a module without notices shows no strip."
+    },
+    {
+        "name": "composer",
+        "report": "The chat: the composer",
+        "version4": "composer-v4.png",
+        "version5": "composer-v5.png",
+        "version5Does": "Same: a tall rounded box, placeholder Message the agent, an attach button, Dump files, the running tool under the last message and a button to scroll to the top. Better: the box grows with its text."
+    },
+    {
+        "name": "top-bars",
+        "report": "The bars at the top",
+        "version4": "top-bars-v4.png",
+        "version5": "top-bars-v5.png",
+        "version5Does": "Same: an agent bar and an information bar, and window buttons that each carry their own icon before their label. Better: the bars are drawn by the shell from what the modules declare, so a new module's figure needs no shell change."
+    },
+    {
+        "name": "side-panels-left",
+        "report": "The side panels",
+        "version4": "side-panels-left-v4.png",
+        "version5": "side-panels-left-v5.png",
+        "version5Does": "Same: a left sidebar listing the suite's pages and the environments with New environment. Better: the pages come from the suite's declaration, never from a list in the shell."
+    },
+    {
+        "name": "side-panels-right",
+        "report": "The side panels",
+        "version4": "side-panels-right-v4.png",
+        "version5": "side-panels-right-v5.png",
+        "version5Does": "Same: an Activity panel on the right. Better: it is a window like any other, so it can also be split, moved or detached."
+    }
+]
