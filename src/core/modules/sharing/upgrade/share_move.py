@@ -1,4 +1,5 @@
 import sqlite3
+from functools import partial
 from datetime import datetime, timedelta
 
 from core.base.database.database import Database
@@ -39,7 +40,7 @@ class ShareMove(VersionFourMove):
             if shared is None or not row["token"]:
                 report.skip(TABLE, row["id"], "its row is no plan that moved, or it has no token")
                 continue
-            report.count("share_links", map.transfer(TABLE, row["id"], "share_links", lambda: self.insert(rows, row, shared, creators.actor_id(row["creator"]), context)))
+            report.count("share_links", map.transfer(TABLE, row["id"], "share_links", partial(self.insert, rows, row, shared, creators.actor_id(row["creator"]), context)))
         return report
 
     def targets(self, source: VersionFourSource) -> dict[int, VersionFourRef]:
