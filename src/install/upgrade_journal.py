@@ -19,7 +19,8 @@ from install.server_wont_stop import ServerWontStop
 from install.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
 from install.upgrade_text import UpgradeText
-from install.version_four_backup import DATABASE, VersionFourBackup
+from install.version_four_backup import BACKUP_FOLDER, DATABASE, VersionFourBackup
+from install.version_four_files import VersionFourFiles
 from server.server_files import ServerFiles
 
 DRY_RUN_LINE = "dry run: nothing was changed"
@@ -39,6 +40,8 @@ class UpgradeJournal:
 
     def run(self, dry_run: bool = False, confirmed: bool = False) -> UpgradeOutcome:
         version_four = self.home.folder / DATABASE
+        if VersionFourFiles(self.home.folder).are_retired() and not version_four.exists():
+            return UpgradeOutcome(0, FINISHED_LINE)
         if not version_four.is_file():
             return UpgradeOutcome(1, f"no version 4 journal: {DATABASE} is not in {self.home.folder}")
         if self.has_answer():
@@ -93,14 +96,17 @@ class UpgradeJournal:
         self.sync(self.home)
         container = synced_container(self.home)
         try:
-            if self.is_finished(container.get(Database), container.get(Registry)):
-                lines.append(FINISHED_LINE)
-                return
-            backup = VersionFourBackup(self.home.folder).make()
-            lines.extend([f"backup: {backup.path}", f"backup checked: {backup.tables} tables"])
-            lines.extend([*UpgradeText(container.get(MoveRunner).run(version_four)).lines(), "upgraded"])
+            finished = self.is_finished(container.get(Database), container.get(Registry))
+            if not finished:
+                backup = VersionFourBackup(self.home.folder).make()
+                lines.extend([f"backup: {backup.path}", f"backup checked: {backup.tables} tables"])
+                lines.extend(UpgradeText(container.get(MoveRunner).run(version_four)).lines())
         finally:
             container.get(Database).close()
+        retired = VersionFourFiles(self.home.folder).retire()
+        if retired:
+            lines.append(f"version 4's files moved into {self.home.folder / BACKUP_FOLDER}: {', '.join(retired)}")
+        lines.append(FINISHED_LINE if finished else "upgraded")
 
     def sync(self, home: JournalHome) -> None:
         container = opened_container(home)

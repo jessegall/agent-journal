@@ -25,14 +25,14 @@ def content(path) -> list[str]:
         connection.close()
 
 
-def test_the_upgrade_of_a_version_4_project_makes_version_5_beside_it_and_leaves_version_4s_database_as_it_was(tmp_path):
+def test_the_upgrade_of_a_version_4_project_makes_version_5_live_and_moves_version_4s_database_with_its_backup_unchanged(tmp_path):
     scratch = version_four_project(tmp_path)
     before = content(scratch.journal / "journal.db")
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
     assert "upgraded" in run.stdout and "not claimed: tasks (2 rows)" in run.stdout
     assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
-    assert content(scratch.journal / "journal.db") == before
+    assert not (scratch.journal / "journal.db").exists() and content(scratch.journal / "version-4" / "journal.db") == before
     assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == before
 
 

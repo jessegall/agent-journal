@@ -52,8 +52,9 @@ def line_value(text: str, label: str) -> str:
 
 def test_the_upgrade_copies_the_version_4_database_into_the_backup_folder_first_and_checks_the_copy(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
+    before = content(version_four)
     outcome = expect_upgrade(story)
-    assert content(Path(line_value(outcome.text, "backup: "))) == content(version_four) and "backup checked" in outcome.text
+    assert content(Path(line_value(outcome.text, "backup: "))) == before and "backup checked" in outcome.text
 
 
 def test_a_failed_run_still_leaves_the_backup(new_story):
@@ -67,7 +68,7 @@ def test_the_version_4_database_is_opened_read_only_and_its_bytes_are_equal_afte
     story, version_four = upgrading(new_story, NOTES, TAGS)
     original = version_four.read_bytes()
     expect_upgrade(story)
-    assert version_four.read_bytes() == original
+    assert (story.home.folder / "version-4" / "journal.db").read_bytes() == original
 
 
 def test_a_dry_run_prints_the_counts_per_module_and_per_dropped_table_and_leaves_the_version_5_database_as_it_was(new_story):
@@ -103,7 +104,7 @@ def test_a_run_that_fails_in_the_tags_move_leaves_notes_moved_rolls_tags_back_an
 def test_a_version_4_table_no_module_claims_is_listed_and_not_lost(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     expect_upgrade(story, "not claimed: old_reports (1 rows)")
-    assert version_four.exists() and b"a report" in version_four.read_bytes()
+    assert b"a report" in (story.home.folder / "version-4" / "journal.db").read_bytes()
 
 
 def test_the_upgrade_of_an_empty_version_4_journal_works(new_story):
@@ -129,3 +130,14 @@ def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_
     connection.close()
     expect_upgrade(story, "movetags: moved 2, already moved 0", "upgraded")
     assert content(backups[0]) == original and count(story, "notes") == 2
+
+
+def test_after_a_good_upgrade_version_4s_files_are_in_version_4_with_the_backup_and_only_version_5_is_live(new_story):
+    story, version_four = upgrading(new_story, NOTES, TAGS)
+    (story.home.folder / "src" / "journal").mkdir(parents=True)
+    (story.home.folder / "src" / "journal" / "version.py").write_text('VERSION = "4.28.0"\n')
+    outcome = expect_upgrade(story)
+    assert not version_four.exists() and not (story.home.folder / "src" / "journal").exists()
+    assert (story.home.folder / "version-4" / "journal.db").is_file() and (story.home.folder / "version-4" / "src" / "journal" / "version.py").is_file()
+    assert (story.home.folder / "version-4" / "4.28.0" / "journal.db").is_file() and "version 4's files moved into" in outcome.text
+    assert story.home.database.is_file()
