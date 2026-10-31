@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {"nameIn": ["MarkDeclaration", "DockDeclaration"], "argument": {"at": 0, "is": "literal"}},
+                    {"nameIn": ["ShowMark"], "argument": {"at": 1, "is": "literal"}},
+                    {"nameIn": ["ShowMark"], "argument": {"at": 2, "is": "literal"}},
+                    {"nameIn": ["AddDockItem"], "argument": {"at": 1, "is": "literal"}}
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "raw-mark-type",
+        "description": "A mark declaration, a dock declaration, ShowMark or AddDockItem names its type or variant with a string literal, so a misspelled name is only found when it is run.",
+        "rule": "Name a type and a variant by the member of the module's own enum: MemoryMarkType.MEMORY, MemoryMarkVariant.MADE.",
+        "skill": "chat-architecture"
+    }
+}

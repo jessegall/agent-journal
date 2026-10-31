@@ -23,3 +23,10 @@ class SampleListener(CommitListener):
     def handle(self, event):
         # @righteous architecture_chat_MarkShownByListenerDetector
         self.bus.run(ShowMark(1, MessageMarkType.THOUGHT, "summary", "key", "words"), event.actor)
+
+
+def sample_declarations() -> None:
+    # @sin architecture_chat_NoRawMarkTypeDetector
+    MarkDeclaration("messages.thought", MessageMarkVariant, FAMILY, "Thoughts", "summary")
+    # @righteous architecture_chat_NoRawMarkTypeDetector
+    MarkDeclaration(MessageMarkType.THOUGHT, MessageMarkVariant, FAMILY, "Thoughts", "summary")
