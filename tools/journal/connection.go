@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 	"time"
 )
 
@@ -67,20 +66,6 @@ func Healthy(client *http.Client) bool {
 	return response.StatusCode == http.StatusOK
 }
 
-// LockIsFree takes the server lock without waiting and lets it go at once: a free lock means no server is
-// running, starting or stopping. The client never holds it while a server starts, so the server can take it.
-func LockIsFree(path string) bool {
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
-	if err != nil {
-		return false
-	}
-	defer file.Close()
-	if syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB) != nil {
-		return false
-	}
-	return syscall.Flock(int(file.Fd()), syscall.LOCK_UN) == nil
-}
-
 // ServerStarter starts a server for a journal's folder, detached from the client.
 type ServerStarter func(home string) (*os.Process, error)
 
@@ -128,7 +113,7 @@ func StartServer(home string) (*os.Process, error) {
 	command.Dir = filepath.Dir(home)
 	command.Env = []string{"PATH=" + os.Getenv("PATH"), "HOME=" + os.Getenv("HOME"), "LANG=" + os.Getenv("LANG"), "PYTHONPATH=" + source}
 	command.Stdin, command.Stdout, command.Stderr = nil, log, log
-	command.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	command.SysProcAttr = DetachedProcess()
 	if err := command.Start(); err != nil {
 		return nil, err
 	}

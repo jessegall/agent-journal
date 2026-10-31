@@ -47,7 +47,7 @@ func Run(argv []string, stdout, stderr io.Writer) int {
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "stop" {
 		return StopServer(home, stdout, stderr)
 	}
-	if FailedRecently(home) {
+	if !ServerSupported || FailedRecently(home) {
 		return DirectRun(home, argv, stdout, stderr)
 	}
 	client, started, err := Connect(home, StartServer)
