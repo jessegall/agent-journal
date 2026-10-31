@@ -1,7 +1,8 @@
 {
     "include": [
         "src/core",
-        "src/server"
+        "src/server",
+        "src/suites"
     ],
     "pythonVersion": "3.14",
     "typeCheckingMode": "strict",

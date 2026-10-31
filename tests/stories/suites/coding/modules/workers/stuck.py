@@ -41,7 +41,7 @@ def test_a_main_session_that_ends_with_a_worker_out_leaves_its_worktree_and_the_
     worker = dispatched_worker(story)
     story.hook(MAIN_SESSION, HookSamples.sample("session_end"))
     story.expect_success("worktree show 1", "state: cut")
-    repository.expect_checked_out(repository.worker_branch(worker.id), repository.worktree_folder(worker.id))
+    repository.expect_head(repository.worker_branch(worker.id), repository.worktree_folder(worker.id))
     story.expect_hook_allowed("s-3", HookSamples.session_start(), f"worker {worker.id} holds task 1, Fix the cart")
 
 
@@ -54,5 +54,5 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     side_worker_id = story.new_row_id("worker dispatch 2")
     story.expect_success("worktree show 1", f"branch: {repository.worker_branch(main_worker.id)}", f"folder: {repository.worktree_folder(main_worker.id)}")
     story.expect_success("worktree show 2", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
-    repository.expect_branch_at(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))
-    repository.expect_branch_at(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))
+    repository.expect_branch_tip(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))
+    repository.expect_branch_tip(repository.worker_branch(side_worker_id, "side"), repository.tip(ENVIRONMENT_BRANCH))

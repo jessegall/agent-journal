@@ -1,5 +1,5 @@
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_nothing_dispatched, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 LIBRARY_FILE = "index.js"
 LIBRARY_TEXT = "module.exports = 1\n"
 
@@ -23,15 +23,9 @@ def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_neve
     repository.expect_excluded(worker_id, "vendor")
 
 
-def test_a_library_name_that_is_no_folder_of_the_environment_is_refused_and_makes_nothing(new_story):
+def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refused_and_makes_nothing(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
-    expect_nothing_dispatched(story, repository)
-
-
-def test_a_library_name_outside_the_environments_folder_is_refused_and_makes_nothing(new_story):
-    story = new_story(fixture=OrchestratorWithOpenTask)
-    repository = repository_environment(story)
     story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
-    expect_nothing_dispatched(story, repository)
+    expect_clean_environment(story, repository)

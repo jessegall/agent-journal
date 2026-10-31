@@ -13,7 +13,7 @@ DELIVERY = "worker deliver"
 
 
 def repository_environment(story: Story, branch: str = ENVIRONMENT_BRANCH) -> GitRepository:
-    repository = GitRepository.made(story.home.folder.parent / "project")
+    repository = GitRepository.sample(story.home.folder.parent / "project")
     branch_flag = f" --branch {branch}" if branch else ""
     story.expect_success(f"environment edit 1 --folder {shlex.quote(str(repository.folder))}{branch_flag}", f"folder: {repository.folder}")
     return repository
@@ -42,8 +42,8 @@ def worker_session(story: Story, worker: Actor) -> str:
     return next(line for line in details if line.startswith("session: ")).removeprefix("session: ")
 
 
-def expect_nothing_dispatched(story: Story, repository: GitRepository) -> None:
+def expect_clean_environment(story: Story, repository: GitRepository) -> None:
     story.expect_success("worktree list", "nothing found")
     story.expect_success("agent list --role worker", "nothing found")
     story.expect_success(lines.TASK_DETAILS, "state: open")
-    repository.expect_nothing_cut()
+    repository.expect_no_worktree()

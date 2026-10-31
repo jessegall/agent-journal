@@ -21,7 +21,7 @@ class GitRepository:
         self.folder = folder
 
     @classmethod
-    def made(cls, folder: Path) -> "GitRepository":
+    def sample(cls, folder: Path) -> "GitRepository":
         folder.mkdir(parents=True)
         repository = cls(folder)
         repository.git("init", "--initial-branch", CHECKOUT_BRANCH)
@@ -65,12 +65,12 @@ class GitRepository:
     def worker_branch(self, worker_id: int, environment: str = ENVIRONMENT) -> str:
         return f"journal/{environment}/worker-{worker_id}"
 
-    def expect_branch_at(self, branch: str, commit: str) -> None:
+    def expect_branch_tip(self, branch: str, commit: str) -> None:
         assert self.tip(branch) == commit, f"branch {branch} is at {self.tip(branch)!r}, not {commit}"
 
     def expect_file(self, branch: str, name: str, text: str) -> None:
-        held = self.git("show", f"refs/heads/{branch}:{name}").stdout
-        assert held == text, f"{name} on {branch} holds {held!r}, not {text!r}"
+        content = self.git("show", f"refs/heads/{branch}:{name}").stdout
+        assert content == text, f"{name} on {branch} holds {content!r}, not {text!r}"
 
     def expect_merge_commit(self, branch: str) -> None:
         parents = self.git("log", "-1", "--format=%P", f"refs/heads/{branch}").stdout.split()
@@ -92,11 +92,11 @@ class GitRepository:
         status = self.git("status", "--porcelain", folder=self.worktree_folder(worker_id)).stdout
         assert status == "", f"the worktree of worker {worker_id} holds uncommitted changes: {status}"
 
-    def expect_checked_out(self, branch: str, folder: Path | None = None) -> None:
+    def expect_head(self, branch: str, folder: Path | None = None) -> None:
         head = self.git("symbolic-ref", "--short", "HEAD", folder=folder).stdout.strip()
         assert head == branch, f"{folder or self.folder} has {head!r} checked out, not {branch}"
 
-    def expect_nothing_cut(self) -> None:
+    def expect_no_worktree(self) -> None:
         branches = self.git("branch", "--list", WORKER_BRANCHES).stdout.split()
         worktrees = [line for line in self.git("worktree", "list", "--porcelain").stdout.splitlines() if line.startswith("worktree ")]
         folders = list((self.folder / ".journal" / "worktrees").glob("*/*"))

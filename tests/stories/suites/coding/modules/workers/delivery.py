@@ -28,7 +28,7 @@ def test_a_delivery_with_a_point_of_the_brief_unproved_is_refused_naming_the_poi
     story.expect_refusal(DELIVERY, "point 2 has no proof", actor=worker)
     story.expect_success(lines.TASK_DETAILS, "state: started")
     story.expect_success("worktree show 1", "state: cut")
-    repository.expect_branch_at(repository.worker_branch(worker.id), base_commit)
+    repository.expect_branch_tip(repository.worker_branch(worker.id), base_commit)
 
 
 def test_a_delivery_of_an_unchanged_worktree_is_refused(new_story):
