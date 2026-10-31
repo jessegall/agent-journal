@@ -1,9 +1,13 @@
 from core.base.command.bus import Bus
+from core.base.listener.commit_listener import CommitListener
 from core.modules.docking.commands.add_dock_item import AddDockItem
 from core.modules.docking.models.dock_item import DockItem
 
 
-class SampleListener:
+class SampleListener(CommitListener):
+    name = "samples.dock"
+    event = "plan.start"
+
     def __init__(self, bus: Bus, repository) -> None:
         self.bus, self.repository = bus, repository
 
