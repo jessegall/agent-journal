@@ -6,6 +6,7 @@ import time
 import pytest
 
 from install.server_lock import ServerLock, ServerWontStopError
+from server.server_files import ServerFiles
 from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
 STUBBORN_SERVER = """
@@ -107,3 +108,17 @@ def test_two_installs_at_once_take_the_lock_in_turn(journal):
         thread.join(timeout=60)
     first, second = sorted(spans)
     assert len(spans) == 2 and first[1] <= second[0]
+
+
+def test_a_client_run_after_the_stop_and_before_the_lock_starts_no_server_and_the_change_goes_through(journal, client):
+    files = ServerFiles(journal.home)
+    files.mark_maintenance()
+    try:
+        answer = subprocess.run([str(client), "setting", "list"], env=journal.environment(), cwd=journal.home.folder.parent, capture_output=True, text=True,
+                                timeout=TIMEOUT_SECONDS)
+        assert not (journal.home.folder / "server.pid").exists() and journal.lock_is_free(), answer.stdout + answer.stderr
+    finally:
+        files.clear_maintenance()
+    with ServerLock(journal.home):
+        assert files.maintenance.exists() and not journal.lock_is_free()
+    assert not files.maintenance.exists() and journal.lock_is_free()

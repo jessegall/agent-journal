@@ -16,15 +16,17 @@ def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
     """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
-    the server's whole life or, for a while, by a helper; and its pid file. Only the server that keeps the
-    lock removes a leftover socket, and a stopping server removes the socket and pid file only while the
-    pid file still names it."""
+    the server's whole life or, for a while, by a helper; its pid file; and the maintenance mark a change of
+    the code keeps while the server is stopped, which tells a client to start none. Only the server that
+    keeps the lock removes a leftover socket, and a stopping server removes the socket and pid file only
+    while the pid file still names it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)
         self.lock = home.folder / "server.lock"
         self.pid_file = home.folder / "server.pid"
         self.log = home.folder / "runtime" / "server.log"
+        self.maintenance = home.folder / "maintenance"
         self.lock_file: IO[str] | None = None
 
     def acquire_lock(self) -> bool:
@@ -74,6 +76,12 @@ class ServerFiles:
         self.log.parent.mkdir(parents=True, exist_ok=True)
         with self.log.open("a") as log:
             log.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} {text}\n")
+
+    def mark_maintenance(self) -> None:
+        self.maintenance.touch()
+
+    def clear_maintenance(self) -> None:
+        self.maintenance.unlink(missing_ok=True)
 
     def release_lock(self) -> None:
         if self.lock_file is not None:

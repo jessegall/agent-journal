@@ -110,3 +110,42 @@ func TestAServerThatNeverAnswersEndsTheWaitWithNoServer(t *testing.T) {
 		t.Fatalf("connect: %v %v", started, err)
 	}
 }
+
+func TestAMaintenanceMarkMeansNoServerIsStartedWhileTheLockIsFree(t *testing.T) {
+	home := shortHome(t)
+	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	starts := 0
+	deadline := StartLimit
+	StartLimit = 300 * time.Millisecond
+	t.Cleanup(func() { StartLimit = deadline })
+	_, _, err := Connect(home, func(string) (*os.Process, error) {
+		starts++
+		return &os.Process{Pid: os.Getpid()}, nil
+	})
+	if err != ErrNoServer || starts != 0 {
+		t.Fatalf("starts %d, err %v", starts, err)
+	}
+}
+
+func TestAMaintenanceMarkLongForgottenIsIgnored(t *testing.T) {
+	home := shortHome(t)
+	mark := filepath.Join(home, MaintenanceMark)
+	if err := os.WriteFile(mark, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	old := time.Now().Add(-2 * MaintenanceLimit)
+	if err := os.Chtimes(mark, old, old); err != nil {
+		t.Fatal(err)
+	}
+	starts := 0
+	_, _, err := Connect(home, func(string) (*os.Process, error) {
+		starts++
+		listening(t, socket.Path(home), healthHandler())
+		return &os.Process{Pid: os.Getpid()}, nil
+	})
+	if err != nil || starts != 1 {
+		t.Fatalf("starts %d, err %v", starts, err)
+	}
+}

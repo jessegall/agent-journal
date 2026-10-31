@@ -15,6 +15,13 @@ import (
 // StartLimit is how long a client waits for a server it started, or one another client is starting.
 var StartLimit = 5 * time.Second
 
+// MaintenanceMark is the file a change of the journal's code keeps in the home while it stops the server and holds the
+// lock: a client starts no server while it is there, and it counts for MaintenanceLimit at most, so a change that died
+// leaves nobody locked out.
+const MaintenanceMark = "maintenance"
+
+const MaintenanceLimit = 10 * time.Minute
+
 // PollInterval is how often a waiting client checks for an answer and for the lock.
 var PollInterval = 50 * time.Millisecond
 
@@ -51,7 +58,7 @@ func Connect(home string, start ServerStarter) (*http.Client, *os.Process, error
 		if Healthy(client) {
 			return client, started, nil
 		}
-		if started == nil && LockIsFree(filepath.Join(home, "server.lock")) {
+		if started == nil && !InMaintenance(home) && LockIsFree(filepath.Join(home, "server.lock")) {
 			process, err := start(home)
 			if err != nil {
 				return nil, nil, err
@@ -103,4 +110,10 @@ func PythonPath() string {
 		return python
 	}
 	return "python3"
+}
+
+// InMaintenance is whether a change of the journal's code has the server stopped, by a mark not older than MaintenanceLimit.
+func InMaintenance(home string) bool {
+	info, err := os.Stat(filepath.Join(home, MaintenanceMark))
+	return err == nil && time.Since(info.ModTime()) < MaintenanceLimit
 }
