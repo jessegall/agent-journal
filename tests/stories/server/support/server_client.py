@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timezone
 import os
-import tempfile
 import shlex
 import subprocess
 import socket
@@ -71,12 +70,7 @@ class ServerStory:
         return reply["refusal"], reply["lines"]
 
     def program_run(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
-        scratch = Path(tempfile.mkdtemp())
-        program = HookProgram(scratch)
-        program.build()
-        root = scratch / "project"
-        root.mkdir()
-        return program.sent(self.story.home.folder, root, {**body, "cwd": str(root)})
+        return HookProgram(self.story.home.folder).sent(body)
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")

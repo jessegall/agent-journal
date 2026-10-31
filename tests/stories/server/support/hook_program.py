@@ -1,27 +1,27 @@
 import json
-import os
 import subprocess
 from pathlib import Path
 
-HOOK_PROGRAM_FOLDER = Path(__file__).resolve().parents[4] / "tools" / "journal-hook"
-BUILD_LIMIT_SECONDS = 180
-RUN_LIMIT_SECONDS = 30
+from tests.stories.server.support.go_build import GoBuild
+
+RUN_TIMEOUT_SECONDS = 30
 SOCKET_SWITCH = "hooks-on-socket"
 
 
 class HookProgram:
-    """The Go hook program built into a scratch folder, run on a raw hook body against a journal folder the way an
-    agent program runs it, with every process under a time limit."""
+    """The Go hook program built into a story's folder, run on a raw hook body against the story's journal the way
+    an agent program runs it, from a project folder whose .journal is the story's journal."""
 
-    def __init__(self, folder: Path) -> None:
-        self.path = folder / "journal-hook"
+    def __init__(self, journal_folder: Path) -> None:
+        self.journal_folder = journal_folder
+        self.binary = GoBuild.built("journal-hook", journal_folder.parent / "journal-hook")
+        self.root = journal_folder.parent / "project"
 
-    def build(self) -> None:
-        subprocess.run(["go", "build", "-o", str(self.path), "."], cwd=HOOK_PROGRAM_FOLDER, check=True, timeout=BUILD_LIMIT_SECONDS, capture_output=True)
-
-    def sent(self, journal_folder: Path, root: Path, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
-        (root / ".journal").symlink_to(journal_folder.resolve(), target_is_directory=True)
-        (journal_folder / SOCKET_SWITCH).write_text("")
-        environment = {**os.environ, "AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "main", "JOURNAL_ACTOR": "agent"}
-        return subprocess.run([str(self.path), "claude", str(root)], input=json.dumps(body), text=True, capture_output=True, env=environment,
-                              timeout=RUN_LIMIT_SECONDS, cwd=root)
+    def sent(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
+        if not self.root.exists():
+            self.root.mkdir()
+            (self.root / ".journal").symlink_to(self.journal_folder.resolve(), target_is_directory=True)
+            (self.journal_folder / SOCKET_SWITCH).write_text("")
+        environment = GoBuild.environment(AGENT_JOURNAL_ACTIVE="1", JOURNAL_ENV="main", JOURNAL_ACTOR="agent")
+        return subprocess.run([str(self.binary), "claude", str(self.root)], input=json.dumps({**body, "cwd": str(self.root)}), text=True,
+                              capture_output=True, env=environment, timeout=RUN_TIMEOUT_SECONDS, cwd=self.root)

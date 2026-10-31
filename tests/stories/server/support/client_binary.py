@@ -1,5 +1,4 @@
 import json
-import os
 import shlex
 import subprocess
 from pathlib import Path
@@ -8,10 +7,10 @@ from core.base.journal_home import JournalHome
 from core.base.timing import Timing
 from core.base.timing_log import TimingLog
 from server.server_files import ServerFiles, socket_path
+from tests.stories.server.support.go_build import GoBuild
 from tests.stories.server.support.server_client import request_answer
 
 ROOT = Path(__file__).resolve().parents[4]
-BUILD_TIMEOUT_SECONDS = 180
 RUN_TIMEOUT_SECONDS = 30
 
 
@@ -23,16 +22,14 @@ class ClientBinary:
         self.home, self.binary = home, build_folder / "journal-client"
 
     def __enter__(self) -> "ClientBinary":
-        subprocess.run(["go", "build", "-o", str(self.binary), "."], cwd=ROOT / "tools" / "journal", check=True, timeout=BUILD_TIMEOUT_SECONDS,
-                       capture_output=True, env={**os.environ, "CGO_ENABLED": "0"})
+        GoBuild.built("journal", self.binary)
         return self
 
     def __exit__(self, *details: object) -> None:
         self.run("server stop")
 
     def run(self, line: str) -> subprocess.CompletedProcess[str]:
-        environment = {"PATH": os.environ.get("PATH", ""), "HOME": os.environ.get("HOME", ""), "JOURNAL_HOME": str(self.home.folder),
-                       "JOURNAL_SOURCE": str(ROOT / "src"), "USER": "story"}
+        environment = GoBuild.environment(JOURNAL_HOME=str(self.home.folder), JOURNAL_SOURCE=str(ROOT / "src"))
         return subprocess.run([str(self.binary), *shlex.split(line)], env=environment, capture_output=True, text=True, timeout=RUN_TIMEOUT_SECONDS)
 
     def expect_answer(self, line: str, expected_line: str) -> None:
