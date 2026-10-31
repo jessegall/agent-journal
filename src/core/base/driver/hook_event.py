@@ -8,6 +8,7 @@ from core.base.driver.hook_fields import mapping, number, text
 from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 1
+CONTEXT_PERCENT = "context_percent"
 REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw")
 
 
@@ -28,6 +29,11 @@ class HookEvent:
     tool: Tool | None
     prompt: str | None
     raw: Mapping[object, object]
+
+    @property
+    def context_percent(self) -> int | None:
+        value = self.raw.get(CONTEXT_PERCENT)
+        return value if isinstance(value, int) and not isinstance(value, bool) else None
 
     @classmethod
     def tick(cls, program: str, session: str, firing: str, hook_timestamp_ms: int, actor: str, environment: str) -> "HookEvent":

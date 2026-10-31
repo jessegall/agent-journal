@@ -100,6 +100,11 @@ class Story:
         missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
         assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
 
+    def expect_ordered_hook_lines(self, session: str, sample: HookSample, *texts: str) -> None:
+        reply = self.hook(session, sample)
+        places = [next((place for place, line in enumerate(reply.lines) if text in line), -1) for text in texts]
+        assert -1 not in places and places == sorted(places), f"the hook's lines {list(reply.lines)} do not hold {list(texts)} in this order"
+
     def expect_hook_silent(self, session: str, sample: HookSample) -> None:
         reply = self.hook(session, sample)
         assert reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}"
