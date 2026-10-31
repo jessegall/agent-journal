@@ -21,7 +21,7 @@ class SettingValues:
         self.rows: dict[tuple[str, int | None], Setting | None] | None = None
 
     @contextmanager
-    def remembered(self) -> Generator[None]:
+    def keep_rows(self) -> Generator[None]:
         self.rows = {}
         try:
             yield
