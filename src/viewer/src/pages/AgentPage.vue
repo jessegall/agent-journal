@@ -1,10 +1,9 @@
 <script setup>
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {activated} from "../domain/panes.js";
 import PaneStage from "../windows/PaneStage.vue";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
-import {useHomeLayout} from "../windows/homeLayout.js";
+import {driverOf, useHomeLayout} from "../windows/homeLayout.js";
 
 const PHONE_WIDTH = 700;
 const props = defineProps({
@@ -17,6 +16,7 @@ const props = defineProps({
 const started = startWindows(props);
 const {subscriptions, shellLine, prompts, listeners, stop} = started;
 const facts = ref(null);
+const failure = ref("");
 const narrow = ref(window.innerWidth < PHONE_WIDTH);
 const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
 const offered = computed(() => (facts.value ? started.catalogue.forAgent(facts.value.role) : started.catalogue));
@@ -34,14 +34,17 @@ const tabbed = computed(() => {
 });
 
 function show(tab) {
-    home.value.store.apply(activated(home.value.store.layout.value, tab.id, tab.name));
+    home.value.store.activate(tab.id, tab.name);
 }
 
+// the agent's role comes from the agent, its driver from the suite's driver for that role
 onMounted(async () => {
     window.addEventListener("resize", measure);
     const answer = await shellLine(["agent", "show", String(props.agent)]);
-    if (!answer.ok) return;
-    facts.value = {role: answer.value.role, driver: answer.value.driver};
+    if (!answer.ok) return void (failure.value = answer.error);
+    const run = await shellLine(["suite", "current", props.environment]);
+    const role = answer.value.role;
+    facts.value = {role, driver: run.ok ? driverOf(run.value.drivers, role) || driverOf(run.value.drivers, "main") : ""};
     listeners.push(layouts(facts.value).heard);
     layouts(facts.value).load();
 });
@@ -53,6 +56,9 @@ onUnmounted(() => {
 
 <template>
     <div class="agent-page">
+        <template v-if="failure">
+            <p class="agent-page-failure" role="alert">Agent {{ agent }} could not be read: {{ failure }}</p>
+        </template>
         <template v-if="facts">
             <header class="agent-page-head">
                 <span class="agent-page-title">Agent {{ agent }}</span>
@@ -84,6 +90,12 @@ onUnmounted(() => {
     gap: 12px;
     padding: 8px 16px;
     border-bottom: 1px solid var(--line);
+}
+
+.agent-page-failure {
+    margin: 0;
+    padding: 16px;
+    color: var(--text-2);
 }
 
 .agent-page-facts {

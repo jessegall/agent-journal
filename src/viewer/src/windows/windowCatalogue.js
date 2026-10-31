@@ -37,7 +37,10 @@ export class WindowCatalogue {
 
     group(windows = this.windows.value) {
         const modules = [...new Set(windows.map((window) => window.module))];
-        return modules.map((module) => ({module, windows: windows.filter((window) => window.module === module)}));
+        return modules.map((module) => {
+            const own = windows.filter((window) => window.module === module);
+            return {module, title: own[0].module_title || own.map((window) => window.title).join(", "), windows: own};
+        });
     }
 
     window(name) {

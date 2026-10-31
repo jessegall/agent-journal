@@ -1,5 +1,5 @@
 import {computed, ref} from "vue";
-import {docked, leaves, measure, opened, resized, wellShaped} from "../domain/panes.js";
+import {activated, docked, leaves, measure, opened, resized, wellShaped} from "../domain/panes.js";
 import {LayoutStore} from "./layoutStore.js";
 
 export const SAVE_DELAY_MS = 500;
@@ -120,6 +120,8 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         keep();
     }
 
+    const activate = (id, window) => apply(activated(layout.value, id, window));
+
     function resize(path, r) {
         layout.value = {...layout.value, tree: resized(layout.value.tree, path, r)};
         keep();
@@ -141,5 +143,5 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         return [...live, ...closing].sort((a, b) => a.id - b.id);
     });
     const open = computed(() => opened(layout.value));
-    return {layout, refusal, load, flush, apply, replace, resize, gone, measured, panes, open};
+    return {layout, refusal, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
 }

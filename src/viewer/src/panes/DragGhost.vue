@@ -1,5 +1,5 @@
 <script setup>
-import Icon from "../kit/Icon.vue";
+import MarkIcon from "../kit/MarkIcon.vue";
 
 defineProps({
     x: {type: Number, required: true},
@@ -12,7 +12,7 @@ defineProps({
 
 <template>
     <div class="drag-ghost" :style="{left: `${x + 14}px`, top: `${y + 12}px`}">
-        <Icon :name="icon" :size="13" />
+        <MarkIcon :name="icon" />
         <span>{{ title }}</span>
         <span class="drag-ghost-hint">{{ hint }}</span>
     </div>

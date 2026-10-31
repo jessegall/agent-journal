@@ -18,6 +18,11 @@
         ]
     },
     "detectors": [
+        "architecture_viewer_WindowDrawnOutsideStageDetector",
+        "architecture_viewer_SwitchCaseOnWindowDetector",
+        "architecture_viewer_LayoutWriteOutsideStoreDetector",
+        "architecture_viewer_LayoutFunctionInPageDetector",
+        "architecture_viewer_WindowDeclaredWithoutIconDetector",
         "naming_PlainViewerTextDetector",
         "naming_PlainJournalTextDetector",
         "naming_PlainViewerScriptTextDetector",

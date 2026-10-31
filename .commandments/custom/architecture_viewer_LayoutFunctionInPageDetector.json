@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "domain/panes\\.js$"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/pages/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "layout-function-in-page",
+        "description": "A page calls the layout functions itself, so the logic for moving, splitting and closing panes exists twice.",
+        "rule": "A page mounts PaneStage with its store; every layout change is a function of composables/paneActions.js or the store.",
+        "skill": "plain-code-words"
+    }
+}

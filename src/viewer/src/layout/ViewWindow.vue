@@ -2,6 +2,7 @@
 import {onUnmounted, watchEffect} from "vue";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import MarkIcon from "../kit/MarkIcon.vue";
 import {useViewTab} from "../composables/viewTabs.js";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
@@ -28,7 +29,7 @@ watchEffect(() => {
     <div class="view-window">
         <template v-if="catalogue.windows.value.length">
             <div class="view-window-bar">
-                <Icon :name="catalogue.window(view)?.icon || 'window'" :size="13" />
+                <MarkIcon :name="catalogue.window(view)?.icon || 'window'" />
                 <span class="view-window-title">{{ catalogue.window(view)?.title || view }}</span>
                 <span class="view-window-env">{{ environment }}</span>
                 <span class="view-window-space" />

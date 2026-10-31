@@ -1,5 +1,6 @@
 <script setup>
 import Icon from "../kit/Icon.vue";
+import MarkIcon from "../kit/MarkIcon.vue";
 
 defineProps({tabs: {type: Array, required: true}, insertAt: {type: Number, default: -1}});
 const emit = defineEmits(["pick", "close", "grab"]);
@@ -28,7 +29,7 @@ const emit = defineEmits(["pick", "close", "grab"]);
                     @keydown.enter.prevent="emit('pick', t.key)"
                     @keydown.space.prevent="emit('pick', t.key)"
                 >
-                    <Icon :name="t.icon" :size="13" />
+                    <MarkIcon :name="t.icon" />
                     <span class="pane-tab-label">{{ t.title }}</span>
                     <template v-if="t.count !== undefined">
                         <span :class="['pane-tab-n', {hot: t.hot}]">{{ t.count }}</span>

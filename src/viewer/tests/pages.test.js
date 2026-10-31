@@ -1,3 +1,5 @@
+import {resolve} from "node:path";
+import {readFileSync} from "node:fs";
 import {createApp, h} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import HomePage from "../src/pages/HomePage.vue";
@@ -29,7 +31,7 @@ function wire() {
         const flag = (name) => line[line.indexOf(name) + 1];
         let value = null;
         if (line.join(" ").startsWith("suite current")) value = current;
-        else if (line[0] === "agent" && line[1] === "show") value = {id: Number(line[2]), role: "worker", driver: "coding.worker"};
+        else if (line[0] === "agent" && line[1] === "show") value = line[2] === "99" ? null : {id: Number(line[2]), role: "worker"};
         else if (line[0] === "viewer-layout" && line[1] === "current") layoutKeys.push(`${flag("--suite")}:${flag("--page")}:${flag("--driver")}`);
         else if (line[0] === "suite" && line[1] === "layout") value = {shape: SHAPES[`${current.suite}:${line[3]}:${flag("--driver")}`]};
         return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: "none"})};
@@ -124,7 +126,7 @@ test("an agent window opened on the home page is given the main agent's id and a
 test("the agent bar of the home page shows an icon for each closed window, one group per module", async () => {
     const {element} = await mount(HomePage);
     const bar = element.querySelector(".agent-bar");
-    expect([...bar.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["tasks", "agents"]);
+    expect([...bar.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["tasks.tasks", "agents.terminal, agents.notes, agents.briefing"]);
     expect(bar.querySelector(`[data-reopen="tasks.tasks"]`)).not.toBeNull();
     expect(bar.querySelector(`[data-reopen="messages.chat"]`)).toBeNull();
     expect(bar.querySelector(`[data-reopen="agents.briefing"]`)).not.toBeNull();
@@ -167,4 +169,23 @@ test("the tour can be skipped, and is followed by the pane menu hint, each shown
     const again = await mount(HomePage);
     expect(again.element.querySelector(".pane-tour")).toBeNull();
     expect(again.element.querySelector(".pane-menu-hint")).toBeNull();
+});
+
+test("an agent page that cannot read its agent says so in plain words instead of drawing nothing", async () => {
+    const {element} = await mount(AgentPage, {agent: 99});
+    expect(element.querySelector(".agent-page-failure").textContent).toBe("Agent 99 could not be read: none");
+});
+
+test("the agent bar names a group by its windows, never by the module's dotted name, and draws each window's icon with the mark icons", async () => {
+    const {element} = await mount(HomePage);
+    const labels = [...element.querySelectorAll(".agent-bar .reopen-module")].map((label) => label.textContent);
+    expect(labels.every((label) => !label.includes("journal.core"))).toBe(true);
+    expect(element.querySelectorAll(".agent-bar [data-reopen] svg.mark-icon").length).toBeGreaterThan(0);
+    expect(element.querySelector("[data-tab] svg.mark-icon")).not.toBeNull();
+});
+
+test("the agent bar scrolls inside itself so the page never scrolls sideways at phone width", () => {
+    const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
+    expect(source).toMatch(/\.pane-stage-bar \{[^}]*overflow-x: auto;/);
+    expect(source).toMatch(/\.pane-stage \{[^}]*max-width: 100vw;/);
 });

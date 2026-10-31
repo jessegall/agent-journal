@@ -9,11 +9,13 @@ export function arrangedShape(stored) {
     return {dir: stored.direction, r: stored.share, a: arrangedShape(stored.first), b: arrangedShape(stored.second)};
 }
 
-// the main driver in suite current's answer, "main: coding.builder, worker: coding.worker"
-export function mainDriver(drivers) {
-    const main = drivers.split(", ").find((driver) => driver.startsWith("main: "));
-    return main ? main.slice("main: ".length) : "";
+// the driver of a role in suite current's answer, "main: coding.builder, worker: coding.worker"
+export function driverOf(drivers, role) {
+    const found = drivers.split(", ").find((driver) => driver.startsWith(`${role}: `));
+    return found ? found.slice(`${role}: `.length) : "";
 }
+
+export const mainDriver = (drivers) => driverOf(drivers, "main");
 
 // a page's layout (the home page's by default) for the environment's suite and a driver, the main one by default, read through the shell's own window line and
 // loaded again whenever a setting changes, so switching the suite or the driver brings that layout

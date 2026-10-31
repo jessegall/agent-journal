@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^(viewer-layout|journal\\.layout\\..*)$"
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/viewer/src/windows/paneLayout.js"
+            },
+            {
+                "file": "src/viewer/src/windows/homeLayout.js"
+            },
+            {
+                "file": "src/viewer/src/windows/legacyLayouts.js"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "layout-write-outside-store",
+        "description": "Code outside the layout store reads or writes a saved layout or its tab copy, so a change skips the store's delayed save and its version check.",
+        "rule": "A layout changes only through the paneLayout store (apply, replace, resize); home and agent pages hand their store to PaneStage.",
+        "skill": "plain-code-words"
+    }
+}

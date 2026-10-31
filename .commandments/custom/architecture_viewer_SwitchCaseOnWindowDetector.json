@@ -1,0 +1,28 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "kind:Element",
+        "where": [
+            {
+                "nameIn": [
+                    "SwitchCase"
+                ]
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/(windows|panes|layout|pages)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "switch-case-in-window-code",
+        "description": "A page, pane or window file switches on a window's name, so each new window means editing that switch.",
+        "rule": "A pane body is WindowPane, which takes the window from the catalogue; never choose a component by a window's name.",
+        "skill": "plain-code-words"
+    }
+}

@@ -1,6 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.modules.viewer.migrations.m001_viewer import ViewerTablesMigration
 from core.modules.viewer.migrations.m002_person_presets import PersonPresetsMigration
@@ -50,4 +51,4 @@ class ViewerModule(Module):
                    SaveWindowSettingSubcommand, WindowSettingSubcommand]
     guards = [PermissionOwnerGuard, LayoutOwnerGuard, PersonPresetOwnerGuard]
     listeners = [PermissionPrunerListener]
-    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, reads=SHELL_READS, runs=SHELL_RUNS)]
+    windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, reads=SHELL_READS, runs=SHELL_RUNS)]

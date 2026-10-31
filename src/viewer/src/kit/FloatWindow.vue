@@ -1,5 +1,6 @@
 <script setup>
 import Icon from "./Icon.vue";
+import MarkIcon from "./MarkIcon.vue";
 import {follow} from "../platform/pointer.js";
 
 const props = defineProps({
@@ -38,7 +39,7 @@ function grow(e) {
         @pointerdown="emit('front')"
     >
         <div class="float-bar" @pointerdown="drag">
-            <Icon :name="icon" :size="13" />
+            <MarkIcon :name="icon" />
             <span class="float-title">{{ title }}</span>
             <span class="float-space" />
             <slot name="head" />

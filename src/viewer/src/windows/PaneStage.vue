@@ -4,6 +4,7 @@ import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
 import Icon from "../kit/Icon.vue";
+import MarkIcon from "../kit/MarkIcon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
@@ -73,7 +74,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     <div class="pane-stage" @keydown="keyed">
         <nav class="pane-stage-bar agent-bar">
             <template v-for="group in groups()" :key="group.module">
-                <span class="reopen-module">{{ group.module }}</span>
+                <span class="reopen-module">{{ group.title }}</span>
                 <template v-for="window in group.windows" :key="window.name">
                     <Btn
                         :data-reopen="window.name"
@@ -82,7 +83,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
                         @click="!window.unavailable_reason && openView(window.name)"
                     >
-                        <Icon :name="window.icon || 'window'" :size="13" />
+                        <MarkIcon :name="window.icon || 'window'" />
                     </Btn>
                 </template>
             </template>
@@ -116,7 +117,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             </template>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
                             <template v-for="group in catalogue.group()" :key="group.module">
-                                <span class="reopen-module" :data-open-module="group.module">{{ group.module }}</span>
+                                <span class="reopen-module" :data-open-module="group.module">{{ group.title }}</span>
                                 <template v-for="window in group.windows" :key="window.name">
                                     <Btn :data-open="window.name" :disabled="Boolean(window.unavailable_reason)" @click="openView(window.name)">{{ window.title }}</Btn>
                                 </template>
@@ -175,6 +176,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <style scoped>
 .pane-stage {
     display: flex;
+    min-width: 0;
+    max-width: 100vw;
     flex: 1;
     flex-direction: column;
     min-height: 0;
@@ -186,8 +189,11 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 
 .pane-stage-bar {
     display: flex;
+    flex: none;
     align-items: center;
     gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
     padding: 4px 12px;
     border-bottom: 1px solid var(--line);
 }
