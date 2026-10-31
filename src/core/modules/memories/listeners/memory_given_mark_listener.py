@@ -11,7 +11,7 @@ from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_delivery import MemoryDelivery
 
 REMINDING_CAUSES = (DeliveryCause.KEYWORD, DeliveryCause.DUE)
-RECALLED_TYPES = ("rule", "reminder")
+RULE_TYPES = ("rule", "reminder")
 
 
 class MemoryGivenMarkListener(MemoryMarkListener):
@@ -27,6 +27,6 @@ class MemoryGivenMarkListener(MemoryMarkListener):
     def handle(self, event: LoggedEvent) -> None:
         delivery = self.queries.query(MemoryDelivery).find(event.row_id)
         memory = self.queries.query(Memory).find(delivery.memory_id)
-        if delivery.cause in REMINDING_CAUSES or memory.type in RECALLED_TYPES:
+        if delivery.cause in REMINDING_CAUSES or memory.type in RULE_TYPES:
             environment_id = self.queries.query(Agent).find(delivery.agent_id).environment_id
             self.show(event, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, environment_id, delivery.agent_id, row_id=memory.id)
