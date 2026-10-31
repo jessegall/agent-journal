@@ -6,10 +6,13 @@ from core.base.database.migration import Migration
 from core.base.model.model import Model
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.base.upgrade.move_declaration import MoveDeclaration
-from core.base.upgrade.move_writer import MoveWriter
-from core.base.upgrade.source_rows import SourceRows
-from core.base.upgrade.upgrade_move import UpgradeMove
+from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.base.upgrade.move_context import MoveContext
+from core.base.upgrade.move_map import MoveMap
+from core.base.upgrade.move_report import MoveReport
+from core.base.upgrade.version_four_move import VersionFourMove
+from core.base.upgrade.version_four_source import VersionFourSource
 
 PATH = "tests.stories.core.upgrade.support.move_samples"
 STANDARD = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
@@ -46,24 +49,43 @@ class TagsMigration(Migration):
                   " label TEXT NOT NULL," + STANDARD,)
 
 
-class NotesMove(UpgradeMove):
-    def carry(self, source: SourceRows, writer: MoveWriter) -> None:
+class NotesMove(VersionFourMove):
+    name = "notes"
+    reads = ["notes"]
+    drops = ["note_drafts"]
+
+    def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         ORDER.append("notes")
+        report = MoveReport()
         for row in source.rows("notes"):
-            writer.insert("notes", {"creator_id": writer.core_actor_id, "text": row["text"]}, "notes", row["id"])
+            report.count("notes", map.transfer("notes", row["id"], "notes", lambda: target.insert(Statement(
+                "INSERT INTO notes (creator_id, text, created_at, updated_at) VALUES (?, ?, ?, ?)", (context.core_actor_id, row["text"], context.timestamp, context.timestamp)))))
+        report.drop("note_drafts", len(source.rows("note_drafts")))
+        return report
 
 
-class TagsMove(UpgradeMove):
-    def carry(self, source: SourceRows, writer: MoveWriter) -> None:
+class TagsMove(VersionFourMove):
+    name = "tags"
+    reads = ["tags"]
+    id_modules = ["movenotes"]
+
+    def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         ORDER.append("tags")
+        report = MoveReport()
         for row in source.rows("tags"):
-            writer.insert("tags", {"creator_id": writer.core_actor_id, "note_id": writer.mapped("notes", row["note_id"]), "label": row["label"]}, "tags", row["id"])
+            note_id = map.new_id("notes", row["note_id"])
+            report.count("tags", map.transfer("tags", row["id"], "tags", lambda: target.insert(Statement(
+                "INSERT INTO tags (creator_id, note_id, label, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+                (context.core_actor_id, note_id, row["label"], context.timestamp, context.timestamp)))))
+        return report
 
 
-class BrokenTagsMove(UpgradeMove):
-    def carry(self, source: SourceRows, writer: MoveWriter) -> None:
+class BrokenTagsMove(TagsMove):
+    def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         first = source.rows("tags")[0]
-        writer.insert("tags", {"creator_id": writer.core_actor_id, "note_id": writer.mapped("notes", first["note_id"]), "label": first["label"]}, "tags", first["id"])
+        map.transfer("tags", first["id"], "tags", lambda: target.insert(Statement(
+            "INSERT INTO tags (creator_id, note_id, label, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+            (context.core_actor_id, map.new_id("notes", first["note_id"]), first["label"], context.timestamp, context.timestamp))))
         raise RuntimeError("the second tag could not be read")
 
 
@@ -73,7 +95,7 @@ class NotesModule(Module):
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Note)]
     migrations = [NotesMigration]
-    moves = [MoveDeclaration(NotesMove, tables=["notes"], drops=["note_drafts"])]
+    moves = [NotesMove]
 
 
 class TagsModule(Module):
@@ -82,7 +104,7 @@ class TagsModule(Module):
     dependencies = ["journal.core.actors", "movenotes"]
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
-    moves = [MoveDeclaration(TagsMove, tables=["tags"], reads_ids_of=["movenotes"])]
+    moves = [TagsMove]
 
 
 class BrokenTagsModule(Module):
@@ -91,21 +113,33 @@ class BrokenTagsModule(Module):
     dependencies = ["journal.core.actors", "movenotes"]
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
-    moves = [MoveDeclaration(BrokenTagsMove, tables=["tags"], reads_ids_of=["movenotes"])]
+    moves = [BrokenTagsMove]
+
+
+class GhostMove(NotesMove):
+    reads = ["ghost_notes"]
+    drops = []
+    id_modules = ["nothing-installed"]
+
+
+class StrangerMove(NotesMove):
+    reads = ["stranger_notes"]
+    drops = []
+    id_modules = ["journal.core.environments"]
 
 
 class GhostReaderModule(Module):
     name = "moveghost"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
-    moves = [MoveDeclaration(NotesMove, tables=["ghost_notes"], reads_ids_of=["nothing-installed"])]
+    moves = [GhostMove]
 
 
 class StrangerReaderModule(Module):
     name = "movestranger"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
-    moves = [MoveDeclaration(NotesMove, tables=["stranger_notes"], reads_ids_of=["journal.core.environments"])]
+    moves = [StrangerMove]
 
 
 def version_four_database(folder: Path) -> Path:
