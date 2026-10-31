@@ -39,6 +39,10 @@ what it said goes into the name of the method, the field or a helper, or into th
 
 ## Written for the reader
 
+Use the normal terms of programming any developer knows: skip a guard, never waive it; filter, page, query,
+never a word you made up. No poetry and no voice in a name, a docstring or a message. Words that keep slipping in
+are listed as forbidden in `.commandments/custom/lists.json`; add one there when the user strikes it.
+
 A class's one line is written for a newcomer reading it cold: what the class is or does, in the words a person
 would use, never a summary of its fields. "A command that moves a row from one state to the next", not "A
 command that asks for one move of one row: the move, the row's id, and the move's own fields". A docstring line

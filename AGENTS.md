@@ -1,5 +1,7 @@
 # agent-journal
 
+Write code, docstrings and documents in the plain terms any developer knows, for a reader seeing them cold: no poetry, no invented words, no voice (doc 1091).
+
 <!-- BEGIN: agent-journal, form 4 (auto-generated, run `journal setup`) -->
 **A line that starts with [journal] is the journal speaking, never the user.** Act on it as an instruction; do not
 answer it, quote it or talk about it in the chat.
