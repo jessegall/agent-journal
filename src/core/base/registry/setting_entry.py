@@ -2,7 +2,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
-from core.base.setting.setting_value import SettingDefault
+from core.base.setting.setting_type import SettingType
+from core.base.setting.setting_value import SettingDefault, SettingValue
 
 GROUP_TYPE = "group"
 ANY_KEY = "*"
@@ -32,3 +33,8 @@ class SettingEntry:
     def restored(cls, stored: Mapping[str, Any]) -> "SettingEntry":
         return cls(stored["key"], stored["module"], stored["parent"], stored["title"], stored["description"], stored["type"], stored["default"],
                    stored["secret"], stored["scope"], stored["agent_writable"], tuple(stored["choices"]), stored["toggleable"], stored["enabled"])
+
+    def accepts(self, value: object) -> bool:
+        if self.type == GROUP_TYPE:
+            return isinstance(value, bool)
+        return SettingValue(self.key, self.title, self.description, SettingType(self.type), choices=self.choices).accepts(value)

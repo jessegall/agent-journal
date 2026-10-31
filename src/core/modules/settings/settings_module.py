@@ -6,7 +6,9 @@ from core.modules.settings.migrations.m001_settings import SettingsTableMigratio
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.sync_notes import SyncNotes
 from core.modules.settings.models.setting import Setting
+from core.modules.settings.support.undeclared_setting_notes import UndeclaredSettingNotes
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
 from core.modules.settings.commands.set_setting_handler import SetSettingHandler
@@ -32,4 +34,4 @@ class SettingsModule(Module):
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, icon=WindowIcon.MENU,
                                  reads=["setting tree"], runs=["setting set", "setting switch"], events=["setting.*"])]
     subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand)
-    bindings = [(GuardSwitches, SettingGuardSwitches)]
+    bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]

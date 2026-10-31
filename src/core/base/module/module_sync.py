@@ -44,6 +44,7 @@ from core.base.module.module_check import ModuleCheck
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
+from core.base.module.sync_notes import SyncNotes
 from core.base.module.sync_report import SyncReport
 from core.base.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
@@ -60,10 +61,10 @@ class ModuleSync:
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
                  triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
-                 entries: DriverEntries, providers: ProviderEntries, events: EventLog, home: JournalHome) -> None:
+                 entries: DriverEntries, providers: ProviderEntries, events: EventLog, home: JournalHome, notes: SyncNotes) -> None:
         self.database, self.clock, self.finder, self.order, self.check, self.events = database, clock, finder, order, check, events
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
-        self.actors, self.registry_table, self.entries, self.providers, self.home = actors, registry_table, entries, providers, home
+        self.actors, self.registry_table, self.entries, self.providers, self.home, self.notes = actors, registry_table, entries, providers, home, notes
 
     def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
@@ -88,7 +89,7 @@ class ModuleSync:
                     if self.timing(listener) is ListenerTiming.COMMIT:
                         self.cursors.start(listener.name)
         self.home.program_table.write_text(ProgramTable([provider for module in modules for provider in module.providers]).text())
-        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
+        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed, tuple(self.notes.lines(modules)))
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         return tuple(migration() for migration in module.migrations)
