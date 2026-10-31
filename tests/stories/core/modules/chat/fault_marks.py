@@ -15,7 +15,7 @@ def test_the_chat_module_declares_the_fault_mark_under_the_journal_group(new_sto
 
 def test_a_failing_command_shows_one_fault_mark_and_the_file_keeps_the_trace(new_story):
     story = new_story(FAULT_SAMPLE, fixture=UserJoined)
-    story.run("chat-mark boom --environment main")
+    story.run("chat-mark boom", environment_id=1)
     story.run_listeners()
     assert marks_text(story).count("RuntimeError: the sample command broke") == 1, marks_text(story) + story.error_log_text()
     assert "the sample command broke" in story.error_log_text() and "Traceback" in story.error_log_text()
