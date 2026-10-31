@@ -1,6 +1,13 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.memories.memory import Memory
+from core.modules.memories.memory_context_subcommand import MemoryContextSubcommand
+from core.modules.memories.memory_make_handler import MemoryMakeHandler
+from core.modules.memories.memory_make_subcommand import MemoryMakeSubcommand
+from core.modules.memories.memory_read_handler import MemoryReadHandler
+from core.modules.memories.memory_read_subcommand import MemoryReadSubcommand
+from core.modules.memories.memory_weigh_handler import MemoryWeighHandler
+from core.modules.memories.memory_weigh_subcommand import MemoryWeighSubcommand
 from core.modules.memories.memory_giving import MemoryGiving
 from core.modules.memories.memory_in_context import MemoryInContext
 from core.modules.memories.memory_keyword import MemoryKeyword
@@ -19,7 +26,9 @@ class MemoriesModule(Module):
     name = "journal.core.memories"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.drivers"]
-    models = [ModelDeclaration(Memory), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
+    models = [ModelDeclaration(Memory, excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryGiving), ModelDeclaration(MemoryMark)]
     migrations = [MemoriesTables]
     views = [StandingMemory, MemoryInContext, MemoryWord]
+    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler]
+    subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand]
