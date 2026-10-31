@@ -11,6 +11,10 @@ from core.modules.memories.compaction_fader import CompactionFader
 from core.modules.memories.task_memory_remover import TaskMemoryRemover
 from core.modules.memories.memory import Memory
 from core.modules.memories.memory_fade_handler import MemoryFadeHandler
+from core.modules.memories.memory_give_handler import MemoryGiveHandler
+from core.modules.memories.rules.give_at_start import GiveAtStart
+from core.modules.memories.rules.give_by_keyword import GiveByKeyword
+from core.modules.memories.rules.give_when_due import GiveWhenDue
 from core.modules.memories.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.memory_faded_subcommand import MemoryFadedSubcommand
 from core.modules.memories.memory_make_handler import MemoryMakeHandler
@@ -43,6 +47,7 @@ class MemoriesModule(Module):
     migrations = [MemoriesTables]
     views = [StandingMemory, MemoryInContext, MemoryWord]
     guards = [TypeMakers, TypeOn, AgentScopeGuard, WeightOnlyRises, TypesByUser, SwitchesByUser, KeywordScope]
-    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler]
+    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler, MemoryGiveHandler]
+    driver_rules = [GiveAtStart, GiveByKeyword, GiveWhenDue]
     listeners = [CompactionFader, TaskMemoryRemover]
     subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand, MemoryFadedSubcommand]

@@ -1,7 +1,9 @@
+from collections.abc import Sequence
 from typing import Self
 
 from core.base.database.database import Database
 from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.subquery_match import SubqueryMatch
@@ -40,6 +42,12 @@ class StandingMemoryQuery(Query[StandingMemory]):
 
     def due(self, timestamp: Timestamp) -> Self:
         return self.matching(DueMemory(timestamp))
+
+    def undated(self) -> Self:
+        return self.matching(IsNull("due_at"))
+
+    def among(self, memory_ids: Sequence[int]) -> Self:
+        return self.matching(Among("memory_id", memory_ids))
 
     def heaviest_first(self) -> Self:
         return self.descending("weight")
