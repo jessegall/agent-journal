@@ -15,7 +15,7 @@ class ReviewsSeeder(Seeder):
 
     def seed(self, demo: Demo) -> None:
         main = demo.people["main"]
-        demo.run("setting make reviews.reviewer true")
+        demo.run("setting make journal.core.reviews.reviewer true")
         review = demo.new_id(f"review request task {demo.ids['task:closed']} --points 2 {demo.environment_flag}", main)
         reviewer = REVIEWER_ID.search(demo.run(f"review show {review}"))
         if reviewer is not None:
