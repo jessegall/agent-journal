@@ -19,6 +19,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
@@ -36,7 +37,7 @@ class Module:
     """What a module adds to the journal, named by the classes themselves: its models, the modules it builds on,
     the core version it needs, its migrations and views, its handlers, subcommands, guards and listeners, the
     classes it binds in place of the core's interfaces, the migration that removes its tables, and the suites,
-    drivers, overlays, driver rules, windows, chat marks, docked items and agent programs it adds."""
+    drivers, overlays, driver rules, windows, chat marks, docked items, skills and agent programs it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -59,6 +60,7 @@ class Module:
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
     settings: ClassVar[Sequence[SettingGroup | SettingValue]] = ()
+    skills: ClassVar[Sequence[SkillDeclaration]] = ()
 
     @classmethod
     def folder(cls) -> Path:

@@ -13,6 +13,7 @@ from core.base.module.suite_check import SuiteCheck
 from core.base.module.window_check import WindowCheck
 from core.base.module.mark_check import MarkCheck
 from core.base.module.dock_check import DockCheck
+from core.base.module.skill_check import SkillCheck
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.module.setting_check import SettingCheck
 
@@ -26,9 +27,9 @@ class ModuleCheck:
     once."""
 
     def __init__(self, tables: Tables, suites: SuiteCheck, windows: WindowCheck, providers: ProviderCheck, marks: MarkCheck,
-                 docks: DockCheck, settings: SettingCheck) -> None:
+                 docks: DockCheck, settings: SettingCheck, skills: SkillCheck) -> None:
         self.tables, self.suites, self.windows, self.providers, self.marks, self.docks = tables, suites, windows, providers, marks, docks
-        self.settings = settings
+        self.settings, self.skills = settings, skills
 
     def known_events(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events: list[str] = []
@@ -40,7 +41,8 @@ class ModuleCheck:
     def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
         problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
                     + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules) + self.windows.problems(modules, self.known_events(modules))
-                    + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules))
+                    + self.providers.problems(modules) + self.marks.problems(modules) + self.docks.problems(modules) + self.settings.problems(modules)
+                    + self.skills.problems(modules, self.known_events(modules)))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 
