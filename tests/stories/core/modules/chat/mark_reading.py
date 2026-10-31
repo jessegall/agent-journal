@@ -26,3 +26,9 @@ def test_the_marks_are_filtered_by_agent(new_story):
 def test_a_mark_is_shown_by_its_id(new_story):
     story = story_with_marks(new_story)
     story.expect_success("chat-mark show 1", "key: moment:1", "label: First mark")
+
+
+def test_the_chat_window_reads_marks_and_follows_their_events(new_story):
+    story = new_story(fixture=UserJoined)
+    window = Registry.read(story.container.get(Database)).window("messages.chat")
+    assert {"chat-mark list", "chat-mark show"} <= set(window.reads) and "chat_mark.*" in window.events

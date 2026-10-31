@@ -19,11 +19,11 @@ class MessagesModule(Module):
 
     name = "journal.core.messages"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     migrations = [MessagesTableMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler)
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show"], runs=["message send"],
-                                 events=["message.*"])]
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show"], runs=["message send"],
+                                 events=["message.*", "chat_mark.*"])]
