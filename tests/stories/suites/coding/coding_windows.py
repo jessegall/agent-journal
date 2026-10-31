@@ -58,9 +58,11 @@ def test_the_coding_suite_offers_version_4s_agent_page_presets_in_their_order(ne
 
 def test_the_coding_suite_lays_out_a_phone_with_the_chat_first_and_the_file_feed_last(new_story):
     story = new_story(fixture=CodingEnvironment)
-    story.expect_success("suite layout main phone", "page: phone", '"messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "coding.file-feed"')
+    story.expect_success("suite layout main phone", "page: phone",
+                         "shape: {'windows': ['messages.chat', 'questions.waiting', 'questions.questions', 'tasks.tasks', 'plans.plans', 'agents.agents', 'coding.file-feed'], 'active': 'messages.chat'}")
 
 
 def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story):
-    story = new_story(fixture=CodingEnvironment)
-    story.expect_success("suite show main", "questions.waiting", "questions.questions")
+    window = window_story(new_story)
+    window.expect_window_allowed("questions.waiting", "wait list")
+    window.expect_window_allowed("questions.questions", "question list")
