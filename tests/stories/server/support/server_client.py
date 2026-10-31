@@ -34,6 +34,7 @@ from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
+from server.viewer.share_sessions import ShareSessions
 from server.server_tunnel import ServerTunnel
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
@@ -249,7 +250,8 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     files.clear_leftover_socket()
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
-    login = ViewerLogin(PhoneSessions(home, listener_thread))
+    phones = PhoneSessions(home, listener_thread)
+    login = ViewerLogin(phones, ShareSessions(phones.journal_output))
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
                             HookDatabase(home), ViewerListener(login, ViewerRoutes(home, listener_thread, login)), ServerTunnel(home), STORY_HOOK_LIMIT_SECONDS)
     server = JournalServer(str(files.socket), RequestHandler, context)

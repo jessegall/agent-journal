@@ -12,6 +12,7 @@ from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
+from server.viewer.share_route import OPEN
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
@@ -19,6 +20,8 @@ from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
 
 COOKIE_NAME = "journal_viewer"
+SHARE_COOKIE_NAME = "journal_share"
+SHARE_ROUTE = "/viewer/share/"
 VIEWER_ROOT = "/viewer/"
 VIEWER_MODULE = "journal.core.viewer"
 KIT_ROUTE = "/viewer/kit/"
@@ -69,6 +72,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path.startswith(KIT_ROUTE) or route.path.startswith(SHELL_ASSETS_ROUTE):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT))
+            return
+        if route.path.startswith(SHARE_ROUTE):
+            self.answer_share(viewer, route.path.removeprefix(SHARE_ROUTE))
             return
         if route.path == PAIRING_PAGE:
             self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE)
@@ -143,13 +149,18 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         event_stream.follow(request.environment, request.cursor_id, self.stream_message)
 
-    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({})) -> None:
+    def answer_share(self, viewer: ViewerServer, token: str) -> None:
+        status = viewer.routes.share_route.status(token)
+        cookie = {"Set-Cookie": f"{SHARE_COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"} if status == OPEN else {}
+        self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status)
+
+    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({}), status: int = 200) -> None:
         try:
             module_file = viewer.routes.module_files.file(module_name, path)
         except MissingModuleFileError as error:
             self.answer(404, {"error": str(error)})
             return
-        self.send_response(200)
+        self.send_response(status)
         self.send_header("Content-Type", module_file.content_type)
         self.send_header("Content-Length", str(len(module_file.content)))
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -199,7 +210,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def cookie_token(self) -> str:
         cookie = SimpleCookie(self.headers.get("Cookie", ""))
-        return cookie[COOKIE_NAME].value if COOKIE_NAME in cookie else ""
+        names = [name for name in (COOKIE_NAME, SHARE_COOKIE_NAME) if name in cookie]
+        return cookie[names[0]].value if names else ""
 
     def viewer(self) -> ViewerServer:
         return server_instance(self.server, ViewerServer)

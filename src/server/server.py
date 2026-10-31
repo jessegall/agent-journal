@@ -25,6 +25,7 @@ from server.listener_work import ListenerWork
 from server.tick_work import TickWork
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
+from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.request_handler import RequestHandler
@@ -54,7 +55,8 @@ def main(argv: list[str]) -> int:
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     tick_round = JournalRound(home, "ticker", TickWork())
     hook_database = HookDatabase(home)
-    login = ViewerLogin(PhoneSessions(home, listener_thread))
+    phones = PhoneSessions(home, listener_thread)
+    login = ViewerLogin(phones, ShareSessions(phones.journal_output))
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)

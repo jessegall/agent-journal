@@ -16,7 +16,7 @@ from core.modules.sharing.models.share_link import ShareLink
 
 TOKEN_BYTES = 24
 LINK_LIFETIME_DAYS = 7
-LINK_PATH = "/share/"
+LINK_PATH = "/viewer/share/"
 
 
 class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
