@@ -80,3 +80,4 @@ src/web/node_modules/
 
 /version-4.bak/
 runtime/
+src/viewer/node_modules

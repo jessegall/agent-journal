@@ -1,0 +1,42 @@
+import {escape, register, rowOf} from "./index.js";
+import {api} from "../api/client.js";
+import {isPicture} from "../format/files.js";
+import {meta, tableOfWord} from "../domain/tables.js";
+import "./cards.css";
+
+const ATTACHMENT = /^(?:\[\[chip ([a-z]+):(\d+)\|[^\]]*\]\]|([A-Za-z][\w-]*) #?(\d+)) ([\w .()-]+\.[A-Za-z0-9]{1,8})$/m;
+const PATH = /^(?:\[\[file ([^|\]#]+)(?:#L\d+)?\|[^\]]*\]\]|(\/[\w .()/-]+\.[A-Za-z0-9]{1,8}))$/m;
+
+function attachment(text, context) {
+    const found = ATTACHMENT.exec(text);
+    const [, markedType, markedNumber, word, number, name] = found || [];
+    const table = found && tableOfWord(markedType || word);
+    const row = table && rowOf(context, table, Number(markedNumber || number));
+    if (!row || !(row.files || []).includes(name)) return null;
+    const url = api.in(context.env).fileUrl(table, row.id, name);
+    const label = `${meta(table).title} ${row.id} · ${escape(name)}`;
+    const picture = isPicture(name) ? `<img class="file-card-image" src="${url}" alt="${escape(name)}">` : "";
+    return {at: found.index, length: found[0].length, html: `<a class="file-card" href="${url}" data-attached="${escape(name)}">${picture}<span class="file-card-name">${label}</span></a>`};
+}
+
+function path(text) {
+    const found = PATH.exec(text);
+    if (!found) return null;
+    const file = found[1] || found[2];
+    return {at: found.index, length: found[0].length, html: `<a class="file-card" href="#" data-file="${file}"><span class="file-card-name">${escape(file.split("/").pop())}</span><span class="file-card-line">${file}</span></a>`};
+}
+
+// a file card is a block of its own, so text drawn in a line, as a chat mark's detail, keeps a path as text
+register(
+    (text, context) => {
+        if (context.inline) return null;
+        const found = attachment(text, context) || path(text);
+        if (!found) return null;
+        return [
+            {kind: "text", text: text.slice(0, found.at)},
+            {kind: "html", html: found.html},
+            {kind: "text", text: text.slice(found.at + found.length)},
+        ];
+    },
+    {first: true}
+);

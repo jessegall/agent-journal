@@ -1,0 +1,83 @@
+<script setup>
+import BubbleHeader from "../kit/BubbleHeader.vue";
+import TextDisplay from "../kit/TextDisplay.vue";
+import ReplyTool from "./ReplyTool.vue";
+import {useTurnLinks} from "./turnLinks.js";
+import {useTurnText} from "./turnText.js";
+
+const props = defineProps({turn: {type: Object, required: true}});
+const emit = defineEmits(["reply"]);
+const {env} = useTurnLinks();
+const {words} = useTurnText(() => props.turn, env);
+</script>
+
+<template>
+    <div class="thread-turn thought" :data-ref="turn.key">
+        <div class="thought-text">
+            <BubbleHeader icon="bot" label="Summary" tone="muted" small />
+            <TextDisplay :text="turn.text" />
+        </div>
+        <div class="thread-tools">
+            <ReplyTool title="Reply to this, quoting it" @reply="emit('reply', {text: words.text, ref: turn.key})" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* a summary steps back from the conversation: no box, quieter grey text lined up with the text in the agent's boxes */
+.thought-text {
+    padding: 0 12px;
+    color: var(--text-2);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+.thought-text :deep(> :first-child) {
+    margin-top: 0;
+}
+
+.thought-text :deep(> :last-child) {
+    margin-bottom: 0;
+}
+
+.thread-tools {
+    position: absolute;
+    top: -11px;
+    right: -6px;
+    display: flex;
+    gap: 1px;
+    padding: 1px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    background: var(--raised);
+    opacity: 0;
+    transform: translateY(3px);
+    pointer-events: none;
+    transition:
+        opacity 0.16s ease-out,
+        transform 0.16s ease-out;
+}
+
+.thread-turn:hover .thread-tools {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.thread-tool {
+    padding: 1px 7px;
+    border: 0;
+    border-radius: 99px;
+    background: none;
+    color: var(--text-3);
+    font-size: 10.5px;
+    line-height: 1.5;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.thread-tool:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+</style>

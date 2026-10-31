@@ -1,0 +1,326 @@
+<script setup>
+import SwitchCase from "../kit/SwitchCase.vue";
+import {computed, nextTick, provide, ref, watch} from "vue";
+import {route} from "../route.js";
+import {useScope} from "../composables/scope.js";
+import ResourceBody from "./ResourceBody.vue";
+import DocRevisions from "./DocRevisions.vue";
+import Comments from "./Comments.vue";
+import PlanTimelinePanel from "./PlanTimelinePanel.vue";
+import SequenceRuns from "./SequenceRuns.vue";
+import {useBeingWritten} from "../composables/sequenceRuns.js";
+import Links from "./Links.vue";
+import Highlight from "./Highlight.vue";
+import {meta} from "../domain/tables.js";
+import {refOf, sectionsOf} from "../domain/row.js";
+
+const props = defineProps({
+    resource: Object,
+    focus: {type: Number, default: 0},
+    linked: {type: Array, default: () => []},
+    readOnly: Boolean,
+});
+const emit = defineEmits(["close"]);
+const quote = ref("");
+const listedAlready = computed(() => [...props.linked, ...(props.resource.table === "plans" ? props.resource.task_ids || [] : []).map((id) => `tasks:${id}`)]);
+const scope = useScope();
+// the count the row was read with, until the comments read since hold more
+const count = computed(() => Math.max(props.resource.comment_count || 0, scope.rows("messages").filter((c) => (c.comments_on || []).includes(refOf(props.resource))).length));
+const talking = ref(props.focus > 0);
+const slid = ref(talking.value);
+const panel = ref(talking.value);
+watch(quote, (q) => q && !running.value && (talking.value = true));
+watch(
+    () => props.focus,
+    (focus) => focus && (talking.value = true),
+    {immediate: true}
+);
+watch(talking, (on) => {
+    if (on) {
+        if (slid.value) panel.value = true;
+        else slid.value = true;
+    } else if (panel.value) panel.value = false;
+    else slid.value = false;
+});
+
+const SLIDE_MS = 280;
+watch(slid, (on) => on && setTimeout(() => talking.value && (panel.value = true), SLIDE_MS));
+
+function panelLeft() {
+    if (talking.value) panel.value = true;
+    else slid.value = false;
+}
+
+const aside = ref("comments");
+const running = useBeingWritten(() => props.resource);
+const page = ref(null);
+const quick = computed(() => !props.readOnly && !slid.value && !running.value && !!meta(props.resource.table)?.takes_comments);
+const SIDE_BY_SIDE = 720;
+
+watch(
+    () => running.value && !props.readOnly,
+    (on) => {
+        if (on) {
+            aside.value = "running";
+            if (page.value?.clientWidth > SIDE_BY_SIDE) talking.value = true;
+        } else if (aside.value === "running") {
+            talking.value = false;
+            aside.value = "comments";
+        }
+    },
+    {immediate: true, flush: "post"}
+);
+
+function toggle(mode = "comments") {
+    if (running.value && mode === "comments") return;
+    if (talking.value && aside.value === mode) {
+        talking.value = false;
+        return;
+    }
+    aside.value = mode;
+    talking.value = true;
+}
+
+provide("talk", {talking, count, aside, running, toggle, say: (text) => (quote.value = text)});
+const body = ref(null);
+const LIT_FOR = 2500;
+
+function sectionAt(part) {
+    const sections = [...(body.value?.querySelectorAll(".section") || [])];
+    const numbered = part.match(/^section (\d+)$/i);
+    if (numbered) return sections[Number(numbered[1]) - 1];
+    const lines = part.match(/^(\d+)(?:-\d+)?$/);
+    if (!lines) return sections.find((el) => el.querySelector("h3")?.textContent.trim().toLowerCase() === part.toLowerCase());
+    let at = 0;
+    const index = sectionsOf(props.resource.body).findIndex((section) => {
+        at += 1 + (section.body || "").split("\n").length;
+        return at >= Number(lines[1]);
+    });
+    return sections[index < 0 ? sections.length - 1 : index];
+}
+
+watch(
+    () => [route.value.sub, props.resource.id],
+    async ([sub]) => {
+        if (!sub) return;
+        await nextTick();
+        const found = sectionAt(decodeURIComponent(sub));
+        if (!found) return;
+        found.scrollIntoView({block: "start", behavior: "smooth"});
+        found.classList.add("part-lit");
+        setTimeout(() => found.classList.remove("part-lit"), LIT_FOR);
+    },
+    {immediate: true}
+);
+</script>
+
+<template>
+    <div ref="page" :class="['document', {slid, quick}]">
+        <div ref="body" class="document-body">
+            <Highlight :off="readOnly" @quote="quote = $event">
+                <slot>
+                    <template v-if="resource.table === 'docs'">
+                        <DocRevisions :resource="resource" :read-only="readOnly" @close="emit('close')" />
+                    </template>
+                    <template v-else>
+                        <ResourceBody :resource="resource" :comments="false" :links="false" :read-only="readOnly" @close="emit('close')" />
+                    </template>
+                </slot>
+                <template v-if="!readOnly">
+                    <div class="document-links">
+                        <Links :resource="resource" :except="listedAlready" />
+                    </div>
+                </template>
+                <slot name="foot" />
+            </Highlight>
+        </div>
+        <template v-if="quick">
+            <div class="document-quick">
+                <Comments :resource="resource" :show-thread="false" />
+            </div>
+        </template>
+        <Transition name="aside" @after-leave="panelLeft">
+            <aside v-if="panel && !readOnly" class="document-aside">
+                <SwitchCase :value="aside">
+                    <template #running>
+                        <SequenceRuns class="running-panel" :resource="resource" panel />
+                    </template>
+                    <template #timeline>
+                        <PlanTimelinePanel class="timeline-aside" :plan="resource" />
+                    </template>
+                    <template #default>
+                        <Comments
+                            :resource="resource"
+                            :quote="quote"
+                            :focus="props.focus"
+                            hint="Select text in the document to comment on that passage."
+                            @sent="quote = ''"
+                        />
+                    </template>
+                </SwitchCase>
+            </aside>
+        </Transition>
+    </div>
+</template>
+
+<style scoped>
+.document {
+    --comments-width: clamp(280px, 34%, 400px);
+    container-type: inline-size;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.document-body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    animation: curtain-left 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    transition: padding-right 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.document.slid .document-body {
+    padding-right: var(--comments-width);
+}
+
+@keyframes curtain-left {
+    from {
+        opacity: 0;
+        transform: translateX(-28px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.document-quick {
+    flex: none;
+}
+
+.document.quick .document-body::after {
+    content: "";
+    display: block;
+    height: 28px;
+}
+
+.document-links {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 32px 60px;
+}
+
+.document-links:empty {
+    display: none;
+}
+
+.document-body :deep(.body) {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 36px 32px 60px;
+}
+
+.document-body :deep(.body.agent-page) {
+    max-width: none;
+    padding: 0 24px 24px;
+}
+
+.document-body :deep(.body) > .head {
+    margin: -36px -32px 0;
+    padding: 36px 32px 8px;
+}
+
+@media (max-width: 640px) {
+    .document-body :deep(.body) {
+        padding: 20px 18px 40px;
+    }
+
+    .document-body :deep(.body) > .head {
+        margin: -20px -18px 0;
+        padding: 20px 18px 8px;
+    }
+
+    .document-links {
+        padding: 0 18px 40px;
+    }
+}
+
+.document-aside {
+    position: absolute;
+    z-index: 3;
+    inset: 0 0 0 auto;
+    width: var(--comments-width);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    border-left: 1px solid var(--border);
+    background: var(--side);
+}
+
+@container (max-width: 720px) {
+    .document.slid .document-body {
+        padding-right: 0;
+    }
+
+    .document-aside {
+        width: 100%;
+        border-left: 0;
+    }
+}
+
+.document-aside > .running-panel,
+.document-aside > .timeline-aside {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.document-aside > :deep(.comments) {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 16px 16px 8px;
+}
+
+.document-aside > :deep(.comment-write) {
+    flex: none;
+    position: static;
+    margin: 0;
+    padding: 8px 16px 14px;
+    border-top: 1px solid var(--border);
+    background: var(--side);
+}
+
+.document-aside.aside-enter-active,
+.document-aside.aside-leave-active {
+    transition:
+        transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+        opacity 0.2s ease;
+}
+
+.document-aside.aside-enter-from,
+.document-aside.aside-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+
+.document-body :deep(.section.part-lit) {
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent);
+    transition:
+        background 0.6s ease,
+        box-shadow 0.6s ease;
+}
+</style>
