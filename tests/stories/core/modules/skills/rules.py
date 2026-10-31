@@ -2,7 +2,9 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.skills.agent_skills import read_of
-from tests.stories.core.modules.skills.due import JOURNAL_TASK_LIST, environment, start
+from tests.stories.core.base.driver.support.fixtures import LeadStarted
+from tests.stories.core.base.driver.support.samples import SAMPLES
+from tests.stories.core.modules.skills.due import DUE, JOURNAL_TASK_LIST, environment, start
 
 EDIT = HookSamples.edit("src/cart.py")
 JOURNAL_AGENT_LIST = HookSamples.shell("journal agent list", ShellPart("journal", CommandCategory.JOURNAL, ["agent", "list"]))
@@ -58,7 +60,7 @@ def test_with_nothing_due_nothing_is_refused(new_story):
 
 
 def test_a_silenced_rule_refuses_nothing_while_the_agent_waits(new_story):
-    story = notes_due(new_story)
+    story = new_story(SAMPLES, DUE, fixture=LeadStarted)
     story.run("task make \"The review\" --environment main")
     story.run("wait on 'the review' --target tasks:1", actor=story.agent)
-    story.expect_hook_allowed("s-1", EDIT)
+    story.expect_hook_allowed("s-1", HookSamples.stop())
