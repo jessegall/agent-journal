@@ -4,6 +4,7 @@ import PaneStage from "../src/windows/PaneStage.vue";
 import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {leaves} from "../src/domain/panes.js";
+import {windowContext} from "../src/windows/windowContext.js";
 
 const TITLES = {"a.chat": "Chat", "a.tasks": "Tasks", "a.notes": "Notes", "a.spare": "Spare", "messages.chat": "Chat"};
 const fake = (name) => ({name, title: TITLES[name], icon: "window", options: [], line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true});
@@ -48,11 +49,11 @@ async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "
         defaults: async () => shape,
         save: async () => ({ok: true, version: 1}),
         tab: {read: () => null, write: () => {}},
-        entry: (name) => (offers.includes(name) ? {...fake(name), ...extra} : null),
+        entry: (name) => (offers.includes(name) ? {...fake(name), ...(typeof extra === "function" ? extra(name) : extra)} : null),
     });
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
     if (titles) store.replace({...store.layout.value, panes: Object.fromEntries(Object.entries(store.layout.value.panes).map(([id, pane]) => [id, {...pane, titles}]))});
-    const windows = shallowRef(offers.map((name) => ({...fake(name), ...extra})));
+    const windows = shallowRef(offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)})));
     const catalogue = {window: (name) => windows.value.find((window) => window.name === name) || null, windows, person: 1};
     const element = document.createElement("div");
     document.body.append(element);
@@ -218,6 +219,7 @@ test("the arrow keys on a resize separator move the split, and the keys that do 
     await settled();
     expect(store.layout.value.tree.r).toBeCloseTo(0.55, 2);
     key(handle, "ArrowLeft");
+    await settled();
     key(handle, "ArrowLeft");
     await settled();
     expect(store.layout.value.tree.r).toBeCloseTo(0.45, 2);
@@ -317,4 +319,93 @@ test("a tab shows its window's count line, runs again on one of the window's eve
     await settled();
     expect(number().textContent).toBe("4");
     expect(number().classList.contains("hot")).toBe(true);
+});
+
+const OPTIONS = [
+    {control: "toggle", key: "hide", label: "Hide tools", default: false},
+    {control: "choice", key: "density", label: "Density", choices: [["roomy", "Roomy"], ["compact", "Compact"]], default: "roomy"},
+];
+const menuOf = (element, id) => element.querySelector(`[data-tabs-of="${id}"] .pane-menu-button`);
+
+test("the reopen bar lists every offered window by module, a third party's too, and shows an unavailable window greyed with its reason", async () => {
+    const extra = (name) => ({module: name === "a.spare" ? "thirdparty" : "mine", unavailable_reason: name === "a.spare" ? "Needs window kit 2." : ""});
+    const {element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra});
+    expect([...element.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["mine", "thirdparty"]);
+    const unavailable = element.querySelector(`[data-reopen="a.spare"]`);
+    expect(unavailable.classList.contains("unavailable")).toBe(true);
+    expect(unavailable.textContent + unavailable.title).toContain("Needs window kit 2.");
+    expect(element.querySelector(`[data-reopen="a.tasks"]`).classList.contains("unavailable")).toBe(false);
+});
+
+test("the pane menu lists every offered window by module too", async () => {
+    const extra = (name) => ({module: name === "a.spare" ? "thirdparty" : "mine"});
+    const {store, element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra});
+    menuOf(element, holder(store, "a.chat")).click();
+    await settled();
+    expect(element.querySelector(`.pane-menu [data-open="a.spare"]`)).not.toBeNull();
+    expect(element.querySelector(`.pane-menu [data-open-module="thirdparty"]`)).not.toBeNull();
+});
+
+test("a declared toggle and choice appear in the pane menu, and a changed value is stored on the pane", async () => {
+    const {store, element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra: {options: OPTIONS}});
+    const id = holder(store, "a.chat");
+    menuOf(element, id).click();
+    await settled();
+    element.querySelector(`[data-option="hide"]`).click();
+    await settled();
+    element.querySelector(`[data-option="density"] [data-choice="compact"]`).click();
+    await settled();
+    expect(store.layout.value.panes[id].options).toEqual({hide: true, density: "compact"});
+});
+
+test("a window reads a pane option through its context, the declared default until the pane stores one", () => {
+    const options = shallowRef({density: "compact"});
+    const context = windowContext({window: "a.chat", environment: "main", visible: () => true, permissions: {}, subscriptions: new WindowSubscriptions(), options, declared: OPTIONS});
+    expect(context.option("density").value).toBe("compact");
+    expect(context.option("hide").value).toBe(false);
+    options.value = {density: "roomy", hide: true};
+    expect(context.option("hide").value).toBe(true);
+});
+
+test("Detach opens a float at the window's float size and takes the tab out of its pane", async () => {
+    const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
+    const id = holder(store, "a.notes");
+    menuOf(element, id).click();
+    await settled();
+    element.querySelector(`[data-menu="detach"]`).click();
+    await settled();
+    expect(store.layout.value.floats).toEqual([expect.objectContaining({view: "a.notes", w: 640, h: 420})]);
+    expect(holder(store, "a.notes")).toBeUndefined();
+});
+
+test("Dock returns a float to a pane", async () => {
+    const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
+    menuOf(element, holder(store, "a.notes")).click();
+    await settled();
+    element.querySelector(`[data-menu="detach"]`).click();
+    await settled();
+    element.querySelector(`[data-float-dock]`).click();
+    await settled();
+    expect(store.layout.value.floats).toEqual([]);
+    expect(holder(store, "a.notes")).toBeDefined();
+});
+
+test("Send away opens the window in a view window, and the dock message brings it back as a float", async () => {
+    const opened = vi.fn();
+    vi.stubGlobal("open", opened);
+    const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
+    menuOf(element, holder(store, "a.notes")).click();
+    await settled();
+    element.querySelector(`[data-menu="detach"]`).click();
+    await settled();
+    const floatId = store.layout.value.floats[0].id;
+    element.querySelector(`[data-float-away="${floatId}"]`).click();
+    await settled();
+    expect(opened.mock.calls[0][0]).toContain("a.notes");
+    expect(store.layout.value.away.map((away) => away.view)).toEqual(["a.notes"]);
+    new BroadcastChannel("journal-views").postMessage({kind: "dock", id: floatId});
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    await settled();
+    expect(store.layout.value.away).toEqual([]);
+    expect(store.layout.value.floats.map((float) => float.view)).toEqual(["a.notes"]);
 });

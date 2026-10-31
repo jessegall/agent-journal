@@ -9,7 +9,10 @@ const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", l
 afterEach(() => vi.unstubAllGlobals());
 
 async function settled() {
-    for (let round = 0; round < 5; round++) await nextTick();
+    for (let round = 0; round < 5; round++) {
+        await new Promise((resolve) => setTimeout(resolve));
+        await nextTick();
+    }
 }
 
 test("a registry sync asks for the windows again: a removed window shows as not installed and a new one joins the menu", async () => {
