@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 import os
+import tempfile
 import shlex
 import socket
 import time
@@ -25,6 +26,7 @@ from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
 from scripts.timing_report import logged_timings, report
+from tests.stories.server.support.hook_program import HookProgram
 
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
@@ -44,11 +46,21 @@ class ServerAnswer:
         return json.loads(self.text)
 
 
+
 class ServerStory:
     """A story's journal with a server running on it, and the checks of what the server answers."""
 
     def __init__(self, story: Story, socket_path: Path) -> None:
         self.story, self.socket_path = story, socket_path
+
+    def expect_program_answer(self, body: dict[str, object], text: str) -> None:
+        scratch = Path(tempfile.mkdtemp())
+        program = HookProgram(scratch)
+        program.build()
+        root = scratch / "project"
+        root.mkdir()
+        run = program.sent(self.story.home.folder, root, {**body, "cwd": str(root)})
+        assert text in run.stdout + run.stderr, f"the hook program printed {run.stdout!r} and {run.stderr!r}, code {run.returncode}"
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")

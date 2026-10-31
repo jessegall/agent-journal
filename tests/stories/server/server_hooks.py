@@ -7,11 +7,15 @@ from core.base.timing import TIMING_HEADER
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.base.drivers.support.fixtures import LeadStarted
 from tests.stories.core.base.drivers.support.samples import SAMPLES
+from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.coding_fixtures import BuilderWithOpenTask
 from tests.stories.core.support.fixtures import ThreeTasks
 from tests.stories.server.support.server_client import expect_timing_lines, server_story
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
+
+CLAUDE_STOP = {"session_id": "s-1", "hook_event_name": "Stop", "transcript_path": "", "stop_hook_active": False}
 
 
 def example(name: str) -> object:
@@ -73,4 +77,10 @@ def test_a_hook_that_waits_past_its_limit_on_a_busy_database_is_let_through_with
         finally:
             writer.rollback()
             writer.close()
+
+
+def test_a_claude_stop_sent_through_the_hook_program_is_refused_as_the_builder_decides(new_story):
+    with server_story(new_story(fixture=BuilderWithOpenTask)) as story:
+        story.expect_program_answer(CLAUDE_STOP, "task 1 is yours now: Fix the cart")
+        story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.builder", "answer: refused")
 
