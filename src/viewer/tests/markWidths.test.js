@@ -6,7 +6,7 @@ import MarkHost from "../src/chat/MarkHost.vue";
 import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
 
-vi.mock("../src/route.js", () => ({go: vi.fn(), peekRef: vi.fn()}));
+vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 
 const WIDTHS = {phone: 375, wide: 1280};
 const mark = {id: 7, type: "memory", text: "Memory 3: weight set", state: "shown", created_at: 5, target_model: "memories", target_id: 3};

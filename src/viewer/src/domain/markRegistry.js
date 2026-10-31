@@ -8,7 +8,11 @@ export function loadMarkDeclarations(list) {
 }
 
 export async function fetchMarkDeclarations() {
-    loadMarkDeclarations(await (await fetch("/api/marks")).json());
+    try {
+        loadMarkDeclarations(await (await fetch("/api/marks")).json());
+    } catch (error) {
+        loadMarkDeclarations([]);
+    }
 }
 
 // a mark whose type no module declares any more is drawn as a quiet line

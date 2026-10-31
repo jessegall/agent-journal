@@ -8,7 +8,11 @@ export function loadDockDeclarations(list) {
 }
 
 export async function fetchDockDeclarations() {
-    loadDockDeclarations(await (await fetch("/api/docks")).json());
+    try {
+        loadDockDeclarations(await (await fetch("/api/docks")).json());
+    } catch (error) {
+        loadDockDeclarations([]);
+    }
 }
 
 export const dockDeclaration = (type) => declarations.value.get(type) || null;

@@ -6,7 +6,7 @@ import ModuleBody from "../src/windows/ModuleBody.vue";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
 import {markLook} from "../src/domain/markLook.js";
 
-vi.mock("../src/route.js", () => ({go: vi.fn(), peekRef: vi.fn()}));
+vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
 
 let app = null;
 afterEach(() => app?.unmount());
