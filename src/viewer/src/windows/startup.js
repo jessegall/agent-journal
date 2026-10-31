@@ -5,13 +5,16 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 
 const SHELL_WINDOW = "viewer.shell";
 
+// a page's reads and runs through the shell's own window
+export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
+
 // what a page of windows needs to run: the catalogue, the shared subscriptions, the shell's own line and allowance
 // prompts, and the environment's event stream, which feeds the catalogue, any `listeners` given later, and the
 // windows; `stop` ends the stream
 export function startWindows({environment, catalogue = null, events = followEvents}) {
     const offers = catalogue || new WindowCatalogue(() => fetchWindowCatalogue(environment));
     const subscriptions = new WindowSubscriptions();
-    const shellLine = (line) => lineResult(SHELL_WINDOW, line, environment);
+    const shellLine = shellReader(environment);
     const prompts = new AllowancePrompts(shellLine);
     const listeners = [];
     const stop = events(environment, async (event) => {

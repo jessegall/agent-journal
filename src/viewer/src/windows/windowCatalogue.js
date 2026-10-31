@@ -28,10 +28,10 @@ export class WindowCatalogue {
         return this.windows.value.filter((window) => window.place === place);
     }
 
-    // the windows an agent of this role is offered: agent windows whose roles name it or name none
+    // the windows an agent of this role is offered: every environment window, and the agent windows whose roles name it or name none
     forAgent(role) {
         const view = Object.create(this);
-        view.windows = computed(() => this.windows.value.filter((window) => window.place === "agent" && (!window.roles?.length || window.roles.includes(role))));
+        view.windows = computed(() => this.windows.value.filter((window) => window.place !== "agent" || !window.roles?.length || window.roles.includes(role)));
         return view;
     }
 

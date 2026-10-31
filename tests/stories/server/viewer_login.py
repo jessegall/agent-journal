@@ -16,6 +16,13 @@ def test_a_login_key_sets_a_cookie_once_and_is_spent(new_story):
         story.expect_viewer_status(f"/?key={key}", 401)
 
 
+def test_a_login_redirect_keeps_the_query_the_person_opened_and_drops_the_key(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        key = story.viewer_key("Ada")
+        story.expect_viewer_login_to(key, "&environment=main&agent=3", "/viewer/?environment=main&agent=3")
+        story.expect_viewer_login_to(story.viewer_key("Ada"), "", "/viewer/")
+
+
 def test_the_cookie_opens_the_viewer_shell_with_its_import_map(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))

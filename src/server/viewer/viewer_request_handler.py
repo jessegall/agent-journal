@@ -2,7 +2,7 @@ import json
 from dataclasses import asdict
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
 from server.viewer.event_stream import EventStream
@@ -46,7 +46,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             except UnknownLoginKeyError as error:
                 self.answer(401, {"error": str(error)})
                 return
-            self.answer_session(token)
+            self.answer_session(token, [pair for pair in parse_qsl(route.query) if pair[0] != "key"])
             return
         if route.path.startswith(MODULES_ROUTE):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
@@ -129,10 +129,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def answer_session(self, token: str) -> None:
+    def answer_session(self, token: str, kept_query: list[tuple[str, str]]) -> None:
         self.send_response(303)
         self.send_header("Set-Cookie", f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/")
-        self.send_header("Location", VIEWER_ROOT)
+        self.send_header("Location", f"{VIEWER_ROOT}?{urlencode(kept_query)}" if kept_query else VIEWER_ROOT)
         self.send_header("Content-Length", "0")
         self.end_headers()
 

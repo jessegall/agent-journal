@@ -34,7 +34,7 @@ function wire() {
         else if (line[0] === "agent" && line[1] === "show") value = line[2] === "99" ? null : {id: Number(line[2]), role: "worker"};
         else if (line[0] === "viewer-layout" && line[1] === "current") layoutKeys.push(`${flag("--suite")}:${flag("--page")}:${flag("--driver")}`);
         else if (line[0] === "suite" && line[1] === "layout") value = {shape: SHAPES[`${current.suite}:${line[3]}:${flag("--driver")}`]};
-        return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: "none"})};
+        return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: line[2] === "99" ? JSON.stringify({refusal: "no agent 99", hint: "see journal agent list"}) : "none"})};
     });
 }
 
@@ -173,7 +173,7 @@ test("the tour can be skipped, and is followed by the pane menu hint, each shown
 
 test("an agent page that cannot read its agent says so in plain words instead of drawing nothing", async () => {
     const {element} = await mount(AgentPage, {agent: 99});
-    expect(element.querySelector(".agent-page-failure").textContent).toBe("Agent 99 could not be read: none");
+    expect(element.querySelector(".agent-page-failure").textContent).toBe("Agent 99 could not be read: no agent 99");
 });
 
 test("the agent bar names a group by its windows, never by the module's dotted name, and draws each window's icon with the mark icons", async () => {
@@ -188,4 +188,55 @@ test("the agent bar scrolls inside itself so the page never scrolls sideways at 
     const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
     expect(source).toMatch(/\.pane-stage-bar \{[^}]*overflow-x: auto;/);
     expect(source).toMatch(/\.pane-stage \{[^}]*max-width: 100vw;/);
+});
+
+import EnvironmentPage from "../src/pages/EnvironmentPage.vue";
+
+async function environments(rows, search = "?agent=3") {
+    const replaced = vi.fn();
+    vi.stubGlobal("location", {replace: replaced});
+    vi.stubGlobal("fetch", async () => ({json: async () => (rows ? {code: 0, value: {rows}, error: ""} : {code: 1, value: null, error: "none"})}));
+    const element = document.createElement("div");
+    createApp(() => h(EnvironmentPage, {search})).mount(element);
+    for (let round = 0; round < 6; round++) await new Promise((resolve) => setTimeout(resolve));
+    return {element, replaced};
+}
+
+test("an address with no environment opens the one environment there is and keeps the rest of the address", async () => {
+    const {replaced} = await environments([{name: "work"}]);
+    expect(replaced).toHaveBeenCalledWith("?agent=3&environment=work");
+});
+
+test("an address with no environment, and several or none to choose from, says so in plain words", async () => {
+    const several = await environments([{name: "work"}, {name: "home"}]);
+    expect(several.replaced).not.toHaveBeenCalled();
+    expect(several.element.textContent).toContain("This address names no environment. Add ?environment= and the name of the environment to open.");
+    expect(several.element.textContent).toContain("Environments: work, home");
+    const none = await environments(null);
+    expect(none.element.textContent).toContain("names no environment");
+});
+
+test("the agent page offers the environment windows too, with no agent id, and filters only the agent windows by role", async () => {
+    const {element} = await mount(AgentPage, {agent: 12});
+    const offered = [...element.querySelectorAll("[data-reopen]")].map((button) => button.dataset.reopen);
+    expect(offered).toContain("tasks.tasks");
+    expect(offered).not.toContain("agents.briefing");
+});
+
+test("a refusal is shown by its words alone", async () => {
+    const {refusalWords} = await import("../src/windows/windowContext.js");
+    expect(refusalWords(JSON.stringify({refusal: "no agent 1", hint: "see journal agent list"}))).toBe("no agent 1");
+    expect(refusalWords("plain text")).toBe("plain text");
+});
+
+test("the full screen button draws the expand icon, not the plain dot, and at phone width the bar shows icons without labels", async () => {
+    const wide = await mount(HomePage);
+    expect(wide.element.querySelector("[data-fullscreen] svg").innerHTML).toContain("M6.2 2.6H2.6");
+    expect(wide.element.querySelector(".agent-bar .reopen-module")).not.toBeNull();
+    vi.stubGlobal("innerWidth", 400);
+    const narrow = await mount(HomePage);
+    expect(narrow.element.querySelector(".agent-bar .reopen-module")).toBeNull();
+    expect(narrow.element.querySelectorAll(".agent-bar [data-reopen]").length).toBeGreaterThan(0);
+    const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
+    expect(source).toMatch(/\.reopen-module \{[^}]*white-space: nowrap;/);
 });

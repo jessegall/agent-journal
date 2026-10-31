@@ -74,7 +74,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     <div class="pane-stage" @keydown="keyed">
         <nav class="pane-stage-bar agent-bar">
             <template v-for="group in groups()" :key="group.module">
-                <span class="reopen-module">{{ group.title }}</span>
+                <template v-if="!narrow">
+                    <span class="reopen-module">{{ group.title }}</span>
+                </template>
                 <template v-for="window in group.windows" :key="window.name">
                     <Btn
                         :data-reopen="window.name"
@@ -89,7 +91,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             </template>
             <span class="agent-bar-space" />
             <Btn data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
-                <Icon name="expand" :size="13" />
+                <Icon name="wide" :size="13" />
             </Btn>
             <template v-if="presets">
                 <LayoutPicker :list="presets" />
@@ -183,6 +185,10 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     min-height: 0;
 }
 
+.agent-bar :deep(button) {
+    flex: none;
+}
+
 .agent-bar-space {
     flex: 1;
 }
@@ -242,6 +248,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 }
 
 .reopen-module {
+    flex: none;
+    white-space: nowrap;
     color: var(--text-3);
     font-size: 11px;
     letter-spacing: 0.04em;

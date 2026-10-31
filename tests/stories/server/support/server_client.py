@@ -91,6 +91,10 @@ class ServerStory:
         assert status == 303 and "HttpOnly" in cookie and "SameSite=Strict" in cookie, (status, headers)
         return cookie.split(";", 1)[0]
 
+    def expect_viewer_login_to(self, key: str, query: str, location: str) -> None:
+        status, headers, _ = viewer_answer(self.viewer_port(), f"/?key={key}{query}", "", "")
+        assert status == 303 and headers.get("Location") == location, (status, headers)
+
     def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
         answered, headers, body = viewer_answer(self.viewer_port(), path, cookie, host)
         assert answered == status and text in body, (answered, headers, body)

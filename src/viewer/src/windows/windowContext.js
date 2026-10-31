@@ -36,11 +36,21 @@ export function windowContext({window, environment, agent, visible, permissions,
     };
 }
 
+// the words of a refusal the journal printed as JSON, else the text as it came
+export function refusalWords(text) {
+    try {
+        const refusal = JSON.parse(text);
+        return [refusal.refusal, refusal.error, refusal.message].find((words) => typeof words === "string") ?? text;
+    } catch (error) {
+        return text;
+    }
+}
+
 export async function lineResult(window, line, environment) {
     try {
         const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
         const answer = await response.json();
-        return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: answer.error};
+        return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {
         return {ok: false, failure: "unreachable", error: String(error)};
     }
