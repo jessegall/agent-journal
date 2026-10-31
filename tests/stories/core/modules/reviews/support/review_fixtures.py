@@ -29,7 +29,7 @@ class ReviewTaken(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.reviewer = Actor(story.new_row_id(REVIEWER_START), ActorType.AGENT)
-        story.run(f"review assign 1 --reviewer {story.reviewer.id}", actor=story.agent)
+        story.run(f"review assign 1 --reviewer-id {story.reviewer.id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
         story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {story.reviewer.id}")

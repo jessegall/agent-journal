@@ -6,5 +6,6 @@ from core.modules.reviews.models.review import Review
 
 
 @dataclass(frozen=True)
-class AbandonReview(MoveCommand[Review]):
-    move = ReviewLifecycle.abandon
+class AssignReview(MoveCommand[Review]):
+    move = ReviewLifecycle.assign
+    reviewer_id: int
