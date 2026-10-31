@@ -130,13 +130,33 @@ test("the agent bar of the home page shows an icon for each closed window, one g
     expect(bar.querySelector(`[data-reopen="agents.briefing"]`)).not.toBeNull();
 });
 
-test("the tour shows once, steps through, and is followed by the pane menu hint, each shown once", async () => {
+const STEPS = [
+    ["Drag a window onto a pane", "Every window has an icon here. Drag one onto a pane to open it there. The icon comes back when you close that window.", ".agent-bar [data-reopen]"],
+    ["Pick a preset", "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.", ".agent-bar [data-presets]"],
+    ["Split a pane", "Each pane has this menu. Split right or Split below opens a second window beside this one.", `[data-menu="split-right"]`],
+    ["Detach a window", "Detach opens this window in a window of its own that stays on screen on every page. Dock it back from its menu.", `[data-menu="detach"]`],
+    ["Full screen", expect.stringMatching(/^This button, or the full screen keys \(.+\), hides the sidebar and the top bar so the panes fill the screen\. Esc brings them back\.$/), ".agent-bar [data-fullscreen]"],
+];
+
+test("the tour shows its five steps in order, pointing at each target, with the pane menu open for the split and detach steps and closed after", async () => {
+    localStorage.clear();
+    const {element} = await mount(HomePage);
+    for (const [at, [title, text, target]] of STEPS.entries()) {
+        expect(element.querySelector(".pane-tour-title").textContent).toContain(title);
+        expect(element.querySelector(".pane-tour-text").textContent).toEqual(text);
+        expect(element.querySelector(".pane-tour-step").textContent).toBe(`${at + 1} of 5`);
+        expect([at, element.querySelector(target)?.className]).toEqual([at, expect.stringContaining("tour-target")]);
+        expect(element.querySelector(".pane-menu") !== null).toBe(at === 2 || at === 3);
+        element.querySelector(`[data-tour="next"]`).click();
+        await settle();
+    }
+    expect(element.querySelector(".pane-tour")).toBeNull();
+    expect(element.querySelector(".pane-menu")).toBeNull();
+});
+
+test("the tour can be skipped, and is followed by the pane menu hint, each shown once", async () => {
     localStorage.clear();
     const first = await mount(HomePage);
-    expect(first.element.querySelector(".pane-tour-title").textContent).toContain("Tabs");
-    first.element.querySelector(`[data-tour="next"]`).click();
-    await settle();
-    expect(first.element.querySelector(".pane-tour-title").textContent).toContain("Move and split");
     first.element.querySelector(`[data-tour="skip"]`).click();
     await settle();
     expect(first.element.querySelector(".pane-tour")).toBeNull();

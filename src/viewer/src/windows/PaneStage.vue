@@ -13,6 +13,9 @@ import PaneGrid from "../panes/PaneGrid.vue";
 import SplitOffer from "../panes/SplitOffer.vue";
 import PaneTour from "../panes/PaneTour.vue";
 import {usePaneGuide} from "../composables/paneGuide.js";
+import {followFullscreen} from "../platform/fullscreen.js";
+import {store as shell} from "../state/store.js";
+import {leaves} from "../domain/panes.js";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
@@ -30,7 +33,6 @@ const props = defineProps({
 });
 
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
-const guide = usePaneGuide(props.environment);
 const agentOf = (name) => (props.catalogue.window(name)?.place === "agent" ? props.agent : null);
 const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";
@@ -57,6 +59,12 @@ const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo
     environment: props.environment,
 });
 
+const guide = usePaneGuide(props.environment, {
+    isOpen: () => menu.value !== null,
+    open: () => (menu.value = leaves(props.store.layout.value.tree)[0]),
+    close: () => (menu.value = null),
+});
+followFullscreen();
 const groups = () => props.catalogue.group(closedWindows.value);
 const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </script>
@@ -79,6 +87,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 </template>
             </template>
             <span class="agent-bar-space" />
+            <Btn data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
+                <Icon name="expand" :size="13" />
+            </Btn>
             <template v-if="presets">
                 <LayoutPicker :list="presets" />
             </template>
@@ -98,10 +109,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </PaneTabs>
                     <template v-if="menu === id">
                         <div class="pane-menu" role="menu">
-                            <template v-if="pane.tabs.length > 1">
-                                <Btn data-menu="split-right" @click="split(id, 'right')">Split right</Btn>
-                                <Btn data-menu="split-below" @click="split(id, 'bottom')">Split below</Btn>
-                            </template>
+                            <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="split(id, 'right')">Split right</Btn>
+                            <Btn data-menu="split-below" :disabled="pane.tabs.length < 2" @click="split(id, 'bottom')">Split below</Btn>
                             <template v-if="floats">
                                 <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
                             </template>

@@ -17,7 +17,7 @@ function pick(key) {
 
 <template>
     <span ref="opener">
-        <Btn small v-tip="tip" @click.stop="open = !open">
+        <Btn small data-presets v-tip="tip" @click.stop="open = !open">
             <Icon name="layout" :size="12" />
             Presets
         </Btn>

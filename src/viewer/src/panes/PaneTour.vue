@@ -1,7 +1,31 @@
 <script setup>
+import {watchEffect} from "vue";
 import Btn from "../kit/Btn.vue";
 
-defineProps({tour: {type: Object, required: true}});
+const props = defineProps({tour: {type: Object, required: true}});
+
+// the element the step points at, marked while the step shows and found again as the page draws it
+watchEffect(
+    (onCleanup) => {
+        const step = props.tour.current.value;
+        let marked = null;
+        const mark = () => {
+            const target = step && (document.querySelector(step.target) || (step.fallback && document.querySelector(step.fallback)));
+            if (target === marked) return;
+            marked?.classList.remove("tour-target");
+            marked = target;
+            marked?.classList.add("tour-target");
+        };
+        const watcher = new MutationObserver(mark);
+        watcher.observe(document.body, {childList: true, subtree: true});
+        mark();
+        onCleanup(() => {
+            watcher.disconnect();
+            marked?.classList.remove("tour-target");
+        });
+    },
+    {flush: "post"},
+);
 </script>
 
 <template>
@@ -22,6 +46,13 @@ defineProps({tour: {type: Object, required: true}});
         </div>
     </template>
 </template>
+
+<style>
+.tour-target {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+</style>
 
 <style scoped>
 .pane-tour,
