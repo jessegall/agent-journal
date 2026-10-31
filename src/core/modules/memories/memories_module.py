@@ -39,6 +39,7 @@ from core.modules.memories.models.memory_type_switch import MemoryTypeSwitch
 from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTablesMigration
 from core.modules.memories.models.active_memory import ActiveMemory
+from core.modules.memories.support.memory_marks import MEMORY_MARKS
 
 
 class MemoriesModule(Module):
@@ -47,7 +48,7 @@ class MemoriesModule(Module):
 
     name = "journal.core.memories"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings",
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat",
                     "journal.core.drivers"]
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
@@ -60,3 +61,4 @@ class MemoriesModule(Module):
     overlays = [WeighingOverlay]
     listeners = [CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener]
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
+    marks = MEMORY_MARKS
