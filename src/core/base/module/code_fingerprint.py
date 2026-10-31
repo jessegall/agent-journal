@@ -3,6 +3,7 @@ from collections.abc import Sequence
 import inspect
 from pathlib import Path
 
+from core.base.module.folder_listing import FolderListing
 from core.base.module.module import Module
 from core.base.version import CORE_VERSION
 
@@ -18,8 +19,11 @@ class CodeFingerprint:
         return self.folder_text([CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in modules)])
 
     def folder_text(self, folders: Sequence[Path]) -> str:
+        return self.files_text(FolderListing(folders).files())
+
+    def files_text(self, files: Sequence[Path]) -> str:
         digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
-        for file in sorted({file for folder in folders for file in folder.rglob("*.py")}):
+        for file in files:
             try:
                 status = file.stat()
             except FileNotFoundError:
