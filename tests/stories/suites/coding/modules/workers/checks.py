@@ -3,7 +3,7 @@ from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DELIVERY, delivered_worker, repository_environment
 
 SHORTFALL = "the rounding has no test"
-PROOF_SHORT = f'proof short 1 "{SHORTFALL}"'
+PROOF_SHORT = f'proof short 1 --shortfall "{SHORTFALL}"'
 
 
 def test_a_proof_the_main_agent_checks_is_checked(new_story):
@@ -20,7 +20,7 @@ def test_a_short_proof_moves_the_task_back_to_started_and_tells_the_worker_what_
     worker = delivered_worker(story, repository)
     story.expect_success(PROOF_SHORT, "state: short", f"shortfall: {SHORTFALL}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
-    story.expect_text(f"message list --agent {worker.id}", SHORTFALL)
+    story.expect_text(f"agent-line list --agent {worker.id}", SHORTFALL)
 
 
 def test_a_short_proof_shown_again_and_delivered_is_checked(new_story):

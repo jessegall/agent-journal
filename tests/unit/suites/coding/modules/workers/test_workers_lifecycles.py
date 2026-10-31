@@ -12,10 +12,10 @@ from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.timestamp import Timestamp
 from suites.coding.modules.workers.models.proof import Proof
-from suites.coding.modules.workers.models.proof_lifecycle import ProofLifecycle
+from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
-from suites.coding.modules.workers.models.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from tests.unit.core.base.command.test_commands import ItemMake
 
 WORKTREE = Worktree(id=1, version=1, agent_id=2, environment_id=1, task_id=1, creator_id=1, folder="/work/journal/.journal/worktrees/main/worker-2",

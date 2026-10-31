@@ -7,10 +7,10 @@ from suites.coding.modules.workers.models.proof import Proof
 
 
 class ProofQuery(Query[Proof]):
-    """Reads proofs, with the proofs of one task by name."""
+    """Reads proofs, with the proofs of one worktree by name."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Proof)
 
-    def task_proofs(self, task_id: int) -> Self:
-        return self.filter(task_id=task_id)
+    def worktree_proofs(self, worktree_id: int) -> Self:
+        return self.filter(worktree_id=worktree_id)

@@ -4,6 +4,12 @@ from suites.coding.modules.workers.commands.dispatch_worker_handler import Dispa
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
 from suites.coding.modules.workers.commands.release_worker_handler import ReleaseWorkerHandler
 from suites.coding.modules.workers.commands.release_worker_subcommand import ReleaseWorkerSubcommand
+from suites.coding.modules.workers.commands.deliver_task_handler import DeliverTaskHandler
+from suites.coding.modules.workers.commands.deliver_task_subcommand import DeliverTaskSubcommand
+from suites.coding.modules.workers.commands.make_proof_handler import MakeProofHandler
+from suites.coding.modules.workers.commands.make_proof_subcommand import MakeProofSubcommand
+from suites.coding.modules.workers.commands.short_proof_handler import ShortProofHandler
+from suites.coding.modules.workers.guards.proof_point_guard import ProofPointGuard
 from suites.coding.modules.workers.guards.dispatch_branch_guard import DispatchBranchGuard
 from suites.coding.modules.workers.guards.dispatch_worker_guard import DispatchWorkerGuard
 from suites.coding.modules.workers.migrations.m001_workers import WorkersTablesMigration
@@ -11,7 +17,7 @@ from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.commands.short_proof import ShortProof
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
@@ -26,6 +32,6 @@ class WorkersModule(Module):
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"])]
     migrations = [WorkersTablesMigration]
-    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler]
-    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand]
-    guards = [DispatchBranchGuard, DispatchWorkerGuard]
+    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler]
+    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand]
+    guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard]

@@ -1,12 +1,12 @@
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
-from suites.coding.modules.workers.models.proof_state import ProofState
+from suites.coding.modules.workers.models.enums.proof_state import ProofState
 
 
 class ProofLifecycle(Lifecycle):
     states = ProofState
     initial = [ProofState.SHOWN]
-    editable = ()
+    editable = [ProofState.SHOWN]
     deletable = ()
 
     check = Move("check", [ProofState.SHOWN], ProofState.CHECKED)

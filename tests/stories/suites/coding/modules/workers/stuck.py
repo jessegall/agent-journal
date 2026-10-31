@@ -18,7 +18,7 @@ def test_a_worker_that_stops_before_delivering_is_refused_until_the_stop_release
         story.expect_hook_refusal(session, HookSamples.stop(), "journal worker deliver")
     story.expect_hook_allowed(session, HookSamples.stop())
     story.expect_text(f"agent show {worker.id}", "ended_at: 2026")
-    story.expect_text(f"message list --agent {story.agent.id}", f"task 1 is still started under worker {worker.id}: journal worker release {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"task 1 is still started under worker {worker.id}: journal worker release {worker.id}")
     story.expect_success(f'worker release {worker.id} "its program stopped"', actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: open")
 
@@ -31,7 +31,7 @@ def test_a_worker_whose_process_is_gone_is_ended_at_the_next_tick_and_the_main_a
     story.use_processes()
     story.tick(MAIN_SESSION)
     story.expect_text(f"agent show {worker.id}", "ended_at: 2026")
-    story.expect_text(f"message list --agent {story.agent.id}", f"task 1 is still started under worker {worker.id}: journal worker release {worker.id}")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"task 1 is still started under worker {worker.id}: journal worker release {worker.id}")
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
 
 

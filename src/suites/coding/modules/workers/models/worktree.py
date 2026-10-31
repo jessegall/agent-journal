@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from core.base.actor import Actor
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
-from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
-from suites.coding.modules.workers.models.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 
 
 @dataclass(frozen=True, kw_only=True)

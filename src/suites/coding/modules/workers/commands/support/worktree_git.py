@@ -20,6 +20,13 @@ class WorktreeGit:
     def cut(self, folder: str, worktree: Worktree) -> None:
         self.checked(folder, CHECKOUT_LIMIT_SECONDS, "worktree", "add", "-b", worktree.branch, worktree.folder, worktree.base_branch)
 
+    def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
+        if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
+            return False
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
+        self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
+        return True
+
     def exclude_file(self, worktree: Worktree) -> Path:
         return Path(worktree.folder) / self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-path", "info/exclude").stdout.strip()
 

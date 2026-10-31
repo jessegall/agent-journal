@@ -8,7 +8,7 @@ from core.modules.tasks.task import Task
 from suites.coding.modules.workers.commands.release_worker import ReleaseWorker
 from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.worker_release import WorkerRelease
-from suites.coding.modules.workers.models.worktree_lifecycle import WorktreeLifecycle
+from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 
 

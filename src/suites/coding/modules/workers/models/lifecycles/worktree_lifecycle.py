@@ -1,6 +1,6 @@
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
-from suites.coding.modules.workers.models.worktree_state import WorktreeState
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 
 
 class WorktreeLifecycle(Lifecycle):
