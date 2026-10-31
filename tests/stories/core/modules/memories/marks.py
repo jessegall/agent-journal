@@ -111,3 +111,21 @@ def test_a_memory_is_docked_with_dock_add_and_the_guards_pass(new_story):
     story.expect_text(f"dock-item show {item_id}", "type: memories.memory", f"target_id: {memory_id}")
     story.expect_refusal(f"dock add memories.memory memory {memory_id} --environment main", "is docked already", actor=story.user)
     story.expect_refusal(f"dock add memories.memory task 1 --environment main", "reads no task", actor=story.user)
+
+
+def test_a_reminder_removed_shows_an_acknowledged_mark_and_no_removed_mark(new_story):
+    story = new_story(fixture=BuilderStarted)
+    reminder_id = story.new_row_id('memory make "Check the cart totals" --type reminder --environment main', actor=story.agent)
+    story.run_listeners()
+    story.expect_success(f'memory remove {reminder_id} --reason "done"', actor=story.agent)
+    story.run_listeners()
+    assert f"Reminder {reminder_id} acknowledged" in marks_text(story) and f"Memory {reminder_id} removed" not in marks_text(story), marks_text(story)
+
+
+def test_a_rule_given_back_shows_a_reminded_mark_of_the_reminders_family(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('memory make "Always run the tests before a commit" --type rule --keywords cart --project --environment main', actor=story.user)
+    story.expect_hook_allowed("s-1", CART_EDIT, "Always run the tests before a commit")
+    story.run_listeners()
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.reminder")
+    assert "Reminded the agent: Always run the tests before a commit" in marks_text(story) and mark.family == "memories.reminders", marks_text(story)

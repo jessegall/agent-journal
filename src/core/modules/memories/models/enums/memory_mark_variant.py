@@ -10,3 +10,4 @@ class MemoryMarkVariant(StrEnum):
     FADED = "faded"
     GIVEN = "given"
     COMPACTED = "compacted"
+    ACKNOWLEDGED = "acknowledged"
