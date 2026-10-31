@@ -22,5 +22,7 @@ from core.modules.phone.phone_module import PhoneModule
 from core.modules.sharing.sharing_module import SharingModule
 from core.modules.tunnel.tunnel_module import TunnelModule
 from core.modules.documents.documents_module import DocumentsModule
+from core.modules.sequences.sequences_module import SequencesModule
+from core.modules.templates.templates_module import TemplatesModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TemplatesModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
