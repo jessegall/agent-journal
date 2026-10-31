@@ -4,9 +4,12 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
+from core.modules.processes.commands.end_process import EndProcess
+from core.modules.processes.commands.end_process_part import EndProcessPart
 from core.modules.processes.commands.part_spec import PartSpec
 from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.output_folder import OutputFolder
 from core.testing.hook_sample import HookSample
 from core.testing.story import Story
 
@@ -47,3 +50,14 @@ def install_runner(story: Story) -> Story:
     binary.write_text("#!/bin/sh\n")
     binary.chmod(0o755)
     return story
+
+
+def ended_run(story: Story, line: str, text: str, exit_code: int = 0) -> Process:
+    """A run of the builder that has ended with the output given, kept as the module keeps a long run's."""
+    process = start_process(story, line)
+    folder = story.container.get(OutputFolder)
+    folder.write_output(process.id, 1, text)
+    bus = story.container.get(Bus)
+    bus.run(EndProcessPart(process.id, 1, exit_code), story.agent, environment_id=1)
+    bus.run(EndProcess(process.id, exit_code, max(len(text), BYTES_LONG), text.count("\n")), story.agent, environment_id=1)
+    return process
