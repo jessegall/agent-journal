@@ -10,6 +10,7 @@ from core.modules.plugins.commands.support.plugin_install import PluginInstall
 from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 
@@ -32,5 +33,6 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             return PluginInstall(manifest, command.source, False)
         shutil.copytree(command.source, self.folders.code(manifest.name), dirs_exist_ok=True)
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
-        self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source, release=manifest.version), context)
+        self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source, release=manifest.version,
+                                    files_digest=PluginDigest.digest(self.folders.code(manifest.name))), context)
         return PluginInstall(manifest, command.source, True)

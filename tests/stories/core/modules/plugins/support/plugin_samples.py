@@ -1,12 +1,24 @@
 import json
 from pathlib import Path
 
-MANIFEST = {"name": "sample", "version": "1.0.0", "title": "Sample", "settings": {"level": {"title": "Level", "type": "number", "default": 1}}}
+PROGRAM = """#!/bin/sh
+line=$(cat)
+case "$line" in
+  *'"command_starting"'*'rm -rf'*) echo '{"v": 1, "answer": "refuse", "reason": "no deletes here"}' ;;
+  *'"file_edited"'*'a.py'*) echo '{"v": 1, "answer": "tell", "tell": "a.py was judged"}' ;;
+esac
+"""
+SETTINGS = [{"key": "level", "title": "Level", "kind": "number", "default": 1, "help": "How strict it is"}]
+MANIFEST = {"name": "sample", "title": "Sample", "version": "1.0.0", "protocol": 1, "program": "run.sh", "hears": ["command_starting", "file_edited"],
+            "holds": [{"event": "command_starting", "window_ms": 5000}], "settings": "settings.json"}
 
 
 def sample_plugin_folder(parent: Path) -> Path:
     folder = parent / "sample-plugin"
-    (folder / ".journal-plugin").mkdir(parents=True, exist_ok=True)
-    (folder / ".journal-plugin" / "plugin.json").write_text(json.dumps(MANIFEST))
-    (folder / "run.sh").write_text("#!/bin/sh\nexit 0\n")
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "journal-plugin.json").write_text(json.dumps(MANIFEST))
+    (folder / "settings.json").write_text(json.dumps(SETTINGS))
+    program = folder / "run.sh"
+    program.write_text(PROGRAM)
+    program.chmod(0o755)
     return folder

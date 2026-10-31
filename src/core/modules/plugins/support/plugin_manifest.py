@@ -3,42 +3,76 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.refusal import Refusal
-from core.base.type_guards import is_mapping
+from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_setting import ManifestSetting
+from core.modules.plugins.support.event_window import EventWindow
 
-MANIFEST_PATH = Path(".journal-plugin") / "plugin.json"
+MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
 
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin folder says about itself in .journal-plugin/plugin.json: its name, title, version and settings."""
+    """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
+    version, the program run for each event, the events it takes and the ones it answers inside a window, and
+    the settings its settings file lists."""
 
     name: str
     title: str
     version: str
+    program: str
+    event_names: tuple[str, ...]
+    event_windows: tuple[EventWindow, ...]
     settings: tuple[ManifestSetting, ...]
+    files: tuple[str, ...]
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
-        path = folder / MANIFEST_PATH
+        path = folder / MANIFEST_FILE
         if not path.is_file():
-            raise Refusal(f"{folder} contains no plugin: {MANIFEST_PATH} is missing", "name the folder of a plugin")
+            raise Refusal(f"{folder} contains no plugin: {MANIFEST_FILE} is missing", "name the folder of a plugin")
         fields: object = json.loads(path.read_text())
         if not is_mapping(fields) or not all(field in fields for field in REQUIRED_FIELDS):
             raise Refusal(f"the manifest {path} lacks one of {', '.join(REQUIRED_FIELDS)}", "a plugin manifest states its name, title and version")
-        declared: object = fields["settings"] if "settings" in fields else None
-        settings = tuple(cls.manifest_setting(str(key), entry) for key, entry in declared.items()) if is_mapping(declared) else ()
-        return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), settings)
+        program = str(fields["program"]) if "program" in fields else ""
+        settings_file = str(fields["settings"]) if "settings" in fields else ""
+        names: object = fields["hears"] if "hears" in fields else None
+        windows: object = fields["holds"] if "holds" in fields else None
+        return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
+                   tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
+                   cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file))
 
     @staticmethod
-    def manifest_setting(key: str, entry: object) -> ManifestSetting:
-        if not is_mapping(entry) or "title" not in entry or "type" not in entry:
-            raise Refusal(f"the setting {key} of a plugin manifest lacks its title or its type", "each setting states both")
-        return ManifestSetting(key, str(entry["title"]), str(entry["type"]), entry["default"] if "default" in entry else None)
+    def event_window(entry: object) -> EventWindow:
+        if is_mapping(entry) and "event" in entry:
+            window: object = entry["window_ms"] if "window_ms" in entry else 0
+            return EventWindow(str(entry["event"]), window if isinstance(window, int) else 0)
+        return EventWindow(str(entry), 0)
+
+    @classmethod
+    def read_settings(cls, folder: Path, settings_file: str) -> tuple[ManifestSetting, ...]:
+        if not settings_file:
+            return ()
+        listed: object = json.loads((folder / settings_file).read_text())
+        return tuple(cls.manifest_setting(entry) for entry in listed) if is_list(listed) else ()
+
+    @staticmethod
+    def manifest_setting(entry: object) -> ManifestSetting:
+        if not is_mapping(entry) or not all(field in entry for field in ("key", "title", "kind")):
+            raise Refusal("a setting of a plugin's settings file lacks its key, title or kind", "each setting states all three")
+        choices: object = entry["choices"] if "choices" in entry else None
+        return ManifestSetting(str(entry["key"]), str(entry["title"]), str(entry["kind"]), entry["default"] if "default" in entry else None,
+                               tuple(str(choice) for choice in choices) if is_list(choices) else ())
 
     def setting(self, key: str) -> ManifestSetting:
         matching = [setting for setting in self.settings if setting.key == key]
         if not matching:
             raise Refusal(f"{self.name} has no setting {key}: it has {', '.join(setting.key for setting in self.settings) or 'none'}", "journal plugin settings shows them")
         return matching[0]
+
+    def window_names(self) -> tuple[str, ...]:
+        return tuple(window.event for window in self.event_windows)
+
+    def window_ms(self, event: str, ceiling_ms: int) -> int:
+        limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
+        return min(limits[0], ceiling_ms) if limits else ceiling_ms

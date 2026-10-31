@@ -5,16 +5,21 @@ from core.modules.plugins.commands.support.user_actor_check import UserActorChec
 from core.modules.plugins.commands.switch_plugin import SwitchPlugin
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
+from core.modules.plugins.support.plugin_digest import PluginDigest
+from core.modules.plugins.support.plugin_folders import PluginFolders
 
 
 class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
-    """Switches an installed plugin on or off; only the person does."""
+    """Switches an installed plugin on or off; only the person does, and switching it on takes its files as
+    they are now."""
 
     command = SwitchPlugin
 
-    def __init__(self, plugins: PluginQuery, repository: Repository) -> None:
-        self.plugins, self.repository = plugins, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, repository: Repository) -> None:
+        self.plugins, self.folders, self.repository = plugins, folders, repository
 
     def handle(self, command: SwitchPlugin, context: Context) -> Plugin:
         UserActorCheck.check(context, "switches on" if command.enabled else "switches off")
-        return self.repository.save(self.plugins.find_name(command.name).changed(enabled=command.enabled), context)
+        plugin = self.plugins.find_name(command.name)
+        digest = PluginDigest.digest(self.folders.code(plugin.name)) if command.enabled else plugin.files_digest
+        return self.repository.save(plugin.changed(enabled=command.enabled, files_digest=digest), context)

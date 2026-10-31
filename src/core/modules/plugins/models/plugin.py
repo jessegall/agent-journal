@@ -5,8 +5,8 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class Plugin(Model):
-    """A program the person installed that hears the journal's events: where it came from, its version, and
-    whether it is switched on."""
+    """A program the person installed that hears the journal's events: where it came from, its version, whether
+    it is switched on, and the digest of its files when the person last installed or switched it on."""
 
     model_name = "plugin"
     cli_name = "plugin"
@@ -17,3 +17,4 @@ class Plugin(Model):
     source: str
     release: str
     enabled: bool = True
+    files_digest: str = ""

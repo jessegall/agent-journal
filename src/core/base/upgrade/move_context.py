@@ -12,3 +12,4 @@ class MoveContext:
     project_folder: str = ""
     setting_keys: tuple[str, ...] = ()
     mark_variants: Mapping[str, str] = field(default_factory=lambda: {})
+    journal_folder: str = ""
