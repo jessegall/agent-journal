@@ -6,6 +6,7 @@ from core.modules.templates.commands.template_list_subcommand import TemplateLis
 from core.modules.templates.commands.template_show_subcommand import TemplateShowSubcommand
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.models.template import Template
+from core.modules.templates.upgrade.templates_move import TemplatesMove
 
 
 class TemplatesModule(Module):
@@ -17,5 +18,6 @@ class TemplatesModule(Module):
     dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Template, excluded_subcommands=["make", "edit", "show", "list"])]
     migrations = [TemplatesTableMigration]
+    moves = [TemplatesMove]
     handlers = [MakeTemplateHandler]
     subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)

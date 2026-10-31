@@ -14,6 +14,7 @@ from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
+from core.modules.sequences.upgrade.sequences_move import SequencesMove
 
 BUILT = ["make", "edit", "show", "list", "delete"]
 
@@ -26,6 +27,7 @@ class SequencesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=BUILT)]
     migrations = [SequencesTablesMigration]
+    moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler]
     subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, RunSequenceSubcommand, FollowStepSubcommand, NextStepSubcommand,
                    AbandonSequenceSubcommand)
