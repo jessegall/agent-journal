@@ -43,3 +43,20 @@ test("an error a window throws shows in its own pane and leaves the next window 
     expect(broken.element.textContent).toContain("the board could not draw");
     expect(working.element.textContent).toContain("following tasks");
 });
+
+test("a window keeps a setting of its own and reads it back, or its fallback when it kept none", async () => {
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const kept = new Map();
+    globalThis.fetch = async (url, request) => {
+        const {line} = JSON.parse(request.body);
+        if (line[1] === "save-setting") kept.set(line[3], line[4]);
+        const value = kept.get(line[3]);
+        return {json: async () => (line[1] === "save-setting" || value ? {code: 0, value: {value}, error: ""} : {code: 1, value: null, error: "kept no setting"})};
+    };
+    const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, subscriptions: new WindowSubscriptions(), open: () => {}});
+    expect(await context.setting("zoom", 1)).toBe(1);
+    await context.keep("zoom", 2);
+    await new Promise((resolve) => setTimeout(resolve, 110));
+    expect(await context.setting("zoom", 1)).toBe(2);
+    delete globalThis.fetch;
+});

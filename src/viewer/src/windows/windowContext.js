@@ -6,7 +6,7 @@ const READ_COALESCE_MS = 100;
 const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
-// through the host, and read and run, which never throw and answer {ok, value} or {ok, failure, error}
+// through the host, read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
 export function windowContext({window, environment, agent, visible, permissions, subscriptions, open}) {
     const recent = new Map();
     const read = (line) => {
@@ -26,12 +26,17 @@ export function windowContext({window, environment, agent, visible, permissions,
         run: (line) => lineResult(window, line, environment),
         follow: (patterns, heard) => subscriptions.follow(window, patterns, heard, visible),
         open,
+        setting: async (key, fallback) => {
+            const answer = await read(`window setting ${window} ${key}`);
+            return answer.ok ? JSON.parse(answer.value.value) : fallback;
+        },
+        keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment),
     };
 }
 
 export async function lineResult(window, line, environment) {
     try {
-        const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: lineWords(line), environment})});
+        const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
         const answer = await response.json();
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: answer.error};
     } catch (error) {

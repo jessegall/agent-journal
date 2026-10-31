@@ -8,9 +8,12 @@ from core.modules.viewer.permission_pruner import PermissionPruner
 from core.modules.viewer.viewer_layout_save_handler import ViewerLayoutSaveHandler
 from core.modules.viewer.viewer_layout_save_subcommand import ViewerLayoutSaveSubcommand
 from core.modules.viewer.window_allow_handler import WindowAllowHandler
+from core.modules.viewer.window_setting_save_handler import WindowSettingSaveHandler
+from core.modules.viewer.window_setting_save_subcommand import WindowSettingSaveSubcommand
 from core.modules.viewer.window_allow_subcommand import WindowAllowSubcommand
 from core.modules.viewer.window_permission_prune_handler import WindowPermissionPruneHandler
 from core.modules.viewer.window_permissions_subcommand import WindowPermissionsSubcommand
+from core.modules.viewer.window_setting_subcommand import WindowSettingSubcommand
 from core.modules.viewer.window_trust_handler import WindowTrustHandler
 from core.modules.viewer.window_trust_subcommand import WindowTrustSubcommand
 from core.modules.viewer.viewer_layout import ViewerLayout
@@ -29,8 +32,9 @@ class ViewerModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
     migrations = [ViewerTables]
-    handlers = [ViewerLayoutSaveHandler, WindowAllowHandler, WindowTrustHandler, WindowPermissionPruneHandler]
-    subcommands = [ViewerLayoutSaveSubcommand, WindowAllowSubcommand, WindowTrustSubcommand, WindowPermissionsSubcommand]
+    handlers = [ViewerLayoutSaveHandler, WindowAllowHandler, WindowTrustHandler, WindowPermissionPruneHandler, WindowSettingSaveHandler]
+    subcommands = [ViewerLayoutSaveSubcommand, WindowAllowSubcommand, WindowTrustSubcommand, WindowPermissionsSubcommand, WindowSettingSaveSubcommand,
+                   WindowSettingSubcommand]
     guards = [PersonGivesPermissions]
     listeners = [PermissionPruner]
     windows = [WindowDeclaration("viewer.shell", "Viewer", "index.html", WindowLoading.PAGE, reads=SHELL_READS, runs=SHELL_RUNS)]
