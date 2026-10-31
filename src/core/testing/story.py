@@ -31,10 +31,11 @@ M = TypeVar("M", bound=Model)
 @dataclass(frozen=True)
 class StoryState:
     """The state a story keeps besides its database, passed from a fixture to the stories that start from it: the
-    agent and the person it acts as."""
+    agent, the subagent it sent and the person it acts as."""
 
     agent: Actor = field(default_factory=Actor.core)
     user: Actor = field(default_factory=Actor.core)
+    subagent: Actor = field(default_factory=Actor.core)
 
 
 class FixedProcessTable(ProcessTable):
@@ -66,7 +67,7 @@ class Story:
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, process_table: "FixedProcessTable", state: StoryState) -> None:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
-        self.agent, self.user = state.agent, state.user
+        self.agent, self.user, self.subagent = state.agent, state.user, state.subagent
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -78,7 +79,7 @@ class Story:
 
     @property
     def state(self) -> StoryState:
-        return StoryState(self.agent, self.user)
+        return StoryState(self.agent, self.user, self.subagent)
 
     def close(self) -> None:
         self.container.get(Database).close()
