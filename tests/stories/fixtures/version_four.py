@@ -90,6 +90,7 @@ ROWS = (
     ("memories", "(environment_id, text, weight, keywords, expires_at, created_at, creator)", (1, "Deploy at nine", 5, "[]", JANUARY_2036, STAMP, USER)),
     ("memories", "(environment_id, text, weight, keywords, removed_at, created_at, creator)", (1, "A removed fact", 5, "[]", STAMP, STAMP, USER)),
     ("memories", "(environment_id, text, weight, keywords, expiry_row, created_at, creator)", (1, "Remove this when the cart task is done", 0, '["cart", "task"]', "tasks:1", STAMP, USER)),
+    ("memories", "(environment_id, text, weight, keywords, created_at, creator)", (1, "A long fact. " * 40, 5, "[]", STAMP, USER)),
     ("phone_codes", "(code, created_at)", ("123456", STAMP)),
     ("old_reports", "(body, created_at)", ("a report", STAMP)),
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "Which database?", '["Postgres", "SQLite"]', "SQLite", "SQLite", STAMP, "agent:s-1")),

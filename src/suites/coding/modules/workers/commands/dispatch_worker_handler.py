@@ -26,7 +26,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
-from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, MOST_OUT, WORKTREE_COMMANDS
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKER_LIMIT, WORKTREE_COMMANDS
 
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
@@ -46,9 +46,9 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if task.state is not TaskState.OPEN:
             raise Refusal(f"task {task.id} is {task.state.value}", "a worker is dispatched to an open task")
         environment = self.queries.query(Environment).find(task.environment_id)
-        most_out = self.settings.number(MOST_OUT, environment.id)
-        if len(self.worktrees.environment_worktrees(environment.id)) >= most_out:
-            raise Refusal(f"{most_out} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.most-out")
+        worker_limit = self.settings.number(WORKER_LIMIT, environment.id)
+        if len(self.worktrees.environment_worktrees(environment.id)) >= worker_limit:
+            raise Refusal(f"{worker_limit} workers are out already", "merge or release one first, or raise journal.suites.coding.workers.worker-limit")
         links = (*self.settings.texts(LIBRARY_LINKS, environment.id), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES, environment.id), *command.library_copies)
         self.libraries.check(environment.folder, (*links, *copies))

@@ -36,6 +36,7 @@ class MemoriesMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
+        cut_memories, cut_characters = 0, 0
         for row in source.rows(TABLE):
             if row["expires_at"] and row["expires_at"] <= context.timestamp:
                 report.drop("memories past their end", 1)
@@ -46,8 +47,11 @@ class MemoriesMove(VersionFourMove):
                 report.skip(TABLE, row["id"], "it has no text")
                 continue
             if len(row["text"]) > TEXT_LIMIT_CHARACTERS:
-                report.drop("memory text beyond 400 characters", len(row["text"]) - TEXT_LIMIT_CHARACTERS)
+                cut_memories += 1
+                cut_characters += len(row["text"]) - TEXT_LIMIT_CHARACTERS
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators.actor_id(row["creator"]), map, context)))
+        if cut_memories:
+            report.note(f"{cut_memories} memories were cut to {TEXT_LIMIT_CHARACTERS} characters: {cut_characters} characters went")
         self.move_instructions(source, rows, creators, map, report, context)
         return report
 

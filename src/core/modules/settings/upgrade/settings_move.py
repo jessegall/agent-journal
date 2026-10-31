@@ -11,10 +11,10 @@ from core.base.upgrade.version_four_source import VersionFourSource
 
 TABLE = "settings"
 LAYOUT_KEYS = ("layout", "inspector_layout", "worker_layout", "viewer.layout", "viewer.inspector_layout", "viewer.worker_layout")
-RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.most-out",
+RENAMED = {"memories.keyword-limit": "journal.core.memories.keyword-limit", "workers.most_out": "journal.suites.coding.workers.worker-limit",
            "workers.builder_may_dispatch": "journal.suites.coding.workers.builder-dispatches-workers",
            "workers.command_kinds": "journal.suites.coding.worker-command-types"}
-LISTED = ("journal.suites.coding.worker-command-types",)
+LISTED_KEY = "journal.suites.coding.worker-command-types"
 
 
 class SettingsMove(VersionFourMove):
@@ -47,7 +47,7 @@ class SettingsMove(VersionFourMove):
 
     def stored(self, key: str, value: str) -> str:
         text = self.json_text(value)
-        if key not in LISTED:
+        if key != LISTED_KEY:
             return text
         loaded = json.loads(text)
         return json.dumps([item.strip() for item in loaded.split(",") if item.strip()] if isinstance(loaded, str) else loaded)

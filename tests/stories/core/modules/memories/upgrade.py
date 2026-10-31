@@ -35,6 +35,11 @@ def test_the_new_memories_are_listed_nowhere_as_a_rule_or_reminder(new_story):
     assert "type: rule" not in story.run("memory list").output_text and "type: reminder" not in story.run("memory list").output_text
 
 
+def test_a_memory_longer_than_version_5_allows_is_cut_and_the_report_says_how_many_were_cut_and_how_many_characters_went(new_story):
+    story = upgraded_story(new_story)
+    assert "1 memories were cut to 400 characters: 120 characters went" in story.upgrade_text
+    assert "rows" not in "".join(line for line in story.upgrade_text.splitlines() if "cut to 400" in line)
+
 def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_their_keywords(new_story):
     story = upgraded_story(new_story)
     memories = story.run("memory list --json").output_text
