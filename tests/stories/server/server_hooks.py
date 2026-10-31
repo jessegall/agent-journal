@@ -1,8 +1,10 @@
 import json
+import os
 from pathlib import Path
 
+from core.base.timing import TIMING_HEADER
 from tests.stories.core.support.fixtures import ThreeTasks
-from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.server_client import expect_timing_lines, server_story
 
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Hook-Id": "7731-1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 SCHEMA_EXAMPLES = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "event" / "testdata" / "schema"
@@ -33,3 +35,10 @@ def test_a_hook_body_the_server_cannot_read_is_refused_with_its_reason(new_story
     with server_story(new_story(fixture=ThreeTasks)) as story:
         story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Whatever"}, 400, "hook_event_name", RAW_HEADERS)
         story.expect_hook_answer("/hook?program=claude", {"hook_event_name": "Stop", "session_id": "s-1"}, 400, "the headers the hook sends")
+
+
+def test_a_hook_sent_with_a_timing_leaves_one_log_line_with_the_hook_route_steps_in_order(new_story):
+    story = new_story(fixture=ThreeTasks)
+    with server_story(story) as server:
+        server.expect_hook_answer("/hook", example("write"), 200, "", {TIMING_HEADER: "go_start=1;go_sent=2"})
+    expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "hook_read", "hook_answered", "answered"])])

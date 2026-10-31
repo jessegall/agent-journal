@@ -1,19 +1,25 @@
 from collections.abc import Mapping
 
+from core.base.timing import Timing
 from server.hook.hook_event import HookEvent, HookEventError
 from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
 
 
 class HookEndpoint:
     """Answers POST /hook: reads the object a hook sends, prepared by the Go program or raw, and answers what the
-    agent program is to do. Until the drivers decide, every hook is let through with an empty answer."""
+    agent program is to do, stamping the request's timing at each step. Until the drivers decide, every hook is
+    let through with an empty answer."""
+
+    def __init__(self, timing: Timing) -> None:
+        self.timing = timing
 
     def event(self, data: object, program: str, headers: Mapping[str, str]) -> HookEvent:
-        if is_raw_body(data):
-            return RawHookBody.parsed(data).event(program, HookHeaders.parsed(headers))
-        return HookEvent.parsed(data)
+        event = RawHookBody.parsed(data).event(program, HookHeaders.parsed(headers)) if is_raw_body(data) else HookEvent.parsed(data)
+        self.timing.stamp("hook_read")
+        return event
 
     def answer(self, event: HookEvent) -> str:
         if event.program not in ("claude", "codex"):
             raise HookEventError(f"no agent program is named {event.program!r}")
+        self.timing.stamp("hook_answered")
         return ""

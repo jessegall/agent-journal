@@ -116,7 +116,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answer_hook(self, body: bytes, program: str) -> None:
         try:
-            endpoint = HookEndpoint()
+            endpoint = HookEndpoint(self.timing)
             answer = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
         except (HookEventError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
