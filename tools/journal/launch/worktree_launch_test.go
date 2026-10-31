@@ -26,8 +26,8 @@ func TestANamedWorktreeLaunchWorksInItsOwnFolderAndBranchWithAnEnvironmentOfItsO
 	if len(journal.created) != 1 || journal.created[0] != created {
 		t.Fatalf("the journal was asked to make %+v, not %+v", journal.created, created)
 	}
-	if choice.Variables["JOURNAL_ENVIRONMENT"] != "cart" {
-		t.Fatalf("the program's hooks would name %q, not the worktree's environment", choice.Variables["JOURNAL_ENVIRONMENT"])
+	if choice.Variables["JOURNAL_ENV"] != "cart" {
+		t.Fatalf("the program's hooks would name %q, not the worktree's environment", choice.Variables["JOURNAL_ENV"])
 	}
 }
 
@@ -48,7 +48,7 @@ func TestABareWorktreeMakesUpATwoWordNameNoFolderBranchTipOrEnvironmentHolds(t *
 
 func TestAWorktreeLaunchNeverSharesAnEnvironmentALiveSessionHoldsAndTakesTheNextNumber(t *testing.T) {
 	if name := UnheldName("cart", []string{"cart", "cart-2"}); name != "cart-3" {
-		t.Fatalf("a launch while cart and cart-2 are live took %q, not cart-3", name)
+		t.Fatalf("a launch while cart and cart-2 are working took %q, not cart-3", name)
 	}
 	if name := UnheldName("cart", []string{"till"}); name != "cart" {
 		t.Fatalf("a launch while cart is free took %q", name)
@@ -96,19 +96,19 @@ func TestOnlyTheUserRemovesALaunchWorktreeAndItsBranchAndLastCommitStay(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := worktrees.Remove("cart", true); err == nil || !strings.Contains(err.Error(), "a session works in it") {
+	if err := worktrees.Discard("cart", true); err == nil || !strings.Contains(err.Error(), "a session works in it") {
 		t.Fatalf("a worktree a session works in was removed: %v", err)
 	}
 	if err := os.WriteFile(filepath.Join(folder, "cart.py"), []byte("TOTAL = 1\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := worktrees.Remove("cart", false); err == nil || !strings.Contains(err.Error(), "cart.py") {
+	if err := worktrees.Discard("cart", false); err == nil || !strings.Contains(err.Error(), "cart.py") {
 		t.Fatalf("a worktree with uncommitted work was removed: %v", err)
 	}
 	run(t, folder, "git", "add", "cart.py")
 	run(t, folder, "git", "-c", "user.name=Story", "-c", "user.email=story@example.com", "commit", "-m", "The cart total")
 	tip := run(t, folder, "git", "rev-parse", "HEAD")
-	if err := worktrees.Remove("cart", false); err != nil {
+	if err := worktrees.Discard("cart", false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(folder); !os.IsNotExist(err) {

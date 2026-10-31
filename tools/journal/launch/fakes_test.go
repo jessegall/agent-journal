@@ -53,7 +53,7 @@ type fakeJournal struct {
 	suites        []string
 	environments  []Environment
 	conversations []Conversation
-	created          []Environment
+	created       []Environment
 }
 
 func (journal *fakeJournal) Suites() ([]string, error) { return journal.suites, nil }

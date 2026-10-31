@@ -36,3 +36,8 @@ def test_a_suite_change_sends_each_open_agent_its_new_drivers_opening_lines(new_
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.run("suite choose control --environment main")
     story.expect_text(f"agent-line list --agent {story.agent.id}", "You are the control lead")
+
+
+def test_the_installed_top_suites_are_listed_one_per_line_for_the_boot_menu(new_story):
+    story = new_story(SAMPLES, fixture=MainEnvironment)
+    story.expect_success("suite list", "coding", "control", "samples")

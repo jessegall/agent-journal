@@ -36,6 +36,7 @@ from core.modules.drivers.bindings.setting_essential_allowances import SettingEs
 from core.modules.drivers.commands.choose_suite_handler import ChooseSuiteHandler
 from core.modules.drivers.commands.choose_suite_subcommand import ChooseSuiteSubcommand
 from core.modules.drivers.commands.suite_current_subcommand import SuiteCurrentSubcommand
+from core.modules.drivers.commands.suite_list_subcommand import SuiteListSubcommand
 from core.modules.drivers.commands.suite_show_subcommand import SuiteShowSubcommand
 from core.modules.drivers.commands.suite_layout_subcommand import SuiteLayoutSubcommand
 from core.modules.drivers.commands.suite_presets_subcommand import SuitePresetsSubcommand
@@ -52,7 +53,7 @@ class DriversModule(Module):
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTablesMigration]
     handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]

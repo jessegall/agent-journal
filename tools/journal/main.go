@@ -49,6 +49,9 @@ func main() {
 // carries the timing main started, stamped go_sent before the post and go_resent before the one resend.
 func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) int {
 	home := JournalHome()
+	if len(argv) > 0 && argv[0] == "launch" {
+		return LaunchProgram(home, argv[1:], stdout, stderr)
+	}
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "stop" {
 		return StopServer(home, stdout, stderr)
 	}
@@ -116,9 +119,9 @@ func SendCli(client *http.Client, request CliRequest, requestTiming *timing.Timi
 		fmt.Fprintln(stderr, err)
 		return ErrorCode, 0
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), CliLimit)
+	limit, cancel := context.WithTimeout(context.Background(), CliLimit)
 	defer cancel()
-	post, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://journal/cli", bytes.NewReader(body))
+	post, err := http.NewRequestWithContext(limit, http.MethodPost, "http://journal/cli", bytes.NewReader(body))
 	if err != nil {
 		fmt.Fprintln(stderr, err)
 		return ErrorCode, 0

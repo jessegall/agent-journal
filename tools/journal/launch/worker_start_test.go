@@ -3,6 +3,7 @@ package launch
 import (
 	"encoding/json"
 	"net"
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -19,7 +20,12 @@ func (starter fakeStarter) Start(start ProgramStart) error {
 }
 
 func TestAWorkerRequestOnTheLaunchersSocketStartsItsProgramInTheWorktreeWithTheWorkersIdentity(t *testing.T) {
-	socket := filepath.Join(t.TempDir(), "launcher.sock")
+	folder, err := os.MkdirTemp("/tmp", "launch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(folder)
+	socket := filepath.Join(folder, "launcher.sock")
 	starter := fakeStarter{started: make(chan ProgramStart, 1)}
 	listener, err := Listen(socket, starter)
 	if err != nil {
@@ -37,7 +43,7 @@ func TestAWorkerRequestOnTheLaunchersSocketStartsItsProgramInTheWorktreeWithTheW
 	connection.Close()
 	select {
 	case start := <-starter.started:
-		if start.Folder != request.Folder || start.Command[0] != "claude" || start.Variables["JOURNAL_AGENT_ID"] != "16" || start.Variables["JOURNAL_ENVIRONMENT"] != "main" {
+		if start.Folder != request.Folder || start.Command[0] != "claude" || start.Variables["JOURNAL_AGENT_ID"] != "16" || start.Variables["JOURNAL_ENV"] != "main" {
 			t.Fatalf("the worker started as %+v", start)
 		}
 	case <-time.After(5 * time.Second):

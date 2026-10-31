@@ -40,9 +40,9 @@ func NamedPath(home string, name string) string {
 
 // Transport sends HTTP requests over the server's Unix socket.
 func Transport(path string) http.RoundTripper {
-	dial := func(ctx context.Context, _, _ string) (net.Conn, error) {
+	dial := func(limit context.Context, _, _ string) (net.Conn, error) {
 		var dialer net.Dialer
-		return dialer.DialContext(ctx, "unix", path)
+		return dialer.DialContext(limit, "unix", path)
 	}
 	return &http.Transport{DialContext: dial}
 }
