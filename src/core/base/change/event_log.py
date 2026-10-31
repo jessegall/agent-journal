@@ -10,6 +10,8 @@ from core.base.model.table import stored
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 
+HIDDEN = "hidden"
+
 PAGE_SIZE_EVENTS = 100
 REGISTRY_SYNC_EVENT = "registry.sync"
 REGISTRY_TABLE = "registry"
@@ -40,7 +42,9 @@ class EventLog:
 
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
         names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
-        return {name: [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))] for name in names}
+        hidden = type(change.row).hidden_fields
+        return {name: [HIDDEN, HIDDEN] if name in hidden else [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))]
+                for name in names}
 
     def event(self, event_id: int) -> LoggedEvent:
         return LoggedEvent.parsed(self.table.row(event_id))

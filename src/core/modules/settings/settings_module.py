@@ -4,14 +4,25 @@ from core.modules.settings.bindings.setting_guard_switches import SettingGuardSw
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.settings.models.setting import Setting
+from core.modules.settings.models.secret_setting import SecretSetting
+from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
+from core.modules.settings.commands.set_setting_handler import SetSettingHandler
+from core.modules.settings.commands.set_setting_subcommand import SetSettingSubcommand
+from core.modules.settings.commands.switch_setting_group_handler import SwitchSettingGroupHandler
+from core.modules.settings.commands.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
+from core.modules.settings.commands.setting_show_subcommand import SettingShowSubcommand
+from core.modules.settings.commands.setting_tree_subcommand import SettingTreeSubcommand
 
 
 class SettingsModule(Module):
-    """Adds settings: values kept for an environment or for the whole project."""
+    """Adds settings: values kept for an environment or for the whole project, set and read by the keys modules
+    declare, a secret kept apart from the event log."""
 
     name = "journal.core.settings"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
-    models = [ModelDeclaration(Setting)]
-    migrations = [SettingsTableMigration]
+    models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
+    migrations = [SettingsTableMigration, SecretSettingsTableMigration]
+    handlers = [SetSettingHandler, SwitchSettingGroupHandler]
+    subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches)]

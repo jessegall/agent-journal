@@ -16,6 +16,7 @@ class Model:
     model_name: ClassVar[str]
     cli_name: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
+    hidden_fields: ClassVar[frozenset[str]] = frozenset()
 
     id: int = 0
     version: int = 0
