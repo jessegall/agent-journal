@@ -33,4 +33,5 @@ class CodingModule(Module):
     windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.PAGE, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.PAGE, reads=[*FILE_EDIT_READS, "agent list"],
-                                 events=["file_edit.create"])]
+                                 events=["file_edit.create"]),
+               WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.PAGE, place=WindowPlace.AGENT)]
