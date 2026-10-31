@@ -2,13 +2,13 @@ import json
 from pathlib import Path
 
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
-from tests.stories.server.support.server_client import expect_same_answer, server_story
+from tests.stories.server.support.server_client import expect_equal_answers, server_story
 
 RECORDED = Path(__file__).resolve().parents[3] / "tools" / "journal-hook" / "testdata" / "recorded" / "claude"
 RAW_HEADERS = {"X-Journal-Request-At": "1793395000123", "X-Journal-Actor": "agent", "X-Journal-Env": "main"}
 
 
-def recorded(event: str, tool: str = "") -> dict[str, object]:
+def recording(event: str, tool: str = "") -> dict[str, object]:
     for line in (RECORDED / f"{event}.jsonl").read_text().splitlines():
         body = json.loads(line)
         if not tool or body.get("tool_name") == tool:
@@ -22,20 +22,20 @@ def decisions(new_story, body: dict[str, object]) -> tuple[tuple[object, object]
 
 
 def test_a_recorded_shell_hook_is_decided_the_same_raw_and_prepared(new_story):
-    expect_same_answer(*decisions(new_story, recorded("PreToolUse", "Bash")))
+    expect_equal_answers(*decisions(new_story, recording("PreToolUse", "Bash")))
 
 
 def test_a_recorded_edit_hook_is_decided_the_same_raw_and_prepared(new_story):
-    expect_same_answer(*decisions(new_story, recorded("PreToolUse", "Edit")))
+    expect_equal_answers(*decisions(new_story, recording("PreToolUse", "Edit")))
 
 
 def test_a_recorded_write_hook_is_decided_the_same_raw_and_prepared(new_story):
-    expect_same_answer(*decisions(new_story, recorded("PreToolUse", "Write")))
+    expect_equal_answers(*decisions(new_story, recording("PreToolUse", "Write")))
 
 
 def test_a_recorded_prompt_is_decided_the_same_raw_and_prepared(new_story):
-    expect_same_answer(*decisions(new_story, recorded("UserPromptSubmit")))
+    expect_equal_answers(*decisions(new_story, recording("UserPromptSubmit")))
 
 
 def test_a_recorded_stop_is_refused_the_same_raw_and_prepared(new_story):
-    expect_same_answer(*decisions(new_story, recorded("Stop")))
+    expect_equal_answers(*decisions(new_story, recording("Stop")))

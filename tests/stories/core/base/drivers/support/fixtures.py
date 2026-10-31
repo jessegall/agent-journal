@@ -6,7 +6,7 @@ from tests.stories.core.base.drivers.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
-class SamplesChosen(StoryFixture):
+class SampleSuiteChoice(StoryFixture):
     """Environment main runs the sample suite, whose lead drives the main agent."""
 
     parent = MainEnvironment
@@ -21,7 +21,7 @@ class SamplesChosen(StoryFixture):
 class LeadStarted(StoryFixture):
     """Session s-1 sent its first hook, which started agent 1 under the sample lead."""
 
-    parent = SamplesChosen
+    parent = SampleSuiteChoice
 
     def steps(self, story: Story) -> None:
         story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))

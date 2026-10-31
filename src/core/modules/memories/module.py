@@ -2,11 +2,11 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope import KeywordScope
-from core.modules.memories.guards.switches_by_user import SwitchesByUser
+from core.modules.memories.guards.switch_change_guard import SwitchChangeGuard
 from core.modules.memories.guards.type_makers import TypeMakers
-from core.modules.memories.guards.type_on import TypeOn
-from core.modules.memories.guards.types_by_user import TypesByUser
-from core.modules.memories.guards.weight_only_rises import WeightOnlyRises
+from core.modules.memories.guards.type_availability import TypeAvailability
+from core.modules.memories.guards.type_change_guard import TypeChangeGuard
+from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
 from core.modules.memories.compaction_fader import CompactionFader
 from core.modules.memories.task_memory_remover import TaskMemoryRemover
 from core.modules.memories.memory import Memory
@@ -18,9 +18,9 @@ from core.modules.memories.memory_skip_handler import MemorySkipHandler
 from core.modules.memories.memory_skip_subcommand import MemorySkipSubcommand
 from core.modules.memories.rules.open_mark import OpenMark
 from core.modules.memories.weighing import Weighing
-from core.modules.memories.rules.give_at_start import GiveAtStart
-from core.modules.memories.rules.give_by_keyword import GiveByKeyword
-from core.modules.memories.rules.give_when_due import GiveWhenDue
+from core.modules.memories.rules.start_giving import StartGiving
+from core.modules.memories.rules.keyword_giving import KeywordGiving
+from core.modules.memories.rules.due_giving import DueGiving
 from core.modules.memories.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.memory_faded_subcommand import MemoryFadedSubcommand
 from core.modules.memories.memory_make_handler import MemoryMakeHandler
@@ -31,12 +31,12 @@ from core.modules.memories.memory_read_subcommand import MemoryReadSubcommand
 from core.modules.memories.memory_weigh_handler import MemoryWeighHandler
 from core.modules.memories.memory_weigh_subcommand import MemoryWeighSubcommand
 from core.modules.memories.memory_giving import MemoryGiving
-from core.modules.memories.memory_in_context import MemoryInContext
+from core.modules.memories.context_memory import ContextMemory
 from core.modules.memories.memory_keyword import MemoryKeyword
 from core.modules.memories.memory_mark import MemoryMark
 from core.modules.memories.memory_type import MemoryType
 from core.modules.memories.memory_type_switch import MemoryTypeSwitch
-from core.modules.memories.memory_word import MemoryWord
+from core.modules.memories.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTables
 from core.modules.memories.standing_memory import StandingMemory
 
@@ -53,10 +53,10 @@ class MemoriesModule(Module):
               ModelDeclaration(MemoryGiving, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
     migrations = [MemoriesTables]
-    views = [StandingMemory, MemoryInContext, MemoryWord]
-    guards = [TypeMakers, TypeOn, AgentScopeGuard, WeightOnlyRises, TypesByUser, SwitchesByUser, KeywordScope]
+    views = [StandingMemory, ContextMemory, KeywordMemory]
+    guards = [TypeMakers, TypeAvailability, AgentScopeGuard, AgentWeightGuard, TypeChangeGuard, SwitchChangeGuard, KeywordScope]
     handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler, MemoryGiveHandler, MemoryMarkOpenHandler, MemorySkipHandler]
-    driver_rules = [GiveAtStart, GiveByKeyword, GiveWhenDue, OpenMark]
+    driver_rules = [StartGiving, KeywordGiving, DueGiving, OpenMark]
     overlays = [Weighing]
     listeners = [CompactionFader, TaskMemoryRemover, MarkCloser]
     subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, MemorySkipSubcommand]

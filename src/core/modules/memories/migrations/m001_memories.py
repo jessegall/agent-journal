@@ -10,14 +10,14 @@ class MemoriesTables(Migration):
     statements = (
         "CREATE TABLE memory_types (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         " name TEXT NOT NULL UNIQUE CHECK (name GLOB '[a-z]*' AND length(name) <= 40), module TEXT NOT NULL,"
-        " description TEXT NOT NULL, agents_may_make INTEGER NOT NULL CHECK (agents_may_make IN (0, 1)),"
+        " description TEXT NOT NULL, agent_writable INTEGER NOT NULL CHECK (agent_writable IN (0, 1)),"
         " fades INTEGER NOT NULL CHECK (fades IN (0, 1)), starting_weight INTEGER NOT NULL DEFAULT 5 CHECK (starting_weight BETWEEN 1 AND 10),"
-        " given_at_start INTEGER NOT NULL DEFAULT 1, given_at_mark INTEGER NOT NULL DEFAULT 0, given_by_keyword INTEGER NOT NULL DEFAULT 1,"
+        " start_giving INTEGER NOT NULL DEFAULT 1, mark_giving INTEGER NOT NULL DEFAULT 0, keyword_giving INTEGER NOT NULL DEFAULT 1,"
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
         " created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
         "CREATE TABLE memory_type_switches (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         " type TEXT NOT NULL REFERENCES memory_types(name) ON DELETE CASCADE, suite TEXT NOT NULL, module TEXT NOT NULL,"
-        " is_on INTEGER NOT NULL CHECK (is_on IN (0, 1)), version INTEGER NOT NULL DEFAULT 1,"
+        " enabled INTEGER NOT NULL CHECK (enabled IN (0, 1)), version INTEGER NOT NULL DEFAULT 1,"
         " metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL,"
         " UNIQUE (type, suite)) STRICT",
         "CREATE TABLE memories (id INTEGER PRIMARY KEY, environment_id INTEGER REFERENCES environments(id) ON DELETE RESTRICT,"
@@ -46,12 +46,12 @@ class MemoriesTables(Migration):
         " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)),"
         " created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT",
         "CREATE UNIQUE INDEX memory_marks_one_open ON memory_marks (agent_id) WHERE state = 'open'",
-        "INSERT INTO memory_types (creator_id, name, module, description, agents_may_make, fades, starting_weight, given_at_start, given_at_mark,"
-        " given_by_keyword, created_at, updated_at) VALUES"
+        "INSERT INTO memory_types (creator_id, name, module, description, agent_writable, fades, starting_weight, start_giving, mark_giving,"
+        " keyword_giving, created_at, updated_at) VALUES"
         f" ({CORE_ACTOR_ID}, 'fact', 'journal.core.memories', 'something true here to keep in mind', 1, 1, 5, 1, 1, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL}),"
         f" ({CORE_ACTOR_ID}, 'rule', 'journal.core.memories', 'a ruling the user made that binds every agent it reaches', 0, 0, 10, 1, 0, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL}),"
         f" ({CORE_ACTOR_ID}, 'reminder', 'journal.core.memories', 'something to keep doing here, or to do at its due time', 1, 0, 5, 1, 0, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
-        "INSERT INTO memory_type_switches (creator_id, type, suite, module, is_on, created_at, updated_at) VALUES"
+        "INSERT INTO memory_type_switches (creator_id, type, suite, module, enabled, created_at, updated_at) VALUES"
         f" ({CORE_ACTOR_ID}, 'fact', '*', 'journal.core.memories', 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL}),"
         f" ({CORE_ACTOR_ID}, 'rule', '*', 'journal.core.memories', 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL}),"
         f" ({CORE_ACTOR_ID}, 'reminder', '*', 'journal.core.memories', 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",

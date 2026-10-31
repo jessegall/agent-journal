@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
-from core.modules.memories.memory_marks import MemoryMarks
+from core.modules.memories.mark_tracker import MarkTracker
 from core.modules.memories.rules.weigh_first import WeighFirst
 
 
@@ -14,7 +14,7 @@ class Weighing(Overlay):
     exclusive = True
     rules = [WeighFirst]
 
-    def __init__(self, marks: MemoryMarks) -> None:
+    def __init__(self, marks: MarkTracker) -> None:
         self.marks = marks
 
     def open_rows(self, agent_id: int) -> Sequence[OpenRow]:

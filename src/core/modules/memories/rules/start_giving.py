@@ -7,11 +7,11 @@ from core.modules.memories.memory_lines import MemoryLines
 from core.modules.memories.hook_memories import HookMemories
 
 
-class GiveAtStart(DriverRule):
-    """At a session start, and after a compaction, the agent is given every standing memory of its scope and the
-    project's of a type given at start and with no due time, rules first and facts heaviest first, each giving kept."""
+class StartGiving(DriverRule):
+    """At a session start and after a compaction, gives the agent each standing memory of its scope and the
+    project's whose type gives at start and that has no due time: rules first, facts heaviest first."""
 
-    name = "memories.give-at-start"
+    name = "memories.start-giving"
     hook = "session_start"
     drivers = ["*"]
     roles = ["main", "worker"]

@@ -20,9 +20,9 @@ class MemoryMakeHandler(Handler[MemoryMake, Memory]):
     def handle(self, command: MemoryMake, context: Context) -> Memory:
         types = self.queries.query(MemoryType).filter(name=command.type).page(1, 1).rows
         if not types:
-            raise Refusal(f"no memory type is called {command.type}", "journal memory-type list names them")
+            raise Refusal(f"no memory type {command.type} exists", "journal memory-type list shows them")
         memory = self.repository.save(Memory(environment_id=None if command.project else context.environment_id,
-                                             agent_id=context.actor.id if command.own else None, task_id=command.task_id,
+                                             agent_id=context.actor.id if command.personal else None, task_id=command.task_id,
                                              creator_id=context.actor.id, type=command.type, text=command.text,
                                              weight=types[0].starting_weight if command.weight is None else command.weight, due_at=command.due_at), context)
         for word in command.keywords:

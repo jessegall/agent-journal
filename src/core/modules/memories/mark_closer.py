@@ -3,7 +3,7 @@ from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.repository.repository import Repository
-from core.modules.memories.memory_marks import MemoryMarks
+from core.modules.memories.mark_tracker import MarkTracker
 
 
 class MarkCloser(SaveListener):
@@ -12,7 +12,7 @@ class MarkCloser(SaveListener):
     name = "memories.mark-closer"
     event = "memory.*"
 
-    def __init__(self, marks: MemoryMarks, repository: Repository) -> None:
+    def __init__(self, marks: MarkTracker, repository: Repository) -> None:
         self.marks, self.repository = marks, repository
 
     def handle(self, change: Change[Model]) -> None:

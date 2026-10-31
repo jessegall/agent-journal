@@ -19,8 +19,8 @@ class Memory(Model):
 
     model_name = "memory"
     cli_name = "memory"
-    table = "memories"
     lifecycle = MemoryLifecycle
+    table = "memories"
 
     environment_id: int | None = None
     agent_id: int | None = None

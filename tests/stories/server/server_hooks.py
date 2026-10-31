@@ -36,7 +36,7 @@ def test_a_raw_body_with_no_version_is_read_the_old_way(new_story):
 
 def test_a_hook_object_of_another_version_is_refused_naming_both_versions(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
-        story.expect_hook_answer("/hook", {**example("stop"), "version": 2}, 400, "version 2 of the prepared object, and this server reads version 1")
+        story.expect_hook_answer("/hook", {**example("stop"), "version": 1}, 400, "version 1 of the prepared object, and this server reads version 2")
 
 
 def test_a_hook_body_the_server_cannot_read_is_refused_with_its_reason(new_story):
@@ -87,5 +87,5 @@ def test_a_claude_stop_sent_through_the_hook_program_is_refused_as_the_builder_d
 
 def test_a_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(new_story):
     with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
-        story.expect_hook_answer_while_another_hook_holds_the_journal(lead_stop("server-4"), "another hook held the journal")
+        story.expect_locked_hook_answer(lead_stop("server-4"), "another hook held the journal")
 

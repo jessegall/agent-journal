@@ -22,7 +22,7 @@ class StandingMemory(ViewModel):
     weight: int
     due_at: Timestamp | None
     fades: bool
-    given_at_start: bool
-    given_at_mark: bool
-    given_by_keyword: bool
+    start_giving: bool
+    mark_giving: bool
+    keyword_giving: bool
     giving_order: int

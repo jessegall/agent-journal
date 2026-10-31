@@ -29,5 +29,5 @@ class WindowAllowHandler(Handler[WindowAllow, WindowPermission]):
         declared = window.reads if command.type is WindowPermissionType.READS else window.runs
         permission = self.allowances.permission(context.actor.id, context.environment_id, command.window, command.type)
         allowed = self.allowances.allowed_lines(context.actor.id, context.environment_id, command.window, command.type)
-        return self.repository.save_over(permission, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
+        return self.repository.merge(permission, WindowPermission(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id,
                                                                       subject=command.window, type=command.type, lines=json.dumps(sorted({*allowed, *declared}))), context)

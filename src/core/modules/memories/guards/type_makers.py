@@ -24,5 +24,5 @@ class TypeMakers(Guard):
         if change.old_row is not None and "type" not in change.fields:
             return
         types = self.queries.query(MemoryType).filter(name=memory.type).page(1, 1).rows
-        if types and not types[0].agents_may_make:
+        if types and not types[0].agent_writable:
             raise Refusal(f"only the user makes a {memory.type}", "keep it as a fact with journal memory make '<text>' --type fact, or ask the user")

@@ -12,12 +12,12 @@ def database(tmp_path) -> Database:
 
 
 def test_the_migration_seeds_fact_rule_and_reminder_with_their_weights_and_who_may_make_them(tmp_path):
-    rows = database(tmp_path).rows(Statement("SELECT name, agents_may_make, fades, starting_weight FROM memory_types ORDER BY name"))
+    rows = database(tmp_path).rows(Statement("SELECT name, agent_writable, fades, starting_weight FROM memory_types ORDER BY name"))
     assert [tuple(row) for row in rows] == [("fact", 1, 1, 5), ("reminder", 1, 0, 5), ("rule", 0, 0, 10)]
 
 
 def test_each_seeded_type_is_on_in_every_suite(tmp_path):
-    rows = database(tmp_path).rows(Statement("SELECT type, suite, is_on FROM memory_type_switches ORDER BY type"))
+    rows = database(tmp_path).rows(Statement("SELECT type, suite, enabled FROM memory_type_switches ORDER BY type"))
     assert [tuple(row) for row in rows] == [("fact", "*", 1), ("reminder", "*", 1), ("rule", "*", 1)]
 
 

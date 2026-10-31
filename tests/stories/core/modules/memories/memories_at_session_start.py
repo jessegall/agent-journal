@@ -6,7 +6,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 SESSION_START = HookSamples.session_start()
 
 
-def remembered(story) -> None:
+def four_memories(story) -> None:
     story.run('memory make "The cart total is in cents" --type fact --weight 4 --environment main', actor=story.agent)
     story.run('memory make "The checkout runs in euros" --type fact --weight 8 --environment main', actor=story.agent)
     story.run('memory make "Log after each step" --type reminder --environment main', actor=story.agent)
@@ -15,7 +15,7 @@ def remembered(story) -> None:
 
 def test_a_session_start_gives_rules_then_reminders_then_facts_heaviest_first(new_story):
     story = new_story(fixture=BuilderStarted)
-    remembered(story)
+    four_memories(story)
     story.expect_ordered_hook_lines("s-1", SESSION_START, "Always run the tests before a commit", "Log after each step", "The checkout runs in euros",
                                      "The cart total is in cents")
 

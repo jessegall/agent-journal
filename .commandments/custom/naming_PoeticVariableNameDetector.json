@@ -29,6 +29,18 @@
             },
             {
                 "resolvesLike": "typing.*"
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "type-declaration"
+                        },
+                        {
+                            "extendsAny": "Lifecycle"
+                        }
+                    ]
+                }
             }
         ]
     },

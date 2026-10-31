@@ -15,9 +15,9 @@ class MemoryType(Model):
     name: str
     module: str
     description: str
-    agents_may_make: bool
+    agent_writable: bool
     fades: bool
     starting_weight: int = 5
-    given_at_start: bool = True
-    given_at_mark: bool = False
-    given_by_keyword: bool = True
+    start_giving: bool = True
+    mark_giving: bool = False
+    keyword_giving: bool = True

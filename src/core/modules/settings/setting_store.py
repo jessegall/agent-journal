@@ -18,4 +18,4 @@ class SettingStore:
         query = self.queries.query(Setting).filter(key=key)
         rows = (query.matching(IsNull("environment_id")) if environment_id is None else query.filter(environment_id=environment_id)).page(1, 1).rows
         setting = Setting(environment_id=environment_id, creator_id=context.actor.id, key=key, value=json.dumps(value))
-        return self.repository.save_over(rows[0] if rows else None, setting, context)
+        return self.repository.merge(rows[0] if rows else None, setting, context)

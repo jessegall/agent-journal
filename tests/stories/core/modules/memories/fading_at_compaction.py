@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithOpenTask
 
-FACT_MAKE = 'memory make "The cart total is in cents" --type fact --environment main'
+FACT_COMMAND = 'memory make "The cart total is in cents" --type fact --environment main'
 COMPACTION = HookSamples.sample("compact")
 
 
@@ -14,7 +14,7 @@ def compacted(story, session: str = "s-1") -> None:
 
 def test_a_main_agent_s_compaction_fades_its_environment_s_facts_and_not_the_project_s(new_story):
     story = new_story(fixture=BuilderStarted)
-    fact_id = story.new_row_id(FACT_MAKE, actor=story.agent)
+    fact_id = story.new_row_id(FACT_COMMAND, actor=story.agent)
     project_id = story.new_row_id('memory make "Use plain words" --type fact --project')
     compacted(story)
     story.expect_success(f"memory show {fact_id}", "weight: 4")
@@ -46,7 +46,7 @@ def test_a_rule_and_a_reminder_never_fade(new_story):
 
 def test_a_compaction_during_a_wait_still_fades(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
-    fact_id = story.new_row_id(FACT_MAKE, actor=story.agent)
+    fact_id = story.new_row_id(FACT_COMMAND, actor=story.agent)
     story.run("wait on 'the review' --target tasks:1", actor=story.agent)
     compacted(story)
     story.expect_success(f"memory show {fact_id}", "weight: 4")

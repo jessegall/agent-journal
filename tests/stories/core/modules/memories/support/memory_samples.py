@@ -10,9 +10,9 @@ class VoiceMemoryTypes(Migration):
 
     number = 1
     statements = (
-        "INSERT INTO memory_types (creator_id, name, module, description, agents_may_make, fades, starting_weight, given_at_start, given_at_mark,"
-        f" given_by_keyword, created_at, updated_at) VALUES (1, 'voice', 'voice', 'how the project speaks', 1, 0, 8, 1, 0, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
-        "INSERT INTO memory_type_switches (creator_id, type, suite, module, is_on, created_at, updated_at)"
+        "INSERT INTO memory_types (creator_id, name, module, description, agent_writable, fades, starting_weight, start_giving, mark_giving,"
+        f" keyword_giving, created_at, updated_at) VALUES (1, 'voice', 'voice', 'how the project speaks', 1, 0, 8, 1, 0, 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
+        "INSERT INTO memory_type_switches (creator_id, type, suite, module, enabled, created_at, updated_at)"
         f" VALUES (1, 'voice', '*', 'voice', 1, {TIMESTAMP_SQL}, {TIMESTAMP_SQL})",
     )
 

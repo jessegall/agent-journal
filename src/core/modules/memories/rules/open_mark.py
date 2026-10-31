@@ -4,7 +4,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.memory_lines import MemoryLines
 from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_mark_open import MemoryMarkOpen
-from core.modules.memories.memory_marks import DEFAULT_MARKS, MemoryMarks
+from core.modules.memories.mark_tracker import DEFAULT_MARKS, MarkTracker
 from core.modules.settings.setting_values import SettingValues
 
 MARKS_SETTING = "memories.marks"
@@ -19,7 +19,7 @@ class OpenMark(DriverRule):
     drivers = ["*"]
     roles = ["main", "worker"]
 
-    def __init__(self, marks: MemoryMarks, settings: SettingValues, memories: HookMemories) -> None:
+    def __init__(self, marks: MarkTracker, settings: SettingValues, memories: HookMemories) -> None:
         self.marks, self.settings, self.memories = marks, settings, memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

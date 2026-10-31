@@ -12,7 +12,7 @@ from core.base.query.select import Select
 from core.base.timestamp import Timestamp
 from core.modules.memories.conditions.agent_scope import AgentScope
 from core.modules.memories.conditions.due_memory import DueMemory
-from core.modules.memories.memory_in_context import MemoryInContext
+from core.modules.memories.context_memory import ContextMemory
 from core.modules.memories.standing_memory import StandingMemory
 
 
@@ -35,10 +35,10 @@ class StandingMemoryQuery(Query[StandingMemory]):
         return self.filter(fades=True)
 
     def start_memories(self) -> Self:
-        return self.filter(given_at_start=True)
+        return self.filter(start_giving=True)
 
     def mark_memories(self) -> Self:
-        return self.filter(given_at_mark=True)
+        return self.filter(mark_giving=True)
 
     def due(self, timestamp: Timestamp) -> Self:
         return self.matching(DueMemory(timestamp))
@@ -59,5 +59,5 @@ class StandingMemoryQuery(Query[StandingMemory]):
         return self.ordered("giving_order").descending("weight")
 
     def absent_memories(self, agent_id: int) -> Self:
-        context_memory_ids = Select(MemoryInContext.view).matching(Equal("agent_id", agent_id)).column("memory_id")
+        context_memory_ids = Select(ContextMemory.view).matching(Equal("agent_id", agent_id)).column("memory_id")
         return self.matching(SubqueryMatch("memory_id", context_memory_ids, negated=True))

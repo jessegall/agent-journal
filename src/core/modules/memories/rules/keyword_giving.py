@@ -4,22 +4,22 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.memories.giving_cause import GivingCause
-from core.modules.memories.hook_words import hook_words
+from core.modules.memories.hook_keywords import hook_keywords
 from core.modules.memories.memory_give import MemoryGive
 from core.modules.memories.memory_lines import MemoryLines
 from core.modules.memories.hook_memories import HookMemories
-from core.modules.memories.memory_word import MemoryWord
+from core.modules.memories.keyword_memory import KeywordMemory
 from core.modules.settings.setting_values import SettingValues
 
 KEYWORD_LIMIT = "memories.keyword-limit"
 KEYWORD_LIMIT_DEFAULT = 3
 
 
-class GiveByKeyword(DriverRule):
+class KeywordGiving(DriverRule):
     """When a prompt or a tool use names a keyword of a standing memory the agent has not been given since its last
     compaction, the agent is given that memory, at most memories.keyword-limit of them on one hook."""
 
-    name = "memories.give-by-keyword"
+    name = "memories.keyword-giving"
     hook = "*"
     drivers = ["*"]
     roles = ["main", "worker"]
@@ -28,10 +28,10 @@ class GiveByKeyword(DriverRule):
         self.queries, self.settings, self.memories = queries, settings, memories
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        named = hook_words(hook.event)
-        if not named:
+        hook_terms = hook_keywords(hook.event)
+        if not hook_terms:
             return RuleAnswer.allowed()
-        memory_ids = [word.memory_id for word in self.queries.query(MemoryWord).matching(Among("word", named)).all_rows()]
+        memory_ids = [keyword.memory_id for keyword in self.queries.query(KeywordMemory).matching(Among("word", hook_terms)).all_rows()]
         limit = self.settings.value(KEYWORD_LIMIT, hook.environment_id, KEYWORD_LIMIT_DEFAULT)
         rows = self.memories.query(hook).among(memory_ids).absent_memories(hook.agent_id).heaviest_first().all_rows()
         memories = list(rows)[: limit if isinstance(limit, int) else KEYWORD_LIMIT_DEFAULT]

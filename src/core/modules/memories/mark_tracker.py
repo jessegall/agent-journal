@@ -9,7 +9,7 @@ from core.modules.memories.memory_mark import MemoryMark
 DEFAULT_MARKS = (50, 80, 90)
 
 
-class MemoryMarks:
+class MarkTracker:
     """An agent's context marks: the one open now, and the next mark its context passed that it has not reached
     since its last compaction."""
 
@@ -24,7 +24,7 @@ class MemoryMarks:
         if not passed:
             return None
         compactions = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").page(1, 1).rows
-        since = next((call.created_at.text for call in compactions if call.created_at is not None), "")
-        reached = [mark.percent for mark in self.queries.query(MemoryMark).filter(agent_id=agent_id).all_rows() if mark.opened_at.text > since]
+        compaction_text = next((call.created_at.text for call in compactions if call.created_at is not None), "")
+        passed_percents = [mark.percent for mark in self.queries.query(MemoryMark).filter(agent_id=agent_id).all_rows() if mark.opened_at.text > compaction_text]
         highest = max(passed)
-        return None if any(percent_reached >= highest for percent_reached in reached) else highest
+        return None if any(percent_reached >= highest for percent_reached in passed_percents) else highest

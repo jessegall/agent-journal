@@ -11,4 +11,4 @@ class HookMemories:
         self.standing, self.choice = standing, choice
 
     def query(self, hook: AgentHook) -> StandingMemoryQuery:
-        return self.standing.scope(hook.agent_id, hook.environment_id).types(self.choice.on_types(hook.environment_id))
+        return self.standing.scope(hook.agent_id, hook.environment_id).types(self.choice.enabled_types(hook.environment_id))

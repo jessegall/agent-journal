@@ -19,7 +19,7 @@ def test_each_answer_names_its_outcome_and_only_a_refusal_or_an_allowance_now_en
 
 def test_commands_ride_on_an_answer_and_ending_a_layer_marks_it():
     answer = RuleAnswer.with_lines("back to work").running(SampleEnd(1)).ending_layer(SampleEnd(2))
-    assert list(answer.commands) == [SampleEnd(1), SampleEnd(2)] and answer.ends_layer and answer.lines == ("back to work",)
+    assert list(answer.commands) == [SampleEnd(1), SampleEnd(2)] and answer.ends_layer and list(answer.lines) == ["back to work"]
 
 
 def test_a_reply_that_lets_the_hook_through_has_no_refusal_and_reads_as_json():

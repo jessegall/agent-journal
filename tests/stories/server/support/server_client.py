@@ -63,7 +63,7 @@ class ServerStory:
     def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
         self.story, self.socket_path, self.context = story, socket_path, context
 
-    def expect_hook_answer_while_another_hook_holds_the_journal(self, body: object, text: str) -> None:
+    def expect_locked_hook_answer(self, body: object, text: str) -> None:
         with self.context.hook_database.lock:
             self.expect_hook_answer("/hook", body, 200, text)
 
@@ -299,7 +299,7 @@ def answer_from(raw: bytes) -> ServerAnswer:
     return ServerAnswer(status, text.decode(), exit_code, headers.get(b"journal-code-version", b"").decode())
 
 
-def expect_same_answer(raw: tuple[object, object], prepared: tuple[object, object]) -> None:
+def expect_equal_answers(raw: tuple[object, object], prepared: tuple[object, object]) -> None:
     assert raw == prepared, f"the raw body was answered {raw} and the prepared object {prepared}"
 
 

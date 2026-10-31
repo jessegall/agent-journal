@@ -10,11 +10,11 @@ from core.modules.memories.memory_remove import MemoryRemove
 DUE_REASON = "given at its due time"
 
 
-class GiveWhenDue(DriverRule):
+class DueGiving(DriverRule):
     """On any hook, the server's tick included, the agent is given each memory of its scope whose due time has
     come, once, and the memory is then removed."""
 
-    name = "memories.give-when-due"
+    name = "memories.due-giving"
     hook = "*"
     drivers = ["*"]
     roles = ["main", "worker"]

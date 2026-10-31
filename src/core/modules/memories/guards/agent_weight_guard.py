@@ -6,10 +6,10 @@ from core.base.refusal import Refusal
 from core.modules.memories.memory import Memory
 
 
-class WeightOnlyRises(Guard):
+class AgentWeightGuard(Guard):
     """An agent keeps or raises a memory's weight, never lowers it; a memory mostly true is corrected with edit."""
 
-    name = "memories.weight-only-rises"
+    name = "memories.agent-weight"
     event = "memory.update"
 
     def check(self, change: Change[Model]) -> None:

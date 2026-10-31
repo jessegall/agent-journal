@@ -13,7 +13,7 @@ class WindowSettingKeys:
 
     def key(self, window: str, key: str) -> str:
         if not self.registry.has_window(window):
-            raise Refusal(f"no installed module declares the window {window}", "journal window permissions <window> names a window of an installed module")
+            raise Refusal(f"no installed module declares the window {window}", "journal window permissions <window> needs a window of an installed module")
         if "." in key:
             raise Refusal(f"a window's setting key has no dot: {key}", "name the setting in one word, such as zoom or sort-order")
         return f"{WINDOW_SETTINGS}{window}.{key}"

@@ -72,9 +72,9 @@ class ViewTiming:
         durations = []
         for key in keys:
             started = time.perf_counter()
-            self.connection.execute(sql, (key,)).fetchall()
+            self.connection.execute(sql, [key]).fetchall()
             durations.append((time.perf_counter() - started) * 1000)
-        plan = " | ".join(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {sql}", (keys[0],)).fetchall())
+        plan = " | ".join(row[3] for row in self.connection.execute(f"EXPLAIN QUERY PLAN {sql}", [keys[0]]).fetchall())
         return ReadTiming(name, statistics.median(durations), plan)
 
     def plan_keys(self) -> list[int]:

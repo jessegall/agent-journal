@@ -8,8 +8,8 @@ from core.modules.memories.memory_make import MemoryMake
 
 
 class MemoryMakeSubcommand(Subcommand[MemoryMake, Memory]):
-    """`journal memory make "<text>" --type <type> [--weight 7] [--keywords a,b] [--task 12] [--due <time>] [--project]
-    [--own]`: a memory for your environment, the whole project or yourself alone."""
+    """`journal memory make "<text>" --type <type>`, with a weight, keywords, a task and a due time if wanted: a
+    memory for your environment, with --project for the whole project, or with --own for yourself alone."""
 
     cli_name = "memory"
     name = "make"
@@ -22,8 +22,8 @@ class MemoryMakeSubcommand(Subcommand[MemoryMake, Memory]):
         parser.add_argument("--task", type=int)
         parser.add_argument("--due", type=Timestamp.parsed)
         parser.add_argument("--project", action="store_true")
-        parser.add_argument("--own", action="store_true")
+        parser.add_argument("--own", action="store_true", dest="personal")
 
     def command(self, arguments: Namespace, caller: Caller) -> MemoryMake:
         keywords = tuple(word.strip().lower() for word in arguments.keywords.split(",") if word.strip())
-        return MemoryMake(arguments.text, arguments.type, arguments.weight, keywords, arguments.task, arguments.due, arguments.project, arguments.own)
+        return MemoryMake(arguments.text, arguments.type, arguments.weight, keywords, arguments.task, arguments.due, arguments.project, arguments.personal)

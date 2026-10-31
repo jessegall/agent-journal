@@ -23,4 +23,4 @@ class ViewerLayoutSaveHandler(Handler[ViewerLayoutSave, ViewerLayout]):
                                                        page=command.page, driver=command.driver).page(1, 1).rows
         layout = ViewerLayout(environment_id=context.environment_id, person_id=context.actor.id, creator_id=context.actor.id, suite=command.suite,
                               page=command.page, driver=command.driver, layout=command.layout)
-        return self.repository.save_over(rows[0] if rows else None, layout, context)
+        return self.repository.merge(rows[0] if rows else None, layout, context)

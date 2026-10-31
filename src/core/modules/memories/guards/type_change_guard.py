@@ -5,10 +5,10 @@ from core.base.model.model import Model
 from core.base.refusal import Refusal
 
 
-class TypesByUser(Guard):
+class TypeChangeGuard(Guard):
     """A memory type is made, changed and deleted only by the user, a module or the core."""
 
-    name = "memories.types-by-user"
+    name = "memories.type-changes"
     event = "memory_type.*"
 
     def check(self, change: Change[Model]) -> None:

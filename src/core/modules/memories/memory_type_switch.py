@@ -14,4 +14,4 @@ class MemoryTypeSwitch(Model):
     type: str
     suite: str
     module: str
-    is_on: bool
+    enabled: bool

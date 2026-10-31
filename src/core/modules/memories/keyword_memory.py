@@ -2,17 +2,17 @@ from dataclasses import dataclass
 
 from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
-from core.modules.memories.views import MEMORY_WORDS_SELECT
+from core.modules.memories.views import KEYWORD_MEMORIES_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
-class MemoryWord(ViewModel):
+class KeywordMemory(ViewModel):
     """A keyword of a standing memory that is given by keyword."""
 
     cli_name = "memory-word"
-    view = "memory_words"
+    view = "keyword_memories"
     key = "keyword_id"
-    select = MEMORY_WORDS_SELECT
+    select = KEYWORD_MEMORIES_SELECT
 
     keyword_id: int
     word: str
@@ -24,7 +24,7 @@ class MemoryWord(ViewModel):
     weight: int
     due_at: Timestamp | None
     fades: bool
-    given_at_start: bool
-    given_at_mark: bool
-    given_by_keyword: bool
+    start_giving: bool
+    mark_giving: bool
+    keyword_giving: bool
     giving_order: int

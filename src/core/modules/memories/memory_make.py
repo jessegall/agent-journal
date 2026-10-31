@@ -17,4 +17,4 @@ class MemoryMake(Command[Memory]):
     task_id: int | None = None
     due_at: Timestamp | None = None
     project: bool = False
-    own: bool = False
+    personal: bool = False

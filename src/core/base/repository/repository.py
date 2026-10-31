@@ -19,7 +19,7 @@ from core.base.repository.stale_row import StaleRow
 
 M = TypeVar("M", bound=Model)
 
-KEPT_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
+IDENTITY_FIELDS = (*BOOKKEEPING_FIELDS, "creator_id")
 
 
 class Repository:
@@ -42,10 +42,10 @@ class Repository:
         self.listeners.run_save_listeners(saved_change)
         return saved
 
-    def save_over(self, found: M | None, model: M, context: Context) -> M:
-        if found is None:
+    def merge(self, existing: M | None, model: M, context: Context) -> M:
+        if existing is None:
             return self.save(model, context)
-        return self.save(replace(found, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in KEPT_FIELDS}), context)
+        return self.save(replace(existing, **{field.name: getattr(model, field.name) for field in fields(model) if field.name not in IDENTITY_FIELDS}), context)
 
     def delete(self, model: Model, context: Context) -> None:
         stored = self.stored(model)
