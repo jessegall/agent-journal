@@ -14,7 +14,7 @@ export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, l
 export const readSession = async () => (await fetch("/api/session")).json();
 
 // what a page of windows needs to run: the catalogue, the shared subscriptions, the shell's own line and allowance
-// prompts, the face its session asks for, and the environment's event stream, which feeds the catalogue, any
+// prompts, the face its session asks for once `opened` answers, and the environment's event stream, which feeds the catalogue, any
 // `listeners` given later, and the windows; `stop` ends the stream
 export function startWindows({environment, catalogue = null, events = followEvents, session = readSession}) {
     const offers = catalogue || new WindowCatalogue(() => fetchWindowCatalogue(environment), readMarkDeclarations);
@@ -28,7 +28,11 @@ export function startWindows({environment, catalogue = null, events = followEven
         subscriptions.dispatch(event);
     });
     const face = shallowRef(null);
-    session().then((answer) => (face.value = answer.type));
+    const opened = session().then((answer) => {
+        face.value = answer.type;
+        document.documentElement.classList.toggle("phone", answer.type === "phone");
+        return answer;
+    });
     offers.load();
-    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face};
+    return {catalogue: offers, subscriptions, shellLine, prompts, listeners, stop, face, opened};
 }

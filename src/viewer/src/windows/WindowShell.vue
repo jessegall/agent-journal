@@ -34,7 +34,7 @@ store.load({environment: props.environment, person: 0, suite: "", page: "fixed",
 
 <template>
     <div class="window-shell" :data-face="face">
-        <PaneStage :store="store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
+        <PaneStage :face="face" :store="store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
     </div>
 </template>
 

@@ -54,3 +54,13 @@ def test_the_coding_suite_offers_version_4s_home_presets_in_their_order(new_stor
 def test_the_coding_suite_offers_version_4s_agent_page_presets_in_their_order(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_ordered_lines("suite presets main agent", "default  Default", "chat  Chat only", "terminal  Terminal", "file-edits  File edits")
+
+
+def test_the_coding_suite_lays_out_a_phone_with_the_chat_first_and_the_file_feed_last(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_success("suite layout main phone", "page: phone", '"messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "coding.file-feed"')
+
+
+def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_success("suite show main", "questions.waiting", "questions.questions")

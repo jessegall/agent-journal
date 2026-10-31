@@ -9,18 +9,19 @@ AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "driver
 class CodingSuite(Suite):
     """Building software: the builder or the orchestrator drives the main agent, which starts workers,
     reviewers and verifiers, while the agent program's own subagents read for it; the viewer shows its chat,
-    tasks, plans, agents and their activity and file edits, and offers version 4's layout presets."""
+    tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's layout presets."""
 
     name = "coding"
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
                 AgentRole.VERIFIER: "coding.verifier"}
-    windows = ["messages.chat", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
+    windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.terminal", "workers.points", "workers.todos"]
     layouts = {
         "home": split("row", 0.62, tabs("messages.chat"), tabs("tasks.tasks", "plans.plans", "agents.agents")),
         "home@coding.orchestrator": split("row", 0.5, tabs("agents.agents", "coding.file-edits"),
                                           split("col", 0.5, tabs("tasks.tasks", "plans.plans"), tabs("messages.chat"))),
         "agent": split("row", 0.5, tabs("messages.chat"), tabs("coding.file-feed", "drivers.hook-calls", "agents.subagents", "coding.terminal")),
+        "phone": tabs("messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "coding.file-feed"),
         "agent@coding.worker": split("row", 0.5, tabs("coding.file-feed", "coding.terminal"),
                                      tabs("workers.points", "workers.todos", "drivers.hook-calls", "tasks.tasks")),
     }

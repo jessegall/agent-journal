@@ -2,6 +2,10 @@ import {moveLegacyLayouts} from "./legacyLayouts.js";
 import {paneLayout} from "./paneLayout.js";
 
 const HOME = "home";
+const PHONE = "phone";
+
+// the page whose layout a session lays out: a phone keeps its own, apart from the computer's home page
+export const sessionPage = (session) => (session.type === PHONE ? PHONE : HOME);
 
 // the shape a suite stores, in the words the layout code arranges
 export function arrangedShape(stored) {
@@ -37,11 +41,14 @@ export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, d
         entry: (name) => catalogue.window(name),
     });
 
-    async function load() {
+    let shown = page;
+
+    async function load(at = shown) {
+        shown = at;
         await moveLegacyLayouts(shellLine, environment);
         const run = await shellLine(["suite", "current", environment]);
         if (!run.ok) return;
-        await store.load({environment, person: catalogue.person, suite: run.value.suite, page, driver: driver ?? mainDriver(run.value.drivers)});
+        await store.load({environment, person: catalogue.person, suite: run.value.suite, page: at, driver: driver ?? mainDriver(run.value.drivers)});
     }
 
     function heard(event) {

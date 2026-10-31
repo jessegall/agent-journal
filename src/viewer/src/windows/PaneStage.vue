@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -20,6 +20,7 @@ import {leaves} from "../domain/panes.js";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
+import PhoneBar from "./PhoneBar.vue";
 
 const props = defineProps({
     store: {type: Object, required: true},
@@ -31,6 +32,7 @@ const props = defineProps({
     floats: {type: Boolean, default: true},
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
+    face: {type: String, default: "person"},
 });
 
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
@@ -41,6 +43,15 @@ const grid = ref(null);
 const narrow = ref(window.innerWidth < PHONE_WIDTH);
 const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
+const phone = computed(() => props.face === "phone");
+const phoneNames = computed(() => {
+    const layout = props.store.layout.value;
+    const names = layout ? leaves(layout.tree).flatMap((id) => layout.panes[id].tabs) : [];
+    return [...names.filter((name) => name === CHAT_WINDOW), ...names.filter((name) => name !== CHAT_WINDOW)];
+});
+const phoneWindows = computed(() => phoneNames.value.map((name) => props.catalogue.window(name) || {name, title: name, icon: "window"}));
+const chosen = ref(null);
+const picked = computed(() => (phoneNames.value.includes(chosen.value) ? chosen.value : phoneNames.value[0]));
 onMounted(() => {
     window.addEventListener("resize", measure);
     presets?.load();
@@ -72,32 +83,54 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 
 <template>
     <div class="pane-stage" @keydown="keyed">
-        <nav class="pane-stage-bar agent-bar">
-            <template v-for="group in groups()" :key="group.module">
-                <template v-if="!narrow">
-                    <span class="reopen-module">{{ group.title }}</span>
-                </template>
-                <template v-for="window in group.windows" :key="window.name">
-                    <Btn
-                        :data-reopen="window.name"
-                        :class="{unavailable: window.unavailable_reason}"
-                        :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
-                        @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
-                        @click="!window.unavailable_reason && openView(window.name)"
-                    >
-                        <MarkIcon :name="window.icon || 'window'" />
-                    </Btn>
-                </template>
+        <template v-if="phone">
+            <template v-if="picked">
+                <section class="pane phone-pane">
+                    <div class="pane-body">
+                        <WindowPane
+                            :key="picked"
+                            :name="picked"
+                            :catalogue="catalogue"
+                            :subscriptions="subscriptions"
+                            :environment="environment"
+                            :agent="agentOf(picked)"
+                            :visible="true"
+                            :prompts="prompts"
+                            :shell-read="shellRead"
+                        />
+                    </div>
+                </section>
             </template>
-            <span class="agent-bar-space" />
-            <Btn data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
-                <Icon name="wide" :size="13" />
-            </Btn>
-            <template v-if="presets">
-                <LayoutPicker :list="presets" />
-            </template>
-        </nav>
-        <template v-if="store.layout.value">
+            <PhoneBar :windows="phoneWindows" :current="picked" :counts="counts" @pick="(name) => (chosen = name)" />
+        </template>
+        <template v-else>
+            <nav class="pane-stage-bar agent-bar">
+                <template v-for="group in groups()" :key="group.module">
+                    <template v-if="!narrow">
+                        <span class="reopen-module">{{ group.title }}</span>
+                    </template>
+                    <template v-for="window in group.windows" :key="window.name">
+                        <Btn
+                            :data-reopen="window.name"
+                            :class="{unavailable: window.unavailable_reason}"
+                            :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
+                            @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
+                            @click="!window.unavailable_reason && openView(window.name)"
+                        >
+                            <MarkIcon :name="window.icon || 'window'" />
+                        </Btn>
+                    </template>
+                </template>
+                <span class="agent-bar-space" />
+                <Btn data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
+                    <Icon name="wide" :size="13" />
+                </Btn>
+                <template v-if="presets">
+                    <LayoutPicker :list="presets" />
+                </template>
+            </nav>
+        </template>
+        <template v-if="store.layout.value && !phone">
             <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
                     <PaneTabs
@@ -157,7 +190,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 </template>
             </PaneGrid>
         </template>
-        <template v-if="floats">
+        <template v-if="floats && !phone">
             <DetachedWindows
                 :detached="detached"
                 :catalogue="catalogue"
@@ -168,7 +201,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 :shell-read="shellRead"
             />
         </template>
-        <PaneTour :tour="guide" />
+        <template v-if="!phone">
+            <PaneTour :tour="guide" />
+        </template>
         <template v-if="ghost">
             <DragGhost v-bind="ghost" />
         </template>
@@ -209,6 +244,13 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     flex: 1;
     min-height: 0;
     overflow: auto;
+}
+
+.phone-pane {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .pane-body > :deep(.window) {

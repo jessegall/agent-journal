@@ -55,3 +55,12 @@ def test_a_save_from_a_layout_loaded_at_an_older_version_is_refused_naming_the_n
     window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
     window.story.expect_success(f"{SECOND_LAYOUT_SAVE} --base-version 1", "version: 2", actor=window.story.user)
     window.story.expect_refusal(f"{LAYOUT_SAVE} --base-version 1", "the layout was saved again since version 1; it is at version 2", actor=window.story.user)
+
+
+def test_a_phone_keeps_its_layout_apart_from_the_computers_home_page(new_story):
+    window = window_story(new_story)
+    window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
+    window.story.expect_success("viewer-layout save --suite notes --page phone --layout '{\"root\": \"pane-9\"}' --environment main", actor=window.story.user)
+    window.expect_row_count("viewer_layouts", 2)
+    window.story.expect_success("viewer-layout current --suite notes --page home --environment main", 'layout: {"root": "pane-1"}', actor=window.story.user)
+    window.story.expect_success("viewer-layout current --suite notes --page phone --environment main", 'layout: {"root": "pane-9"}', actor=window.story.user)

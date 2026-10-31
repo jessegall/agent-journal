@@ -71,7 +71,7 @@ onUnmounted(() => {
                     </template>
                 </nav>
             </template>
-            <PaneStage page="agent" :floats="false" :store="home.store" :catalogue="offered" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellLine" />
+            <PaneStage page="agent" :face="started.face.value" :floats="false" :store="home.store" :catalogue="offered" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellLine" />
         </template>
     </div>
 </template>

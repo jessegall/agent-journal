@@ -1,4 +1,4 @@
-/* The phone's shell over the viewer's own pages: one column, touch-sized controls, room for the notch. */
+/* The phone face: the shell sets the phone class on the page for a phone session; room for the notch and touch-sized controls. */
 
 html.phone body {
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -7,17 +7,7 @@ html.phone body {
 
 /* a finger, not a pointer: every control the phone shows is at least 40 points each way */
 html.phone .icon-btn,
-html.phone button {
+html.phone .btn {
     min-width: 40px;
     min-height: 40px;
-}
-
-.phone-elsewhere {
-    max-width: 420px;
-    margin: 30vh auto 0;
-    padding: 0 24px;
-    font-size: 15px;
-    line-height: 1.5;
-    text-align: center;
-    color: var(--text-2);
 }

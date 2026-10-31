@@ -1,6 +1,7 @@
 import {createApp} from "vue";
 import {tip} from "./kit/tip.js";
 import "./tokens.css";
+import "./phone/phone.css";
 import ViewWindow from "./layout/ViewWindow.vue";
 import EnvironmentPage from "./pages/EnvironmentPage.vue";
 import AgentPage from "./pages/AgentPage.vue";
