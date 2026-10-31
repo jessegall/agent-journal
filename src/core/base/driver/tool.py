@@ -32,7 +32,7 @@ class Tool:
                    DiffCount.parsed(diff) if diff is not None else None)
 
     @property
-    def runs_journal_line(self) -> bool:
+    def is_journal_line(self) -> bool:
         return self.shell is not None and self.shell.is_journal_line
 
     def is_writing_files(self) -> bool:
