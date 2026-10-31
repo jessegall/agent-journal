@@ -17,6 +17,11 @@ const PathLimit = 100
 
 // Path is the server's socket for a journal's folder.
 func Path(home string) string {
+	return NamedPath(home, "server")
+}
+
+// NamedPath is the socket of one name, the server's or the launcher's, for a journal's folder.
+func NamedPath(home string, name string) string {
 	resolved, err := filepath.EvalSymlinks(home)
 	if err != nil {
 		resolved = home
@@ -25,7 +30,7 @@ func Path(home string) string {
 	if err != nil {
 		absolute = resolved
 	}
-	path := filepath.Join(absolute, "server.sock")
+	path := filepath.Join(absolute, name+".sock")
 	if len(path) <= PathLimit {
 		return path
 	}

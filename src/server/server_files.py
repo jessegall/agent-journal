@@ -11,8 +11,10 @@ from server.server_files_error import ServerFilesError
 SOCKET_FILE_MODE = 0o600
 SOCKET_PATH_LIMIT_CHARACTERS = 100
 SHORT_SOCKET_FOLDER = Path("/tmp")
-def socket_path(home: JournalHome) -> Path:
-    path = home.folder.resolve() / "server.sock"
+SERVER_SOCKET = "server"
+LAUNCHER_SOCKET = "launcher"
+def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
+    path = home.folder.resolve() / f"{name}.sock"
     if len(str(path)) <= SOCKET_PATH_LIMIT_CHARACTERS:
         return path
     return SHORT_SOCKET_FOLDER / f"journal-{hashlib.sha256(str(path).encode()).hexdigest()[:16]}.sock"
