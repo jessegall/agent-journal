@@ -13,6 +13,9 @@ from core.modules.messages.models.enums.message_type import MessageType
 
 TABLE = "messages"
 TYPES = {"user": MessageType.USER, "agent": MessageType.AGENT}
+CARD_MARKS = {"task_card": "tasks.task", "plan_card": "plans.plan", "memory_card": "memories.memory", "skill_card": "skills.skill",
+              "question_card": "questions.question", "wait_card": "waits.impasse"}
+ENDED = "ended"
 
 
 class MessagesMove(VersionFourMove):
@@ -29,7 +32,9 @@ class MessagesMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
         for row in source.rows(TABLE):
             card_type = self.card_type(row["data"])
-            if card_type:
+            if card_type and CARD_MARKS.get(card_type) in context.mark_variants:
+                report.count("chat_marks", map.transfer(TABLE, row["id"], "chat_marks", lambda: self.mark(rows, row, creators, card_type, context)))
+            elif card_type:
                 report.drop(f"chat card {card_type}", 1)
             elif row["author"] not in TYPES:
                 report.skip(TABLE, row["id"], f"author {row['author']} is none of {', '.join(TYPES)}")
@@ -52,3 +57,11 @@ class MessagesMove(VersionFourMove):
         return rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent, "parent_id": parent,
                                    "creator_id": creators.actor_id(row["creator"]), "type": TYPES[row["author"]].value, "text": row["text"] or "",
                                    "read_at": row["read_at"], "created_at": created, "updated_at": row["updated_at"] or created})
+
+    def mark(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, card_type: str, context: MoveContext) -> int:
+        mark_type, created = CARD_MARKS[card_type], row["created_at"] or context.timestamp
+        mark_id = rows.insert("chat_marks", {"environment_id": row["environment_id"], "creator_id": creators.actor_id(row["creator"]), "type": mark_type,
+                                             "variant": context.mark_variants[mark_type], "key": f"version-4:{row['id']}", "text": row["text"] or "",
+                                             "ended_at": row["updated_at"] or created, "created_at": created, "updated_at": row["updated_at"] or created})
+        rows.set_state("chat_marks", mark_id, ENDED)
+        return mark_id

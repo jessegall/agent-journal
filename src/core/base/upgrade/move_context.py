@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True)
@@ -10,3 +11,4 @@ class MoveContext:
     timestamp: str
     project_folder: str = ""
     setting_keys: tuple[str, ...] = ()
+    mark_variants: Mapping[str, str] = field(default_factory=lambda: {})

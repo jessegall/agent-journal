@@ -31,7 +31,8 @@ class MoveRunner:
     def run(self, version_four: Path, dry_run: bool = False) -> UpgradeReport:
         report, moved = UpgradeReport(), MoveMap(self.database)
         context = MoveContext(CORE_ACTOR_ID, self.clock.timestamp().text, str(self.home.project_folder),
-                              tuple(entry.key for entry in self.registry.settings if entry.type != GROUP_TYPE))
+                              tuple(entry.key for entry in self.registry.settings if entry.type != GROUP_TYPE),
+                              {mark.type: mark.variants[0] for mark in self.registry.marks if mark.variants})
         with VersionFourSource(version_four) as source:
             try:
                 if dry_run:
