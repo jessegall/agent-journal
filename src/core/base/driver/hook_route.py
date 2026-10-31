@@ -3,7 +3,7 @@ from core.base.driver.hook_reply import HookReply
 
 
 class HookRoute:
-    """How the journal answers a hook; with no drivers module installed, every hook is let through."""
+    """How the journal answers a hook; with no drivers module installed, every hook is allowed."""
 
     def answer(self, event: HookEvent) -> HookReply:
-        return HookReply.let_through()
+        return HookReply.allowed()

@@ -17,7 +17,8 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.error_log import ErrorLog
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.journal_home import JournalHome
-from core.base.registry.dotted_path import DottedPath, WrongBaseError
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.wrong_base_error import WrongBaseError
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.timestamp import Timestamp
@@ -31,18 +32,18 @@ def at(minutes: int) -> Timestamp:
     return Timestamp(START + timedelta(minutes=minutes))
 
 
-class Through(DriverRule):
+class Allows(DriverRule):
     """Lets the hook through and says nothing."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
-class Tells(DriverRule):
-    """Tells the agent which layer it was asked for."""
+class AddsLine(DriverRule):
+    """AddsLine the agent which layer it was asked for."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.told(f"asked for {hook.layer_ref or 'the driver'}")
+        return RuleAnswer.with_lines(f"asked for {hook.layer_ref or 'the driver'}")
 
 
 class Refuses(DriverRule):
@@ -52,11 +53,11 @@ class Refuses(DriverRule):
         return RuleAnswer.refused("no")
 
 
-class LetsThroughNow(DriverRule):
+class AllowsNow(DriverRule):
     """Lets the hook through at once, ending the walk."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.let_through_now("go on")
+        return RuleAnswer.final_allowance("go on")
 
 
 class Raises(DriverRule):
@@ -77,16 +78,16 @@ class EndsItsLayer(DriverRule):
     """Ends the layer it is asked for."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through().ending_layer(SampleEnd(1))
+        return RuleAnswer.allowed().ending_layer(SampleEnd(1))
 
 
 class TellsOnRegainedControl(DriverRule):
-    """Tells the agent when it has control again."""
+    """AddsLine the agent when it has control again."""
 
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.told("control regained") if hook.regained_control else RuleAnswer.through()
+        return RuleAnswer.with_lines("control regained") if hook.regained_control else RuleAnswer.allowed()
 
 
 class OldWait(Overlay):
@@ -136,54 +137,54 @@ def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type
 
 
 def test_essential_rules_and_limits_come_first_then_layers_newest_first_then_the_driver_rules(tmp_path):
-    rules = [rule("d.driver", Tells, 1, DRIVER), rule("o.old", Tells, 2, "samples.OldWait"), rule("o.new", Tells, 3, "samples.NewRun"),
-             rule("d.limit", Through, 4, DRIVER, limit=True), rule("drivers.essential", Through, 5, "drivers", essential=True)]
-    assert outcomes(tmp_path, rules, [NewRun]) == [("d.limit", "", "through"), ("drivers.essential", "", "through"), ("o.new", "sequence_run:2", "told"), ("d.driver", "", "told")]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("o.new", AddsLine, 3, "samples.NewRun"),
+             rule("d.limit", Allows, 4, DRIVER, limit=True), rule("drivers.essential", Allows, 5, "drivers", essential=True)]
+    assert outcomes(tmp_path, rules, [NewRun]) == [("d.limit", "", "allowed"), ("drivers.essential", "", "allowed"), ("o.new", "sequence_run:2", "lines"), ("d.driver", "", "lines")]
 
 
 def test_an_exclusive_layer_passes_over_the_ordinary_rules_beneath_it_but_never_a_limit(tmp_path):
-    rules = [rule("d.driver", Tells, 1, DRIVER), rule("o.old", Tells, 2, "samples.OldWait"), rule("d.limit", Tells, 3, DRIVER, limit=True)]
-    assert outcomes(tmp_path, rules, [OldWait]) == [("d.limit", "", "told"), ("o.old", "wait:1", "told"), ("d.driver", "", "passed_over")]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.limit", AddsLine, 3, DRIVER, limit=True)]
+    assert outcomes(tmp_path, rules, [OldWait]) == [("d.limit", "", "lines"), ("o.old", "wait:1", "lines"), ("d.driver", "", "silenced")]
 
 
 def test_a_newer_layer_is_asked_before_an_older_exclusive_one_which_then_silences_the_driver(tmp_path):
-    rules = [rule("d.driver", Tells, 1, DRIVER), rule("o.old", Tells, 2, "samples.OldWait"), rule("o.new", Tells, 3, "samples.NewRun")]
-    assert outcomes(tmp_path, rules, [OldWait, NewRun]) == [("o.new", "sequence_run:2", "told"), ("o.old", "wait:1", "told"), ("d.driver", "", "passed_over")]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("o.new", AddsLine, 3, "samples.NewRun")]
+    assert outcomes(tmp_path, rules, [OldWait, NewRun]) == [("o.new", "sequence_run:2", "lines"), ("o.old", "wait:1", "lines"), ("d.driver", "", "silenced")]
 
 
 def test_a_layer_whose_rule_ends_it_silences_nothing_beneath(tmp_path):
-    rules = [rule("d.driver", Tells, 1, DRIVER), rule("o.old", EndsItsLayer, 2, "samples.OldWait")]
-    assert outcomes(tmp_path, rules, [OldWait]) == [("o.old", "wait:1", "through"), ("d.driver", "", "told")]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", EndsItsLayer, 2, "samples.OldWait")]
+    assert outcomes(tmp_path, rules, [OldWait]) == [("o.old", "wait:1", "allowed"), ("d.driver", "", "lines")]
 
 
 def test_the_first_refusal_ends_the_walk(tmp_path):
-    rules = [rule("d.first", Refuses, 1, DRIVER), rule("d.second", Tells, 2, DRIVER)]
+    rules = [rule("d.first", Refuses, 1, DRIVER), rule("d.second", AddsLine, 2, DRIVER)]
     assert outcomes(tmp_path, rules) == [("d.first", "", "refused")]
 
 
 def test_a_rule_that_raises_is_recorded_and_the_walk_goes_on(tmp_path):
-    rules = [rule("d.broken", Raises, 1, DRIVER), rule("d.second", Tells, 2, DRIVER)]
-    assert outcomes(tmp_path, rules) == [("d.broken", "", "raised"), ("d.second", "", "told")]
+    rules = [rule("d.broken", Raises, 1, DRIVER), rule("d.second", AddsLine, 2, DRIVER)]
+    assert outcomes(tmp_path, rules) == [("d.broken", "", "raised"), ("d.second", "", "lines")]
     assert "the rule failed" in JournalHome(tmp_path).error_log.read_text()
 
 
 def test_an_ordinary_rule_that_lets_the_hook_through_at_once_is_recorded_as_raised_and_the_walk_goes_on(tmp_path):
-    rules = [rule("d.hasty", LetsThroughNow, 1, DRIVER), rule("d.second", Tells, 2, DRIVER)]
-    assert outcomes(tmp_path, rules) == [("d.hasty", "", "raised"), ("d.second", "", "told")]
+    rules = [rule("d.hasty", AllowsNow, 1, DRIVER), rule("d.second", AddsLine, 2, DRIVER)]
+    assert outcomes(tmp_path, rules) == [("d.hasty", "", "raised"), ("d.second", "", "lines")]
 
 
 def test_a_limit_that_lets_the_hook_through_at_once_ends_the_walk(tmp_path):
-    rules = [rule("d.limit", LetsThroughNow, 1, DRIVER, limit=True), rule("d.second", Tells, 2, DRIVER)]
-    assert outcomes(tmp_path, rules) == [("d.limit", "", "told")]
+    rules = [rule("d.limit", AllowsNow, 1, DRIVER, limit=True), rule("d.second", AddsLine, 2, DRIVER)]
+    assert outcomes(tmp_path, rules) == [("d.limit", "", "lines")]
 
 
 def test_a_switched_off_rule_is_neither_asked_nor_passed_over(tmp_path):
-    rules = [rule("d.off", Tells, 1, DRIVER), rule("o.old", Tells, 2, "samples.OldWait"), rule("d.also-off", Tells, 3, DRIVER)]
-    assert outcomes(tmp_path, rules, [OldWait], off=["d.off", "d.also-off"]) == [("o.old", "wait:1", "told")]
+    rules = [rule("d.off", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.also-off", AddsLine, 3, DRIVER)]
+    assert outcomes(tmp_path, rules, [OldWait], off=["d.off", "d.also-off"]) == [("o.old", "wait:1", "lines")]
 
 
 def test_a_history_rule_is_told_when_it_has_control_again(tmp_path):
-    assert outcomes(tmp_path, [rule("d.back", TellsOnRegainedControl, 1, DRIVER)]) == [("d.back", "", "told")]
+    assert outcomes(tmp_path, [rule("d.back", TellsOnRegainedControl, 1, DRIVER)]) == [("d.back", "", "lines")]
 
 
 def test_a_registered_class_of_the_wrong_base_is_refused_by_the_one_loader():

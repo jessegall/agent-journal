@@ -7,7 +7,7 @@ from core.base.guard.guard import Guard
 
 class Driver:
     """The base of every driver: how the journal drives an agent of one role in one suite, by its limits, which no
-    overlay silences, its own rules, the guards that apply only to its agents, and the lines it opens a session with."""
+    overlay silences, its own rules, the guards for its agents only, and its opening lines."""
 
     name: ClassVar[str]
     suite: ClassVar[str]

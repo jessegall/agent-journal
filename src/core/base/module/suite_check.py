@@ -1,20 +1,19 @@
 from collections.abc import Iterator, Mapping, Sequence
 
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.suite import Suite
-from core.base.module.driver_entries import DriverEntries
 from core.base.module.module import Module
+from core.base.module.name_groups import NameGroups
+from core.base.registry.driver_rule_entry import ANY_HOOK, DriverRuleEntry
 
 
 class SuiteCheck:
     """Checks the suites, drivers and driver rules before a sync writes: names, requirements, suites reached
     through dependencies, defaults that fit their role and suite, and who owns each rule."""
 
-    def __init__(self, entries: DriverEntries) -> None:
-        self.entries = entries
-
-    def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+    def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)
-                + self.misnamed_drivers(modules) + self.wrong_defaults(modules) + self.rule_owners(modules))
+                + self.misnamed_drivers(modules) + self.wrong_defaults(modules) + self.rule_owners(modules, rules) + self.unknown_hooks(rules))
 
     def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:
         return {suite.name: module.name for module in modules for suite in module.suites}
@@ -22,7 +21,7 @@ class SuiteCheck:
     def duplicates(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         groups = (("suites", [suite.name for module in modules for suite in module.suites]), ("drivers", [driver.name for module in modules for driver in module.drivers]),
                   ("overlays", [overlay.name for module in modules for overlay in module.overlays]))
-        return tuple(f"two {group} named {name}" for group, names in groups for name in sorted({name for name in names if names.count(name) > 1}))
+        return NameGroups.duplicates(groups)
 
     def unknown_requirements(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         shipped = self.suite_modules(modules)
@@ -69,9 +68,12 @@ class SuiteCheck:
         elif driver in roles and roles[driver] != role:
             yield f"suite {suite.name} gives role {role} driver {driver}, which drives role {roles[driver]}"
 
-    def rule_owners(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+    def rule_owners(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         module_names = {module.name for module in modules}
-        rules = self.entries.rules(modules)
         problems = [f"rule {rule.name} is listed by {rule.owner} and also names driver patterns" for rule in rules if rule.owner not in module_names and (rule.drivers or rule.roles)]
         problems += [f"rule {rule.name} names no driver pattern, so no driver hears it" for rule in rules if rule.owner in module_names and not rule.drivers]
         return tuple(problems)
+
+    def unknown_hooks(self, rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
+        names = {*HookEventName, ANY_HOOK}
+        return tuple(f"rule {rule.name} covers hook {rule.hook}, which no agent program sends" for rule in rules if rule.hook not in names)

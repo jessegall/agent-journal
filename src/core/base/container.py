@@ -2,29 +2,11 @@ import sys
 from inspect import Parameter, signature
 from typing import TypeVar, get_type_hints
 
+from core.base.missing_hint_error import MissingHintError
+from core.base.unbound_value_error import UnboundValueError
+from core.base.wrong_instance_error import WrongInstanceError
+
 T = TypeVar("T")
-
-
-
-class MissingHintError(Exception):
-    """Raised when a class asks for something in its constructor without saying its type."""
-
-    def __init__(self, class_type: type, parameter: str) -> None:
-        super().__init__(f"{class_type.__name__}.__init__ gives no type for {parameter}, so the container cannot build it")
-
-
-class UnboundValueError(Exception):
-    """Raised when the container is asked to make a standard library value, such as a path."""
-
-    def __init__(self, class_type: type) -> None:
-        super().__init__(f"{class_type.__name__} is a value the container never makes up: bind it, or bind the class that asks for it")
-
-
-class WrongInstanceError(Exception):
-    """Raised when the value stored for a class is not an instance of that class."""
-
-    def __init__(self, class_type: type, instance: object) -> None:
-        super().__init__(f"the value bound for {class_type.__name__} is a {type(instance).__name__}")
 
 
 class Container:

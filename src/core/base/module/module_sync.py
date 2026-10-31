@@ -24,11 +24,13 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.registry.dotted_path import DottedPath
 from core.base.change.event_pattern import EventPattern
 from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.listener_entry import ListenerEntry
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.module.module import ListenerClass, Module
 from core.base.module.driver_entries import DriverEntries
+from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.module.module_check import ModuleCheck, subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
@@ -68,7 +70,8 @@ class ModuleSync:
 
     def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
-        self.check.check(modules)
+        rules = self.entries.rules(modules)
+        self.check.check(modules, rules)
         models = self.check.models(modules)
         migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
         self.schema.rebuild_views(tuple(view for module in modules for view in module.views))
@@ -82,14 +85,14 @@ class ModuleSync:
                 for listener in module.listeners:
                     if self.timing(listener) is ListenerTiming.COMMIT:
                         self.cursors.start(listener.name)
-            registry = self.registry(modules, actor_ids)
+            registry = self.registry(modules, rules, actor_ids)
             registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         return tuple(migration() for migration in module.migrations)
 
-    def registry(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> Registry:
+    def registry(self, modules: tuple[type[Module], ...], rules: tuple[DriverRuleEntry, ...], actor_ids: dict[str, int]) -> Registry:
         guards = [guard for module in modules for guard in module.guards]
         listeners = [(module, listener) for module in modules for listener in module.listeners]
         return Registry(
@@ -105,7 +108,7 @@ class ModuleSync:
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings},
             overlays=self.entries.overlays(modules),
-            rules=self.entries.rules(modules),
+            rules=rules,
             suites=self.entries.suites(modules),
             drivers=self.entries.drivers(modules),
         )

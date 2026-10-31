@@ -1,7 +1,8 @@
 from collections.abc import Mapping
 
 from core.base.timing import Timing
-from core.base.driver.hook_event import HookEvent, HookEventError
+from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_event_error import HookEventError
 from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
 
 

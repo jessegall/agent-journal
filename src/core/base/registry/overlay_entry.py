@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
-from fnmatch import fnmatchcase
 
 from core.base.registry.dotted_path import DottedPath
+from core.base.registry.driver_patterns import DriverPatterns
 
 
 @dataclass(frozen=True)
@@ -16,4 +16,4 @@ class OverlayEntry:
     drivers: Sequence[str]
 
     def covers(self, driver: str) -> bool:
-        return any(fnmatchcase(driver, pattern) for pattern in self.drivers)
+        return DriverPatterns(self.drivers).covers(driver)

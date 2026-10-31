@@ -6,7 +6,8 @@ from core.base.command.command import Command
 
 @dataclass(frozen=True)
 class RuleAnswer:
-    """What one driver rule says about a hook: nothing, lines, or a refusal, with the commands the journal runs for it."""
+    """What one driver rule says about a hook: nothing, lines, or a refusal, with the commands the journal runs
+    for it."""
 
     refusal: str = ""
     lines: Sequence[str] = ()
@@ -15,11 +16,11 @@ class RuleAnswer:
     ends_layer: bool = False
 
     @classmethod
-    def through(cls) -> "RuleAnswer":
+    def allowed(cls) -> "RuleAnswer":
         return cls()
 
     @classmethod
-    def told(cls, *lines: str) -> "RuleAnswer":
+    def with_lines(cls, *lines: str) -> "RuleAnswer":
         return cls(lines=lines)
 
     @classmethod
@@ -27,7 +28,7 @@ class RuleAnswer:
         return cls(refusal=line, last=True)
 
     @classmethod
-    def let_through_now(cls, *lines: str) -> "RuleAnswer":
+    def final_allowance(cls, *lines: str) -> "RuleAnswer":
         return cls(lines=lines, last=True)
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
@@ -37,11 +38,11 @@ class RuleAnswer:
         return replace(self, commands=[*self.commands, command], ends_layer=True)
 
     @property
-    def is_let_through_now(self) -> bool:
+    def is_final_allowance(self) -> bool:
         return self.last and not self.refusal
 
     @property
-    def said(self) -> str:
+    def outcome(self) -> str:
         if self.refusal:
             return "refused"
-        return "told" if self.lines else "through"
+        return "lines" if self.lines else "allowed"

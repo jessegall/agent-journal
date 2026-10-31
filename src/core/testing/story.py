@@ -108,18 +108,22 @@ class Story:
 
     def hook(self, session: str, sample: dict[str, object]) -> HookReply:
         self.hook_count += 1
-        fired_at_ms = int(self.clock.timestamp().value.timestamp() * 1000)
-        event = HookEvent.parsed({**sample, "session": session, "firing": f"story-{self.hook_count}", "fired_at_ms": fired_at_ms})
+        milliseconds = int(self.clock.timestamp().value.timestamp() * 1000)
+        event = HookEvent.parsed({**sample, "session": session, "firing": f"story-{self.hook_count}", "fired_at_ms": milliseconds})
         return self.container.get(HookRoute).answer(event)
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 
-    def expect_hook_through(self, session: str, sample: dict[str, object], *expected_lines: str) -> None:
+    def expect_hook_allowed(self, session: str, sample: dict[str, object], *expected_lines: str) -> None:
         reply = self.hook(session, sample)
         assert reply.refusal == "", f"the hook was refused: {reply.refusal}"
         missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
         assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
+
+    def expect_hook_silent(self, session: str, sample: dict[str, object]) -> None:
+        reply = self.hook(session, sample)
+        assert reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}"
 
     def expect_absent_hook_line(self, session: str, sample: dict[str, object], line: str) -> None:
         reply = self.hook(session, sample)

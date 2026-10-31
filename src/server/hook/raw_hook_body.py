@@ -2,14 +2,18 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.type_guards import is_mapping
-from core.base.driver.hook_event import HookEvent, HookEventError, Tool, mapping, text
+from core.base.driver.hook_event import HookEvent
+from core.base.driver.hook_event_error import HookEventError
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.hook_fields import mapping, text
+from core.base.driver.tool import Tool
 
 RAW_BODY_VERSION = 0
-EVENT_NAMES = {"PreToolUse": "pre_tool_use", "PostToolUse": "post_tool_use", "PostToolUseFailure": "post_tool_use_failure",
-               "UserPromptSubmit": "prompt", "Stop": "stop", "StopFailure": "stop_failure", "SessionStart": "session_start",
-               "SessionEnd": "session_end", "PreCompact": "compact", "SubagentStart": "subagent_start", "SubagentStop": "subagent_stop",
-               "MessageDisplay": "message_display"}
-TOOL_EVENTS = ("pre_tool_use", "post_tool_use", "post_tool_use_failure")
+EVENT_NAMES = {"PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE, "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE,
+               "UserPromptSubmit": HookEventName.PROMPT, "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
+               "SessionStart": HookEventName.SESSION_START, "SessionEnd": HookEventName.SESSION_END, "PreCompact": HookEventName.COMPACT,
+               "SubagentStart": HookEventName.SUBAGENT_START, "SubagentStop": HookEventName.SUBAGENT_STOP, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
+TOOL_EVENTS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 HOOK_HEADERS = ("X-Journal-Hook-Id", "X-Journal-Request-At", "X-Journal-Actor", "X-Journal-Env")
 
 

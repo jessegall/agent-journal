@@ -4,7 +4,8 @@ from core.base.container import Container
 from core.base.error_log import ErrorLog
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.listener_cursor_table import ListenerCursorTable
-from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.listener_entry import ListenerEntry
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 
 FAILURE_LIMIT_ATTEMPTS = 3

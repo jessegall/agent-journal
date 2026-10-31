@@ -19,7 +19,7 @@ class StopThrough(DriverRule):
     hook = "stop"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
 class NoGit(DriverRule):
@@ -29,7 +29,7 @@ class NoGit(DriverRule):
     hook = "pre_tool_use"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
 class AnyMain(DriverRule):
@@ -41,7 +41,7 @@ class AnyMain(DriverRule):
     roles = ["main"]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
 class Coding(Suite):
@@ -76,7 +76,7 @@ def module(name: str, dependencies: Sequence[str] = (), **lists: object) -> type
 
 
 def problems(*modules: type[Module]) -> list[str]:
-    return list(SuiteCheck(DriverEntries()).problems(modules))
+    return list(SuiteCheck().problems(modules, DriverEntries().rules(modules)))
 
 
 def test_a_suite_with_its_drivers_passes_and_a_default_may_name_a_driver_not_installed_yet():
@@ -127,3 +127,8 @@ def test_the_entries_keep_sync_order_limits_and_rules_then_overlay_rules_then_ad
     assert [(entry.name, entry.owner, entry.limit, entry.position) for entry in entries] == [
         ("coding.no-git", "coding.builder", True, 1), ("coding.carry-on", "coding.builder", False, 2), ("coding.carry-on", "waits.wait", False, 3),
         ("safety.any-main", "coding", False, 4)]
+
+
+def test_a_rule_whose_hook_no_agent_program_sends_is_refused():
+    misspelled = type("Misspelled", (DriverRule,), {"name": "safety.misspelled", "hook": "stopp", "drivers": ["*"]})
+    assert problems(module("safety", driver_rules=[misspelled])) == ["rule safety.misspelled covers hook stopp, which no agent program sends"]

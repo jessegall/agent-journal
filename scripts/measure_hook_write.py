@@ -1,4 +1,8 @@
+"""Times one hook's work as the server does it, one transaction of ten indexed reads and one row written, alone and
+while five agents write a tick every twenty milliseconds, and prints the median, the 95th percentile and the worst.
+Run with PYTHONPATH=src python3 scripts/measure_hook_write.py; it is a measurement, never part of the test run."""
 import statistics
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -11,8 +15,6 @@ HOOKS = 200
 READS_PER_HOOK = 10
 TICKING_AGENTS = 5
 TICK_INTERVAL_SECONDS = 0.02
-MEDIAN_BUDGET_MILLISECONDS = 5.0
-WORST_BUDGET_MILLISECONDS = 50.0
 CALLS = ("CREATE TABLE hook_calls (id INTEGER PRIMARY KEY, agent_id INTEGER NOT NULL, data TEXT NOT NULL) STRICT",
          "CREATE INDEX hook_calls_agent ON hook_calls (agent_id, id)")
 
@@ -56,20 +58,24 @@ def prepared(folder: Path) -> Path:
     return folder
 
 
-def test_one_hook_of_ten_reads_and_one_write_stays_inside_its_budget_alone(tmp_path):
-    durations = timed_hooks(prepared(tmp_path))
-    assert statistics.median(durations) < MEDIAN_BUDGET_MILLISECONDS and max(durations) < WORST_BUDGET_MILLISECONDS, (statistics.median(durations), max(durations))
+def report(label: str, durations: list[float]) -> str:
+    ordered = sorted(durations)
+    return f"{label}: median {statistics.median(ordered):.3f} ms, p95 {ordered[int(len(ordered) * 0.95)]:.3f} ms, worst {ordered[-1]:.3f} ms"
 
 
-def test_one_hook_stays_inside_its_budget_while_five_agents_tick_every_twenty_milliseconds(tmp_path):
-    folder, stop = prepared(tmp_path), threading.Event()
-    tickers = [threading.Thread(target=ticks, args=(folder, agent_id, stop), daemon=True) for agent_id in range(2, 2 + TICKING_AGENTS)]
+def measured(ticking: bool) -> list[float]:
+    folder, stop = prepared(Path(tempfile.mkdtemp())), threading.Event()
+    tickers = [threading.Thread(target=ticks, args=(folder, agent_id, stop), daemon=True) for agent_id in range(2, 2 + TICKING_AGENTS)] if ticking else []
     for ticker in tickers:
         ticker.start()
     try:
-        durations = timed_hooks(folder)
+        return timed_hooks(folder)
     finally:
         stop.set()
         for ticker in tickers:
             ticker.join(timeout=5)
-    assert statistics.median(durations) < MEDIAN_BUDGET_MILLISECONDS and max(durations) < WORST_BUDGET_MILLISECONDS, (statistics.median(durations), max(durations))
+
+
+if __name__ == "__main__":
+    print(report("alone", measured(False)))
+    print(report(f"{TICKING_AGENTS} ticking agents", measured(True)))

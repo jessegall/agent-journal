@@ -2,15 +2,16 @@ from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 
 
 class DriverRule:
-    """The base of every driver rule: one rule about what an agent may do or is told, asked on the hooks its pattern
-    covers while a driver its patterns name drives the agent; its class docstring says the rule in plain words."""
+    """The base of every driver rule: one rule about what an agent may do or reads, asked on the hooks it covers
+    while a driver its patterns name drives the agent; its class docstring says the rule in plain words."""
 
     name: ClassVar[str]
-    hook: ClassVar[str]
+    hook: ClassVar[HookEventName | str]
     drivers: ClassVar[Sequence[str]] = []
     roles: ClassVar[Sequence[str]] = []
     essential: ClassVar[bool] = False

@@ -1,6 +1,8 @@
 import pytest
 
-from core.base.container import Container, MissingHintError, WrongInstanceError
+from core.base.container import Container
+from core.base.missing_hint_error import MissingHintError
+from core.base.wrong_instance_error import WrongInstanceError
 
 
 class Clockwork:

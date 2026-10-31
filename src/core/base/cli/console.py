@@ -16,7 +16,8 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.model.tables import Tables
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
-from core.base.registry.registry import Registry, StaleRegistryError
+from core.base.registry.registry import Registry
+from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 

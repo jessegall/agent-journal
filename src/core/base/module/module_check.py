@@ -5,7 +5,9 @@ from core.base.model.tables import Tables
 from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module, SubcommandClass
 from core.base.module.module_error import ModuleError
+from core.base.module.name_groups import NameGroups
 from core.base.module.suite_check import SuiteCheck
+from core.base.registry.driver_rule_entry import DriverRuleEntry
 
 STANDARD_CHANGES = ("create", "update", "delete", "metadata")
 LIFECYCLE_ATTRIBUTES = ("states", "initial", "editable", "deletable")
@@ -26,24 +28,21 @@ class ModuleCheck:
             events.extend(f"{model.model_name}.{change}" for change in STANDARD_CHANGES + moves)
         return tuple(events)
 
-    def check(self, modules: Sequence[type[Module]]) -> None:
-        problems = (self.duplicate_names(modules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
-                    + self.duplicate_subcommands(modules) + self.suites.problems(modules))
+    def check(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> None:
+        problems = (self.duplicate_names(modules, rules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.duplicate_handlers(modules)
+                    + self.duplicate_subcommands(modules) + self.suites.problems(modules, rules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 
     def models(self, modules: Sequence[type[Module]]) -> tuple[type[Model], ...]:
         return tuple(declaration.model for module in modules for declaration in module.models)
 
-    def duplicate_names(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+    def duplicate_names(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         models = self.models(modules)
-        names = [model.model_name for model in models]
-        tables = [self.tables.table(model).name for model in models]
-        guards = [guard.name for module in modules for guard in module.guards]
-        switch_names = [*guards, *(listener.name for module in modules for listener in module.listeners),
-                    *(rule.name for rule in self.suites.entries.rules(modules))]
-        return tuple(f"two {group} named {name}" for group, values in (("models", names), ("tables", tables), ("guards, listeners or driver rules", switch_names))
-                     for name in sorted({value for value in values if values.count(value) > 1}))
+        switch_names = [*(guard.name for module in modules for guard in module.guards), *(listener.name for module in modules for listener in module.listeners),
+                        *(rule.name for rule in rules)]
+        return NameGroups.duplicates([("models", [model.model_name for model in models]), ("tables", [self.tables.table(model).name for model in models]),
+                                      ("guards, listeners or driver rules", switch_names)])
 
     def lifecycle_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         problems: list[str] = []

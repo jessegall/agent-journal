@@ -72,7 +72,7 @@ class StopLine(DriverRule):
     hook = "stop"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.told("the lead stops here")
+        return RuleAnswer.with_lines("the lead stops here")
 
 
 class RemovalLimit(DriverRule):
@@ -85,7 +85,7 @@ class RemovalLimit(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is not None and shell.line.startswith("rm -rf"):
             return RuleAnswer.refused("the lead removes no folder")
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
 class LockedEditRefusal(DriverRule):
@@ -97,7 +97,7 @@ class LockedEditRefusal(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.event.tool is not None and hook.event.tool.category == "edit":
             return RuleAnswer.refused(f"{hook.layer_ref} refuses every edit")
-        return RuleAnswer.through()
+        return RuleAnswer.allowed()
 
 
 class ReturnLine(DriverRule):
@@ -109,7 +109,7 @@ class ReturnLine(DriverRule):
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.told("you are back at your own work") if hook.regained_control else RuleAnswer.through()
+        return RuleAnswer.with_lines("you are back at your own work") if hook.regained_control else RuleAnswer.allowed()
 
 
 class FailingRule(DriverRule):
@@ -132,7 +132,7 @@ class EssentialClaim(DriverRule):
     essential = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.told("the sample rule speaks first")
+        return RuleAnswer.with_lines("the sample rule speaks first")
 
 
 class LockRelease(DriverRule):
@@ -142,7 +142,7 @@ class LockRelease(DriverRule):
     hook = "prompt"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through().ending_layer(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.through()
+        return RuleAnswer.allowed().ending_layer(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
 
 
 class SecondLockRelease(DriverRule):
@@ -152,7 +152,7 @@ class SecondLockRelease(DriverRule):
     hook = "prompt"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.through().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.through()
+        return RuleAnswer.allowed().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
 
 
 class EditLockOverlay(Overlay):
@@ -160,7 +160,7 @@ class EditLockOverlay(Overlay):
 
     name = "samples.edit-lock"
     exclusive = True
-    holds_lines = True
+    delays_lines = True
     rules = [LockedEditRefusal, LockRelease, SecondLockRelease]
 
     def __init__(self, queries: Queries) -> None:

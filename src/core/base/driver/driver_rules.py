@@ -16,9 +16,9 @@ from core.base.registry.registry import Registry
 
 
 class DriverRules:
-    """Asks the rules a hook's driver hears: essential rules and limits, then the layers newest first, then the driver's
-    own; an exclusive layer silences ordinary rules beneath it, a refusal ends the walk, and a rule that raises is
-    recorded and passed by."""
+    """Asks the rules a hook's driver hears: standing rules first, then each layer newest first, then the driver's
+    own. An exclusive layer silences the ordinary rules beneath it, a refusal ends the walk, and a rule that
+    raises is recorded and passed by."""
 
     def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, layers: Layers, history: HookHistory, errors: ErrorLog) -> None:
         self.registry, self.container, self.switches, self.layers, self.history, self.errors = registry, container, switches, layers, history, errors
@@ -26,7 +26,7 @@ class DriverRules:
     def ask(self, hook: AgentHook) -> RuleAnswers:
         active = self.layers.active(hook.agent_id, hook.driver)
         walk = Walk([layer.row.ref for layer in active])
-        for entry in self.registry.essential_rules(hook.driver, hook.role, hook.hook_name):
+        for entry in self.registry.essential_rules(hook.driver, hook.hook_name):
             if self.switches.enabled(entry.name) and walk.record(entry, "", self.outcome(entry, hook)):
                 return walk.answers()
         for layer in active:
@@ -56,6 +56,6 @@ class DriverRules:
         except Exception as error:
             self.errors.reported(["driver rule", entry.name], error)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")
-        if answer.is_let_through_now and not entry.is_asked_first:
-            return RuleOutcome.raised(f"{entry.name} let the hook through and ended the walk, which only an essential rule or a limit may")
+        if answer.is_final_allowance and not entry.is_standing:
+            return RuleOutcome.raised(f"{entry.name} allowed the hook at once and ended the walk, which only an essential rule or a limit may")
         return RuleOutcome.answered(answer)

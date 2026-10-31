@@ -1,3 +1,4 @@
+from tests.stories.core.support import story_lines as lines
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
@@ -34,7 +35,7 @@ class LeadLocked(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story: Story) -> None:
-        story.run("edit-lock make 1")
+        story.run(lines.EDIT_LOCK)
 
     def expect(self, story: Story) -> None:
         story.expect_success("edit-lock show 1", "agent_id: 1", "state: open")

@@ -9,15 +9,12 @@ from core.base.registry.dotted_path import DottedPath
 from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.listener_entry import ListenerEntry
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
+from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
-
-
-
-class StaleRegistryError(Exception):
-    """Raised when the code has changed since the registry was built, so it must be synced first."""
 
 
 @dataclass(frozen=True)
@@ -87,7 +84,7 @@ class Registry:
     def with_rules(self, rules: tuple[DriverRuleEntry, ...]) -> "Registry":
         return replace(self, rules=rules)
 
-    def essential_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
+    def essential_rules(self, driver: str, hook_name: str) -> list[DriverRuleEntry]:
         return [rule for rule in self.hook_rules(hook_name) if (rule.essential and not rule.limit) or (rule.limit and rule.owner == driver)]
 
     def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:

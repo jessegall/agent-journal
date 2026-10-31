@@ -7,7 +7,7 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class AgentHook:
-    """A hook event with the agent that sent it, its driver, the time the journal took it, and the layer it is asked for."""
+    """A hook event with its agent, the agent's driver, the time it was taken, and the layer it is asked for."""
 
     event: HookEvent
     agent_id: int

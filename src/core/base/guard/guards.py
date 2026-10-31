@@ -7,7 +7,7 @@ from core.base.guard.guard_switches import GuardSwitches
 from core.base.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerTiming
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 

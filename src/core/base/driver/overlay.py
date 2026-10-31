@@ -11,7 +11,7 @@ class Overlay:
 
     name: ClassVar[str]
     exclusive: ClassVar[bool] = False
-    holds_lines: ClassVar[bool] = False
+    delays_lines: ClassVar[bool] = False
     drivers: ClassVar[Sequence[str]] = ["*"]
     rules: ClassVar[Sequence[type[DriverRule]]] = []
 

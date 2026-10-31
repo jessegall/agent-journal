@@ -1,17 +1,9 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
 from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_pattern import EventPattern
 from core.base.registry.dotted_path import DottedPath
-
-
-class ListenerTiming(StrEnum):
-    """When a listener runs: before a deletion is written, after a save is written, or after the commit."""
-
-    DELETION = "deletion"
-    SAVE = "save"
-    COMMIT = "commit"
+from core.base.registry.listener_timing import ListenerTiming
 
 
 @dataclass(frozen=True)

@@ -2,6 +2,7 @@
     "$schema": "./config.schema.json",
     "paths": [
         "src/core",
+        "src/install",
         "src/server",
         "tests",
         "tools/journal-hook"

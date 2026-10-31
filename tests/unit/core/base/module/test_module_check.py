@@ -73,17 +73,17 @@ def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[t
 
 def problems(*modules: type[Module]) -> str:
     with pytest.raises(ModuleError) as raised:
-        ModuleCheck(Tables(), SuiteCheck(DriverEntries())).check(modules)
+        ModuleCheck(Tables(), SuiteCheck()).check(modules, DriverEntries().rules(modules))
     return str(raised.value)
 
 
 def test_every_event_of_every_model_is_known():
-    events = ModuleCheck(Tables(), SuiteCheck(DriverEntries())).known_events([module("items", [ModelDeclaration(Item)])])
+    events = ModuleCheck(Tables(), SuiteCheck()).known_events([module("items", [ModelDeclaration(Item)])])
     assert events == ("item.create", "item.update", "item.delete", "item.metadata", "item.pause", "item.close")
 
 
 def test_modules_without_problems_pass():
-    ModuleCheck(Tables(), SuiteCheck(DriverEntries())).check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])])
+    ModuleCheck(Tables(), SuiteCheck()).check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])], ())
 
 
 def test_a_guard_on_an_event_no_model_raises_is_refused():

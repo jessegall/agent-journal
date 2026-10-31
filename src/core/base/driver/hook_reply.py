@@ -6,14 +6,14 @@ from core.base.driver.hook_call_like import HookCallLike
 
 @dataclass(frozen=True)
 class HookReply:
-    """What the journal answers a hook: its refusal, if any, the lines the agent reads, and the hook call that keeps it."""
+    """What the journal answers a hook: its refusal, if any, the lines the agent reads, and the hook call row."""
 
     refusal: str = ""
     lines: Sequence[str] = ()
     hook_call_id: int | None = None
 
     @classmethod
-    def let_through(cls, *lines: str) -> "HookReply":
+    def allowed(cls, *lines: str) -> "HookReply":
         return cls(lines=lines)
 
     @classmethod

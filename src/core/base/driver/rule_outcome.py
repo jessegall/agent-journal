@@ -2,9 +2,8 @@ from dataclasses import dataclass
 
 from core.base.driver.rule_answer import RuleAnswer
 
-ANSWERED_OUTCOMES = ("through", "told", "refused")
 RAISED = "raised"
-SILENCED = "passed_over"
+SILENCED = "silenced"
 
 
 @dataclass(frozen=True)
@@ -17,8 +16,8 @@ class RuleOutcome:
 
     @classmethod
     def answered(cls, answer: RuleAnswer) -> "RuleOutcome":
-        return cls(answer.said, answer)
+        return cls(answer.outcome, answer)
 
     @classmethod
     def raised(cls, line: str) -> "RuleOutcome":
-        return cls(RAISED, RuleAnswer.told(line))
+        return cls(RAISED, RuleAnswer.with_lines(line))

@@ -9,9 +9,11 @@ from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.registry.dotted_path import DottedPath, DottedPathError
-from core.base.registry.listener_entry import ListenerTiming
-from core.base.registry.registry import Registry, StaleRegistryError
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.dotted_path_error import DottedPathError
+from core.base.registry.listener_timing import ListenerTiming
+from core.base.registry.registry import Registry
+from core.base.registry.stale_registry_error import StaleRegistryError
 from tests.unit.core.base.command.test_commands import ItemMake
 
 SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"

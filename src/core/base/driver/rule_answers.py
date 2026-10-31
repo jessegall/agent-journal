@@ -11,23 +11,23 @@ class RuleAnswers:
 
     layers: Sequence[str]
     rules: Sequence[RuleRecord]
-    holds_lines: bool = False
+    delays_lines: bool = False
 
     @property
-    def spoken(self) -> list[RuleRecord]:
+    def answered(self) -> list[RuleRecord]:
         return [rule for rule in self.rules if rule.answer is not None]
 
     @property
     def refusal(self) -> str:
-        return next((rule.answer.refusal for rule in self.spoken if rule.answer is not None and rule.answer.refusal), "")
+        return next((rule.answer.refusal for rule in self.answered if rule.answer is not None and rule.answer.refusal), "")
 
     @property
     def lines(self) -> list[str]:
-        return [line for rule in self.spoken if rule.answer is not None for line in rule.answer.lines]
+        return [line for rule in self.answered if rule.answer is not None for line in rule.answer.lines]
 
     @property
     def commands(self) -> list[tuple[str, Command[object]]]:
-        return [(rule.name, command) for rule in self.spoken if rule.answer is not None for command in rule.answer.commands]
+        return [(rule.name, command) for rule in self.answered if rule.answer is not None for command in rule.answer.commands]
 
     def metadata(self) -> dict[str, object]:
         return {"layers": list(self.layers), "rules": [{"rule": rule.name, "layer": rule.layer, "outcome": rule.outcome} for rule in self.rules]}

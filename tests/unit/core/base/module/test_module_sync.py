@@ -10,7 +10,8 @@ from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync
-from core.base.registry.registry import Registry, StaleRegistryError
+from core.base.registry.registry import Registry
+from core.base.registry.stale_registry_error import StaleRegistryError
 from tests.unit.core.base.samples import sync_sample
 
 ITEMS = "tests.unit.core.base.samples.sync_sample:ItemsModule"

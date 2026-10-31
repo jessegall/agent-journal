@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from core.base.container import Container, UnboundValueError
+from core.base.container import Container
+from core.base.unbound_value_error import UnboundValueError
 from core.base.journal_home import JournalHome
 
 

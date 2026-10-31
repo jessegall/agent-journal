@@ -16,7 +16,8 @@ from core.base.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
-from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.listener_entry import ListenerEntry
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container

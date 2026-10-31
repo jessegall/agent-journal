@@ -4,7 +4,7 @@ from core.base.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.registry.listener_entry import ListenerTiming
+from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 
 

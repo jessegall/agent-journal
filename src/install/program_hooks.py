@@ -8,8 +8,9 @@ JOURNAL_MARKS = ("journal-hook", "hooks/hook.sh")
 
 @dataclass(frozen=True)
 class ProgramHooks:
-    """One agent program's hook settings file: the journal's hooks in it are contents anew for every event the program
-    sends, each running the hook program with the program's name and the project's root; the rest stays as it was."""
+    """One agent program's hook settings file: the journal's hooks in it are replaced by one per event the
+    program sends, each running the hook program with the program's name and the project root; the rest stays
+    as it was."""
 
     program: str
     path: Path
