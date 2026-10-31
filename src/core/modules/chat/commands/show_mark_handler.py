@@ -11,8 +11,9 @@ DETAIL_CHARACTERS = 80
 
 
 class ShowMarkHandler(Handler[ShowMark, ChatMark]):
-    """Makes the mark, or edits the shown mark of the same key in the environment and ends it when told to; the
-    detail is cut to its first 80 characters and the lines keep all of it, and a mark that ended is never edited."""
+    """Makes the mark, or edits the shown mark of the same key in the environment and ends it when told
+    to; the detail is cut to its first 80 characters and the lines keep all of it, and a mark that ended
+    is never edited."""
 
     command = ShowMark
 

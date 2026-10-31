@@ -12,11 +12,11 @@ class ChatMarkQuery(Query[ChatMark]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, ChatMark)
 
-    def in_environment(self, environment_id: int) -> Self:
+    def environment_marks(self, environment_id: int) -> Self:
         return self.filter(environment_id=environment_id)
 
-    def of_agent(self, agent_id: int) -> Self:
+    def agent_marks(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
 
-    def of_run(self, run_key: str) -> Self:
+    def run_marks(self, run_key: str) -> Self:
         return self.filter(run_key=run_key).ordered("run_step")
