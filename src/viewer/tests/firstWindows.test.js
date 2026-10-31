@@ -1,6 +1,5 @@
-import {createApp, h, nextTick} from "vue";
 import {expect, test} from "vitest";
-import {WINDOW_CONTEXT} from "@journal/window-kit";
+import {context, drawn, page} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
 import PlanList from "../../core/modules/plans/web/src/plans.js";
@@ -11,40 +10,6 @@ import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
 import FileEdits from "../../suites/coding/web/src/FileEdits.vue";
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
-
-const page = (rows) => ({ok: true, value: {rows, page: 1, size: 50, total: rows.length}});
-
-function context(answers, agent = null) {
-    const reads = [];
-    return {
-        reads,
-        window: "test.window",
-        environment: "main",
-        agent,
-        visible: {value: true},
-        permissions: {reads: [], runs: [], missing: [], ask: async () => true},
-        read: async (line) => {
-            reads.push(line);
-            const key = Object.keys(answers).find((start) => line.startsWith(start));
-            return key ? answers[key] : {ok: false, failure: "refused", error: `no answer for ${line}`};
-        },
-        run: async () => ({ok: true, value: null}),
-        follow: () => {},
-        open: () => {},
-        setting: async (key, fallback) => fallback,
-        keep: async () => {},
-    };
-}
-
-async function drawn(component, windowContext) {
-    const element = document.createElement("div");
-    const app = createApp({render: () => h(component)});
-    app.provide(WINDOW_CONTEXT, windowContext);
-    app.mount(element);
-    for (let round = 0; round < 5; round++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve));
-    return element.textContent;
-}
 
 test("the chat window shows the environment's messages", async () => {
     expect(await drawn(Chat, context({"message list": page([{id: 1, type: "user", text: "Ship the cart today"}])}))).toContain("Ship the cart today");

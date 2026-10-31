@@ -1,5 +1,12 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
+from suites.coding.modules.workers.commands.record_todo_list_handler import RecordTodoListHandler
+from suites.coding.modules.workers.migrations.m002_todo_items import TodoItemsTableMigration
+from suites.coding.modules.workers.models.todo_item import TodoItem
+from suites.coding.modules.workers.rules.record_todo_list_rule import RecordTodoListRule
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
 from suites.coding.modules.workers.commands.merge_worker_handler import MergeWorkerHandler
@@ -38,9 +45,14 @@ class WorkersModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
-              ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"])]
-    migrations = [WorkersTablesMigration]
-    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler]
+              ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),
+              ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
+    migrations = [WorkersTablesMigration, TodoItemsTableMigration]
+    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler]
     subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule]
+    driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule]
+    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
+                                 reads=["worktree list", "task show", "proof list"], events=["proof.*", "worktree.*"]),
+               WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["todo-item list"],
+                                 events=["todo_item.*"])]
