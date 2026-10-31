@@ -6,6 +6,7 @@ import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatal
 import {WindowSubscriptions} from "./windowSubscriptions.js";
 
 const SHELL_WINDOW = "viewer.shell";
+const PHONE_WORKER = "/viewer/phone-sw.js";
 
 // a page's reads and runs through the shell's own window
 export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
@@ -31,6 +32,7 @@ export function startWindows({environment, catalogue = null, events = followEven
     const opened = session().then((answer) => {
         face.value = answer.type;
         document.documentElement.classList.toggle("phone", answer.type === "phone");
+        if (answer.type === "phone") navigator.serviceWorker?.register(PHONE_WORKER, {scope: "/"}).catch(() => {});
         return answer;
     });
     offers.load();

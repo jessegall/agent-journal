@@ -318,7 +318,7 @@ def viewer_answer(port: int, path: str, cookie: str, host: str, body: dict[str, 
     try:
         connection.request("GET" if body is None else "POST", path, body=None if body is None else json.dumps(body), headers=headers)
         response = connection.getresponse()
-        return response.status, dict(response.getheaders()), response.read().decode()
+        return response.status, dict(response.getheaders()), response.read().decode(errors="replace")
     finally:
         connection.close()
 

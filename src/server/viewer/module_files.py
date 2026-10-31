@@ -10,6 +10,7 @@ from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.module_file import ModuleFile
 
 UNKNOWN_TYPE = "application/octet-stream"
+SUFFIX_CONTENT_TYPES = {".webmanifest": "application/manifest+json"}
 
 
 class ModuleFiles:
@@ -27,7 +28,7 @@ class ModuleFiles:
         target = (folder / path).resolve()
         if not target.is_relative_to(folder) or not target.is_file():
             raise MissingModuleFileError(f"{module_name} has no file {path} in its web/dist")
-        return ModuleFile(target.read_bytes(), mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
+        return ModuleFile(target.read_bytes(), SUFFIX_CONTENT_TYPES.get(target.suffix) or mimetypes.guess_type(target.name)[0] or UNKNOWN_TYPE, self.is_frame_entry(module_name, path))
 
     def is_frame_entry(self, module_name: str, path: str) -> bool:
         container = synced_container(self.home)

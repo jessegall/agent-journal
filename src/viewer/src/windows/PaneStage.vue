@@ -52,11 +52,24 @@ const phoneNames = computed(() => {
 const phoneWindows = computed(() => phoneNames.value.map((name) => props.catalogue.window(name) || {name, title: name, icon: "window"}));
 const chosen = ref(null);
 const picked = computed(() => (phoneNames.value.includes(chosen.value) ? chosen.value : phoneNames.value[0]));
+// a row's reference, such as questions:4, names the window that lists its kind, questions.questions
+const windowOfRef = (ref) => `${ref.split(":")[0]}.${ref.split(":")[0]}`;
+const linkedRef = () => new URLSearchParams(location.hash.slice(1)).get("open");
+function openRef(ref) {
+    if (phone.value) chosen.value = windowOfRef(ref);
+    else openView(windowOfRef(ref));
+}
+const heardWorker = (event) => event.data?.open && openRef(event.data.open);
 onMounted(() => {
     window.addEventListener("resize", measure);
+    navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
+    if (linkedRef()) openRef(linkedRef());
 });
-onUnmounted(() => window.removeEventListener("resize", measure));
+onUnmounted(() => {
+    window.removeEventListener("resize", measure);
+    navigator.serviceWorker?.removeEventListener("message", heardWorker);
+});
 const {counts} = useTabCounts({
     catalogue: props.catalogue,
     subscriptions: props.subscriptions,

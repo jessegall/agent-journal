@@ -1,3 +1,5 @@
+from collections.abc import Mapping
+from types import MappingProxyType
 import json
 from dataclasses import asdict
 from http.cookies import SimpleCookie
@@ -27,8 +29,12 @@ WINDOWS_ROUTE = "/api/windows"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
+WAITING_ROUTE = "/api/waiting"
 PAIRING_PAGE = "/pair"
 PAIRING_ROUTE = "/viewer/pair"
+PHONE_WORKER = "phone-sw.js"
+PHONE_FILES = (PHONE_WORKER, "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png")
+WORKER_HEADERS = {"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"}
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
@@ -65,6 +71,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == PAIRING_PAGE:
             self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE)
             return
+        if route.path.removeprefix(VIEWER_ROOT) in PHONE_FILES:
+            name = route.path.removeprefix(VIEWER_ROOT)
+            self.answer_module_file(viewer, VIEWER_MODULE, name, WORKER_HEADERS if name == PHONE_WORKER else {})
+            return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
@@ -72,6 +82,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == WINDOWS_ROUTE:
             windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
             self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
+            return
+        if route.path == WAITING_ROUTE:
+            self.answer(200, {"waiting": [asdict(thing) for thing in viewer.routes.waiting_route.waiting()]})
             return
         if route.path == SESSION_ROUTE:
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
@@ -121,7 +134,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         event_stream.follow(request.environment, request.cursor_id, self.stream_message)
 
-    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str) -> None:
+    def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({})) -> None:
         try:
             module_file = viewer.routes.module_files.file(module_name, path)
         except MissingModuleFileError as error:
@@ -134,6 +147,8 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Origin", "*")
         if module_file.frame:
             self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=f"http://{viewer.host}"))
+        for name, value in headers.items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(module_file.content)
 
