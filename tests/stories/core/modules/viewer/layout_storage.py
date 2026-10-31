@@ -35,3 +35,16 @@ def test_a_layout_is_kept_apart_per_driver(new_story):
 def test_an_agent_cannot_save_a_layout(new_story):
     window = window_story(new_story)
     window.story.expect_refusal(LAYOUT_SAVE, "only a person keeps a layout", actor=window.story.agent)
+
+
+def test_a_person_reads_back_the_layout_they_saved_for_a_suite_page_and_driver(new_story):
+    window = window_story(new_story)
+    window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
+    window.story.expect_success("viewer-layout current --suite notes --page home --environment main", 'layout: {"root": "pane-1"}', actor=window.story.user)
+    window.story.expect_refusal("viewer-layout current --suite notes --page agent --environment main", "you saved no layout of agent for notes", actor=window.story.user)
+
+
+def test_another_person_reads_none_of_your_layouts(new_story):
+    window = window_story(new_story)
+    window.story.expect_success(LAYOUT_SAVE, actor=window.story.user)
+    window.story.expect_refusal("viewer-layout current --suite notes --page home --environment main", "you saved no layout", actor=window.new_person("Bob"))

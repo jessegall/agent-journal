@@ -2,7 +2,8 @@ import {expect, test} from "vitest";
 import {LayoutStore} from "../src/windows/layoutStore.js";
 import {arranged, fresh} from "../src/domain/panes.js";
 
-const layoutOf = (...windows) => arranged(fresh(), {tabs: windows});
+const shapeOf = (...windows) => ({tabs: windows, active: windows[0]});
+const layoutOf = (...windows) => arranged(fresh(), shapeOf(...windows)).layout;
 
 function store({saved = {}, defaults = {}} = {}) {
     const kept = [];
@@ -27,11 +28,9 @@ test("switching the suite loads the person's saved layout for the new suite, and
 });
 
 test("with nothing saved, the suite's layout for the driver comes before its plain page layout", async () => {
-    const forOrchestrator = layoutOf("agents.agents");
-    const plain = layoutOf("messages.chat");
-    const {layouts} = store({defaults: {"home@coding.orchestrator": forOrchestrator, home: plain}});
-    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.orchestrator"})).toEqual(forOrchestrator);
-    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.builder"})).toEqual(plain);
+    const {layouts} = store({defaults: {"home@coding.orchestrator": shapeOf("agents.agents"), home: shapeOf("messages.chat")}});
+    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.orchestrator"})).toEqual(layoutOf("agents.agents"));
+    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.builder"})).toEqual(layoutOf("messages.chat"));
 });
 
 test("an agent page keeps one layout per driver, so the main agent's and a worker's stay apart", async () => {
@@ -43,13 +42,12 @@ test("an agent page keeps one layout per driver, so the main agent's and a worke
 
 test("a stored layout that names a window no module has is loaded as it is and never saved over", async () => {
     const stored = layoutOf("messages.chat", "marketing.gone");
-    const {layouts, kept} = store({saved: {"coding/home/coding.builder": stored}, defaults: {home: layoutOf("tasks.tasks")}});
+    const {layouts, kept} = store({saved: {"coding/home/coding.builder": stored}, defaults: {home: shapeOf("tasks.tasks")}});
     expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.builder"})).toEqual(stored);
     expect(kept).toEqual([]);
 });
 
 test("a stored layout of the wrong shape gives way to the suite's default", async () => {
-    const plain = layoutOf("messages.chat");
-    const {layouts} = store({saved: {"coding/home/coding.builder": {tree: "not a layout"}}, defaults: {home: plain}});
-    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.builder"})).toEqual(plain);
+    const {layouts} = store({saved: {"coding/home/coding.builder": {tree: "not a layout"}}, defaults: {home: shapeOf("messages.chat")}});
+    expect(await layouts.layout({suite: "coding", page: "home", driver: "coding.builder"})).toEqual(layoutOf("messages.chat"));
 });

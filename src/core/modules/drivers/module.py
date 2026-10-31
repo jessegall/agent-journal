@@ -34,6 +34,7 @@ from core.modules.drivers.suite_choose_handler import SuiteChooseHandler
 from core.modules.drivers.suite_choose_subcommand import SuiteChooseSubcommand
 from core.modules.drivers.suite_current_subcommand import SuiteCurrentSubcommand
 from core.modules.drivers.suite_show_subcommand import SuiteShowSubcommand
+from core.modules.drivers.suite_layout_subcommand import SuiteLayoutSubcommand
 from core.modules.drivers.table_hook_history import TableHookHistory
 
 
@@ -47,7 +48,7 @@ class DriversModule(Module):
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineDelivery]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTables]
     handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler, DriverAllowEssentialHandler]
-    subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand, DriverShowSubcommand,
+    subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, DriverChooseSubcommand, DriverShowSubcommand,
                    DriverAllowEssentialSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLines]
