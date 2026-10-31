@@ -7,6 +7,8 @@ from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
+from core.modules.plugins.support.plugin_requirement import PluginRequirement
+from core.modules.plugins.support.setup_step import SetupStep
 from core.modules.plugins.support.event_window import EventWindow
 
 MANIFEST_FILE = "journal-plugin.json"
@@ -17,7 +19,8 @@ REQUIRED_FIELDS = ("name", "title", "version")
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
     version, the program run for each event, the events it takes and the ones it answers inside a window, the
-    settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, and the services it keeps running."""
+    settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, the services it keeps running, and what its
+    install requires, sets up and reads back."""
 
     name: str
     title: str
@@ -30,6 +33,9 @@ class PluginManifest:
     card_tones: Mapping[str, str]
     skills_folder: str
     services: tuple[ManifestService, ...]
+    requirements: tuple[PluginRequirement, ...]
+    setup_steps: tuple[SetupStep, ...]
+    installed_command: str
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -47,7 +53,19 @@ class PluginManifest:
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
                    cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
-                   cls.read_services(fields["services"] if "services" in fields else None))
+                   cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
+                   cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "")
+
+    @staticmethod
+    def read_requirements(requires: object) -> tuple[PluginRequirement, ...]:
+        entries = [(str(name), entry) for name, entry in requires.items() if is_mapping(entry)] if is_mapping(requires) else []
+        return tuple(PluginRequirement(name, str(entry["check"]) if "check" in entry else f"command -v {name}", str(entry["hint"]) if "hint" in entry else "")
+                     for name, entry in entries)
+
+    @staticmethod
+    def read_setup_steps(setup: object) -> tuple[SetupStep, ...]:
+        entries = [entry for entry in setup if is_mapping(entry) and "run" in entry] if is_list(setup) else []
+        return tuple(SetupStep(str(entry["name"]) if "name" in entry else str(entry["run"]), str(entry["run"])) for entry in entries)
 
     @staticmethod
     def read_services(services: object) -> tuple[ManifestService, ...]:
