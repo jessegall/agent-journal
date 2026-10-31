@@ -2,7 +2,7 @@
     "$schema": "../rule.schema.json",
     "engine": "python",
     "find": {
-        "select": "identifier",
+        "select": "member-access",
         "where": [
             {
                 "fileMatches": "(^|/)src/core/(base/chat|modules/(chat|docking))/"

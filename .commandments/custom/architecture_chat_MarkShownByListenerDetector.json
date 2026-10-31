@@ -5,10 +5,25 @@
         "select": "call",
         "where": [
             {
-                "nameIn": ["run", "dispatch"]
+                "nameIn": [
+                    "run",
+                    "dispatch"
+                ]
             },
             {
-                "argument": {"at": 0, "is": "call", "nameIn": ["ShowMark"]}
+                "argument": {
+                    "at": 0,
+                    "all": [
+                        {
+                            "is": "call"
+                        },
+                        {
+                            "nameIn": [
+                                "ShowMark"
+                            ]
+                        }
+                    ]
+                }
             }
         ],
         "reject": [
@@ -17,8 +32,14 @@
             },
             {
                 "any": [
-                    {"extendsAny": "CommitListener", "of": "enclosingType"},
-                    {"extendsAny": "SaveListener", "of": "enclosingType"}
+                    {
+                        "extendsAny": "CommitListener",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "SaveListener",
+                        "of": "enclosingType"
+                    }
                 ]
             }
         ]

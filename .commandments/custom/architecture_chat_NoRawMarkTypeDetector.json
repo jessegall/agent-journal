@@ -6,10 +6,67 @@
         "where": [
             {
                 "any": [
-                    {"nameIn": ["MarkDeclaration", "DockDeclaration"], "argument": {"at": 0, "is": "literal"}},
-                    {"nameIn": ["ShowMark"], "argument": {"at": 1, "is": "literal"}},
-                    {"nameIn": ["ShowMark"], "argument": {"at": 2, "is": "literal"}},
-                    {"nameIn": ["AddDockItem"], "argument": {"at": 1, "is": "literal"}}
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "MarkDeclaration",
+                                    "DockDeclaration"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "at": 0,
+                                    "is": "literal"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "ShowMark"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "at": 1,
+                                    "is": "literal"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "ShowMark"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "at": 2,
+                                    "is": "literal"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "AddDockItem"
+                                ]
+                            },
+                            {
+                                "argument": {
+                                    "at": 1,
+                                    "is": "literal"
+                                }
+                            }
+                        ]
+                    }
                 ]
             }
         ],
