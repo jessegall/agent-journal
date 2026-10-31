@@ -13,7 +13,7 @@ class SuiteCheck:
 
     def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)
-                + self.misnamed_drivers(modules) + self.wrong_defaults(modules) + self.rule_owners(modules, rules) + self.unknown_hooks(rules))
+                + self.wrong_suite_drivers(modules) + self.wrong_defaults(modules) + self.rule_owners(modules, rules) + self.unknown_hooks(rules))
 
     def suite_modules(self, modules: Sequence[type[Module]]) -> Mapping[str, str]:
         return {suite.name: module.name for module in modules for suite in module.suites}
@@ -53,7 +53,7 @@ class SuiteCheck:
                     problems.append(f"driver {driver.name} names suite {driver.suite.name} of module {owners[driver.suite.name]}, which module {module.name} does not depend on")
         return tuple(problems)
 
-    def misnamed_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
+    def wrong_suite_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         return tuple(f"driver {driver.name} belongs to suite {driver.suite.name}, so its name starts {driver.suite.name}."
                      for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite.name)
 

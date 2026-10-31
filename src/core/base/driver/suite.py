@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from typing import ClassVar
 
 from core.base.viewer.layout_shape import LayoutShape
+from core.base.agent_role import AgentRole
 
 
 class Suite:
@@ -12,7 +13,7 @@ class Suite:
 
     name: ClassVar[str]
     requires: ClassVar[Sequence[str]] = []
-    defaults: ClassVar[Mapping[str, str]] = {}
+    defaults: ClassVar[Mapping[AgentRole, str]] = {}
     complete_control: ClassVar[bool] = False
     included_overlays: ClassVar[Sequence[str]] = []
     windows: ClassVar[Sequence[str]] = []

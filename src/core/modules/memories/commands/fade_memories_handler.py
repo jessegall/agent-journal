@@ -3,7 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.fade_memories import FadeMemories
 from core.modules.memories.queries.active_memory_query import ActiveMemoryQuery

@@ -5,6 +5,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.agent_role import AgentRole
 
 
 class DriverRule:
@@ -14,7 +15,7 @@ class DriverRule:
     name: ClassVar[str]
     hook: ClassVar[HookEventName | HookWildcard]
     drivers: ClassVar[Sequence[str]] = []
-    roles: ClassVar[Sequence[str]] = []
+    roles: ClassVar[Sequence[AgentRole]] = []
     essential: ClassVar[bool] = False
     history: ClassVar[bool] = False
 

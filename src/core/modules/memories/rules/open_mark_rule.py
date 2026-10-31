@@ -7,6 +7,7 @@ from core.modules.memories.support.mark_tracker import DEFAULT_MARKS, MarkTracke
 from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.memories.commands.open_memory_mark import OpenMemoryMark
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.base.agent_role import AgentRole
 
 MARKS_SETTING = "memories.marks"
 
@@ -18,7 +19,7 @@ class OpenMarkRule(DriverRule):
     name = "memories.open-mark"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
-    roles = ["main", "worker"]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, marks: MarkTracker, settings: SettingValues, memories: HookMemories) -> None:
         self.marks, self.settings, self.memories = marks, settings, memories

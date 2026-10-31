@@ -3,6 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.base.agent_role import AgentRole
 
 
 class TaskSummaryLineRule(DriverRule):
@@ -12,7 +13,7 @@ class TaskSummaryLineRule(DriverRule):
     name = "tasks.session-start-summary"
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, current_tasks: CurrentTasks) -> None:
         self.current_tasks = current_tasks

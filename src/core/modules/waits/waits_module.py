@@ -5,10 +5,10 @@ from core.modules.waits.overlays.help_request_overlay import HelpRequestOverlay
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.commands.end_wait import EndWait
-from core.modules.waits.commands.wait_rows_subcommand import WaitRowsSubcommand
+from core.modules.waits.commands.open_wait_subcommand import OpenWaitSubcommand
 from core.modules.waits.commands.open_wait_handler import OpenWaitHandler
 from core.modules.waits.commands.resume_wait import ResumeWait
-from core.modules.waits.commands.help_request_subcommand import HelpRequestSubcommand
+from core.modules.waits.commands.request_help_subcommand import RequestHelpSubcommand
 from core.modules.waits.models.wait_target import WaitTarget
 from core.modules.waits.overlays.wait_overlay import WaitOverlay
 
@@ -23,6 +23,6 @@ class WaitsModule(Module):
     models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
     migrations = [WaitsTablesMigration]
     handlers = [OpenWaitHandler]
-    subcommands = [WaitRowsSubcommand, HelpRequestSubcommand]
+    subcommands = [OpenWaitSubcommand, RequestHelpSubcommand]
     listeners = [TargetResolutionListener]
     overlays = [WaitOverlay, HelpRequestOverlay]

@@ -7,6 +7,7 @@ from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.commands.give_memories import GiveMemories
 from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.memories.commands.remove_memory import RemoveMemory
+from core.base.agent_role import AgentRole
 
 DUE_REASON = "given at its due time"
 
@@ -18,7 +19,7 @@ class DueDeliveryRule(DriverRule):
     name = "memories.due-delivery"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = ["main", "worker"]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, memories: HookMemories) -> None:
         self.memories = memories

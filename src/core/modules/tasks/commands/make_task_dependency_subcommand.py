@@ -6,7 +6,7 @@ from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.commands.support.dependency_subcommands import dependency_arguments
 
 
-class TaskDependSubcommand(Subcommand[MakeTaskDependency, TaskDependency]):
+class MakeTaskDependencySubcommand(Subcommand[MakeTaskDependency, TaskDependency]):
     """`journal task depend <task> --on <other task>`: the task waits on the other."""
 
     cli_name = "task"

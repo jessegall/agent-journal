@@ -1,7 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.agents.commands.start_agent import StartAgent
 from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand

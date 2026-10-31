@@ -30,6 +30,7 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
         if started and started[0].ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
         if started:
+            self.check_resume(started[0], command, context.environment_id)
             return self.repository.save(replace(started[0], ended_at=None, pid=command.pid,
                                                 process_started_at=command.process_started_at or self.process_start(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
@@ -37,6 +38,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
                       process_started_at=command.process_started_at or self.process_start(command.pid))
         return self.repository.save(agent, context)
+
+    def check_resume(self, agent: Agent, command: StartAgent, environment_id: int) -> None:
+        if agent.environment_id != environment_id:
+            raise Refusal(f"session {command.session} is agent {agent.id} of environment {agent.environment_id}", "resume it in its own environment")
+        if (agent.role, agent.program) != (command.role, command.program):
+            raise Refusal(f"session {command.session} is agent {agent.id}, a {agent.role} agent of {agent.program}", "resume it as it started")
 
     def process_start(self, pid: int | None) -> Timestamp | None:
         steps = self.chain.steps(pid) if pid else []

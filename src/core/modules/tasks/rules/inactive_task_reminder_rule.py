@@ -6,6 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.base.agent_role import AgentRole
 
 INACTIVE_MINUTES = 15
 MINUTE_SECONDS = 60
@@ -18,7 +19,7 @@ class InactiveTaskReminderRule(DriverRule):
     name = "tasks.quiet-task"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, current_tasks: CurrentTasks, calls: HookCallQuery, history: HookHistory) -> None:
         self.current_tasks, self.calls, self.hook_history = current_tasks, calls, history

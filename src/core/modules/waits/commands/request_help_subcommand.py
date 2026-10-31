@@ -7,16 +7,14 @@ from core.modules.waits.commands.open_wait import OpenWait
 from core.modules.waits.models.enums.wait_type import WaitType
 
 
-class WaitRowsSubcommand(Subcommand[OpenWait, Wait]):
-    """`journal wait on <focus> --target <table:id> ...`: the agent waits on rows it does not control, until
-    they resolve."""
+class RequestHelpSubcommand(Subcommand[OpenWait, Wait]):
+    """`journal wait stuck <why>`: the agent reports it is stuck; it is told nothing until it works again."""
 
     cli_name = "wait"
-    name = "on"
+    name = "stuck"
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("focus")
-        parser.add_argument("--target", action="append", default=[])
 
     def command(self, arguments: Namespace, caller: Caller) -> OpenWait:
-        return OpenWait(WaitType.ROWS, arguments.focus, tuple(arguments.target))
+        return OpenWait(WaitType.HELP_REQUEST, arguments.focus)

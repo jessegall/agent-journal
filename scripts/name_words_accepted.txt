@@ -31,6 +31,8 @@ amount
 amsterdam
 ancestor
 and
+annotation
+annotations
 anonymise
 anonymised
 anonymiser
@@ -67,6 +69,7 @@ attr
 attribute
 attributes
 author
+authors
 availability
 bad
 base
@@ -178,6 +181,8 @@ compact
 compacted
 compaction
 compactions
+comparators
+compare
 compared
 comparisons
 compile
@@ -254,6 +259,7 @@ defaults
 delays
 deletable
 deleted
+deletes
 deletion
 deliver
 delivered
@@ -311,6 +317,7 @@ effect
 effects
 elapsed
 else
+elts
 empty
 enabled
 encode
@@ -455,6 +462,7 @@ getcwd
 getenv
 getfile
 getheaders
+getmembers
 getpid
 getppid
 getresponse
@@ -512,6 +520,7 @@ imode
 implementation
 implemented
 import
+importlib
 inactive
 included
 includes
@@ -532,6 +541,7 @@ integrity
 interface
 interpreted
 interval
+isclass
 isdigit
 isinstance
 isoformat
@@ -615,6 +625,7 @@ lowest
 lstart
 main
 makers
+makes
 manual
 map
 mapped
@@ -654,7 +665,6 @@ minute
 minutes
 mismatch
 mismatches
-misnamed
 missed
 missing
 misspelled
@@ -690,6 +700,7 @@ needed
 negated
 nested
 nesting
+network
 new
 newer
 newest
@@ -744,6 +755,7 @@ overlays
 own
 owner
 owners
+package
 packages
 page
 pair
@@ -820,6 +832,7 @@ pre
 prefix
 prefixes
 prepared
+prepend
 present
 previous
 prints
@@ -834,6 +847,7 @@ program
 programs
 progress
 project
+projects
 prompt
 properties
 property
@@ -870,6 +884,7 @@ rate
 raw
 reachable
 reached
+reaches
 read
 reader
 readline
@@ -923,7 +938,6 @@ render
 renumber
 renumbering
 reopen
-reopening
 repeat
 repeated
 replace
@@ -1053,6 +1067,8 @@ short
 shortest
 shutdown
 shutil
+side
+sides
 signal
 signature
 signs
@@ -1139,6 +1155,7 @@ strongest
 strptime
 struct
 style
+sub
 subagent
 subagents
 subclasses
@@ -1171,6 +1188,7 @@ synced
 syntax
 sys
 sysconf
+syspath
 system
 table
 tables
@@ -1184,6 +1202,7 @@ tasks
 tempfile
 template
 templates
+temporary
 terminal
 terminalreporter
 terms
@@ -1248,7 +1267,9 @@ turn
 twice
 type
 types
+typing
 tzinfo
+unambiguous
 unanswered
 unassigned
 unavailable
@@ -1273,6 +1294,7 @@ unpack
 unparsed
 unreachable
 unrelated
+unsafe
 unset
 unsupported
 untrusted
@@ -1334,6 +1356,7 @@ when
 which
 whitespace
 wider
+wildcard
 window
 windows
 with

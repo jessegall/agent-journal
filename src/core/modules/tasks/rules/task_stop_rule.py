@@ -4,6 +4,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.rules.support.current_tasks import CurrentTasks
+from core.base.agent_role import AgentRole
 
 LOG_STOP_REFUSAL_COUNT = 3
 
@@ -15,7 +16,7 @@ class TaskStopRule(DriverRule):
     name = "tasks.carry-on-at-stop"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, current_tasks: CurrentTasks, calls: HookCallQuery) -> None:
         self.current_tasks, self.calls = current_tasks, calls

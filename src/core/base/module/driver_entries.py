@@ -17,7 +17,7 @@ class DriverEntries:
     each driver's permanent rules and rules, each overlay's rules, then the rules the module adds."""
 
     def suites(self, modules: Sequence[type[Module]]) -> tuple[SuiteEntry, ...]:
-        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), dict(suite.defaults), suite.complete_control, tuple(suite.included_overlays),
+        return tuple(SuiteEntry(suite.name, module.name, tuple(suite.requires), {role.value: driver for role, driver in suite.defaults.items()}, suite.complete_control, tuple(suite.included_overlays),
                                       tuple(suite.windows), dict(suite.layouts))
                      for module in modules for suite in module.suites)
 

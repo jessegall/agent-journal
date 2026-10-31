@@ -20,6 +20,7 @@ from server.endpoints.cli_request_error import CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from core.base.driver.hook_event_error import HookEventError
+from core.base.provider.unknown_program_error import UnknownProgramError
 from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake
@@ -141,7 +142,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         try:
             endpoint = HookEndpoint(self.timing, self.journal_server().context)
             reply = endpoint.answer(endpoint.event(json.loads(body or b"{}"), program, dict(self.headers.items())))
-        except (HookEventError, json.JSONDecodeError) as error:
+        except (HookEventError, UnknownProgramError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
         self.answer_json(200, reply.json())

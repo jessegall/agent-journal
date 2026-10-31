@@ -24,6 +24,7 @@ from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.base.agent_role import AgentRole
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
@@ -41,7 +42,7 @@ class EditLockLifecycle(Lifecycle):
     deletable = [EditLockState.OPEN, EditLockState.ENDED]
 
     ended = Move("ended", [EditLockState.OPEN], EditLockState.ENDED)
-    reopening = Move("reopening", [EditLockState.ENDED], EditLockState.OPEN)
+    reopen = Move("reopen", [EditLockState.ENDED], EditLockState.OPEN)
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -63,7 +64,7 @@ class EditLockEnd(MoveCommand[EditLock]):
 
 @dataclass(frozen=True)
 class EditLockReopen(MoveCommand[EditLock]):
-    move = EditLockLifecycle.reopening
+    move = EditLockLifecycle.reopen
 
 
 class EditLocksTable(Migration):
@@ -177,10 +178,10 @@ class StopRefusal(DriverRule):
         return RuleAnswer.refused("the sample lead may not stop yet") if self.settings.project_value("samples.refuse-stops", False) is True else RuleAnswer.allowed()
 
 
-class ReopeningClaim(DriverRule):
+class ReopenClaim(DriverRule):
     """On a compaction, asks to reopen the edit lock it is asked for, which is open, so the lifecycle refuses it."""
 
-    name = "samples.reopening-claim"
+    name = "samples.reopen-claim"
     hook = HookEventName.COMPACT
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -193,7 +194,7 @@ class EditLockOverlay(Overlay):
     name = "samples.edit-lock"
     exclusive = True
     delays_lines = True
-    rules = [LockedEditRefusal, LockRelease, SecondLockRelease, ReopeningClaim]
+    rules = [LockedEditRefusal, LockRelease, SecondLockRelease, ReopenClaim]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -216,7 +217,7 @@ class SampleSuite(Suite):
     """A sample suite of one lead."""
 
     name = "samples"
-    defaults = {"main": LEAD}
+    defaults = {AgentRole.MAIN: LEAD}
 
 
 class Lead(Driver):
@@ -224,7 +225,7 @@ class Lead(Driver):
 
     name = LEAD
     suite = SampleSuite
-    role = "main"
+    role = AgentRole.MAIN
     permanent_rules = [RemovalRule]
     rules = [StopLine, StopRefusal]
     guards = [LeadLockGuard]
@@ -235,7 +236,7 @@ class ControlSuite(Suite):
     """A sample suite in complete control that includes the sample edit lock."""
 
     name = "control"
-    defaults = {"main": "control.lead"}
+    defaults = {AgentRole.MAIN: "control.lead"}
     complete_control = True
     included_overlays = ["samples.edit-lock"]
 
@@ -245,7 +246,7 @@ class ControlLead(Driver):
 
     name = "control.lead"
     suite = ControlSuite
-    role = "main"
+    role = AgentRole.MAIN
     opening_lines = ["You are the control lead"]
 
 

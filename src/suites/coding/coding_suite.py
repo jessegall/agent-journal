@@ -1,3 +1,4 @@
+from core.base.agent_role import AgentRole
 from core.base.driver.suite import Suite
 from core.base.viewer.layout_shape import split, tabs
 
@@ -8,8 +9,8 @@ class CodingSuite(Suite):
     tasks, plans, agents and their activity and file edits."""
 
     name = "coding"
-    defaults = {"main": "coding.builder", "worker": "coding.worker", "subagent": "coding.subagent", "reviewer": "coding.reviewer",
-                "verifier": "coding.verifier"}
+    defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",
+                AgentRole.VERIFIER: "coding.verifier"}
     windows = ["messages.chat", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.terminal"]
     layouts = {

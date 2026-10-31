@@ -8,7 +8,22 @@
                 "fileMatches": "(^|/)src/"
             },
             {
-                "extendsAny": "Command"
+                "any": [
+                    {
+                        "extendsAny": "Command"
+                    },
+                    {
+                        "extendsAny": "Subcommand"
+                    },
+                    {
+                        "extendsAny": "Handler"
+                    }
+                ]
+            },
+            {
+                "not": {
+                    "extendsAny": "ReadSubcommand"
+                }
             },
             {
                 "not": {
@@ -19,12 +34,19 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "nameIn": [
+                    "Subcommand",
+                    "Handler",
+                    "Command"
+                ]
             }
         ]
     },
     "sin": {
         "name": "command-named-for-its-effect",
-        "description": "A command is named for what it does to a row (MemoryMake, FileEditRecord) instead of as the order it is.",
+        "description": "A command, its handler or its subcommand is named for what it does to a row (MemoryMake, FileEditRecordHandler) instead of as the order it is.",
         "rule": "Name a command as an order, its verb first: MakeMemory, RecordFileEdit, StartTask; its handler and subcommand take the same name. A new verb goes into command_verbs in lists.json.",
         "skill": "plain-code-words"
     }

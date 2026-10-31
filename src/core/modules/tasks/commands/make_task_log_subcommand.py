@@ -5,7 +5,7 @@ from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.commands.make_task_log import MakeTaskLog
 
 
-class TaskLogSubcommand(Subcommand[MakeTaskLog, TaskLog]):
+class MakeTaskLogSubcommand(Subcommand[MakeTaskLog, TaskLog]):
     """`journal task log <task> "<line>"`: writes a line on a task."""
 
     cli_name = "task"

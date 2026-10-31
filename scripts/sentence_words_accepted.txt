@@ -36,6 +36,7 @@ and
 answer
 answered
 answers
+anthropic
 any
 anyone
 anything
@@ -123,6 +124,7 @@ chain
 change
 changed
 changes
+character
 characters
 charset
 chat
@@ -145,6 +147,7 @@ class
 classes
 classified
 classifies
+classmethod
 claude
 clause
 clean
@@ -155,6 +158,7 @@ clock
 close
 closed
 closes
+cls
 coalesce
 code
 codex
@@ -178,6 +182,7 @@ compact
 compacted
 compaction
 compared
+compares
 complete
 completed
 component
@@ -200,6 +205,7 @@ control
 converts
 cookie
 copied
+copieditemsmodule
 copy
 core
 corrected
@@ -221,6 +227,7 @@ cursor
 cursors
 custom
 daemon
+dash
 data
 database
 day
@@ -232,6 +239,7 @@ declares
 decoder
 decoders
 deepest
+def
 default
 defaults
 deferrable
@@ -255,6 +263,7 @@ detach
 diff
 differ
 differs
+digit
 digits
 direct
 direction
@@ -471,6 +480,7 @@ interfaces
 item
 itemmake
 items
+itemsmodule
 itemstate
 itemtitle
 its
@@ -512,6 +522,7 @@ length
 less
 let
 lets
+letter
 letters
 level
 levels
@@ -533,6 +544,7 @@ lists
 loaded
 loading
 loads
+local
 location
 lock
 locked
@@ -557,6 +569,7 @@ machine
 macos
 main
 major
+makeitem
 makes
 manual
 mapped
@@ -572,6 +585,7 @@ may
 measure
 measurement
 median
+member
 memories
 memory
 message
@@ -614,6 +628,7 @@ negated
 neighbouring
 nested
 nesting
+network
 new
 newer
 newest
@@ -729,6 +744,7 @@ program
 programs
 progress
 project
+projects
 prompt
 protected
 provide
@@ -743,6 +759,7 @@ python
 pythonpath
 queries
 query
+question
 questions
 queue
 raise
@@ -793,6 +810,7 @@ removes
 rename
 renamed
 reopen
+reopens
 repeat
 repeatable
 replace
@@ -969,6 +987,7 @@ streams
 stretch
 strftime
 strict
+string
 style
 sub
 subagent

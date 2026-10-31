@@ -8,7 +8,7 @@ from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.agents.commands.start_agent import StartAgent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall

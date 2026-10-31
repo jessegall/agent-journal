@@ -4,9 +4,9 @@ from collections.abc import Mapping
 
 from core.base.database.database import Database
 from core.base.driver.hook_event import HookEvent
-from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
+from core.base.provider.providers import Providers
 from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
@@ -15,7 +15,6 @@ from server.hook.hook_headers import HookHeaders
 from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.server_context import ServerContext
 
-PROGRAMS = ("claude", "codex")
 
 
 class HookEndpoint:
@@ -33,8 +32,6 @@ class HookEndpoint:
         return event
 
     def answer(self, event: HookEvent) -> HookReply:
-        if event.program not in PROGRAMS:
-            raise HookEventError(f"no agent program is named {event.program!r}")
         try:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
                 return self.routed_answer(event, database)
@@ -49,6 +46,7 @@ class HookEndpoint:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
+        container.get(Providers).provider(event.program)
         database.set_busy_timeout(self.context.hook_limit_seconds)
         try:
             return container.get(HookRoute).answer(event)

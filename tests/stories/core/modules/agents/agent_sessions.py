@@ -43,3 +43,12 @@ def test_a_resumed_session_reopens_its_ended_agent_under_the_same_number(new_sto
     story.expect_success("agent start s-1 claude main --pid 4321 --process-started-at 2026-10-31T09:00:00+00:00 --environment main", f"id: {agent_id}")
     story.expect_absent(f"agent show {agent_id}", "ended_at: 2026-10-31T09:00:00.000000+00:00")
     story.expect_success(f"agent show {agent_id}", "pid: 4321")
+
+
+def test_a_resume_in_another_environment_or_as_another_role_is_refused_naming_the_row(new_story):
+    story = new_story(fixture=MainEnvironment)
+    agent_id = story.new_row_id(lines.AGENT_START)
+    story.run(f"agent end {agent_id}")
+    story.run('environment make elsewhere /work/elsewhere')
+    story.expect_refusal("agent start s-1 claude main --environment elsewhere", f"session s-1 is agent {agent_id} of environment 1")
+    story.expect_refusal("agent start s-1 claude worker --environment main", f"session s-1 is agent {agent_id}, a main agent of claude")

@@ -6,6 +6,7 @@ from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.commands.give_memories import GiveMemories
 from core.modules.memories.rules.support.memory_lines import MemoryLines
+from core.base.agent_role import AgentRole
 
 
 class StartDeliveryRule(DriverRule):
@@ -15,7 +16,7 @@ class StartDeliveryRule(DriverRule):
     name = "memories.start-delivery"
     hook = HookEventName.SESSION_START
     drivers = ["*"]
-    roles = ["main", "worker"]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, memories: HookMemories) -> None:
         self.memories = memories

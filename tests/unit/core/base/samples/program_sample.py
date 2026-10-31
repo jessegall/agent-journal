@@ -45,7 +45,7 @@ class SampleProgram(Provider):
         return ["--resume", session]
 
     def helper_outcome(self, output: str, errors: str) -> HelperOutcome:
-        return HelperOutcome(output, "", errors)
+        return HelperOutcome(output, "", errors or None)
 
     def transcript(self, project: Path, session: str) -> Path | None:
         return None

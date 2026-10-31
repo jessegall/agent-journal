@@ -88,3 +88,8 @@ def test_a_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_o
     with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
         story.expect_locked_hook_answer(lead_stop("server-4"), "another hook held the journal")
 
+
+
+def test_a_hook_from_a_program_no_module_provides_is_refused_naming_it(new_story):
+    with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
+        story.expect_hook_answer("/hook", {**lead_stop("server-6"), "program": "gemini"}, 400, "no module provides the agent program 'gemini'")

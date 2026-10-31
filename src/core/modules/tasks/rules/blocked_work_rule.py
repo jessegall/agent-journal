@@ -5,6 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.base.agent_role import AgentRole
 
 BLOCKED_TASK_PAGE_SIZE = 10
 
@@ -16,7 +17,7 @@ class BlockedWorkRule(DriverRule):
     name = "tasks.blocked-work-at-stop"
     hook = HookEventName.STOP
     drivers = ["*"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, tasks: TaskQuery, calls: HookCallQuery) -> None:
         self.tasks, self.calls = tasks, calls

@@ -5,7 +5,7 @@ from core.modules.messages.commands.send_message import SendMessage
 from core.modules.messages.models.message import Message
 
 
-class MessageReplySubcommand(Subcommand[SendMessage, Message]):
+class ReplyMessageSubcommand(Subcommand[SendMessage, Message]):
     """`journal message reply <message> "<text>"`: writes a message that answers another."""
 
     cli_name = "message"
