@@ -35,7 +35,7 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         dock_capacity = self.limits.dock_capacity(dock.id)
         self.free_place(self.items.docked(dock.id), dock_capacity, f"the dock allows at most {dock_capacity} items", context)
         item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id)
-        return self.repository.save(item.changed(leaves_at=self.leave_time.moment(item, context.timestamp)), context)
+        return self.repository.save(item.changed(leaves_at=self.leave_time.departure(item, context.timestamp)), context)
 
     def free_place(self, docked_items: DockItemQuery, capacity: int, limit_text: str, context: Context) -> None:
         docked = list(docked_items.oldest().all_rows())

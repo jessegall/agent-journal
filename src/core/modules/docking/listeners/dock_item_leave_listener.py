@@ -25,7 +25,7 @@ class DockItemLeaveListener(CommitListener):
         actor = self.actors.actor(MODULE_NAME)
         model_name = event.event.split(".")[0]
         for item in self.pending(model_name, event.row_id):
-            leaves_at = self.leave_time.moment(item, event.timestamp)
+            leaves_at = self.leave_time.departure(item, event.timestamp)
             if leaves_at is not None:
                 self.bus.run(ScheduleDockItemLeave(item.id, leaves_at), actor, cause_id=event.id, environment_id=event.environment_id)
         for item in self.items.leaving(event.timestamp):

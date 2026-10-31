@@ -27,5 +27,5 @@ class DockItemQuery(Query[DockItem]):
     def waiting(self) -> Self:
         return self.filter(state=DockItemState.DOCKED, kept=False).matching(IsNull("leaves_at"))
 
-    def leaving(self, now: Timestamp) -> list[DockItem]:
-        return [item for item in self.filter(state=DockItemState.DOCKED, kept=False).all_rows() if item.leaves_at is not None and item.leaves_at.value <= now.value]
+    def leaving(self, clock_time: Timestamp) -> list[DockItem]:
+        return [item for item in self.filter(state=DockItemState.DOCKED, kept=False).all_rows() if item.leaves_at is not None and item.leaves_at.value <= clock_time.value]

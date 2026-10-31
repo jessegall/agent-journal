@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.modules.docking.migrations.m002_docks_of_existing_environments import DocksOfExistingEnvironmentsMigration
+from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -68,6 +68,6 @@ def test_the_migration_makes_the_dock_of_every_environment_that_has_none(new_sto
     story.run("environment make elsewhere /work/elsewhere")
     database = story.container.get(Database)
     database.update(Statement("DELETE FROM docks"))
-    for sql in DocksOfExistingEnvironmentsMigration.statements:
+    for sql in ExistingEnvironmentDocksMigration.statements:
         database.update(Statement(sql))
     assert database.rows(Statement("SELECT count(*) FROM docks"))[0][0] == 2

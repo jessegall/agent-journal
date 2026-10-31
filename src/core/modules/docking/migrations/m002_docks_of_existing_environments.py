@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 from core.base.database.timestamp_sql import TIMESTAMP_SQL
 
 
-class DocksOfExistingEnvironmentsMigration(Migration):
+class ExistingEnvironmentDocksMigration(Migration):
     """Makes the dock of every environment that has none, so an environment made before the docking module was
     installed has one; the listener makes the dock of each environment made after."""
 

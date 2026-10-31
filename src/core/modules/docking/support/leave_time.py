@@ -13,8 +13,8 @@ class LeaveTime:
     def __init__(self, registry: Registry, row_end: RowEnd) -> None:
         self.registry, self.row_end = registry, row_end
 
-    def moment(self, item: DockItem, now: Timestamp) -> Timestamp | None:
+    def departure(self, item: DockItem, clock_time: Timestamp) -> Timestamp | None:
         declared = next((entry for entry in self.registry.docks if entry.type == item.type), None)
         if item.kept or declared is None or declared.leaves_after_seconds <= 0 or not self.row_end.ended(item):
             return None
-        return Timestamp(now.value + timedelta(seconds=declared.leaves_after_seconds))
+        return Timestamp(clock_time.value + timedelta(seconds=declared.leaves_after_seconds))
