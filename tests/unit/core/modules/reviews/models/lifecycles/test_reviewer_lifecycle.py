@@ -13,7 +13,7 @@ IDLE = Reviewer(id=5, version=1, environment_id=1, creator_id=1, program="claude
 
 
 def test_a_reviewer_starts_idle_takes_a_review_and_goes_idle_again():
-    reviewing = IDLE.take(NOW, ACTOR)
+    reviewing = IDLE.start(NOW, ACTOR)
     assert reviewing.state == ReviewerState.REVIEWING
     assert reviewing.finish(NOW, ACTOR).state == ReviewerState.IDLE
 
@@ -25,4 +25,4 @@ def test_only_an_idle_reviewer_retires():
 
 def test_a_reviewer_ends_idle_or_reviewing():
     assert IDLE.end(NOW, ACTOR).state == ReviewerState.ENDED
-    assert IDLE.take(NOW, ACTOR).end(NOW, ACTOR).state == ReviewerState.ENDED
+    assert IDLE.start(NOW, ACTOR).end(NOW, ACTOR).state == ReviewerState.ENDED
