@@ -17,6 +17,7 @@ from core.modules.environments.environment import Environment
 from core.modules.settings.setting_values import SettingValues
 from core.modules.tasks.task import Task
 from core.modules.tasks.task_start import TaskStart
+from core.modules.tasks.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -42,6 +43,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
 
     def handle(self, command: DispatchWorker, context: Context) -> Agent:
         task = self.queries.query(Task).find(command.task_id)
+        if task.state is not TaskState.OPEN:
+            raise Refusal(f"task {task.id} is {task.state.value}", "a worker is dispatched to an open task")
         environment = self.queries.query(Environment).find(task.environment_id)
         links = (*self.settings.texts(LIBRARY_LINKS, environment.id, ()), *command.library_links)
         copies = (*self.settings.texts(LIBRARY_COPIES, environment.id, ()), *command.library_copies)

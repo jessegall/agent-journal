@@ -1,7 +1,7 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import DISPATCH, dispatched_worker, expect_clean_environment, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import CHECKOUT_BRANCH, ENVIRONMENT_BRANCH
 WORKER_START = "agent start s-2 claude worker --environment main"
@@ -52,3 +52,13 @@ def test_a_dispatch_whose_worktree_command_fails_is_refused_with_its_output_and_
     story.expect_success("""setting make workers.worktree-commands '["echo npm is not installed >&2; exit 1"]' --environment main""", "key: workers.worktree-commands")
     story.expect_refusal(DISPATCH, "npm is not installed", actor=story.agent)
     expect_clean_environment(story, repository)
+
+
+def test_a_dispatch_of_a_task_that_is_not_open_is_refused_and_makes_nothing(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    repository = repository_environment(story)
+    story.expect_refusal(DISPATCH, "task 1 is started: a worker is dispatched to an open task", actor=story.agent)
+    story.expect_success("worktree list", "nothing found")
+    story.expect_success("agent list --role worker", "nothing found")
+    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
+    repository.expect_no_worktree()
