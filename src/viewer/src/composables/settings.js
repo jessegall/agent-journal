@@ -1,6 +1,5 @@
 import {DEFAULT_MODE} from "../domain/modes.js";
 import {computed} from "vue";
-import {saveSettings} from "../actions/settings.js";
 import {store} from "../state/store.js";
 
 export const feedOn = computed(() => !store.settings || store.settings.features.file_feed !== false);
@@ -15,9 +14,5 @@ const viewer = () => (store.settings && store.settings.viewer) || {};
 export const viewerSetting = (key, fallback) => viewer()[key] ?? fallback;
 
 export const settingsLoaded = () => Boolean(store.settings);
-
-export async function saveViewerSetting(key, value) {
-    await saveSettings({viewer: {[key]: value}});
-}
 
 export const agentRunningIn = (name) => store.live.some((live) => live.environment === name);
