@@ -1,3 +1,4 @@
+from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.missing_rows import MissingRows
 from core.base.registry.registry import Registry
@@ -15,12 +16,12 @@ class RowEnd:
         entry = self.registry.models.get(item.target_model)
         if entry is None:
             return True
-        model = entry.model.loaded()
+        model = entry.model.checked_class(Model)
         try:
             row = self.queries.query(model).find(item.target_id)
         except MissingRows:
             return True
-        lifecycle = getattr(row, "lifecycle", None)
+        lifecycle = row.lifecycle
         if lifecycle is None:
             return True
         return all(move.target in lifecycle.initial for move in lifecycle.outgoing_moves(row.current_state()))
