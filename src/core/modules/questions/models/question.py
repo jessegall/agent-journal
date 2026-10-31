@@ -25,6 +25,7 @@ class Question(Model):
     options: tuple[str, ...] = ()
     recommended: str = ""
     answer: str = ""
+    message_id: int | None = None
     state: QuestionState = QuestionState.OPEN
 
     def __post_init__(self) -> None:

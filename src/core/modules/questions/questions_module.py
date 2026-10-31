@@ -10,6 +10,7 @@ from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.questions.guards.main_agent_guard import MainAgentGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
+from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.models.question import Question
 
 
@@ -18,9 +19,9 @@ class QuestionsModule(Module):
 
     name = "journal.core.questions"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
-    migrations = [QuestionsTablesMigration]
+    migrations = [QuestionsTablesMigration, AnswerMessageMigration]
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]

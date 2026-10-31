@@ -32,6 +32,8 @@ class QuestionShowSubcommand(ReadSubcommand[Question]):
         output.line(f"state: {value.state}")
         if value.state is QuestionState.ANSWERED:
             output.line(f"answer: {value.answer}")
+            if value.message_id is not None:
+                output.line(f"answered by message {value.message_id}")
             output.line("act on the answer")
         elif value.state is QuestionState.OPEN:
             output.line("answer: not answered yet")

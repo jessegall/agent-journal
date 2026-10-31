@@ -9,3 +9,4 @@ from core.modules.questions.models.question import Question
 class AnswerQuestion(MoveCommand[Question]):
     move = QuestionLifecycle.answer
     answer: str
+    message_id: int | None = None
