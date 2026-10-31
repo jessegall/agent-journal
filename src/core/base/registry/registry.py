@@ -16,6 +16,7 @@ from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.registry.window_entry import WindowEntry
+from core.base.viewer.layout_shape import loaded_layout, stored_layout
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,8 @@ class Registry:
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
                                         rule["limit"], rule["essential"], rule.get("history", False), rule.get("claims_essential", False))
                         for rule in entries.get("rules", [])),
-            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]))
+            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]),
+                                    tuple(suite.get("windows", [])), {page: loaded_layout(shape) for page, shape in suite.get("layouts", {}).items()})
                          for suite in entries.get("suites", [])),
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
@@ -81,7 +83,8 @@ class Registry:
                        "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential, "history": rule.history,
                        "claims_essential": rule.claims_essential} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
-                        "included_overlays": list(suite.included_overlays)} for suite in self.suites],
+                        "included_overlays": list(suite.included_overlays), "windows": list(suite.windows),
+                        "layouts": {page: stored_layout(shape) for page, shape in suite.layouts.items()}} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
                          "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
