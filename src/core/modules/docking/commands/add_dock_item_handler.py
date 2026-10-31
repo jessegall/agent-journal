@@ -31,14 +31,14 @@ class AddDockItemHandler(Handler[AddDockItem, DockItem]):
         dock = dock or self.repository.save(Dock(environment_id=environment_id, creator_id=context.actor.id), context)
         type_most = self.limits.type_most(command.type)
         if type_most is not None:
-            self.make_room(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} allows at most {type_most} items", context)
+            self.free_place(self.items.docked(dock.id).of_type(command.type), type_most, f"{command.type} allows at most {type_most} items", context)
         dock_most = self.limits.dock_most(dock.id)
-        self.make_room(self.items.docked(dock.id), dock_most, f"the dock allows at most {dock_most} items", context)
+        self.free_place(self.items.docked(dock.id), dock_most, f"the dock allows at most {dock_most} items", context)
         item = DockItem(dock_id=dock.id, creator_id=context.actor.id, type=command.type, target_model=command.row_model, target_id=command.row_id)
         return self.repository.save(item.changed(leaves_at=self.leave_time.at(item, context.timestamp)), context)
 
-    def make_room(self, held: DockItemQuery, most: int, limit_text: str, context: Context) -> None:
-        docked = list(held.oldest().all_rows())
+    def free_place(self, docked_items: DockItemQuery, most: int, limit_text: str, context: Context) -> None:
+        docked = list(docked_items.oldest().all_rows())
         if len(docked) < most:
             return
         leaving = next((item for item in docked if not item.kept and self.row_end.ended(item)), None)

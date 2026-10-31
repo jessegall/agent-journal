@@ -21,6 +21,6 @@ class TypeLimitGuard(Guard):
         most = self.limits.type_most(item.type) if item is not None else None
         if item is None or most is None:
             return
-        held = [other for other in self.items.docked(item.dock_id).of_type(item.type).all_rows() if other.id != item.id]
-        if len(held) >= most:
+        docked_items = [sibling for sibling in self.items.docked(item.dock_id).of_type(item.type).all_rows() if sibling.id != item.id]
+        if len(docked_items) >= most:
             raise Refusal(f"{item.type} allows at most {most} items", "undock one, or keep fewer items of this type")

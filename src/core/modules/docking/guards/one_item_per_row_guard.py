@@ -19,6 +19,6 @@ class OneItemPerRowGuard(Guard):
         item = DockingArrival.item(change)
         if item is None:
             return
-        same = self.items.docked(item.dock_id).of_type(item.type).pointing_at(item.target_model, item.target_id)
-        if any(other.id != item.id for other in same.all_rows()):
+        matching = self.items.docked(item.dock_id).of_type(item.type).pointing_at(item.target_model, item.target_id)
+        if any(sibling.id != item.id for sibling in matching.all_rows()):
             raise Refusal(f"{item.target_model} {item.target_id} is docked already as {item.type}", "it is docked once for each type")
