@@ -1,3 +1,4 @@
+from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.chat.support.v4_looks import IMPASSE, expect_declared_look
 import pytest
 
@@ -11,17 +12,17 @@ from tests.stories.core.modules.chat.support.mark_samples import marks_text, mod
 
 
 def test_an_agent_reporting_it_is_stuck_shows_an_impasse_mark_after_the_commit(new_story):
-    story = new_story(fixture=LeadStarted)
+    story = new_story(SAMPLES, fixture=LeadStarted)
     story.expect_success("wait stuck 'the build server is down'", actor=story.agent)
     story.run_listeners()
     assert "Stuck: the build server is down" in marks_text(story), marks_text(story)
 
 
 def test_the_waits_module_writes_only_its_own_marks(new_story):
-    story = new_story(fixture=LeadStarted)
+    story = new_story(SAMPLES, fixture=LeadStarted)
     with pytest.raises(Refusal, match="only journal.core.tasks writes a mark of tasks.task"):
         story.container.get(Bus).run(ShowMark(1, TaskMarkType.TASK, TaskMarkVariant.STARTED, "task:9", "A mark"), module_actor(story, "journal.core.waits"))
 
 
 def test_the_impasse_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(fixture=LeadStarted), IMPASSE)
+    expect_declared_look(new_story(SAMPLES, fixture=LeadStarted), IMPASSE)
