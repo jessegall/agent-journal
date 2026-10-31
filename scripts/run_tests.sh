@@ -1,12 +1,16 @@
 #!/bin/sh
-# Runs the test ids it is given: a path under a Go module in tools/ with go test in that module, anything else with pytest.
+# Runs the test ids it is given: a Go test file under a module in tools/ runs its package with go test in the
+# workspace of tools/go.work, anything else runs with pytest.
+go_package() {
+    echo "./$(dirname "${1%%::*}")"
+}
 hook_packages=""
 client_packages=""
 python_ids=""
 for test_id in "$@"; do
     case "$test_id" in
-        tools/journal-hook*) hook_packages="$hook_packages ./${test_id#tools/journal-hook/}" ;;
-        tools/journal/*) client_packages="$client_packages ./${test_id#tools/journal/}" ;;
+        tools/journal-hook/*) hook_packages="$hook_packages $(go_package "${test_id#tools/journal-hook/}")" ;;
+        tools/journal/*) client_packages="$client_packages $(go_package "${test_id#tools/journal/}")" ;;
         *) python_ids="$python_ids $test_id" ;;
     esac
 done

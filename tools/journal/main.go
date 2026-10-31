@@ -15,6 +15,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/trail"
 )
 
 // Exit codes, as the journal's console gives them.
@@ -37,12 +39,14 @@ var DrainLimit = 10 * time.Second
 var FailedStartPeriod = 60 * time.Second
 
 func main() {
-	os.Exit(Run(os.Args[1:], os.Stdout, os.Stderr))
+	requestTrail := trail.Started()
+	os.Exit(Run(requestTrail, os.Args[1:], os.Stdout, os.Stderr))
 }
 
 // Run sends one command line to the journal's server and prints its answer as it comes; when no server can be
-// started it runs the line directly, so a server fault makes the journal slower, never broken.
-func Run(argv []string, stdout, stderr io.Writer) int {
+// started it runs the line directly, so a server fault makes the journal slower, never broken. The request
+// carries the trail main started, stamped go_sent before the post and go_resent before the one resend.
+func Run(requestTrail *trail.Trail, argv []string, stdout, stderr io.Writer) int {
 	home := JournalHome()
 	if len(argv) == 2 && argv[0] == "server" && argv[1] == "stop" {
 		return StopServer(home, stdout, stderr)
@@ -60,7 +64,7 @@ func Run(argv []string, stdout, stderr io.Writer) int {
 		return DirectRun(home, argv, stdout, stderr)
 	}
 	request := NewCliRequest(argv, os.LookupEnv, WorkingFolder())
-	code, status := SendCli(client, request, stdout, stderr)
+	code, status := SendCli(client, request, requestTrail, "go_sent", stdout, stderr)
 	if status != http.StatusConflict {
 		return code
 	}
@@ -69,7 +73,7 @@ func Run(argv []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, "the journal's server restarted for newer code and did not come back")
 		return ErrorCode
 	}
-	code, status = SendCli(client, request, stdout, stderr)
+	code, status = SendCli(client, request, requestTrail, "go_resent", stdout, stderr)
 	if status == http.StatusConflict {
 		fmt.Fprintln(stderr, "the journal's server answered newer code twice")
 		return ErrorCode
@@ -103,8 +107,9 @@ func StopServer(home string, stdout, stderr io.Writer) int {
 }
 
 // SendCli posts the request, copies the answer's output to stdout as it streams in, and returns the exit code
-// the answer ends with and the HTTP status. A timeout is never resent: the command may still be running.
-func SendCli(client *http.Client, request CliRequest, stdout, stderr io.Writer) (int, int) {
+// the answer ends with and the HTTP status. The trail is stamped with the given name right before the post and
+// sent in its header. A timeout is never resent: the command may still be running.
+func SendCli(client *http.Client, request CliRequest, requestTrail *trail.Trail, stampName string, stdout, stderr io.Writer) (int, int) {
 	body, err := request.Body()
 	if err != nil {
 		fmt.Fprintln(stderr, err)
@@ -117,6 +122,8 @@ func SendCli(client *http.Client, request CliRequest, stdout, stderr io.Writer) 
 		fmt.Fprintln(stderr, err)
 		return ErrorCode, 0
 	}
+	requestTrail.Stamp(stampName)
+	post.Header.Set(trail.Header, requestTrail.Text())
 	response, err := client.Do(post)
 	if err != nil {
 		fmt.Fprintf(stderr, "the journal's server did not answer: %v; the command may still be running\n", err)

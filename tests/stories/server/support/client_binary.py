@@ -1,9 +1,12 @@
+import json
 import os
 import shlex
 import subprocess
 from pathlib import Path
 
 from core.base.journal_home import JournalHome
+from core.base.trail import Trail
+from core.base.trail_log import TrailLog
 from server.server_files import ServerFiles, socket_path
 from tests.stories.server.support.server_client import request_answer
 
@@ -21,7 +24,7 @@ class ClientBinary:
 
     def __enter__(self) -> "ClientBinary":
         subprocess.run(["go", "build", "-o", str(self.binary), "."], cwd=ROOT / "tools" / "journal", check=True, timeout=BUILD_TIMEOUT_SECONDS,
-                       capture_output=True)
+                       capture_output=True, env={**os.environ, "CGO_ENABLED": "0"})
         return self
 
     def __exit__(self, *details: object) -> None:
@@ -43,6 +46,12 @@ class ClientBinary:
 
     def expect_server_pid(self, pid: object) -> None:
         assert self.server_pid() == pid
+
+    def expect_trail_names(self, line: str, names: list[str]) -> None:
+        written = [json.loads(raw) for raw in TrailLog(self.home).path.read_text().splitlines()]
+        trails = [(entry["request_id"], Trail.parsed(entry["trail"]).stamps) for entry in written if entry["line"] == line]
+        assert [[name for name, _ in stamps] for _, stamps in trails] == [names], written
+        assert trails[0][0].endswith(f"-{trails[0][1][0][1]}"), written
 
     def expect_no_server(self) -> None:
         files = ServerFiles(self.home)

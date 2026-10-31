@@ -21,3 +21,10 @@ def test_server_stop_stops_the_server_and_lets_its_lock_go(new_story, tmp_path):
         client.expect_answer("task list --oldest", "1  First  open  normal")
         client.expect_answer("server stop", "the server stopped")
         client.expect_no_server()
+
+
+def test_a_line_sent_by_the_client_leaves_a_trail_line_from_go_start_to_answered(new_story, tmp_path):
+    with ClientBinary(new_story(fixture=ThreeTasks).home, tmp_path) as client:
+        client.expect_answer("task list --oldest", "1  First  open  normal")
+        client.expect_answer("server stop", "the server stopped")
+        client.expect_trail_names("task list", ["go_start", "go_sent", "server_accepted", "server_received", "command_started", "command_done", "answered"])
