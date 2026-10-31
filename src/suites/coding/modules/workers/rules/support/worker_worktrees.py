@@ -1,6 +1,6 @@
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery

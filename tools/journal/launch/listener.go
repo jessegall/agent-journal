@@ -12,11 +12,12 @@ import (
 // WorkerRequest is what a dispatch hands the launcher: the worker's agent row and session, its environment, the
 // worktree it starts in and the command line that starts its program.
 type WorkerRequest struct {
-	AgentID     int      `json:"agent_id"`
-	Session     string   `json:"session"`
-	Environment string   `json:"environment"`
-	Folder      string   `json:"folder"`
-	Command     []string `json:"command"`
+	AgentID     int               `json:"agent_id"`
+	Session     string            `json:"session"`
+	Environment string            `json:"environment"`
+	Folder      string            `json:"folder"`
+	Command     []string          `json:"command"`
+	Variables   map[string]string `json:"variables"`
 }
 
 // ProgramStart is one program the launcher starts: its folder, its command line and the variables it starts with.
@@ -71,5 +72,8 @@ func started(connection net.Conn, starter Starter) {
 		return
 	}
 	variables := map[string]string{"JOURNAL_AGENT_ID": strconv.Itoa(request.AgentID), "JOURNAL_SESSION": request.Session, EnvironmentVariable: request.Environment, ActiveVariable: "1"}
+	for name, value := range request.Variables {
+		variables[name] = value
+	}
 	_ = starter.Start(ProgramStart{Folder: request.Folder, Command: request.Command, Variables: variables})
 }

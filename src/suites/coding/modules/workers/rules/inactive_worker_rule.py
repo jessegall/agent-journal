@@ -10,6 +10,7 @@ from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from core.base.agent_role import AgentRole
 
 INACTIVE_MINUTES = 5
 MINUTE_SECONDS = 60
@@ -21,7 +22,7 @@ class InactiveWorkerRule(DriverRule):
     name = "workers.inactive-worker"
     hook = HookEventName.TICK
     drivers = ["coding.builder", "coding.orchestrator"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, worktrees: WorkerWorktrees, calls: HookCallQuery, history: HookHistory) -> None:
         self.queries, self.worktrees, self.calls, self.hook_history = queries, worktrees, calls, history

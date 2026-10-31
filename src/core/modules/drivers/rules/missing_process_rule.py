@@ -7,6 +7,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.commands.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
+from core.base.agent_role import AgentRole
 
 
 class MissingProcessRule(DriverRule):
@@ -15,7 +16,7 @@ class MissingProcessRule(DriverRule):
     name = "drivers.end_commands-process"
     hook = HookEventName.TICK
     drivers = ["*"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, processes: ProcessTable) -> None:
         self.queries, self.processes = queries, processes

@@ -4,6 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.base.agent_role import AgentRole
 
 DISPATCHES_WORKERS_SETTING = "coding.builder-dispatches-workers"
 DISPATCH_ARGUMENTS = ("worker", "dispatch")
@@ -15,7 +16,7 @@ class DispatchAllowanceRule(DriverRule):
     name = "workers.dispatch-allowed"
     hook = HookEventName.PRE_TOOL_USE
     drivers = ["coding.builder"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings

@@ -33,7 +33,8 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerDispatch]):
             return
         output.row(value.worker)
         if not self.launcher_runs():
-            output.line(f"start the worker with: cd {shlex.quote(value.worktree.folder)} && {shlex.join(value.command)}")
+            variables = " ".join(f"{name}={shlex.quote(text)}" for name, text in value.command.variables.items())
+            output.line(f"start the worker with: cd {shlex.quote(str(value.command.folder))} && {variables} {shlex.join(value.command.arguments)}")
 
     def launcher_runs(self) -> bool:
         path = self.home.socket(LAUNCHER_SOCKET)

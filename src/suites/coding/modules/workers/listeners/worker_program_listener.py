@@ -7,6 +7,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.environments.models.environment import Environment
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.worker_command import WorkerCommand
 
@@ -26,8 +27,9 @@ class WorkerProgramListener(CommitListener):
         worktree = self.queries.query(Worktree).find(event.row_id)
         worker = self.queries.query(Agent).find(worktree.agent_id)
         environment = self.queries.query(Environment).find(worktree.environment_id)
-        request = {"agent_id": worker.id, "session": worker.session, "environment": environment.name, "folder": worktree.folder,
-                   "command": list(self.worker_command.arguments(worker))}
+        command = self.worker_command.command(worker, worktree, environment, self.queries.query(Task).find(worktree.task_id))
+        request = {"agent_id": worker.id, "session": worker.session, "environment": environment.name, "folder": str(command.folder),
+                   "command": list(command.arguments), "variables": dict(command.variables)}
         path = self.home.socket(LAUNCHER_SOCKET)
         if not path.exists():
             return

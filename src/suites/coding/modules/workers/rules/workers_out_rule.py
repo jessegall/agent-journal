@@ -5,6 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from core.base.agent_role import AgentRole
 
 
 class WorkersOutRule(DriverRule):
@@ -13,7 +14,7 @@ class WorkersOutRule(DriverRule):
     name = "workers.workers-out-at-start"
     hook = HookEventName.SESSION_START
     drivers = ["coding.builder", "coding.orchestrator"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, worktrees: WorktreeQuery) -> None:
         self.queries, self.worktrees = queries, worktrees

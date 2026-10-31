@@ -9,6 +9,7 @@ from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from core.base.agent_role import AgentRole
 
 REMINDER_SECONDS = 3600
 
@@ -19,7 +20,7 @@ class MergeCheckoutRule(DriverRule):
     name = "workers.merge-waits-for-checkout"
     hook = HookEventName.TICK
     drivers = ["coding.builder", "coding.orchestrator"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, queries: Queries, delivered: WorkerWorktrees, proofs: ProofQuery, git: WorktreeGit, history: HookHistory) -> None:
         self.queries, self.delivered, self.proofs, self.git, self.hook_history = queries, delivered, proofs, git, history

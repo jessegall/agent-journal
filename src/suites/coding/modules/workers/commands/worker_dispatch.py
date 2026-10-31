@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.provider.launch_command import LaunchCommand
 from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.models.worktree import Worktree
 
@@ -10,4 +11,4 @@ class WorkerDispatch:
 
     worker: Agent
     worktree: Worktree
-    command: tuple[str, ...]
+    command: LaunchCommand

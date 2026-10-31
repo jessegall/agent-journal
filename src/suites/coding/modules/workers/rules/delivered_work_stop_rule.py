@@ -6,6 +6,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_history_key import RuleHistoryKey
 from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.rules.support.worker_worktrees import WorkerWorktrees
+from core.base.agent_role import AgentRole
 
 
 class DeliveredWorkStopRule(DriverRule):
@@ -14,7 +15,7 @@ class DeliveredWorkStopRule(DriverRule):
     name = "workers.delivered-work-at-stop"
     hook = HookEventName.STOP
     drivers = ["coding.builder", "coding.orchestrator"]
-    roles = ["main"]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, delivered: WorkerWorktrees, proofs: ProofQuery, history: HookHistory) -> None:
         self.delivered, self.proofs, self.hook_history = delivered, proofs, history

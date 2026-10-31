@@ -11,7 +11,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.agents.commands.start_agent import StartAgent
 from core.modules.environments.models.environment import Environment
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -70,4 +70,4 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerDispatch]):
         except Refusal:
             self.git.remove(environment.folder, worktree)
             raise
-        return WorkerDispatch(worker, worktree, self.worker_command.arguments(worker))
+        return WorkerDispatch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))

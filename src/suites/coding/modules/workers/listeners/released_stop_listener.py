@@ -6,7 +6,7 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.modules.agents.commands.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.queries.hook_call_query import HookCallQuery

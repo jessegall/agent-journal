@@ -3,7 +3,7 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
-from core.modules.agents.models.enums.agent_role import AgentRole
+from core.base.agent_role import AgentRole
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.queries.task_query import TaskQuery
 
