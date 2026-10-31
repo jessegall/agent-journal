@@ -24,7 +24,7 @@ class ChatMark(Model):
     type: str
     variant: str
     key: str
-    label: str
+    text: str
     detail: str = ""
     lines: str = ""
     row_model: str = ""

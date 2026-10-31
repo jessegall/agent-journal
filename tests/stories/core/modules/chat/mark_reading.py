@@ -21,13 +21,13 @@ def test_an_environments_marks_are_listed_newest_last(new_story):
 
 def test_the_marks_are_filtered_by_agent(new_story):
     story = story_with_marks(new_story)
-    story.expect_success(f"chat-mark list --agent {story.agent.id}", "Second mark")
+    story.expect_text(f"chat-mark list --agent {story.agent.id}", "Second mark")
     story.expect_absent(f"chat-mark list --agent {story.agent.id}", "First mark")
 
 
 def test_a_mark_is_shown_by_its_id(new_story):
     story = story_with_marks(new_story)
-    story.expect_success("chat-mark show 1", "key: moment:1", "label: First mark")
+    story.expect_text("chat-mark show 1", "key: moment:1", "text: First mark")
 
 
 def test_the_chat_window_reads_marks_and_follows_their_events(new_story):
@@ -41,5 +41,5 @@ def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     for number in range(1, 56):
         bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor)
-    story.expect_success("chat-mark list --environment 1", "Mark 55", "page 1, 50 of 55 rows: --page 2 for the next")
-    story.expect_success("chat-mark list --environment 1 --page 2", "Mark 5")
+    story.expect_text("chat-mark list --environment 1", "Mark 55", "page 1, 50 of 55 rows: --page 2 for the next")
+    story.expect_text("chat-mark list --environment 1 --page 2", "Mark 5")

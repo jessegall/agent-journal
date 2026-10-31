@@ -11,7 +11,7 @@ def test_a_memory_weighed_shows_one_mark_written_by_the_listener_after_the_commi
     assert mark_count(story) == 0
     story.run_listeners()
     assert mark_count(story) == 1
-    story.expect_success("chat-mark list --environment main", f"Memory {memory_id}: weight set to 7")
+    story.expect_text("chat-mark list --environment 1", f"Memory {memory_id}: weight set to 7")
 
 
 def test_a_failed_command_writes_no_mark(new_story):

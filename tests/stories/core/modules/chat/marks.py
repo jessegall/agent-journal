@@ -38,7 +38,7 @@ def test_a_process_mark_with_the_same_key_is_edited_in_place(new_story):
     bus.run(show(SampleMarkType.PROCESS, "run:1", "Running"), actor)
     bus.run(show(SampleMarkType.PROCESS, "run:1", "Still running"), actor)
     assert mark_count(story) == 1
-    story.expect_success("chat-mark list --environment main", "Still running")
+    story.expect_text("chat-mark list --environment 1", "Still running")
 
 
 def test_a_process_mark_is_never_edited_once_it_ended(new_story):
@@ -47,7 +47,7 @@ def test_a_process_mark_is_never_edited_once_it_ended(new_story):
     bus.run(show(SampleMarkType.PROCESS, "run:1", "Done", ended=True), actor)
     with pytest.raises(Refusal, match="chat mark run:1 has ended"):
         bus.run(show(SampleMarkType.PROCESS, "run:1", "Again"), actor)
-    story.expect_success("chat-mark list --environment main", "Done")
+    story.expect_text("chat-mark list --environment 1", "Done")
 
 
 def test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id(new_story):
@@ -55,7 +55,7 @@ def test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id(n
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     first = bus.run(show(SampleMarkType.PROCESS, "run:2", "Running"), actor)
     second = bus.run(show(SampleMarkType.PROCESS, "run:2", "Passed", ended=True), actor)
-    assert (second.id, second.label, second.state.value) == (first.id, "Passed", "ended")
+    assert (second.id, second.text, second.state.value) == (first.id, "Passed", "ended")
 
 
 def test_the_detail_is_cut_to_80_characters_and_the_lines_keep_all_of_it(new_story):

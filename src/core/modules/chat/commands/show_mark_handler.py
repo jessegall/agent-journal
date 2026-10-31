@@ -25,11 +25,11 @@ class ShowMarkHandler(Handler[ShowMark, ChatMark]):
         if existing is None:
             ended_at = context.timestamp if command.ended else None
             return self.repository.save(ChatMark(environment_id=command.environment_id, agent_id=command.agent_id, creator_id=context.actor.id, type=command.type.value,
-                                                 variant=command.variant.value, key=command.key, label=command.text, detail=detail, lines=command.detail,
+                                                 variant=command.variant.value, key=command.key, text=command.text, detail=detail, lines=command.detail,
                                                  row_model=command.row_model, row_id=command.row_id, outcome=command.outcome, figure=command.figure,
                                                  fraction=command.fraction, state=ChatMarkState.ENDED if command.ended else ChatMarkState.SHOWN, ended_at=ended_at), context)
         if existing.state is ChatMarkState.ENDED:
             raise Refusal(f"chat mark {command.key} has ended", "show a mark under a new key")
-        edited = existing.changed(agent_id=command.agent_id, label=command.text, detail=detail, lines=command.detail, row_model=command.row_model, row_id=command.row_id,
+        edited = existing.changed(agent_id=command.agent_id, text=command.text, detail=detail, lines=command.detail, row_model=command.row_model, row_id=command.row_id,
                                   outcome=command.outcome, figure=command.figure, fraction=command.fraction)
         return self.repository.save(edited.end(context.timestamp, context.actor) if command.ended else edited, context)

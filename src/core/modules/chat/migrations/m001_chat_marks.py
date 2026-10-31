@@ -8,7 +8,7 @@ class ChatMarksTableMigration(Migration):
     statements = (
         "CREATE TABLE chat_marks (id INTEGER PRIMARY KEY, environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE,"
         " agent_id INTEGER REFERENCES agents(id) ON DELETE RESTRICT, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
-        " type TEXT NOT NULL, variant TEXT NOT NULL, key TEXT NOT NULL, label TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '',"
+        " type TEXT NOT NULL, variant TEXT NOT NULL, key TEXT NOT NULL, text TEXT NOT NULL, detail TEXT NOT NULL DEFAULT '',"
         " lines TEXT NOT NULL DEFAULT '', row_model TEXT NOT NULL DEFAULT '', row_id INTEGER,"
         " outcome TEXT NOT NULL DEFAULT 'none' CHECK (outcome IN ('none', 'running', 'passed', 'failed', 'warned')),"
         " figure TEXT NOT NULL DEFAULT '', fraction REAL NOT NULL DEFAULT 0, run_key TEXT NOT NULL DEFAULT '', run_step INTEGER NOT NULL DEFAULT 0,"
