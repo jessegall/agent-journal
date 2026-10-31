@@ -4,7 +4,7 @@ ROW_COLUMNS = "version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAUL
 
 
 class PluginsTablesMigration(Migration):
-    """Creates the plugins, plugin settings, plugin deliveries and plugin outputs tables."""
+    """Creates the plugins, plugin settings, plugin deliveries, plugin outputs and plugin queue files tables."""
 
     number = 1
     statements = (
@@ -22,4 +22,6 @@ class PluginsTablesMigration(Migration):
         " environment_id INTEGER NOT NULL REFERENCES environments(id) ON DELETE CASCADE, agent_id INTEGER NOT NULL REFERENCES agents(id) ON DELETE CASCADE,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT,"
         f" output TEXT NOT NULL CHECK (json_valid(output)), {ROW_COLUMNS}) STRICT",
+        "CREATE TABLE plugin_queue_files (id INTEGER PRIMARY KEY, plugin_id INTEGER NOT NULL REFERENCES plugins(id) ON DELETE CASCADE,"
+        f" creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, name TEXT NOT NULL, {ROW_COLUMNS}) STRICT",
     )

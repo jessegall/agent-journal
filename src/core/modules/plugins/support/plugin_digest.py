@@ -9,8 +9,7 @@ class PluginDigest:
     times, so a check on every hook costs a few file reads of their metadata."""
 
     @staticmethod
-    def digest(folder: Path) -> str:
-        manifest = PluginManifest.read(folder)
+    def digest(folder: Path, manifest: PluginManifest) -> str:
         parts: list[str] = []
         for name in manifest.files:
             path = folder / name

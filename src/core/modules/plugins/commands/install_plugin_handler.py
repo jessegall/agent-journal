@@ -47,7 +47,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
         plugin = self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source,
-                                             release=manifest.version, files_digest=PluginDigest.digest(folder)), context)
+                                             release=manifest.version, files_digest=PluginDigest.digest(folder, manifest)), context)
         declared = {setting.key for setting in manifest.settings}
         for key, value in self.steps.installed_settings(manifest, folder).items():
             if key in declared:

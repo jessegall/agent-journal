@@ -4,8 +4,8 @@ from core.modules.plugins.models.plugin import Plugin
 
 
 @dataclass(frozen=True)
-class HealthMiss:
-    """A plugin's service that missed its health check and was started again: the plugin and the fault."""
+class ServiceFault:
+    """A fault of a plugin's service: a missed health check or a condition past its limit, with its plugin."""
 
     plugin: Plugin
     fault: str

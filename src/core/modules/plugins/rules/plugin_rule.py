@@ -8,9 +8,11 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.plugins.commands.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
+from core.modules.plugins.commands.clear_plugin_queue_file import ClearPluginQueueFile
 from core.modules.plugins.commands.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.switch_off_changed_plugin import SwitchOffChangedPlugin
+from core.modules.plugins.models.enums.refusable_event import RefusableEvent
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_call import PluginCall
@@ -27,7 +29,6 @@ from core.modules.plugins.support.plugin_settings import PluginSettings
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 CEILING_SETTING = "journal.core.plugins.hold_window_ms"
-REFUSABLE_EVENTS = ("tool_starting", "command_starting", "file_edited", "idle")
 
 
 class PluginRule(DriverRule):
@@ -49,15 +50,13 @@ class PluginRule(DriverRule):
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
         for plugin in self.plugins.enabled_ones():
-            if PluginDigest.digest(self.folders.code(plugin.name)) != plugin.files_digest:
+            manifest = PluginManifest.read(self.folders.code(plugin.name))
+            if PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
                 lines.append(f"[plugin {plugin.name}] switched off: its files changed since it was installed; the user switches it on again once they read the change")
                 commands.append(SwitchOffChangedPlugin(plugin.id))
                 continue
-            manifest = PluginManifest.read(self.folders.code(plugin.name))
             if hook.event.accepts_lines:
-                for queued in PluginQueue(self.folders.data(plugin.name)).answers(hook.event.environment, hook.agent_id):
-                    lines.extend([f"[plugin {plugin.name}] {queued.line}"] if queued.line else [])
-                    commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, queued.output)] if queued.has_output() else [])
+                self.queued(hook, plugin, lines, commands)
             for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
                 if event.name not in manifest.window_names():
                     commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, hook.agent_id, event.name, json.dumps(dict(event.data))))
@@ -66,6 +65,14 @@ class PluginRule(DriverRule):
                 if refusal:
                     return RuleAnswer(refusal=refusal, lines=tuple(lines), commands=tuple(commands))
         return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
+
+    def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
+        read = PluginQueue(self.folders.data(plugin.name)).reserve(hook.event.environment, hook.agent_id)
+        for name, answer in read.answers:
+            lines.extend([f"[plugin {plugin.name}] {answer.line}"] if answer.line else [])
+            commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output)] if answer.has_output() else [])
+            commands.append(ClearPluginQueueFile(plugin.id, name))
+        commands.extend(RecordPluginFault(plugin.id, f"its queue file {name} is not JSON") for name in read.unreadable)
 
     @staticmethod
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
@@ -86,7 +93,7 @@ class PluginRule(DriverRule):
             commands.append(AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
-        refusing = answer.is_refusal() and event.name in REFUSABLE_EVENTS
+        refusing = answer.is_refusal() and event.name in [refusable.value for refusable in RefusableEvent]
         if refusing and not journal_line:
             return f"[plugin {plugin.name}] {answer_text}"
         if answer_text:

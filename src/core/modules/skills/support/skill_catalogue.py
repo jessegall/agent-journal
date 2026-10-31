@@ -11,7 +11,7 @@ PLUGIN_KEY = "plugin"
 
 class SkillCatalogue:
     """Every skill an agent may be given: the skills the modules declare, and the skills an installed plugin
-    published into the agent programs' skill folders, which carry plugin: <name> in their front matter."""
+    published into any of the agent programs' skill folders, which carry plugin: <name> in their front matter."""
 
     def __init__(self, registry: Registry, home: JournalHome) -> None:
         self.registry, self.home = registry, home
@@ -20,9 +20,9 @@ class SkillCatalogue:
         return (*self.registry.skills, *self.plugin_skills())
 
     def plugin_skills(self) -> list[SkillEntry]:
-        root = self.home.project_folder / PROGRAM_FOLDERS[0]
         entries: list[SkillEntry] = []
-        for path in sorted(root.glob(f"*/{SKILL_FILE}")):
+        paths = {path.parent.name: path for program_folder in reversed(PROGRAM_FOLDERS) for path in (self.home.project_folder / program_folder).glob(f"*/{SKILL_FILE}")}
+        for path in [paths[name] for name in sorted(paths)]:
             text = path.read_text()
             fields = self.front_matter(text)
             if PLUGIN_KEY in fields:

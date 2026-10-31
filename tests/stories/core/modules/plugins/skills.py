@@ -25,3 +25,11 @@ def test_a_switched_off_plugin_takes_its_skills_away(new_story):
     story.run("plugin disable sample", actor=story.user)
     story.expect_absent("skill list", "sample-rules", actor=story.user)
     story.expect_rows(not (story.home.folder.parent / ".claude" / "skills" / "sample-rules").exists())
+
+
+def test_a_plugin_skill_published_only_for_codex_is_known(new_story):
+    story = installed_story(new_story)
+    codex_skill = story.home.folder.parent / ".agents" / "skills" / "codex-rules" / "SKILL.md"
+    codex_skill.parent.mkdir(parents=True, exist_ok=True)
+    codex_skill.write_text("---\nplugin: sample\nname: codex-rules\ndescription: Rules only Codex reads\n---\n")
+    story.expect_text("skill list", "codex-rules", actor=story.user)

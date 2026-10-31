@@ -2,7 +2,7 @@ from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.modules.plugins.commands.support.plugin_health_check import PluginHealthCheck
-from core.modules.plugins.support.plugin_services import PluginServices
+from core.modules.plugins.commands.support.plugin_service_round import PluginServiceRound
 from core.modules.plugins.support.service_processes import ServiceProcesses
 
 
@@ -18,7 +18,7 @@ class ServerPluginServices:
     def follow(self) -> None:
         container = synced_container(self.home)
         try:
-            container.get(PluginServices).follow(self.processes)
+            container.get(PluginServiceRound).run(self.processes)
         finally:
             container.get(Database).close()
 

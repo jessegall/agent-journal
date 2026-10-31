@@ -24,9 +24,10 @@ class SwitchPluginHandler(Handler[SwitchPlugin, Plugin]):
         UserActorCheck.check(context, "switches on" if command.enabled else "switches off")
         plugin = self.plugins.find_name(command.name)
         folder = self.folders.code(plugin.name)
-        if command.enabled:
-            self.skill_files.publish(folder, PluginManifest.read(folder))
-        else:
+        if not command.enabled:
             self.skill_files.withdraw(plugin.name)
-        digest = PluginDigest.digest(folder) if command.enabled else plugin.files_digest
+            return self.repository.save(plugin.changed(enabled=False), context)
+        manifest = PluginManifest.read(folder)
+        self.skill_files.publish(folder, manifest)
+        digest = PluginDigest.digest(folder, manifest)
         return self.repository.save(plugin.changed(enabled=command.enabled, files_digest=digest), context)

@@ -15,6 +15,7 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 PROGRAM_PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
 SETTINGS_FILE = ".journal-settings.json"
+STOP_LIMIT_SECONDS = 1
 
 
 class PluginProgram:
@@ -46,8 +47,7 @@ class PluginProgram:
         try:
             output, _ = process.communicate(line + "\n", timeout=limit_ms / 1000)
         except subprocess.TimeoutExpired:
-            os.killpg(process.pid, signal.SIGKILL)
-            process.communicate()
+            self.stop(process)
             raise PluginLateError(f"it ran past {limit_ms} ms") from None
         if process.returncode != 0:
             raise PluginFaultError(f"it ended with code {process.returncode}")
@@ -55,6 +55,16 @@ class PluginProgram:
             return PluginAnswer.parsed(output)
         except json.JSONDecodeError:
             raise PluginFaultError("its answer is not JSON") from None
+
+    @staticmethod
+    def stop(process: "subprocess.Popen[str]") -> None:
+        os.killpg(process.pid, signal.SIGKILL)
+        try:
+            process.communicate(timeout=STOP_LIMIT_SECONDS)
+        except subprocess.TimeoutExpired:
+            for pipe in (process.stdin, process.stdout):
+                if pipe is not None:
+                    pipe.close()
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}

@@ -7,6 +7,7 @@ from core.base.type_guards import is_mapping
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.table_copy_move import TableCopyMove
 from core.modules.plugins.support.plugin_digest import PluginDigest
+from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 TABLE = "plugins"
 
@@ -26,7 +27,7 @@ class PluginsMove(TableCopyMove):
         created = row["created_at"] or context.timestamp
         plugin_id = rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "name": row["name"], "title": str(manifest["title"] if "title" in manifest else row["name"]),
                                    "source": row["source"], "release": row["release"] or "", "enabled": int(bool(row["enabled"]) and not row["is_user_disabled"] and folder.is_dir()),
-                                   "files_digest": PluginDigest.digest(folder) if folder.is_dir() else "",
+                                   "files_digest": PluginDigest.digest(folder, PluginManifest.read(folder)) if folder.is_dir() else "",
                                    "created_at": created, "updated_at": row["updated_at"] or created})
         for key, value in self.settings(row["settings"]).items():
             rows.insert("plugin_settings", {"plugin_id": plugin_id, "creator_id": creator_id, "key": key, "value": json.dumps(value), "created_at": created, "updated_at": created})

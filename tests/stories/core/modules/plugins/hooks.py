@@ -1,4 +1,5 @@
 import json
+import os
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -63,3 +64,36 @@ def test_a_switched_off_plugin_hears_nothing(new_story):
     story = installed_story(new_story)
     story.run("plugin disable sample", actor=story.user)
     story.expect_hook_allowed("s-1", REMOVAL_SAMPLE)
+
+
+def test_a_queue_file_that_is_not_json_is_set_aside_as_the_plugins_fault_and_the_next_line_still_arrives(new_story):
+    story = installed_story(new_story)
+    queue = story.home.folder / "plugin-data" / "sample" / "queue"
+    queue.mkdir(parents=True, exist_ok=True)
+    (queue / "1.json").write_text("{not json")
+    story.hook("s-1", LISTING_SAMPLE)
+    story.run_listeners()
+    story.expect_text("plugin list", "last fault: its queue file 1.json is not JSON", actor=story.user)
+    (queue / "2.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "two sins in c.py"}))
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] two sins in c.py")
+
+
+def test_a_line_reserved_by_a_hook_that_never_committed_is_offered_again(new_story):
+    story = installed_story(new_story)
+    queue = story.home.folder / "plugin-data" / "sample" / "queue"
+    queue.mkdir(parents=True, exist_ok=True)
+    reserved_file = queue / "1.reserved"
+    reserved_file.write_text(json.dumps({"v": 1, "env": "main", "tell": "three sins in d.py"}))
+    os.utime(reserved_file, (0, 0))
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] three sins in d.py")
+
+
+def test_a_line_read_by_a_hook_is_not_read_again_before_it_is_deleted(new_story):
+    story = installed_story(new_story)
+    queue = story.home.folder / "plugin-data" / "sample" / "queue"
+    queue.mkdir(parents=True, exist_ok=True)
+    (queue / "1.json").write_text(json.dumps({"v": 1, "env": "main", "tell": "four sins in e.py"}))
+    story.expect_hook_allowed("s-1", LISTING_SAMPLE, "[plugin sample] four sins in e.py")
+    story.expect_absent_hook_line("s-1", LISTING_SAMPLE, "four sins in e.py")
+    story.run_listeners()
+    story.expect_rows(not any(queue.iterdir()))

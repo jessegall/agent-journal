@@ -10,6 +10,7 @@ from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.plugin_health import PluginHealth
 from core.modules.plugins.support.plugin_requirement import PluginRequirement
 from core.modules.plugins.support.setup_step import SetupStep
+from core.modules.plugins.models.enums.service_restart import ServiceRestart
 from core.modules.plugins.support.event_window import EventWindow
 
 MANIFEST_FILE = "journal-plugin.json"
@@ -86,10 +87,14 @@ class PluginManifest:
         return tuple(SetupStep(str(entry["name"]) if "name" in entry else str(entry["run"]), str(entry["run"])) for entry in entries)
 
     @staticmethod
-    def read_services(services: object) -> tuple[ManifestService, ...]:
+    def restart_rule(restart: object) -> ServiceRestart:
+        return ServiceRestart(restart) if restart in [rule.value for rule in ServiceRestart] else ServiceRestart.STOPPED_END
+
+    @classmethod
+    def read_services(cls, services: object) -> tuple[ManifestService, ...]:
         entries = [entry for entry in services if is_mapping(entry) and "name" in entry and "command" in entry and is_list(entry["command"])] if is_list(services) else []
         return tuple(ManifestService(str(entry["name"]), tuple(str(part) for part in command) if is_list(command := entry["command"]) else (),
-                                     str(entry["when"]) if "when" in entry else "", str(entry["restart"]) if "restart" in entry else "never",
+                                     str(entry["when"]) if "when" in entry else "", cls.restart_rule(entry["restart"] if "restart" in entry else None),
                                      entry["answers"] is True if "answers" in entry else False) for entry in entries)
 
     @staticmethod

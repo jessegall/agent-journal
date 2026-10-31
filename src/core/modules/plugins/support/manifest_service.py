@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.modules.plugins.models.enums.service_restart import ServiceRestart
+
 
 @dataclass(frozen=True)
 class ManifestService:
@@ -10,5 +12,5 @@ class ManifestService:
     name: str
     command: tuple[str, ...]
     condition: str
-    restart: str
+    restart: ServiceRestart
     answers: bool
