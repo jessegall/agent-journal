@@ -41,3 +41,10 @@ class GhostEventModule(Module):
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
     skills = [SkillDeclaration("journal-notes", "How to take notes", events=["ghost.*"])]
+
+
+class PlanSkillsModule(Module):
+    name = "planskills"
+    requires_core = ">=5,<6"
+    dependencies = DEPENDENCIES
+    skills = [SkillDeclaration("journal-plans", "How to follow a plan", keywords=["plan"])]

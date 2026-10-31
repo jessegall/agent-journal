@@ -30,6 +30,9 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
+from core.base.registry.skill_entry import SkillEntry
+from core.base.skill.skill_declaration import SKILLS_FOLDER
+from core.base.skill.skill_digest import SkillDigest
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
@@ -114,6 +117,7 @@ class ModuleSync:
             docks=self.docks(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
+            skills=self.skills(modules),
         )
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
@@ -136,6 +140,16 @@ class ModuleSync:
         return tuple(DockEntry(dock.type.value, module.name, dock.icon, dock.title, dock.body, tuple(button.listed() for button in dock.buttons), dock.most,
                                dock.leaves_after_seconds, tuple(dock.reads), module in shipped, unavailable_reason(dock.kit))
                      for module in modules for dock in module.docks)
+
+    def skills(self, modules: tuple[type[Module], ...]) -> tuple[SkillEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        entries: list[SkillEntry] = []
+        for module in modules:
+            for skill in module.skills:
+                path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
+                entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
+                                          SkillDigest.of(path.read_text()), str(path), module in shipped))
+        return tuple(entries)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

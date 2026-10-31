@@ -35,6 +35,7 @@ PAIRING_ROUTE = "/viewer/pair"
 PHONE_WORKER = "phone-sw.js"
 PHONE_FILES = (PHONE_WORKER, "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png")
 WORKER_HEADERS = {"Service-Worker-Allowed": "/", "Cache-Control": "no-cache"}
+SKILLS_ROUTE = "/api/skills"
 MODULES_ROUTE = "/modules/"
 FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener}; style-src {listener} 'unsafe-inline'; img-src {listener} data:;"
                 " connect-src 'none'; form-action 'none'")
@@ -94,6 +95,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if route.path == DOCKS_ROUTE:
             self.answer(200, {"docks": viewer.routes.chat_declarations_route.docks()})
+            return
+        if route.path == SKILLS_ROUTE:
+            self.answer(200, {"skills": viewer.routes.skills_route.skills()})
             return
         if route.path == EVENTS_ROUTE:
             self.answer_events(viewer.routes.event_stream, parse_qs(route.query))

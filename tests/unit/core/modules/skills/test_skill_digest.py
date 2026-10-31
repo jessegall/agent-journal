@@ -1,6 +1,6 @@
 import hashlib
 
-from core.modules.skills.support.skill_digest import SkillDigest
+from core.base.skill.skill_digest import SkillDigest
 
 
 def test_the_digest_is_the_first_twelve_characters_of_the_sha1_of_the_text():

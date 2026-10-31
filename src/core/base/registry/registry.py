@@ -19,6 +19,7 @@ from core.base.registry.setting_entry import SettingEntry
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
+from core.base.registry.skill_entry import SkillEntry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
 from core.base.registry.window_entry import WindowEntry
@@ -49,6 +50,7 @@ class Registry:
     docks: tuple[DockEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
+    skills: tuple[SkillEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
     @classmethod
@@ -88,6 +90,7 @@ class Registry:
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
+            skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
 
@@ -120,6 +123,7 @@ class Registry:
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
+            "skills": [asdict(skill) for skill in self.skills],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
 
