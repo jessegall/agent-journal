@@ -167,6 +167,22 @@
                                 }
                             }
                         ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/queries/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Query"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
                     }
                 ]
             }
