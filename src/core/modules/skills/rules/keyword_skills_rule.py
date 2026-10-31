@@ -2,7 +2,7 @@ from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.hook_keyterms import hook_keyterms
+from core.base.driver.hook_keywords import hook_keywords
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.registry.registry import Registry
 from core.modules.skills.commands.require_skill import RequireSkill
@@ -26,6 +26,6 @@ class KeywordSkillsRule(DriverRule):
         prompt = hook.event.prompt or ""
         if hook.event.subagent or prompt.lstrip().startswith(NOTICE_OPENING):
             return RuleAnswer.allowed()
-        terms = hook_keyterms(hook.event)
+        terms = hook_keywords(hook.event)
         return RuleAnswer.allowed().running(*(RequireSkill(hook.agent_id, skill.folder) for skill in self.registry.skills
-                                             if any(keyword.lower() in terms for keyword in skill.keyterms)))
+                                             if any(keyword.lower() in terms for keyword in skill.keywords)))

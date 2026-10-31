@@ -98,7 +98,7 @@ def test_an_event_a_skill_names_makes_it_due_for_the_main_agent_of_the_environme
     story = environment(new_story)
     start(story)
     story.run(f'task make "Fix the cart" --environment main')
-    story.run("task start 1", actor=story.agent)
+    story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()
     expect_due(story, "journal-tasks")
 
@@ -108,7 +108,7 @@ def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(new_story)
     start(story)
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-tasks", digest_of(story, "journal-tasks")), story.agent)
     story.run('task make "Fix the cart" --environment main')
-    story.run("task start 1", actor=story.agent)
+    story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()
     expect_not_due(story, "journal-tasks")
 
