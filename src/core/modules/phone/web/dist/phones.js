@@ -1,58 +1,50 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-c36e75d83981")) { const style = document.createElement("style"); style.id = "window-styles-c36e75d83981"; style.textContent = ".phones[data-v-63f855f0]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-63f855f0]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-63f855f0]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-63f855f0],.phones-failure[data-v-63f855f0]{margin:0;color:var(--text-2)}.phones-name[data-v-63f855f0]{flex:1}\n"; document.head.appendChild(style); }
-import { computed as R, ref as k, openBlock as d, createElementBlock as _, createElementVNode as r, createVNode as f, unref as t, withCtx as h, createTextVNode as w, Fragment as V, toDisplayString as i, createCommentVNode as y } from "vue";
-import { useRows as B, Btn as g, RowList as P } from "@journal/window-kit";
-const E = (l, p) => {
-  const n = l.__vccOpts || l;
-  for (const [c, u] of p)
-    n[c] = u;
-  return n;
-}, F = { class: "phones" }, O = { class: "phones-pair" }, S = { class: "phones-code" }, T = { class: "phones-hint" }, D = {
+if (!document.getElementById("window-styles-1d9533671a2f")) { const style = document.createElement("style"); style.id = "window-styles-1d9533671a2f"; style.textContent = ".phones[data-v-231be85c]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-231be85c]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-231be85c]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-231be85c],.phones-failure[data-v-231be85c]{margin:0;color:var(--text-2)}.phones-name[data-v-231be85c]{flex:1}\n"; document.head.appendChild(style); }
+import { computed as g, openBlock as c, createElementBlock as _, createElementVNode as s, createVNode as u, unref as e, withCtx as h, createTextVNode as k, Fragment as C, toDisplayString as a, createCommentVNode as v } from "vue";
+import { useRows as x, Btn as w, RowList as N } from "@journal/window-kit";
+const R = (r, i) => {
+  const t = r.__vccOpts || r;
+  for (const [p, n] of i)
+    t[p] = n;
+  return t;
+}, V = { class: "phones" }, B = { class: "phones-pair" }, P = { class: "phones-code" }, E = { class: "phones-hint" }, F = {
   key: 1,
   class: "phones-failure"
-}, I = { class: "phones-name" }, L = {
+}, O = { class: "phones-name" }, S = {
   __name: "PhoneRows",
-  setup(l) {
-    const { rows: p, failure: n, loaded: c, load: u, context: m } = B("phone list", ["phone.*"]), x = R(() => p.value.filter((e) => e.state === "paired")), s = k(null), a = k("");
-    async function C() {
-      const e = await m.run(["phone", "pair"]);
-      a.value = e.ok ? "" : e.error, s.value = e.ok ? e.value : null;
-    }
-    async function N(e) {
-      const o = await m.run(["phone", "unpair", String(e.id)]);
-      a.value = o.ok ? "" : o.error, u();
-    }
-    return (e, o) => (d(), _("div", F, [
-      r("div", O, [
-        f(t(g), {
+  setup(r) {
+    const { rows: i, failure: t, loaded: p, act: n, actionFailure: m, answer: d } = x("phone list", ["phone.*"]), y = g(() => i.value.filter((f) => f.state === "paired"));
+    return (f, o) => (c(), _("div", V, [
+      s("div", B, [
+        u(e(w), {
           kind: "primary",
-          onClick: C
+          onClick: o[0] || (o[0] = (l) => e(n)(["phone", "pair"]))
         }, {
-          default: h(() => [...o[0] || (o[0] = [
-            w("Pair a phone", -1)
+          default: h(() => [...o[1] || (o[1] = [
+            k("Pair a phone", -1)
           ])]),
           _: 1
         }),
-        s.value ? (d(), _(V, { key: 0 }, [
-          r("p", S, "Code: " + i(s.value.code), 1),
-          r("p", T, "Open " + i(s.value.link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
-        ], 64)) : y("", !0),
-        a.value ? (d(), _("p", D, i(a.value), 1)) : y("", !0)
+        e(d) ? (c(), _(C, { key: 0 }, [
+          s("p", P, "Code: " + a(e(d).code), 1),
+          s("p", E, "Open " + a(e(d).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
+        ], 64)) : v("", !0),
+        e(m) ? (c(), _("p", F, a(e(m)), 1)) : v("", !0)
       ]),
-      f(t(P), {
-        rows: x.value,
-        failure: t(n),
-        loaded: t(c),
+      u(e(N), {
+        rows: y.value,
+        failure: e(t),
+        loaded: e(p),
         empty: "No phone is paired"
       }, {
-        default: h(({ row: v }) => [
-          r("span", I, i(v.name), 1),
-          f(t(g), {
+        default: h(({ row: l }) => [
+          s("span", O, a(l.name), 1),
+          u(e(w), {
             small: "",
-            onClick: (U) => N(v)
+            onClick: (T) => e(n)(["phone", "unpair", String(l.id)])
           }, {
-            default: h(() => [...o[1] || (o[1] = [
-              w("Unpair", -1)
+            default: h(() => [...o[2] || (o[2] = [
+              k("Unpair", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])
@@ -61,7 +53,7 @@ const E = (l, p) => {
       }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, j = /* @__PURE__ */ E(L, [["__scopeId", "data-v-63f855f0"]]);
+}, D = /* @__PURE__ */ R(S, [["__scopeId", "data-v-231be85c"]]);
 export {
-  j as default
+  D as default
 };

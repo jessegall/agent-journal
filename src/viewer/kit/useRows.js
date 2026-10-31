@@ -8,6 +8,8 @@ export function useRows(line, patterns) {
     const rows = ref([]);
     const failure = ref("");
     const loaded = ref(false);
+    const actionFailure = ref("");
+    const answer = ref(null);
 
     async function load() {
         const result = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line);
@@ -16,7 +18,16 @@ export function useRows(line, patterns) {
         loaded.value = true;
     }
 
+    // runs a command the window declares, keeps what it answered or why it failed, and reads the rows again
+    async function act(words) {
+        const result = await context.run(words);
+        actionFailure.value = result.ok ? "" : result.error;
+        answer.value = result.ok ? result.value : null;
+        await load();
+        return result;
+    }
+
     context.follow(patterns, load);
     load();
-    return {rows, failure, loaded, load, context};
+    return {rows, failure, loaded, load, act, actionFailure, answer, context};
 }
