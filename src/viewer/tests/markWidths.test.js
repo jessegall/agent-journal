@@ -1,4 +1,5 @@
 import {readFileSync} from "node:fs";
+import {resolve} from "node:path";
 import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import DockWrapper from "../src/chat/DockWrapper.vue";
@@ -7,6 +8,12 @@ import {loadDockDeclarations} from "../src/domain/dockRegistry.js";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
+
+vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+    disconnect() {}
+    unobserve() {}
+});
 
 const WIDTHS = {phone: 375, wide: 1280};
 const mark = {id: 7, type: "memory", text: "Memory 3: weight set", state: "shown", created_at: 5, target_model: "memories", target_id: 3};
@@ -45,7 +52,7 @@ for (const [name, width] of Object.entries(WIDTHS)) {
 
 test("the dock stays in the chat's flow, so at phone width it never covers the compose box", () => {
     for (const file of ["src/kit/ChatDock.vue", "src/chat/DockWrapper.vue", "src/chat/DockStack.vue"]) {
-        const style = readFileSync(new URL(`../${file}`, import.meta.url), "utf8").split("<style")[1] || "";
+        const style = readFileSync(resolve(process.cwd(), file), "utf8").split("<style")[1] || "";
         expect(style).not.toMatch(/position:\s*(fixed|sticky)/);
         expect(style).not.toMatch(/position:\s*absolute[^}]*bottom/);
     }
