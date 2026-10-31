@@ -3196,7 +3196,8 @@ function Il(e, t) {
     detail: n.body_url ? "" : e.detail || "",
     figure: e.figure || "",
     fraction: e.fraction || 0,
-    ended: e.state === "ended",
+    // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick
+    ended: !!n.process && e.state === "ended",
     active: !!n.process && e.state === "shown",
     time: e.created_at,
     action: s ? Ll[s](e) : "",

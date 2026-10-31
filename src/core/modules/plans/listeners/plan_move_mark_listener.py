@@ -20,4 +20,4 @@ class PlanMoveMarkListener(MarkListener):
         variant = MOVE_VARIANTS.get(event.event.split(".")[1])
         if variant is not None:
             plan = self.queries.query(Plan).find(event.row_id)
-            self.show(event, PlanMarkType.PLAN, variant, f"Plan {plan.id} {variant.value}", plan.environment_id, None, "plan", plan.id)
+            self.show(event, PlanMarkType.PLAN, variant, f"Plan {plan.id} {variant.value}: {plan.title}", plan.environment_id, None, "plan", plan.id)

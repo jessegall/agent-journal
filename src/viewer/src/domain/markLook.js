@@ -25,7 +25,8 @@ export function markLook(mark, declaration) {
         detail: kind.body_url ? "" : mark.detail || "",
         figure: mark.figure || "",
         fraction: mark.fraction || 0,
-        ended: mark.state === "ended",
+        // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick
+        ended: Boolean(kind.process) && mark.state === "ended",
         active: Boolean(kind.process) && mark.state === "shown",
         time: mark.created_at,
         action: opens ? ACTIONS[opens](mark) : "",

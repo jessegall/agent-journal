@@ -76,4 +76,13 @@ async function send() {
     margin: 0;
     color: var(--text-2);
 }
+
+/* version 4's marks are quiet lines, about 28 pixels tall, in a muted colour */
+.history :deep(.row-list-row) {
+    padding: 1px 8px;
+}
+
+.history :deep(.mark.w-event) {
+    color: var(--text-3);
+}
 </style>

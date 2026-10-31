@@ -18,4 +18,4 @@ class TaskMoveMarkListener(MarkListener):
         variant = MOVE_VARIANTS.get(event.event.split(".")[1])
         if variant is not None:
             task = self.queries.query(Task).find(event.row_id)
-            self.show(event, TaskMarkType.TASK, variant, f"Task {task.id} {variant.value}", task.environment_id, None, "task", task.id)
+            self.show(event, TaskMarkType.TASK, variant, f"Task {task.id} {variant.value}: {task.title}", task.environment_id, None, "task", task.id)
