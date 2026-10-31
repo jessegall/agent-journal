@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["run", "dispatch", "save", "delete", "running", "ending_layer"]
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/questions/rules/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "question-rule-acts",
+        "description": "A rule in the questions module runs a command or writes a row, when a rule only reads and tells.",
+        "rule": "A rule answers with lines or a refusal; the change it follows belongs to a command or a listener.",
+        "skill": "plain-code-words"
+    }
+}

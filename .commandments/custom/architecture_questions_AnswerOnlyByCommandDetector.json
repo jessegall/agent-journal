@@ -1,0 +1,40 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "moved",
+                    "changed",
+                    "replace"
+                ]
+            },
+            {
+                "descendant": {
+                    "nameIn": [
+                        "answer",
+                        "message_id",
+                        "QuestionLifecycle",
+                        "QuestionState"
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/base/command/handlers/move_handler\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "question-answered-outside-its-commands",
+        "description": "Code outside the answer and close commands writes a question's answer or state, so the move skips the lifecycle guard and the wait that ends with it.",
+        "rule": "Answer by running AnswerQuestion and close by running CloseQuestion; only the move handler writes the move.",
+        "skill": "plain-code-words"
+    }
+}

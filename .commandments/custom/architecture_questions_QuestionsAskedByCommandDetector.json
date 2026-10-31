@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Question"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/questions/commands/ask_question_handler\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "question-made-outside-the-ask-handler",
+        "description": "A Question row is built outside the handler of AskQuestion, so it skips the wait that opens with it and the guards on who may ask and how.",
+        "rule": "Ask by running AskQuestion; only AskQuestionHandler builds and saves a Question.",
+        "skill": "plain-code-words"
+    }
+}

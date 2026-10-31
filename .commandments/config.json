@@ -59,6 +59,10 @@
         "architecture_chat_NoRawMarkTypeDetector",
         "architecture_chat_MarkEnumsInEnumsFolderDetector",
         "architecture_docking_DockOnlyByCommandDetector",
+        "architecture_questions_QuestionsAskedByCommandDetector",
+        "architecture_questions_AnswerOnlyByCommandDetector",
+        "architecture_questions_WaitsOnlyByWaitsCommandsDetector",
+        "architecture_questions_RulesNeverAskDetector",
         "architecture_chat_NoModuleKindPathDetector",
         "architecture_chat_NoMarkTypeInViewerDetector",
         "test_UnitTestBoundaryDetector"

@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["Wait", "WaitTarget"]
+            },
+            {
+                "fileMatches": "(^|/)src/core/modules/questions/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "wait-written-by-questions",
+        "description": "The questions module builds a Wait or a WaitTarget itself, so the wait skips the waits module's own checks.",
+        "rule": "Open a wait by running the waits module's OpenWait, and end it by its EndWait or by the waits module's own listener.",
+        "skill": "plain-code-words"
+    }
+}
