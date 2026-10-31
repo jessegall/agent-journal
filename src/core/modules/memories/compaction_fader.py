@@ -12,7 +12,7 @@ class CompactionFader(CommitListener):
     """When an agent's context window is compacted, its memories of a fading type each lose one weight; a listener
     and not a driver rule, so an overlay that silences the rules, such as a wait, never stops the fading."""
 
-    name = "memories.fade-at-compaction"
+    name = "memories.compaction-fader"
     event = "hook_call.create"
 
     def __init__(self, bus: Bus, queries: Queries) -> None:

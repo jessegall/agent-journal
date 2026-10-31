@@ -47,9 +47,11 @@ class MemoriesModule(Module):
 
     name = "journal.core.memories"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings",
+                    "journal.core.drivers"]
     models = [ModelDeclaration(Memory, commands=[MemoryRemove], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
-              ModelDeclaration(MemoryGiving), ModelDeclaration(MemoryMark)]
+              ModelDeclaration(MemoryGiving, excluded_subcommands=["make", "edit", "delete"]),
+              ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
     migrations = [MemoriesTables]
     views = [StandingMemory, MemoryInContext, MemoryWord]
     guards = [TypeMakers, TypeOn, AgentScopeGuard, WeightOnlyRises, TypesByUser, SwitchesByUser, KeywordScope]
