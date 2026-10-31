@@ -42,7 +42,7 @@ func TestEachCodexToolHasItsCategoryAndFiles(t *testing.T) {
 		{`{"tool_name":"write_file","tool_input":{"path":"notes.md","content":"x"}}`, "write", "notes.md"},
 		{`{"tool_name":"read_file","tool_input":{"file_path":"src/app.py"}}`, "read", "src/app.py"},
 		{`{"tool_name":"collaborationspawn_agent","tool_input":{"task_name":"x"}}`, "agent", ""},
-		{`{"tool_name":"request_user_input","tool_input":{}}`, "other", ""},
+		{`{"tool_name":"request_user_input","tool_input":{}}`, "question", ""},
 	}
 	for _, sample := range cases {
 		body := `{"hook_event_name":"PreToolUse","session_id":"s",` + sample.body[1:]

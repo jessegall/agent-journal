@@ -48,6 +48,7 @@
       ],
       "tool_categories": {
         "Agent": "agent",
+        "AskUserQuestion": "question",
         "Bash": "shell",
         "Edit": "edit",
         "Glob": "search",
@@ -93,6 +94,7 @@
         "apply_patch": "edit",
         "collaborationspawn_agent": "agent",
         "read_file": "read",
+        "request_user_input": "question",
         "write_file": "write"
       }
     }
