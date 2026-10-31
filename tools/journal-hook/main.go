@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"time"
@@ -12,7 +13,14 @@ import (
 	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 )
 
+// version is set by the release build with -ldflags "-X main.version=<version>".
+var version = "dev"
+
 func main() {
+	if len(os.Args) == 2 && os.Args[1] == "--version" {
+		fmt.Println("journal-hook " + version)
+		return
+	}
 	requestTiming := timing.Started()
 	started := time.Now()
 	if len(os.Args) < 3 {
