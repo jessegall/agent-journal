@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {expect, test} from "vitest";
-import Reviewer from "../../core/modules/reviews/web/src/Reviewer.vue";
+import ReviewerSteps from "../../core/modules/reviews/web/src/ReviewerSteps.vue";
 import {context, page} from "./support/windowContext.js";
 
 const MINUTE = 60 * 1000;
@@ -9,7 +9,7 @@ const at = (minutesAgo) => new Date(Date.now() - minutesAgo * MINUTE).toISOStrin
 
 async function mounted(windowContext) {
     const element = document.createElement("div");
-    const app = createApp({render: () => h(Reviewer)});
+    const app = createApp({render: () => h(ReviewerSteps)});
     app.provide(WINDOW_CONTEXT, windowContext);
     app.mount(element);
     for (let round = 0; round < 5; round++) await nextTick();

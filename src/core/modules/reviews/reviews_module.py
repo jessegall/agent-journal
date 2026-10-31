@@ -1,5 +1,8 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
 from core.modules.reviews.commands.assign_next_review_handler import AssignNextReviewHandler
 from core.modules.reviews.commands.take_reviewer import TakeReviewer
 from core.modules.reviews.listeners.review_queued_listener import ReviewQueuedListener
@@ -49,3 +52,5 @@ class ReviewsModule(Module):
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewTakenMarkListener, ReviewReportedMarkListener]
     marks = REVIEW_MARKS
+    windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW,
+                                 reads=["review list", "review show", "review-step list", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"])]
