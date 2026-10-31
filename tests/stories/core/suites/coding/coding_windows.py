@@ -1,4 +1,5 @@
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
+from tests.stories.core.support.coding_fixtures import CodingEnvironment
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -29,3 +30,14 @@ def test_the_file_edits_window_reads_its_lines_with_no_allowance(new_story):
 
 def test_the_terminal_window_is_a_page_window_of_one_agent_that_reads_nothing(new_story):
     window_story(new_story).expect_declared_window("coding.terminal", "page", "agent")
+
+
+def test_the_coding_suite_gives_the_orchestrator_its_own_home_layout_and_every_other_driver_the_plain_one(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_success("suite layout main home --driver coding.orchestrator", "suite: coding", "page: home", "driver: coding.orchestrator")
+    story.expect_success("suite layout main home --driver coding.builder", "suite: coding", "page: home", "driver: coding.builder")
+    story.expect_success("suite layout main agent --driver coding.worker", "suite: coding", "page: agent", "driver: coding.worker")
+
+
+def test_a_page_the_coding_suite_lays_out_nothing_for_is_refused(new_story):
+    new_story(fixture=CodingEnvironment).expect_refusal("suite layout main settings", "no suite layout for the page settings in main")
