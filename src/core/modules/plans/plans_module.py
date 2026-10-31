@@ -26,6 +26,9 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.models.phase import Phase
 from core.modules.plans.models.phase_task import PhaseTask
 from core.modules.plans.models.plan import Plan
+from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
+from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
 
 PLAN_COMMANDS = (BlockPlan, CancelPlan)
 
@@ -35,7 +38,7 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
@@ -44,6 +47,8 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 NextPlanTaskStarterListener)
+                 NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
+    marks = PLAN_MARKS
+    docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list"],
                                  events=["plan.*", "phase.*"])]

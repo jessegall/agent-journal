@@ -51,3 +51,11 @@ def test_the_plans_module_writes_only_its_own_marks(new_story):
 
 def test_the_plan_mark_is_declared_as_version_4_showed_it(new_story):
     expect_declared_look(new_story(fixture=BuilderStarted), PLAN)
+
+
+def test_a_started_plan_is_docked_and_undocked_when_it_ends(new_story):
+    story = started_plan(new_story)
+    story.run("plan start 1", actor=story.agent)
+    story.expect_text("dock-item list", "plans.started", "docked")
+    story.run("plan close 1", actor=story.agent)
+    story.expect_text("dock-item show 1", "state: undocked")
