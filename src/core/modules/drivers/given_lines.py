@@ -8,18 +8,19 @@ from core.modules.drivers.agent_line import AgentLine
 
 TOOL_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 TOOL_HOOK_LINES = 3
+LINELESS_HOOK = HookEventName.TICK
 
 
 @dataclass(frozen=True)
 class GivenLines:
-    """The waiting lines a hook gives the agent: none while the newest layer delays lines, three on a tool hook, all of
-    them on any other; the rest stay waiting."""
+    """The waiting lines a hook gives the agent: none on a tick, which reaches no agent, or while the newest layer
+    delays lines, three on a tool hook, all of them on any other; the rest stay waiting."""
 
     rows: Sequence[AgentLine]
 
     @classmethod
     def chosen(cls, event: HookEvent, answers: RuleAnswers, waiting: Sequence[AgentLine]) -> "GivenLines":
-        if answers.delays_lines:
+        if answers.delays_lines or event.event == LINELESS_HOOK:
             return cls([])
         return cls(list(waiting)[:TOOL_HOOK_LINES] if event.event in TOOL_HOOKS else list(waiting))
 

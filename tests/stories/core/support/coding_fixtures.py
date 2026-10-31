@@ -64,3 +64,15 @@ class SubagentStarted(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success(f"agent show {story.subagent.id}", "role: subagent", f"parent_id: {story.agent.id}")
+
+
+class BuilderWithStartedTask(StoryFixture):
+    """The builder's agent started task 1, Fix the cart, and holds it."""
+
+    parent = BuilderWithOpenTask
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.TASK_START, actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")

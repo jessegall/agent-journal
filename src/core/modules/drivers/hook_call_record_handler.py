@@ -15,7 +15,7 @@ from core.modules.agents.agent import Agent
 from core.modules.drivers.agent_line import AgentLine
 from core.modules.drivers.agent_line_give import AgentLineGive
 from core.modules.drivers.agent_line_state import AgentLineState
-from core.modules.drivers.given_lines import GivenLines
+from core.modules.drivers.given_lines import LINELESS_HOOK, GivenLines
 from core.modules.drivers.hook_answer import HookAnswer
 from core.modules.drivers.hook_call import HookCall
 from core.modules.drivers.hook_call_record import HookCallRecord
@@ -26,11 +26,13 @@ from core.modules.drivers.suite_choice import SuiteChoice
 DRIVERS_MODULE = "journal.core.drivers"
 SUMMARY_CHARACTERS = 200
 
+TICK_SOURCE = "tick"
+
 
 class HookCallRecordHandler(Handler[HookCallRecord, HookReply]):
     """Answers one hook in one transaction: asks every rule first, keeps their history and the hook call,
     gives the agent its waiting lines, and runs each command the rules returned alone, so a refused one rolls
-    back by itself."""
+    back by itself; a tick's lines wait for the agent's next hook."""
 
     command = HookCallRecord
 
@@ -54,14 +56,21 @@ class HookCallRecordHandler(Handler[HookCallRecord, HookReply]):
         tool = command.event.tool
         call = self.repository.save(HookCall(agent_id=agent.id, environment_id=agent.environment_id, creator_id=context.actor.id, hook=command.event.event,
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
-                                             writes_files=tool is not None and tool.category in ("edit", "write"), suite=suite.name if suite is not None else "",
+                                             writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped)}})), context)
         for row in handed_lines.rows:
             self.bus.dispatch(AgentLineGive(row.id, call.id, context.timestamp), context)
         refused = [line for _, rule_command in moves.runnable if (line := self.refusal_line(rule_command, context))]
+        if command.event.event == LINELESS_HOOK:
+            return self.save_waiting_lines(agent.id, [*answers.lines, *refused], call.id, context)
         return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *refused], call.id)
+
+    def save_waiting_lines(self, agent_id: int, texts: list[str], call_id: int, context: Context) -> HookReply:
+        for text in texts:
+            self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=TICK_SOURCE), context)
+        return HookReply("", [], call_id)
 
     def refusal_line(self, rule_command: Command[object], context: Context) -> str:
         try:

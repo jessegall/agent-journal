@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
-from core.modules.tasks.task import Task
+from core.modules.tasks.task import Task, TaskState
 
 
 class TaskQuery(Query[Task]):
@@ -18,3 +18,9 @@ class TaskQuery(Query[Task]):
 
     def unclosed(self) -> Self:
         return self.matching(IsNull("closed_at"))
+
+    def held_by(self, agent_id: int) -> Self:
+        return self.filter(holder_id=agent_id)
+
+    def started(self) -> Self:
+        return self.filter(state=TaskState.STARTED)

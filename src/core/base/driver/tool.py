@@ -4,6 +4,9 @@ from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_fields import mapping, text, texts
 from core.base.driver.shell_line import ShellLine
 
+WRITING_CATEGORIES = ("edit", "write")
+WRITING_EFFECT = "writes_files"
+
 
 @dataclass(frozen=True)
 class Tool:
@@ -22,3 +25,8 @@ class Tool:
         shell, diff = fields.get("shell"), fields.get("diff")
         return cls(text(fields, "name"), text(fields, "kind"), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
                    DiffCount.parsed(diff) if diff is not None else None)
+
+    def is_writing_files(self) -> bool:
+        if self.category in WRITING_CATEGORIES:
+            return True
+        return self.shell is not None and (bool(self.shell.redirects) or any(WRITING_EFFECT in part.classification.effects for part in self.shell.parts))

@@ -1,10 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.driver.tool import Tool
-
-WRITING_CATEGORIES = ("edit", "write")
-WRITING_EFFECT = "writes_files"
 
 
 class ReadsOnlyLimit(DriverRule):
@@ -16,10 +12,6 @@ class ReadsOnlyLimit(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        return RuleAnswer.refused("a subagent reads and searches only: the agent that sent it makes the change") if tool is not None and self.writes(tool) else RuleAnswer.allowed()
-
-    @staticmethod
-    def writes(tool: Tool) -> bool:
-        if tool.category in WRITING_CATEGORIES:
-            return True
-        return tool.shell is not None and (bool(tool.shell.redirects) or any(WRITING_EFFECT in part.classification.effects for part in tool.shell.parts))
+        if tool is not None and tool.is_writing_files():
+            return RuleAnswer.refused("a subagent reads and searches only: the agent that sent it makes the change")
+        return RuleAnswer.allowed()

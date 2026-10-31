@@ -1,8 +1,11 @@
 from typing import Self
 
 from core.base.database.database import Database
+from core.base.timestamp import Timestamp
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
+from core.base.query.conditions.minimum import Minimum
+from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
 from core.modules.drivers.hook_answer import HookAnswer
 from core.modules.drivers.hook_call import HookCall
@@ -23,3 +26,13 @@ class HookCallQuery(Query[HookCall]):
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().page(1, STOPS_READ).rows
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)
+
+    def writes_since(self, agent_id: int, timestamp: Timestamp) -> int:
+        return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
+
+    def refused_stops_since(self, agent_id: int, timestamp: Timestamp) -> int:
+        return self.agent(agent_id).filter(hook=HookEventName.STOP, answer=HookAnswer.REFUSED).matching(Minimum("created_at", timestamp.text)).count()
+
+    def newest_agent_hook(self, agent_id: int) -> HookCall | None:
+        calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().page(1, 1).rows
+        return calls[0] if calls else None

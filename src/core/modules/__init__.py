@@ -9,4 +9,4 @@ from core.modules.tasks.module import TasksModule
 from core.modules.waits.module import WaitsModule
 from core.suites.coding.module import CodingModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, TasksModule, PlansModule, MessagesModule, SettingsModule, DriversModule, WaitsModule, CodingModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, WaitsModule, CodingModule)
