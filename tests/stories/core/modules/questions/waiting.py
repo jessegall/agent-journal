@@ -39,8 +39,8 @@ def test_a_late_answer_is_told_to_the_agent_once(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(ASK, actor=story.agent)
     story.run("question answer 1 --answer sqlite")
-    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question 1 was answered: sqlite")
-    story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 was answered")
+    story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "question 1 is answered: read it with journal question show 1 and act on it")
+    story.expect_absent_hook_line("s-1", HookSamples.prompt("and on"), "question 1 is answered")
 
 
 def test_a_closed_question_is_told_to_the_agent_once(new_story):

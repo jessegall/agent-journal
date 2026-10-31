@@ -18,3 +18,9 @@ class QuestionQuery(Query[Question]):
 
     def open_ones(self) -> Self:
         return self.filter(state=QuestionState.OPEN)
+
+    def asked_by(self, agent_id: int) -> Self:
+        return self.filter(agent_id=agent_id)
+
+    def answered_ones(self) -> Self:
+        return self.filter(state=QuestionState.ANSWERED)

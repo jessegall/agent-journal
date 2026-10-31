@@ -7,6 +7,7 @@ from core.modules.questions.commands.ask_question_subcommand import AskQuestionS
 from core.modules.questions.commands.question_list_subcommand import QuestionListSubcommand
 from core.modules.questions.commands.question_show_subcommand import QuestionShowSubcommand
 from core.modules.questions.queries.question_query import QuestionQuery
+from core.modules.questions.rules.question_answered_rule import QuestionAnsweredRule
 from core.modules.questions.guards.main_agent_guard import MainAgentGuard
 from core.modules.questions.guards.actor_options_guard import ActorOptionsGuard
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
@@ -25,3 +26,4 @@ class QuestionsModule(Module):
     subcommands = (AskQuestionSubcommand, QuestionListSubcommand, QuestionShowSubcommand)
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]
+    driver_rules = [QuestionAnsweredRule]
