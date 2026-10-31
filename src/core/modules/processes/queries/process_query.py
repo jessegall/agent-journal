@@ -35,3 +35,6 @@ class ProcessQuery(Query[Process]):
 
     def line(self, line: str) -> Self:
         return self.filter(line=line)
+
+    def moved(self) -> Self:
+        return self.matching(Greater("moved_at", ""))
