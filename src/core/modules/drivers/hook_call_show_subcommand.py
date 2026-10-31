@@ -27,5 +27,5 @@ class HookCallShowSubcommand(ReadSubcommand[HookCallView]):
         record = call.metadata.module_part(DRIVERS_MODULE)
         layers, rules, dropped = record.get("layers", []), record.get("rules", []), record.get("dropped", [])
         outcomes = [f"{rule['rule']}: {rule['outcome']}" for rule in rules if is_mapping(rule)] if is_list(rules) else []
-        return HookCallView(call.id, call.agent_id, call.hook, call.driver, call.answer, call.refusal, call.lines.replace("\n", " | "),
+        return HookCallView(call.id, call.agent_id, call.hook, call.suite, call.driver, call.answer, call.refusal, call.lines.replace("\n", " | "),
                             ", ".join(map(str, layers)) if is_list(layers) else "", ", ".join(outcomes), ", ".join(map(str, dropped)) if is_list(dropped) else "")

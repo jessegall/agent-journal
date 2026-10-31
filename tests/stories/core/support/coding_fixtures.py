@@ -15,7 +15,7 @@ class CodingEnvironment(StoryFixture):
         story.run("suite choose coding --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("suite current main", "suite: coding", "main: coding.builder")
+        story.expect_success("suite current main", "suite: coding", "drivers: main: coding.builder")
 
 
 class BuilderStarted(StoryFixture):
@@ -51,7 +51,7 @@ class OrchestratorWithOpenTask(StoryFixture):
         story.run("driver choose coding.orchestrator --environment main")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("suite current main", "main: coding.orchestrator")
+        story.expect_success("suite current main", "drivers: main: coding.orchestrator")
 
 
 class SubagentStarted(StoryFixture):

@@ -53,3 +53,16 @@ class LeadWaiting(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("wait show 1", "type: rows", "state: open")
+
+
+class LeadLinesWaiting(StoryFixture):
+    """Five lines, line 1 to line 5, wait for agent 1's next hook."""
+
+    parent = LeadStarted
+
+    def steps(self, story: Story) -> None:
+        for number in range(1, 6):
+            story.run(f'agent-line make {story.agent.id} "line {number}"')
+
+    def expect(self, story: Story) -> None:
+        story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "line 1", "line 5")
