@@ -166,3 +166,16 @@ class StartedPlanTask(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("task show 1", "state: started")
+
+
+class DependencyChain(StoryFixture):
+    """Task 1 waits on task 2 and task 2 on task 3, so task 3 waiting on task 1 would close a loop."""
+
+    parent = ThreeTasks
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.FIRST_TASK_DEPENDENCY)
+        story.run("task depend 2 --on 3")
+
+    def expect(self, story: Story) -> None:
+        story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop")
