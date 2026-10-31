@@ -36,14 +36,14 @@ class AgentHookRoute(HookRoute):
         return self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
 
     def agent(self, event: HookEvent) -> Agent | None:
-        main = self.open_agent(event.session) or self.agent_by_launch(event)
+        main = self.open_agent(event.session) or self.launch_name_agent(event)
         if main is None and event.event == HookEventName.SESSION_START and not event.subagent and not event.launch:
-            main = self.started(event, event.session, AgentRole.MAIN, None)
+            main = self.started(event, AgentRole.MAIN, None)
         if main is None or not event.subagent:
             return main
-        return self.open_agent(event.subagent) or self.started(event, event.subagent, AgentRole.SUBAGENT, main.id)
+        return self.open_agent(event.subagent) or self.started(event, AgentRole.SUBAGENT, main.id)
 
-    def agent_by_launch(self, event: HookEvent) -> Agent | None:
+    def launch_name_agent(self, event: HookEvent) -> Agent | None:
         if not event.launch:
             return None
         agent = self.open_agent(event.launch)
@@ -56,7 +56,8 @@ class AgentHookRoute(HookRoute):
         rows = self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).page(1, 1).rows
         return rows[0] if rows else None
 
-    def started(self, event: HookEvent, session: str, role: AgentRole, parent_id: int | None) -> Agent | None:
+    def started(self, event: HookEvent, role: AgentRole, parent_id: int | None) -> Agent | None:
+        session = event.subagent if role is AgentRole.SUBAGENT else event.session
         environments = self.queries.query(Environment).filter(name=event.environment).page(1, 1).rows
         if not environments:
             return None
