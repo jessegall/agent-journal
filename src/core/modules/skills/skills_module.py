@@ -16,6 +16,7 @@ from core.modules.skills.listeners.compaction_reset_listener import CompactionRe
 from core.modules.skills.listeners.skill_event_listener import SkillEventListener
 from core.modules.skills.listeners.start_skills_listener import StartSkillsListener
 from core.modules.skills.listeners.skill_read_listener import SkillReadListener
+from core.modules.skills.commands.agent_skill_unread_subcommand import AgentSkillUnreadSubcommand
 from core.modules.skills.commands.load_agent_skill import LoadAgentSkill
 from core.modules.skills.commands.load_skill_handler import LoadSkillHandler
 from core.modules.skills.commands.require_skill_handler import RequireSkillHandler
@@ -35,7 +36,7 @@ class SkillsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat"]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill])]
     migrations = [SkillsTablesMigration]
-    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand]
+    subcommands = [SkillWriteSubcommand, SkillListSubcommand, RequireSkillSubcommand, SkillShowSubcommand, AgentSkillUnreadSubcommand]
     handlers = [RequireSkillHandler, LoadSkillHandler, ResetSkillsHandler]
     listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener]
     marks = SKILL_MARKS

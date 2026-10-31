@@ -66,7 +66,9 @@ def test_a_compaction_clears_the_agents_loaded_rows(new_story):
     due_notes(story)
     read_of(story, NOTES_FILE)
     story.hook("s-1", HookSamples.sample("compact"))
-    story.expect_success("agent-skill unread " + str(story.agent.id), "journal-notes")
+    story.run_listeners()
+    story.expect_absent("agent-skill list --agent " + str(story.agent.id), "journal-notes")
+    story.expect_absent("agent-skill unread " + str(story.agent.id), "journal-notes")
 
 
 def test_a_skill_gone_from_the_catalogue_is_dropped_from_due(new_story):
