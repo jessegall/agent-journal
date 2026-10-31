@@ -21,12 +21,14 @@ FORMER_NAMES = {"parked": TaskState.BLOCKED, "paused": TaskState.BLOCKED, "done"
 STATES = {member.value: member for member in TaskState}
 CLOSED = (TaskState.COMPLETED, TaskState.CANCELLED)
 HIGH_PRIORITY, LOW_PRIORITY = 3, 1
+MISSING_HOLDER_REASON = "its holder was not found"
 
 
 class TasksMove(VersionFourMove):
     """Carries version 4's tasks with their numbers: the state by its name or its former name (paused and
     parked are blocked), the priority number as low, normal or high, a title cut to 80 characters with the
     whole of it put first in the brief, the pause or block reason as the reason, and the agent that held it.
+    A started task whose holder did not move is blocked, with the reason that its holder was not found.
     Their log lines go to task_logs and the links of type depends to task_dependencies, a link that would
     close a loop dropped and counted. A task in a state version 5 does not know is skipped and told."""
 
@@ -68,13 +70,16 @@ class TasksMove(VersionFourMove):
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, state: TaskState, creator_id: int, holder_id: int | None, context: MoveContext) -> int:
         title, brief = row["title"] or "", row["brief"] or ""
+        reason = row["block_reason"] or ""
+        if state is TaskState.STARTED and holder_id is None:
+            state, reason = TaskState.BLOCKED, MISSING_HOLDER_REASON
         if len(title) > TITLE_LIMIT_CHARACTERS:
             title, brief = title[:TITLE_LIMIT_CHARACTERS], f"{row['title']}\n\n{brief}".strip()
         created = row["created_at"] or context.timestamp
         closed = (row["completed_at"] or row["updated_at"] or created) if state in CLOSED else None
         task_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "holder_id": holder_id if state is TaskState.STARTED else None,
                                       "creator_id": creator_id, "title": title, "brief": brief, "priority": self.priority(row["priority"]),
-                                      "reason": row["block_reason"] or "", "outcome": row["outcome"] or "", "closed_at": closed,
+                                      "reason": reason, "outcome": row["outcome"] or "", "closed_at": closed,
                                       "created_at": created, "updated_at": row["updated_at"] or created})
         for step in StateWalk(TaskLifecycle).path(state) or []:
             rows.set_state(TABLE, task_id, step.value)

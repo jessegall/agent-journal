@@ -74,6 +74,7 @@ ROWS = (
     ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "Ship the cart", "", 3, "started", STAMP, "agent:s-1")),
     ("tasks", "(environment_id, title, brief, priority, state, block_reason, created_at, creator)", (1, "Wait for the price list", "", 2, "paused", "the list is late", STAMP, USER)),
     ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "A task in a lost state", "", 2, "limbo", STAMP, USER)),
+    ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "Ship the till", "", 2, "started", STAMP, USER)),
     ("task_logs", "(task_id, line, created_at, creator)", (1, "the totals are worked out", STAMP, "agent:s-1")),
     ("links", "(source, target, link_type, created_at, creator)", ("tasks:2", "tasks:1", "depends", STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("tasks:1", "tasks:2", "depends", STAMP, USER)),

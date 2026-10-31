@@ -52,7 +52,7 @@ def test_the_first_start_after_an_upgrade_shows_one_chat_mark_with_the_counts_an
     story.run_listeners()
     assert mark_count(story) >= 1
     text = marks_text(story)
-    assert "Upgraded from version 4: 3 tasks, 3 plans, 2 messages, 5 memories moved" in text, text
+    assert "Upgraded from version 4: 4 tasks, 3 plans, 2 messages, 5 memories moved" in text, text
     starting_count = mark_count(story)
     story.run_listeners()
     assert mark_count(story) == starting_count

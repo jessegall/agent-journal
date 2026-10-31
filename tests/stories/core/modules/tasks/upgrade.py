@@ -34,3 +34,8 @@ def test_the_agent_that_held_a_task_in_version_4_holds_it_in_version_5(new_story
     story = upgraded_story(new_story)
     agent = next(line.split()[0] for line in story.run("agent list").output_text.splitlines() if "s-1" in line)
     story.expect_success("task show 2", f"holder_id: {agent}")
+
+
+def test_a_started_task_with_no_holder_in_version_4_moves_as_blocked_with_the_reason_its_holder_was_not_found(new_story):
+    story = upgraded_story(new_story)
+    story.expect_success("task show 5", "title: Ship the till", "state: blocked", "reason: its holder was not found")
