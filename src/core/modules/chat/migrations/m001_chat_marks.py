@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class ChatMarksTableMigration(Migration):
+class ChatMarkTableMigration(Migration):
     """Creates the chat marks table, one key to a mark in an environment, and the index a chat reads by."""
 
     number = 1

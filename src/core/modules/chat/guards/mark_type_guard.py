@@ -8,7 +8,7 @@ from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.chat.models.chat_mark import ChatMark
 
 
-class DeclaredTypeGuard(Guard):
+class MarkTypeGuard(Guard):
     """A mark is of a type an installed module declares, names a variant of that type, and is written only by the
     actor of the module that declares the type; a move such as end is not a write."""
 
