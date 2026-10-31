@@ -48,7 +48,8 @@ class Output:
 
     def values(self, record: object) -> dict[str, object]:
         if isinstance(record, Model):
-            return {column: self.json_value(getattr(record, column)) for column in self.tables.table(type(record)).columns}
+            hidden = type(record).hidden_fields
+            return {column: self.json_value(getattr(record, column)) for column in self.tables.table(type(record)).columns if column not in hidden}
         if is_dataclass(record) and not isinstance(record, type):
             return {record_field.name: self.json_value(getattr(record, record_field.name)) for record_field in fields(record)}
         return {"value": self.json_value(record)}

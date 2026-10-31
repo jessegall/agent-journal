@@ -5,6 +5,7 @@ from server.viewer.event_stream import EventStream
 from server.viewer.line_route import LineRoute
 from server.viewer.module_files import ModuleFiles
 from server.viewer.share_route import ShareRoute
+from server.viewer.push_route import PushRoute
 from server.viewer.session_route import SessionRoute
 from server.viewer.skills_route import SkillsRoute
 from server.viewer.viewer_login import ViewerLogin
@@ -24,3 +25,4 @@ class ViewerRoutes:
         self.waiting_route = WaitingRoute(home)
         self.skills_route = SkillsRoute(home)
         self.share_route = ShareRoute(login.shares)
+        self.notices_route = PushRoute(login, login.phones)

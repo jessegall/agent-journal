@@ -1,4 +1,6 @@
 import fcntl
+import os
+import signal
 import http.client
 import socket
 import sqlite3
@@ -11,6 +13,7 @@ from core.base.journal_home import JournalHome
 
 INSTALL = Path(__file__).resolve().parents[2] / "install.sh"
 TIMEOUT_SECONDS = 120
+SERVER_EXIT_SECONDS = 5
 SYSTEM_PATH = "/usr/bin:/bin"
 
 
@@ -67,6 +70,7 @@ class LiveJournal:
         self.home = JournalHome(folder / "project" / ".journal")
         self.home.folder.mkdir(parents=True)
         self.processes: list[subprocess.Popen[str]] = []
+        self.left_running: int | None = None
         self.sync()
 
     def environment(self) -> dict[str, str]:
@@ -108,10 +112,30 @@ class LiveJournal:
                 return False
             return True
 
+    def server_pid(self) -> int | None:
+        pid_file = self.home.folder / "server.pid"
+        return int(pid_file.read_text()) if pid_file.is_file() and pid_file.read_text().strip().isdigit() else None
+
+    def is_running(self, pid: int) -> bool:
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        return not any(process.pid == pid and process.poll() is not None for process in self.processes)
+
     def close(self) -> None:
+        """Ends every process the test started, and a server the Go client started on its own, by its pid; it
+        returns the pid of a server that was left running, so the fixture can fail the test."""
         for process in self.processes:
             process.kill()
             process.wait(timeout=10)
+        pid = self.server_pid()
+        deadline = time.monotonic() + SERVER_EXIT_SECONDS
+        while pid is not None and self.is_running(pid) and time.monotonic() < deadline:
+            time.sleep(0.05)
+        self.left_running = pid if pid is not None and self.is_running(pid) else None
+        if self.left_running is not None:
+            os.kill(self.left_running, signal.SIGKILL)
 
 
 class UnixConnection(http.client.HTTPConnection):

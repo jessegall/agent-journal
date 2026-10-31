@@ -21,6 +21,7 @@ import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
 import PhoneBar from "./PhoneBar.vue";
+import PhoneNotify from "./PhoneNotify.vue";
 
 const props = defineProps({
     store: {type: Object, required: true},
@@ -114,6 +115,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </div>
                 </section>
             </template>
+            <PhoneNotify />
             <PhoneBar :windows="phoneWindows" :current="picked" :counts="counts" @pick="(name) => (chosen = name)" />
         </template>
         <template v-else>

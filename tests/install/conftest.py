@@ -10,6 +10,7 @@ def journal(tmp_path):
     live = LiveJournal(tmp_path)
     yield live
     live.close()
+    assert live.left_running is None, f"the test left the server {live.left_running} running"
 
 
 @pytest.fixture(scope="module")

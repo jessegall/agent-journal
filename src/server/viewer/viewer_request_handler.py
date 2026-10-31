@@ -38,6 +38,7 @@ WINDOWS_ROUTE = "/api/windows"
 MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
+NOTICES_ROUTE = "/api/push"
 WAITING_ROUTE = "/api/waiting"
 PAIRING_PAGE = "/pair"
 PAIRING_ROUTE = "/viewer/pair"
@@ -107,6 +108,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == WAITING_ROUTE:
             self.answer(200, {"waiting": [asdict(waiting_item) for waiting_item in viewer.routes.waiting_route.waiting()]})
             return
+        if route.path == NOTICES_ROUTE:
+            self.answer_notices(viewer, token, None)
+            return
         if route.path == SESSION_ROUTE:
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
@@ -140,6 +144,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
+        if urlsplit(self.path).path == NOTICES_ROUTE:
+            self.answer_notices(viewer, token, body)
+            return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
             return
@@ -155,6 +162,21 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(403, {"error": refusal.reason})
             return
         self.answer(200, asdict(answered))
+
+    def answer_notices(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
+        notices = viewer.routes.notices_route
+        if notices.is_share(token):
+            self.answer(403, {"error": "a share link has no phone to send notices to"})
+            return
+        try:
+            if body is None:
+                self.answer(200, {"public_key": notices.public_key()})
+                return
+            notices.subscribe(token, body)
+        except (PhoneModuleError, ViewerRequestError) as error:
+            self.answer(404 if isinstance(error, PhoneModuleError) else 400, {"error": str(error)})
+            return
+        self.answer(200, {"subscribed": True})
 
     def answer_events(self, event_stream: EventStream, query: dict[str, list[str]], shared: SharedRow | None, shares: ShareSessions) -> None:
         request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))

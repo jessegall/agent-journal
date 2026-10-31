@@ -1,4 +1,5 @@
 import io
+import json
 import secrets
 
 from core.base.actor import Actor
@@ -37,6 +38,12 @@ class PhoneSessions:
             return PairedPhone.parsed(self.journal_output(["phone", "session", self.digest(token)])).person_id
         except PhoneModuleError:
             return None
+
+    def push_key(self) -> str:
+        return str(json.loads(self.journal_output(["phone", "push-key"]))["line"])
+
+    def subscribed(self, token: str, subscription: str) -> None:
+        self.journal_output(["phone", "subscribe", self.digest(token), subscription])
 
     def journal_output(self, argv: list[str]) -> str:
         stream = io.StringIO()
