@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+import json
 import sqlite3
 from collections.abc import Mapping
 from dataclasses import MISSING, fields
@@ -77,6 +78,8 @@ def indefinite_article(cli_name: str) -> str:
 def plain_type(hint: object) -> type:
     if get_origin(hint) in (Union, UnionType):
         hint = next(arg for arg in get_args(hint) if arg is not NoneType)
+    if get_origin(hint) is tuple:
+        return tuple
     if isinstance(hint, type):
         return hint
     raise UnsupportedColumnTypeError(f"a field typed {hint} cannot be stored")
@@ -91,6 +94,8 @@ def stored(value: object) -> object:
         return value.value
     if isinstance(value, bool):
         return int(value)
+    if isinstance(value, (tuple, list)):
+        return json.dumps(value)
     return value
 
 
@@ -105,4 +110,6 @@ def loaded(value_type: type, value: object) -> Any:
         return value_type(value)
     if value_type is bool:
         return bool(value)
+    if value_type is tuple and isinstance(value, str):
+        return tuple(json.loads(value))
     return value

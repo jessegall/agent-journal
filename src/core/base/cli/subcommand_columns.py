@@ -47,6 +47,8 @@ def copied_default(model_field: Field[Any]) -> Field[Any]:
 def parser_argument(parser: ArgumentParser, flag: str, value_type: type[object]) -> None:
     if value_type is bool:
         parser.add_argument(flag, action="store_true", default=None)
+    elif value_type is tuple:
+        parser.add_argument(flag, nargs="+")
     elif issubclass(value_type, StrEnum):
         parser.add_argument(flag, type=value_type, choices=tuple(value_type.__members__.values()))
     elif value_type is Timestamp:

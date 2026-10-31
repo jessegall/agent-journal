@@ -9,9 +9,10 @@ from core.modules.environments.environments_module import EnvironmentsModule
 from core.modules.memories.memories_module import MemoriesModule
 from core.modules.messages.messages_module import MessagesModule
 from core.modules.plans.plans_module import PlansModule
+from core.modules.questions.questions_module import QuestionsModule
 from core.modules.settings.settings_module import SettingsModule
 from core.modules.tasks.tasks_module import TasksModule
 from core.modules.waits.waits_module import WaitsModule
 from core.modules.viewer.viewer_module import ViewerModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, ChatModule, DockingModule, MemoriesModule, QuestionsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
