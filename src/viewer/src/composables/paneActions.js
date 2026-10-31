@@ -1,4 +1,4 @@
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import {activated, aimAt, leaves, ordered, paneClosed, placed, tabClosed} from "../domain/panes.js";
 import {usePaneDrag} from "./paneDrag.js";
 
@@ -74,8 +74,32 @@ export function usePaneActions({store, area, catalogue}) {
         };
     });
 
+    const full = ref(null);
+    const menu = ref(null);
+
+    function keyed(event) {
+        if (event.key === "Escape" && full.value !== null) full.value = null;
+        const strip = event.target.closest?.("[data-tabs-of]");
+        if (event.key === "f" && strip) full.value = full.value === null ? Number(strip.dataset.tabsOf) : null;
+    }
+
+    const toggleMenu = (id) => (menu.value = menu.value === id ? null : id);
+    const split = (id, zone) => {
+        const pane = layout().panes[id];
+        store.apply(placed(layout(), pane.active, id, zone, id));
+        menu.value = null;
+    };
+    const moveTo = (id, target) => {
+        store.apply(placed(layout(), layout().panes[id].active, target, "center", id));
+        menu.value = null;
+    };
+    const others = (id) =>
+        leaves(layout().tree)
+            .filter((other) => other !== id)
+            .map((other) => ({id: other, title: tabsOf(other, layout().panes[other]).find((tab) => tab.on)?.title || "Empty pane"}));
+
     const closedWindows = computed(() => !layout() ? [] : catalogue.windows.value.filter((window) => !store.open.value.has(window.name)));
     const reopen = (name) => store.apply(placed(layout(), name, leaves(layout().tree)[0], "center"));
 
-    return {drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, reopen};
+    return {full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, reopen};
 }

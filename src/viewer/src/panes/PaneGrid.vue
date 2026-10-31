@@ -9,11 +9,14 @@ const props = defineProps({
     colors: {type: Function, default: null},
     stacked: Boolean,
     rank: {type: Function, default: null},
+    full: {type: Number, default: null},
 });
 const emit = defineEmits(["resize"]);
 const area = ref(null);
 const live = ref(false);
 const SNAP = 14;
+const NUDGE = 0.05;
+const KEYS = {row: {ArrowLeft: -1, ArrowRight: 1}, col: {ArrowUp: -1, ArrowDown: 1}};
 const LEAST = 140;
 const EDGE = 0.0005;
 
@@ -37,6 +40,13 @@ function ratio(s) {
     };
 }
 
+function nudge(event, s) {
+    const way = KEYS[s.dir][event.key];
+    if (!way) return;
+    event.preventDefault();
+    emit("resize", s.path, Math.min(0.9, Math.max(0.1, s.r + way * NUDGE)));
+}
+
 const reading = (p) => Math.round(p.rect.y * 1000) * 1000 + Math.round(p.rect.x * 1000);
 const stackOrder = (p) => ({order: (props.rank ? props.rank(p) : 0) * 1e6 + reading(p)});
 const placed = (p) => (props.stacked ? stackOrder(p) : percentBox(p.rect));
@@ -48,7 +58,7 @@ defineExpose({element: area});
     <div ref="area" :class="['pane-grid', {live, stacked}]">
         <template v-for="p in panes" :key="p.id">
             <section
-                :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE}]"
+                :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE, full: p.id === full}]"
                 :style="{...placed(p), ...(props.colors ? props.colors(p.pane) : {})}"
             >
                 <slot name="pane" v-bind="p" />
@@ -62,6 +72,7 @@ defineExpose({element: area});
                 :style="border(s)"
                 @start="live = true"
                 @stop="live = false"
+                @keydown="nudge($event, s)"
                 @resize="emit('resize', s.path, $event)"
                 @reset="emit('resize', s.path, 0.5)"
             />
@@ -71,6 +82,16 @@ defineExpose({element: area});
 </template>
 
 <style scoped>
+.pane-grid .pane.full {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .pane-grid {
     position: relative;
     flex: 1;

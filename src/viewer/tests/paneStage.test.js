@@ -197,3 +197,60 @@ test("a gone window's placeholder has Remove tab, which closes that tab", async 
     await settled();
     expect(tabsIn(store, leaves(store.layout.value.tree)[0])).toEqual(["a.chat"]);
 });
+
+const key = (target, name) => target.dispatchEvent(new KeyboardEvent("keydown", {key: name, bubbles: true}));
+
+test("Enter and Space on a focused tab pick it", async () => {
+    const {store, element} = await stage();
+    const own = holder(store, "a.tasks");
+    key(tab(element, "a.notes"), "Enter");
+    await settled();
+    expect(store.layout.value.panes[own].active).toBe("a.notes");
+    key(tab(element, "a.tasks"), " ");
+    await settled();
+    expect(store.layout.value.panes[own].active).toBe("a.tasks");
+});
+
+test("the arrow keys on a resize separator move the split, and the keys that do not fit its direction do nothing", async () => {
+    const {store, element} = await stage();
+    const handle = element.querySelector(".pane-split");
+    key(handle, "ArrowRight");
+    await settled();
+    expect(store.layout.value.tree.r).toBeCloseTo(0.55, 2);
+    key(handle, "ArrowLeft");
+    key(handle, "ArrowLeft");
+    await settled();
+    expect(store.layout.value.tree.r).toBeCloseTo(0.45, 2);
+    key(handle, "ArrowDown");
+    await settled();
+    expect(store.layout.value.tree.r).toBeCloseTo(0.45, 2);
+});
+
+test("the pane menu splits a pane with several tabs and moves its tab to another pane", async () => {
+    const {store, element} = await stage();
+    const own = holder(store, "a.tasks");
+    element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
+    await settled();
+    element.querySelector(`[data-menu="split-right"]`).click();
+    await settled();
+    expect(leaves(store.layout.value.tree)).toHaveLength(3);
+    expect(holder(store, "a.tasks")).not.toBe(holder(store, "a.notes"));
+    const from = holder(store, "a.notes");
+    element.querySelector(`[data-tabs-of="${from}"] .pane-menu-button`).click();
+    await settled();
+    element.querySelector(`[data-menu="move-${holder(store, "a.chat")}"]`).click();
+    await settled();
+    expect(tabsIn(store, holder(store, "a.chat"))).toEqual(["a.chat", "a.notes"]);
+});
+
+test("f makes the focused pane full screen and Escape returns it", async () => {
+    const {store, element} = await stage();
+    const own = holder(store, "a.tasks");
+    key(tab(element, "a.tasks"), "f");
+    await settled();
+    expect(element.querySelector("section.pane.full")).not.toBeNull();
+    expect(element.querySelector("section.pane.full [data-tabs-of]").dataset.tabsOf).toBe(String(own));
+    key(tab(element, "a.tasks"), "Escape");
+    await settled();
+    expect(element.querySelector("section.pane.full")).toBeNull();
+});

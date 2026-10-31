@@ -58,6 +58,7 @@ function start(event) {
     <div
         :class="['resize-handle', axis, {snapped}]"
         role="separator"
+        tabindex="0"
         :aria-orientation="axis === 'y' ? 'horizontal' : 'vertical'"
         title="Drag to resize; double-click to reset"
         @pointerdown="start"

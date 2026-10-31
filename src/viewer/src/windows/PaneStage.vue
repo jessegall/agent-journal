@@ -19,7 +19,7 @@ const props = defineProps({
 });
 
 const grid = ref(null);
-const {aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, reopen} = usePaneActions({
+const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, reopen} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
@@ -30,9 +30,9 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
 </script>
 
 <template>
-    <div class="pane-stage">
+    <div class="pane-stage" @keydown="keyed">
         <template v-if="store.layout.value">
-            <PaneGrid ref="grid" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
+            <PaneGrid ref="grid" :full="full" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
                     <PaneTabs
                         :tabs="tabsOf(id, pane)"
@@ -41,7 +41,20 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
                         @grab="(event, key) => grabTab(event, id, key)"
                         @pick="(key) => pick(id, key)"
                         @close="(key) => closeTab(id, key)"
-                    />
+                    >
+                        <Btn class="pane-menu-button" aria-label="Pane menu" @click="toggleMenu(id)">&hellip;</Btn>
+                    </PaneTabs>
+                    <template v-if="menu === id">
+                        <div class="pane-menu" role="menu">
+                            <template v-if="pane.tabs.length > 1">
+                                <Btn data-menu="split-right" @click="split(id, 'right')">Split right</Btn>
+                                <Btn data-menu="split-below" @click="split(id, 'bottom')">Split below</Btn>
+                            </template>
+                            <template v-for="other in others(id)" :key="other.id">
+                                <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
+                            </template>
+                        </div>
+                    </template>
                     <div class="pane-body">
                         <template v-if="pane.active">
                             <WindowPane
@@ -100,6 +113,20 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
 
 .pane-body > :deep(.window) {
     padding: 16px;
+}
+
+.pane-menu {
+    position: absolute;
+    top: 34px;
+    right: 5px;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--bg);
 }
 
 .pane-empty {
