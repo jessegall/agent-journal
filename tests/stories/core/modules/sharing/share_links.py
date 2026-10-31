@@ -24,7 +24,7 @@ class PlanAndPersonFixture(StoryFixture):
 def test_a_person_makes_a_link_for_a_plan_and_sees_its_token_once(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     made = story.run("share make plans:1 --json", actor=story.user).output_text
-    assert '"token": "' in made and '"link": "/share/' in made, made
+    assert '"token": "' in made and '"link": "/viewer/share/' in made, made
     story.expect_success("share show 1", "state: active", "row_model: plan", "row_id: 1", "comments: False", actor=story.user)
     token = made.split('"token": "')[1].split('"')[0]
     assert token not in story.run("share list --json", actor=story.user).output_text

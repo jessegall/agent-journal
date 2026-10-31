@@ -16,7 +16,7 @@ class ShareSessions:
 
     def link(self, token: str) -> ShareLinkSession | None:
         try:
-            return ShareLinkSession.parsed(self.journal_output(["share", "session", TextDigest().digest(token)]))
+            return ShareLinkSession.parsed(self.journal_output(["share", "session", TextDigest().hex_digest(token)]))
         except PhoneModuleError:
             return None
 
