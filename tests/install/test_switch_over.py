@@ -141,3 +141,41 @@ def test_restore_in_a_project_with_no_backup_is_refused_plainly(tmp_path):
     scratch = Scratch(tmp_path)
     run = restore(scratch, "--yes")
     assert run.returncode == 1 and "nothing to restore" in run.stdout
+
+
+def test_an_upgrade_with_the_hook_binary_installed_writes_the_binary_and_without_it_writes_hook_sh(tmp_path):
+    (tmp_path / "with").mkdir()
+    (tmp_path / "without").mkdir()
+    with_binary = version_four_project_with_hooks(tmp_path / "with")
+    binary = with_binary.journal / "bin" / "journal-hook"
+    binary.parent.mkdir(parents=True)
+    binary.write_text("#!/bin/sh\nexit 0\n")
+    binary.chmod(0o755)
+    assert upgrade(with_binary, "--yes").returncode == 0
+    assert all(command.startswith(f'"{binary}"') for command in hook_commands(with_binary)), hook_commands(with_binary)
+    without = version_four_project_with_hooks(tmp_path / "without")
+    assert upgrade(without, "--yes").returncode == 0
+    assert all("hooks/hook.sh" in command and "journal-hook" not in command for command in hook_commands(without)), hook_commands(without)
+
+
+def test_a_binary_that_does_not_start_is_not_written_into_the_hooks(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    binary = scratch.journal / "bin" / "journal-hook"
+    binary.parent.mkdir(parents=True)
+    binary.write_text("#!/bin/sh\nexit 1\n")
+    binary.chmod(0o755)
+    assert upgrade(scratch, "--yes").returncode == 0
+    assert all("hooks/hook.sh" in command for command in hook_commands(scratch))
+
+
+def test_a_restore_keeps_a_setting_added_after_the_switch_and_takes_version_5s_hooks_out(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    original = hook_commands(scratch)
+    assert upgrade(scratch, "--yes").returncode == 0
+    settings = json.loads((scratch.project / SETTINGS).read_text())
+    settings["permissions"]["allow"].append("Bash(git status:*)")
+    settings["added"] = "after the switch"
+    (scratch.project / SETTINGS).write_text(json.dumps(settings))
+    assert restore(scratch, "--yes").returncode == 0
+    restored = json.loads((scratch.project / SETTINGS).read_text())
+    assert hook_commands(scratch) == original and restored["added"] == "after the switch" and "Bash(git status:*)" in restored["permissions"]["allow"]
