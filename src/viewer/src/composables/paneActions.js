@@ -13,7 +13,7 @@ const HINTS = {
 
 // what a pane stage does with its layout store: tab strips and edges aim a held tab, a drop lands it, and tabs close,
 // pick and reopen; `area` is the ref to the pane grid
-export function usePaneActions({store, area, catalogue}) {
+export function usePaneActions({store, area, catalogue, counts}) {
     const layout = () => store.layout.value;
     const offer = ref(null);
 
@@ -61,6 +61,8 @@ export function usePaneActions({store, area, catalogue}) {
                 title: entry?.title || pane.titles?.[name] || name,
                 icon: entry?.icon || "window",
                 gone: !entry,
+                count: counts.value[name]?.count,
+                hot: Boolean(counts.value[name]?.warm),
                 on: name === pane.active,
                 lifting: drag.value?.view === name && drag.value.from === id,
             };

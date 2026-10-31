@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
+import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
@@ -27,10 +28,17 @@ const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 onMounted(() => window.addEventListener("resize", measure));
 onUnmounted(() => window.removeEventListener("resize", measure));
+const {counts} = useTabCounts({
+    catalogue: props.catalogue,
+    subscriptions: props.subscriptions,
+    environment: props.environment,
+    names: () => (props.store.layout.value ? [...props.store.open.value] : []),
+});
 const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
+    counts,
 });
 
 const modules = () => [...new Set(closedWindows.value.map((window) => window.module))];

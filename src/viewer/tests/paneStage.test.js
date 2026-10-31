@@ -42,21 +42,21 @@ async function settled() {
     for (let round = 0; round < 5; round++) await nextTick();
 }
 
-async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null} = {}) {
+async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null, extra = {}, subscriptions = new WindowSubscriptions()} = {}) {
     const store = paneLayout({
         saved: async () => null,
         defaults: async () => shape,
         save: async () => ({ok: true, version: 1}),
         tab: {read: () => null, write: () => {}},
-        entry: (name) => (offers.includes(name) ? fake(name) : null),
+        entry: (name) => (offers.includes(name) ? {...fake(name), ...extra} : null),
     });
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
     if (titles) store.replace({...store.layout.value, panes: Object.fromEntries(Object.entries(store.layout.value.panes).map(([id, pane]) => [id, {...pane, titles}]))});
-    const windows = shallowRef(offers.map(fake));
+    const windows = shallowRef(offers.map((name) => ({...fake(name), ...extra})));
     const catalogue = {window: (name) => windows.value.find((window) => window.name === name) || null, windows, person: 1};
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(PaneStage, {store, catalogue, subscriptions: new WindowSubscriptions(), environment: "main"})).mount(element);
+    createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main"})).mount(element);
     mounted.push(element);
     await settled();
     return {store, element};
@@ -299,4 +299,22 @@ test("the offer answered Side by side splits the pane, and answered Add as tab j
     buttons(tabbed).find((button) => button.textContent.includes("Add as tab")).click();
     await settled();
     expect(tabsIn(tabbed.store, holder(tabbed.store, "a.chat"))).toEqual(["a.chat", "a.spare"]);
+});
+
+test("a tab shows its window's count line, runs again on one of the window's events, and shows the warm count marked", async () => {
+    const answers = [{count: 3, warm: false}, {count: 4, warm: true}];
+    vi.stubGlobal("fetch", async (url, init) => {
+        const body = JSON.parse(init?.body || "{}");
+        const counting = body.line?.join(" ") === "task count";
+        return {json: async () => (counting ? {code: 0, value: answers.shift(), error: ""} : {code: 1, value: null, error: "refused"})};
+    });
+    const subscriptions = new WindowSubscriptions();
+    const {element} = await stage({tabs: ["a.tasks"], active: "a.tasks"}, {offers: ["a.tasks"], extra: {count: "task count", events: ["task.*"]}, subscriptions});
+    const number = () => tab(element, "a.tasks").querySelector(".pane-tab-n");
+    expect(number().textContent).toBe("3");
+    expect(number().classList.contains("hot")).toBe(false);
+    subscriptions.dispatch({event: "task.create"});
+    await settled();
+    expect(number().textContent).toBe("4");
+    expect(number().classList.contains("hot")).toBe(true);
 });
