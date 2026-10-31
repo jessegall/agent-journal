@@ -26,3 +26,8 @@ def test_each_proposed_view_read_by_key_stays_a_plain_view():
     for read in reads:
         print(f"{read.name}: {read.median_ms:.3f} ms; {read.plan}")
     assert not [read.name for read in reads if read.scans_tasks or read.median_ms > PLAIN_VIEW_LIMIT_MS], reads
+
+
+def test_plan_progress_by_plan_searches_plans_by_key_and_scans_no_tasks():
+    read = ViewTiming().timed("plan_progress view", "SELECT * FROM plan_progress WHERE plan_id = ?", [1])
+    assert "SEARCH plans USING INTEGER PRIMARY KEY" in read.plan and not read.scans_tasks, read.plan

@@ -142,6 +142,39 @@ class PlanTasksPlaced(StoryFixture):
         story.expect_success("phase-task list --phase 1 --oldest", "1  1  1  1", "2  1  2  2")
 
 
+class PlanAcrossPhases(StoryFixture):
+    """A started plan 1 with phases Build (1) and Ship (2): task 1, Release, sits in Ship; tasks 2, Cart, and 3, Tax,
+    sit in Build in that order, so the order of phases and places differs from the order the tasks were made."""
+
+    parent = AgentStarted
+
+    def steps(self, story: Story) -> None:
+        story.run(lines.NEW_PLAN)
+        story.run('phase make --plan 1 "Build"')
+        story.run('phase make --plan 1 "Ship"')
+        for title, phase in (("Release", 2), ("Cart", 1), ("Tax", 1)):
+            task_id = story.new_row_id(f'task make "{title}" --environment main')
+            story.run(f"phase place {task_id} --phase {phase}")
+        for move in ("ready", "approve", "start"):
+            story.run(f"plan {move} 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("plan show 1", "state: started")
+
+
+class PlanFirstTaskClosed(StoryFixture):
+    """The agent finished task 2, Cart, the first task of plan 1 by phase and place."""
+
+    parent = PlanAcrossPhases
+
+    def steps(self, story: Story) -> None:
+        story.run("task start 2", actor=story.agent)
+        story.run('task close 2 --outcome "done"', actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("task show 2", "state: completed")
+
+
 class MessageAnswered(StoryFixture):
     """Ada's message 1, answered by the agent's reply 2."""
 
