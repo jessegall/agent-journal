@@ -6,7 +6,9 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.deliver_plugin_event import DeliverPluginEvent
+from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.commands.switch_off_changed_plugin import SwitchOffChangedPlugin
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.queries.plugin_query import PluginQuery
@@ -14,7 +16,9 @@ from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_event import PluginEvent
 from core.modules.plugins.support.plugin_event_names import PluginEventNames
+from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_late_error import PluginLateError
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
 from core.modules.plugins.support.plugin_queue import PluginQueue
@@ -54,14 +58,22 @@ class PluginRule(DriverRule):
                 if event.name not in manifest.window_names():
                     commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, event.name, json.dumps(dict(event.data))))
                     continue
-                refusal = self.refusal_text(hook, plugin, manifest, event, lines)
+                refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands)
                 if refusal:
                     return RuleAnswer(refusal=refusal, lines=tuple(lines), commands=tuple(commands))
         return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
 
-    def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str]) -> str:
+    def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]]) -> str:
         call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, self.settings.values(plugin, manifest))
-        answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING, hook.environment_id)))
+        try:
+            answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING, hook.environment_id)))
+        except PluginLateError:
+            return ""
+        except PluginFaultError as fault:
+            commands.append(RecordPluginFault(plugin.id, f"{fault} at {event.name}"))
+            return ""
+        if plugin.fault_count:
+            commands.append(ClearPluginFaults(plugin.id))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
         if answer.is_refusal() and event.name in REFUSABLE_EVENTS and not journal_line:

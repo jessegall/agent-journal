@@ -6,7 +6,9 @@ import subprocess
 from core.base.journal_home import JournalHome
 from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_call import PluginCall
+from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_late_error import PluginLateError
 
 PASSED_VARIABLES = ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER")
 PROGRAM_PATH = "/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
@@ -16,7 +18,7 @@ SETTINGS_FILE = ".journal-settings.json"
 class PluginProgram:
     """Runs a plugin's program for one event, as version 4 did: in its folder and a process group of its own, the
     line on its input, a clean environment naming its folders and settings, and a time limit past which it is
-    stopped and its answer dropped, so the event goes through."""
+    stopped; a late run, an error code or an answer that is not JSON is raised as the plugin's fault."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders) -> None:
         self.home, self.folders = home, folders
@@ -34,8 +36,13 @@ class PluginProgram:
         except subprocess.TimeoutExpired:
             os.killpg(process.pid, signal.SIGKILL)
             process.communicate()
-            return PluginAnswer.parsed("")
-        return PluginAnswer.parsed(output) if process.returncode == 0 else PluginAnswer.parsed("")
+            raise PluginLateError(f"it ran past {limit_ms} ms") from None
+        if process.returncode != 0:
+            raise PluginFaultError(f"it ended with code {process.returncode}")
+        try:
+            return PluginAnswer.parsed(output)
+        except json.JSONDecodeError:
+            raise PluginFaultError("its answer is not JSON") from None
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}

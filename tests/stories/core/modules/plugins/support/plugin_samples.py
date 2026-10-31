@@ -6,6 +6,7 @@ line=$(cat)
 case "$line" in
   *'"command_starting"'*'rm -rf'*) echo '{"v": 1, "answer": "refuse", "reason": "no deletes here"}' ;;
   *'"file_edited"'*'a.py'*) echo '{"v": 1, "answer": "tell", "tell": "a.py was judged"}' ;;
+  *'"command_starting"'*'cat broken'*) exit 3 ;;
 esac
 """
 SETTINGS = [{"key": "level", "title": "Level", "kind": "number", "default": 1, "help": "How strict it is"}]

@@ -26,5 +26,6 @@ class PluginListSubcommand(ReadSubcommand[Sequence[Plugin]]):
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Plugin)] if is_tuple(value) else []
-        text = "\n".join(f"{row.name:<20} {'on' if row.enabled else 'off'}  {row.release}" for row in listed) or "no plugin is installed"
+        text = "\n".join(f"{row.name:<20} {'on' if row.enabled else 'off'}  {row.release}{f'  last fault: {row.last_fault}' if row.fault_count else ''}"
+                         for row in listed) or "no plugin is installed"
         output.write(text, {"rows": [output.values(row) for row in listed]})

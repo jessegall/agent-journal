@@ -2,14 +2,20 @@ import json
 
 from core.base.change.logged_event import LoggedEvent
 from core.base.clock import Clock
+from core.base.command.bus import Bus
+from core.base.command.command import Command
 from core.base.listener.commit_listener import CommitListener
+from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.type_guards import is_mapping
 from core.modules.environments.models.environment import Environment
+from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
+from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_call import PluginCall
 from core.modules.plugins.support.plugin_event import PluginEvent
+from core.modules.plugins.support.plugin_fault_error import PluginFaultError
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_program import PluginProgram
@@ -17,6 +23,7 @@ from core.modules.plugins.support.plugin_queue import PluginQueue
 from core.modules.plugins.support.plugin_settings import PluginSettings
 
 DELIVERY_LIMIT_MS = 60_000
+MODULE_NAME = "journal.core.plugins"
 
 
 class PluginDeliveryListener(CommitListener):
@@ -26,8 +33,8 @@ class PluginDeliveryListener(CommitListener):
     name = "plugins.delivery"
     event = "plugin_delivery.create"
 
-    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock) -> None:
-        self.queries, self.folders, self.program, self.settings, self.clock = queries, folders, program, settings, clock
+    def __init__(self, queries: Queries, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, clock: Clock, bus: Bus, actors: ModuleActors) -> None:
+        self.queries, self.folders, self.program, self.settings, self.clock, self.bus, self.actors = queries, folders, program, settings, clock, bus, actors
 
     def handle(self, event: LoggedEvent) -> None:
         delivery = self.queries.query(PluginDelivery).find(event.row_id)
@@ -38,6 +45,16 @@ class PluginDeliveryListener(CommitListener):
         environment = self.queries.query(Environment).find(delivery.environment_id).name
         data: object = json.loads(delivery.data)
         plugin_event = PluginEvent(delivery.event, {str(key): value for key, value in data.items()} if is_mapping(data) else {})
-        answer = self.program.run(PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest)), DELIVERY_LIMIT_MS)
+        call = PluginCall(manifest, plugin_event, environment, self.clock.timestamp(), self.settings.values(plugin, manifest))
+        try:
+            answer = self.program.run(call, DELIVERY_LIMIT_MS)
+        except PluginFaultError as fault:
+            self.record(event, delivery, RecordPluginFault(delivery.plugin_id, f"{fault} at {delivery.event}"))
+            return
+        if plugin.fault_count:
+            self.record(event, delivery, ClearPluginFaults(delivery.plugin_id))
         if answer.line:
             PluginQueue(self.folders.data(plugin.name)).add(environment, answer.line, f"delivery-{delivery.id}")
+
+    def record(self, event: LoggedEvent, delivery: PluginDelivery, command: Command[Plugin]) -> None:
+        self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=delivery.environment_id)
