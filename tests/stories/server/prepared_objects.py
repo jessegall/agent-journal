@@ -27,8 +27,10 @@ def decisions(new_story, recorded: tuple[dict[str, object], dict[str, object]]) 
         return story.hook_decision(body, {**RAW_HEADERS, "X-Journal-Hook-Id": "raw-1"}), story.hook_decision(prepared, {})
 
 
-def test_a_recorded_shell_hook_is_decided_the_same_raw_and_prepared(new_story):
-    expect_equal_answers(*decisions(new_story, recording("PreToolUse", "Bash")))
+def test_a_recorded_shell_hook_arriving_raw_is_left_unsplit_while_its_prepared_body_meets_the_runner(new_story):
+    raw, prepared = decisions(new_story, recording("PreToolUse", "Bash"))
+    expect_equal_answers(raw, ("", []))
+    expect_equal_answers((prepared[0], [line.split(" in ")[0] for line in prepared[1]]), ("", ["journal-run is not installed"]))
 
 
 def test_a_recorded_edit_hook_is_decided_the_same_raw_and_prepared(new_story):
