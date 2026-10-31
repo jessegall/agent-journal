@@ -103,3 +103,48 @@ test("importing a layout file saves it, keeping windows the suite does not offer
     expect(save).toEqual(expect.arrayContaining(["--name", "From a friend"]));
     expect(JSON.parse(save[save.indexOf("--shape") + 1])).toEqual(shape);
 });
+
+const MINE = [{id: 7, name: "Mine", shape: JSON.stringify({tabs: ["messages.chat"], active: "messages.chat"})}];
+const commands = (lines) => lines.filter((line) => line[0] === "person-preset" && line[1] !== "list");
+
+test("importing something that is not a layout is refused with a plain notice and saves nothing", async () => {
+    const {list, lines} = await presets();
+    await list.importLayout({name: "Broken", shape: {dir: "diagonal"}});
+    expect(list.notice.value).toBe("That isn't a saved layout. Share one with a layout's share button.");
+    await list.importLayout({shape: {tabs: ["messages.chat"], active: "messages.chat"}});
+    expect(list.notice.value).toContain("isn't a saved layout");
+    expect(commands(lines)).toEqual([]);
+});
+
+test("a name a saved layout already has is refused for save, import and rename", async () => {
+    const {list, lines} = await presets({person: MINE});
+    await list.save("mine");
+    expect(list.notice.value).toBe("A layout named mine already exists.");
+    await list.importLayout({name: "Mine", shape: {tabs: ["messages.chat"], active: "messages.chat"}});
+    expect(list.notice.value).toBe("A layout named Mine already exists.");
+    await list.rename("person:7", "Mine");
+    expect(list.notice.value).toBe("A layout named Mine already exists.");
+    expect(commands(lines)).toEqual([]);
+});
+
+test("a rename, remove, update or share of a layout that is gone is refused with a notice and runs nothing", async () => {
+    const {list, lines} = await presets();
+    await list.rename("person:99", "New");
+    expect(list.notice.value).toBe("That layout no longer exists.");
+    list.notice.value = "";
+    await list.remove("person:99");
+    expect(list.notice.value).toBe("That layout no longer exists.");
+    list.notice.value = "";
+    await list.update("person:99");
+    expect(list.notice.value).toBe("That layout no longer exists.");
+    expect(commands(lines)).toEqual([]);
+});
+
+test("a command the journal refuses shows its error as the notice", async () => {
+    const {list} = await presets();
+    const shellLine = vi.fn(async () => ({ok: false, error: "only a person keeps a layout"}));
+    const refusing = useLayoutPresets({environment: "main", page: "home", shellLine, catalogue: {window: () => null}, store: {layout: {value: null}}});
+    await refusing.importLayout({name: "Fine", shape: {tabs: ["a.b"], active: "a.b"}});
+    expect(refusing.notice.value).toBe("only a person keeps a layout");
+    expect(list.notice.value).toBe("");
+});

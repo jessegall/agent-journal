@@ -24,6 +24,9 @@ function pick(key) {
     </span>
     <template v-if="open">
         <MenuPanel :anchor="opener" align="end" :min-width="240" :max-width="300" @click.stop @close="open = false">
+            <template v-if="list.notice.value">
+                <p class="layout-notice" role="alert">{{ list.notice.value }}</p>
+            </template>
             <PresetList
                 :presets="list.presets.value"
                 savable
@@ -38,3 +41,12 @@ function pick(key) {
         </MenuPanel>
     </template>
 </template>
+
+<style scoped>
+.layout-notice {
+    margin: 0;
+    padding: 6px 10px;
+    color: var(--text-2);
+    font-size: 12px;
+}
+</style>
