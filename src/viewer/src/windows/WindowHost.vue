@@ -17,6 +17,7 @@ const props = defineProps({
     unavailableReason: {type: String, default: ""},
     options: {type: Object, default: () => ({})},
     declared: {type: Array, default: () => []},
+    readOnly: Boolean,
 });
 const emit = defineEmits(["open", "remove"]);
 const failure = ref("");
@@ -37,6 +38,7 @@ provide(WINDOW_CONTEXT, windowContext({
     subscriptions: props.subscriptions,
     options: computed(() => props.options),
     declared: props.declared,
+    readOnly: props.readOnly,
     open: (window, agent) => emit("open", window, agent),
 }));
 

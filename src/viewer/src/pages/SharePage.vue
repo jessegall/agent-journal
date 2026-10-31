@@ -6,7 +6,6 @@ import {WindowSubscriptions} from "../windows/windowSubscriptions.js";
 import {lineResult} from "../windows/windowContext.js";
 import ShareFace from "../windows/ShareFace.vue";
 
-const WINDOWS = {plan: "plans.plans"};
 const session = ref(null);
 const entry = ref(null);
 const subscriptions = new WindowSubscriptions();
@@ -16,7 +15,7 @@ async function open() {
     if (answer.type !== "share") return;
     session.value = answer;
     const offers = await fetchWindowCatalogue(answer.share.environment);
-    entry.value = offers.windows.find((window) => window.name === WINDOWS[answer.share.row_model]) ?? null;
+    entry.value = offers.windows.find((window) => window.name === answer.share.window) ?? null;
 }
 
 open();

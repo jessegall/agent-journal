@@ -3,10 +3,12 @@ import {afterEach, expect, test, vi} from "vitest";
 import {settled} from "./settled.js";
 import ShareFace from "../src/windows/ShareFace.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
+import Btn from "../src/kit/Btn.vue";
+import plans from "../../core/modules/plans/web/src/plans.js";
 
 const PHONE_WIDTH = 400;
 const WIDE_WIDTH = 1400;
-const SESSION = {type: "share", person_id: 2, share: {row_model: "plan", row_id: 1, environment: "main", ends_at: "2026-11-07T09:00:00.000000+00:00"}};
+const SESSION = {type: "share", person_id: 2, share: {row_model: "plan", row_id: 1, window: "plans.plans", environment: "main", ends_at: "2026-11-07T09:00:00.000000+00:00"}};
 const PLANS_WINDOW = {render: () => h("div", {class: "plans-body"}, "Plan page")};
 const ENTRY = {name: "plans.plans", entry_url: "/modules/journal.core.plans/plans.js", unavailable_reason: ""};
 const PHASES = {rows: [{id: 1, position: 1, title: "Values"}, {id: 2, position: 2, title: "Models"}, {id: 3, position: 3, title: "Queries"}], total: 3};
@@ -104,4 +106,18 @@ test("a read that cannot reach the journal shows a reconnecting notice and keeps
 test("a share page shows no visitor comments", async () => {
     const {element} = await face();
     expect(element.querySelector("[data-comments], .comments")).toBeNull();
+});
+
+test("the plans window mounted as a share has no control that can be used", async () => {
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {rows: [{id: 1, title: "Version 5 core", state: "started"}], total: 1}, error: ""})}));
+    const controls = {render: () => h("div", [h(Btn, null, () => "Start"), h(plans)])};
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp(() => h(ShareFace, {session: SESSION, read: reads(), entry: ENTRY, subscriptions: new WindowSubscriptions(), load: async () => ({default: controls})})).mount(element);
+    mounted.push(element);
+    await settled();
+    expect(element.querySelector(".window").textContent).toContain("Version 5 core");
+    const buttons = [...element.querySelectorAll(".window button, .window a, .window input, .window textarea")];
+    expect(buttons.length).toBeGreaterThan(0);
+    expect(buttons.every((control) => control.disabled)).toBe(true);
 });

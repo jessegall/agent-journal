@@ -20,7 +20,7 @@ class ViewerRoutes:
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin) -> None:
         self.line_route, self.event_stream = LineRoute(home, listener_thread), EventStream(home)
         self.module_files, self.windows_route = ModuleFiles(home), WindowsRoute(home)
-        self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login)
+        self.chat_declarations_route, self.session_route = ChatDeclarationsRoute(home), SessionRoute(login, home)
         self.waiting_route = WaitingRoute(home)
         self.skills_route = SkillsRoute(home)
         self.share_route = ShareRoute(login.shares)

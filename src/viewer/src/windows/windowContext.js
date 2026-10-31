@@ -7,8 +7,8 @@ const READ_COALESCE_MS = 100;
 const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
-// through the host, read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
-export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = []}) {
+// through the host, whether it is only looked at (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
+export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], readOnly = false}) {
     const recent = new Map();
     const read = (line) => {
         const last = recent.get(line);
@@ -23,6 +23,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         agent,
         visible: computed(() => visible()),
         permissions,
+        readOnly,
         read,
         run: (line) => lineResult(window, line, environment),
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),

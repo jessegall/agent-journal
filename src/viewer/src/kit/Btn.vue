@@ -1,7 +1,9 @@
 <script setup>
+import {computed, inject} from "vue";
+import {WINDOW_CONTEXT} from "../../kit/windowContextKey.js";
 import Spinner from "./Spinner.vue";
 
-defineProps({
+const props = defineProps({
     kind: {type: String, default: "ghost"},
     small: Boolean,
     large: Boolean,
@@ -10,6 +12,8 @@ defineProps({
     fill: Boolean,
     href: {type: String, default: ""},
 });
+// a window a share link shows is only looked at, so its buttons do nothing
+const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDOW_CONTEXT, null)?.readOnly));
 </script>
 
 <template>
@@ -19,7 +23,7 @@ defineProps({
         :href="href || undefined"
         :class="['btn', kind, {small, large, busy, fill}]"
         :aria-busy="busy"
-        :disabled="busy || disabled"
+        :disabled="idle"
     >
         <span :class="['btn-label', {hidden: busy}]"><slot /></span>
         <template v-if="busy">
