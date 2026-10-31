@@ -16,6 +16,6 @@ class ChatModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery)]
     migrations = [ChatMarkTableMigration]
-    handlers = (ShowMarkHandler,)
+    handlers = [ShowMarkHandler]
     guards = [MarkTypeGuard]
     marks = CHAT_MARKS
