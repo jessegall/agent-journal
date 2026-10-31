@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class TasksTables(Migration):
+class TasksTablesMigration(Migration):
     """Creates the tasks table with its log lines and its dependencies."""
 
     number = 1

@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class FileEditsTable(Migration):
+class FileEditsTableMigration(Migration):
     """Creates the file_edits table, one row for each file an agent edited or wrote."""
 
     number = 1

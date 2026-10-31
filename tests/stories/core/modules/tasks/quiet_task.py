@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.modules.tasks.inactive_task_reminder import INACTIVE_MINUTES
+from core.modules.tasks.inactive_task_reminder_rule import INACTIVE_MINUTES
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 

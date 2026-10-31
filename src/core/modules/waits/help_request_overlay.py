@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.waits.wait import Wait
 from core.modules.waits.wait_state import WaitState
 from core.modules.waits.wait_type import WaitType
-from core.modules.waits.work_ends_wait import WorkEndsWait
+from core.modules.waits.work_ends_wait_rule import WorkEndsWaitRule
 
 
 class HelpRequestOverlay(Overlay):
@@ -16,7 +16,7 @@ class HelpRequestOverlay(Overlay):
     name = "waits.stuck"
     exclusive = True
     delays_lines = True
-    rules = [WorkEndsWait]
+    rules = [WorkEndsWaitRule]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries

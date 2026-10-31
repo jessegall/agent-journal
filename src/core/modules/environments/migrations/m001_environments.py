@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class EnvironmentsTable(Migration):
+class EnvironmentsTableMigration(Migration):
     """Creates the environments table."""
 
     number = 1

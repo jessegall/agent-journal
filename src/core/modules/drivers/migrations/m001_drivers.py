@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 COMMON = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 
 
-class DriversTables(Migration):
+class DriversTablesMigration(Migration):
     """Creates the hook calls, the agent lines and the rule history of the drivers module."""
 
     number = 1

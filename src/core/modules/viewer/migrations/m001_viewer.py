@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class ViewerTables(Migration):
+class ViewerTablesMigration(Migration):
     """Creates the viewer's tables: each person's layouts, one per environment, suite, page and driver, and the
     permissions each person gave a window or a module in one environment."""
 

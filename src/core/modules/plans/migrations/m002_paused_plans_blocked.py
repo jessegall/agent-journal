@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class PausedPlansBlocked(Migration):
+class PausedPlansBlockedMigration(Migration):
     """Turns every paused plan into a blocked one, since plans have no paused state."""
 
     number = 2

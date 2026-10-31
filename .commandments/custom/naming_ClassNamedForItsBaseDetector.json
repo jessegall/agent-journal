@@ -1,0 +1,195 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "DriverRule"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Rule"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Guard"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Guard"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Handler"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Handler"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Subcommand"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Subcommand"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "ReadSubcommand"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Subcommand"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "SaveListener"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Listener"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "CommitListener"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Listener"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "DeletionListener"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Listener"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Driver"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Driver"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Overlay"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Overlay"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Suite"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Suite"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Module"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Module"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Migration"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Migration"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "extendsAny": "Provider"
+                            },
+                            {
+                                "not": {
+                                    "nameLike": "*Provider"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "class-unnamed-for-its-base",
+        "description": "A class extends one of the core's building blocks but its name does not end with that block's name, so a reader cannot tell what it is.",
+        "rule": "End the class's name with the block it extends: ...Rule for a DriverRule, ...Guard, ...Handler, ...Subcommand, ...Listener, ...Driver, ...Overlay, ...Suite, ...Module, ...Migration or ...Provider; name its file the same in snake case.",
+        "skill": "plain-code-words"
+    }
+}

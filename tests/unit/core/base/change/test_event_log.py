@@ -8,7 +8,7 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.change.event_log import EventLog
 from core.base.command.context import Context
-from core.base.database.core_tables import CORE_MIGRATIONS
+from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.journal_home import JournalHome

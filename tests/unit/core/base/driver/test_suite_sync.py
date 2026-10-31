@@ -51,7 +51,7 @@ class Coding(Suite):
     defaults = {"main": "coding.builder", "worker": "coding.worker"}
 
 
-class Builder(Driver):
+class BuilderDriver(Driver):
     """Drives the main agent of the coding suite."""
 
     name = "coding.builder"
@@ -80,7 +80,7 @@ def problems(*modules: type[Module]) -> list[str]:
 
 
 def test_a_suite_with_its_drivers_passes_and_a_default_may_name_a_driver_not_installed_yet():
-    assert problems(module("coding", suites=[Coding], drivers=[Builder])) == []
+    assert problems(module("coding", suites=[Coding], drivers=[BuilderDriver])) == []
 
 
 def test_a_suite_two_modules_ship_is_refused():
@@ -100,12 +100,12 @@ def test_suites_that_require_each_other_are_refused():
 
 
 def test_a_driver_of_a_suite_whose_module_it_does_not_depend_on_is_refused():
-    assert problems(module("coding", suites=[Coding]), module("extra", drivers=[Builder])) == [
+    assert problems(module("coding", suites=[Coding]), module("extra", drivers=[BuilderDriver])) == [
         "driver coding.builder names suite coding of module coding, which module extra does not depend on"]
 
 
 def test_a_driver_of_a_suite_its_module_depends_on_passes():
-    assert problems(module("coding", suites=[Coding]), module("extra", ["coding"], drivers=[Builder])) == []
+    assert problems(module("coding", suites=[Coding]), module("extra", ["coding"], drivers=[BuilderDriver])) == []
 
 
 def test_a_default_naming_a_driver_of_another_role_or_an_unrequired_suite_is_refused():
@@ -123,7 +123,7 @@ def test_a_rule_a_driver_lists_may_not_name_patterns_and_a_rule_a_module_adds_mu
 
 
 def test_the_entries_keep_sync_order_limits_and_rules_then_overlay_rules_then_added_rules():
-    entries = DriverEntries().rules([module("coding", suites=[Coding], drivers=[Builder], overlays=[Wait], driver_rules=[AnyMain])])
+    entries = DriverEntries().rules([module("coding", suites=[Coding], drivers=[BuilderDriver], overlays=[Wait], driver_rules=[AnyMain])])
     assert [(entry.name, entry.owner, entry.permanent, entry.position) for entry in entries] == [
         ("coding.no-git", "coding.builder", True, 1), ("coding.carry-on", "coding.builder", False, 2), ("coding.carry-on", "waits.wait", False, 3),
         ("safety.any-main", "coding", False, 4)]

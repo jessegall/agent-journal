@@ -7,7 +7,7 @@ from core.base.command.handlers.make_handler import MakeHandler
 from core.base.command.handlers.move_handler import MoveHandler
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import MoveCommand
-from core.base.database.core_tables import CORE_MIGRATIONS
+from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_log import EventLog
 from core.base.database.database import Database

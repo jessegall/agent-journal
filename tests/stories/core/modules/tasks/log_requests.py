@@ -1,7 +1,7 @@
 from datetime import timedelta
 
-from core.modules.tasks.unlogged_write_limit import UNLOGGED_WRITES_CEILING
-from core.modules.tasks.log_request import LOG_REQUEST_WRITES
+from core.modules.tasks.unlogged_write_rule import UNLOGGED_WRITES_CEILING
+from core.modules.tasks.log_request_rule import LOG_REQUEST_WRITES
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask

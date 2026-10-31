@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from core.modules.tasks.task_stop_refusal import LOG_STOP_REFUSAL_COUNT
+from core.modules.tasks.task_stop_rule import LOG_STOP_REFUSAL_COUNT
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithStartedTask

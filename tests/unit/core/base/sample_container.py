@@ -6,7 +6,7 @@ from core.base.actor_type import ActorType
 from core.base.command.command import Command
 from core.base.command.context import Context
 from core.base.container import Container
-from core.base.database.core_tables import CORE_MIGRATIONS
+from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement

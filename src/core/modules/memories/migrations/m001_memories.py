@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 from core.base.database.timestamp_sql import TIMESTAMP_SQL
 
 
-class MemoriesTables(Migration):
+class MemoriesTablesMigration(Migration):
     """Creates memories with their types, switches, keywords, deliveries and marks, and the three core types."""
 
     number = 1

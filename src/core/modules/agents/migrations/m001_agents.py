@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class AgentsTable(Migration):
+class AgentsTableMigration(Migration):
     """Creates the agents table, whose ids are the ids of their actors."""
 
     number = 1

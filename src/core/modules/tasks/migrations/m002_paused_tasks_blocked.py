@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class PausedTasksBlocked(Migration):
+class PausedTasksBlockedMigration(Migration):
     """Turns every paused task into a blocked one, since tasks have no paused state."""
 
     number = 2

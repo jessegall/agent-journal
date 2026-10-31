@@ -1,8 +1,8 @@
-from core.modules.messages.guards.one_reply_per_message import OneReplyPerMessage
+from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.message_read_handler import MessageReadHandler
 from core.modules.messages.message_send_handler import MessageSendHandler
 from core.modules.messages.message_query import MessageQuery
-from core.modules.messages.migrations.m001_messages import MessagesTable
+from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.message_read_subcommand import MessageReadSubcommand
 from core.modules.messages.message_reply_subcommand import MessageReplySubcommand
 from core.modules.messages.message_send_subcommand import MessageSendSubcommand
@@ -20,8 +20,8 @@ class MessagesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
-    migrations = [MessagesTable]
-    guards = [OneReplyPerMessage]
+    migrations = [MessagesTableMigration]
+    guards = [OneReplyPerMessageGuard]
     handlers = (MessageSendHandler, MessageReadHandler)
     subcommands = (MessageSendSubcommand, MessageReplySubcommand, MessageReadSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, reads=["message list", "message show"], runs=["message send"],

@@ -3,7 +3,7 @@ from core.base.database.migration import Migration
 COMMON = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}' CHECK (json_valid(metadata)), created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 
 
-class WaitsTables(Migration):
+class WaitsTablesMigration(Migration):
     """Creates the waits and the rows each wait on rows ends on."""
 
     number = 1

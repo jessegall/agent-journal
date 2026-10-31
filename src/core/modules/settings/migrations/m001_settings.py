@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class SettingsTable(Migration):
+class SettingsTableMigration(Migration):
     """Creates the settings table; a key is set once per environment and once for the whole project."""
 
     number = 1

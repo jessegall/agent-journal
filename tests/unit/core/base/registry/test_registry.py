@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from core.base.database.core_tables import CORE_MIGRATIONS
+from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.database.statement import Statement

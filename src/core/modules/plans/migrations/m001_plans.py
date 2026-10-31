@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class PlansTables(Migration):
+class PlansTablesMigration(Migration):
     """Creates the plans table, its phases and the places of tasks in them."""
 
     number = 1

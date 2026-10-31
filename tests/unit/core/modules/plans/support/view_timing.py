@@ -4,10 +4,10 @@ import time
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from core.modules.plans.migrations.m001_plans import PlansTables
+from core.modules.plans.migrations.m001_plans import PlansTablesMigration
 from core.modules.plans.plan_progress import PlanProgress
 from core.modules.plans.plan_task import PlanTask
-from core.modules.tasks.migrations.m001_tasks import TasksTables
+from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
 from core.modules.tasks.open_dependency import OpenDependency
 
 PLAN_COUNT = 2000
@@ -39,7 +39,7 @@ class ViewTiming:
 
     def __init__(self) -> None:
         self.connection = sqlite3.connect(":memory:")
-        for statement in (*TasksTables.statements, *PlansTables.statements, *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
+        for statement in (*TasksTablesMigration.statements, *PlansTablesMigration.statements, *(f"CREATE VIEW {name} AS {select}" for name, select in VIEWS)):
             self.connection.execute(statement)
         self.fill()
 

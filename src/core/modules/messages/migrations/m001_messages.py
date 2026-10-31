@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class MessagesTable(Migration):
+class MessagesTableMigration(Migration):
     """Creates the messages table with its chat and unread indexes."""
 
     number = 1

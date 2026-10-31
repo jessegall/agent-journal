@@ -3,15 +3,15 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
-from suites.coding.drivers.builder.builder import Builder
+from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.commands.file_edit_record_handler import FileEditRecordHandler
-from suites.coding.migrations.m001_file_edits import FileEditsTable
-from suites.coding.drivers.orchestrator.orchestrator import Orchestrator
+from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
+from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
-from suites.coding.rules.record_file_edit import RecordFileEdit
-from suites.coding.drivers.subagent.subagent import Subagent
+from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
+from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show"]
 
@@ -25,11 +25,11 @@ class CodingModule(Module):
     dependencies = ["journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
-    drivers = [Builder, Orchestrator, Subagent]
+    drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditsTable]
+    migrations = [FileEditsTableMigration]
     handlers = [FileEditRecordHandler]
-    driver_rules = [RecordFileEdit]
+    driver_rules = [RecordFileEditRule]
     windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, reads=[*FILE_EDIT_READS, "agent list"],

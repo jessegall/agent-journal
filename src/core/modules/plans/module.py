@@ -2,12 +2,12 @@ from core.modules.plans.plan_block import PlanBlock
 from core.modules.plans.plan_cancel import PlanCancel
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
-from core.modules.plans.listeners.cancel_open_plan_tasks import CancelOpenPlanTasks
-from core.modules.plans.listeners.phase_renumbering import PhaseRenumbering
-from core.modules.plans.listeners.forget_place import ForgetPlace
-from core.modules.plans.listeners.next_plan_task_starter import NextPlanTaskStarter
-from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlocked
-from core.modules.plans.migrations.m001_plans import PlansTables
+from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
+from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
+from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
+from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
+from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
+from core.modules.plans.migrations.m001_plans import PlansTablesMigration
 from core.modules.plans.phase_make_handler import PhaseMakeHandler
 from core.modules.plans.phase_move_handler import PhaseMoveHandler
 from core.modules.plans.phase_place_handler import PhasePlaceHandler
@@ -36,13 +36,13 @@ class PlansModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
-    migrations = [PlansTables, PausedPlansBlocked]
+    migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
     handlers = (PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler)
     subcommands = (PhaseMakeSubcommand, PhaseMoveSubcommand,
                    PhasePlaceSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]
-    listeners = (ForgetPlace, PhaseRenumbering, CancelOpenPlanTasks,
-                 NextPlanTaskStarter)
+    listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
+                 NextPlanTaskStarterListener)
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, reads=["plan list", "plan show", "plan progress", "phase list"],
                                  events=["plan.*", "phase.*"])]

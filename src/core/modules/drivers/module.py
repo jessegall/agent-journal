@@ -23,10 +23,10 @@ from core.modules.drivers.hook_call_query import HookCallQuery
 from core.modules.drivers.hook_call_record_handler import HookCallRecordHandler
 from core.modules.drivers.hook_call_show_subcommand import HookCallShowSubcommand
 from core.modules.drivers.driver_setting_guard import DriverSettingGuard
-from core.modules.drivers.migrations.m001_drivers import DriversTables
-from core.modules.drivers.new_driver_lines import NewDriverLines
+from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
+from core.modules.drivers.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.opening_lines_rule import OpeningLinesRule
-from core.modules.drivers.repeated_stop_release import RepeatedStopRelease
+from core.modules.drivers.repeated_stop_release_rule import RepeatedStopReleaseRule
 from core.modules.drivers.rule_history import RuleHistory
 from core.modules.drivers.session_end_rule import SessionEndRule
 from core.modules.drivers.setting_essential_allowances import SettingEssentialAllowances
@@ -46,13 +46,13 @@ class DriversModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineDelivery]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
-    migrations = [DriversTables]
+    migrations = [DriversTablesMigration]
     handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler, DriverAllowEssentialHandler]
     subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, DriverChooseSubcommand, DriverShowSubcommand,
                    DriverAllowEssentialSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [NewDriverLines]
-    driver_rules = [RepeatedStopRelease, SessionEndRule, OpeningLinesRule]
+    listeners = [NewDriverLinesListener]
+    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
