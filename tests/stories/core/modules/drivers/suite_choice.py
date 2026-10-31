@@ -5,12 +5,12 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 def test_with_several_top_suites_installed_none_runs_until_one_is_chosen(new_story):
     story = new_story(SAMPLES, fixture=MainEnvironment)
-    story.expect_success("suite current main", "suite: none, choose one with journal suite choose control or samples")
+    story.expect_success("suite current main", "suite: none, choose one with journal suite choose coding or control or samples")
 
 
 def test_choosing_a_suite_no_module_ships_is_refused_naming_the_installed_ones(new_story):
     story = new_story(SAMPLES, fixture=MainEnvironment)
-    story.expect_refusal("suite choose marketing --environment main", "no installed module ships suite marketing: control or samples")
+    story.expect_refusal("suite choose marketing --environment main", "no installed module ships suite marketing: coding or control or samples")
 
 
 def test_a_chosen_suite_runs_in_its_environment_and_gives_each_role_its_default_driver(new_story):
