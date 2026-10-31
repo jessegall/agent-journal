@@ -29,4 +29,4 @@ class MemoryGivenMarkListener(MemoryMarkListener):
         memory = self.queries.query(Memory).find(delivery.memory_id)
         if delivery.cause in REMINDING_CAUSES or memory.type in RULE_TYPES:
             environment_id = self.queries.query(Agent).find(delivery.agent_id).environment_id
-            self.show(event, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, environment_id, delivery.agent_id, row_id=memory.id)
+            self.show_memory(event, MemoryMarkVariant.GIVEN, f"Reminded the agent: {memory.text}", MemoryMarkType.REMINDER, environment_id, delivery.agent_id, row_id=memory.id)

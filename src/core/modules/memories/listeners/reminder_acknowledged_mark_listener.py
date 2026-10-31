@@ -16,4 +16,4 @@ class ReminderAcknowledgedMarkListener(MemoryMarkListener):
     def handle(self, event: LoggedEvent) -> None:
         memory = self.queries.query(Memory).find(event.row_id)
         if memory.type == REMINDER_TYPE:
-            self.show(event, MemoryMarkVariant.ACKNOWLEDGED, f"Reminder {memory.id} acknowledged", MemoryMarkType.REMINDER, memory.environment_id, row_id=memory.id)
+            self.show_memory(event, MemoryMarkVariant.ACKNOWLEDGED, f"Reminder {memory.id} acknowledged", MemoryMarkType.REMINDER, memory.environment_id, row_id=memory.id)

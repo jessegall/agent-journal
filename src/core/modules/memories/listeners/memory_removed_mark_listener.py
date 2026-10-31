@@ -14,4 +14,4 @@ class MemoryRemovedMarkListener(MemoryMarkListener):
 
     def handle(self, event: LoggedEvent) -> None:
         if self.queries.query(Memory).find(event.row_id).type != REMINDER_TYPE:
-            self.show(event, MemoryMarkVariant.REMOVED, f"Memory {event.row_id} removed", environment_id=self.memory_environment(event), row_id=event.row_id)
+            self.show_memory(event, MemoryMarkVariant.REMOVED, f"Memory {event.row_id} removed", environment_id=self.memory_environment(event), row_id=event.row_id)

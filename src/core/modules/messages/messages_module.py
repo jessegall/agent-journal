@@ -12,6 +12,9 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.models.message import Message
+from core.modules.messages.listeners.message_filed_mark_listener import MessageFiledMarkListener
+from core.modules.messages.listeners.message_thought_mark_listener import MessageThoughtMarkListener
+from core.modules.messages.support.message_marks import MESSAGE_MARKS
 
 
 class MessagesModule(Module):
@@ -27,3 +30,5 @@ class MessagesModule(Module):
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list"], runs=["message send"],
                                  events=["message.*", "chat_mark.*", "dock_item.*"])]
+    marks = MESSAGE_MARKS
+    listeners = [MessageThoughtMarkListener, MessageFiledMarkListener]

@@ -21,4 +21,4 @@ class CompactionMarkListener(MemoryMarkListener):
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)
         if call.hook == HookEventName.COMPACT:
-            self.show(event, MemoryMarkVariant.COMPACTED, "Conversation compacted", MemoryMarkType.COMPACTION, call.environment_id, call.agent_id, row_model="")
+            self.show_memory(event, MemoryMarkVariant.COMPACTED, "Conversation compacted", MemoryMarkType.COMPACTION, call.environment_id, call.agent_id, row_model="")

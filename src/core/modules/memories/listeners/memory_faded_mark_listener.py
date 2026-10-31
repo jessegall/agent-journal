@@ -24,4 +24,4 @@ class MemoryFadedMarkListener(MemoryMarkListener):
         memories = self.scope.memories(call.agent_id) if call.hook == HookEventName.COMPACT else []
         if memories:
             shown = len([memory for memory in memories if memory.weight > 0])
-            self.show(event, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(memories)} still shown", agent_id=call.agent_id, row_model="")
+            self.show_memory(event, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(memories)} still shown", agent_id=call.agent_id, row_model="")
