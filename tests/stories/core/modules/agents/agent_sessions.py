@@ -33,3 +33,13 @@ def test_a_session_start_records_the_agent_programs_pid_and_process_start(new_st
     agent_id = story.new_row_id("agent start s-1 claude main --pid 4321 --process-started-at 2026-10-31T09:00:00+00:00 --environment main")
     story.expect_success(f"agent show {agent_id}", "pid: 4321", "process_started_at: 2026-10-31T09:00:00.000000+00:00")
 
+
+
+def test_a_resumed_session_reopens_its_ended_agent_under_the_same_number(new_story):
+    story = new_story(fixture=MainEnvironment)
+    agent_id = story.new_row_id(lines.AGENT_START)
+    story.run(f"agent end {agent_id}")
+    story.expect_success(f"agent show {agent_id}", "ended_at: 2026-10-31T09:00:00.000000+00:00")
+    story.expect_success("agent start s-1 claude main --pid 4321 --process-started-at 2026-10-31T09:00:00+00:00 --environment main", f"id: {agent_id}")
+    story.expect_absent(f"agent show {agent_id}", "ended_at: 2026-10-31T09:00:00.000000+00:00")
+    story.expect_success(f"agent show {agent_id}", "pid: 4321")

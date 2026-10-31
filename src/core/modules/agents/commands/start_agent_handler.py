@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.commands.start_agent import StartAgent
@@ -12,7 +14,8 @@ from core.base.repository.repository import Repository
 
 
 class StartAgentHandler(Handler[StartAgent, Agent]):
-    """Makes the actor of a new session, then its agent row with the actor's id, in one transaction; a pid given
+    """Makes the actor of a new session, then its agent row with the actor's id, in one transaction, or
+    reopens the ended row of a resumed session so the agent keeps its number and its tasks; a pid given
     without its start time gets the start the process table reads for it."""
 
     command = StartAgent
@@ -23,8 +26,12 @@ class StartAgentHandler(Handler[StartAgent, Agent]):
     def handle(self, command: StartAgent, context: Context) -> Agent:
         if context.environment_id is None:
             raise Refusal("an agent starts in an environment", "name one with --environment")
-        if self.queries.query(Agent).filter(session=command.session).exists():
+        started = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
+        if started and started[0].ended_at is None:
             raise Refusal(f"session {command.session} has started already", "journal agent list shows the agents")
+        if started:
+            return self.repository.save(replace(started[0], ended_at=None, pid=command.pid,
+                                                process_started_at=command.process_started_at or self.process_start(command.pid)), context)
         actor = self.repository.save(ActorRecord(type=ActorType.AGENT, name=command.session, creator_id=context.actor.id), context)
         agent = Agent(id=actor.id, environment_id=context.environment_id, parent_id=command.parent_id, creator_id=context.actor.id,
                       session=command.session, program=command.program, role=command.role, pid=command.pid,
