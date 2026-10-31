@@ -53,7 +53,7 @@ type corpusSize struct {
 
 func TestCorpusHasEveryEventAndTool(t *testing.T) {
 	if _, err := os.Stat(recordedFolder); os.IsNotExist(err) {
-		t.Skipf("%s is not recorded yet: task 4679 waits for the user's decision on running the anonymiser", recordedFolder)
+		t.Skipf("%s is not recorded yet: task 4679 records it with cmd/anonymise once the port is checked", recordedFolder)
 	}
 	files, err := filepath.Glob(filepath.Join(recordedFolder, "*", "*.jsonl"))
 	if err != nil || len(files) == 0 {
