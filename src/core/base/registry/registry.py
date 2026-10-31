@@ -15,6 +15,7 @@ from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.registry.suite_entry import SuiteEntry
+from core.base.registry.window_entry import WindowEntry
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,7 @@ class Registry:
     rules: tuple[DriverRuleEntry, ...] = ()
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
+    windows: tuple[WindowEntry, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -59,6 +61,8 @@ class Registry:
             drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
                                       tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
+            windows=tuple(WindowEntry(window["name"], window["module"], tuple(window["reads"]), tuple(window["runs"]), window["shipped"])
+                          for window in entries.get("windows", [])),
         )
 
     def entries_text(self) -> str:
@@ -79,6 +83,8 @@ class Registry:
                         "included_overlays": list(suite.included_overlays)} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
                          "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
+            "windows": [{"name": window.name, "module": window.module, "reads": list(window.reads), "runs": list(window.runs), "shipped": window.shipped}
+                        for window in self.windows],
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
@@ -125,6 +131,12 @@ class Registry:
 
     def suite(self, name: str) -> SuiteEntry | None:
         return next((suite for suite in self.suites if suite.name == name), None)
+
+    def has_window(self, name: str) -> bool:
+        return any(window.name == name for window in self.windows)
+
+    def window(self, name: str) -> WindowEntry:
+        return next(window for window in self.windows if window.name == name)
 
     def driver(self, name: str) -> DriverEntry | None:
         return next((driver for driver in self.drivers if driver.name == name), None)

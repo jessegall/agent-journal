@@ -28,6 +28,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
+from core.base.registry.window_entry import WindowEntry
 from core.base.module.module import ListenerClass, Module
 from core.base.module.driver_entries import DriverEntries
 from core.base.registry.driver_rule_entry import DriverRuleEntry
@@ -112,7 +113,13 @@ class ModuleSync:
             rules=rules,
             suites=self.entries.suites(modules),
             drivers=self.entries.drivers(modules),
+            windows=self.windows(modules),
         )
+
+    def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:
+        shipped = set(self.finder.default_modules())
+        return tuple(WindowEntry(window.name, module.name, tuple(window.reads), tuple(window.runs), module in shipped)
+                     for module in modules for window in module.windows)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):

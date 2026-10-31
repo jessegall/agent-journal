@@ -14,6 +14,7 @@ from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
@@ -43,3 +44,4 @@ class Module:
     drivers: ClassVar[Sequence[type[Driver]]] = ()
     overlays: ClassVar[Sequence[type[Overlay]]] = ()
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
+    windows: ClassVar[Sequence[WindowDeclaration]] = ()

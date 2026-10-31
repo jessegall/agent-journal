@@ -1,4 +1,3 @@
-from argparse import ArgumentParser
 from typing import TextIO
 
 from core.base.caller.caller_request import CallerRequest
@@ -6,7 +5,8 @@ from core.base.caller.caller_resolver import CallerResolver
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.base.cli.subcommand_lookup import SubcommandLookup, UsageError
+from core.base.cli.line_parser import LineParser
+from core.base.cli.subcommand_lookup import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
 from core.base.deadline import DeadlinePassedError
@@ -30,10 +30,10 @@ class Console:
     and exit code. A write runs the commit listeners before and after it; an error after the commit is
     logged and never changes the exit code of a write that was saved."""
 
-    def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, lookup: SubcommandLookup, bus: Bus,
+    def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
                  environment_names: EnvironmentNames, resolver: CallerResolver) -> None:
-        self.registry, self.finder, self.fingerprint, self.lookup, self.bus = registry, finder, fingerprint, lookup, bus
+        self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
         self.environment_names, self.resolver = environment_names, resolver
 
@@ -67,12 +67,7 @@ class Console:
         return self.run(argv, caller, stream)
 
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
-        subcommand = self.lookup.subcommand(argv[0], argv[1])
-        parser = ArgumentParser(prog=f"journal {argv[0]} {argv[1]}", description=subcommand.help, allow_abbrev=False)
-        parser.add_argument("--json", action="store_true")
-        subcommand.arguments(parser)
-        if isinstance(subcommand, Subcommand):
-            self.flags.add(parser)
+        subcommand, parser = self.line_parser.parser(argv)
         try:
             arguments = parser.parse_args(argv[2:])
         except SystemExit as exit_request:
