@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.waits.wait_end import WaitEnd
+from core.modules.waits.end_wait import EndWait
 
 
 class WorkEndsWaitRule(DriverRule):
@@ -17,4 +17,4 @@ class WorkEndsWaitRule(DriverRule):
         journal_line = tool is not None and tool.shell is not None and tool.shell.is_journal_line
         if hook.layer is None or journal_line:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().ending_layer(WaitEnd(hook.layer.row_id, outcome="the agent went on working"))
+        return RuleAnswer.allowed().ending_layer(EndWait(hook.layer.row_id, outcome="the agent went on working"))

@@ -1,10 +1,10 @@
 from core.modules.tasks.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.task_stop_rule import TaskStopRule
-from core.modules.tasks.task_block import TaskBlock
-from core.modules.tasks.task_cancel import TaskCancel
-from core.modules.tasks.task_close import TaskClose
+from core.modules.tasks.block_task import BlockTask
+from core.modules.tasks.cancel_task import CancelTask
+from core.modules.tasks.close_task import CloseTask
 from core.modules.tasks.task_depend_subcommand import TaskDependSubcommand
-from core.modules.tasks.task_dependency_removal_subcommand import TaskDependencyRemovalSubcommand
+from core.modules.tasks.remove_task_dependency_subcommand import RemoveTaskDependencySubcommand
 from core.modules.tasks.guards.dependencies_closed_guard import DependenciesClosedGuard
 from core.modules.tasks.guards.no_dependency_loop_guard import NoDependencyLoopGuard
 from core.modules.tasks.listeners.dependency_remover_listener import DependencyRemoverListener
@@ -17,7 +17,7 @@ from core.modules.tasks.task_summary_line_rule import TaskSummaryLineRule
 from core.modules.tasks.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.task_log_subcommand import TaskLogSubcommand
 from core.modules.tasks.task_query import TaskQuery
-from core.modules.tasks.task_dependency_removal_handler import TaskDependencyRemovalHandler
+from core.modules.tasks.remove_task_dependency_handler import RemoveTaskDependencyHandler
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
@@ -27,7 +27,7 @@ from core.modules.tasks.task import Task
 from core.modules.tasks.task_dependency import TaskDependency
 from core.modules.tasks.task_log import TaskLog
 
-TASK_COMMANDS = (TaskBlock, TaskClose, TaskCancel)
+TASK_COMMANDS = (BlockTask, CloseTask, CancelTask)
 
 
 class TasksModule(Module):
@@ -40,8 +40,8 @@ class TasksModule(Module):
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration]
     subcommands = (TaskLogSubcommand, TaskDependSubcommand,
-                   TaskDependencyRemovalSubcommand)
-    handlers = [TaskDependencyRemovalHandler]
+                   RemoveTaskDependencySubcommand)
+    handlers = [RemoveTaskDependencyHandler]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency]
     listeners = [DependencyRemoverListener]

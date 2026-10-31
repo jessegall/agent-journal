@@ -1,5 +1,5 @@
-from core.modules.plans.plan_block import PlanBlock
-from core.modules.plans.plan_cancel import PlanCancel
+from core.modules.plans.block_plan import BlockPlan
+from core.modules.plans.cancel_plan import CancelPlan
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
 from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
@@ -8,12 +8,12 @@ from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListen
 from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
-from core.modules.plans.phase_make_handler import PhaseMakeHandler
-from core.modules.plans.phase_move_handler import PhaseMoveHandler
-from core.modules.plans.phase_place_handler import PhasePlaceHandler
-from core.modules.plans.phase_make_subcommand import PhaseMakeSubcommand
-from core.modules.plans.phase_move_subcommand import PhaseMoveSubcommand
-from core.modules.plans.phase_place_subcommand import PhasePlaceSubcommand
+from core.modules.plans.make_phase_handler import MakePhaseHandler
+from core.modules.plans.move_phase_handler import MovePhaseHandler
+from core.modules.plans.place_phase_handler import PlacePhaseHandler
+from core.modules.plans.make_phase_subcommand import MakePhaseSubcommand
+from core.modules.plans.move_phase_subcommand import MovePhaseSubcommand
+from core.modules.plans.place_phase_subcommand import PlacePhaseSubcommand
 from core.modules.plans.plan_progress import PlanProgress
 from core.modules.plans.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.plan_task import PlanTask
@@ -26,7 +26,7 @@ from core.modules.plans.phase import Phase
 from core.modules.plans.phase_task import PhaseTask
 from core.modules.plans.plan import Plan
 
-PLAN_COMMANDS = (PlanBlock, PlanCancel)
+PLAN_COMMANDS = (BlockPlan, CancelPlan)
 
 
 class PlansModule(Module):
@@ -37,9 +37,9 @@ class PlansModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
-    handlers = (PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler)
-    subcommands = (PhaseMakeSubcommand, PhaseMoveSubcommand,
-                   PhasePlaceSubcommand, PlanProgressSubcommand)
+    handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
+    subcommands = (MakePhaseSubcommand, MovePhaseSubcommand,
+                   PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,

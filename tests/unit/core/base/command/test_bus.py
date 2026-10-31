@@ -27,7 +27,7 @@ from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from tests.unit.core.base.sample_container import sample_container
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 
@@ -102,7 +102,7 @@ def titles(container) -> list[str]:
 
 
 def test_a_command_finds_its_handler_along_its_bases_and_a_more_specific_one_wins(container):
-    assert container.get(Bus).run(ItemMake(title="Dune"), AGENT).title == "Dune"
+    assert container.get(Bus).run(MakeItem(title="Dune"), AGENT).title == "Dune"
     assert container.get(Bus).run(ItemPause(row_id=1), AGENT).state.value == "paused"
     with pytest.raises(Refusal, match="no more items today"):
         container.get(Bus).run(BlockedItem(title="Emma"), AGENT)
@@ -115,7 +115,7 @@ def test_every_row_a_command_writes_carries_one_timestamp(container):
 
 
 def test_a_nested_refusal_a_listener_catches_leaves_the_outer_work(container):
-    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     assert titles(container) == ["Dune"]
 
 
@@ -129,9 +129,9 @@ def test_a_command_is_run_at_the_top_outside_a_transaction_and_nested_only_insid
     bus = container.get(Bus)
     with container.get(Database).transaction():
         with pytest.raises(TransactionError, match="dispatch it"):
-            bus.run(ItemMake(title="Dune"), AGENT)
+            bus.run(MakeItem(title="Dune"), AGENT)
     with pytest.raises(TransactionError, match="run it instead"):
-        bus.dispatch(ItemMake(title="Dune"), Context(AGENT, bus.clock.timestamp(), ItemMake(title="Dune")))
+        bus.dispatch(MakeItem(title="Dune"), Context(AGENT, bus.clock.timestamp(), MakeItem(title="Dune")))
 
 
 def test_a_command_no_handler_carries_out_is_a_clear_fault(container):

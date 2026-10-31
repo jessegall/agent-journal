@@ -1,11 +1,11 @@
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
-from core.modules.messages.message_read_handler import MessageReadHandler
-from core.modules.messages.message_send_handler import MessageSendHandler
+from core.modules.messages.read_message_handler import ReadMessageHandler
+from core.modules.messages.send_message_handler import SendMessageHandler
 from core.modules.messages.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
-from core.modules.messages.message_read_subcommand import MessageReadSubcommand
+from core.modules.messages.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.message_reply_subcommand import MessageReplySubcommand
-from core.modules.messages.message_send_subcommand import MessageSendSubcommand
+from core.modules.messages.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
@@ -22,7 +22,7 @@ class MessagesModule(Module):
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     migrations = [MessagesTableMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (MessageSendHandler, MessageReadHandler)
-    subcommands = (MessageSendSubcommand, MessageReplySubcommand, MessageReadSubcommand,)
+    handlers = (SendMessageHandler, ReadMessageHandler)
+    subcommands = (SendMessageSubcommand, MessageReplySubcommand, ReadMessageSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, reads=["message list", "message show"], runs=["message send"],
                                  events=["message.*"])]

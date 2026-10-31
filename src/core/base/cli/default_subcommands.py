@@ -48,7 +48,7 @@ class DefaultSubcommands:
         table = self.tables.table(model)
         return tuple(MoveSubcommand(table, command_index.get(move.name) or move_command(table, move)) for move in lifecycle.moves())
 def move_command(table: Table[Model], move: Move) -> type[MoveCommand[Model]]:
-    class_name = f"{table.model.__name__}{move.name.title().replace('_', '')}"
+    class_name = f"{move.name.title().replace('_', '')}{table.model.__name__}"
     return dataclasses.make_dataclass(class_name, [], bases=tuple([generic_base(MoveCommand[table.model])]), namespace={"move": move}, frozen=True)
 def model_move_commands(command_paths: Sequence[str]) -> tuple[type[MoveCommand[Model]], ...]:
     loaded = tuple(DottedPath(path).loaded() for path in command_paths)

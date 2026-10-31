@@ -21,7 +21,7 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 
@@ -61,7 +61,7 @@ def container(tmp_path):
 
 
 def save(container: Container, item: Item) -> Item:
-    return container.get(Repository).save(item, context(ItemMake(title=item.title)))
+    return container.get(Repository).save(item, context(MakeItem(title=item.title)))
 
 
 def test_a_new_row_gets_an_id_a_first_version_and_both_timestamps(container: Container):
@@ -109,9 +109,9 @@ def test_a_constraint_failure_becomes_a_refusal(container: Container):
 
 def test_a_deleted_row_is_gone_and_logged(tmp_path):
     container = sample_container(tmp_path, empty_registry())
-    saved = container.get(Repository).save(Item(title="Dune"), context(ItemMake(title="Dune")))
+    saved = container.get(Repository).save(Item(title="Dune"), context(MakeItem(title="Dune")))
     with pytest.raises(StaleRow):
-        container.get(Repository).delete(replace(saved, version=5), context(ItemMake(title="Dune")))
-    container.get(Repository).delete(saved, context(ItemMake(title="Dune")))
+        container.get(Repository).delete(replace(saved, version=5), context(MakeItem(title="Dune")))
+    container.get(Repository).delete(saved, context(MakeItem(title="Dune")))
     assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0
     assert container.get(EventLog).event(2).event == "item.delete"

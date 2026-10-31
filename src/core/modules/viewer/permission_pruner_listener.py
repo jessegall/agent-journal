@@ -3,7 +3,7 @@ from core.base.change.event_log import REGISTRY_SYNC_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.modules.viewer.window_permission_prune import WindowPermissionPrune
+from core.modules.viewer.prune_window_permissions import PruneWindowPermissions
 
 
 class PermissionPrunerListener(CommitListener):
@@ -16,4 +16,4 @@ class PermissionPrunerListener(CommitListener):
         self.bus = bus
 
     def handle(self, event: LoggedEvent) -> None:
-        self.bus.run(WindowPermissionPrune(), Actor.core(), cause_id=event.id)
+        self.bus.run(PruneWindowPermissions(), Actor.core(), cause_id=event.id)

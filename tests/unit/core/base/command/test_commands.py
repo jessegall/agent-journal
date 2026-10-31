@@ -22,22 +22,22 @@ class ItemPause(MoveCommand[Item]):
 
 
 @dataclass(frozen=True)
-class ItemMake(MakeCommand[Item]):
+class MakeItem(MakeCommand[Item]):
     title: str
 
 
 @dataclass(frozen=True)
-class ItemEdit(EditCommand[Item]):
+class EditItem(EditCommand[Item]):
     title: str | None = None
 
 
 @dataclass(frozen=True)
-class ItemDelete(DeleteCommand):
+class DeleteItem(DeleteCommand):
     deleted_model = Item
 
 
 def test_a_command_names_the_model_it_works_on():
-    assert (ItemPause.model(), ItemMake.model(), ItemEdit.model(), ItemDelete.model()) == (Item, Item, Item, Item)
+    assert (ItemPause.model(), MakeItem.model(), EditItem.model(), DeleteItem.model()) == (Item, Item, Item, Item)
 
 
 def test_a_move_command_hands_on_only_its_own_fields():
@@ -45,12 +45,12 @@ def test_a_move_command_hands_on_only_its_own_fields():
 
 
 def test_an_edit_hands_on_only_the_fields_given():
-    assert ItemEdit(row_id=4).changed_fields() == {}
-    assert ItemEdit(row_id=4, title="Dune Messiah").changed_fields() == {"title": "Dune Messiah"}
+    assert EditItem(row_id=4).changed_fields() == {}
+    assert EditItem(row_id=4, title="Dune Messiah").changed_fields() == {"title": "Dune Messiah"}
 
 
 def test_a_nested_context_keeps_who_when_and_the_skipped_guards_and_names_its_own_command():
-    outer = Context(Actor(7, ActorType.AGENT), AT, ItemMake(title="Dune"), frozenset({"messages.one-reply-per-message"}), cause_id=12)
+    outer = Context(Actor(7, ActorType.AGENT), AT, MakeItem(title="Dune"), frozenset({"messages.one-reply-per-message"}), cause_id=12)
     inner = outer.nested(ItemPause(row_id=4, reason="paused"))
     assert (inner.actor, inner.timestamp, inner.skipped_guards, inner.cause_id) == (outer.actor, outer.timestamp, outer.skipped_guards, 12)
     assert inner.command == ItemPause(row_id=4, reason="paused")

@@ -2,10 +2,10 @@ from argparse import ArgumentParser, Namespace
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.tasks.task_log import TaskLog
-from core.modules.tasks.task_log_make import TaskLogMake
+from core.modules.tasks.make_task_log import MakeTaskLog
 
 
-class TaskLogSubcommand(Subcommand[TaskLogMake, TaskLog]):
+class TaskLogSubcommand(Subcommand[MakeTaskLog, TaskLog]):
     """`journal task log <task> "<line>"`: writes a line on a task."""
 
     cli_name = "task"
@@ -15,5 +15,5 @@ class TaskLogSubcommand(Subcommand[TaskLogMake, TaskLog]):
         parser.add_argument("task_id", type=int)
         parser.add_argument("line")
 
-    def command(self, arguments: Namespace, caller: Caller) -> TaskLogMake:
-        return TaskLogMake(arguments.task_id, arguments.line)
+    def command(self, arguments: Namespace, caller: Caller) -> MakeTaskLog:
+        return MakeTaskLog(arguments.task_id, arguments.line)

@@ -11,7 +11,7 @@ from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.agent import Agent
 from core.modules.agents.agent_role import AgentRole
-from core.modules.drivers.hook_call_prune import HookCallPrune
+from core.modules.drivers.prune_hook_calls import PruneHookCalls
 from core.modules.environments.environment import Environment
 from server.round_work import RoundWork
 
@@ -33,7 +33,7 @@ class TickWork(RoundWork):
             if agent.role != AgentRole.SUBAGENT:
                 route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
         if self.pruned_at is None or self.pruned_at.elapsed_seconds(clock_time) >= PRUNE_PERIOD.total_seconds():
-            container.get(Bus).run(HookCallPrune(), Actor.core())
+            container.get(Bus).run(PruneHookCalls(), Actor.core())
             self.pruned_at = clock_time
 
     @staticmethod

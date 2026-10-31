@@ -20,7 +20,7 @@ from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
 GUARD_CALLS: list[str] = []
@@ -66,7 +66,7 @@ REGISTRY = Registry("abc", {}, {}, {}, (entry(SecondGuard, 3), entry(NoSecondIte
 
 
 def change(skipped: frozenset[str] = frozenset()) -> Change[Model]:
-    context = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), skipped)
+    context = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"), skipped)
     return Change(None, Item(title="Dune"), context)
 
 

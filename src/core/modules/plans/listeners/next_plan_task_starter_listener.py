@@ -10,7 +10,7 @@ from core.modules.plans.conditions.checkpoint_limit import CheckpointLimit
 from core.modules.plans.plan import Plan
 from core.modules.plans.plan_state import PlanState
 from core.modules.plans.plan_task import PlanTask
-from core.modules.tasks.task_start import TaskStart
+from core.modules.tasks.start_task import StartTask
 from core.modules.tasks.open_dependency import OpenDependency
 from core.modules.tasks.task_state import TaskState
 
@@ -34,4 +34,4 @@ class NextPlanTaskStarterListener(CommitListener):
         free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.OPEN).matching(waiting).matching(CheckpointLimit(plan_id))
         following = free_tasks.ordered("phase_position", "position").page(1, 1).rows
         if following:
-            self.bus.run(TaskStart(following[0].task_id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
+            self.bus.run(StartTask(following[0].task_id), Actor(event.actor_id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)

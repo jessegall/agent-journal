@@ -10,12 +10,12 @@ from core.modules.memories.guards.agent_weight_guard import AgentWeightGuard
 from core.modules.memories.compaction_fader_listener import CompactionFaderListener
 from core.modules.memories.task_memory_remover_listener import TaskMemoryRemoverListener
 from core.modules.memories.memory import Memory
-from core.modules.memories.memory_fade_handler import MemoryFadeHandler
-from core.modules.memories.memory_give_handler import MemoryGiveHandler
+from core.modules.memories.fade_memories_handler import FadeMemoriesHandler
+from core.modules.memories.give_memories_handler import GiveMemoriesHandler
 from core.modules.memories.mark_closer_listener import MarkCloserListener
-from core.modules.memories.memory_mark_open_handler import MemoryMarkOpenHandler
-from core.modules.memories.memory_skip_handler import MemorySkipHandler
-from core.modules.memories.memory_skip_subcommand import MemorySkipSubcommand
+from core.modules.memories.open_memory_mark_handler import OpenMemoryMarkHandler
+from core.modules.memories.skip_memory_mark_handler import SkipMemoryMarkHandler
+from core.modules.memories.skip_memory_mark_subcommand import SkipMemoryMarkSubcommand
 from core.modules.memories.rules.open_mark_rule import OpenMarkRule
 from core.modules.memories.weighing_overlay import WeighingOverlay
 from core.modules.memories.rules.start_delivery_rule import StartDeliveryRule
@@ -23,13 +23,13 @@ from core.modules.memories.rules.keyword_delivery_rule import KeywordDeliveryRul
 from core.modules.memories.rules.due_delivery_rule import DueDeliveryRule
 from core.modules.memories.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.memory_faded_subcommand import MemoryFadedSubcommand
-from core.modules.memories.memory_make_handler import MemoryMakeHandler
-from core.modules.memories.memory_make_subcommand import MemoryMakeSubcommand
-from core.modules.memories.memory_read_handler import MemoryReadHandler
-from core.modules.memories.memory_remove import MemoryRemove
-from core.modules.memories.memory_read_subcommand import MemoryReadSubcommand
-from core.modules.memories.memory_weigh_handler import MemoryWeighHandler
-from core.modules.memories.memory_weigh_subcommand import MemoryWeighSubcommand
+from core.modules.memories.make_memory_handler import MakeMemoryHandler
+from core.modules.memories.make_memory_subcommand import MakeMemorySubcommand
+from core.modules.memories.read_memory_handler import ReadMemoryHandler
+from core.modules.memories.remove_memory import RemoveMemory
+from core.modules.memories.read_memory_subcommand import ReadMemorySubcommand
+from core.modules.memories.weigh_memories_handler import WeighMemoriesHandler
+from core.modules.memories.weigh_memories_subcommand import WeighMemoriesSubcommand
 from core.modules.memories.memory_delivery import MemoryDelivery
 from core.modules.memories.context_memory import ContextMemory
 from core.modules.memories.memory_keyword import MemoryKeyword
@@ -49,14 +49,14 @@ class MemoriesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings",
                     "journal.core.drivers"]
-    models = [ModelDeclaration(Memory, commands=[MemoryRemove], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
+    models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
     migrations = [MemoriesTablesMigration]
     views = [ActiveMemory, ContextMemory, KeywordMemory]
     guards = [TypeMakersGuard, TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, TypeChangeGuard, SwitchChangeGuard, KeywordScopeGuard]
-    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler, MemoryGiveHandler, MemoryMarkOpenHandler, MemorySkipHandler]
+    handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
     driver_rules = [StartDeliveryRule, KeywordDeliveryRule, DueDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
     listeners = [CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener]
-    subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, MemorySkipSubcommand]
+    subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]

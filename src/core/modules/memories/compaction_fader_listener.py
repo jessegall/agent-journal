@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.drivers.hook_call import HookCall
-from core.modules.memories.memory_fade import MemoryFade
+from core.modules.memories.fade_memories import FadeMemories
 
 
 class CompactionFaderListener(CommitListener):
@@ -21,4 +21,4 @@ class CompactionFaderListener(CommitListener):
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)
         if call.hook == HookEventName.COMPACT:
-            self.bus.run(MemoryFade(call.agent_id), Actor.core(), cause_id=event.id, environment_id=event.environment_id)
+            self.bus.run(FadeMemories(call.agent_id), Actor.core(), cause_id=event.id, environment_id=event.environment_id)

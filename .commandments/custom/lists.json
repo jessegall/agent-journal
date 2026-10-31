@@ -1034,5 +1034,33 @@
         "coding.file-feed",
         "coding.file-edits",
         "coding.terminal"
+    ],
+    "command_verbs": [
+        "Allow",
+        "Block",
+        "Cancel",
+        "Choose",
+        "Close",
+        "Delete",
+        "Deliver",
+        "Edit",
+        "End",
+        "Fade",
+        "Give",
+        "Make",
+        "Move",
+        "Open",
+        "Place",
+        "Prune",
+        "Read",
+        "Record",
+        "Remove",
+        "Resume",
+        "Save",
+        "Send",
+        "Skip",
+        "Start",
+        "Trust",
+        "Weigh"
     ]
 }

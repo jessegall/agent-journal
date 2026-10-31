@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/"
+            },
+            {
+                "extendsAny": "Command"
+            },
+            {
+                "not": {
+                    "nameMatches": "^(${command_verbs})[A-Z]"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "command-named-for-its-effect",
+        "description": "A command is named for what it does to a row (MemoryMake, FileEditRecord) instead of as the order it is.",
+        "rule": "Name a command as an order, its verb first: MakeMemory, RecordFileEdit, StartTask; its handler and subcommand take the same name. A new verb goes into command_verbs in lists.json.",
+        "skill": "plain-code-words"
+    }
+}

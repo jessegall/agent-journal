@@ -26,7 +26,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from tests.unit.core.base.sample_container import sample_container
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle
 from tests.unit.core.base.model.test_model import Item
 
@@ -95,7 +95,7 @@ def cursor(container, name: str) -> int:
 
 def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
     container = container_with(tmp_path, PausedItemCounter)
-    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
     assert (HANDLED, cursor(container, PausedItemCounter.name)) == ([], 1)
 
@@ -103,7 +103,7 @@ def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
 def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
     container = container_with(tmp_path, NewItemPause, PausedItemCounter)
     container.get(CommitListenerRunner).run()
-    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()
     assert HANDLED == ["pause 1", "counted 1"]
     assert container.get(EventLog).event(2).cause_id == 1
@@ -114,7 +114,7 @@ def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
 def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp_path):
     container = container_with(tmp_path, FailingListener)
     container.get(CommitListenerRunner).run()
-    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     for _ in range(3):
         container.get(CommitListenerRunner).run()
     assert HANDLED == ["failed", "failed", "failed"]
@@ -124,7 +124,7 @@ def test_an_event_that_fails_three_times_is_skipped_and_the_listener_goes_on(tmp
 
 def test_a_runner_that_read_an_old_position_cannot_claim_an_event_another_runner_took(tmp_path):
     container = container_with(tmp_path, PausedItemCounter)
-    container.get(Bus).run(ItemMake(title="Dune"), AGENT)
+    container.get(Bus).run(MakeItem(title="Dune"), AGENT)
     cursors = container.get(ListenerCursorTable)
     assert cursors.claimed(PausedItemCounter.name, 0, 1)
     assert not cursors.claimed(PausedItemCounter.name, 0, 1)

@@ -6,7 +6,7 @@ from core.base.viewer.window_place import WindowPlace
 from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
-from suites.coding.commands.file_edit_record_handler import FileEditRecordHandler
+from suites.coding.commands.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
@@ -28,7 +28,7 @@ class CodingModule(Module):
     drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration]
-    handlers = [FileEditRecordHandler]
+    handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule]
     windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),

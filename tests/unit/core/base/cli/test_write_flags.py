@@ -23,7 +23,7 @@ from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from tests.unit.core.base.sample_container import sample_container
 from tests.unit.core.base.samples.listener_sample import ShelfCounter
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 
 AGENT = Actor(7, ActorType.AGENT)
 
@@ -55,7 +55,7 @@ def registry() -> Registry:
 
 def test_explain_lists_every_refusal_and_listener_and_writes_nothing(tmp_path):
     container = sample_container(tmp_path, registry())
-    explanation = container.get(Bus).explain(ItemMake(title="Dune"), AGENT)
+    explanation = container.get(Bus).explain(MakeItem(title="Dune"), AGENT)
     assert [refusal.guard for refusal in explanation.refusals] == ["items.no-dune", "items.closed-today"]
     assert [(event.event, event.listeners) for event in explanation.events] == [("item.create", ["items.count"])]
     assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0
@@ -68,11 +68,11 @@ def test_a_skipped_guard_and_a_short_flag_reach_the_context(tmp_path):
     flags.add(parser)
     skipped = flags.skipped_guards(parser.parse_args(["--skip-guard", "items.no-dune", "--today"]))
     assert skipped == frozenset({"items.no-dune", "items.closed-today"})
-    item = container.get(Bus).run(ItemMake(title="Dune"), AGENT, skipped)
+    item = container.get(Bus).run(MakeItem(title="Dune"), AGENT, skipped)
     assert item.title == "Dune"
     assert container.get(Database).rows(Statement("SELECT skipped_guards FROM events"))[0][0] == '["items.closed-today", "items.no-dune"]'
 
 
 def test_without_explain_the_first_refusal_stops_the_command(tmp_path):
     with pytest.raises(GuardRefusal, match="no item may be titled Dune"):
-        sample_container(tmp_path, registry()).get(Bus).run(ItemMake(title="Dune"), AGENT)
+        sample_container(tmp_path, registry()).get(Bus).run(MakeItem(title="Dune"), AGENT)

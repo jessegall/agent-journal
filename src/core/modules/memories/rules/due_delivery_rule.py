@@ -4,9 +4,9 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.delivery_cause import DeliveryCause
 from core.modules.memories.hook_memories import HookMemories
-from core.modules.memories.memory_give import MemoryGive
+from core.modules.memories.give_memories import GiveMemories
 from core.modules.memories.memory_lines import MemoryLines
-from core.modules.memories.memory_remove import MemoryRemove
+from core.modules.memories.remove_memory import RemoveMemory
 
 DUE_REASON = "given at its due time"
 
@@ -27,5 +27,5 @@ class DueDeliveryRule(DriverRule):
         memories = list(self.memories.query(hook).due(hook.timestamp).delivery_order().all_rows())
         if not memories:
             return RuleAnswer.allowed()
-        removals = (MemoryRemove(row.memory_id, DUE_REASON) for row in memories)
-        return RuleAnswer.with_lines(*MemoryLines.listing(memories)).running(MemoryGive(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.DUE), *removals)
+        removals = (RemoveMemory(row.memory_id, DUE_REASON) for row in memories)
+        return RuleAnswer.with_lines(*MemoryLines.listing(memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.DUE), *removals)

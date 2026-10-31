@@ -34,4 +34,4 @@ class EditSubcommand(Subcommand[EditCommand[Model], Model]):
 def edit_command(table: Table[Model]) -> type[EditCommand[Model]]:
     hints = get_type_hints(table.model)
     command_fields = [(column, hints[column] | None, field(default=None)) for column in editable_columns(table)]
-    return dataclasses.make_dataclass(f"{table.model.__name__}Edit", command_fields, bases=tuple([generic_base(EditCommand[table.model])]), frozen=True)
+    return dataclasses.make_dataclass(f"Edit{table.model.__name__}", command_fields, bases=tuple([generic_base(EditCommand[table.model])]), frozen=True)

@@ -9,10 +9,10 @@ from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
-CHANGE = Change(None, Item(title="Dune"), Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune")))
+CHANGE = Change(None, Item(title="Dune"), Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune")))
 
 
 def test_every_guard_is_on_and_everything_applies_until_something_else_is_bound():

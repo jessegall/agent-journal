@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.agents.agent_end import AgentEnd
+from core.modules.agents.end_agent import EndAgent
 
 
 class SessionEndRule(DriverRule):
@@ -14,4 +14,4 @@ class SessionEndRule(DriverRule):
     essential = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(AgentEnd(hook.agent_id))
+        return RuleAnswer.allowed().running(EndAgent(hook.agent_id))

@@ -1,11 +1,11 @@
 from argparse import ArgumentParser, Namespace
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.messages.message_send import MessageSend
+from core.modules.messages.send_message import SendMessage
 from core.modules.messages.message import Message
 
 
-class MessageReplySubcommand(Subcommand[MessageSend, Message]):
+class MessageReplySubcommand(Subcommand[SendMessage, Message]):
     """`journal message reply <message> "<text>"`: writes a message that answers another."""
 
     cli_name = "message"
@@ -15,5 +15,5 @@ class MessageReplySubcommand(Subcommand[MessageSend, Message]):
         parser.add_argument("parent_id", type=int)
         parser.add_argument("text")
 
-    def command(self, arguments: Namespace, caller: Caller) -> MessageSend:
-        return MessageSend(arguments.text, arguments.parent_id)
+    def command(self, arguments: Namespace, caller: Caller) -> SendMessage:
+        return SendMessage(arguments.text, arguments.parent_id)

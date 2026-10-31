@@ -5,7 +5,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.mark_tracker import DEFAULT_MARKS, MarkTracker
 from core.modules.memories.memory_lines import MemoryLines
-from core.modules.memories.memory_mark_open import MemoryMarkOpen
+from core.modules.memories.open_memory_mark import OpenMemoryMark
 from core.modules.settings.setting_values import SettingValues
 
 MARKS_SETTING = "memories.marks"
@@ -31,4 +31,4 @@ class OpenMarkRule(DriverRule):
         if reached is None:
             return RuleAnswer.allowed()
         memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
-        return RuleAnswer.with_lines(*MemoryLines.weigh(reached, memories)).running(MemoryMarkOpen(hook.agent_id, reached))
+        return RuleAnswer.with_lines(*MemoryLines.weigh(reached, memories)).running(OpenMemoryMark(hook.agent_id, reached))

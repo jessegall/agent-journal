@@ -1,7 +1,7 @@
-from core.modules.agents.agent_end_handler import AgentEndHandler
-from core.modules.agents.agent_end_subcommand import AgentEndSubcommand
-from core.modules.agents.agent_start_handler import AgentStartHandler
-from core.modules.agents.agent_start_subcommand import AgentStartSubcommand
+from core.modules.agents.end_agent_handler import EndAgentHandler
+from core.modules.agents.end_agent_subcommand import EndAgentSubcommand
+from core.modules.agents.start_agent_handler import StartAgentHandler
+from core.modules.agents.start_agent_subcommand import StartAgentSubcommand
 from core.modules.agents.migrations.m001_agents import AgentsTableMigration
 from core.modules.agents.agent import Agent
 from core.base.caller.caller_resolver import CallerResolver
@@ -21,8 +21,8 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     migrations = [AgentsTableMigration]
-    handlers = [AgentStartHandler, AgentEndHandler]
-    subcommands = [AgentStartSubcommand, AgentEndSubcommand]
+    handlers = [StartAgentHandler, EndAgentHandler]
+    subcommands = [StartAgentSubcommand, EndAgentSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["agent list"],

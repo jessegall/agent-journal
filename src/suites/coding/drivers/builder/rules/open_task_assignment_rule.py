@@ -3,7 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.task_query import TaskQuery
-from core.modules.tasks.task_start import TaskStart
+from core.modules.tasks.start_task import StartTask
 
 
 class OpenTaskAssignmentRule(DriverRule):
@@ -22,4 +22,4 @@ class OpenTaskAssignmentRule(DriverRule):
         open_tasks = self.tasks.open_tasks(hook.environment_id).oldest().page(1, 1).rows
         if not open_tasks:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"task {open_tasks[0].id} is yours now: {open_tasks[0].title}").running(TaskStart(open_tasks[0].id))
+        return RuleAnswer.refused(f"task {open_tasks[0].id} is yours now: {open_tasks[0].title}").running(StartTask(open_tasks[0].id))

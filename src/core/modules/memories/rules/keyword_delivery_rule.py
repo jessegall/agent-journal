@@ -8,7 +8,7 @@ from core.modules.memories.delivery_cause import DeliveryCause
 from core.modules.memories.hook_keywords import hook_keywords
 from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.keyword_memory import KeywordMemory
-from core.modules.memories.memory_give import MemoryGive
+from core.modules.memories.give_memories import GiveMemories
 from core.modules.memories.memory_lines import MemoryLines
 from core.modules.settings.setting_values import SettingValues
 
@@ -38,4 +38,4 @@ class KeywordDeliveryRule(DriverRule):
         memories = list(rows)[: limit if isinstance(limit, int) else KEYWORD_LIMIT_DEFAULT]
         if not memories:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(*MemoryLines.listing(memories)).running(MemoryGive(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))
+        return RuleAnswer.with_lines(*MemoryLines.listing(memories)).running(GiveMemories(hook.agent_id, tuple(row.memory_id for row in memories), DeliveryCause.KEYWORD))

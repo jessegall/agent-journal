@@ -17,7 +17,7 @@ from tests.unit.core.base.samples.module_copy import items_module_copy
 
 ITEMS = "tests.unit.core.base.samples.sync_sample:ItemsModule"
 ITEM_COUNT = "tests.unit.core.base.samples.sync_sample:ItemCountModule"
-EVENT = Statement("INSERT INTO events (actor_id, row_id, name, row_table, command, created_at) VALUES (1, 1, 'item.create', 'items', 'ItemMake', '2026')")
+EVENT = Statement("INSERT INTO events (actor_id, row_id, name, row_table, command, created_at) VALUES (1, 1, 'item.create', 'items', 'MakeItem', '2026')")
 
 
 def synced(home: JournalHome, *modules: str) -> Container:

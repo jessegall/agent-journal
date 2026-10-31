@@ -39,4 +39,4 @@ def creation_command(table: Table[Model]) -> type[MakeCommand[Model]]:
     command_fields = [(column, hints[column]) for column in argument_columns(table)]
     command_fields += [(column, hints[column], field(default=False) if column in switch_columns(table) else copied_default(model_fields[column]))
                        for column in flag_columns(table)]
-    return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=tuple([generic_base(MakeCommand[table.model])]), frozen=True)
+    return dataclasses.make_dataclass(f"Make{table.model.__name__}", command_fields, bases=tuple([generic_base(MakeCommand[table.model])]), frozen=True)

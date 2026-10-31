@@ -5,12 +5,12 @@ from core.base.actor_type import ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
 from core.base.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
 
 AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
-CONTEXT = Context(Actor(7, ActorType.AGENT), AT, ItemMake(title="Dune"))
+CONTEXT = Context(Actor(7, ActorType.AGENT), AT, MakeItem(title="Dune"))
 STORED = Item(id=4, version=1, title="Dune")
 
 

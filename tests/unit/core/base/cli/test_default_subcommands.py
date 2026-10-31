@@ -18,7 +18,7 @@ from core.base.missing_rows import MissingRows
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.model.model import Model
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.listener.test_commit_listener_runner import container_with
 from tests.unit.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.unit.core.base.model.test_model import Item
@@ -42,7 +42,7 @@ class Note(Model):
 def container(tmp_path) -> Container:
     built = container_with(tmp_path)
     for title in ("Dune", "Emma", "Ulysses"):
-        built.get(Bus).run(ItemMake(title=title), CALLER.actor)
+        built.get(Bus).run(MakeItem(title=title), CALLER.actor)
     built.get(Database).update(Statement(NOTES))
     for item_id in (1, 1, 2):
         built.get(Database).insert(Statement(NOTE, [item_id]))
@@ -68,7 +68,7 @@ def test_the_built_command_is_the_nouns_make_command_and_runs_through_the_bus(co
     subcommand, parser = container.get(DefaultSubcommands).make(Item), ArgumentParser()
     subcommand.arguments(parser)
     command = subcommand.command(parser.parse_args(["Middlemarch"]), CALLER)
-    assert (command.model(), command.label()) == (Item, "ItemMake")
+    assert (command.model(), command.label()) == (Item, "MakeItem")
     assert container.get(Bus).run(command, CALLER.actor).id == 4
 
 
@@ -116,13 +116,13 @@ def test_delete_removes_a_row_and_a_referenced_row_names_the_referring_table(con
 
 
 @dataclass(frozen=True)
-class ItemClose(MoveCommand[Item]):
+class CloseItem(MoveCommand[Item]):
     move = ItemLifecycle.close
     title: str
 
 
 def test_each_move_is_a_subcommand_and_a_typed_command_gives_its_fields_as_flags(container):
-    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.unit.core.base.cli.test_default_subcommands:ItemClose"])
+    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.unit.core.base.cli.test_default_subcommands:CloseItem"])
     assert (pause.name, close.name) == ("pause", "close")
     assert run(container, pause, "1").state == ItemState.PAUSED
     with pytest.raises(SystemExit):

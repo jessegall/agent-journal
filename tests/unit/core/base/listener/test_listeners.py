@@ -19,7 +19,7 @@ from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.timestamp import Timestamp
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
 HANDLED: list[str] = []
@@ -57,7 +57,7 @@ def entry(listener: type[SaveListener] | type[DeletionListener], timing: Listene
 UNUSED = ListenerEntry("shelves.count", EventPattern("shelf.create"), ListenerTiming.SAVE, DottedPath("tests.unit.core.base.samples.listener_sample:ShelfCounter"), 9)
 REGISTRY = Registry("abc", {}, {}, {}, (), (entry(SecondOnSave, ListenerTiming.SAVE, 2), entry(FirstOnSave, ListenerTiming.SAVE, 1),
                                           entry(ClearItemNotes, ListenerTiming.DELETION, 1), UNUSED))
-CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"))
+CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"))
 
 
 def listeners() -> Listeners:

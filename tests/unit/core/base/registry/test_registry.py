@@ -14,13 +14,13 @@ from core.base.registry.dotted_path_error import DottedPathError
 from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.registry.stale_registry_error import StaleRegistryError
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 
 SAMPLE = "tests.unit.core.base.samples.registry_sample:SampleGuard"
 ENTRIES = {
     "models": {"item": {"module": "items", "model": "tests.unit.core.base.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
-    "handlers": {DottedPath.class_path(ItemMake).text: "tests.unit.core.base.command.test_commands:ItemMake"},
-    "subcommands": {"item make": "tests.unit.core.base.command.test_commands:ItemMake"},
+    "handlers": {DottedPath.class_path(MakeItem).text: "tests.unit.core.base.command.test_commands:MakeItem"},
+    "subcommands": {"item make": "tests.unit.core.base.command.test_commands:MakeItem"},
     "guards": [
         {"name": "items.no-second-item", "event": "item.create", "path": SAMPLE, "position": 2, "short_flag": ""},
         {"name": "core.lifecycle", "event": "*", "path": SAMPLE, "position": 1, "short_flag": ""},
@@ -63,7 +63,7 @@ def test_listeners_are_listed_by_event_and_timing(database):
 
 def test_a_command_finds_its_handler(database):
     registry = Registry.read(database)
-    assert registry.has_handler(ItemMake) and registry.command_handler(ItemMake).loaded() is ItemMake
+    assert registry.has_handler(MakeItem) and registry.command_handler(MakeItem).loaded() is MakeItem
 
 
 def test_a_registry_built_from_other_code_is_refused(database):

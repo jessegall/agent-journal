@@ -14,7 +14,7 @@ from core.base.journal_home import JournalHome
 from core.base.registry.registry import Registry
 from core.base.timing import Timing
 from tests.unit.core.base.command.test_bus import handlers
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.module.test_module_sync import ITEMS
 from tests.unit.core.base.sample_container import sample_container
 
@@ -59,14 +59,14 @@ def container(tmp_path):
 def test_a_write_with_a_timing_set_stamps_the_lock_then_the_commit(container):
     timing = Timing.started("server_received")
     container.bind(Timing, timing)
-    container.get(Bus).run(ItemMake(title="Dune"), Actor(7, ActorType.AGENT))
+    container.get(Bus).run(MakeItem(title="Dune"), Actor(7, ActorType.AGENT))
     assert names(timing) == ["server_received", "write_started", "committed"]
 
 
 def test_an_explained_write_stamps_nothing(container):
     timing = Timing.started("server_received")
     container.bind(Timing, timing)
-    container.get(Bus).explain(ItemMake(title="Dune"), Actor(7, ActorType.AGENT))
+    container.get(Bus).explain(MakeItem(title="Dune"), Actor(7, ActorType.AGENT))
     assert names(timing) == ["server_received"]
 
 

@@ -4,10 +4,10 @@ from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
 from core.modules.waits.help_request_overlay import HelpRequestOverlay
 from core.modules.waits.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.wait import Wait
-from core.modules.waits.wait_end import WaitEnd
+from core.modules.waits.end_wait import EndWait
 from core.modules.waits.wait_rows_subcommand import WaitRowsSubcommand
-from core.modules.waits.wait_open_handler import WaitOpenHandler
-from core.modules.waits.wait_resume import WaitResume
+from core.modules.waits.open_wait_handler import OpenWaitHandler
+from core.modules.waits.resume_wait import ResumeWait
 from core.modules.waits.help_request_subcommand import HelpRequestSubcommand
 from core.modules.waits.wait_target import WaitTarget
 from core.modules.waits.wait_overlay import WaitOverlay
@@ -20,9 +20,9 @@ class WaitsModule(Module):
     name = "journal.core.waits"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
-    models = [ModelDeclaration(Wait, commands=[WaitEnd, WaitResume], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
     migrations = [WaitsTablesMigration]
-    handlers = [WaitOpenHandler]
+    handlers = [OpenWaitHandler]
     subcommands = [WaitRowsSubcommand, HelpRequestSubcommand]
     listeners = [TargetResolutionListener]
     overlays = [WaitOverlay, HelpRequestOverlay]

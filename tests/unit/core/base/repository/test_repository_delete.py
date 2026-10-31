@@ -15,7 +15,7 @@ from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from tests.unit.core.base.sample_container import context, empty_registry, sample_container
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 from tests.unit.core.base.model.test_model import Item
 
 NOTES = "CREATE TABLE item_notes (id INTEGER PRIMARY KEY, item_id INTEGER NOT NULL REFERENCES items(id) ON DELETE RESTRICT) STRICT"
@@ -37,7 +37,7 @@ class ClearItemNotes(DeletionListener):
 def with_note(container: Container) -> Item:
     database = container.get(Database)
     database.update(Statement(NOTES))
-    item = container.get(Repository).save(Item(title="Dune"), context(ItemMake(title="Dune")))
+    item = container.get(Repository).save(Item(title="Dune"), context(MakeItem(title="Dune")))
     database.insert(Statement("INSERT INTO item_notes (item_id) VALUES (?)", [item.id]))
     return item
 
@@ -48,7 +48,7 @@ def test_a_deletion_listener_clears_what_points_at_the_row_first(tmp_path):
     container = sample_container(tmp_path, registry)
     item = with_note(container)
     with container.get(Database).transaction():
-        container.get(Repository).delete(item, context(ItemMake(title="Dune")))
+        container.get(Repository).delete(item, context(MakeItem(title="Dune")))
     assert container.get(Database).rows(Statement("SELECT count(*) FROM item_notes"))[0][0] == 0
     assert container.get(EventLog).event(container.get(EventLog).newest_id()).event == "item.delete"
 
@@ -57,4 +57,4 @@ def test_a_row_still_pointed_at_is_refused_naming_the_table_that_points(tmp_path
     container = sample_container(tmp_path, empty_registry())
     item = with_note(container)
     with pytest.raises(Refusal, match="this item is still referred to by item_notes"):
-        container.get(Repository).delete(item, context(ItemMake(title="Dune")))
+        container.get(Repository).delete(item, context(MakeItem(title="Dune")))

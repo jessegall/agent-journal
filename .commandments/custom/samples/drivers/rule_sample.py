@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.commands import TaskStart
+from core.modules.tasks.commands import StartTask
 from core.modules.tasks.task_query import TaskQuery
 
 
@@ -15,9 +15,9 @@ class SampleStart(DriverRule):
 
     def answer(self, hook):
         # @sin architecture_drivers_RuleRunsNoCommandDetector
-        self.bus.run(TaskStart(1))
+        self.bus.run(StartTask(1))
         # @righteous architecture_drivers_RuleRunsNoCommandDetector
-        return RuleAnswer.allowed().running(TaskStart(1))
+        return RuleAnswer.allowed().running(StartTask(1))
 
 
 class SampleReader(DriverRule):

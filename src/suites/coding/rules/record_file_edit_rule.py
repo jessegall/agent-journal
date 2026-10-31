@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from suites.coding.commands.file_edit_record import FileEditRecord
+from suites.coding.commands.record_file_edit import RecordFileEdit
 
 
 class RecordFileEditRule(DriverRule):
@@ -17,4 +17,4 @@ class RecordFileEditRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.diff is None or not tool.is_writing_files():
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(FileEditRecord(hook.agent_id, hook.environment_id, tool.diff))
+        return RuleAnswer.allowed().running(RecordFileEdit(hook.agent_id, hook.environment_id, tool.diff))
