@@ -38,7 +38,7 @@ def test_an_undecided_report_shows_a_mark_with_no_outcome(new_story):
 def test_a_refused_report_shows_no_mark(new_story):
     story = new_story(fixture=ReviewInProgress)
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.expect_refusal('review record "1 passed. 2 passed" --environment main', "not the reviewer", actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
