@@ -93,12 +93,3 @@ func run(t *testing.T, options Options, client Client) (string, int) {
 	within(t, 20*time.Second, func() { code = Run(options, client, &output) })
 	return output.String(), code
 }
-
-func modified(t *testing.T, path string) time.Time {
-	t.Helper()
-	info, err := os.Stat(path)
-	if err != nil {
-		return time.Time{}
-	}
-	return info.ModTime()
-}

@@ -1,6 +1,4 @@
 import shutil
-from datetime import datetime, timezone
-
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 
@@ -14,7 +12,7 @@ HEARTBEAT_FILE = "heartbeat"
 
 class OutputFolder:
     """The one class that knows .journal/processes/<number>/: the line, the parts, each part's <position>.out and
-    <position>.status, the runner's pid, the end and the heartbeat, which the runner writes and the module reads."""
+    <position>.status, the runner's pid, the end and the heartbeat, the time of the runner's last sign of life, which the runner writes and the module reads."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -59,13 +57,12 @@ class OutputFolder:
     def end(self, process_id: int) -> int | None:
         return self.number(process_id, END_FILE)
 
-    def beat(self, process_id: int) -> None:
-        self.write(process_id, HEARTBEAT_FILE, "")
-        (self.home.folder / FOLDER_NAME / str(process_id) / HEARTBEAT_FILE).touch()
+    def beat(self, process_id: int, moment: Timestamp) -> None:
+        self.write(process_id, HEARTBEAT_FILE, moment.text)
 
     def heartbeat(self, process_id: int) -> Timestamp | None:
-        path = self.home.folder / FOLDER_NAME / str(process_id) / HEARTBEAT_FILE
-        return Timestamp(datetime.fromtimestamp(path.stat().st_mtime, timezone.utc)) if path.exists() else None
+        text = self.text(process_id, HEARTBEAT_FILE).strip()
+        return Timestamp.parsed(text) if text else None
 
     def sizes(self, process_id: int) -> tuple[int, int]:
         texts = [self.output(process_id, position) for position in range(1, len(self.part_texts(process_id)) + 1)]

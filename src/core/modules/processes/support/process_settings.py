@@ -5,6 +5,10 @@ FOREGROUND_SETTING = "processes.foreground-seconds"
 WAITING_SETTING = "processes.foreground-while-waiting"
 UNREAD_SETTING = "processes.unread-output-every"
 DEFAULT_UNREAD_EVERY = 5
+LOST_SETTING = "processes.lost-seconds"
+KEPT_SETTING = "processes.outputs-kept"
+DEFAULT_LOST_SECONDS = 90
+DEFAULT_OUTPUTS_KEPT = 40
 DEFAULT_SHORT_OUTPUT_BYTES = 200
 DEFAULT_FOREGROUND_SECONDS = 30
 DEFAULT_WAITING_SECONDS = 10
@@ -32,3 +36,9 @@ class ProcessSettings:
 
     def unread_every(self, environment_id: int) -> int:
         return max(1, self.seconds(UNREAD_SETTING, environment_id, DEFAULT_UNREAD_EVERY))
+
+    def lost_seconds(self, environment_id: int) -> int:
+        return self.seconds(LOST_SETTING, environment_id, DEFAULT_LOST_SECONDS)
+
+    def outputs_kept(self, environment_id: int) -> int:
+        return self.seconds(KEPT_SETTING, environment_id, DEFAULT_OUTPUTS_KEPT)

@@ -38,6 +38,7 @@ func TestAnAtOnceRunMovesBeforeItsFirstOutput(t *testing.T) {
 	if code != 0 || time.Since(started) > time.Second || !strings.Contains(output, "moved to the background: journal output read 4 --summary when it ends") {
 		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
 	}
+	waitFor(t, 10*time.Second, "the end of the moved run", func() bool { return exists(folderOf(setup) + "/end") })
 }
 
 func TestALimitOf0NeverMoves(t *testing.T) {

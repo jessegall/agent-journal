@@ -73,12 +73,9 @@ func (folder Folder) Sizes(parts int) (int, int) {
 	return bytes, lines
 }
 
+// Beat writes the time of the runner's last sign of life into the heartbeat file, as the module reads it.
 func (folder Folder) Beat() {
-	path := filepath.Join(folder.Path, "heartbeat")
-	now := time.Now()
-	if err := os.Chtimes(path, now, now); err != nil {
-		_ = os.WriteFile(path, nil, 0o644)
-	}
+	_ = os.WriteFile(filepath.Join(folder.Path, "heartbeat"), []byte(time.Now().UTC().Format("2006-01-02T15:04:05.000000+00:00")), 0o644)
 }
 
 func (folder Folder) number(name string) (int, bool) {

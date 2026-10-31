@@ -14,6 +14,10 @@ from core.modules.processes.commands.watch_output_handler import WatchOutputHand
 from core.modules.processes.commands.watch_output_subcommand import WatchOutputSubcommand
 from core.modules.processes.listeners.ended_process_watch_listener import EndedProcessWatchListener
 from core.modules.processes.rules.watch_lines import WatchLines
+from core.modules.processes.commands.prune_outputs_handler import PruneOutputsHandler
+from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
+from core.modules.processes.queries.process_part_query import ProcessPartQuery
+from core.modules.processes.rules.lost_process_rule import LostProcessRule
 from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
 from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
 from core.modules.processes.commands.lose_process import LoseProcess
@@ -52,10 +56,10 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages"]
-    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
+    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, ShippedReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler, PruneOutputsHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines]
-    listeners = [EndedProcessWatchListener]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, LostProcessRule]
+    listeners = [EndedProcessWatchListener, OutputPruneListener]

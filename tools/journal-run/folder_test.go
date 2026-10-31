@@ -45,8 +45,11 @@ func TestTheHeartbeatIsWrittenWhileTheShellLives(t *testing.T) {
 		close(finished)
 	}()
 	waitFor(t, 5*time.Second, "the heartbeat", func() bool { return exists(folderOf(setup) + "/heartbeat") })
-	first := modified(t, folderOf(setup)+"/heartbeat")
-	waitFor(t, 5*time.Second, "a later heartbeat", func() bool { return modified(t, folderOf(setup)+"/heartbeat").After(first) })
+	first := readFile(t, folderOf(setup)+"/heartbeat")
+	if _, err := time.Parse("2006-01-02T15:04:05.000000-07:00", first); err != nil {
+		t.Fatalf("the heartbeat holds %q, which is no time: %v", first, err)
+	}
+	waitFor(t, 5*time.Second, "a later heartbeat", func() bool { return readFile(t, folderOf(setup)+"/heartbeat") != first })
 	<-finished
 }
 
