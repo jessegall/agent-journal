@@ -1,7 +1,7 @@
 from server.journal_round import JournalRound
 from server.tick_work import TickWork
-from tests.stories.core.base.drivers.support.fixtures import LeadLocked
-from tests.stories.core.base.drivers.support.samples import SAMPLES
+from tests.stories.core.base.driver.support.fixtures import LeadLocked
+from tests.stories.core.base.driver.support.samples import SAMPLES
 
 
 def test_a_tick_round_reaches_each_open_agents_rules_and_a_silenced_history_rule_keeps_its_history(new_story):

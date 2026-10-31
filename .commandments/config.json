@@ -2,6 +2,7 @@
     "$schema": "./config.schema.json",
     "paths": [
         "src/core",
+        "src/suites",
         "src/install",
         "src/server",
         "tests",
@@ -213,6 +214,7 @@
         "tests",
         "tools/journal-hook/testdata",
         "src/viewer/tests/sample-window",
-        "src/core/modules/viewer/web/dist"
+        "src/core/modules/viewer/web/dist",
+        "src/suites/coding/web/dist"
     ]
 }

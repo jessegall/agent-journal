@@ -3,10 +3,10 @@ import {join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {build} from "vite";
 
-const CORE = fileURLToPath(new URL("../../core", import.meta.url));
+const MODULE_FOLDERS = [fileURLToPath(new URL("../../core", import.meta.url)), fileURLToPath(new URL("../../suites", import.meta.url))];
 const SKIPPED = new Set(["node_modules", "dist", "__pycache__"]);
 
-// every module's window build in the core, each a web/vite.config.js written with windowBuild
+// every module's window build in the core and the suites, each a web/vite.config.js written with windowBuild
 function windowConfigs(folder) {
     const config = join(folder, "web", "vite.config.js");
     const found = existsSync(config) ? [config] : [];
@@ -16,4 +16,4 @@ function windowConfigs(folder) {
     return found;
 }
 
-for (const config of windowConfigs(CORE)) await build({configFile: config, logLevel: "warn"});
+for (const config of MODULE_FOLDERS.flatMap(windowConfigs)) await build({configFile: config, logLevel: "warn"});

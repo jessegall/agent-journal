@@ -8,12 +8,12 @@ from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
 from core.base.type_guards import is_list, is_tuple
 
-DEFAULT_MODULE_LIST = DottedPath("core.modules:DEFAULT_MODULES")
+DEFAULT_MODULE_LISTS = [DottedPath("core.modules:DEFAULT_MODULES"), DottedPath("suites:DEFAULT_SUITES")]
 
 
 class ModuleFinder:
-    """Finds the modules to load: the core's default modules, then the plugins the project's modules.json lists,
-    each refused if it needs a core version this core is not."""
+    """Finds the modules to load: the core's default modules, the suites shipped beside the core, then the plugins
+    the project's modules.json lists, each refused if it needs a core version this core is not."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home
@@ -22,10 +22,13 @@ class ModuleFinder:
         return (*self.default_modules(), *(self.checked(DottedPath(path)) for path in self.plugin_paths()))
 
     def default_modules(self) -> tuple[type[Module], ...]:
-        listed = DEFAULT_MODULE_LIST.value()
+        return tuple(module for path in DEFAULT_MODULE_LISTS for module in self.listed_modules(path))
+
+    def listed_modules(self, path: DottedPath) -> tuple[type[Module], ...]:
+        listed = path.value()
         if not is_tuple(listed):
-            raise ModuleError(f"{DEFAULT_MODULE_LIST.text} is no tuple of modules")
-        return tuple(self.module(item, DEFAULT_MODULE_LIST.text) for item in listed)
+            raise ModuleError(f"{path.text} is no tuple of modules")
+        return tuple(self.module(item, path.text) for item in listed)
 
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():

@@ -9,6 +9,5 @@ from core.modules.settings.module import SettingsModule
 from core.modules.tasks.module import TasksModule
 from core.modules.waits.module import WaitsModule
 from core.modules.viewer.module import ViewerModule
-from core.suites.coding.module import CodingModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, MemoriesModule, WaitsModule, ViewerModule, CodingModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, MessagesModule, MemoriesModule, WaitsModule, ViewerModule)

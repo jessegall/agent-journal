@@ -1,7 +1,7 @@
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
-from tests.stories.core.base.drivers.support.hook_agents import hook_agent
+from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import MainEnvironment
 

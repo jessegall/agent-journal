@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
-from tests.stories.core.base.drivers.support.fixtures import LeadStarted, LeadWaiting
-from tests.stories.core.base.drivers.support.samples import SAMPLES
+from tests.stories.core.base.driver.support.fixtures import LeadStarted, LeadWaiting
+from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 
 
