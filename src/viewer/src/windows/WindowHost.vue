@@ -16,8 +16,14 @@ const props = defineProps({
     events: {type: Array, default: () => []},
     unavailableReason: {type: String, default: ""},
 });
-const emit = defineEmits(["open"]);
+const emit = defineEmits(["open", "remove"]);
 const failure = ref("");
+const attempt = ref(0);
+
+function retry() {
+    failure.value = "";
+    attempt.value++;
+}
 
 provide(WINDOW_CONTEXT, windowContext({
     window: props.name,
@@ -52,13 +58,13 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
             <WindowPlaceholder :name="name" :reason="unavailableReason" />
         </template>
         <template v-else-if="failure">
-            <WindowPlaceholder :name="name" :reason="`This window failed: ${failure}`" />
+            <WindowPlaceholder :name="name" :reason="`This window failed: ${failure}`" retry @retry="retry" />
         </template>
         <template v-else-if="!component">
-            <WindowPlaceholder :name="name" reason="No installed module has this window." />
+            <WindowPlaceholder :name="name" reason="No installed module has this window." removable @remove="emit('remove')" />
         </template>
         <template v-else>
-            <Hosted />
+            <Hosted :key="attempt" />
         </template>
     </section>
 </template>

@@ -6,6 +6,7 @@ import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
 import WindowHost from "./WindowHost.vue";
 
+const emit = defineEmits(["remove"]);
 const props = defineProps({
     name: {type: String, required: true},
     catalogue: {type: Object, required: true},
@@ -91,6 +92,6 @@ watch(
         />
     </template>
     <template v-else>
-        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" />
+        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" @remove="emit('remove')" />
     </template>
 </template>

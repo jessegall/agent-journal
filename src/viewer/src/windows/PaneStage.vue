@@ -54,6 +54,7 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
                                 :visible="state === 'live'"
                                 :prompts="prompts"
                                 :shell-read="shellRead"
+                                @remove="closeTab(id, pane.active)"
                             />
                         </template>
                         <template v-else>

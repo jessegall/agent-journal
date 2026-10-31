@@ -190,3 +190,10 @@ test("a window that is gone keeps a muted tab with its last title and a placehol
     expect(element.textContent).toContain("No installed module has this window.");
     expect(element.querySelector(`[data-reopen="a.old"]`)).toBeNull();
 });
+
+test("a gone window's placeholder has Remove tab, which closes that tab", async () => {
+    const {store, element} = await stage({tabs: ["a.old", "a.chat"], active: "a.old"}, {offers: ["a.chat"], titles: {"a.old": "Old board"}});
+    [...element.querySelectorAll(".window-placeholder button")].find((button) => button.textContent.includes("Remove tab")).click();
+    await settled();
+    expect(tabsIn(store, leaves(store.layout.value.tree)[0])).toEqual(["a.chat"]);
+});
