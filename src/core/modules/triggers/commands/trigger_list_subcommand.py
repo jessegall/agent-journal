@@ -2,9 +2,9 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
+from core.base.subcommand.listed_rows import ListedRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
 from core.modules.triggers.commands.support.trigger_lines import TriggerLines
 from core.modules.triggers.models.trigger import Trigger
 from core.modules.triggers.queries.trigger_query import TriggerQuery
@@ -26,5 +26,4 @@ class TriggerListSubcommand(ReadSubcommand[Sequence[Trigger]]):
         return tuple(self.triggers.open())
 
     def write_output(self, value: object, output: Output) -> None:
-        listed = [row for row in value if isinstance(row, Trigger)] if is_tuple(value) else []
-        output.write("\n".join(TriggerLines.listed(row) for row in listed), {"rows": [output.values(row) for row in listed]})
+        ListedRows.write(output, value, Trigger, TriggerLines.listed)
