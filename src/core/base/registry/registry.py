@@ -11,6 +11,8 @@ from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry
 from core.base.registry.listener_timing import ListenerTiming
+from core.base.registry.button_line import ButtonLine
+from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.model_entry import ModelEntry
@@ -161,6 +163,13 @@ class Registry:
 
     def suite(self, name: str) -> SuiteEntry | None:
         return next((suite for suite in self.suites if suite.name == name), None)
+
+    def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
+        if window == ButtonWindow.MARKS:
+            return tuple(ButtonLine(mark.module, button["runs"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons))
+        if window == ButtonWindow.DOCK:
+            return tuple(ButtonLine(dock.module, button["runs"]) for dock in self.docks for button in dock.buttons)
+        return ()
 
     def has_window(self, name: str) -> bool:
         return any(window.name == name for window in self.windows)

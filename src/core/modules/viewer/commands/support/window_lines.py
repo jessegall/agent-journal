@@ -39,7 +39,7 @@ class WindowLines:
                 raise WindowRefusal(f"{window_name} may use only its own settings")
             return
         declared = window.reads if parsed.is_read else window.runs
-        if parsed.line not in declared:
+        if parsed.line not in declared and not any(button.allows(argv) for button in self.registry.button_lines(window_name)):
             raise WindowRefusal(f"{window_name} does not declare {parsed.line}")
         permission_type = WindowPermissionType.READS if parsed.is_read else WindowPermissionType.RUNS
         if not window.shipped and parsed.line not in self.allowances.allowed_lines(person.id, self.environment_names.environment_id(environment), window_name, permission_type):
