@@ -87,6 +87,7 @@ class ModuleSync:
         listeners = [(module, listener) for module in modules for listener in module.listeners]
         return Registry(
             fingerprint=self.fingerprint.text(modules),
+            module_fingerprints={module.name: self.fingerprint.module_text(module) for module in modules},
             models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
                                                   declaration.excluded_subcommands) for module in modules for declaration in module.models},
             handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},

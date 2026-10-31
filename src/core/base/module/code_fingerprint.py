@@ -17,6 +17,9 @@ class CodeFingerprint:
     def text(self, modules: Sequence[type[Module]]) -> str:
         return self.folder_text([CORE_FOLDER, *(module.folder() for module in modules)])
 
+    def module_text(self, module: type[Module]) -> str:
+        return self.folder_text([module.folder()])
+
     def folder_text(self, folders: Sequence[Path]) -> str:
         return self.files_text(FolderListing(folders).files())
 

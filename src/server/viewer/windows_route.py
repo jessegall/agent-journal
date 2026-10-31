@@ -23,4 +23,4 @@ class WindowsRoute:
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
         finally:
             container.get(Database).close()
-        return [ViewerWindow.listed(window, registry.fingerprint) for window in windows]
+        return [ViewerWindow.listed(window, registry.module_fingerprints[window.module]) for window in windows]

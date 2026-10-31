@@ -36,6 +36,7 @@ class Registry:
     suites: tuple[SuiteEntry, ...] = ()
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
+    module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -66,6 +67,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"])
                           for window in entries.get("windows", [])),
+            module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
 
     def entries_text(self) -> str:
@@ -90,6 +92,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason} for window in self.windows],
+            "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":

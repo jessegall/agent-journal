@@ -3,6 +3,7 @@ from dataclasses import replace
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
+from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.viewer.window_allowances import WindowAllowances
 from core.modules.viewer.window_permission import WindowPermission
@@ -16,14 +17,14 @@ class WindowTrustHandler(Handler[WindowTrust, WindowPermission]):
 
     command = WindowTrust
 
-    def __init__(self, allowances: WindowAllowances, repository: Repository) -> None:
-        self.allowances, self.repository = allowances, repository
+    def __init__(self, registry: Registry, allowances: WindowAllowances, repository: Repository) -> None:
+        self.registry, self.allowances, self.repository = registry, allowances, repository
 
     def handle(self, command: WindowTrust, context: Context) -> WindowPermission:
         if context.environment_id is None:
             raise Refusal("a module is trusted in an environment", "name one with --environment")
-        fingerprint = self.allowances.module_fingerprint(command.module)
-        if not fingerprint:
+        fingerprint = self.registry.module_fingerprints.get(command.module)
+        if fingerprint is None:
             raise Refusal(f"no installed module is named {command.module}", "journal module list shows them")
         trust = self.allowances.permission(context.actor.id, context.environment_id, command.module, WindowPermissionType.PAGE)
         if trust is not None:
