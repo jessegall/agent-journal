@@ -52,7 +52,7 @@ for (const [name, width] of Object.entries(WIDTHS)) {
 
 test("the dock stays in the chat's flow, so at phone width it never covers the compose box", () => {
     for (const file of ["src/kit/ChatDock.vue", "src/chat/DockWrapper.vue", "src/chat/DockStack.vue"]) {
-        const style = readFileSync(resolve(process.cwd(), file), "utf8").split("<style")[1] || "";
+        const style = readFileSync(resolve(__dirname, "..", file), "utf8").split("<style")[1] || "";
         expect(style).not.toMatch(/position:\s*(fixed|sticky)/);
         expect(style).not.toMatch(/position:\s*absolute[^}]*bottom/);
     }
