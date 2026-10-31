@@ -1,0 +1,31 @@
+{
+    "version": 1,
+    "program": "claude",
+    "event": "pre_tool_use",
+    "session": "4ddd741e-fab8-4b31-91f9-469ef0cf1c0c",
+    "firing": "7731-1793395000123",
+    "fired_at_ms": 1793395000123,
+    "actor": "agent",
+    "environment": "development",
+    "subagent": "",
+    "tool": {
+        "name": "Bash",
+        "kind": "shell",
+        "shell": {
+            "line": "git status && grep -n foo src/app.py | head -5",
+            "parts": [
+                {"text": "git status", "program": "git", "subcommand": "status", "arguments": ["status"], "classification": {"kind": "version control", "effects": ["reads_files"]}, "joined_by": "&&"},
+                {"text": "grep -n foo src/app.py", "program": "grep", "arguments": ["-n", "foo", "src/app.py"], "classification": {"kind": "search", "effects": ["reads_files"]}, "read_paths": ["src/app.py"], "piped_into": 2},
+                {"text": "head -5", "program": "head", "arguments": ["-5"], "classification": {"kind": "read", "effects": []}}
+            ],
+            "redirects": [],
+            "kind": "search",
+            "is_journal_only": false,
+            "parse_error": ""
+        },
+        "files": [],
+        "diff": null
+    },
+    "prompt": null,
+    "raw": {"hook_event_name": "PreToolUse", "tool_name": "Bash", "tool_input": {"command": "git status && grep -n foo src/app.py | head -5"}}
+}

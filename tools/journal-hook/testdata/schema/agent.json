@@ -1,0 +1,3 @@
+{"version": 1, "program": "claude", "event": "pre_tool_use", "session": "s1", "firing": "1-5", "fired_at_ms": 5, "actor": "agent", "environment": "development", "subagent": "",
+ "tool": {"name": "Agent", "kind": "agent", "files": [], "diff": null},
+ "prompt": null, "raw": {"hook_event_name": "PreToolUse", "tool_name": "Agent"}}
