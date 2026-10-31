@@ -13,8 +13,12 @@ class SettingValues:
         self.queries = queries
 
     def value(self, key: str, environment_id: int, default: object) -> object:
+        setting = self.row(key, environment_id)
+        return json.loads(setting.value) if setting is not None else self.project_value(key, default)
+
+    def row(self, key: str, environment_id: int) -> Setting | None:
         rows = self.queries.query(Setting).filter(key=key, environment_id=environment_id).page(1, 1).rows
-        return json.loads(rows[0].value) if rows else self.project_value(key, default)
+        return rows[0] if rows else None
 
     def project_value(self, key: str, default: object) -> object:
         rows = self.queries.query(Setting).filter(key=key).matching(IsNull("environment_id")).page(1, 1).rows

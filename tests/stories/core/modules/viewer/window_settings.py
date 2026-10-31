@@ -31,3 +31,14 @@ def test_a_window_is_refused_the_settings_of_another_window(new_story):
 def test_a_setting_never_saved_is_refused_with_the_way_to_save_one(new_story):
     window = window_story(new_story)
     window.story.expect_refusal(ZOOM_READ, "notes.board has no setting zoom", actor=window.story.user)
+
+
+def test_a_setting_key_with_a_dot_is_refused_so_it_never_reaches_another_window_s_settings(new_story):
+    window = window_story(new_story)
+    window.story.expect_refusal("window save-setting notes.board zoom.level 2 --environment main", "a window's setting key has no dot", actor=window.story.user)
+
+
+def test_a_setting_of_a_window_no_module_declares_is_refused(new_story):
+    window = window_story(new_story)
+    window.story.expect_refusal("window save-setting notes.calendar zoom 2 --environment main", "no installed module declares the window notes.calendar",
+                                actor=window.story.user)

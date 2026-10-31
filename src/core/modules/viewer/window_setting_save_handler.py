@@ -6,7 +6,7 @@ from core.base.refusal import Refusal
 from core.modules.settings.setting import Setting
 from core.modules.settings.setting_store import SettingStore
 from core.modules.viewer.window_setting_save import WindowSettingSave
-from core.modules.viewer.window_setting_key import window_setting_key
+from core.modules.viewer.window_setting_keys import WindowSettingKeys
 
 
 class WindowSettingSaveHandler(Handler[WindowSettingSave, Setting]):
@@ -14,10 +14,10 @@ class WindowSettingSaveHandler(Handler[WindowSettingSave, Setting]):
 
     command = WindowSettingSave
 
-    def __init__(self, store: SettingStore) -> None:
-        self.store = store
+    def __init__(self, store: SettingStore, keys: WindowSettingKeys) -> None:
+        self.store, self.keys = store, keys
 
     def handle(self, command: WindowSettingSave, context: Context) -> Setting:
         if context.environment_id is None:
             raise Refusal("a window's settings belong to an environment", "name one with --environment")
-        return self.store.write(window_setting_key(command.window, command.key), json.loads(command.value), context.environment_id, context)
+        return self.store.write(self.keys.key(command.window, command.key), json.loads(command.value), context.environment_id, context)
