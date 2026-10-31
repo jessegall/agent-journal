@@ -26,6 +26,9 @@ class QuestionShowSubcommand(ReadSubcommand[Question]):
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, Question):
             return
+        if output.json_output:
+            output.row(value)
+            return
         output.line(f"question {value.id}: {value.text}")
         if value.options:
             output.line(f"choices: {' / '.join(value.options)}")

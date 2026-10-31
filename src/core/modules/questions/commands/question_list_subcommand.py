@@ -3,12 +3,12 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.base.type_guards import is_tuple
+from core.base.page import Page, is_page
 from core.modules.questions.models.question import Question
 from core.modules.questions.queries.question_query import QuestionQuery
 
 
-class QuestionListSubcommand(ReadSubcommand[tuple[Question, ...]]):
+class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
     """`journal question list`: the open questions of the caller's environment, each with its number, text and
     choices."""
 
@@ -21,16 +21,19 @@ class QuestionListSubcommand(ReadSubcommand[tuple[Question, ...]]):
     def arguments(self, parser: ArgumentParser) -> None:
         return None
 
-    def read(self, arguments: Namespace, caller: Caller) -> tuple[Question, ...]:
+    def read(self, arguments: Namespace, caller: Caller) -> Page[Question]:
         query = self.questions.open_ones()
         if caller.environment_id is not None:
             query = query.environment(caller.environment_id)
-        return tuple(query.oldest().all_rows())
+        return query.oldest().page()
 
     def write_output(self, value: object, output: Output) -> None:
-        if not is_tuple(value):
+        if not is_page(value):
             return
-        questions = [row for row in value if isinstance(row, Question)]
+        if output.json_output:
+            output.page(value)
+            return
+        questions = [row for row in value.rows if isinstance(row, Question)]
         for question in questions:
             choices = f"  [{' / '.join(question.options)}]" if question.options else ""
             output.line(f"{question.id}  {question.text}{choices}")
