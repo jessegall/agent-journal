@@ -105,7 +105,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         stale = self.journal_server().context.code_version.is_stale()
         self.timing.stamp("stale_checked")
         if stale:
-            self.answer_json(409, {"error": "newer code: the server restarts, send the request again"}, closing=True)
+            self.close_with_json(409, {"error": "newer code: the server restarts, send the request again"})
             self.journal_server().release_files()
             return
         if self.path == "/viewer/key":
@@ -113,7 +113,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             return
         if self.path == "/stop":
             self.journal_server().request_stop()
-            self.answer_json(200, {"status": "stopping"}, closing=True)
+            self.close_with_json(200, {"status": "stopping"})
             return
         route, _, query = self.path.partition("?")
         if route == "/hook":
@@ -180,13 +180,22 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(f"{len(data):x}\r\n".encode() + data + b"\r\n")
         self.wfile.flush()
 
-    def answer_json(self, status: int, answer: dict[str, object], closing: bool = False) -> None:
+    def answer_json(self, status: int, answer: dict[str, object]) -> None:
+        if self.journal_server().stopping.is_set():
+            self.close_with_json(status, answer)
+            return
+        self.send_json(status, answer)
+
+    def close_with_json(self, status: int, answer: dict[str, object]) -> None:
+        self.close_connection = True
+        self.send_json(status, answer, {"Connection": "close"})
+
+    def send_json(self, status: int, answer: dict[str, object], extra_headers: dict[str, str] | None = None) -> None:
         body = json.dumps(answer).encode()
         self.status = status
         self.send_response(status)
-        if closing or self.journal_server().stopping.is_set():
-            self.close_connection = True
-            self.send_header("Connection", "close")
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
