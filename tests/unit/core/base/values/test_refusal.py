@@ -13,9 +13,9 @@ def test_not_found_names_the_noun_and_every_missing_id():
 
 
 def test_a_guard_refusal_names_its_guard_and_its_skip_flag_only_when_it_has_one():
-    reason = Refusal("message 5 already has your reply 9", "send it again only if it says something new")
+    reason = Refusal("message 5 already has your reply 9", "send it again only if it adds something new")
     assert GuardRefusal("messages.one-reply-per-message", reason, "--confirm").text == (
-        "refused by messages.one-reply-per-message: message 5 already has your reply 9: send it again only if it says something new (to pass it: --confirm)")
+        "refused by messages.one-reply-per-message: message 5 already has your reply 9: send it again only if it adds something new (to pass it: --confirm)")
     assert GuardRefusal("core.lifecycle", Refusal("task 12 is completed, so it cannot start"), "").text == "refused by core.lifecycle: task 12 is completed, so it cannot start"
 
 

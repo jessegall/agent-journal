@@ -9,7 +9,7 @@ def answered_story(new_story):
 def test_a_second_agent_reply_is_refused_with_the_flag_that_passes_it(new_story):
     story = answered_story(new_story)
     story.expect_refusal('message reply 1 "Still on it" --environment main',
-                         "refused by messages.one-reply-per-message: message 1 already has your reply 2: send it again only if it says something new"
+                         "refused by messages.one-reply-per-message: message 1 already has your reply 2: send it again only if it adds something new"
                          " (to pass it: --confirm)", actor=story.agent)
 
 

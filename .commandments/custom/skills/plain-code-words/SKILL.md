@@ -1,6 +1,6 @@
 ---
 name: PlainCodeWords
-description: Load it before naming a class, a method, a constant or a nudge, or before writing a docstring, so the code says what it is in plain words and never in poetry.
+description: Load it before naming a class, a method, a constant or a variable, or before writing a docstring, so the code says what it is in plain words and never in poetry.
 summary: A name says what the thing is or does in ordinary words; a class has one line at its top and nothing else; no docstring or comment inside a method, none on a field.
 tier: mandatory
 languages: [python]
@@ -16,21 +16,15 @@ else: no docstring inside a method, no comment inside a method, no docstring und
 ## When it fires
 
 - **`poetic-type-name`** - a class named by a word that does not say what it is: `Said`, `Worded`, `Meaning`,
-  `Whisper`, `Muse`, `TypedNudges`, `Spoken`, `Utterance`. Name it for what it holds: a line with its values is a
-  `Nudge`; a snapshot of the options is `Settings`.
+  `Whisper`, `Muse`, `Spoken`, `Utterance`. Name it for what it holds: a line with its values is a `Message`;
+  a snapshot of the options is `Settings`.
 - **`poetic-method-name`** - a method named by a word that does not say what it does: `about`, `worded`,
   `meaning`, `whisper`, `muse`, `spoken`, `typed`, `utter`, `tell`, `says`, `said`, `hear`, `heard`. Name it for
-  what it does: `create`, `rendered`, `with_values`, `on_tool_starting`.
+  what it does: `create`, `rendered`, `with_values`, `requested_run`.
 - **`docstring-in-method`** - a docstring inside a method or a function. Say it in the name, or in the class's
   one line; a method's body carries no prose.
-- **`comment-in-method`** - a comment inside a method or a function (a draft rule, `CommentInMethodDetector.json.draft`,
-  not yet proved: the plugin's tree gives a comment above a `def` to its parameters, so the rule cannot yet tell it
-  from one inside the body). Say it in a name instead, or in the class's one line.
 - **`field-docstring`** - a docstring under a field or a constant. Name the field so it needs none, or say it in
   the class's one line.
-
-- **`state-machine-outside-engine`** - a file outside `journal/engine` imports the state machine. Only the engine
-  and `journal panic` touch it: a command writes rows, the model names the event, the state answers it.
 
 ## The fix
 

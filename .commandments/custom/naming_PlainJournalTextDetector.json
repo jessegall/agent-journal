@@ -7,11 +7,10 @@
             {
                 "of": "closest:call",
                 "nameIn": [
-                    "Rejection",
-                    "Nudge",
-                    "Option",
+                    "Refusal",
+                    "UsageError",
                     "add_argument",
-                    "verb"
+                    "ArgumentParser"
                 ]
             },
             {
@@ -26,7 +25,7 @@
     },
     "sin": {
         "name": "plain-journal-text",
-        "description": "A refusal, a nudge, an option or a command's help is written in the journal's voice: a thing says, names, carries, holds, keeps or picks, or a person is told or given.",
+        "description": "A refusal, a usage error or a command's help is written in the journal's voice: a thing says, names, carries, holds, keeps or picks, or a person is told or given.",
         "rule": "Write every text the agent or a person reads in plain words that say literally what happens: the journal shows, a field contains, a reader selects the lines, you are informed or sent.",
         "skill": "plain-code-words"
     }

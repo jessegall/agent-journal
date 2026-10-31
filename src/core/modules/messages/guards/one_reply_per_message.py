@@ -22,4 +22,4 @@ class OneReplyPerMessage(Guard):
             return
         answered = self.messages.replies(message.parent_id).agent_messages().page(1, 1).rows
         if answered:
-            raise Refusal(f"message {message.parent_id} already has your reply {answered[0].id}", "send it again only if it says something new")
+            raise Refusal(f"message {message.parent_id} already has your reply {answered[0].id}", "send it again only if it adds something new")

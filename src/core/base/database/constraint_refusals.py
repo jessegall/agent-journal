@@ -41,7 +41,7 @@ class ConstraintRefusals:
         if message == "FOREIGN KEY constraint failed" and deletion:
             return Refusal(f"this {cli_name} is still referred to by {', '.join(self.referencing_tables(table.name))}", "remove or move those first")
         if message == "FOREIGN KEY constraint failed":
-            return Refusal(f"this {cli_name} refers to a row that does not exist", "check the ids it names")
+            return Refusal(f"this {cli_name} refers to a row that does not exist", "check the ids in the command")
         raise error
 
     def referencing_tables(self, table: str) -> list[str]:

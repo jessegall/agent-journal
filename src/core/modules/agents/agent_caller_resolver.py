@@ -38,7 +38,7 @@ class AgentCallerResolver(CallerResolver):
             return None
         agent = next(iter(self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).all_rows()), None)
         if agent is None:
-            raise UsageError(f"{SESSION_VARIABLE} names session {session}, which is no open agent: start it with journal agent start")
+            raise UsageError(f"{SESSION_VARIABLE} is session {session}, which is no open agent: start it with journal agent start")
         return agent
 
     def ancestor_agent(self, request: CallerRequest) -> Agent | None:

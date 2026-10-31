@@ -152,3 +152,17 @@ class MessageAnswered(StoryFixture):
 
     def expect(self, story: Story) -> None:
         story.expect_success("message show 2", "parent_id: 1", "type: agent")
+
+
+class StartedPlanTask(StoryFixture):
+    """Plan 1 approved and started, its first task started by the agent, the second still open."""
+
+    parent = PlanTasksPlaced
+
+    def steps(self, story: Story) -> None:
+        for move in ("ready", "approve", "start"):
+            story.run(f"plan {move} 1")
+        story.run(lines.TASK_START, actor=story.agent)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("task show 1", "state: started")
