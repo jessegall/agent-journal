@@ -102,3 +102,49 @@ test("at phone width the home page stacks its panes and the agent page shows a p
     const bar = agent.element.querySelector("nav.agent-tabbar");
     expect([...bar.querySelectorAll("button")].map((button) => button.textContent.trim())).toEqual(["agents.terminal", "agents.notes"]);
 });
+
+test("an agent window opened on the home page is given the main agent's id and an environment window is not", async () => {
+    const line = (words) => words;
+    const base = globalThis.fetch;
+    vi.stubGlobal("fetch", async (url, init) => {
+        const words = JSON.parse(init?.body || "{}").line || [];
+        if (words[0] === "agent" && words[1] === "list") return {json: async () => ({code: 0, value: {rows: [{id: 3}]}, error: ""})};
+        return base(url, init);
+    });
+    current = {suite: "coding", drivers: "main: coding.builder"};
+    SHAPES["coding:home:coding.builder"] = {windows: ["messages.chat", "agents.terminal"], active: "messages.chat"};
+    const {element} = await mount(HomePage);
+    element.querySelector(`[data-tab="agents.terminal"]`).dispatchEvent(new KeyboardEvent("keydown", {key: "Enter", bubbles: true}));
+    await settle();
+    expect(element.querySelector(`section.window[data-window="agents.terminal"]`).dataset.agent).toBe("3");
+    expect(line).toBeDefined();
+    SHAPES["coding:home:coding.builder"] = {windows: ["messages.chat"], active: "messages.chat"};
+});
+
+test("the agent bar of the home page shows an icon for each closed window, one group per module", async () => {
+    const {element} = await mount(HomePage);
+    const bar = element.querySelector(".agent-bar");
+    expect([...bar.querySelectorAll(".reopen-module")].map((module) => module.textContent)).toEqual(["tasks", "agents"]);
+    expect(bar.querySelector(`[data-reopen="tasks.tasks"]`)).not.toBeNull();
+    expect(bar.querySelector(`[data-reopen="messages.chat"]`)).toBeNull();
+    expect(bar.querySelector(`[data-reopen="agents.briefing"]`)).not.toBeNull();
+});
+
+test("the tour shows once, steps through, and is followed by the pane menu hint, each shown once", async () => {
+    localStorage.clear();
+    const first = await mount(HomePage);
+    expect(first.element.querySelector(".pane-tour-title").textContent).toContain("Tabs");
+    first.element.querySelector(`[data-tour="next"]`).click();
+    await settle();
+    expect(first.element.querySelector(".pane-tour-title").textContent).toContain("Move and split");
+    first.element.querySelector(`[data-tour="skip"]`).click();
+    await settle();
+    expect(first.element.querySelector(".pane-tour")).toBeNull();
+    expect(first.element.querySelector(".pane-menu-hint")).not.toBeNull();
+    first.element.querySelector(`[data-hint="done"]`).click();
+    await settle();
+    expect(first.element.querySelector(".pane-menu-hint")).toBeNull();
+    const again = await mount(HomePage);
+    expect(again.element.querySelector(".pane-tour")).toBeNull();
+    expect(again.element.querySelector(".pane-menu-hint")).toBeNull();
+});

@@ -1,5 +1,5 @@
 <script setup>
-import {onUnmounted} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import PaneStage from "../windows/PaneStage.vue";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
@@ -14,13 +14,19 @@ const props = defineProps({
 const {catalogue, subscriptions, shellLine, prompts, listeners, stop} = startWindows(props);
 const home = useHomeLayout(props.environment, shellLine, catalogue);
 listeners.push(home.heard);
+// the main agent, whose id the agent windows opened on the home page are given
+const mainAgent = ref(null);
+onMounted(async () => {
+    const answer = await shellLine(["agent", "list", "--role", "main"]);
+    if (answer.ok && answer.value?.rows?.length) mainAgent.value = answer.value.rows[0].id;
+});
 onUnmounted(stop);
 home.load();
 </script>
 
 <template>
     <div class="home-page">
-        <PaneStage page="home" :store="home.store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
+        <PaneStage page="home" :agent="mainAgent" :store="home.store" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
     </div>
 </template>
 

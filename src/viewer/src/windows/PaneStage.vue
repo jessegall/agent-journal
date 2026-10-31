@@ -3,6 +3,7 @@ import {onMounted, onUnmounted, ref} from "vue";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
 import {useTabCounts} from "../composables/tabCounts.js";
 import {usePaneActions} from "../composables/paneActions.js";
 import DetachedWindows from "../layout/DetachedWindows.vue";
@@ -10,6 +11,8 @@ import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
 import PaneGrid from "../panes/PaneGrid.vue";
 import SplitOffer from "../panes/SplitOffer.vue";
+import PaneTour from "../panes/PaneTour.vue";
+import {usePaneGuide} from "../composables/paneGuide.js";
 import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
@@ -27,6 +30,8 @@ const props = defineProps({
 });
 
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
+const guide = usePaneGuide(props.environment);
+const agentOf = (name) => (props.catalogue.window(name)?.place === "agent" ? props.agent : null);
 const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";
 const grid = ref(null);
@@ -58,9 +63,26 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 
 <template>
     <div class="pane-stage" @keydown="keyed">
-        <template v-if="presets">
-            <nav class="pane-stage-bar"><LayoutPicker :list="presets" /></nav>
-        </template>
+        <nav class="pane-stage-bar agent-bar">
+            <template v-for="group in groups()" :key="group.module">
+                <span class="reopen-module">{{ group.module }}</span>
+                <template v-for="window in group.windows" :key="window.name">
+                    <Btn
+                        :data-reopen="window.name"
+                        :class="{unavailable: window.unavailable_reason}"
+                        :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
+                        @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
+                        @click="!window.unavailable_reason && openView(window.name)"
+                    >
+                        <Icon :name="window.icon || 'window'" :size="13" />
+                    </Btn>
+                </template>
+            </template>
+            <span class="agent-bar-space" />
+            <template v-if="presets">
+                <LayoutPicker :list="presets" />
+            </template>
+        </nav>
         <template v-if="store.layout.value">
             <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
@@ -103,7 +125,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 :catalogue="catalogue"
                                 :subscriptions="subscriptions"
                                 :environment="environment"
-                                :agent="agent"
+                                :agent="agentOf(pane.active)"
                                 :visible="state === 'live'"
                                 :prompts="prompts"
                                 :shell-read="shellRead"
@@ -123,24 +145,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 </template>
             </PaneGrid>
         </template>
-        <template v-if="closedWindows.length">
-            <nav class="reopen-bar" aria-label="Closed windows">
-                <template v-for="group in groups()" :key="group.module">
-                    <span class="reopen-module">{{ group.module }}</span>
-                    <template v-for="window in group.windows" :key="window.name">
-                        <Btn
-                            :data-reopen="window.name"
-                            :class="{unavailable: window.unavailable_reason}"
-                            :title="window.unavailable_reason"
-                            @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
-                            @click="!window.unavailable_reason && openView(window.name)"
-                        >
-                            {{ window.title }}<template v-if="window.unavailable_reason"> ({{ window.unavailable_reason }})</template>
-                        </Btn>
-                    </template>
-                </template>
-            </nav>
-        </template>
         <template v-if="floats">
             <DetachedWindows
                 :detached="detached"
@@ -152,6 +156,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 :shell-read="shellRead"
             />
         </template>
+        <PaneTour :tour="guide" />
         <template v-if="ghost">
             <DragGhost v-bind="ghost" />
         </template>
@@ -166,9 +171,14 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     min-height: 0;
 }
 
+.agent-bar-space {
+    flex: 1;
+}
+
 .pane-stage-bar {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
     padding: 4px 12px;
     border-bottom: 1px solid var(--line);
 }
@@ -198,7 +208,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     background: var(--bg);
 }
 
-.reopen-bar .unavailable {
+.agent-bar .unavailable {
     opacity: 0.45;
 }
 
