@@ -38,9 +38,9 @@ class LineRoute:
         try:
             code = self.line_run.run_as([*argv, "--json"], checked_caller, stream)
         except UsageError as error:
-            return LineAnswer(USAGE_CODE, None, str(error))
+            return LineAnswer(USAGE_CODE, error=str(error))
         except Refusal as refusal:
-            return LineAnswer(REFUSED_CODE, None, refusal.reason)
+            return LineAnswer(REFUSED_CODE, error=refusal.reason)
         if code != 0:
-            return LineAnswer(code, None, stream.getvalue().strip())
-        return LineAnswer(code, json.loads(stream.getvalue() or "null"), "")
+            return LineAnswer(code, error=stream.getvalue().strip())
+        return LineAnswer(code, value=json.loads(stream.getvalue() or "null"))

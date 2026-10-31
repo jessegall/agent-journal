@@ -4,12 +4,12 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
+from server.server_instance import server_instance
 from server.viewer.event_stream import EventStream
 from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file import MissingModuleFile
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.unknown_login_key import UnknownLoginKey
-from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
 
@@ -37,15 +37,20 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         route = urlsplit(self.path)
         key = parse_qs(route.query).get("key", [""])[0]
         if route.path == "/" and key:
-            self.answer_login(viewer.login, key)
+            try:
+                token = viewer.login.session_token(key)
+            except UnknownLoginKey as error:
+                self.answer(401, {"error": str(error)})
+                return
+            self.answer_session(token)
             return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
         if route.path == WINDOWS_ROUTE:
-            offers = viewer.routes.windows_route.offers(parse_qs(route.query).get("environment", [""])[0])
-            self.answer(200, {"windows": [asdict(offer) for offer in offers]})
+            windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
+            self.answer(200, {"windows": [asdict(window) for window in windows]})
             return
         if route.path.startswith(MODULES_ROUTE):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
@@ -110,12 +115,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def answer_login(self, login: ViewerLogin, key: str) -> None:
-        try:
-            token = login.session_token(key)
-        except UnknownLoginKey as error:
-            self.answer(401, {"error": str(error)})
-            return
+    def answer_session(self, token: str) -> None:
         self.send_response(303)
         self.send_header("Set-Cookie", f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/")
         self.send_header("Location", VIEWER_ROOT)
@@ -127,9 +127,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         return cookie[COOKIE_NAME].value if COOKIE_NAME in cookie else ""
 
     def viewer(self) -> ViewerServer:
-        if not isinstance(self.server, ViewerServer):
-            raise TypeError(f"a viewer request handler serves a ViewerListener, not {type(self.server).__name__}")
-        return self.server
+        return server_instance(self.server, ViewerServer)
 
     def answer(self, status: int, value: dict[str, object]) -> None:
         body = json.dumps(value).encode()

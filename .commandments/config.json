@@ -5,7 +5,8 @@
         "src/install",
         "src/server",
         "tests",
-        "tools/journal-hook"
+        "tools/journal-hook",
+        "src/viewer"
     ],
     "base": "main",
     "disable": {
@@ -210,6 +211,8 @@
     },
     "exclude": [
         "tests",
-        "tools/journal-hook/testdata"
+        "tools/journal-hook/testdata",
+        "src/viewer/tests/sample-window",
+        "src/core/modules/viewer/web/dist"
     ]
 }

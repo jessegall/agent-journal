@@ -3,7 +3,7 @@ import {computed, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import {AllowancePrompts} from "./allowancePrompts.js";
 import {lineResult} from "./windowContext.js";
-import {WindowOffers, fetchWindowOffers, followEvents} from "./windowOffers.js";
+import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatalogue.js";
 import WindowPane from "./WindowPane.vue";
 import {WindowSubscriptions} from "./windowSubscriptions.js";
 
@@ -11,44 +11,46 @@ const SHELL_WINDOW = "viewer.shell";
 const props = defineProps({
     environment: {type: String, required: true},
     layout: {type: Array, default: null},
-    offers: {type: Object, default: null},
+    catalogue: {type: Object, default: null},
     events: {type: Function, default: followEvents},
 });
 
-const offers = props.offers || new WindowOffers(() => fetchWindowOffers(props.environment));
+const catalogue = props.catalogue || new WindowCatalogue(() => fetchWindowCatalogue(props.environment));
 const subscriptions = new WindowSubscriptions();
 const shellLine = (line) => lineResult(SHELL_WINDOW, line, props.environment);
 const prompts = new AllowancePrompts(shellLine);
 const panes = ref(props.layout ? [...props.layout] : []);
-const unopened = computed(() => offers.offers.value.filter((offer) => !panes.value.includes(offer.name)));
+const unopened = computed(() => catalogue.windows.value.filter((window) => !panes.value.includes(window.name)));
 
 const stop = props.events(props.environment, async (event) => {
-    await offers.heard(event);
+    await catalogue.heard(event);
     subscriptions.dispatch(event);
 });
 onUnmounted(stop);
 
-offers.load().then(() => {
-    if (!props.layout) panes.value = offers.offers.value.map((offer) => offer.name);
+catalogue.load().then(() => {
+    if (!props.layout) panes.value = catalogue.windows.value.map((window) => window.name);
 });
 </script>
 
 <template>
     <div class="window-shell">
         <nav class="window-shell-menu">
-            <Btn v-for="offer in unopened" :key="offer.name" @click="panes.push(offer.name)">Open {{ offer.title }}</Btn>
+            <template v-for="entry in unopened" :key="entry.name">
+                <Btn @click="panes.push(entry.name)">Open {{ entry.title }}</Btn>
+            </template>
         </nav>
         <div class="window-shell-panes">
-            <WindowPane
-                v-for="name in panes"
-                :key="name"
-                :name="name"
-                :offers="offers"
-                :subscriptions="subscriptions"
-                :environment="environment"
-                :prompts="prompts"
-                :shell-read="shellLine"
-            />
+            <template v-for="name in panes" :key="name">
+                <WindowPane
+                    :name="name"
+                    :catalogue="catalogue"
+                    :subscriptions="subscriptions"
+                    :environment="environment"
+                    :prompts="prompts"
+                    :shell-read="shellLine"
+                />
+            </template>
         </div>
     </div>
 </template>

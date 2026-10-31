@@ -3,7 +3,7 @@ import {shallowRef, watch} from "vue";
 import WindowHost from "./WindowHost.vue";
 
 const props = defineProps({
-    offer: {type: Object, required: true},
+    entry: {type: Object, required: true},
     subscriptions: {type: Object, required: true},
     environment: {type: String, required: true},
     agent: {type: Number, default: null},
@@ -14,10 +14,10 @@ const props = defineProps({
 const component = shallowRef(null);
 
 watch(
-    () => props.offer.entry_url,
+    () => props.entry.entry_url,
     async (url) => {
         component.value = null;
-        if (!props.offer.unavailable_reason) component.value = (await import(/* @vite-ignore */ url)).default;
+        if (!props.entry.unavailable_reason) component.value = (await import(/* @vite-ignore */ url)).default;
     },
     {immediate: true},
 );
@@ -25,8 +25,8 @@ watch(
 
 <template>
     <WindowHost
-        :key="offer.entry_url"
-        :name="offer.name"
+        :key="entry.entry_url"
+        :name="entry.name"
         :component="component"
         :subscriptions="subscriptions"
         :environment="environment"
@@ -34,6 +34,6 @@ watch(
         :visible="visible"
         :permissions="permissions"
         :prompts="prompts"
-        :unavailable-reason="offer.unavailable_reason"
+        :unavailable-reason="entry.unavailable_reason"
     />
 </template>

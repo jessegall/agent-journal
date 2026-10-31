@@ -3,9 +3,9 @@ from core.base.environment_names import EnvironmentNames
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.registry.registry import Registry
-from core.base.viewer.suite_windows import SuiteWindows
+from core.base.registry.suite_windows import SuiteWindows
 from core.modules.drivers.suite_choice import SuiteChoice
-from server.viewer.window_offer import WindowOffer
+from server.viewer.viewer_window import ViewerWindow
 
 
 class WindowsRoute:
@@ -15,7 +15,7 @@ class WindowsRoute:
     def __init__(self, home: JournalHome) -> None:
         self.home = home
 
-    def offers(self, environment: str) -> list[WindowOffer]:
+    def windows(self, environment: str) -> list[ViewerWindow]:
         container = synced_container(self.home)
         try:
             registry = container.get(Registry)
@@ -23,4 +23,4 @@ class WindowsRoute:
             windows = SuiteWindows(registry).windows(suite.name) if suite is not None else []
         finally:
             container.get(Database).close()
-        return [WindowOffer.offered(window, registry.fingerprint) for window in windows]
+        return [ViewerWindow.listed(window, registry.fingerprint) for window in windows]

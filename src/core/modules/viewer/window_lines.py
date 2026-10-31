@@ -13,10 +13,10 @@ WINDOW_SETTING_LINES = ("window save-setting", "window setting")
 
 
 class WindowLines:
-    """Whether a window may run a command line for a person: the line parses, it is a read subcommand the window
-    declares or a command it declares, or one of its own settings, it neither skips a guard nor names another
-    environment, and the person has allowed it unless the journal ships the window. It checks the parsed line, never
-    its raw words."""
+    """Whether a window may run a command line for a person: the line parses, it is a read subcommand the
+    window declares or a command it declares, or one of its own settings, it neither skips a guard nor names
+    another environment, and the person has allowed it unless the journal ships the window. It checks the
+    parsed line, never its raw words."""
 
     def __init__(self, registry: Registry, line_parser: LineParser, flags: WriteFlags, allowances: WindowAllowances, environment_names: EnvironmentNames) -> None:
         self.registry, self.line_parser, self.flags = registry, line_parser, flags

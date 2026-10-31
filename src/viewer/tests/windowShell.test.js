@@ -1,7 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import WindowShell from "../src/windows/WindowShell.vue";
-import {WindowOffers} from "../src/windows/windowOffers.js";
+import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
 const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", line: "task list", loading: "document", reads: ["task list"], runs: [], unavailable_reason: ""};
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
@@ -15,14 +15,14 @@ async function settled() {
 test("a registry sync asks for the windows again: a removed window shows as not installed and a new one joins the menu", async () => {
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "the line was refused"})}));
     const answers = [[summary], [calendar]];
-    const offers = new WindowOffers(async () => answers.shift());
+    const catalogue = new WindowCatalogue(async () => answers.shift());
     let heard = null;
     const events = (environment, listener) => {
         heard = listener;
         return () => {};
     };
     const element = document.createElement("div");
-    createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], offers, events})).mount(element);
+    createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], catalogue, events})).mount(element);
     await settled();
     expect(element.textContent).toContain("the line was refused");
     expect(element.textContent).not.toContain("Open Notes calendar");

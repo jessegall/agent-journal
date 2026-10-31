@@ -43,10 +43,20 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
 
 <template>
     <section class="window" :data-window="name">
-        <AllowancePrompt v-if="prompt()" :request="prompt()" @answer="prompts.answer($event)" />
-        <WindowPlaceholder v-if="unavailableReason" :name="name" :reason="unavailableReason" />
-        <WindowPlaceholder v-else-if="failure" :name="name" :reason="`This window failed: ${failure}`" />
-        <WindowPlaceholder v-else-if="!component" :name="name" reason="No installed module has this window." />
-        <Hosted v-else />
+        <template v-if="prompt()">
+            <AllowancePrompt :request="prompt()" @answer="prompts.answer($event)" />
+        </template>
+        <template v-if="unavailableReason">
+            <WindowPlaceholder :name="name" :reason="unavailableReason" />
+        </template>
+        <template v-else-if="failure">
+            <WindowPlaceholder :name="name" :reason="`This window failed: ${failure}`" />
+        </template>
+        <template v-else-if="!component">
+            <WindowPlaceholder :name="name" reason="No installed module has this window." />
+        </template>
+        <template v-else>
+            <Hosted />
+        </template>
     </section>
 </template>

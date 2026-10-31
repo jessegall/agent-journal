@@ -1,36 +1,37 @@
-if (!document.getElementById("window-styles-885a23f564ae")) { const style = document.createElement("style"); style.id = "window-styles-885a23f564ae"; style.textContent = ".skeleton-line[data-v-0ebb6933]{display:grid;flex:none}.skeleton-line[data-v-0ebb6933]>*{grid-area:1 / 1}.bars[data-v-0ebb6933]{display:flex;flex-direction:column;justify-content:space-around;gap:5px;height:100%;padding:2px 0;box-sizing:border-box;transition:opacity .18s}.faded[data-v-0ebb6933]{opacity:0}.bar[data-v-0ebb6933]{display:block;background:linear-gradient(100deg,var(--border) 0%,var(--border) 40%,var(--border-2) 50%,var(--border) 60%,var(--border) 100%);background-attachment:fixed;background-size:200vw 100%;animation:sweep-0ebb6933 2s linear infinite}.bar.still[data-v-0ebb6933]{background:var(--border);animation:none}@keyframes sweep-0ebb6933{0%{background-position:100vw 0}70%,to{background-position:-100vw 0}}@media(prefers-reduced-motion:reduce){.bar[data-v-0ebb6933]{animation:none}}.skeleton-messages[data-v-c687fb85]{order:1;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:14px 8px 12px;overflow:hidden}.skeleton-message[data-v-c687fb85]{flex:none;border-radius:9px;background-color:color-mix(in srgb,var(--raised) 60%,transparent);background-image:linear-gradient(100deg,transparent 35%,color-mix(in srgb,var(--text-3) 22%,transparent) 50%,transparent 65%);background-size:200vw 100%;background-repeat:no-repeat;background-attachment:fixed;animation:skeleton-shimmer-c687fb85 1.6s linear infinite}.skeleton-message.mine[data-v-c687fb85]{align-self:flex-end}.skeleton-cards[data-v-c687fb85]{display:flex;flex-direction:column;gap:10px}.skeleton-card[data-v-c687fb85]{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--raised)}.skeleton-files[data-v-c687fb85]{display:flex;width:100%;flex-direction:column;gap:10px}.skeleton-file[data-v-c687fb85]{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--raised)}.skeleton-file-head[data-v-c687fb85]{padding-bottom:9px;border-bottom:1px solid var(--border)}.skeleton-rows[data-v-c687fb85]{display:flex;flex-direction:column}.skeleton-row[data-v-c687fb85]{height:44px;padding:6px 12px;box-sizing:border-box}.skeleton-text[data-v-c687fb85]{display:flex;flex-direction:column;gap:18px;padding:4px 0}.skeleton-text[data-v-c687fb85]>*{height:64px}.skeleton-text>.skeleton-heading[data-v-c687fb85]{height:84px}@keyframes skeleton-shimmer-c687fb85{0%{background-position:-100vw 0}to{background-position:100vw 0}}@media(prefers-reduced-motion:reduce){.skeleton-message[data-v-c687fb85]{animation:none}}.empty-state[data-v-b27e89b0]{margin:0;color:var(--text-3)}.empty-state.titled[data-v-b27e89b0]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center;pointer-events:none;animation:empty-state-in-b27e89b0 .3s both}.empty-state-title[data-v-b27e89b0]{margin:0;color:var(--text-2);font-size:14px;font-weight:500}.empty-state-text[data-v-b27e89b0]{max-width:300px;margin:0;color:var(--text-4);font-size:12.5px;line-height:1.5;text-wrap:pretty}@keyframes empty-state-in-b27e89b0{0%{opacity:0}}.spinner[data-v-eb453d6f]{width:9px;height:9px;flex:none;border:1px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin-eb453d6f .7s linear infinite}@keyframes spin-eb453d6f{to{transform:rotate(360deg)}}.btn[data-v-30ec20fe]{position:relative;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border:1px solid var(--border-2);border-radius:7px;background:transparent;color:var(--text-2);font-size:12.5px;text-decoration:none;cursor:pointer;white-space:nowrap}.btn-label[data-v-30ec20fe]{display:inline-flex;align-items:center;gap:6px}.btn-label.hidden[data-v-30ec20fe]{visibility:hidden}.btn.fill .btn-label[data-v-30ec20fe]{flex:1;min-width:0}.btn-spinner[data-v-30ec20fe]{position:absolute;top:0;right:0;bottom:0;left:0;margin:auto}.btn[data-v-30ec20fe] .ico{width:12px;height:12px}.btn[data-v-30ec20fe]:hover{background:var(--hover);color:var(--text)}.btn[data-v-30ec20fe]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.btn.primary[data-v-30ec20fe]{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn.primary[data-v-30ec20fe]:hover{background:var(--accent);color:#fff}.btn.danger[data-v-30ec20fe]{border-color:color-mix(in oklab,var(--danger) 55%,var(--border-2));color:var(--danger)}.btn.danger[data-v-30ec20fe]:hover{border-color:var(--danger);background:color-mix(in oklab,var(--danger) 12%,transparent);color:var(--danger)}.btn.text[data-v-30ec20fe]{height:auto;padding:0;border:0;border-radius:0;background:none;font:inherit;text-align:left;white-space:normal}.btn.text[data-v-30ec20fe]:hover{background:none;color:var(--text)}.btn.text .btn-label[data-v-30ec20fe]{display:block}.btn.icon[data-v-30ec20fe]{height:auto;padding:5px;border-color:transparent}.btn.icon[data-v-30ec20fe]:hover{background:color-mix(in srgb,var(--border-3) 70%,transparent);color:var(--text)}.btn.small[data-v-30ec20fe]{height:24px;padding:0 9px;font-size:12px}.btn.large[data-v-30ec20fe]{height:36px;padding:0 14px;font-size:13.5px}.btn[data-v-30ec20fe]:disabled:not(.busy){opacity:.45;cursor:default;pointer-events:none}.row-list[data-v-d1eccf64]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.row-list-row[data-v-d1eccf64]{display:flex;gap:10px;align-items:baseline;padding:6px 8px;border-radius:6px;color:var(--text)}.row-list-row[data-v-d1eccf64]:hover{background:var(--bg-2, rgba(255, 255, 255, .03))}.row-list-failure[data-v-d1eccf64]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { openBlock as e, createElementBlock as h, renderSlot as g, createElementVNode as c, normalizeClass as v, Fragment as d, renderList as s, normalizeStyle as b, defineComponent as S, Comment as H, h as $, cloneVNode as C, createBlock as M, withCtx as o, unref as k, createVNode as f, toDisplayString as L, resolveDynamicComponent as _, createCommentVNode as A, ref as V, inject as B } from "vue";
-const x = (t, a) => {
+/* @code-commandments-generated */
+if (!document.getElementById("window-styles-6aeb78d95f5c")) { const style = document.createElement("style"); style.id = "window-styles-6aeb78d95f5c"; style.textContent = ".skeleton-line[data-v-0ebb6933]{display:grid;flex:none}.skeleton-line[data-v-0ebb6933]>*{grid-area:1 / 1}.bars[data-v-0ebb6933]{display:flex;flex-direction:column;justify-content:space-around;gap:5px;height:100%;padding:2px 0;box-sizing:border-box;transition:opacity .18s}.faded[data-v-0ebb6933]{opacity:0}.bar[data-v-0ebb6933]{display:block;background:linear-gradient(100deg,var(--border) 0%,var(--border) 40%,var(--border-2) 50%,var(--border) 60%,var(--border) 100%);background-attachment:fixed;background-size:200vw 100%;animation:sweep-0ebb6933 2s linear infinite}.bar.still[data-v-0ebb6933]{background:var(--border);animation:none}@keyframes sweep-0ebb6933{0%{background-position:100vw 0}70%,to{background-position:-100vw 0}}@media(prefers-reduced-motion:reduce){.bar[data-v-0ebb6933]{animation:none}}.skeleton-messages[data-v-c687fb85]{order:1;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:14px 8px 12px;overflow:hidden}.skeleton-message[data-v-c687fb85]{flex:none;border-radius:9px;background-color:color-mix(in srgb,var(--raised) 60%,transparent);background-image:linear-gradient(100deg,transparent 35%,color-mix(in srgb,var(--text-3) 22%,transparent) 50%,transparent 65%);background-size:200vw 100%;background-repeat:no-repeat;background-attachment:fixed;animation:skeleton-shimmer-c687fb85 1.6s linear infinite}.skeleton-message.mine[data-v-c687fb85]{align-self:flex-end}.skeleton-cards[data-v-c687fb85]{display:flex;flex-direction:column;gap:10px}.skeleton-card[data-v-c687fb85]{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--raised)}.skeleton-files[data-v-c687fb85]{display:flex;width:100%;flex-direction:column;gap:10px}.skeleton-file[data-v-c687fb85]{display:flex;flex-direction:column;gap:9px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--raised)}.skeleton-file-head[data-v-c687fb85]{padding-bottom:9px;border-bottom:1px solid var(--border)}.skeleton-rows[data-v-c687fb85]{display:flex;flex-direction:column}.skeleton-row[data-v-c687fb85]{height:44px;padding:6px 12px;box-sizing:border-box}.skeleton-text[data-v-c687fb85]{display:flex;flex-direction:column;gap:18px;padding:4px 0}.skeleton-text[data-v-c687fb85]>*{height:64px}.skeleton-text>.skeleton-heading[data-v-c687fb85]{height:84px}@keyframes skeleton-shimmer-c687fb85{0%{background-position:-100vw 0}to{background-position:100vw 0}}@media(prefers-reduced-motion:reduce){.skeleton-message[data-v-c687fb85]{animation:none}}.empty-state[data-v-b27e89b0]{margin:0;color:var(--text-3)}.empty-state.titled[data-v-b27e89b0]{position:absolute;top:0;right:0;bottom:0;left:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px;text-align:center;pointer-events:none;animation:empty-state-in-b27e89b0 .3s both}.empty-state-title[data-v-b27e89b0]{margin:0;color:var(--text-2);font-size:14px;font-weight:500}.empty-state-text[data-v-b27e89b0]{max-width:300px;margin:0;color:var(--text-4);font-size:12.5px;line-height:1.5;text-wrap:pretty}@keyframes empty-state-in-b27e89b0{0%{opacity:0}}.spinner[data-v-eb453d6f]{width:9px;height:9px;flex:none;border:1px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin-eb453d6f .7s linear infinite}@keyframes spin-eb453d6f{to{transform:rotate(360deg)}}.btn[data-v-30ec20fe]{position:relative;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border:1px solid var(--border-2);border-radius:7px;background:transparent;color:var(--text-2);font-size:12.5px;text-decoration:none;cursor:pointer;white-space:nowrap}.btn-label[data-v-30ec20fe]{display:inline-flex;align-items:center;gap:6px}.btn-label.hidden[data-v-30ec20fe]{visibility:hidden}.btn.fill .btn-label[data-v-30ec20fe]{flex:1;min-width:0}.btn-spinner[data-v-30ec20fe]{position:absolute;top:0;right:0;bottom:0;left:0;margin:auto}.btn[data-v-30ec20fe] .ico{width:12px;height:12px}.btn[data-v-30ec20fe]:hover{background:var(--hover);color:var(--text)}.btn[data-v-30ec20fe]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}.btn.primary[data-v-30ec20fe]{border-color:var(--accent);background:var(--accent-dim);color:var(--accent-text)}.btn.primary[data-v-30ec20fe]:hover{background:var(--accent);color:#fff}.btn.danger[data-v-30ec20fe]{border-color:color-mix(in oklab,var(--danger) 55%,var(--border-2));color:var(--danger)}.btn.danger[data-v-30ec20fe]:hover{border-color:var(--danger);background:color-mix(in oklab,var(--danger) 12%,transparent);color:var(--danger)}.btn.text[data-v-30ec20fe]{height:auto;padding:0;border:0;border-radius:0;background:none;font:inherit;text-align:left;white-space:normal}.btn.text[data-v-30ec20fe]:hover{background:none;color:var(--text)}.btn.text .btn-label[data-v-30ec20fe]{display:block}.btn.icon[data-v-30ec20fe]{height:auto;padding:5px;border-color:transparent}.btn.icon[data-v-30ec20fe]:hover{background:color-mix(in srgb,var(--border-3) 70%,transparent);color:var(--text)}.btn.small[data-v-30ec20fe]{height:24px;padding:0 9px;font-size:12px}.btn.large[data-v-30ec20fe]{height:36px;padding:0 14px;font-size:13.5px}.btn[data-v-30ec20fe]:disabled:not(.busy){opacity:.45;cursor:default;pointer-events:none}.row-list[data-v-ee7750fd]{display:flex;flex-direction:column;gap:2px;margin:0;padding:0;list-style:none}.row-list-row[data-v-ee7750fd]{display:flex;gap:10px;align-items:baseline;padding:6px 8px;border-radius:6px;color:var(--text)}.row-list-row[data-v-ee7750fd]:hover{background:var(--bg-2, rgba(255, 255, 255, .03))}.row-list-failure[data-v-ee7750fd]{margin:0;color:var(--text-2)}.title[data-v-8ffafffe]{flex:1}.state[data-v-8ffafffe]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as e, createElementBlock as l, renderSlot as g, createElementVNode as d, normalizeClass as x, Fragment as n, renderList as o, normalizeStyle as b, defineComponent as L, Comment as z, h as H, cloneVNode as _, createBlock as u, withCtx as p, unref as m, createVNode as w, toDisplayString as k, resolveDynamicComponent as C, createCommentVNode as A, inject as B, ref as S } from "vue";
+const v = (t, a) => {
   const i = t.__vccOpts || t;
-  for (const [l, n] of a)
-    i[l] = n;
+  for (const [h, s] of a)
+    i[h] = s;
   return i;
 }, E = { class: "skeleton-line" }, I = {
   __name: "SkeletonLine",
   props: { filled: Boolean, still: Boolean, bars: { type: Array, default: () => [] } },
   setup(t) {
-    return (a, i) => (e(), h("span", E, [
+    return (a, i) => (e(), l("span", E, [
       g(a.$slots, "default", {}, void 0, !0),
-      c("span", {
-        class: v(["bars", { faded: t.filled }])
+      d("span", {
+        class: x(["bars", { faded: t.filled }])
       }, [
-        (e(!0), h(d, null, s(t.bars, (l) => (e(), h("span", {
-          key: l.width,
-          class: v(["bar", { still: t.still }]),
-          style: b({ width: l.width, height: `${l.height}px`, borderRadius: `${l.height / 2}px` })
+        (e(!0), l(n, null, o(t.bars, (h) => (e(), l("span", {
+          key: h.width,
+          class: x(["bar", { still: t.still }]),
+          style: b({ width: h.width, height: `${h.height}px`, borderRadius: `${h.height / 2}px` })
         }, null, 6))), 128))
       ], 2)
     ]));
   }
-}, u = /* @__PURE__ */ x(I, [["__scopeId", "data-v-0ebb6933"]]), N = S({
+}, y = /* @__PURE__ */ v(I, [["__scopeId", "data-v-0ebb6933"]]), N = L({
   props: { value: { type: [String, Number], default: "" } },
   setup(t, { slots: a }) {
     return () => {
-      const i = a[String(t.value)] ? String(t.value) : "default", l = (a[i] ? a[i]() : []).filter((n) => n.type !== H);
-      return l.length !== 1 ? $(d, { key: i }, l) : l[0].key == null ? C(l[0], { key: i }) : l[0];
+      const i = a[String(t.value)] ? String(t.value) : "default", h = (a[i] ? a[i]() : []).filter((s) => s.type !== z);
+      return h.length !== 1 ? H(n, { key: i }, h) : h[0].key == null ? _(h[0], { key: i }) : h[0];
     };
   }
-}), R = ["aria-label"], T = ["aria-label"], Z = ["aria-label"], q = ["aria-label"], D = ["aria-label"], O = ["aria-label"], W = ["aria-label"], j = {
+}), R = ["aria-label"], q = ["aria-label"], T = ["aria-label"], Z = ["aria-label"], D = ["aria-label"], O = ["aria-label"], W = ["aria-label"], j = {
   __name: "Skeleton",
   props: { shape: { type: String, default: "rows" }, count: { type: Number, default: 4 }, label: { type: String, default: "Loading" } },
   setup(t) {
@@ -53,131 +54,131 @@ const x = (t, a) => {
       { id: "kind", bars: [{ width: "64px", height: 8 }] },
       { id: "title", bars: [{ width: "70%", height: 12 }] },
       { id: "line", bars: [{ width: "45%", height: 9 }] }
-    ], l = [
+    ], h = [
       { width: "46%", height: 12 },
       { width: "52px", height: 9 }
-    ], n = [
+    ], s = [
       { id: "first", bars: [{ width: "88%", height: 9 }] },
       { id: "second", bars: [{ width: "64%", height: 9 }] },
       { id: "third", bars: [{ width: "76%", height: 9 }] }
-    ], y = [
+    ], M = [
       { width: "58%", height: 11 },
       { width: "32%", height: 9 }
-    ], p = ["94%", "88%", "91%", "62%"].map((m) => ({ width: m, height: 10 })), z = [
+    ], c = ["94%", "88%", "91%", "62%"].map((V) => ({ width: V, height: 10 })), $ = [
       { width: "110px", height: 12 },
       { width: "86%", height: 24 },
       { width: "52%", height: 24 }
     ];
-    return (m, nt) => (e(), M(N, { value: t.shape }, {
-      messages: o(() => [
-        c("div", {
+    return (V, Mt) => (e(), u(N, { value: t.shape }, {
+      messages: p(() => [
+        d("div", {
           class: "skeleton-messages",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(), h(d, null, s(a, (r) => c("div", {
+          (e(), l(n, null, o(a, (r) => d("div", {
             key: r.id,
-            class: v(["skeleton-message", { mine: r.mine }]),
+            class: x(["skeleton-message", { mine: r.mine }]),
             style: b({ width: `${r.width}%`, height: `${r.height}px` })
           }, null, 6)), 64))
         ], 8, R)
       ]),
-      older: o(() => [
-        c("div", {
+      older: p(() => [
+        d("div", {
           class: "skeleton-messages skeleton-older",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), h(d, null, s(a.slice(0, 3), (r) => (e(), h("div", {
+          (e(!0), l(n, null, o(a.slice(0, 3), (r) => (e(), l("div", {
             key: r.id,
-            class: v(["skeleton-message", { mine: r.mine }]),
+            class: x(["skeleton-message", { mine: r.mine }]),
             style: b({ width: `${r.width}%`, height: `${r.height}px` })
           }, null, 6))), 128))
-        ], 8, T)
+        ], 8, q)
       ]),
-      cards: o(() => [
-        c("div", {
+      cards: p(() => [
+        d("div", {
           class: "skeleton-cards",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), h(d, null, s(t.count, (r) => (e(), h("div", {
+          (e(!0), l(n, null, o(t.count, (r) => (e(), l("div", {
             key: r,
             class: "skeleton-card"
           }, [
-            (e(), h(d, null, s(i, (w) => f(u, {
-              key: w.id,
-              bars: w.bars
+            (e(), l(n, null, o(i, (f) => w(y, {
+              key: f.id,
+              bars: f.bars
             }, null, 8, ["bars"])), 64))
           ]))), 128))
-        ], 8, Z)
+        ], 8, T)
       ]),
-      file: o(() => [
-        c("div", {
+      file: p(() => [
+        d("div", {
           class: "skeleton-files",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), h(d, null, s(t.count, (r) => (e(), h("div", {
+          (e(!0), l(n, null, o(t.count, (r) => (e(), l("div", {
             key: r,
             class: "skeleton-file"
           }, [
-            f(u, {
+            w(y, {
               class: "skeleton-file-head",
-              bars: l
+              bars: h
             }),
-            (e(), h(d, null, s(n, (w) => f(u, {
-              key: w.id,
-              bars: w.bars
+            (e(), l(n, null, o(s, (f) => w(y, {
+              key: f.id,
+              bars: f.bars
             }, null, 8, ["bars"])), 64))
           ]))), 128))
-        ], 8, q)
+        ], 8, Z)
       ]),
-      page: o(() => [
-        c("div", {
+      page: p(() => [
+        d("div", {
           class: "skeleton-text",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          f(u, {
+          w(y, {
             class: "skeleton-heading",
-            bars: z
+            bars: $
           }),
-          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+          (e(!0), l(n, null, o(t.count, (r) => (e(), u(y, {
             key: r,
-            bars: k(p)
+            bars: m(c)
           }, null, 8, ["bars"]))), 128))
         ], 8, D)
       ]),
-      text: o(() => [
-        c("div", {
+      text: p(() => [
+        d("div", {
           class: "skeleton-text",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+          (e(!0), l(n, null, o(t.count, (r) => (e(), u(y, {
             key: r,
-            bars: k(p)
+            bars: m(c)
           }, null, 8, ["bars"]))), 128))
         ], 8, O)
       ]),
-      default: o(() => [
-        c("div", {
+      default: p(() => [
+        d("div", {
           class: "skeleton-rows",
           "aria-busy": "true",
           "aria-label": t.label
         }, [
-          (e(!0), h(d, null, s(t.count, (r) => (e(), M(u, {
+          (e(!0), l(n, null, o(t.count, (r) => (e(), u(y, {
             key: r,
             class: "skeleton-row",
-            bars: y
+            bars: M
           }))), 128))
         ], 8, W)
       ]),
       _: 1
     }, 8, ["value"]));
   }
-}, F = /* @__PURE__ */ x(j, [["__scopeId", "data-v-c687fb85"]]), G = {
+}, F = /* @__PURE__ */ v(j, [["__scopeId", "data-v-c687fb85"]]), G = {
   key: 1,
   class: "empty-state titled"
 }, K = { class: "empty-state-title" }, U = { class: "empty-state-text" }, X = {
@@ -187,28 +188,28 @@ const x = (t, a) => {
   __name: "EmptyState",
   props: { title: { type: String, default: "" }, loading: Boolean, shape: { type: String, default: "rows" } },
   setup(t) {
-    return (a, i) => t.loading ? (e(), M(F, {
+    return (a, i) => t.loading ? (e(), u(F, {
       key: 0,
       shape: t.shape
-    }, null, 8, ["shape"])) : t.title ? (e(), h("div", G, [
-      c("p", K, L(t.title), 1),
-      c("p", U, [
+    }, null, 8, ["shape"])) : t.title ? (e(), l("div", G, [
+      d("p", K, k(t.title), 1),
+      d("p", U, [
         g(a.$slots, "default", {}, void 0, !0)
       ])
-    ])) : (e(), h("p", X, [
+    ])) : (e(), l("p", X, [
       g(a.$slots, "default", {}, void 0, !0)
     ]));
   }
-}, P = /* @__PURE__ */ x(J, [["__scopeId", "data-v-b27e89b0"]]), Q = {
+}, P = /* @__PURE__ */ v(J, [["__scopeId", "data-v-b27e89b0"]]), Q = {
   __name: "Spinner",
   props: { size: { type: Number, default: 9 } },
   setup(t) {
-    return (a, i) => (e(), h("span", {
+    return (a, i) => (e(), l("span", {
       class: "spinner",
       style: b({ width: `${t.size}px`, height: `${t.size}px`, borderWidth: t.size > 14 ? "2px" : "1px" })
     }, null, 4));
   }
-}, Y = /* @__PURE__ */ x(Q, [["__scopeId", "data-v-eb453d6f"]]), tt = {
+}, Y = /* @__PURE__ */ v(Q, [["__scopeId", "data-v-eb453d6f"]]), tt = {
   __name: "Btn",
   props: {
     kind: { type: String, default: "ghost" },
@@ -220,20 +221,20 @@ const x = (t, a) => {
     href: { type: String, default: "" }
   },
   setup(t) {
-    return (a, i) => (e(), M(_(t.href ? "a" : "button"), {
+    return (a, i) => (e(), u(C(t.href ? "a" : "button"), {
       type: t.href ? void 0 : "button",
       href: t.href || void 0,
-      class: v(["btn", t.kind, { small: t.small, large: t.large, busy: t.busy, fill: t.fill }]),
+      class: x(["btn", t.kind, { small: t.small, large: t.large, busy: t.busy, fill: t.fill }]),
       "aria-busy": t.busy,
       disabled: t.busy || t.disabled
     }, {
-      default: o(() => [
-        c("span", {
-          class: v(["btn-label", { hidden: t.busy }])
+      default: p(() => [
+        d("span", {
+          class: x(["btn-label", { hidden: t.busy }])
         }, [
           g(a.$slots, "default", {}, void 0, !0)
         ], 2),
-        t.busy ? (e(), M(Y, {
+        t.busy ? (e(), u(Y, {
           key: 0,
           class: "btn-spinner"
         })) : A("", !0)
@@ -241,7 +242,7 @@ const x = (t, a) => {
       _: 3
     }, 8, ["type", "href", "class", "aria-busy", "disabled"]));
   }
-}, et = /* @__PURE__ */ x(tt, [["__scopeId", "data-v-30ec20fe"]]), at = ["stroke-width", "innerHTML"], ht = {
+}, et = /* @__PURE__ */ v(tt, [["__scopeId", "data-v-30ec20fe"]]), at = ["stroke-width", "innerHTML"], ht = {
   __name: "Icon",
   props: {
     name: { type: String, default: "dot" },
@@ -250,7 +251,7 @@ const x = (t, a) => {
     bold: Boolean
   },
   setup(t) {
-    const a = t, i = { right: 0, down: 90, left: 180, up: 270 }, l = {
+    const a = t, i = { right: 0, down: 90, left: 180, up: 270 }, h = {
       mail: "inbox",
       circle: "todos",
       play: "work",
@@ -274,7 +275,7 @@ const x = (t, a) => {
       send: "arrow",
       more: "dots",
       chevron: "arrow"
-    }, n = {
+    }, s = {
       phone: '<rect x="4.5" y="1.5" width="7" height="13" rx="1.6"/><path d="M7 12.2h2"/>',
       key: '<circle cx="5.5" cy="10.5" r="2.8"/><path d="M7.5 8.5 13 3M10.8 5.2l1.7 1.7M9.2 6.8l1.2 1.2"/>',
       terminal: '<path d="M2 3.5h12v9H2zM4.8 6.4 6.9 8l-2.1 1.6M8.4 10h3"/>',
@@ -378,7 +379,7 @@ const x = (t, a) => {
       family: '<rect x="6" y="1.8" width="4" height="3.4" rx="1"/><rect x="1.8" y="10.8" width="4" height="3.4" rx="1"/><rect x="10.2" y="10.8" width="4" height="3.4" rx="1"/><path d="M8 5.2v2.6M3.8 10.8V9.4q0-1.6 1.6-1.6h5.2q1.6 0 1.6 1.6v1.4"/>',
       loop: '<path d="M12.6 6.2A4.9 4.9 0 0 0 3.4 6M3.4 9.8a4.9 4.9 0 0 0 9.2.2"/><path d="M12.8 3v3.3H9.5M3.2 13V9.7h3.3"/>'
     };
-    return (y, p) => (e(), h("svg", {
+    return (M, c) => (e(), l("svg", {
       class: "ico",
       style: b({
         ...t.size ? { "--icon-size": `${t.size}px` } : {},
@@ -391,27 +392,27 @@ const x = (t, a) => {
       "stroke-linecap": "round",
       "stroke-linejoin": "round",
       "aria-hidden": "true",
-      innerHTML: n[l[t.name] || t.name] || n.dot
+      innerHTML: s[h[t.name] || t.name] || s.dot
     }, null, 12, at));
   }
-}, ot = {
+}, vt = {
   __name: "CloseButton",
   props: { title: { type: String, default: "Close" } },
   setup(t) {
-    return (a, i) => (e(), M(et, {
+    return (a, i) => (e(), u(et, {
       kind: "icon",
       "aria-label": t.title
     }, {
-      default: o(() => [
-        f(ht, { name: "x" })
+      default: p(() => [
+        w(ht, { name: "x" })
       ]),
       _: 1
     }, 8, ["aria-label"]));
   }
-}, lt = {
+}, it = {
   key: 0,
   class: "row-list-failure"
-}, it = {
+}, lt = {
   key: 2,
   class: "row-list"
 }, rt = {
@@ -422,40 +423,63 @@ const x = (t, a) => {
     empty: { type: String, required: !0 }
   },
   setup(t) {
-    return (a, i) => t.failure ? (e(), h("p", lt, L(t.failure), 1)) : t.rows.length ? (e(), h("ul", it, [
-      (e(!0), h(d, null, s(t.rows, (l) => (e(), h("li", {
-        key: l.id,
+    return (a, i) => t.failure ? (e(), l("p", it, k(t.failure), 1)) : t.rows.length ? (e(), l("ul", lt, [
+      (e(!0), l(n, null, o(t.rows, (h) => (e(), l("li", {
+        key: h.id,
         class: "row-list-row"
       }, [
-        g(a.$slots, "default", { row: l }, void 0, !0)
+        g(a.$slots, "default", { row: h }, void 0, !0)
       ]))), 128))
-    ])) : (e(), M(P, {
+    ])) : (e(), u(P, {
       key: 1,
       title: t.empty
     }, null, 8, ["title"]));
   }
-}, Mt = /* @__PURE__ */ x(rt, [["__scopeId", "data-v-d1eccf64"]]), pt = "1.0.0", ut = "3.5", dt = Symbol.for("journal.window-context");
-function ct() {
-  const t = B(dt, null);
+}, dt = /* @__PURE__ */ v(rt, [["__scopeId", "data-v-ee7750fd"]]), st = Symbol.for("journal.window-context");
+function nt() {
+  const t = B(st, null);
   if (!t) throw new Error("useWindow is called only inside a window the viewer hosts");
   return t;
 }
-function yt(t, a) {
-  const i = ct(), l = V([]), n = V("");
-  async function y() {
-    const p = await i.read(t);
-    l.value = p.ok ? p.value.rows : [], n.value = p.ok ? "" : p.error;
+function ct(t, a) {
+  const i = nt(), h = S([]), s = S("");
+  async function M() {
+    const c = await i.read(t);
+    h.value = c.ok ? c.value.rows : [], s.value = c.ok ? "" : c.error;
   }
-  return i.follow(a, y), y(), { rows: l, failure: n, load: y, context: i };
+  return i.follow(a, M), M(), { rows: h, failure: s, load: M, context: i };
 }
+const ot = { class: "title" }, pt = { class: "state" }, ut = {
+  __name: "StateRows",
+  props: {
+    line: { type: String, required: !0 },
+    events: { type: Array, required: !0 },
+    empty: { type: String, required: !0 }
+  },
+  setup(t) {
+    const a = t, { rows: i, failure: h } = ct(a.line, a.events);
+    return (s, M) => (e(), u(dt, {
+      rows: m(i),
+      failure: m(h),
+      empty: t.empty
+    }, {
+      default: p(({ row: c }) => [
+        d("span", ot, k(c.title), 1),
+        d("span", pt, k(c.state), 1)
+      ]),
+      _: 1
+    }, 8, ["rows", "failure", "empty"]));
+  }
+}, xt = /* @__PURE__ */ v(ut, [["__scopeId", "data-v-8ffafffe"]]), ft = "1.0.0", wt = "3.5";
 export {
   et as Btn,
-  ot as CloseButton,
+  vt as CloseButton,
   P as EmptyState,
-  pt as KIT_VERSION,
-  ut as KIT_VUE,
-  Mt as RowList,
-  dt as WINDOW_CONTEXT,
-  yt as useRows,
-  ct as useWindow
+  ft as KIT_VERSION,
+  wt as KIT_VUE,
+  dt as RowList,
+  xt as StateRows,
+  st as WINDOW_CONTEXT,
+  ct as useRows,
+  nt as useWindow
 };

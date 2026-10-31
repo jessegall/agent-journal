@@ -7,7 +7,7 @@ import WindowHost from "./WindowHost.vue";
 
 const props = defineProps({
     name: {type: String, required: true},
-    offers: {type: Object, required: true},
+    catalogue: {type: Object, required: true},
     subscriptions: {type: Object, required: true},
     environment: {type: String, required: true},
     agent: {type: Number, default: null},
@@ -17,27 +17,27 @@ const props = defineProps({
 });
 const FRAME_REASON = "This window loads in a frame, which the viewer cannot show yet.";
 
-const offer = computed(() => props.offers.offer(props.name));
-const documentComponent = computed(() => offer.value && {render: () => h(DocumentWindow, {line: offer.value.line})});
+const entry = computed(() => props.catalogue.window(props.name));
+const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
 const access = ref(null);
 const permissions = computed(() =>
-    access.value ? windowPermissions(access.value, ask) : {reads: offer.value?.reads || [], runs: offer.value?.runs || [], missing: [], ask: async () => true},
+    access.value ? windowPermissions(access.value, ask) : {reads: entry.value?.reads || [], runs: entry.value?.runs || [], missing: [], ask: async () => true},
 );
 
 async function loadAccess() {
-    if (!offer.value || offer.value.allowed || !props.shellRead) return;
+    if (!entry.value || entry.value.allowed || !props.shellRead) return;
     const answer = await props.shellRead(`window permissions ${props.name} --environment ${props.environment}`);
     access.value = answer.ok ? answer.value : null;
 }
 
 async function ask() {
-    const allowed = await props.prompts.ask(offer.value.title, access.value);
+    const allowed = await props.prompts.ask(entry.value.title, access.value);
     await loadAccess();
     return allowed;
 }
 
 watch(
-    () => offer.value?.entry_url || offer.value?.line,
+    () => entry.value?.entry_url || entry.value?.line,
     async () => {
         await loadAccess();
         if (permissions.value.missing.length) ask();
@@ -47,28 +47,32 @@ watch(
 </script>
 
 <template>
-    <PageWindow
-        v-if="offer && offer.loading === 'page'"
-        :offer="offer"
-        :subscriptions="subscriptions"
-        :environment="environment"
-        :agent="agent"
-        :visible="visible"
-        :permissions="permissions"
-        :prompts="prompts"
-    />
-    <WindowHost
-        v-else-if="offer"
-        :key="offer.line || offer.entry_url"
-        :name="name"
-        :component="documentComponent"
-        :subscriptions="subscriptions"
-        :environment="environment"
-        :agent="agent"
-        :visible="visible"
-        :permissions="permissions"
-        :prompts="prompts"
-        :unavailable-reason="offer.unavailable_reason || (offer.loading === 'frame' ? FRAME_REASON : '')"
-    />
-    <WindowHost v-else :name="name" :subscriptions="subscriptions" :environment="environment" />
+    <template v-if="entry && entry.loading === 'page'">
+        <PageWindow
+            :entry="entry"
+            :subscriptions="subscriptions"
+            :environment="environment"
+            :agent="agent"
+            :visible="visible"
+            :permissions="permissions"
+            :prompts="prompts"
+        />
+    </template>
+    <template v-else-if="entry">
+        <WindowHost
+            :key="entry.line || entry.entry_url"
+            :name="name"
+            :component="documentComponent"
+            :subscriptions="subscriptions"
+            :environment="environment"
+            :agent="agent"
+            :visible="visible"
+            :permissions="permissions"
+            :prompts="prompts"
+            :unavailable-reason="entry.unavailable_reason || (entry.loading === 'frame' ? FRAME_REASON : '')"
+        />
+    </template>
+    <template v-else>
+        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" />
+    </template>
 </template>

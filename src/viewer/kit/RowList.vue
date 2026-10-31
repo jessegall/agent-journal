@@ -9,13 +9,21 @@ defineProps({
 </script>
 
 <template>
-    <p v-if="failure" class="row-list-failure">{{ failure }}</p>
-    <EmptyState v-else-if="!rows.length" :title="empty" />
-    <ul v-else class="row-list">
-        <li v-for="row in rows" :key="row.id" class="row-list-row">
-            <slot :row="row" />
-        </li>
-    </ul>
+    <template v-if="failure">
+        <p class="row-list-failure">{{ failure }}</p>
+    </template>
+    <template v-else-if="!rows.length">
+        <EmptyState :title="empty" />
+    </template>
+    <template v-else>
+        <ul class="row-list">
+            <template v-for="row in rows" :key="row.id">
+                <li class="row-list-row">
+                    <slot :row="row" />
+                </li>
+            </template>
+        </ul>
+    </template>
 </template>
 
 <style scoped>

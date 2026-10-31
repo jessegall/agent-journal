@@ -65,24 +65,6 @@ export class ApiClient {
         return this.url(`${this.here(path)}${path.includes("?") ? "&" : "?"}env=${encoded(this.env())}`);
     }
 
-    // a file the build carries, beside the page: at the root for the viewer, under /p/ for the phone
-    publicUrl(path) {
-        return onPhone ? `./${path}` : `/${path}`;
-    }
-
-    // each voice's 3D figure file, by voice; a file is named by a hash of its content
-    voiceFigures() {
-        return transport.request("GET", this.publicUrl("voices/figures/figures.json"));
-    }
-
-    voiceFigureUrl(file) {
-        return this.publicUrl(`voices/figures/${file}`);
-    }
-
-    figureDecoderUrl() {
-        return this.publicUrl("voices/figures/draco/");
-    }
-
     // the journal as a whole
 
     manifest() {

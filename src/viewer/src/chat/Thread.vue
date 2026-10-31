@@ -544,7 +544,9 @@ watch(
                         {{ held || missed ? `${held || missed} new` : "Newest" }}
                     </button>
                 </Transition>
-                <p v-if="sessionNotice" class="thread-notice" data-session-notice>{{ sessionNotice }}</p>
+                <template v-if="sessionNotice">
+                    <p class="thread-notice" data-session-notice>{{ sessionNotice }}</p>
+                </template>
                 <template v-if="editing">
                     <div class="thread-answering">
                         <span class="thread-answering-label">Editing message {{ editing.id }}</span>

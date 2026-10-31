@@ -26,7 +26,9 @@ async function send() {
             <input v-model="text" class="composer-input" placeholder="Write a message" />
             <Btn kind="primary" :disabled="!text.trim()" @click="send">Send</Btn>
         </form>
-        <p v-if="sendFailure" class="composer-failure">{{ sendFailure }}</p>
+        <template v-if="sendFailure">
+            <p class="composer-failure">{{ sendFailure }}</p>
+        </template>
     </div>
 </template>
 

@@ -5,9 +5,10 @@ from core.base.viewer.layout_shape import LayoutShape
 
 
 class Suite:
-    """The base of every suite: a swappable set of drivers above the core, with the suites it requires, a default
-    driver per role, whether it takes complete control, the other modules' overlays it then includes, the viewer
-    windows its environments show, and the default layout of each viewer page, per driver where one is named."""
+    """The base of every suite: a swappable set of drivers above the core, with the suites it requires, a
+    default driver per role, whether it takes complete control, the other modules' overlays it then includes,
+    the viewer windows its environments show, and the default layout of each viewer page, per driver where one
+    is named."""
 
     name: ClassVar[str]
     requires: ClassVar[Sequence[str]] = []

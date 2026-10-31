@@ -1,3 +1,4 @@
+/* @code-commandments-generated */
 const s = (t, r) => {
   const o = t.__vccOpts || t;
   for (const [c, e] of r)

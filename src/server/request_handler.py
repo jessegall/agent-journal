@@ -20,6 +20,7 @@ from server.endpoints.cli_request_error import CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.endpoints.hook_endpoint import HookEndpoint
 from core.base.driver.hook_event_error import HookEventError
+from server.server_instance import server_instance
 from server.journal_server import JournalServer
 from server.listener_wake import ListenerWake
 from server.peer_pid import peer_pid
@@ -73,9 +74,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             context.files.log_line(f"timing line not written: {error}")
 
     def journal_server(self) -> JournalServer:
-        if not isinstance(self.server, JournalServer):
-            raise TypeError(f"a request handler serves a JournalServer, not {type(self.server).__name__}")
-        return self.server
+        return server_instance(self.server, JournalServer)
 
     def do_GET(self) -> None:
         self.answered_safely(self.answer_get)

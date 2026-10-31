@@ -5,8 +5,8 @@ from core.suites.coding.file_edit_record import FileEditRecord
 
 
 class RecordFileEdit(DriverRule):
-    """Each file an agent edits or writes is kept as a file edit, with its path and its line counts, for the file feed
-    and the file edits windows."""
+    """Each file an agent edits or writes is kept as a file edit, with its path and its line counts, for the
+    file feed and the file edits windows."""
 
     name = "coding.record-file-edit"
     hook = "post_tool_use"

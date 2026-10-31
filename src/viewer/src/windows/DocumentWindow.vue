@@ -16,6 +16,10 @@ load();
 </script>
 
 <template>
-    <p v-if="answer && !answer.ok" class="window-failure">{{ answer.error }}</p>
-    <Dashboard v-else-if="answer" :document="answer.value" />
+    <template v-if="answer && !answer.ok">
+        <p class="window-failure">{{ answer.error }}</p>
+    </template>
+    <template v-else-if="answer">
+        <Dashboard :document="answer.value" />
+    </template>
 </template>

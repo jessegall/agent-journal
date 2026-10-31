@@ -2,8 +2,11 @@ import vue from "@vitejs/plugin-vue";
 import {createHash} from "node:crypto";
 import {defineConfig} from "vite";
 
+// the mark the code commandments judge reads to leave a built file alone
+const GENERATED_MARK = "/* @code-commandments-generated */";
+
 // a module's styles, put into each of its window scripts and added to the page once, since the page loads a window's
-// script alone
+// script alone; every built file is marked as generated
 export const stylesInScripts = () => ({
     name: "styles-in-scripts",
     apply: "build",
@@ -12,11 +15,10 @@ export const stylesInScripts = () => ({
         const sheets = Object.values(bundle).filter((file) => file.type === "asset" && file.fileName.endsWith(".css"));
         const css = sheets.map((sheet) => sheet.source).join("\n");
         sheets.forEach((sheet) => delete bundle[sheet.fileName]);
-        if (!css) return;
         const id = `window-styles-${createHash("sha256").update(css).digest("hex").slice(0, 12)}`;
-        const added = `if (!document.getElementById(${JSON.stringify(id)})) { const style = document.createElement("style"); style.id = ${JSON.stringify(id)}; style.textContent = ${JSON.stringify(css)}; document.head.appendChild(style); }\n`;
+        const added = css ? `if (!document.getElementById(${JSON.stringify(id)})) { const style = document.createElement("style"); style.id = ${JSON.stringify(id)}; style.textContent = ${JSON.stringify(css)}; document.head.appendChild(style); }\n` : "";
         for (const file of Object.values(bundle)) {
-            if (file.type === "chunk" && file.isEntry) file.code = added + file.code;
+            if (file.type === "chunk") file.code = `${GENERATED_MARK}\n${file.isEntry ? added : ""}${file.code}`;
         }
     },
 });

@@ -27,7 +27,7 @@ class EventStream:
         container = synced_container(self.home)
         try:
             environment_id = container.get(EnvironmentNames).environment_id(environment)
-            log, quiet_seconds = container.get(EventLog), 0.0
+            log, idle_seconds = container.get(EventLog), 0.0
             cursor_id = log.newest_id() if cursor_id is None else cursor_id
             while True:
                 events = log.events_past(cursor_id)
@@ -35,14 +35,14 @@ class EventStream:
                     if event.environment_id in (environment_id, None) and not output(self.message(event)):
                         return
                 if events:
-                    cursor_id, quiet_seconds = events[-1].id, 0.0
+                    cursor_id, idle_seconds = events[-1].id, 0.0
                     continue
-                if quiet_seconds >= HEARTBEAT_SECONDS:
+                if idle_seconds >= HEARTBEAT_SECONDS:
                     if not output(HEARTBEAT):
                         return
-                    quiet_seconds = 0.0
+                    idle_seconds = 0.0
                 time.sleep(POLL_SECONDS)
-                quiet_seconds += POLL_SECONDS
+                idle_seconds += POLL_SECONDS
         finally:
             container.get(Database).close()
 

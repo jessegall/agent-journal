@@ -1,12 +1,13 @@
 <script setup>
 // one compaction's round of memories, as its mark keeps it, in two groups shut until clicked: those still shown, and those removed, faded out or taken out since the last round
-import {computed, ref} from "vue";
+import {computed} from "vue";
 import {useTurnLinks} from "./turnLinks.js";
+import {useToggledSet} from "../composables/toggledSet.js";
 import FoldGroup from "../kit/FoldGroup.vue";
 
 const props = defineProps({round: {type: Object, default: null}});
 const {openRef} = useTurnLinks();
-const opened = ref(new Set());
+const {members: opened, toggle} = useToggledSet();
 
 const parts = computed(() =>
     props.round
@@ -23,11 +24,6 @@ const parts = computed(() =>
         : []
 );
 
-function toggle(label) {
-    const next = new Set(opened.value);
-    next.has(label) ? next.delete(label) : next.add(label);
-    opened.value = next;
-}
 </script>
 
 <template>

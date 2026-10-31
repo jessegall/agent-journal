@@ -43,13 +43,13 @@ const ORCHESTRATOR_TOGGLES = [
 const AUTO_TOGGLE = {feature: "tasks", name: "auto", label: "Auto", note: "Works through the task list without asking. Off, it asks before picking up the next task.", fallback: true};
 const BUILDER_TOGGLES = [
     AUTO_TOGGLE,
-    {feature: "workers", name: "builder_may_dispatch", label: "May dispatch workers", note: "Sends a worker with journal worker dispatch. Off, the line is refused.", fallback: true},
+    {feature: "workers", name: "builder_may_dispatch", label: "May start workers", note: "Starts a worker for a task. Off, starting one is refused.", fallback: true},
     {feature: "workers", name: "builder_may_queue", label: "May queue a worker's next task", note: "Queues a worker's next task with journal worker queue. Off, the line is refused.", fallback: true},
-    {feature: "workers", name: "builder_may_subagents", label: "May send subagents", note: "Sends its program's own subagents. Off, the dispatch is refused.", fallback: true},
+    {feature: "workers", name: "builder_may_subagents", label: "May send subagents", note: "Sends its program's own subagents. Off, sending one is refused.", fallback: true},
 ];
 const SOLO_TOGGLES = [
     AUTO_TOGGLE,
-    {feature: "workers", name: "solo_may_subagents", label: "May send subagents to help it", note: "Sends its program's own subagents to help it. Off, the dispatch is refused.", fallback: true},
+    {feature: "workers", name: "solo_may_subagents", label: "May send subagents to help it", note: "Sends its program's own subagents to help it. Off, sending one is refused.", fallback: true},
 ];
 const MODE_TOGGLES = {orchestrator: ORCHESTRATOR_TOGGLES, builder: BUILDER_TOGGLES, solo: SOLO_TOGGLES};
 

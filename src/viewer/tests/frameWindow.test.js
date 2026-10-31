@@ -7,7 +7,7 @@ import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
-const offer = {name: "notes.board", title: "Notes board", entry_url: "/modules/notes/board.html?v=1", loading: "frame", reads: ["task list"], runs: []};
+const entry = {name: "notes.board", title: "Notes board", entry_url: "/modules/notes/board.html?v=1", loading: "frame", reads: ["task list"], runs: []};
 
 function frame() {
     const posted = [];
@@ -16,11 +16,11 @@ function frame() {
 
 test("a frame window is a sandboxed frame that may run scripts and has no origin of its own", async () => {
     const element = document.createElement("div");
-    createApp(() => h(FrameWindow, {offer, subscriptions: new WindowSubscriptions(), environment: "main"})).mount(element);
+    createApp(() => h(FrameWindow, {entry, subscriptions: new WindowSubscriptions(), environment: "main"})).mount(element);
     await nextTick();
     const iframe = element.querySelector("iframe");
     expect(iframe.getAttribute("sandbox")).toBe("allow-scripts");
-    expect(iframe.getAttribute("src")).toBe(offer.entry_url);
+    expect(iframe.getAttribute("src")).toBe(entry.entry_url);
 });
 
 test("the bridge sends a frame's line with the frame's own window name, whatever window the frame names", async () => {

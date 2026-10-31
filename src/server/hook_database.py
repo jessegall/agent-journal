@@ -8,9 +8,9 @@ from server.hook_database_busy import HookDatabaseBusy
 
 
 class HookDatabase:
-    """The one database connection the server's hooks share, kept open so its page cache stays warm; one hook uses
-    it at a time, as hooks are write transactions SQLite runs one at a time anyway, and one that waits past its limit
-    for another is told so."""
+    """The one database connection the server's hooks share, kept open so its page cache stays warm; one hook
+    uses it at a time, as hooks are write transactions SQLite runs one at a time anyway, and one that waits
+    past its limit for another is told so."""
 
     def __init__(self, home: JournalHome) -> None:
         self.database = Database.shared(home)

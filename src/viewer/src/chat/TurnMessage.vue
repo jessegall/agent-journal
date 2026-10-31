@@ -1,5 +1,5 @@
 <script setup>
-import MarkIcon from "../kit/MarkIcon.vue";
+import TurnQuestionHead from "./TurnQuestionHead.vue";
 import {turnFold} from "../domain/turnFolds.js";
 import {meta} from "../domain/tables.js";
 import {store} from "../state/store.js";
@@ -43,6 +43,8 @@ const report = computed(() => reportOf(props.turn));
 const reportedTask = computed(() =>
     report.value && report.value.workerId ? rowsOf("tasks").find((t) => t.worker_id === report.value.workerId) || null : null
 );
+const reportTaskId = computed(() => props.turn.data.task || reportedTask.value?.id || 0);
+const hasButtons = computed(() => Boolean(props.turn.data?.buttons?.length));
 const {words, html} = useTurnText(() => (report.value ? {...props.turn, text: report.value.text} : props.turn), env);
 
 const sent = computed(() => Boolean(props.turn.data?.sent_to));
@@ -149,7 +151,7 @@ async function drop() {
                 :worker="report.worker"
                 :worker-id="report.workerId"
                 :message-id="turn.id"
-                :task-id="turn.data.task || reportedTask?.id || 0"
+                :task-id="reportTaskId"
                 :text="report.text"
             />
         </template>
@@ -165,22 +167,21 @@ async function drop() {
                 <TurnParent :label="commentParent.label" @open="openComment" />
             </template>
             <Transition :css="false" @enter="growHeight">
-                <div v-if="turn.kind === 'question'" :class="['thread-results', {live: !turn.question.closedAt}]">
-                    <MarkIcon name="question" />
-                    <p class="thread-ask-label">Question {{ turn.question.id }} · {{ turn.question.closedAt ? "you answered" : "the agent waits for your answer" }}</p>
-                </div>
+                <template v-if="turn.kind === 'question'">
+                    <TurnQuestionHead :question="turn.question" />
+                </template>
             </Transition>
             <template v-if="quoteText">
                 <TurnQuote :html="quoteHtml" @go="resourceComment ? openComment() : toQuoted()" />
             </template>
-            <TurnText :html="html" :name="turn.key" :fold-at="fold.at" :keep="fold.keep" @activate="openChip" />
+            <TurnText :html="html" :name="turn.key" :fold="fold" @activate="openChip" />
             <template v-if="turn.kind === 'question'">
                 <TurnQuestion :turn="turn" />
             </template>
             <template v-if="turn.kind === 'message'">
                 <ChoiceCard :message="turn" />
             </template>
-            <template v-if="turn.data?.buttons?.length">
+            <template v-if="hasButtons">
                 <MessageButtons :message="turn" />
             </template>
             <template v-if="files.length">
@@ -277,29 +278,6 @@ async function drop() {
 
 .thread-turn.ask:has(.thread-results:not(.live)) .thread-bubble {
     border-color: var(--border);
-}
-
-.thread-results {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin: 0 0 5px;
-    color: var(--text-3);
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.thread-results.live {
-    color: var(--tone-warn);
-}
-
-.thread-results :deep(svg) {
-    width: 13px;
-    height: 13px;
-}
-
-.thread-ask-label {
-    margin: 0 auto 0 0;
 }
 
 .thread-turn.quoting {
