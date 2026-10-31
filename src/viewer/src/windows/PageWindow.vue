@@ -34,6 +34,7 @@ watch(
         :visible="visible"
         :permissions="permissions"
         :prompts="prompts"
+        :events="entry.events"
         :unavailable-reason="entry.unavailable_reason"
     />
 </template>

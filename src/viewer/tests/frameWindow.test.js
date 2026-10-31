@@ -49,7 +49,7 @@ test("the bridge answers only the frame it made", async () => {
 test("a frame's follow sends each event it hears back to the frame under the follow's id", async () => {
     const board = frame();
     const subscriptions = new WindowSubscriptions();
-    const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, subscriptions, open: () => {}});
+    const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, events: ["task.*"], subscriptions, open: () => {}});
     const bridge = new FrameBridge(board, context);
     await bridge.received({source: board.contentWindow, data: {id: 4, type: "follow", patterns: ["task.*"]}});
     subscriptions.dispatch({event: "task.create", row_id: 7});

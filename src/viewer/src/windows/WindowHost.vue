@@ -13,6 +13,7 @@ const props = defineProps({
     visible: {type: Boolean, default: true},
     permissions: {type: Object, default: () => ({reads: [], runs: [], missing: [], ask: async () => true})},
     prompts: {type: Object, default: null},
+    events: {type: Array, default: () => []},
     unavailableReason: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
@@ -24,6 +25,7 @@ provide(WINDOW_CONTEXT, windowContext({
     agent: props.agent,
     visible: () => props.visible,
     permissions: props.permissions,
+    events: props.events,
     subscriptions: props.subscriptions,
     open: (window, agent) => emit("open", window, agent),
 }));

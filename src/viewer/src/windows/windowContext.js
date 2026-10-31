@@ -1,4 +1,5 @@
 import {computed} from "vue";
+import {matches} from "./windowSubscriptions.js";
 export {WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
 
 const FAILURES = {1: "refused", 2: "usage", 3: "fault"};
@@ -7,7 +8,7 @@ const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment and agent, whether it is shown, what it may run, its follows
 // through the host, read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
-export function windowContext({window, environment, agent, visible, permissions, subscriptions, open}) {
+export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open}) {
     const recent = new Map();
     const read = (line) => {
         const last = recent.get(line);
@@ -24,7 +25,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         permissions,
         read,
         run: (line) => lineResult(window, line, environment),
-        follow: (patterns, heard) => subscriptions.follow(window, patterns, heard, visible),
+        follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),
         open,
         setting: async (key, fallback) => {
             const answer = await read(`window setting ${window} ${key}`);

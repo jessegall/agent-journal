@@ -20,6 +20,7 @@ class ViewerWindow:
     roles: Sequence[str]
     reads: Sequence[str]
     runs: Sequence[str]
+    events: Sequence[str]
     unavailable_reason: str
     allowed: bool
 
@@ -28,4 +29,4 @@ class ViewerWindow:
         document = window.loading == WindowLoading.DOCUMENT
         entry_url = "" if document else f"/modules/{window.module}/{window.entry}?v={fingerprint}"
         return cls(window.name, window.title, entry_url, window.entry if document else "", window.loading, window.place, window.roles,
-                   window.reads, window.runs, window.unavailable_reason, window.shipped)
+                   window.reads, window.runs, window.events, window.unavailable_reason, window.shipped)

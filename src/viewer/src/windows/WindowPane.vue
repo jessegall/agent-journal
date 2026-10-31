@@ -69,6 +69,7 @@ watch(
             :visible="visible"
             :permissions="permissions"
             :prompts="prompts"
+            :events="entry.events"
             :unavailable-reason="entry.unavailable_reason || (entry.loading === 'frame' ? FRAME_REASON : '')"
         />
     </template>

@@ -7,7 +7,7 @@ import {useWindow} from "../src/windows/windowContext.js";
 const following = defineComponent({
     setup() {
         const window = useWindow();
-        onMounted(() => window.follow("task.*", () => {}));
+        onMounted(() => window.follow(["task.*"], () => {}));
         return () => h("p", "following tasks");
     },
 });
@@ -21,7 +21,7 @@ const failing = defineComponent({
 function mounted(component, subscriptions) {
     const element = document.createElement("div");
     document.body.appendChild(element);
-    const app = createApp(() => h(WindowHost, {name: "notes.board", component, subscriptions}));
+    const app = createApp(() => h(WindowHost, {name: "notes.board", component, subscriptions, events: ["task.*"]}));
     app.mount(element);
     return {app, element};
 }
@@ -59,4 +59,15 @@ test("a window keeps a setting of its own and reads it back, or its fallback whe
     await new Promise((resolve) => setTimeout(resolve, 110));
     expect(await context.setting("zoom", 1)).toBe(2);
     delete globalThis.fetch;
+});
+
+test("a window hears only the events it declared, whatever patterns it asks to follow", async () => {
+    const {windowContext} = await import("../src/windows/windowContext.js");
+    const subscriptions = new WindowSubscriptions();
+    const heard = [];
+    const context = windowContext({window: "notes.board", environment: "main", agent: null, visible: () => true, permissions: {}, events: ["task.*"], subscriptions, open: () => {}});
+    context.follow(["task.*", "message.*", "*.*"], (event) => heard.push(event.event));
+    subscriptions.dispatch({event: "task.create"});
+    subscriptions.dispatch({event: "message.create"});
+    expect(heard).toEqual(["task.create"]);
 });
