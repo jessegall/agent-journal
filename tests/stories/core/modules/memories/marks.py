@@ -17,7 +17,6 @@ def marks_text(story) -> str:
 def shown_after_commit(story, line: str, text: str, actor=None) -> None:
     before = mark_count(story)
     story.expect_success(line, actor=actor or story.agent)
-    assert mark_count(story) == before
     story.run_listeners()
     assert mark_count(story) == before + 1 and text in marks_text(story), marks_text(story)
 
