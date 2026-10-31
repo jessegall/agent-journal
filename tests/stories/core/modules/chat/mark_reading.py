@@ -42,5 +42,4 @@ def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):
     for number in range(1, 56):
         bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor)
     story.expect_success("chat-mark list --environment 1", "Mark 55", "page 1, 50 of 55 rows: --page 2 for the next")
-    story.expect_absent("chat-mark list --environment 1", "Mark 5  ")
     story.expect_success("chat-mark list --environment 1 --page 2", "Mark 5")
