@@ -38,11 +38,15 @@ class HookSwitch:
                 kept.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(self.root / name, kept)
         runner = self.runner()
-        HookWriter(self.root).write(runner)
+        for program in HookWriter(self.root).programs:
+            if program.path.relative_to(self.root) in present:
+                program.write(runner, self.root)
         return [f"the hooks of {', '.join(str(name) for name in present)} call {runner}; the old files are in {self.saved}"]
 
     def restore(self) -> list[str]:
         restored = [name for name in SETTINGS_FILES if (self.saved / name).is_file()]
+        for name in [name for name in SETTINGS_FILES if name not in restored and (self.root / name).is_file()]:
+            self.without_journal_hooks(self.root / name)
         for name in restored:
             current, kept = self.settings(self.root / name), self.settings(self.saved / name)
             current_hooks, kept_hooks = current.get("hooks"), kept.get("hooks")
@@ -53,6 +57,13 @@ class HookSwitch:
                     hooks.setdefault(str(event), []).extend(block for block in blocks if ProgramHooks.is_journals(block))
             (self.root / name).write_text(json.dumps({**current, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
         return [f"version 4's hooks are back in {', '.join(str(name) for name in restored)}"] if restored else []
+
+    def without_journal_hooks(self, path: Path) -> None:
+        current = self.settings(path)
+        stored = current.get("hooks")
+        hooks = {str(event): [block for block in blocks if not ProgramHooks.is_journals(block)] for event, blocks in (stored.items() if is_mapping(stored) else [])
+                 if is_list(blocks)}
+        path.write_text(json.dumps({**current, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
 
     def runner(self) -> str:
         binary = self.root / BINARY

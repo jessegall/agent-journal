@@ -179,3 +179,25 @@ def test_a_restore_keeps_a_setting_added_after_the_switch_and_takes_version_5s_h
     assert restore(scratch, "--yes").returncode == 0
     restored = json.loads((scratch.project / SETTINGS).read_text())
     assert hook_commands(scratch) == original and restored["added"] == "after the switch" and "Bash(git status:*)" in restored["permissions"]["allow"]
+
+
+def test_an_upgrade_of_a_claude_only_project_writes_no_codex_file_and_a_restore_leaves_no_version_5_hook(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    assert not (scratch.project / ".codex" / "hooks.json").exists()
+    original = hook_commands(scratch)
+    assert upgrade(scratch, "--yes").returncode == 0
+    assert not (scratch.project / ".codex" / "hooks.json").exists() and not (scratch.project / ".codex").exists()
+    assert restore(scratch, "--yes").returncode == 0
+    assert hook_commands(scratch) == original and not (scratch.project / ".codex" / "hooks.json").exists()
+
+
+def test_a_restore_strips_the_journals_blocks_from_a_hooks_file_that_has_no_kept_copy(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    assert upgrade(scratch, "--yes").returncode == 0
+    stray = scratch.project / ".codex" / "hooks.json"
+    stray.parent.mkdir()
+    stray.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": f'sh "{scratch.journal}/hooks/hook.sh" codex "{scratch.project}"'},
+                                                            {"type": "command", "command": "echo mine"}]}]}, "kept": 1}))
+    assert restore(scratch, "--yes").returncode == 0
+    left = json.loads(stray.read_text())
+    assert left["kept"] == 1 and "hook.sh" not in json.dumps(left)
