@@ -15,16 +15,18 @@ from core.modules.plans.models.enums.plan_state import PlanState
 from core.modules.plans.models.lifecycles.plan_lifecycle import PlanLifecycle
 
 TABLE = "plans"
+PHASE_LINK = "phase_of"
 STATES = {member.value: member for member in PlanState}
 RENAMED = {"reviewing": PlanState.READY, "delegated": PlanState.STARTED, "done": PlanState.COMPLETED, "paused": PlanState.APPROVED}
 CLOSED = (PlanState.COMPLETED, PlanState.CANCELLED)
 
 
 class PlansMove(VersionFourMove):
-    """Carries version 4's plans with their numbers and states (reviewing is ready, delegated is started, done is
-    completed and a paused plan is approved, so it can be started again), their phases with position, title,
-    goal and checkpoint, and the tasks in each phase in the order of their links. Plan reviews and reviewers
-    are dropped and counted. A plan in a state version 5 does not know is skipped and told."""
+    """Carries version 4's plans with their numbers and states (reviewing is ready, delegated is started,
+    done is completed and a paused plan is approved, so it can be started again), their phases (linked
+    phase_of, in link order) with title, goal and checkpoint, and the tasks in each phase in the order of
+    their links. Plan reviews and reviewers are dropped and counted. A plan in a state version 5 does not
+    know is skipped and told."""
 
     name = "plans"
     reads = ["plans", "phases"]
@@ -55,22 +57,33 @@ class PlansMove(VersionFourMove):
         return plan_id
 
     def phases(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
-        for row in source.rows("phases"):
-            plan_id = map.new_id(TABLE, row["plan_id"]) if row["plan_id"] is not None else None
-            if plan_id is None:
-                report.skip("phases", row["id"], "its plan did not move")
+        phases = {row["id"]: row for row in source.rows("phases")}
+        positions: dict[int, int] = {}
+        for link in [row for row in source.rows("links") if row["link_type"] == PHASE_LINK]:
+            phase, plan = VersionFourRef.parsed(link["source"]), VersionFourRef.parsed(link["target"])
+            plan_id = map.linked_id(plan, TABLE)
+            row = phases.get(phase.number) if phase.table == "phases" and phase.number is not None else None
+            if plan_id is None or row is None:
+                report.skip("links", link["id"], "its phase or its plan did not move")
                 continue
-            created = row["created_at"] or context.timestamp
-            report.count("phases", map.transfer("phases", row["id"], "phases", lambda: rows.insert("phases", {
-                "id": row["id"], "plan_id": plan_id, "creator_id": creators.actor_id(row["creator"]), "position": row["position"], "title": row["title"],
-                "goal": row["done_when"] or "", "checkpoint": 1 if row["checkpoint"] else 0, "created_at": created, "updated_at": row["updated_at"] or created})))
+            positions[plan_id] = positions.get(plan_id, 0) + 1
+            report.count("phases", map.transfer("phases", row["id"], "phases", partial(self.phase, rows, row, plan_id, positions[plan_id], creators.actor_id(row["creator"]),
+                                                                                        context)))
+
+    def phase(self, rows: RowInsert, row: sqlite3.Row, plan_id: int, position: int, creator_id: int, context: MoveContext) -> int:
+        created = row["created_at"] or context.timestamp
+        return rows.insert("phases", {"id": row["id"], "plan_id": plan_id, "creator_id": creator_id, "position": position, "title": row["title"],
+                                      "goal": row["completion_rule"] or "", "checkpoint": 1 if row["checkpoint"] else 0, "created_at": created,
+                                      "updated_at": row["updated_at"] or created})
 
     def tasks(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
         positions: dict[int, int] = {}
-        for link in [row for row in source.rows("links") if row["link_type"] == "in_phase"]:
+        phase_links = [row for row in source.rows("links") if row["link_type"] == "in_phase"]
+        latest = {link["source"]: link["id"] for link in phase_links}
+        report.drop("in_phase links older than the task's last phase", sum(1 for link in phase_links if latest[link["source"]] != link["id"]))
+        for link in [row for row in phase_links if latest[row["source"]] == row["id"]]:
             task, phase = VersionFourRef.parsed(link["source"]), VersionFourRef.parsed(link["target"])
-            task_id = map.new_id("tasks", task.number) if task.table == "tasks" and task.number is not None else None
-            phase_id = map.new_id("phases", phase.number) if phase.table == "phases" and phase.number is not None else None
+            task_id, phase_id = map.linked_id(task, "tasks"), map.linked_id(phase, "phases")
             if task_id is None or phase_id is None:
                 report.skip("links", link["id"], "its task or its phase did not move")
                 continue

@@ -29,3 +29,8 @@ def test_an_agents_message_names_the_agent_that_wrote_it(new_story):
     story = upgraded_story(new_story)
     agent = next(line.split()[0] for line in story.run("agent list").output_text.splitlines() if "s-1" in line)
     story.expect_success("message show 2", f"agent_id: {agent}")
+
+
+def test_a_message_of_an_environment_that_no_longer_exists_is_skipped_and_told(new_story):
+    story = upgraded_story(new_story)
+    assert "skipped messages 5: its environment 9 did not move" in story.upgrade_text

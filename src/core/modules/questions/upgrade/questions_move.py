@@ -4,6 +4,7 @@ from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
+from core.base.upgrade.agent_sessions import AgentSessions
 from core.base.upgrade.creator_resolver import AGENT, CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -15,12 +16,13 @@ from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
 
 TABLE = "questions"
+TEXT_LIMIT_CHARACTERS = 500
 
 
 class QuestionsMove(VersionFourMove):
     """Carries version 4's questions with their numbers, text, options, recommended choice and answer, asked by
     the agent whose session wrote them; an answered one is answered and the rest open. A question whose agent
-    did not move is skipped and told."""
+    did not move, or whose text is longer than version 5 allows, is skipped and told."""
 
     name = "questions"
     reads = [TABLE]
@@ -28,12 +30,15 @@ class QuestionsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        agents = {row["session"]: row["id"] for row in source.rows("agents")}
+        sessions = AgentSessions(source, map)
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
-            agent_id = map.new_id("agents", agents[session]) if actor_type == AGENT and session in agents else None
+            agent_id = sessions.agent_id(session) if actor_type == AGENT else None
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that asked it did not move")
+                continue
+            if len(row["text"]) > TEXT_LIMIT_CHARACTERS:
+                report.skip(TABLE, row["id"], f"its text is longer than {TEXT_LIMIT_CHARACTERS} characters")
                 continue
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, agent_id, creators.actor_id(row["creator"]), context)))
         return report

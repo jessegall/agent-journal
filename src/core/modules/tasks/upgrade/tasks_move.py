@@ -61,7 +61,7 @@ class TasksMove(VersionFourMove):
         holders: dict[int, int] = {}
         for link in [row for row in source.rows("links") if row["link_type"] == "holds"]:
             agent, task = VersionFourRef.parsed(link["source"]), VersionFourRef.parsed(link["target"])
-            new_agent = map.new_id("agents", agent.number) if agent.table == "agents" and agent.number is not None else None
+            new_agent = map.linked_id(agent, "agents")
             if new_agent is not None and task.table == TABLE and task.number is not None:
                 holders[task.number] = new_agent
         return holders
@@ -114,7 +114,7 @@ class TasksMove(VersionFourMove):
 
     def task_id(self, text: str | None, map: MoveMap) -> int | None:
         ref = VersionFourRef.parsed(text)
-        return map.new_id(TABLE, ref.number) if ref.table == TABLE and ref.number is not None else None
+        return map.linked_id(ref, TABLE)
 
     def depend(self, rows: RowInsert, creators: CreatorResolver, link: sqlite3.Row, task_id: int, dependency_id: int, context: MoveContext) -> int:
         return rows.insert("task_dependencies", {"task_id": task_id, "dependency_id": dependency_id, "creator_id": creators.actor_id(link["creator"]),

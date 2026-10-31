@@ -23,3 +23,9 @@ def test_a_plan_in_review_moves_as_ready_with_its_phases_checkpoint_and_tasks_in
 def test_the_plan_reviews_of_version_4_are_dropped_and_counted(new_story):
     story = upgraded_story(new_story)
     assert "dropped plan_reviews: 2 rows" in story.upgrade_text
+
+
+def test_a_task_version_4_left_in_two_phases_moves_into_its_last_and_the_older_link_is_counted(new_story):
+    story = upgraded_story(new_story)
+    assert "dropped in_phase links older than the task's last phase: 1 rows" in story.upgrade_text
+    assert "phase_id: 2" in next(story.run(f"phase-task show {n}").output_text for n in (1, 2, 3) if "task_id: 2" in story.run(f"phase-task show {n}").output_text)

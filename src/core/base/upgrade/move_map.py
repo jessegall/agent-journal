@@ -3,6 +3,7 @@ from collections.abc import Callable
 from core.base.database.database import Database
 from core.base.database.upgrade_map_table import UpgradeMapTable
 from core.base.database.moved_row import MovedRow
+from core.base.upgrade.version_four_ref import VersionFourRef
 
 
 class MoveMap:
@@ -14,6 +15,9 @@ class MoveMap:
 
     def new_id(self, old_table: str, old_id: int) -> int | None:
         return self.table.new_id(old_table, old_id)
+
+    def linked_id(self, end: VersionFourRef, old_table: str) -> int | None:
+        return self.new_id(old_table, end.number) if end.table == old_table and end.number is not None else None
 
     def record(self, moved: MovedRow) -> None:
         self.table.record(moved)

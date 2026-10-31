@@ -11,3 +11,8 @@ def test_an_open_question_moves_open(new_story):
     story = upgraded_story(new_story)
     story.expect_success("question show 2", "question 2: Ship on Friday?", "state: open")
     assert "questions: moved 2" in story.upgrade_text
+
+
+def test_a_question_longer_than_version_5_allows_is_skipped_and_named(new_story):
+    story = upgraded_story(new_story)
+    assert "skipped questions 3: its text is longer than 500 characters" in story.upgrade_text

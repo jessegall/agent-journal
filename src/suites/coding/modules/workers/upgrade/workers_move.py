@@ -7,6 +7,7 @@ from core.base.upgrade.version_four_source import VersionFourSource
 
 WORKERS = "sent_agents"
 UNFINISHED_STATES = ("clocked in", "reported", "ended without clocking out")
+BRIEF_SHOWN_CHARACTERS = 80
 HISTORY_LINE = "workers, their to-do items and proofs are history in the backup: send any worker that was still working again"
 
 
@@ -26,5 +27,5 @@ class WorkersMove(VersionFourMove):
         report.note(HISTORY_LINE)
         for worker in workers:
             if worker["state"] in UNFINISHED_STATES:
-                report.note(f"worker {worker['name']} had not finished ({worker['state']}): {worker['brief']}")
+                report.note(f"worker {worker['name']} had not finished ({worker['state']}): {worker['brief'][:BRIEF_SHOWN_CHARACTERS]}")
         return report
