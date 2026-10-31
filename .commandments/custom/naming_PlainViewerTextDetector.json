@@ -1,6 +1,6 @@
 {
     "$schema": "../rule.schema.json",
-    "engine": "frontend",
+    "engine": "vue",
     "find": {
         "select": "kind:Attribute",
         "where": [
