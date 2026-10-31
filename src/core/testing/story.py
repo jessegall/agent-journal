@@ -1,4 +1,5 @@
 import io
+import json
 import shlex
 from uuid import uuid4
 from dataclasses import dataclass, field
@@ -7,6 +8,7 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.cli.console import Console
+from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.process_table import ProcessRow, ProcessTable
 from core.base.clock import Clock
@@ -179,6 +181,13 @@ class Story:
 
     def error_log_text(self) -> str:
         return self.home.error_log.read_text() if self.home.error_log.exists() else ""
+
+    def expect_sync_refusal(self, module: str, text: str) -> None:
+        modules = json.loads(self.home.module_list.read_text())
+        self.home.module_list.write_text(json.dumps([*modules, module]))
+        stream = io.StringIO()
+        code = self.container.get(ModuleSyncLine).run(list(SYNC_ARGV), stream)
+        assert code != 0 and text in stream.getvalue(), f"module sync with {module} gave {code}: {stream.getvalue()}"
 
     def expect_rows(self, *checks: bool) -> None:
         assert all(checks), f"a row check failed: {checks}"
