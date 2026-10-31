@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "parent",
+                "kind": "CaseClause"
+            },
+            {
+                "textMatches": "^(claude|codex)$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "file": "**/journal-hook/programs/**"
+            }
+        ]
+    },
+    "sin": {
+        "name": "go-program-switch-outside-programs",
+        "description": "Go code outside the programs package switches on an agent program's name, so a third program means editing every switch.",
+        "rule": "Ask the program's row in the program table, or its decoder in tools/journal-hook/programs, for what differs between programs.",
+        "skill": "plain-code-words"
+    }
+}

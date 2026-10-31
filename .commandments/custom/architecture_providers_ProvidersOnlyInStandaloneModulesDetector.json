@@ -1,0 +1,70 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "extendsAny": "Module"
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "assignment"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "providers"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "assignment"
+                        },
+                        {
+                            "descendant": {
+                                "all": [
+                                    {
+                                        "is": "identifier"
+                                    },
+                                    {
+                                        "name": "dependencies"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "descendant": {
+                                "is": "literal"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "provider-in-a-dependent-module",
+        "description": "A module that depends on other modules provides an agent program, so the program cannot be added or removed on its own.",
+        "rule": "Give each agent program a module of its own with no dependencies, as journal.core.claude_code and journal.core.codex are.",
+        "skill": "providers-architecture"
+    }
+}

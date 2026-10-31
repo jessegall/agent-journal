@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "src/(core|server)/"
+            },
+            {
+                "textMatches": "^(pre_tool_use|post_tool_use|post_tool_use_failure|prompt|stop|stop_failure|session_start|session_end|compact|message_display|tick)$"
+            },
+            {
+                "of": "parent",
+                "is": "comparison"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "hook-compared-by-a-string",
+        "description": "Code compares a hook event by its string, so a misspelt hook compares false and the names are written out again.",
+        "rule": "Compare with the member: event.event is HookEventName.STOP.",
+        "skill": "providers-architecture"
+    }
+}

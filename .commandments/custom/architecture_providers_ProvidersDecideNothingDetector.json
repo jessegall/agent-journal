@@ -1,0 +1,40 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "fileMatches": "src/core/(base/provider|modules/[a-z_]+/providers)/"
+            },
+            {
+                "any": [
+                    {
+                        "nameMatches": "(\\.guards?(\\.|$)|driver_rule|rule_answer|hook_reply|\\.rules\\.)"
+                    },
+                    {
+                        "descendant": {
+                            "resolvesLike": "*.guards.*"
+                        }
+                    },
+                    {
+                        "descendant": {
+                            "resolvesLike": "*.rules.*"
+                        }
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "provider-decides-what-an-agent-may-do",
+        "description": "A provider imports a guard, a driver rule or the hook's answer, so what an agent may do is decided in the code that only speaks the program's language.",
+        "rule": "A provider reads and writes its program's files and lines; what the agent may do is the drivers' and guards' to decide.",
+        "skill": "providers-architecture"
+    }
+}
