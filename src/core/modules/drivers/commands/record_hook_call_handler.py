@@ -71,7 +71,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
-        outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable]
+        outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in self.unneeded_rules(answers)]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         updated_input = self.updated_input(answers, outcomes)
         if updated_input != answers.updated_input:
@@ -84,6 +84,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         for rule, text in rule_lines:
             self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=rule), context)
         return HookReply("", [], call_id)
+
+    def unneeded_rules(self, answers: RuleAnswers) -> set[str]:
+        return {rule.name for rule in answers.rewriters} if answers.refusal else set()
 
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:
         try:

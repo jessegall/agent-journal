@@ -11,6 +11,7 @@ from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.start_process_handler import StartProcessHandler
 from core.modules.processes.commands.stop_process_handler import StopProcessHandler
 from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
+from core.modules.processes.rules.runner_rewrite import RunnerRewrite
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -32,3 +33,4 @@ class ProcessesModule(Module):
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard]
+    driver_rules = [RunnerRewrite]
