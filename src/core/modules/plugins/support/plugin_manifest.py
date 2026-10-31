@@ -14,6 +14,7 @@ from core.modules.plugins.support.event_window import EventWindow
 
 MANIFEST_FILE = "journal-plugin.json"
 REQUIRED_FIELDS = ("name", "title", "version")
+WORKERS_ROLE = "workers"
 
 
 @dataclass(frozen=True)
@@ -21,7 +22,8 @@ class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
     version, the program run for each event, the events it takes and the ones it answers inside a window, the
     settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, the services it keeps running, and what its
-    install requires, sets up and reads back, and how its services answer a health check."""
+    install requires, sets up and reads back, how its services answer a health check, and
+    which helpers besides the main agent each event reaches."""
 
     name: str
     title: str
@@ -38,6 +40,7 @@ class PluginManifest:
     setup_steps: tuple[SetupStep, ...]
     installed_command: str
     health: PluginHealth | None
+    reaches: Mapping[str, tuple[str, ...]]
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -57,7 +60,12 @@ class PluginManifest:
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
-                   cls.read_health(fields["health"] if "health" in fields else None))
+                   cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None))
+
+    @staticmethod
+    def read_reaches(reaches: object) -> dict[str, tuple[str, ...]]:
+        entries = [(str(event), roles) for event, roles in reaches.items() if is_list(roles)] if is_mapping(reaches) else []
+        return {event: tuple(str(role) for role in roles) for event, roles in entries}
 
     @staticmethod
     def read_health(health: object) -> "PluginHealth | None":
@@ -115,6 +123,9 @@ class PluginManifest:
         if not matching:
             raise Refusal(f"{self.name} has no setting {key}: it has {', '.join(setting.key for setting in self.settings) or 'none'}", "journal plugin settings shows them")
         return matching[0]
+
+    def reaches_workers(self, event: str) -> bool:
+        return event in self.reaches and WORKERS_ROLE in self.reaches[event]
 
     def window_names(self) -> tuple[str, ...]:
         return tuple(window.event for window in self.event_windows)

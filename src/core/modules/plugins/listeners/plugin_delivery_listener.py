@@ -55,7 +55,7 @@ class PluginDeliveryListener(CommitListener):
         if plugin.fault_count:
             self.record(event, delivery, ClearPluginFaults(delivery.plugin_id))
         if answer.line:
-            PluginQueue(self.folders.data(plugin.name)).add(environment, answer.line, f"delivery-{delivery.id}")
+            PluginQueue(self.folders.data(plugin.name)).add(environment, delivery.agent_id, answer.line, f"delivery-{delivery.id}")
         if answer.has_output():
             self.record(event, delivery, AddPluginOutput(plugin.id, delivery.environment_id, delivery.agent_id, answer.output))
 

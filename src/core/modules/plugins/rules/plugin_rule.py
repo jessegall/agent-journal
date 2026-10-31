@@ -31,14 +31,15 @@ REFUSABLE_EVENTS = ("tool_starting", "command_starting", "file_edited", "idle")
 
 
 class PluginRule(DriverRule):
-    """Hands the main agent's hooks to the plugins switched on, as version 4 did: a plugin answers an event it
-    holds inside its window, and may refuse it; an event it only hears runs after the reply; the lines in its
-    queue reach the agent; and a plugin whose files changed since the person last took them is switched off."""
+    """Hands the main agent's hooks to the plugins switched on, and a worker's to those whose manifest
+    reaches workers for the event, as version 4 did: a plugin answers an event it holds inside its window,
+    and may refuse it; an event it only hears runs after the reply; the lines in its queue reach the agent
+    they are for; and a plugin whose files changed since the person last took them is switched off."""
 
     name = "plugins.plugin-events"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN]
+    roles = [AgentRole.MAIN, AgentRole.WORKER]
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, program: PluginProgram, settings: PluginSettings, setting_values: SettingValues) -> None:
         self.plugins, self.folders, self.program, self.settings, self.setting_values = plugins, folders, program, settings, setting_values
@@ -54,10 +55,10 @@ class PluginRule(DriverRule):
                 continue
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if hook.event.accepts_lines:
-                for queued in PluginQueue(self.folders.data(plugin.name)).answers(hook.event.environment):
+                for queued in PluginQueue(self.folders.data(plugin.name)).answers(hook.event.environment, hook.agent_id):
                     lines.extend([f"[plugin {plugin.name}] {queued.line}"] if queued.line else [])
                     commands.extend([AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, queued.output)] if queued.has_output() else [])
-            for event in [event for event in events if event.name in manifest.event_names]:
+            for event in [event for event in events if event.name in manifest.event_names and self.reaches(hook, manifest, event.name)]:
                 if event.name not in manifest.window_names():
                     commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, hook.agent_id, event.name, json.dumps(dict(event.data))))
                     continue
@@ -65,6 +66,10 @@ class PluginRule(DriverRule):
                 if refusal:
                     return RuleAnswer(refusal=refusal, lines=tuple(lines), commands=tuple(commands))
         return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
+
+    @staticmethod
+    def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
+        return hook.role is AgentRole.MAIN or manifest.reaches_workers(event)
 
     def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]]) -> str:
         call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, self.settings.values(plugin, manifest))

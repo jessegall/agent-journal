@@ -16,7 +16,8 @@ esac
 SETTINGS = [{"key": "level", "title": "Level", "kind": "number", "default": 1, "help": "How strict it is"}]
 MANIFEST = {"name": "sample", "title": "Sample", "version": "1.0.0", "protocol": 1, "program": "run.sh", "hears": ["command_starting", "file_edited"],
             "holds": [{"event": "command_starting", "window_ms": 5000}], "settings": "settings.json",
-            "cards": [{"kind": "state", "label": "State", "tone": "note"}], "skills": "skills"}
+            "cards": [{"kind": "state", "label": "State", "tone": "note"}], "skills": "skills",
+            "reaches": {"file_edited": ["workers"]}}
 SKILL = "---\nname: sample-rules\ndescription: The rules the sample plugin checks\n---\n\n# Sample rules\n"
 
 
