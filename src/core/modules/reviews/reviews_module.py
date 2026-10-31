@@ -7,6 +7,7 @@ from core.modules.reviews.listeners.reviewer_idle_listener import ReviewerIdleLi
 from core.modules.reviews.commands.abandon_review import AbandonReview
 from core.modules.reviews.commands.end_reviewer import EndReviewer
 from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
+from core.modules.reviews.commands.reviewer_list_subcommand import ReviewerListSubcommand
 from core.modules.reviews.commands.add_reviewer_handler import AddReviewerHandler
 from core.modules.reviews.commands.add_reviewer_subcommand import AddReviewerSubcommand
 from core.modules.reviews.commands.retire_reviewer_handler import RetireReviewerHandler
@@ -36,7 +37,7 @@ class ReviewsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(TakeReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration]
-    subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand)
+    subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener]

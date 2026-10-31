@@ -49,8 +49,7 @@ def test_the_reviewer_list_names_each_reviewer_and_the_waiting_reviews_in_order(
     story.run(REVIEW_REQUEST, actor=story.agent)
     story.run("review request task 2 --points 1 --environment main", actor=story.agent)
     story.run("review request task 3 --points 1 --environment main", actor=story.agent)
-    story.expect_ordered_lines("reviewer list", "reviewing", "reviews waiting", "task 2", "task 3")
-    story.expect_text("reviewer list", "reviewers: 1, reviews waiting: 2")
+    story.expect_ordered_lines("reviewer list", "reviewer 2: reviewing", "waiting 1: review 2", "waiting 2: review 3", "reviewers: 1, reviews waiting: 2")
 
 
 def test_a_reviewer_is_refused_while_reviewers_are_switched_off(new_story):
