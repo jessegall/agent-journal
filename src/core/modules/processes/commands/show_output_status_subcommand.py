@@ -26,9 +26,9 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
 
     def read(self, arguments: Namespace, caller: Caller) -> OutputLines:
         if arguments.process_id is not None:
-            return OutputLines((self.line(self.access.process(caller, arguments.process_id)),))
-        query = self.processes.environment(self.access.environment(caller)).oldest()
-        if self.access.is_own_only(caller):
+            return OutputLines((self.line(self.access.process(caller.actor, arguments.process_id)),))
+        query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).oldest()
+        if self.access.is_own_only(caller.actor):
             query = query.agent(caller.actor.id)
         return OutputLines(tuple(self.line(process) for process in query.all_rows()))
 

@@ -4,6 +4,7 @@ from core.modules.processes.commands.end_process_handler import EndProcessHandle
 from core.modules.processes.commands.end_process_part_handler import EndProcessPartHandler
 from core.modules.processes.commands.end_process_part_subcommand import EndProcessPartSubcommand
 from core.modules.processes.commands.end_process_subcommand import EndProcessSubcommand
+from core.modules.processes.commands.read_output_handler import ReadOutputHandler
 from core.modules.processes.commands.read_output_subcommand import ReadOutputSubcommand
 from core.modules.processes.commands.show_output_status_subcommand import ShowOutputStatusSubcommand
 from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
@@ -13,6 +14,8 @@ from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.start_process_handler import StartProcessHandler
 from core.modules.processes.commands.stop_process_handler import StopProcessHandler
 from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
+from core.modules.processes.rules.ended_output_line import EndedOutputLine
+from core.modules.processes.rules.unread_output_reminder import UnreadOutputReminder
 from core.modules.processes.rules.runner_rewrite import RunnerRewrite
 from core.modules.processes.rules.sleep_poll_refusal import SleepPollRefusal
 from core.modules.processes.commands.add_reader_handler import AddReaderHandler
@@ -44,7 +47,7 @@ class ProcessesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, ShippedReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder]

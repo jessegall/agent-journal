@@ -3,6 +3,8 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 SHORT_OUTPUT_SETTING = "processes.short-output"
 FOREGROUND_SETTING = "processes.foreground-seconds"
 WAITING_SETTING = "processes.foreground-while-waiting"
+UNREAD_SETTING = "processes.unread-output-every"
+DEFAULT_UNREAD_EVERY = 5
 DEFAULT_SHORT_OUTPUT_BYTES = 200
 DEFAULT_FOREGROUND_SECONDS = 30
 DEFAULT_WAITING_SECONDS = 10
@@ -27,3 +29,6 @@ class ProcessSettings:
     def seconds(self, key: str, environment_id: int, default: int) -> int:
         value = self.settings.value(key, environment_id, default)
         return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else default
+
+    def unread_every(self, environment_id: int) -> int:
+        return max(1, self.seconds(UNREAD_SETTING, environment_id, DEFAULT_UNREAD_EVERY))

@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -18,6 +20,7 @@ def test_the_end_of_a_background_run_tells_the_agent_once_with_the_readers_summa
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest -q")
     end_run(story, process, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
     assert ENDED in lines_of(story, NOTHING)
     assert ENDED not in lines_of(story, NOTHING)
 
@@ -32,6 +35,7 @@ def test_the_reminder_comes_every_5_tool_uses_while_the_output_is_not_read(new_s
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest -q")
     end_run(story, process, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
     reminders = [ENDED in lines_of(story, AFTER) for _ in range(10)]
     assert reminders == [False, False, False, False, True, False, False, False, False, True]
@@ -41,6 +45,7 @@ def test_reading_the_output_ends_the_reminders(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest -q")
     end_run(story, process, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
     story.run(f"output read {process.id} --summary", actor=story.agent)
     assert [ENDED in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
