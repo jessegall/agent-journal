@@ -7,7 +7,7 @@
 # agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
 # synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
 # is and told to run journal upgrade (sh install.sh upgrade, with --dry-run to see the counts and --yes to go on without
-# asking), and an install already made says so and changes nothing. Nothing is started.
+# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing. Nothing is started.
 #
 # The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
 # checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The hooks of
@@ -90,6 +90,10 @@ python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is o
 if [ "${1:-}" = "upgrade" ]; then
   shift
   exec env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" "$@"
+fi
+if [ "${1:-}" = "restore" ]; then
+  shift
+  exec env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" --restore "$@"
 fi
 status=0
 PYTHONPATH="$SOURCE" "$python" -m install.install_journal "$ROOT" "$SOURCE" || status=$?

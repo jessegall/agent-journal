@@ -39,6 +39,7 @@ FINISHED_LINE = "nothing left to move"
 UNCHANGED_LINE = "nothing was written"
 FINISH_LINE = "run journal upgrade again to finish"
 QUESTION = "move these rows into version 5? [y/N] "
+RESTORE_QUESTION = "put version 4 back and set version 5 aside? [y/N] "
 AGREEMENTS = ("y", "yes")
 
 
@@ -166,7 +167,8 @@ class UpgradeJournal:
 if __name__ == "__main__":
     flags, journal = sys.argv[2:], JournalHome(Path(sys.argv[1]) / ".journal")
     if "--restore" in flags:
-        outcome = RestoreVersionFour(journal).run()
+        agreed = "--yes" in flags or input(RESTORE_QUESTION).strip().lower() in AGREEMENTS
+        outcome = RestoreVersionFour(journal).run() if agreed else UpgradeOutcome(0, UNCHANGED_LINE)
     else:
         outcome = UpgradeJournal(journal, source=Path(__file__).resolve().parents[1]).run("--dry-run" in flags, "--yes" in flags)
     print(outcome.text)

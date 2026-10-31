@@ -23,6 +23,11 @@ def version_four_project_with_hooks(tmp_path) -> Scratch:
     return scratch
 
 
+def restore(scratch: Scratch, *flags: str, answer: str = "") -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["sh", str(INSTALL), "restore", *flags], cwd=scratch.project, env=scratch.environment(), input=answer, capture_output=True, text=True,
+                          timeout=TIMEOUT_SECONDS)
+
+
 def hook_commands(scratch: Scratch) -> set[str]:
     settings = json.loads((scratch.project / SETTINGS).read_text())
     return {hook["command"] for groups in settings["hooks"].values() for group in groups for hook in group["hooks"]}
@@ -65,7 +70,7 @@ def test_the_restore_puts_version_4_and_its_hooks_back_and_sets_version_5_aside(
     scratch = version_four_project_with_hooks(tmp_path)
     original, hooks = content(scratch.journal / "journal.db"), hook_commands(scratch)
     assert upgrade(scratch, "--yes").returncode == 0
-    run = upgrade(scratch, "--restore")
+    run = restore(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
     assert content(scratch.journal / "journal.db") == original and not (scratch.journal / "version-5.db").exists()
     assert hook_commands(scratch) == hooks
@@ -118,3 +123,21 @@ def test_a_version_4_journal_that_appears_again_after_the_upgrade_is_refused_pla
     run = upgrade(scratch, "--yes")
     assert run.returncode == 1 and "a version 4 journal.db is in" in run.stdout and "again after the upgrade finished" in run.stdout and "Nothing was changed" in run.stdout
     assert content(backup) == backup_content and (scratch.journal / "journal.db").is_file()
+
+
+def test_restore_asks_once_and_a_no_changes_nothing_and_restore_with_yes_puts_version_4_back(tmp_path):
+    scratch = version_four_project_with_hooks(tmp_path)
+    original = content(scratch.journal / "journal.db")
+    assert upgrade(scratch, "--yes").returncode == 0
+    starting_files = scratch.file_contents()
+    declined = restore(scratch, answer="n\n")
+    assert declined.returncode == 0 and "put version 4 back" in declined.stdout and scratch.file_contents() == starting_files
+    restored = restore(scratch, "--yes")
+    assert restored.returncode == 0 and "restored from" in restored.stdout, restored.stdout + restored.stderr
+    assert content(scratch.journal / "journal.db") == original and any(path.name.startswith("version-5.") for path in scratch.journal.iterdir())
+
+
+def test_restore_in_a_project_with_no_backup_is_refused_plainly(tmp_path):
+    scratch = Scratch(tmp_path)
+    run = restore(scratch, "--yes")
+    assert run.returncode == 1 and "nothing to restore" in run.stdout
