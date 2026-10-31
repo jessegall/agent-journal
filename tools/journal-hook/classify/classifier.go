@@ -18,16 +18,29 @@ var quotedPath = regexp.MustCompile(`['"]([^'"\s]*/[^'"\s]*)['"]`)
 
 // Classifier reads commands against a command table, as version 4's CommandClassifier.
 type Classifier struct {
-	table *Table
+	table       *Table
+	projectFile string
 }
 
 func NewClassifier(table *Table) *Classifier {
 	return &Classifier{table: table}
 }
 
+// ClassifierOf reads the table at the classifier's first use, so a hook that classifies no command never loads it.
+func ClassifierOf(projectFile string) *Classifier {
+	return &Classifier{projectFile: projectFile}
+}
+
+func (classifier *Classifier) loaded() *Table {
+	if classifier.table == nil {
+		classifier.table = LoadTable(classifier.projectFile)
+	}
+	return classifier.table
+}
+
 // tokens are a command's words with its wrappers taken off.
 func (classifier *Classifier) tokens(text string) []string {
-	return classifier.table.Unwrapped(shell.Tokens(text))
+	return classifier.loaded().Unwrapped(shell.Tokens(text))
 }
 
 // row is the table row of a command's program, or of the script an interpreter or the command itself runs.
@@ -35,7 +48,7 @@ func (classifier *Classifier) row(tokens []string) *Row {
 	if len(tokens) == 0 {
 		return nil
 	}
-	row := classifier.table.Programs[baseName(tokens[0])]
+	row := classifier.loaded().Programs[baseName(tokens[0])]
 	script := tokens[0]
 	if row != nil && row.Interpreted {
 		script = ""
@@ -43,7 +56,7 @@ func (classifier *Classifier) row(tokens []string) *Row {
 			script = tokens[1+first]
 		}
 	}
-	if scriptRow := classifier.table.Script(script); scriptRow != nil {
+	if scriptRow := classifier.loaded().Script(script); scriptRow != nil {
 		return scriptRow
 	}
 	return row
@@ -187,7 +200,7 @@ func isAlphanumeric(characters []rune) bool {
 // arguments are the words of a command's first line its row leaves as arguments, quoted words and redirects left out.
 func (classifier *Classifier) arguments(text string) []string {
 	firstLine := strings.SplitN(text, "\n", 2)[0]
-	tokens := classifier.tokens(classifier.table.redirection.ReplaceAllLiteralString(blanked(firstLine), " "))
+	tokens := classifier.tokens(classifier.loaded().redirection.ReplaceAllLiteralString(blanked(firstLine), " "))
 	row := classifier.row(tokens)
 	if row == nil {
 		return []string{}
@@ -206,8 +219,8 @@ func (classifier *Classifier) arguments(text string) []string {
 // redirectTargets are the files a command's redirects write.
 func (classifier *Classifier) redirectTargets(text string) []string {
 	targets := []string{}
-	for _, redirect := range classifier.table.redirection.FindAllStringSubmatch(blanked(text), -1) {
-		if !classifier.table.RedirectWrites(redirect[2], redirect[3]) {
+	for _, redirect := range classifier.loaded().redirection.FindAllStringSubmatch(blanked(text), -1) {
+		if !classifier.loaded().RedirectWrites(redirect[2], redirect[3]) {
 			continue
 		}
 		targets = append(targets, strings.Trim(redirect[3], "'"))

@@ -32,12 +32,15 @@ SECOND_SERVER_CODE = 0
 
 TICK_PERIOD_SECONDS = 60.0
 
+# How long a request may be answered on code that has changed since the last check of its files.
+CODE_RECHECK_SECONDS = 1.0
+
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="journal server")
     parser.add_argument("--home", required=True)
     home = JournalHome(Path(parser.parse_args(argv).home))
-    code_version = CodeVersion(CodeFingerprint(), CodeFolders(ModuleFinder(home)))
+    code_version = CodeVersion(CodeFingerprint(), CodeFolders(ModuleFinder(home)), CODE_RECHECK_SECONDS)
     files = ServerFiles(home)
     if not files.acquire_lock():
         files.log_line("another server holds the lock; this one exits")

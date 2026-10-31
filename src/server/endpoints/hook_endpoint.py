@@ -29,6 +29,7 @@ class HookEndpoint:
     def answer(self, data: object, program: str, headers: Mapping[str, str]) -> HookReply:
         try:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
+                self.timing.stamp("hook_locked")
                 return self.routed_answer(data, program, headers, database)
         except HookDatabaseBusyError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
@@ -41,6 +42,7 @@ class HookEndpoint:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
+        self.timing.stamp("hook_synced")
         event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
         try:

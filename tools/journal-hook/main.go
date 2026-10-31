@@ -37,14 +37,17 @@ func main() {
 	if skip {
 		os.Exit(0)
 	}
+	requestTiming.Stamp("go_context")
 	body, err := io.ReadAll(os.Stdin)
 	if err != nil {
 		os.Exit(0)
 	}
+	requestTiming.Stamp("go_stdin")
 	prepared, skip, err := programs.Prepared(program, body, context)
 	if skip || err != nil {
 		os.Exit(0)
 	}
+	requestTiming.Stamp("go_prepared")
 	object, err := json.Marshal(prepared)
 	if err != nil {
 		os.Exit(0)

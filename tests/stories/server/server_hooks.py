@@ -48,7 +48,7 @@ def test_a_hook_sent_with_a_timing_leaves_one_log_line_with_the_hook_route_steps
     story = new_story(fixture=ThreeTasks)
     with server_story(story) as server:
         server.expect_hook_answer("/hook", example("write"), 200, '"refusal": ""', {TIMING_HEADER: "go_start=1;go_sent=2"})
-    expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "hook_read", "hook_answered", "answered"])])
+    expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "body_read", "stale_checked", "hook_body", "hook_json", "hook_locked", "hook_synced", "hook_read", "hook_answered", "answered"])])
 
 
 def lead_stop(firing: str) -> dict[str, object]:

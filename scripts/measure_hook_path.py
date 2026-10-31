@@ -29,9 +29,16 @@ BUILD_TIMEOUT_SECONDS = 180
 HOOK_TIMEOUT_SECONDS = 20
 SERVER_WAIT_SECONDS = 30
 LSOF_TIMEOUT_SECONDS = 10
-STEPS = (("preparation (go_start -> go_sent)", "go_start", "go_sent"), ("request (go_sent -> server_received)", "go_sent", "server_received"),
-         ("server parse (server_received -> hook_read)", "server_received", "hook_read"), ("rules and write (hook_read -> hook_answered)", "hook_read", "hook_answered"),
-         ("server answer (hook_answered -> answered)", "hook_answered", "answered"))
+STEPS = (("go context (go_start -> go_context)", "go_start", "go_context"), ("go stdin (go_context -> go_stdin)", "go_context", "go_stdin"),
+         ("go prepare (go_stdin -> go_prepared)", "go_stdin", "go_prepared"), ("go send setup (go_prepared -> go_sent)", "go_prepared", "go_sent"),
+         ("request (go_sent -> server_received)", "go_sent", "server_received"),
+         ("server body read (server_received -> body_read)", "server_received", "body_read"),
+         ("server stale check (body_read -> stale_checked)", "body_read", "stale_checked"), ("server routing (stale_checked -> hook_body)", "stale_checked", "hook_body"), ("server json (hook_body -> hook_json)", "hook_body", "hook_json"),
+         ("server database lock (hook_json -> hook_locked)", "hook_json", "hook_locked"),
+         ("server registry sync (hook_locked -> hook_synced)", "hook_locked", "hook_synced"),
+         ("server event parse (hook_synced -> hook_read)", "hook_synced", "hook_read"),
+         ("rules and write (hook_read -> hook_answered)", "hook_read", "hook_answered"), ("server answer (hook_answered -> answered)", "hook_answered", "answered"),
+         ("stamped hook (go_start -> answered)", "go_start", "answered"))
 WHOLE_HOOK = "whole hook (process start to exit)"
 
 

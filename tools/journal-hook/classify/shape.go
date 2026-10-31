@@ -120,7 +120,7 @@ func (classifier *Classifier) unwrappedAll(command string) string {
 	for index, span := range spans {
 		tokens[index] = strings.Trim(command[span[0]:span[1]], `'"`)
 	}
-	remaining := classifier.table.ShapeUnwrapped(tokens)
+	remaining := classifier.loaded().ShapeUnwrapped(tokens)
 	if len(remaining) > 0 && len(remaining) < len(tokens) {
 		return command[spans[len(tokens)-len(remaining)][0]:]
 	}

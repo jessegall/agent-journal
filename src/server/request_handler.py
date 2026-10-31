@@ -98,7 +98,10 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def answer_post(self) -> None:
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
-        if self.journal_server().context.code_version.is_stale():
+        self.timing.stamp("body_read")
+        stale = self.journal_server().context.code_version.is_stale()
+        self.timing.stamp("stale_checked")
+        if stale:
             self.answer_json(409, {"error": "newer code: the server restarts, send the request again"})
             self.journal_server().release_files()
             return
@@ -139,9 +142,12 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(403, {"error": refusal.reason})
 
     def answer_hook(self, body: bytes, program: str) -> None:
+        self.timing.stamp("hook_body")
         try:
             endpoint = HookEndpoint(self.timing, self.journal_server().context)
-            reply = endpoint.answer(json.loads(body or b"{}"), program, dict(self.headers.items()))
+            data = json.loads(body or b"{}")
+            self.timing.stamp("hook_json")
+            reply = endpoint.answer(data, program, dict(self.headers.items()))
         except (HookEventError, UnknownProgramError, json.JSONDecodeError) as error:
             self.answer_json(400, {"error": str(error)})
             return
