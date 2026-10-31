@@ -12,19 +12,20 @@ from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.module_finder import ModuleFinder
+from core.base.module.module_order import ModuleOrder
 from core.base.module.module_sync import ModuleSync
 
 
 
 class ModuleRemoval:
-    """Takes an installed plugin out of the journal: refused while its tables hold rows unless it ships a
-    migration that removes them; its listener cursors, migration records and metadata keys go with it, then
-    the rest is synced."""
+    """Takes an installed plugin out of the journal: refused while another module depends on it, or while its
+    tables hold rows unless it ships a migration that removes them, before anything changes; its listener
+    cursors, migration records and metadata keys go with it, then the rest is synced."""
 
     def __init__(self, database: Database, home: JournalHome, finder: ModuleFinder, check: ModuleCheck, tables: Tables, sync: ModuleSync,
-                 cursors: ListenerCursorTable, schema: Schema) -> None:
+                 cursors: ListenerCursorTable, schema: Schema, order: ModuleOrder) -> None:
         self.database, self.home, self.finder, self.check, self.tables, self.sync = database, home, finder, check, tables, sync
-        self.cursors, self.schema = cursors, schema
+        self.cursors, self.schema, self.order = cursors, schema, order
 
     def remove(self, name: str) -> None:
         listed = self.finder.plugin_paths()
@@ -36,6 +37,7 @@ class ModuleRemoval:
         if removal is None:
             self.refuse_rows(module)
         remaining_modules = tuple(candidate for candidate in self.finder.modules() if candidate is not module)
+        self.order.ordered(remaining_modules)
         with self.database.transaction():
             if removal is not None:
                 removal.run(self.database)

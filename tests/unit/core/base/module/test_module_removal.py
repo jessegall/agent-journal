@@ -42,3 +42,15 @@ def test_a_default_or_unknown_module_cannot_be_removed(tmp_path):
     container = synced(JournalHome(tmp_path), ITEMS)
     with pytest.raises(ModuleError, match="no installed plugin"):
         container.get(ModuleRemoval).remove("tasks")
+
+
+def test_a_module_another_depends_on_is_refused_and_nothing_changes(tmp_path):
+    home = JournalHome(tmp_path)
+    container = synced(home, REMOVABLE_ITEMS, ITEM_COUNT)
+    database = container.get(Database)
+    listed = home.module_list.read_text()
+    with pytest.raises(ModuleError, match="module item-count depends on items"):
+        container.get(ModuleRemoval).remove("items")
+    assert database.rows(TABLES) != []
+    assert database.rows(Statement("SELECT * FROM migrations WHERE module = 'items'")) != []
+    assert home.module_list.read_text() == listed
