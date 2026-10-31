@@ -23,9 +23,10 @@ from core.modules.sharing.sharing_module import SharingModule
 from core.modules.tunnel.tunnel_module import TunnelModule
 from core.modules.documents.documents_module import DocumentsModule
 from core.modules.sequences.sequences_module import SequencesModule
+from core.modules.triggers.triggers_module import TriggersModule
 from core.modules.templates.templates_module import TemplatesModule
 from core.modules.notices.notices_module import NoticesModule
 from core.modules.suggestions.suggestions_module import SuggestionsModule
 from core.modules.plugins.plugins_module import PluginsModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TemplatesModule, NoticesModule, SuggestionsModule, PluginsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, TemplatesModule, NoticesModule, SuggestionsModule, PluginsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
