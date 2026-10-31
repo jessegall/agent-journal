@@ -8,10 +8,10 @@ from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
 
-DEFAULT_MODULES: tuple[str, ...] = ("core.actors.module:ActorsModule", "core.environments.module:EnvironmentsModule",
-                                   "core.agents.module:AgentsModule", "core.tasks.module:TasksModule",
-                                   "core.plans.module:PlansModule", "core.messages.module:MessagesModule",
-                                   "core.settings.module:SettingsModule")
+DEFAULT_MODULES: tuple[str, ...] = ("core.modules.actors.module:ActorsModule", "core.modules.environments.module:EnvironmentsModule",
+                                   "core.modules.agents.module:AgentsModule", "core.modules.tasks.module:TasksModule",
+                                   "core.modules.plans.module:PlansModule", "core.modules.messages.module:MessagesModule",
+                                   "core.modules.settings.module:SettingsModule")
 
 
 def is_list(value: object) -> TypeIs[list[object]]:

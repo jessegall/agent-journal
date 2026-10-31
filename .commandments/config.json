@@ -45,7 +45,7 @@
             },
             {
                 "layer": [
-                    "core.actors",
+                    "core.modules.actors",
                     [
                         "core.base"
                     ]
@@ -53,63 +53,63 @@
             },
             {
                 "layer": [
-                    "core.environments",
+                    "core.modules.environments",
                     [
                         "core.base",
-                        "core.actors"
+                        "core.modules.actors"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "core.agents",
+                    "core.modules.agents",
                     [
                         "core.base",
-                        "core.actors",
-                        "core.environments"
+                        "core.modules.actors",
+                        "core.modules.environments"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "core.tasks",
+                    "core.modules.tasks",
                     [
                         "core.base",
-                        "core.actors",
-                        "core.environments",
-                        "core.agents"
+                        "core.modules.actors",
+                        "core.modules.environments",
+                        "core.modules.agents"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "core.plans",
+                    "core.modules.plans",
                     [
                         "core.base",
-                        "core.actors",
-                        "core.environments",
-                        "core.agents",
-                        "core.tasks"
+                        "core.modules.actors",
+                        "core.modules.environments",
+                        "core.modules.agents",
+                        "core.modules.tasks"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "core.messages",
+                    "core.modules.messages",
                     [
                         "core.base",
-                        "core.actors",
-                        "core.environments",
-                        "core.agents"
+                        "core.modules.actors",
+                        "core.modules.environments",
+                        "core.modules.agents"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "core.settings",
+                    "core.modules.settings",
                     [
                         "core.base",
-                        "core.actors"
+                        "core.modules.actors"
                     ]
                 ]
             },
@@ -118,8 +118,8 @@
                     "core.journal_module",
                     [
                         "core.base",
-                        "core.actors",
-                        "core.settings"
+                        "core.modules.actors",
+                        "core.modules.settings"
                     ]
                 ]
             },
