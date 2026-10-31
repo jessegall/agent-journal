@@ -1,10 +1,12 @@
 import {computed, shallowRef} from "vue";
+import {withFamilyOptions} from "../domain/markFamilies.js";
 
 // the windows the journal lists for this environment and the person they are listed for, asked again whenever the registry is synced: a window whose entry
 // URL changed is mounted again from its new file, a removed one turns into its placeholder, and a new one joins the menu
 export class WindowCatalogue {
-    constructor(fetchOffers) {
+    constructor(fetchOffers, fetchMarks = async () => []) {
         this.fetchOffers = fetchOffers;
+        this.fetchMarks = fetchMarks;
         this.windows = shallowRef([]);
         this.person = null;
     }
@@ -12,7 +14,7 @@ export class WindowCatalogue {
     async load() {
         const offers = await this.fetchOffers();
         this.person = offers.person_id ?? null;
-        this.windows.value = offers.windows;
+        this.windows.value = withFamilyOptions(offers.windows, await this.fetchMarks());
     }
 
     heard(event) {

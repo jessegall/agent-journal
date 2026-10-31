@@ -1,11 +1,12 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, DockWrapper, MarkHost, RowList, fetchDockDeclarations, fetchMarkDeclarations, interleaved, useRows} from "@journal/window-kit";
+import {Btn, DockWrapper, MarkHost, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
 
 const {rows: messages, failure, load, context} = useRows("message list", ["message.*"]);
-const {rows: marks} = useRows("chat-mark list", ["chat_mark.*"]);
+const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const dockedNow = computed(() => docked.value.filter((item) => item.state === "docked"));
+const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const rows = computed(() => interleaved(messages.value, marks.value));
 onMounted(() => Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]));
 const text = ref("");
