@@ -12,7 +12,7 @@ from core.base.model.tables import Tables
 from core.base.page import Page
 from core.base.refusal import Refusal
 
-LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "created_by", "environment_id")
+LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creator_id", "environment_id")
 
 
 class Output:
@@ -29,7 +29,8 @@ class Output:
         self.write("\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
 
     def page(self, page: Page[object]) -> None:
-        lines = ["  ".join(str(value) for column, value in self.values(record).items() if column not in LIST_HIDDEN_COLUMNS) for record in page.rows]
+        lines = ["  ".join(str(value) for column, value in self.values(record).items() if column not in LIST_HIDDEN_COLUMNS and is_shown(value))
+                 for record in page.rows]
         if not page.is_last:
             lines.append(f"page {page.number}, {len(page.rows)} of {page.total} rows: --page {page.number + 1} for the next")
         listing = {"rows": [self.values(record) for record in page.rows], "page": page.number, "size": page.size, "total": page.total}
@@ -53,6 +54,8 @@ class Output:
         return {"value": self.json_value(record)}
 
     def json_value(self, value: object) -> object:
+        if isinstance(value, bool):
+            return value
         if isinstance(value, Metadata):
             return {module: dict(part) for module, part in value.values.items()}
         if is_frozenset(value):
@@ -65,6 +68,10 @@ class Output:
 
     def write(self, text: str, data: object) -> None:
         self.stream.write((json.dumps(data, sort_keys=True) if self.json_output else text) + "\n")
+
+
+def is_shown(value: object) -> bool:
+    return value is not None and value is not False and value != "" and value != {}
 
 
 def is_frozenset(value: object) -> TypeIs[frozenset[object]]:

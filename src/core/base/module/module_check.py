@@ -28,7 +28,7 @@ class ModuleCheck:
         events: list[str] = []
         for model in self.models(modules):
             moves = tuple(move.name for move in model.lifecycle.moves()) if model.lifecycle else ()
-            events.extend(f"{model.name}.{change}" for change in STANDARD_CHANGES + moves)
+            events.extend(f"{model.model_name}.{change}" for change in STANDARD_CHANGES + moves)
         return tuple(events)
 
     def check(self, modules: tuple[type[Module], ...]) -> None:
@@ -42,7 +42,7 @@ class ModuleCheck:
 
     def name_clashes(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
         models = self.models(modules)
-        names = [model.name for model in models]
+        names = [model.model_name for model in models]
         tables = [self.tables.table(model).name for model in models]
         guards = [self.guard(path).name for module in modules for path in module.guards]
         listeners = [self.listener_name(path) for module in modules for path in module.listeners]

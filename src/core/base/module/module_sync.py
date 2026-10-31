@@ -2,12 +2,21 @@ from dataclasses import dataclass
 
 from core.base.clock import Clock
 from core.base.command.command import Command
+from core.base.command.delete_command import DeleteCommand
+from core.base.command.edit_command import EditCommand
+from core.base.command.handlers.delete_handler import DeleteHandler
+from core.base.command.handlers.edit_handler import EditHandler
+from core.base.command.handlers.make_handler import MakeHandler
+from core.base.command.handlers.move_handler import MoveHandler
+from core.base.command.make_command import MakeCommand
+from core.base.command.move_command import MoveCommand
 from core.base.database.core_tables import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.schema import ModuleMigrations, Schema
 from core.base.database.triggers import Triggers
 from core.base.database.view import View
+from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.database.actor_table import ActorTable
@@ -27,6 +36,9 @@ from core.base.module.module_error import ModuleError
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
 
+
+DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
+                    for command, handler in ((MakeCommand, MakeHandler), (EditCommand, EditHandler), (MoveCommand, MoveHandler), (DeleteCommand, DeleteHandler))}
 
 
 @dataclass(frozen=True)
@@ -57,7 +69,7 @@ class ModuleSync:
         self.actors, self.registry_table = actors, registry_table
 
     def run(self) -> SyncReport:
-        modules = self.order.ordered(self.finder.found())
+        modules = self.order.ordered(self.finder.modules())
         self.check.check(modules)
         models = self.check.models(modules)
         migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
@@ -91,13 +103,15 @@ class ModuleSync:
         listeners = [(module, path, self.check.listener(path)) for module in modules for path in module.listeners]
         return Registry(
             fingerprint=self.fingerprint.text(modules),
-            nouns={noun.model.cli_noun: NounEntry(module.name, DottedPath.class_path(noun.model), noun.commands) for module in modules for noun in module.nouns},
-            handlers={DottedPath.class_path(self.command(path)).text: DottedPath(path) for module in modules for path in module.handlers},
+            nouns={noun.model.cli_noun: NounEntry(module.name, DottedPath.class_path(noun.model), noun.commands, noun.excluded_subcommands) for module in modules for noun in module.nouns},
+            handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(self.command(path)).text: DottedPath(path) for module in modules for path in module.handlers}},
             subcommands={self.check.subcommand_line(path): DottedPath(path) for module in modules for path in module.subcommands},
-            guards=tuple(GuardEntry(guard.name, EventPattern(guard.event), DottedPath(path), position, guard.short_flag)
-                         for position, (path, guard) in enumerate(guards, 1)),
+            guards=(GuardEntry(LifecycleGuard.name, EventPattern(LifecycleGuard.event), DottedPath.class_path(LifecycleGuard), 0, LifecycleGuard.short_flag),
+                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath(path), position, guard.short_flag)
+                      for position, (path, guard) in enumerate(guards, 1))),
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath(path), position, actor_ids[module.name])
                             for position, (module, path, listener) in enumerate(listeners, 1)),
+            bindings={interface: DottedPath(implementation) for module in modules for interface, implementation in module.bindings},
         )
 
     def command(self, handler_path: str) -> type[Command[object]]:

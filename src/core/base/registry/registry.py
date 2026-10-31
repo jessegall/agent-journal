@@ -1,8 +1,9 @@
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from core.base.change.event_pattern import EventPattern
 from core.base.database.database import Database
+from core.base.container import Container
 from core.base.database.registry_table import RegistryTable
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
@@ -26,6 +27,7 @@ class Registry:
     subcommands: dict[str, DottedPath]
     guards: tuple[GuardEntry, ...]
     listeners: tuple[ListenerEntry, ...]
+    bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -35,25 +37,31 @@ class Registry:
         entries = json.loads(row["entries"])
         return cls(
             fingerprint=row["fingerprint"],
-            nouns={cli_noun: NounEntry(noun["module"], DottedPath(noun["model"]), tuple(noun["commands"])) for cli_noun, noun in entries["nouns"].items()},
+            nouns={cli_noun: NounEntry(noun["module"], DottedPath(noun["model"]), tuple(noun["commands"]), tuple(noun["excluded_subcommands"])) for cli_noun, noun in entries["nouns"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"])
                          for guard in entries["guards"]),
             listeners=tuple(ListenerEntry(listener["name"], EventPattern(listener["event"]), ListenerTiming(listener["timing"]), DottedPath(listener["path"]),
                                           listener["position"], listener["actor_id"]) for listener in entries["listeners"]),
+            bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
         )
 
     def entries_text(self) -> str:
         return json.dumps({
-            "nouns": {cli_noun: {"module": noun.module, "model": noun.model.text, "commands": list(noun.commands)} for cli_noun, noun in self.nouns.items()},
+            "nouns": {cli_noun: {"module": noun.module, "model": noun.model.text, "commands": list(noun.commands), "excluded_subcommands": list(noun.excluded_subcommands)} for cli_noun, noun in self.nouns.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
             "guards": [{"name": guard.name, "event": guard.event.text, "path": guard.path.text, "position": guard.position, "short_flag": guard.short_flag}
                        for guard in self.guards],
             "listeners": [{"name": listener.name, "event": listener.event.text, "timing": listener.timing.value, "path": listener.path.text,
                            "position": listener.position, "actor_id": listener.actor_id} for listener in self.listeners],
+            "bindings": {interface: path.text for interface, path in self.bindings.items()},
         }, sort_keys=True)
+
+    def bind(self, container: Container) -> None:
+        for interface, implementation in self.bindings.items():
+            container.substitute(DottedPath(interface).loaded(), implementation.loaded())
 
     def require_current(self, code_fingerprint: str) -> None:
         if code_fingerprint != self.fingerprint:

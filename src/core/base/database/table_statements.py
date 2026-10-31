@@ -12,7 +12,7 @@ class TableStatements:
         self.table = table
 
     def insert(self, row: dict[str, object], moment: Moment) -> Statement:
-        values = {**{column: value for column, value in row.items() if column != "id"}, "version": FIRST_VERSION, "created_at": moment.text, "updated_at": moment.text}
+        values = {**{column: value for column, value in row.items() if column != "id" or value}, "version": FIRST_VERSION, "created_at": moment.text, "updated_at": moment.text}
         marks = ", ".join("?" for _ in values)
         return Statement(f"INSERT INTO {self.table.name} ({', '.join(values)}) VALUES ({marks})", tuple(values.values()))
 

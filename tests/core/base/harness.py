@@ -15,15 +15,15 @@ from core.base.registry.registry import Registry
 from core.base.moment import Moment
 
 MOMENT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
-LOANS = ("CREATE TABLE loans (id INTEGER PRIMARY KEY, title TEXT NOT NULL UNIQUE, state TEXT NOT NULL, version INTEGER NOT NULL,"
+ITEMS = ("CREATE TABLE items (id INTEGER PRIMARY KEY, title TEXT NOT NULL UNIQUE, state TEXT NOT NULL, version INTEGER NOT NULL,"
          " metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT")
 
 
 def harness(folder: Path, registry: Registry) -> Container:
-    """A container wired around a scratch database with the core's tables and a loans table, for unit tests of the machinery."""
+    """A container wired around a scratch database with the core's tables and a items table, for unit tests of the machinery."""
     database = Database.opened(JournalHome(folder))
     Schema(database, Tables()).migrate((CORE_MIGRATIONS,))
-    database.update(Statement(LOANS))
+    database.update(Statement(ITEMS))
     container = Container()
     container.bind(Database, database)
     container.bind(Registry, registry)

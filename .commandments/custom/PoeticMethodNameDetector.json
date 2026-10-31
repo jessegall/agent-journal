@@ -28,6 +28,9 @@
                         "file": "tests/stories/builder/**"
                     }
                 ]
+            },
+            {
+                "nameMatches": "^test_"
             }
         ]
     },

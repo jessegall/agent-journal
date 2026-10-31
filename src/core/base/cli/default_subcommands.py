@@ -9,6 +9,7 @@ from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
+from core.base.command.handlers.make_handler import CREATOR_COLUMN, ENVIRONMENT_COLUMN
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import ROW_ID, MoveCommand
 from core.base.subcommand.output import Output
@@ -24,6 +25,7 @@ from core.base.query.query import PAGE_SIZE_ROWS
 
 FOREIGN_KEY_SUFFIX = "_id"
 STATE_COLUMN = "state"
+HANDLER_COLUMNS = (CREATOR_COLUMN, ENVIRONMENT_COLUMN)
 
 
 class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
@@ -38,13 +40,13 @@ class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
         self.command_class = creation_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
-        for column in self.table.required_fields:
+        for column in argument_columns(self.table):
             parser_argument(parser, column, self.table.types[column])
-        for column in self.table.optional_fields:
+        for column in flag_columns(self.table):
             parser_argument(parser, f"--{column.replace('_', '-')}", self.table.types[column])
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeCommand[Model]:
-        columns = (*self.table.required_fields, *self.table.optional_fields)
+        columns = (*argument_columns(self.table), *flag_columns(self.table))
         values = {column: getattr(arguments, column) for column in columns if getattr(arguments, column) is not None}
         return self.command_class(**values)
 
@@ -198,8 +200,8 @@ def filter_flag(column: str) -> str:
 def creation_command(table: Table) -> type[MakeCommand[Model]]:
     hints = get_type_hints(table.model)
     model_fields = {model_field.name: model_field for model_field in fields(table.model)}
-    command_fields = [(column, hints[column]) for column in table.required_fields]
-    command_fields += [(column, hints[column], copied_default(model_fields[column])) for column in table.optional_fields]
+    command_fields = [(column, hints[column]) for column in argument_columns(table)]
+    command_fields += [(column, hints[column], copied_default(model_fields[column])) for column in flag_columns(table)]
     return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=(generic_base(MakeCommand[table.model]),), frozen=True)
 
 
@@ -232,7 +234,15 @@ def generic_base(base: object) -> type:
 
 
 def editable_columns(table: Table) -> tuple[str, ...]:
-    return tuple(column for column in (*table.required_fields, *table.optional_fields) if column != STATE_COLUMN)
+    return tuple(column for column in (*argument_columns(table), *flag_columns(table)) if column != STATE_COLUMN)
+
+
+def argument_columns(table: Table) -> tuple[str, ...]:
+    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS)
+
+
+def flag_columns(table: Table) -> tuple[str, ...]:
+    return tuple(column for column in table.optional_fields if column not in HANDLER_COLUMNS)
 
 
 def copied_default(model_field: Field[Any]) -> Field[Any]:

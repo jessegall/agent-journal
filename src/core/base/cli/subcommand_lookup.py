@@ -32,6 +32,8 @@ class SubcommandLookup:
         entry = self.registry.nouns.get(cli_noun)
         if entry is None:
             raise UsageError(f"journal has no noun {cli_noun}: journal --help lists them")
+        if name in entry.excluded_subcommands:
+            raise UsageError(f"journal {cli_noun} has no subcommand {name}")
         model = entry.model.loaded()
         if not issubclass(model, Model):
             raise UsageError(f"{entry.model.text} is no model")

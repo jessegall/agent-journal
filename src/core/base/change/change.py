@@ -55,7 +55,7 @@ class Change(Generic[M]):
 
     @property
     def event(self) -> str:
-        name = self.row.name
+        name = self.row.model_name
         if self.old_row is None:
             return f"{name}.create"
         if self.new_row is None:

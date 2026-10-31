@@ -19,3 +19,4 @@ class Module:
     guards: ClassVar[tuple[str, ...]] = ()
     listeners: ClassVar[tuple[str, ...]] = ()
     removal: ClassVar[str] = ""
+    bindings: ClassVar[tuple[tuple[str, str], ...]] = ()

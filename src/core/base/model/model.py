@@ -18,7 +18,7 @@ class ModelError(Exception):
 class Model:
     """A row of the database as an object that cannot be changed in place; every change makes a copy."""
 
-    name: ClassVar[str]
+    model_name: ClassVar[str]
     cli_noun: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
 
@@ -31,7 +31,7 @@ class Model:
 
     @property
     def is_saved(self) -> bool:
-        return self.id > 0
+        return self.version > 0
 
     def changed(self, **values: object) -> Self:
         if self.lifecycle is not None and STATE in values:

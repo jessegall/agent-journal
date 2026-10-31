@@ -7,6 +7,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.subcommand_lookup import SubcommandLookup, UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
+from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.model.tables import Tables
@@ -24,14 +25,16 @@ class Console:
     runs its command, and turns a refusal, a usage error or an unexpected error into its line and exit code."""
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, lookup: SubcommandLookup, bus: Bus,
-                 flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner) -> None:
+                 flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
+                 environment_names: EnvironmentNames) -> None:
         self.registry, self.finder, self.fingerprint, self.lookup, self.bus = registry, finder, fingerprint, lookup, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
+        self.environment_names = environment_names
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO) -> int:
         output = Output(self.tables, "--json" in argv, stream)
         try:
-            self.registry.require_current(self.fingerprint.text(self.finder.found()))
+            self.registry.require_current(self.fingerprint.text(self.finder.modules()))
             if len(argv) < 2:
                 raise UsageError("write journal <noun> <subcommand>; journal --help lists them")
             return self.chosen_run(argv, caller, output)
@@ -62,9 +65,10 @@ class Console:
             subcommand.write_output(subcommand.read(arguments, caller), output)
             return SUCCESS_CODE
         command, skipped = subcommand.command(arguments, caller), self.flags.skipped_guards(arguments)
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if arguments.explain:
-            output.explanation(self.bus.explain(command, caller.actor, skipped, caller.environment_id))
+            output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
-        subcommand.write_output(self.bus.run(command, caller.actor, skipped, environment_id=caller.environment_id), output)
+        subcommand.write_output(self.bus.run(command, caller.actor, skipped, environment_id=environment_id), output)
         self.commit_listeners.run()
         return SUCCESS_CODE

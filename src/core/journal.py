@@ -9,10 +9,9 @@ from core.base.actor import Actor, ActorType
 from core.base.subcommand.caller import Caller
 from core.base.cli.console import USAGE_CODE, Console
 from core.base.cli.module_sync_line import SYNC_ARGV, ModuleSyncLine
-from core.base.container import Container
-from core.base.database.database import Database
+from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
-from core.base.registry.registry import Registry, StaleRegistryError
+from core.base.registry.registry import StaleRegistryError
 
 HOME_VARIABLE = "JOURNAL_HOME"
 ACTOR_VARIABLES = ("JOURNAL_ACTOR_ID", "JOURNAL_ACTOR_TYPE")
@@ -21,14 +20,10 @@ ENVIRONMENT_VARIABLE = "JOURNAL_ENVIRONMENT_ID"
 
 def main(argv: list[str]) -> int:
     home = JournalHome(Path(os.environ.get(HOME_VARIABLE, ".journal")))
-    database = Database.opened(home)
-    container = Container()
-    container.bind(JournalHome, home)
-    container.bind(Database, database)
     if argv[:2] == SYNC_ARGV:
-        return container.get(ModuleSyncLine).run(argv, sys.stdout)
+        return opened_container(home).get(ModuleSyncLine).run(argv, sys.stdout)
     try:
-        container.bind(Registry, Registry.read(database))
+        container = synced_container(home)
     except StaleRegistryError as error:
         print(error)
         return USAGE_CODE

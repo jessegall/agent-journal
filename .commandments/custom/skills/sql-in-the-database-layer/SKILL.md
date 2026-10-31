@@ -8,8 +8,8 @@ languages: [python]
 
 # SQL in the database layer
 
-SQL text is written in four places only: `core/base/database/`, `core/base/query/`, a module's `migrations/`
-and a module's `conditions/`. Everywhere else the code calls a method that says what it reads or writes.
+SQL text is written in five places only: `core/base/database/`, `core/base/query/`, a module's `migrations/`,
+the views a module declares in its `views.py`, and a module's `conditions/`. Everywhere else the code calls a method that says what it reads or writes.
 
 ## When it fires
 

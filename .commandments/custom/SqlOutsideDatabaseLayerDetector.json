@@ -19,13 +19,16 @@
                 "fileMatches": "(^|/)conditions/"
             },
             {
+                "fileMatches": "(^|/)views\\.py$"
+            },
+            {
                 "testCode": true
             }
         ]
     },
     "sin": {
         "name": "sql-outside-database-layer",
-        "description": "SQL text is written outside base/database, base/query, a migration or a module's conditions, so its table and column names go unchecked.",
+        "description": "SQL text is written outside base/database, base/query, a migration, a module's views.py or its conditions, so its table and column names go unchecked.",
         "rule": "Name the statement in the database layer (base/database) or build it with the query builder, and use it from there.",
         "skill": "sql-in-the-database-layer"
     }

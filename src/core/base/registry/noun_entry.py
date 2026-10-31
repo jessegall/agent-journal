@@ -11,3 +11,4 @@ class NounEntry:
     module: str
     model: DottedPath
     commands: tuple[str, ...]
+    excluded_subcommands: tuple[str, ...] = ()

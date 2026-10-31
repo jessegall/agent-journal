@@ -3,7 +3,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 
 CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
-MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (created_by, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
+MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (creator_id, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
 MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
 
 

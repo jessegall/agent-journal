@@ -20,20 +20,27 @@ class WrongInstanceError(Exception):
 
 
 class Container:
-    """Creates the objects the journal needs and hands each one out, creating it only once."""
+    """Creates the objects the journal needs and hands each one out, creating it only once; a module may name
+    the class that stands in for an interface of the core."""
 
     def __init__(self) -> None:
         self.instances: dict[type, object] = {Container: self}
+        self.substitutes: dict[type, type[object]] = {}
 
     def bind(self, kind: type[T], instance: T) -> None:
         self.instances[kind] = instance
 
+    def substitute(self, kind: type, implementation: type) -> None:
+        if not issubclass(implementation, kind):
+            raise WrongInstanceError(kind, implementation)
+        self.substitutes[kind] = implementation
+
     def get(self, kind: type[T]) -> T:
-        instance = self.instances.get(kind)
+        instance: object = self.instances.get(kind)
         if instance is None:
-            built = self.constructed(kind)
-            self.instances[kind] = built
-            return built
+            implementation: type[object] = self.substitutes.get(kind, kind)
+            instance = self.constructed(implementation)
+            self.instances[kind] = instance
         if isinstance(instance, kind):
             return instance
         raise WrongInstanceError(kind, instance)

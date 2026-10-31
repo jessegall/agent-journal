@@ -12,6 +12,7 @@ from core.base.database.table_statements import TableStatements
 from core.base.guard.guards import Guards
 from core.base.listener.listeners import Listeners
 from core.base.model.model import Model
+from core.base.model.table import Table
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.repository.stale_row import StaleRow
@@ -45,7 +46,7 @@ class Repository:
         skipped = self.guards.ask(change)
         self.listeners.run_deletion_listeners(change)
         table = self.tables.table(type(model))
-        self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table.name, table.noun)
+        self.guarded(lambda: self.database.update(TableStatements(table).delete(model.id, model.version)), table, True)
         self.log.write(change, skipped)
         self.listeners.run_save_listeners(change)
 
@@ -62,16 +63,16 @@ class Repository:
         statements = TableStatements(table)
         moment = change.context.moment
         if change.old_row is None:
-            row_id = self.guarded(lambda: self.database.insert(statements.insert(table.row(model, table.columns), moment)), table.name, table.noun)
+            row_id = self.guarded(lambda: self.database.insert(statements.insert(table.row(model, table.columns), moment)), table, False)
             return model.saved(row_id, 1, moment)
         changed = table.row(model, change.fields)
-        updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, moment)), table.name, table.noun)
+        updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, moment)), table, False)
         if updated_count == 0:
             raise StaleRow(model.cli_noun, model.id)
         return model.saved(model.id, model.version + 1, moment)
 
-    def guarded(self, statement_run: Callable[[], int], table: str, noun: str) -> int:
+    def guarded(self, statement_run: Callable[[], int], table: Table, deletion: bool) -> int:
         try:
             return statement_run()
         except sqlite3.IntegrityError as error:
-            raise self.constraint_refusals.refusal(error, table, noun) from error
+            raise self.constraint_refusals.refusal(error, table, deletion) from error

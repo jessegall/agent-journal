@@ -25,7 +25,7 @@ class Table:
     def build(cls, model: type[Model]) -> "Table":
         hints = get_type_hints(model)
         column_types = {field.name: plain_type(hints[field.name]) for field in fields(model) if field.name not in UNSTORED_FIELDS}
-        return cls(model, getattr(model, "table", plural(model.name)), column_types)
+        return cls(model, getattr(model, "table", plural(model.model_name)), column_types)
 
     @property
     def columns(self) -> tuple[str, ...]:
@@ -62,6 +62,10 @@ def plural(name: str) -> str:
     if name.endswith("y") and name[-2:-1] not in VOWELS:
         return name[:-1] + "ies"
     return name + ("es" if name.endswith(("s", "x", "sh", "ch")) else "s")
+
+
+def indefinite_article(noun: str) -> str:
+    return "an" if noun[:1].lower() in "aeiou" else "a"
 
 
 class UnstorableTypeError(Exception):

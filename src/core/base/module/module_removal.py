@@ -35,7 +35,7 @@ class ModuleRemoval:
         removal = self.removal_migration(module)
         if removal is None:
             self.refuse_rows(module)
-        remaining_modules = tuple(candidate for candidate in self.finder.found() if candidate is not module)
+        remaining_modules = tuple(candidate for candidate in self.finder.modules() if candidate is not module)
         with self.database.transaction():
             if removal is not None:
                 removal.run(self.database)

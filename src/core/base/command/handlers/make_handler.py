@@ -7,7 +7,7 @@ from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.repository.repository import Repository
 
-CREATOR_COLUMN = "created_by"
+CREATOR_COLUMN = "creator_id"
 ENVIRONMENT_COLUMN = "environment_id"
 
 
@@ -25,6 +25,6 @@ class MakeHandler(Handler[MakeCommand[Model], Model]):
         values: dict[str, Any] = dict(command.model_fields())
         if table.has_column(CREATOR_COLUMN):
             values.setdefault(CREATOR_COLUMN, context.actor.id)
-        if table.has_column(ENVIRONMENT_COLUMN) and context.environment_id is not None:
+        if table.has_column(ENVIRONMENT_COLUMN):
             values.setdefault(ENVIRONMENT_COLUMN, context.environment_id)
         return self.repository.save(table.new_model(values), context)

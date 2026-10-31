@@ -1,7 +1,8 @@
 {
     "$schema": "./config.schema.json",
     "paths": [
-        "src/core"
+        "src/core",
+        "tests"
     ],
     "base": "main",
     "disable": {
@@ -137,6 +138,44 @@
                     50
                 ]
             }
+        ],
+        "PoeticTypeNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "PoeticMethodNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "PoeticVariableNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "PoeticParameterNameDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
         ]
-    }
+    },
+    "exclude": [
+        "tests"
+    ]
 }

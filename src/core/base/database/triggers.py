@@ -4,6 +4,7 @@ from core.base.database.constraint_refusals import RULE_PREFIX
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.model.model import STATE, Model
+from core.base.model.table import indefinite_article
 from core.base.model.tables import Tables
 
 RULE_TRIGGERS = Statement("SELECT name FROM sqlite_master WHERE type = 'trigger' AND name LIKE '%\\_rule\\_%' ESCAPE '\\'")
@@ -38,9 +39,9 @@ class Triggers:
             f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}a new {noun} starts as {' or '.join(lifecycle.initial)}'); END",
             f"CREATE TRIGGER {table}_rule_state_move BEFORE UPDATE OF {STATE} ON {table}"
             f" WHEN OLD.{STATE} != NEW.{STATE} AND OLD.{STATE} || '>' || NEW.{STATE} NOT IN ({pairs})"
-            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}no move of a {noun} leads from that state to that state'); END",
+            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}no move of {indefinite_article(noun)} {noun} leads from that state to that state'); END",
             f"CREATE TRIGGER {table}_rule_state_delete BEFORE DELETE ON {table} WHEN OLD.{STATE} NOT IN ({listed(tuple(lifecycle.deletable))})"
-            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}a {noun} in that state cannot be deleted'); END",
+            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(noun)} {noun} in that state cannot be deleted'); END",
         )
 
     def enum_triggers(self, model: type[Model]) -> tuple[str, ...]:
@@ -49,7 +50,7 @@ class Triggers:
         triggers: list[str] = []
         for column, kind in enums.items():
             allowed = listed(tuple(member.value for member in kind))
-            refusal = f"SELECT RAISE(ABORT, '{RULE_PREFIX}a {model.cli_noun}''s {column} is one of {', '.join(member.value for member in kind)}')"
+            refusal = f"SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(model.cli_noun)} {model.cli_noun}''s {column} is one of {', '.join(member.value for member in kind)}')"
             triggers.append(f"CREATE TRIGGER {table.name}_rule_{column}_insert BEFORE INSERT ON {table.name} WHEN NEW.{column} NOT IN ({allowed}) BEGIN {refusal}; END")
             triggers.append(f"CREATE TRIGGER {table.name}_rule_{column}_update BEFORE UPDATE OF {column} ON {table.name} WHEN NEW.{column} NOT IN ({allowed}) BEGIN {refusal}; END")
         return tuple(triggers)
