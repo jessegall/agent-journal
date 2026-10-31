@@ -39,9 +39,8 @@ class UpgradeJournal:
         self.home, self.reply, self.source = home, reply, source
 
     def run(self, dry_run: bool = False, confirmed: bool = False) -> UpgradeOutcome:
-        version_four = self.home.folder / DATABASE
-        if VersionFourFiles(self.home.folder).are_retired() and not version_four.exists():
-            return UpgradeOutcome(0, FINISHED_LINE)
+        files = VersionFourFiles(self.home.folder)
+        version_four = self.home.folder / DATABASE if (self.home.folder / DATABASE).is_file() else files.database()
         if not version_four.is_file():
             return UpgradeOutcome(1, f"no version 4 journal: {DATABASE} is not in {self.home.folder}")
         if self.has_answer():

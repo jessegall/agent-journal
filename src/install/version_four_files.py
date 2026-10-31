@@ -18,6 +18,9 @@ class VersionFourFiles:
     def are_retired(self) -> bool:
         return (self.retired / DATABASE).is_file()
 
+    def database(self) -> Path:
+        return self.retired / DATABASE
+
     def retire(self) -> list[str]:
         self.retired.mkdir(parents=True, exist_ok=True)
         moved: list[str] = []

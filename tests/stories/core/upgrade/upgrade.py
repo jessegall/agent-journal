@@ -141,3 +141,29 @@ def test_after_a_good_upgrade_version_4s_files_are_in_version_4_with_the_backup_
     assert (story.home.folder / "version-4" / "journal.db").is_file() and (story.home.folder / "version-4" / "src" / "journal" / "version.py").is_file()
     assert (story.home.folder / "version-4" / "4.28.0" / "journal.db").is_file() and "version 4's files moved into" in outcome.text
     assert story.home.database.is_file()
+
+
+def test_a_table_whose_module_is_not_built_is_listed_as_waiting_and_stays_in_the_backup(new_story):
+    from tests.stories.fixtures.version_four import version_four_fixture
+
+    story = new_story()
+    version_four_fixture(story.home.folder / "journal.db")
+    outcome = expect_upgrade(story, "not claimed: workers (1 rows); waits for its module and stays in the backup",
+                             "not claimed: questions (1 rows); waits for its module and stays in the backup")
+    assert "old_reports (1 rows)" in outcome.text and "waits" not in next(line for line in outcome.text.splitlines() if "old_reports" in line)
+    assert sqlite3.connect(next((story.home.folder / "version-4").rglob("journal.db"))).execute("SELECT count(*) FROM workers").fetchone()[0] == 1
+
+
+def test_a_module_added_later_runs_its_move_on_a_second_upgrade_from_the_retired_database(new_story):
+    import json
+
+    from tests.stories.fixtures.version_four import version_four_fixture
+
+    story = new_story()
+    version_four_fixture(story.home.folder / "journal.db")
+    expect_upgrade(story, "upgraded")
+    story.home.module_list.write_text(json.dumps([NOTES]))
+    sqlite3.connect(story.home.folder / "version-4" / "journal.db").executescript("CREATE TABLE notes (id INTEGER PRIMARY KEY, text TEXT); INSERT INTO notes VALUES (7, 'First');")
+    expect_upgrade(story, "movenotes: moved 1, already moved 0", "upgraded")
+    assert count(story, "notes") == 1
+    expect_upgrade(story, "nothing left to move")

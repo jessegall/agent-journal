@@ -22,6 +22,8 @@ TABLES = (
     f"CREATE TABLE memories ({COMMON}, environment_id INTEGER, text TEXT, weight INTEGER, keywords TEXT, removed_at TEXT, expires_at TEXT, expiry_row TEXT)",
     f"CREATE TABLE phone_codes ({COMMON}, code TEXT)",
     f"CREATE TABLE old_reports ({COMMON}, body TEXT)",
+    f"CREATE TABLE workers ({COMMON}, name TEXT)",
+    f"CREATE TABLE questions ({COMMON}, environment_id INTEGER, text TEXT)",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
 USER = "user:1"
@@ -62,6 +64,8 @@ ROWS = (
     ("memories", "(environment_id, text, weight, keywords, expiry_row, created_at, creator)", (1, "Remove this when the cart task is done", 0, '["cart", "task"]', "tasks:1", STAMP, USER)),
     ("phone_codes", "(code, created_at)", ("123456", STAMP)),
     ("old_reports", "(body, created_at)", ("a report", STAMP)),
+    ("workers", "(name, created_at)", ("Ada", STAMP)),
+    ("questions", "(environment_id, text, created_at)", (1, "Which database?", STAMP)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
 )
 
