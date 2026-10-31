@@ -14,15 +14,15 @@ class CodeVersion:
     def __init__(self, fingerprint: CodeFingerprint, folders: CodeFolders, recheck_seconds: float = 0) -> None:
         self.fingerprint, self.listing = fingerprint, FolderListing(folders.folders())
         self.text = self.current_text()
-        self.recheck_seconds, self.checked_at, self.stale = recheck_seconds, time.monotonic(), False
+        self.recheck_seconds, self.checked_seconds, self.code_changed = recheck_seconds, time.monotonic(), False
 
     def current_text(self) -> str:
         return self.fingerprint.files_text(self.listing.files())
 
     def is_stale(self) -> bool:
-        now = time.monotonic()
-        if self.stale or now - self.checked_at < self.recheck_seconds:
-            return self.stale
-        self.checked_at = now
-        self.stale = self.current_text() != self.text
-        return self.stale
+        clock_seconds = time.monotonic()
+        if self.code_changed or clock_seconds - self.checked_seconds < self.recheck_seconds:
+            return self.code_changed
+        self.checked_seconds = clock_seconds
+        self.code_changed = self.current_text() != self.text
+        return self.code_changed

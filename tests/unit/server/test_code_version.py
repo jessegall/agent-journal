@@ -38,5 +38,5 @@ def test_a_change_is_seen_only_after_the_recheck_time(tmp_path):
     version = CodeVersion(CodeFingerprint(), SampleFolders([tmp_path]), recheck_seconds=3600)
     source.write_text("x = 22\n")
     assert not version.is_stale()
-    version.checked_at -= 3600
+    version.checked_seconds -= 3600
     assert version.is_stale()
