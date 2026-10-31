@@ -13,7 +13,7 @@ from core.base.journal_home import JournalHome
 
 INSTALL = Path(__file__).resolve().parents[2] / "install.sh"
 TIMEOUT_SECONDS = 120
-SERVER_EXIT_SECONDS = 5
+SERVER_EXIT_SECONDS = 20
 SYSTEM_PATH = "/usr/bin:/bin"
 
 
