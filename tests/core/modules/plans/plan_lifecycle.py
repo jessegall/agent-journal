@@ -1,3 +1,4 @@
+from tests.core import story_lines as lines
 from tests.core.modules.tasks.task_lifecycle import started_story
 
 
@@ -8,7 +9,7 @@ def test_a_plan_is_made_as_a_draft_in_the_callers_environment(new_story):
 
 def test_a_plan_moves_from_draft_to_completed(new_story):
     story = started_story(new_story)
-    story.run('plan make "Version 5 core" --environment main')
+    story.run(lines.NEW_PLAN)
     story.expect_success("plan ready 1", "state: ready")
     story.expect_success("plan approve 1", "state: approved")
     story.expect_success("plan start 1", "state: started", actor=story.agent)
@@ -21,12 +22,12 @@ def test_a_plan_moves_from_draft_to_completed(new_story):
 
 def test_a_plan_is_cancelled_with_its_reason(new_story):
     story = started_story(new_story)
-    story.run('plan make "Version 5 core" --environment main')
-    story.expect_success('plan cancel 1 --reason "replaced"', "state: cancelled", "reason: replaced")
+    story.run(lines.NEW_PLAN)
+    story.expect_success(lines.PLAN_CANCEL, "state: cancelled", "reason: replaced")
 
 
 def test_a_move_out_of_a_wrong_state_is_refused_with_the_moves_that_go_on(new_story):
     story = started_story(new_story)
-    story.run('plan make "Version 5 core" --environment main')
+    story.run(lines.NEW_PLAN)
     story.expect_refusal("plan start 1", "from draft it can only go on with journal plan ready 1, journal plan cancel 1")
     story.expect_refusal("plan approve 1", "plan 1 is draft, so it cannot approve")

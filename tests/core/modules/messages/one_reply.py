@@ -1,11 +1,9 @@
+from tests.core.fixtures import MessageAnswered
 from tests.core.modules.messages.chat_messages import user_story
 
 
 def answered_story(new_story):
-    story = user_story(new_story)
-    story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    story.run('message reply 1 "On it" --environment main', actor=story.agent)
-    return story
+    return new_story(fixture=MessageAnswered)
 
 
 def test_a_second_agent_reply_is_refused_with_the_flag_that_passes_it(new_story):

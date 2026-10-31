@@ -1,14 +1,14 @@
 import io
 import shlex
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TypeVar
 from datetime import timedelta
-from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.cli.console import Console
 from core.base.clock import Clock
 from core.base.container import Container
+from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
@@ -16,9 +16,17 @@ from core.base.query.queries import Queries
 from core.base.refusal_log import RecordedRefusal, RefusalLog
 from core.base.subcommand.caller import Caller
 from core.testing.manual_clock import ManualClock
-from core.testing.template_databases import TemplateDatabases
 
 M = TypeVar("M", bound=Model)
+
+
+@dataclass(frozen=True)
+class StoryState:
+    """What a story knows beside its database, carried from a fixture to the stories that start from it: the
+    agent and the person it acts as."""
+
+    agent: Actor = field(default_factory=Actor.core)
+    user: Actor = field(default_factory=Actor.core)
 
 
 @dataclass(frozen=True)
@@ -35,20 +43,24 @@ class Story:
     modules named, runs command lines as text through the same console, container and registry as a real run,
     moves its clock by hand, reads rows and refusals, and checks what came back. It knows no noun of the core."""
 
-    def __init__(self, home: JournalHome, container: Container, clock: ManualClock) -> None:
+    def __init__(self, home: JournalHome, container: Container, clock: ManualClock, state: StoryState) -> None:
         self.home, self.container, self.clock = home, container, clock
         self.results: list[LineOutcome] = []
-        self.agent = Actor.core()
-        self.user = Actor.core()
+        self.agent, self.user = state.agent, state.user
 
     @classmethod
-    def started(cls, templates: TemplateDatabases, folder: Path, modules: tuple[str, ...]) -> "Story":
-        home = JournalHome(folder)
-        templates.copied(modules, home)
+    def opened(cls, home: JournalHome, state: StoryState) -> "Story":
         clock = ManualClock()
         container = synced_container(home)
         container.bind(Clock, clock)
-        return cls(home, container, clock)
+        return cls(home, container, clock, state)
+
+    @property
+    def state(self) -> StoryState:
+        return StoryState(self.agent, self.user)
+
+    def close(self) -> None:
+        self.container.get(Database).close()
 
     def run(self, line: str, actor: Actor | None = None, environment_id: int | None = None) -> LineOutcome:
         stream = io.StringIO()

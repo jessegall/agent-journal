@@ -2,9 +2,9 @@ from pathlib import Path
 
 import pytest
 
-from core.testing.pytest_plugin import new_story, templates
+from core.testing.pytest_plugin import new_story, pytest_terminal_summary, templates
 
-STORY_FIXTURES = (new_story, templates)
+STORY_FIXTURES = (new_story, templates, pytest_terminal_summary)
 
 def pytest_collect_file(file_path: Path, parent: pytest.Collector):
     in_stories = "stories" in file_path.parts or "modules" in file_path.parts

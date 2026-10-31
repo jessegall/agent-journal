@@ -1,36 +1,67 @@
 import json
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 
-from core.base.journal_container import opened_container
+from core.base.clock import Clock
 from core.base.database.database import Database
+from core.base.journal_container import opened_container
 from core.base.journal_home import JournalHome
 from core.base.module.module_sync import ModuleSync
 from core.testing.manual_clock import ManualClock
-from core.base.clock import Clock
+from core.testing.story import Story, StoryState
+from core.testing.story_fixture import StoryFixture
+
+
+@dataclass(frozen=True)
+class Template:
+    """A built database a story is copied from, with what the story knows beside it."""
+
+    home: JournalHome
+    state: StoryState
 
 
 class TemplateDatabases:
-    """One migrated and synced database per set of modules, made once and copied for every story that loads
-    the same modules."""
+    """One migrated and synced database per set of modules, and one more per fixture built on it, each made once
+    and copied for every story that starts from it."""
 
     def __init__(self, folder: Path) -> None:
         self.folder = folder
-        self.homes: dict[tuple[str, ...], JournalHome] = {}
+        self.templates: dict[tuple[tuple[str, ...], type[StoryFixture] | None], Template] = {}
 
-    def copied(self, modules: tuple[str, ...], target: JournalHome) -> None:
-        template = self.homes.get(modules) or self.new_template(modules)
-        target.folder.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(template.database, target.database)
-        shutil.copyfile(template.module_list, target.module_list)
+    def story(self, folder: Path, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Story:
+        template = self.template(modules, fixture)
+        home = self.copy(template, folder)
+        return Story.opened(home, template.state)
 
-    def new_template(self, modules: tuple[str, ...]) -> JournalHome:
-        home = JournalHome(self.folder / f"template-{len(self.homes) + 1}")
+    def template(self, modules: tuple[str, ...], fixture: type[StoryFixture] | None) -> Template:
+        template = self.templates.get((modules, fixture))
+        if template is None:
+            template = self.fixture_template(modules, fixture) if fixture else self.synced_template(modules)
+            self.templates[(modules, fixture)] = template
+        return template
+
+    def synced_template(self, modules: tuple[str, ...]) -> Template:
+        home = JournalHome(self.folder / f"template-{len(self.templates) + 1}")
         home.folder.mkdir(parents=True)
         home.module_list.write_text(json.dumps(list(modules)))
         container = opened_container(home)
         container.bind(Clock, ManualClock())
         container.get(ModuleSync).run()
         container.get(Database).close()
-        self.homes[modules] = home
+        return Template(home, StoryState())
+
+    def fixture_template(self, modules: tuple[str, ...], fixture: type[StoryFixture]) -> Template:
+        base = self.template(modules, fixture.parent)
+        story = Story.opened(self.copy(base, self.folder / f"template-{len(self.templates) + 1}"), base.state)
+        fixture().steps(story)
+        fixture().expect(story)
+        story.close()
+        return Template(story.home, story.state)
+
+    def copy(self, template: Template, folder: Path) -> JournalHome:
+        home = JournalHome(folder)
+        home.folder.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(template.home.database, home.database)
+        shutil.copyfile(template.home.module_list, home.module_list)
         return home

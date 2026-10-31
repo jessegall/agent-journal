@@ -1,0 +1,13 @@
+NEW_ENVIRONMENT = "environment make main /work/journal"
+AGENT_START = "agent start s-1 claude main --environment main"
+NEW_TASK = 'task make "Fix the cart" --environment main'
+TASK_START = "task start 1"
+TASK_CLOSE = 'task close 1 --outcome "done"'
+TASK_DETAILS = "task show 1"
+TASK_DELETION = "task delete 1"
+FIRST_TASK_DEPENDENCY = "task depend 1 --on 2"
+THIRD_TASK_DEPENDENCY = "task depend 3 --on 1"
+FIRST_TASK_PLACE = "phase place 1 --phase 1"
+USER_MESSAGE = 'message send "Fix the cart first" --environment main'
+NEW_PLAN = 'plan make "Version 5 core" --environment main'
+PLAN_CANCEL = 'plan cancel 1 --reason "replaced"'

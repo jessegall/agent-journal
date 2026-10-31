@@ -1,12 +1,9 @@
+from tests.core.fixtures import PlanWithPhases
 from tests.core.modules.tasks.task_lifecycle import started_story
 
 
 def plan_with_three_phases(new_story):
-    story = started_story(new_story)
-    story.run('plan make "Version 5 core" --environment main')
-    for title in ("Values", "Models", "Queries"):
-        story.run(f'phase make --plan 1 "{title}" --goal "{title.lower()} pass their tests"')
-    return story
+    return new_story(fixture=PlanWithPhases)
 
 
 def test_phases_are_made_in_order_at_the_end_of_their_plan(new_story):

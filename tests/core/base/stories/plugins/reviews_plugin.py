@@ -1,28 +1,39 @@
+from tests.core import story_lines as lines
 from core.modules.tasks.task import Task, TaskState
 from tests.core.base.stories.plugins.samples import Review, ReviewState
-from tests.core.modules.tasks.task_lifecycle import started_story
+from core.testing.story import Story
+from core.testing.story_fixture import StoryFixture
+from tests.core.fixtures import AssignedTask
 
 REVIEWS = "tests.core.base.stories.plugins.samples:ReviewsModule"
 
 
+class ReviewRequested(StoryFixture):
+    """With the reviews plugin loaded: the task held by the agent, and a review of it requested."""
+
+    parent = AssignedTask
+
+    def steps(self, story: Story) -> None:
+        story.run("review make 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("review show 1", "task_id: 1", "state: requested")
+
+
 def reviewed_task_story(new_story):
-    story = started_story(lambda: new_story(REVIEWS))
-    story.run('task make "Fix the cart" --environment main')
-    story.run("task start 1", actor=story.agent)
-    story.run("review make 1")
-    return story
+    return new_story(REVIEWS, fixture=ReviewRequested)
 
 
 def test_a_task_waits_for_its_review_before_it_closes(new_story):
     story = reviewed_task_story(new_story)
-    story.expect_refusal('task close 1 --outcome "done"', "refused by reviews.task-closes-after-its-review: task 1 waits for its review", actor=story.agent)
+    story.expect_refusal(lines.TASK_CLOSE, "refused by reviews.task-closes-after-its-review: task 1 waits for its review", actor=story.agent)
     story.expect_success("review passed 1", "state: passed")
-    story.expect_success('task close 1 --outcome "done"', "state: completed", actor=story.agent)
+    story.expect_success(lines.TASK_CLOSE, "state: completed", actor=story.agent)
     story.expect_rows(story.row(Task, 1).state is TaskState.COMPLETED, story.row(Review, 1).state is ReviewState.PASSED)
 
 
 def test_a_failed_review_takes_its_note_and_the_refusal_is_recorded(new_story):
     story = reviewed_task_story(new_story)
-    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run(lines.TASK_CLOSE, actor=story.agent)
     story.expect_success('review failed 1 --note "the total is still wrong"', "state: failed", "note: the total is still wrong")
     story.expect_rows([refusal.guard for refusal in story.refusals()] == ["reviews.task-closes-after-its-review"])
