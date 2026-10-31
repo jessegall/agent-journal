@@ -3,6 +3,7 @@ import sqlite3
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
+from core.base.type_guards import is_list
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -59,8 +60,10 @@ class MemoriesMove(VersionFourMove):
 
     def words(self, text: str | None) -> list[str]:
         try:
-            parsed = json.loads(text) if text else []
+            parsed: object = json.loads(text) if text else []
         except ValueError:
+            return []
+        if not is_list(parsed):
             return []
         distinct = {str(item).lower() for item in parsed if isinstance(item, str)}
         return sorted(item for item in distinct if KEYWORD_LIMITS[0] <= len(item) <= KEYWORD_LIMITS[1])

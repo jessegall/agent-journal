@@ -1,4 +1,5 @@
 import sqlite3
+from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
@@ -41,7 +42,7 @@ class TasksMove(VersionFourMove):
             if state is None:
                 report.skip(TABLE, row["id"], f"state {row['state']} is none of {', '.join(member.value for member in TaskState)}")
             else:
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, state, creators.actor_id(row["creator"]), holders.get(row["id"]), context)))
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, state, creators.actor_id(row["creator"]), holders.get(row["id"]), context)))
         self.logs(source, rows, creators, map, report, context)
         self.dependencies(source, rows, creators, map, report, context)
         return report
@@ -99,7 +100,7 @@ class TasksMove(VersionFourMove):
                 report.drop("dependency loops", 1)
             else:
                 edges.setdefault(task_id, set()).add(dependency_id)
-                report.count("links", map.transfer("links", link["id"], "task_dependencies", lambda: self.depend(rows, creators, link, task_id, dependency_id, context)))
+                report.count("links", map.transfer("links", link["id"], "task_dependencies", partial(self.depend, rows, creators, link, task_id, dependency_id, context)))
 
     def reaches(self, edges: dict[int, set[int]], start: int, goal: int) -> bool:
         pending, visited = [start], set[int]()

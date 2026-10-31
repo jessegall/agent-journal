@@ -1,4 +1,5 @@
 import sqlite3
+from functools import partial
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
@@ -37,7 +38,7 @@ class PlansMove(VersionFourMove):
             if state is None:
                 report.skip(TABLE, row["id"], f"state {row['state']} is none of {', '.join(STATES)}")
             else:
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, state, creators.actor_id(row["creator"]), context)))
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, state, creators.actor_id(row["creator"]), context)))
         self.phases(source, rows, creators, map, report, context)
         self.tasks(source, rows, creators, map, report, context)
         for table in self.drops:
@@ -74,7 +75,10 @@ class PlansMove(VersionFourMove):
                 report.skip("links", link["id"], "its task or its phase did not move")
                 continue
             positions[phase_id] = positions.get(phase_id, 0) + 1
-            created = link["created_at"] or context.timestamp
-            report.count("links", map.transfer("links", link["id"], "phase_tasks", lambda: rows.insert("phase_tasks", {
-                "phase_id": phase_id, "task_id": task_id, "creator_id": creators.actor_id(link["creator"]), "position": positions[phase_id],
-                "created_at": created, "updated_at": link["updated_at"] or created})))
+            report.count("links", map.transfer("links", link["id"], "phase_tasks", partial(self.place, rows, link, creators.actor_id(link["creator"]), phase_id, task_id,
+                                                                                         positions[phase_id], context)))
+
+    def place(self, rows: RowInsert, link: sqlite3.Row, creator_id: int, phase_id: int, task_id: int, position: int, context: MoveContext) -> int:
+        created = link["created_at"] or context.timestamp
+        return rows.insert("phase_tasks", {"phase_id": phase_id, "task_id": task_id, "creator_id": creator_id, "position": position, "created_at": created,
+                                           "updated_at": link["updated_at"] or created})
