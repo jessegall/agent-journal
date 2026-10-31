@@ -10,9 +10,9 @@ from core.modules.environments.environment_query import EnvironmentQuery
 class EnvironmentsModule(Module):
     """Adds environments, the checkouts where work happens, and lets --environment name one."""
 
-    name = "environments"
+    name = "journal.core.environments"
     requires_core = ">=5,<6"
-    dependencies = ["actors"]
+    dependencies = ["journal.core.actors"]
     models = [ModelDeclaration(Environment, query=EnvironmentQuery)]
     migrations = [EnvironmentsTable]
     bindings = [(EnvironmentNames, EnvironmentTableNames)]

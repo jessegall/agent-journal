@@ -11,9 +11,9 @@ from core.modules.messages.message import Message
 class MessagesModule(Module):
     """Adds messages: what the user, the agents and the journal say in an environment's chat."""
 
-    name = "messages"
+    name = "journal.core.messages"
     requires_core = ">=5,<6"
-    dependencies = ("actors", "environments", "agents")
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     migrations = [MessagesTable]
     guards = [OneReplyPerMessage]

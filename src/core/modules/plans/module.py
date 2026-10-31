@@ -20,9 +20,9 @@ PLAN_COMMANDS = (PlanPause, PlanBlock, PlanCancel,)
 class PlansModule(Module):
     """Adds plans: a goal, its phases in order, and the tasks placed in each."""
 
-    name = "plans"
+    name = "journal.core.plans"
     requires_core = ">=5,<6"
-    dependencies = ("actors", "environments", "agents", "tasks")
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask))
     migrations = [PlansTables]
     handlers = (PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler)

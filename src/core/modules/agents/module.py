@@ -13,9 +13,9 @@ from core.base.module.model_declaration import ModelDeclaration
 class AgentsModule(Module):
     """Adds agents, one per session of an agent program, each an actor with the same number."""
 
-    name = "agents"
+    name = "journal.core.agents"
     requires_core = ">=5,<6"
-    dependencies = ["actors", "environments"]
+    dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     migrations = [AgentsTable]
     handlers = [AgentStartHandler, AgentEndHandler]

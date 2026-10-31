@@ -93,7 +93,7 @@ class ForgetTaskReviews(DeletionListener):
 class ReviewsModule(Module):
     name = "reviews"
     requires_core = ">=5.0,<6"
-    dependencies = ["tasks"]
+    dependencies = ["journal.core.tasks"]
     models = [ModelDeclaration(Review, commands=[ReviewFailed])]
     migrations = [ReviewsTable]
     guards = [ReviewedTaskGuard]

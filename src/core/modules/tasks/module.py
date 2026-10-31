@@ -18,9 +18,9 @@ TASK_COMMANDS = (TaskPause, TaskBlock, TaskClose, TaskCancel,)
 class TasksModule(Module):
     """Adds tasks, units of work held by an agent, with their log lines and dependencies."""
 
-    name = "tasks"
+    name = "journal.core.tasks"
     requires_core = ">=5,<6"
-    dependencies = ("actors", "environments", "agents")
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
     migrations = [TasksTables]
     subcommands = (TaskLogSubcommand, TaskDependSubcommand,

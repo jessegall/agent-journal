@@ -7,6 +7,6 @@ from core.base.module.model_declaration import ModelDeclaration
 class ActorsModule(Module):
     """Gives the actors table, which the core owns, its commands: journal actor make, show, list, edit and delete."""
 
-    name = "actors"
+    name = "journal.core.actors"
     requires_core = ">=5,<6"
     models = [ModelDeclaration(ActorRecord, query=ActorQuery)]

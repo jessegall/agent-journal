@@ -9,9 +9,9 @@ from core.modules.settings.setting import Setting
 class SettingsModule(Module):
     """Adds settings: values kept for an environment or for the whole project."""
 
-    name = "settings"
+    name = "journal.core.settings"
     requires_core = ">=5,<6"
-    dependencies = ("actors", "environments")
+    dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting)]
     migrations = [SettingsTable]
     bindings = [(GuardSwitches, SettingGuardSwitches)]
