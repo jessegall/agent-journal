@@ -21,7 +21,8 @@ export function markLook(mark, declaration) {
         group: kind.group || "",
         tone: kind.colouring === "outcome" ? OUTCOME_TONES[mark.outcome] || "" : "",
         label: mark.text,
-        detail: mark.detail || "",
+        // a mark with a body of its module's own keeps its lines for that body, and its cut-off first part is not a second line
+        detail: kind.body_url ? "" : mark.detail || "",
         figure: mark.figure || "",
         fraction: mark.fraction || 0,
         ended: mark.state === "ended",

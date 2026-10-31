@@ -1,4 +1,5 @@
 export {default as EmptyState} from "../src/kit/EmptyState.vue";
+export {default as FoldGroup} from "../src/kit/FoldGroup.vue";
 export {default as Btn} from "../src/kit/Btn.vue";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as RowList} from "./RowList.vue";

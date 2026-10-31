@@ -13,7 +13,7 @@ REMINDERS_FAMILY = MarkFamily("memories.reminders", "Reminders", "reminder", Mar
 CONTEXT_FAMILY = MarkFamily("memories.context", "Context", "compact", MarkGroup.AGENT)
 
 MEMORY_MARKS = [
-    MarkDeclaration(MemoryMarkType.MEMORY, MemoryMarkVariant, MEMORIES_FAMILY, "Memories", "fact", click=MarkClick.OPEN_ROW),
+    MarkDeclaration(MemoryMarkType.MEMORY, MemoryMarkVariant, MEMORIES_FAMILY, "Memories", "fact", click=MarkClick.OPEN_ROW, body="memory-round.js"),
     MarkDeclaration(MemoryMarkType.REMINDER, MemoryMarkVariant, REMINDERS_FAMILY, "Rules and reminders recalled", "rule", click=MarkClick.OPEN_ROW,
                     group_label="{count} rules and reminders recalled"),
     MarkDeclaration(MemoryMarkType.COMPACTION, MemoryMarkVariant, CONTEXT_FAMILY, "Conversation compacted", "compact", click=MarkClick.NONE,

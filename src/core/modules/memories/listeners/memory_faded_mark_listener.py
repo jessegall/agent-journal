@@ -6,6 +6,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.base.driver.hook_event_name import HookEventName
 from core.modules.memories.listeners.memory_mark_listener import MemoryMarkListener
 from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVariant
+from core.modules.memories.models.memory import Memory
 from core.modules.memories.support.fading_scope import FadingScope
 
 
@@ -23,5 +24,11 @@ class MemoryFadedMarkListener(MemoryMarkListener):
         call = self.queries.query(HookCall).find(event.row_id)
         memories = self.scope.memories(call.agent_id) if call.hook == HookEventName.COMPACT else []
         if memories:
-            shown = len([memory for memory in memories if memory.weight > 0])
-            self.show_memory(event, MemoryMarkVariant.FADED, f"Memories faded by one: {shown} of {len(memories)} still shown", agent_id=call.agent_id, row_model="")
+            shown = [memory for memory in memories if memory.weight > 0]
+            self.show_memory(event, MemoryMarkVariant.FADED, f"Memories faded by one: {len(shown)} of {len(memories)} still shown", agent_id=call.agent_id, row_model="",
+                             detail=self.round(memories))
+
+    @staticmethod
+    def round(memories: list[Memory]) -> str:
+        """One line to a memory, `part|id|weight before|weight after`, which the memory mark's body draws as a round."""
+        return "\n".join(f"{'shown' if memory.weight > 0 else 'faded'}|{memory.id}|{memory.weight + 1}|{memory.weight}" for memory in memories)

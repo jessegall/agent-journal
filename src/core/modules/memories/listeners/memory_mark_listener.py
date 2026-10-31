@@ -19,5 +19,5 @@ class MemoryMarkListener(MarkListener):
         return event.environment_id or self.queries.query(Memory).find(event.row_id).environment_id
 
     def show_memory(self, event: LoggedEvent, variant: MemoryMarkVariant, text: str, type: StrEnum = MemoryMarkType.MEMORY, environment_id: int | None = None,
-             agent_id: int | None = None, row_model: str = "memory", row_id: int | None = None) -> None:
-        self.show(event, type, variant, text, environment_id, agent_id, row_model, row_id)
+             agent_id: int | None = None, row_model: str = "memory", row_id: int | None = None, detail: str = "") -> None:
+        self.show(event, type, variant, text, environment_id, agent_id, row_model, row_id, detail)

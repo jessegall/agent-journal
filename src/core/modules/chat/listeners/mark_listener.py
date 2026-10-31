@@ -20,10 +20,10 @@ class MarkListener(CommitListener):
         self.bus, self.actors, self.queries = bus, actors, queries
 
     def show(self, event: LoggedEvent, type: StrEnum, variant: StrEnum, text: str, environment_id: int | None = None, agent_id: int | None = None,
-             row_model: str = "", row_id: int | None = None) -> None:
+             row_model: str = "", row_id: int | None = None, detail: str = "") -> None:
         environment_id = environment_id or event.environment_id
         if environment_id is None:
             return
         key = f"{variant.value}:{event.row_id}:{event.id}"
-        self.bus.run(ShowMark(environment_id, type, variant, key, text, agent_id=agent_id, row_model=row_model, row_id=row_id, ended=True),
+        self.bus.run(ShowMark(environment_id, type, variant, key, text, agent_id=agent_id, detail=detail, row_model=row_model, row_id=row_id, ended=True),
                      self.actors.actor(self.module_name), cause_id=event.id, environment_id=environment_id)

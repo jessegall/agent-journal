@@ -19,7 +19,7 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
     <div :class="['mark-more', {open: shown}]" @click.stop>
         <div class="mark-more-inner">
             <template v-if="declaration.body_url">
-                <ModuleBody :declaration="declaration" />
+                <ModuleBody :declaration="declaration" :row="mark" />
             </template>
             <template v-else>
                 <template v-if="hasOutput && pages.loaded.value">
