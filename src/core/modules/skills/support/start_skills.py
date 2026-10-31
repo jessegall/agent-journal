@@ -15,8 +15,9 @@ SKILL_SETTINGS = [
 
 
 class StartSkills:
-    """The skills made due when a session starts and when it starts again after a compaction, as the two settings
-    name them for an environment, else for the project, else the journal's three, each only when a module declares it."""
+    """The skills made due when a session starts and when it starts again after a compaction, as the two
+    settings name them for an environment, else for the project, else the journal's three, each only when a
+    module declares it."""
 
     def __init__(self, values: SettingValues, registry: Registry) -> None:
         self.values, self.registry = values, registry

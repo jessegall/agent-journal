@@ -31,7 +31,7 @@ def test_a_button_running_no_command_is_refused_at_sync(new_story):
 
 
 def test_a_button_filling_another_placeholder_is_refused_at_sync(new_story):
-    refused(new_story, "OtherPlaceholderModule", "filling {task_id}, and only {row_id} is filled")
+    refused(new_story, "SecondPlaceholderModule", "filling {task_id}, and only {row_id} is filled")
 
 
 def test_a_mark_body_missing_from_web_dist_is_refused_at_sync(new_story):

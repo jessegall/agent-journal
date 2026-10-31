@@ -1,5 +1,5 @@
 from tests.stories.core.base.driver.support.samples import SAMPLES
-from tests.stories.core.modules.chat.support.v4_looks import IMPASSE, expect_declared_look
+from tests.stories.core.modules.chat.support.v4_looks import IMPASSE, expect_declared_appearance
 import pytest
 
 from core.base.command.bus import Bus
@@ -25,4 +25,4 @@ def test_the_waits_module_writes_only_its_own_marks(new_story):
 
 
 def test_the_impasse_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(SAMPLES, fixture=LeadStarted), IMPASSE)
+    expect_declared_appearance(new_story(SAMPLES, fixture=LeadStarted), IMPASSE)

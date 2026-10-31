@@ -20,7 +20,7 @@ def test_a_reviewer_starts_idle_takes_a_review_and_goes_idle_again():
 
 def test_only_an_idle_reviewer_retires():
     assert IDLE.retire(NOW, ACTOR).state == ReviewerState.RETIRED
-    assert tuple(ReviewerLifecycle.retire.sources) == (ReviewerState.IDLE,)
+    assert list(ReviewerLifecycle.retire.sources) == [ReviewerState.IDLE]
 
 
 def test_a_reviewer_ends_idle_or_reviewing():

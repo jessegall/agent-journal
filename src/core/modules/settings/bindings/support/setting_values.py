@@ -2,7 +2,7 @@ from collections.abc import Generator
 from contextlib import contextmanager
 
 from core.base.type_guards import is_list, is_tuple
-from core.modules.settings.support.declared_values import DeclaredValues
+from core.modules.settings.support.setting_reader import SettingReader
 
 
 class SettingValues:
@@ -10,7 +10,7 @@ class SettingValues:
     its declared default, as the type the reader needs. Reading a key no module declares raises a refusal
     naming it."""
 
-    def __init__(self, values: DeclaredValues) -> None:
+    def __init__(self, values: SettingReader) -> None:
         self.values = values
 
     @contextmanager

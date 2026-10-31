@@ -3,7 +3,7 @@ from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import AgentStarted
 
 
-class AskedQuestion(StoryFixture):
+class OpenQuestion(StoryFixture):
     """One open question, Which database? (1), with the options sqlite and postgres, asked by the main agent in main."""
 
     parent = AgentStarted
@@ -18,7 +18,7 @@ class AskedQuestion(StoryFixture):
 class AnsweredQuestion(StoryFixture):
     """The question Which database? (1), answered sqlite."""
 
-    parent = AskedQuestion
+    parent = OpenQuestion
 
     def steps(self, story: Story) -> None:
         story.run("question answer 1 --answer sqlite")

@@ -1,8 +1,8 @@
-from tests.stories.core.modules.questions.fixtures import AnsweredQuestion, AskedQuestion
+from tests.stories.core.modules.questions.fixtures import AnsweredQuestion, OpenQuestion
 
 
 def test_the_list_shows_the_open_questions_with_their_choices(new_story):
-    story = new_story(fixture=AskedQuestion)
+    story = new_story(fixture=OpenQuestion)
     story.expect_success("question list", "1  Which database?  [sqlite / postgres]")
 
 
@@ -12,7 +12,7 @@ def test_an_answered_question_leaves_the_list(new_story):
 
 
 def test_show_says_an_open_question_is_not_answered_yet(new_story):
-    story = new_story(fixture=AskedQuestion)
+    story = new_story(fixture=OpenQuestion)
     story.expect_success("question show 1", "question 1: Which database?", "choices: sqlite / postgres", "answer: not answered yet")
 
 

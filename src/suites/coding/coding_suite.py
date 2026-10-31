@@ -9,7 +9,8 @@ AGENT_WORK_TABS = ("coding.terminal", "coding.file-feed", "tasks.tasks", "driver
 class CodingSuite(Suite):
     """Building software: the builder or the orchestrator drives the main agent, which starts workers,
     reviewers and verifiers, while the agent program's own subagents read for it; the viewer shows its chat,
-    tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's layout presets."""
+    tasks, plans, agents, questions and their activity and file edits, a phone layout, and version 4's
+    layout presets."""
 
     name = "coding"
     defaults = {AgentRole.MAIN: "coding.builder", AgentRole.WORKER: "coding.worker", AgentRole.SUBAGENT: "coding.subagent", AgentRole.REVIEWER: "coding.reviewer",

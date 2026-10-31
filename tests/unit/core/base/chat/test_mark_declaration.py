@@ -48,7 +48,7 @@ def test_a_declaration_has_the_defaults_the_design_gives():
 
 
 def test_a_dock_declaration_holds_one_item_and_never_leaves_by_default():
-    dock = DockDeclaration(type=SampleType.NOTE, icon="note", title="{row_title}", body="note.js", buttons=(MarkButton("x", "Go", "note open {row_id}"),))
+    dock = DockDeclaration(type=SampleType.NOTE, icon="note", title="{row_title}", body="note.js", buttons=[MarkButton("x", "Go", "note open {row_id}")])
     assert (dock.most, dock.leaves_after_seconds, tuple(dock.reads)) == (1, 0, ())
 
 

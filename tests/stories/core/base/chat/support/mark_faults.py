@@ -17,8 +17,8 @@ class Variant(StrEnum):
     PLAIN = "plain"
 
 
-class OtherVariant(StrEnum):
-    OTHER = "other"
+class SecondVariant(StrEnum):
+    SECOND = "other"
 
 
 class NoVariant(StrEnum):
@@ -55,7 +55,7 @@ class DuplicateMarkModule(Module):
     name = "twice"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    marks = [mark(Twice.FIRST), mark(Twice.FIRST, variants=OtherVariant)]
+    marks = [mark(Twice.FIRST), mark(Twice.FIRST, variants=SecondVariant)]
 
 
 class ForeignNameModule(Module):
@@ -86,7 +86,7 @@ class UnknownCommandModule(Module):
     marks = [mark(Plain.NOTE, buttons=[MarkButton("words", "Fly", "task fly {row_id}")])]
 
 
-class OtherPlaceholderModule(Module):
+class SecondPlaceholderModule(Module):
     name = "good"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES

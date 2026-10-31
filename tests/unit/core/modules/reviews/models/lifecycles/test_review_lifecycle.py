@@ -32,7 +32,7 @@ def test_a_report_ends_the_review_and_keeps_its_text(method: str, state: ReviewS
 
 def test_only_a_review_being_reviewed_can_be_reported():
     for move in (ReviewLifecycle.approve, ReviewLifecycle.reject, ReviewLifecycle.leave_undecided):
-        assert tuple(move.sources) == (ReviewState.REVIEWING,)
+        assert list(move.sources) == [ReviewState.REVIEWING]
 
 
 def test_a_review_is_abandoned_while_queued_or_reviewing():

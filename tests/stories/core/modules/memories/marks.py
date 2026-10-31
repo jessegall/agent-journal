@@ -15,10 +15,10 @@ def marks_text(story) -> str:
 
 
 def shown_after_commit(story, line: str, text: str, actor=None) -> None:
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.expect_success(line, actor=actor or story.agent)
     story.run_listeners()
-    assert mark_count(story) == before + 1 and text in marks_text(story), marks_text(story)
+    assert mark_count(story) == starting_count + 1 and text in marks_text(story), marks_text(story)
 
 
 def test_a_memory_made_shows_its_mark_after_the_commit(new_story):
@@ -37,10 +37,10 @@ def test_a_memory_edited_without_a_new_weight_shows_no_weighed_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     memory_id = story.new_row_id(FACT, actor=story.agent)
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.expect_success(f'memory edit {memory_id} --text "The cart total is in euro cents"', actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
 
 
 def test_a_memory_removed_shows_its_mark(new_story):
@@ -55,10 +55,10 @@ def test_a_fade_shows_how_many_memories_are_still_shown(new_story):
     story.new_row_id('memory make "Almost gone" --type fact --weight 1 --environment main', actor=story.agent)
     story.new_row_id('memory make "Still strong" --type fact --weight 5 --environment main', actor=story.agent)
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.hook("s-1", HookSamples.sample("compact"))
     story.run_listeners()
-    assert mark_count(story) > before and "Memories faded by one: 1 of 2 still shown" in marks_text(story), marks_text(story)
+    assert mark_count(story) > starting_count and "Memories faded by one: 1 of 2 still shown" in marks_text(story), marks_text(story)
 
 
 def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
@@ -92,10 +92,10 @@ def test_a_failed_command_shows_no_memory_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     memory_id = story.new_row_id(FACT, actor=story.agent)
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.expect_refusal(f"memory weigh {memory_id},{memory_id} 4,5,6", "2 memories and 3 weights", actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
 
 
 def test_memory_marks_fold_in_the_declarations_words_from_three(new_story):

@@ -6,13 +6,13 @@ from server.viewer.viewer_request_error import ViewerRequestError
 
 
 @dataclass(frozen=True)
-class PairingRequest:
+class PairRequest:
     """The body of POST /viewer/pair: the code a phone brings."""
 
     code: str
 
     @classmethod
-    def parsed(cls, body: bytes) -> "PairingRequest":
+    def parsed(cls, body: bytes) -> "PairRequest":
         try:
             data = json.loads(body or b"{}")
         except json.JSONDecodeError as error:

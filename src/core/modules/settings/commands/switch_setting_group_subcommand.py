@@ -1,16 +1,15 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
+from core.modules.settings.commands.support.current_setting_output import CurrentSettingOutput
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.settings.commands.switch_setting_group import SwitchSettingGroup
-from core.modules.settings.support.setting_lines import SettingLines
 from core.modules.settings.support.current_setting import CurrentSetting
 
-ON = "on"
+ENABLED_STATE = "on"
 
 
-class SwitchSettingGroupSubcommand(Subcommand[SwitchSettingGroup, CurrentSetting]):
+class SwitchSettingGroupSubcommand(CurrentSettingOutput, Subcommand[SwitchSettingGroup, CurrentSetting]):
     """`journal setting switch <group> on|off [--project]`: switches a group of settings and all inside it."""
 
     cli_name = "setting"
@@ -22,8 +21,4 @@ class SwitchSettingGroupSubcommand(Subcommand[SwitchSettingGroup, CurrentSetting
         parser.add_argument("--project", action="store_true")
 
     def command(self, arguments: Namespace, caller: Caller) -> SwitchSettingGroup:
-        return SwitchSettingGroup(arguments.key, arguments.state == ON, arguments.project)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, CurrentSetting):
-            SettingLines().write(value, output)
+        return SwitchSettingGroup(arguments.key, arguments.state == ENABLED_STATE, arguments.project)

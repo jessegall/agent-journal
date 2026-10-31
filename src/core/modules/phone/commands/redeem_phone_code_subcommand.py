@@ -10,7 +10,8 @@ PHONE_NAME = "Phone"
 
 
 class RedeemPhoneCodeSubcommand(Subcommand[RedeemPhoneCode, Phone]):
-    """`journal phone redeem <code> --token-digest <digest>`: run by the viewer's listener when a phone brings a code."""
+    """`journal phone redeem <code> --token-digest <digest>`: run by the viewer's listener when a phone
+    brings a code."""
 
     cli_name = "phone"
     name = "redeem"

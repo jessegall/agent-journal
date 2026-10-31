@@ -34,7 +34,7 @@ def expect_due(story, *folders: str) -> None:
     assert all(f"  {folder}  due" in text for folder in folders), text
 
 
-def expect_not_due(story, *folders: str) -> None:
+def expect_skills_absent(story, *folders: str) -> None:
     text = due_lines(story)
     assert not any(f"  {folder}  due" in text for folder in folders), text
 
@@ -47,7 +47,7 @@ def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which
     story = environment(new_story)
     start(story)
     expect_due(story, *DEFAULTS)
-    expect_not_due(story, "journal-notes", "journal-tasks")
+    expect_skills_absent(story, "journal-notes", "journal-tasks")
 
 
 def test_the_session_start_setting_names_the_skills_instead(new_story):
@@ -55,7 +55,7 @@ def test_the_session_start_setting_names_the_skills_instead(new_story):
     story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start(story)
     expect_due(story, "journal-notes")
-    expect_not_due(story, *DEFAULTS)
+    expect_skills_absent(story, *DEFAULTS)
 
 
 def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(new_story):
@@ -83,7 +83,7 @@ def test_a_journal_line_a_plugins_notice_or_a_subagents_notice_makes_nothing_due
         story.hook("s-1", HookSamples.prompt(text))
     story.hook("s-1", HookSamples.prompt("take a note of that").with_fields(subagent="a-1"))
     story.run_listeners()
-    expect_not_due(story, "journal-notes")
+    expect_skills_absent(story, "journal-notes")
 
 
 def test_a_journal_command_of_a_noun_a_skill_covers_is_refused_until_the_skill_is_read(new_story):
@@ -108,7 +108,7 @@ def test_an_event_a_skill_names_makes_it_due_unless_the_agent_read_it(new_story)
     story.run('task make "Fix the cart" --environment main')
     story.run("task start 1 --environment main", actor=story.agent)
     story.run_listeners()
-    expect_not_due(story, "journal-tasks")
+    expect_skills_absent(story, "journal-tasks")
 
 
 def test_a_skill_already_loaded_at_the_same_digest_is_never_due(new_story):
@@ -117,5 +117,5 @@ def test_a_skill_already_loaded_at_the_same_digest_is_never_due(new_story):
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", digest_of(story, "journal-notes")), story.agent)
     story.hook("s-1", HookSamples.prompt("please take a note of that"))
     story.run_listeners()
-    expect_not_due(story, "journal-notes")
+    expect_skills_absent(story, "journal-notes")
     assert f"journal-notes  {digest_of(story, 'journal-notes')}  loaded" in due_lines(story)

@@ -12,7 +12,7 @@ def skill_file(story, program_folder: str, folder: str) -> Path:
     return story.home.project_folder / program_folder / folder / "SKILL.md"
 
 
-def written_story(new_story):
+def story_with_skill_files(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
     story.run("skill write")
     return story
@@ -51,7 +51,7 @@ def test_skill_write_puts_each_skill_in_both_program_folders(new_story):
 
 
 def test_skill_write_rewrites_only_a_changed_file(new_story):
-    story = written_story(new_story)
+    story = story_with_skill_files(new_story)
     unchanged, changed = skill_file(story, ".claude/skills", "journal-tasks"), skill_file(story, ".claude/skills", "journal-notes")
     os.utime(unchanged, ns=(1, 1))
     changed.write_text("an old text")
@@ -61,7 +61,7 @@ def test_skill_write_rewrites_only_a_changed_file(new_story):
 
 
 def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_write(new_story):
-    story = written_story(new_story)
+    story = story_with_skill_files(new_story)
     stale, foreign = skill_file(story, ".claude/skills", "journal-old"), skill_file(story, ".claude/skills", "writing-story-tests")
     for file in (stale, foreign):
         file.parent.mkdir(parents=True, exist_ok=True)

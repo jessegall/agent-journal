@@ -10,8 +10,8 @@ from core.base.viewer.layout_shape import layout_windows
 
 class SuiteCheck:
     """Checks the suites, drivers and driver rules before a sync writes: names, requirements, suites reached
-    through dependencies, defaults that fit their role and suite, presets that show only the suite's windows under keys of their own,
-    and who owns each rule."""
+    through dependencies, defaults that fit their role and suite, presets that show only the suite's windows
+    under keys of their own, and who owns each rule."""
 
     def problems(self, modules: Sequence[type[Module]], rules: Sequence[DriverRuleEntry]) -> tuple[str, ...]:
         return (self.duplicates(modules) + self.unknown_requirements(modules) + self.requirement_loops(modules) + self.driver_suites(modules)

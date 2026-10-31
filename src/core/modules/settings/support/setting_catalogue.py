@@ -6,7 +6,7 @@ from core.base.registry.registry import Registry
 from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, SettingEntry
 
 
-class DeclaredSettings:
+class SettingCatalogue:
     """The settings the installed modules declare, found by their full key, with the groups above each."""
 
     def __init__(self, registry: Registry) -> None:
@@ -28,7 +28,7 @@ class DeclaredSettings:
             raise Refusal(f"{key} is a group of settings", f"switch it with journal setting switch {key} on or off")
         return entry
 
-    def groups_above(self, entry: SettingEntry) -> Iterator[SettingEntry]:
+    def enclosing_groups(self, entry: SettingEntry) -> Iterator[SettingEntry]:
         parent = entry.parent
         while parent is not None:
             group = self.entry(parent)

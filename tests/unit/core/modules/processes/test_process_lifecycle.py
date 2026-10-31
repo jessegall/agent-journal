@@ -11,7 +11,7 @@ ENDINGS = (ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop
 
 def test_a_process_starts_running_and_moves_to_the_background_only_from_running():
     assert ProcessLifecycle.initial == [ProcessState.RUNNING]
-    assert tuple(ProcessLifecycle.background.sources) == (ProcessState.RUNNING,) and ProcessLifecycle.background.target == ProcessState.BACKGROUND
+    assert list(ProcessLifecycle.background.sources) == [ProcessState.RUNNING] and ProcessLifecycle.background.target == ProcessState.BACKGROUND
 
 
 def test_a_running_or_background_process_ends_in_one_of_four_states_and_an_ended_one_goes_no_further():

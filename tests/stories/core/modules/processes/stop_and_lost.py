@@ -7,7 +7,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-LOST_LINE = "process 1 was lost: its shell is gone; journal output read 1 --summary"
+ORPHAN_LINE = "process 1 was lost: its shell is gone; journal output read 1 --summary"
 
 
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):
@@ -39,7 +39,7 @@ def test_a_heartbeat_older_than_90_seconds_ends_the_run_lost_and_tells_the_agent
     story.advance(timedelta(seconds=40))
     story.tick("s-1")
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
-    assert any(LOST_LINE in line for line in story.hook("s-1", NOTHING).lines)
+    assert any(ORPHAN_LINE in line for line in story.hook("s-1", NOTHING).lines)
 
 
 def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder(new_story):

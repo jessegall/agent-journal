@@ -4,9 +4,9 @@ from core.modules.settings.support.settings_tree import GUARD_SETTINGS
 
 
 class SettingGuardSwitches(GuardSwitches):
-    """Reads whether a guard or rule is on from the project-wide setting of the settings module's guard group: false switches
-    it off, any other value or none leaves it on, and a row for one environment is never read. The core
-    never asks this of core.lifecycle."""
+    """Reads whether a guard or rule is on from the project-wide setting of the settings module's guard
+    group: false switches it off, any other value or none leaves it on, and a row for one environment is
+    never read. The core never asks this of core.lifecycle."""
 
     def __init__(self, values: SettingValues) -> None:
         self.values = values

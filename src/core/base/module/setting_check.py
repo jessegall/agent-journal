@@ -2,7 +2,7 @@ from collections.abc import Iterator, Sequence
 
 from core.base.module.module import Module
 from core.base.setting.setting_group import SettingGroup
-from core.base.setting.setting_tree import SettingTree
+from core.base.registry.setting_tree import SettingTree
 from core.base.setting.setting_value import SettingValue
 
 TITLE_LIMIT_CHARACTERS = 40
@@ -10,9 +10,9 @@ DESCRIPTION_LIMIT_CHARACTERS = 120
 
 
 class SettingCheck:
-    """Refuses a settings tree a module cannot be synced with: two settings with one key, a default that is not
-    of its setting's type, a group that holds nothing, a title or description past its length, and a secret with
-    a default."""
+    """Refuses a settings tree a module cannot be synced with: two settings with one key, a default that is
+    not of its setting's type, a group that holds nothing, a title or description past its length, and a
+    secret with a default."""
 
     def problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         return tuple(problem for module in modules for problem in self.module_problems(module))

@@ -20,7 +20,7 @@ def mark(value: str, family: MarkFamily = FAMILY) -> MarkDeclaration:
 
 
 def module(name: str, *marks: MarkDeclaration) -> type[Module]:
-    return type("Sample", (Module,), {"name": name, "requires_core": ">=5,<6", "marks": marks})
+    return type("Sample", tuple([Module]), {"name": name, "requires_core": ">=5,<6", "marks": marks})
 
 
 def problems(*modules: type[Module]) -> tuple[str, ...]:
@@ -32,7 +32,7 @@ def test_a_valid_declaration_has_no_problems():
 
 
 def test_a_family_declared_by_two_modules_is_refused():
-    assert problems(module("sample", mark("sample.note")), module("other", mark("other.note"))) == ("the mark family notes is declared by sample and by other",)
+    assert problems(module("sample", mark("sample.note")), module("other", mark("other.note"))) == tuple(["the mark family notes is declared by sample and by other"])
 
 
 def test_a_family_declared_twice_with_different_fields_is_refused():

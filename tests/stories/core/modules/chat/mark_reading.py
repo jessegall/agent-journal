@@ -9,8 +9,8 @@ from tests.stories.core.support.fixtures import UserJoined
 def story_with_marks(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
-    bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:1", "First mark"), actor)
-    bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:2", "Second mark", agent_id=story.agent.id), actor)
+    bus.run(ShowMark(1, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:1", "First mark"), actor)
+    bus.run(ShowMark(1, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, "moment:2", "Second mark", agent_id=story.agent.id), actor)
     return story
 
 
@@ -40,6 +40,6 @@ def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
     for number in range(1, 56):
-        bus.run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor)
+        bus.run(ShowMark(1, SampleMarkType.EVENT_TYPE, SampleMarkVariant.PLAIN, f"moment:{number}", f"Mark {number}"), actor)
     story.expect_text("chat-mark list --environment 1", "Mark 55", "page 1, 50 of 55 rows: --page 2 for the next")
     story.expect_text("chat-mark list --environment 1 --page 2", "Mark 5")

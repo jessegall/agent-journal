@@ -2,7 +2,7 @@ from core.base.refusal import Refusal
 from core.base.registry.setting_entry import SettingEntry
 from core.base.setting.setting_type import SettingType
 
-FLAG_WORDS = {"on": True, "true": True, "yes": True, "off": False, "false": False, "no": False}
+FLAG_TEXTS = {"on": True, "true": True, "yes": True, "off": False, "false": False, "no": False}
 
 
 class SettingText:
@@ -13,9 +13,9 @@ class SettingText:
             case SettingType.NUMBER:
                 return self.number(entry, text)
             case SettingType.FLAG:
-                if text.lower() not in FLAG_WORDS:
+                if text.lower() not in FLAG_TEXTS:
                     raise self.refusal(entry, text)
-                return FLAG_WORDS[text.lower()]
+                return FLAG_TEXTS[text.lower()]
             case SettingType.LIST:
                 return tuple(item.strip() for item in text.split(",") if item.strip())
             case SettingType.NUMBER_LIST:

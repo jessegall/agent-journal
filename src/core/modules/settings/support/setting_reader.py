@@ -10,7 +10,7 @@ from core.base.setting.setting_value import SettingDefault
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.current_setting import CurrentSetting
-from core.modules.settings.support.declared_settings import DeclaredSettings
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
 
 ENVIRONMENT_SOURCE = "environment"
 PROJECT_SOURCE = "project"
@@ -18,12 +18,12 @@ DEFAULT_SOURCE = "default"
 StoredValue = str | int | float | bool | list[object] | None
 
 
-class DeclaredValues:
+class SettingReader:
     """The one reader of settings: off when a toggleable group above is switched off, else the value for the
     environment, else for the project, else the declared default; a secret is read from its own table. Inside
     keep_rows(), each row is read once and kept, for a stretch in which nothing writes a setting."""
 
-    def __init__(self, queries: Queries, declared: DeclaredSettings) -> None:
+    def __init__(self, queries: Queries, declared: SettingCatalogue) -> None:
         self.queries, self.declared = queries, declared
         self.rows: dict[tuple[str, int | None], StoredValue] | None = None
 
@@ -37,7 +37,7 @@ class DeclaredValues:
 
     def current(self, key: str, environment_id: int | None) -> CurrentSetting:
         entry = self.declared.entry(key)
-        for group in self.declared.groups_above(entry):
+        for group in self.declared.enclosing_groups(entry):
             if group.toggleable and self.current(group.key, environment_id).value is False:
                 return CurrentSetting(entry, False, f"group {group.key} is off")
         model = SecretSetting if entry.secret else Setting

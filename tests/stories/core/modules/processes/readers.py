@@ -11,7 +11,7 @@ TESTS_READER = 'reader add tests --commands "pytest*" --lines "FAILED|passed|fai
 
 
 def module_actor(story, name: str) -> Actor:
-    row = story.container.get(Database).rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = ?", (name,)))[0]
+    row = story.container.get(Database).rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = ?", [name]))[0]
     return Actor(row["id"], ActorType.MODULE)
 
 
@@ -57,8 +57,8 @@ def test_a_journal_commands_own_output_is_never_read_by_a_reader(new_story):
     story.run('reader add every --commands "*" --lines "state"', actor=story.agent)
     process = ended_run(story, "journal task show 1", "state: open\ntitle: Fix\n")
     story.expect_absent(f"output read {process.id} --summary", "1: state: open", actor=story.agent)
-    other = ended_run(story, "cat notes", "state: kept\n")
-    story.expect_text(f"output read {other.id} --summary", "1: state: kept", actor=story.agent)
+    second_output = ended_run(story, "cat notes", "state: kept\n")
+    story.expect_text(f"output read {second_output.id} --summary", "1: state: kept", actor=story.agent)
 
 
 def test_the_shipped_pytest_reader_reads_a_pytest_output(new_story):

@@ -159,7 +159,8 @@ class NumberedRewrite(DriverRule):
 
 
 class ForegroundRun(DriverRule):
-    """While samples.foreground is true, a shell line the agent program would run in its own background is asked for in the foreground."""
+    """While samples.foreground is true, a shell line the agent program would run in its own background is
+    asked for in the foreground."""
 
     name = "samples.foreground-run"
     hook = HookEventName.PRE_TOOL_USE

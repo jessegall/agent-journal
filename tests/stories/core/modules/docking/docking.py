@@ -67,7 +67,7 @@ def test_a_row_is_docked_once_per_type(new_story):
 def test_a_type_no_module_declares_is_refused(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     with pytest.raises(Refusal, match="no installed module declares the dock type docksample.ghost"):
-        docked(story, ended_task(story, "Ghost"), SampleDockType.GHOST)
+        docked(story, ended_task(story, "Ghost"), SampleDockType.UNKNOWN_TYPE)
 
 
 def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):

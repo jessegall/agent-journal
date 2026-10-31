@@ -36,11 +36,11 @@ def test_deleting_a_dock_deletes_its_items(new_story):
 def test_docking_a_task_changes_no_task_row(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     task_id = story.new_row_id('task make "Fix it" --environment main', actor=story.user)
-    before = story.run(f"task show {task_id}").output_text
+    starting_text = story.run(f"task show {task_id}").output_text
     story.run_listeners()
     dock_id = 1
     story.new_row_id(f"dock-item make {dock_id} docksample.task task {task_id}")
-    assert story.run(f"task show {task_id}").output_text == before
+    assert story.run(f"task show {task_id}").output_text == starting_text
 
 
 def test_an_environment_made_gets_its_dock_from_the_listener(new_story):

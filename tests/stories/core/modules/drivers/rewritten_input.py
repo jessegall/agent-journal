@@ -38,9 +38,9 @@ def test_an_input_built_from_the_result_of_a_rules_command_carries_what_the_comm
 def test_a_hook_sent_twice_is_answered_with_the_same_new_input(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.run("setting make samples.rewrite-after true")
-    sent = LISTING.with_fields(firing="sent-twice")
-    first = story.hook("s-1", sent)
-    assert dict(story.hook("s-1", sent).updated_input) == dict(first.updated_input) == {"command": "sample-run --process 7 -- ls build"}
+    repeated_listing = LISTING.with_fields(firing="sent-twice")
+    first = story.hook("s-1", repeated_listing)
+    assert dict(story.hook("s-1", repeated_listing).updated_input) == dict(first.updated_input) == {"command": "sample-run --process 7 -- ls build"}
 
 
 def test_a_shell_line_the_agent_would_run_in_its_own_background_is_asked_for_without_the_flag(new_story):

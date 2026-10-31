@@ -5,8 +5,8 @@ from core.base.refusal import Refusal
 from core.base.registry.setting_entry import GROUP_TYPE
 from core.modules.settings.commands.switch_setting_group import SwitchSettingGroup
 from core.modules.settings.commands.support.setting_store import SettingStore
-from core.modules.settings.support.declared_settings import DeclaredSettings
-from core.modules.settings.support.declared_values import DeclaredValues
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.current_setting import CurrentSetting
 
 
@@ -15,13 +15,13 @@ class SwitchSettingGroupHandler(Handler[SwitchSettingGroup, CurrentSetting]):
 
     command = SwitchSettingGroup
 
-    def __init__(self, declared: DeclaredSettings, values: DeclaredValues, store: SettingStore) -> None:
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, store: SettingStore) -> None:
         self.declared, self.values, self.store = declared, values, store
 
     def handle(self, command: SwitchSettingGroup, context: Context) -> CurrentSetting:
         entry = self.declared.entry(command.key)
         if entry.type != GROUP_TYPE or not entry.toggleable:
-            raise Refusal(f"{entry.key} cannot be switched off", "only a group that says it can be switched off is")
+            raise Refusal(f"{entry.key} cannot be switched off", "only a group declared toggleable can be switched off")
         if context.actor.type is not ActorType.USER:
             raise Refusal(f"ask the user to switch {entry.key}")
         if not command.project and context.environment_id is None:

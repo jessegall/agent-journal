@@ -9,7 +9,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 
 def worker_run(story, worker: Actor, line: str) -> int:
-    process = story.container.get(Bus).run(StartProcess(worker.id, None, line, "/work/main", "zsh", CommandCategory.UNKNOWN, 30, (PartSpec(line, line.split()[0]),)), worker, environment_id=1)
+    process = story.container.get(Bus).run(StartProcess(worker.id, None, line, "/work/main", "zsh", CommandCategory.UNKNOWN, 30, [PartSpec(line, line.split()[0])]), worker, environment_id=1)
     return process.id
 
 

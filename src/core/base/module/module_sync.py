@@ -47,7 +47,7 @@ from core.base.module.module_order import ModuleOrder
 from core.base.module.sync_report import SyncReport
 from core.base.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
-from core.base.setting.setting_tree import SettingTree
+from core.base.registry.setting_tree import SettingTree
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)

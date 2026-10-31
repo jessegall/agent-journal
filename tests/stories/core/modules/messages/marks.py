@@ -1,4 +1,4 @@
-from tests.stories.core.modules.chat.support.v4_looks import FILED, THOUGHT, expect_declared_look
+from tests.stories.core.modules.chat.support.v4_looks import FILED, THOUGHT, expect_declared_appearance
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 import pytest
@@ -41,8 +41,8 @@ def test_the_messages_module_writes_only_its_own_marks(new_story):
 
 
 def test_the_thought_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(fixture=UnansweredMessage), THOUGHT)
+    expect_declared_appearance(new_story(fixture=UnansweredMessage), THOUGHT)
 
 
 def test_the_filed_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(fixture=UnansweredMessage), FILED)
+    expect_declared_appearance(new_story(fixture=UnansweredMessage), FILED)

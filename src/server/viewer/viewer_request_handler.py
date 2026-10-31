@@ -11,7 +11,7 @@ from server.viewer.event_stream import EventStream
 from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
-from server.viewer.pairing_request import PairingRequest
+from server.viewer.pair_request import PairRequest
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
@@ -42,10 +42,10 @@ FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
-    """Answers the viewer's requests: refuses one whose Host is not the listener's own address, turns a login key
-    into a session cookie once, serves module, window kit and shell asset files, which hold code and no data, to any origin, and the phone's
-    pairing page and its POST to anyone,
-    so a frame with no origin loads its own, and answers the viewer's pages and data only with that cookie."""
+    """Answers the viewer's requests: refuses one whose Host is not the listener's own address, turns a
+    login key into a session cookie once, serves module, window kit and shell asset files, which hold code
+    and no data, to any origin, and the phone's pairing page and its POST to anyone, so a frame with no
+    origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:
         viewer = self.viewer()
@@ -85,7 +85,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"windows": [asdict(window) for window in windows], "person_id": viewer.login.person_id(token)})
             return
         if route.path == WAITING_ROUTE:
-            self.answer(200, {"waiting": [asdict(thing) for thing in viewer.routes.waiting_route.waiting()]})
+            self.answer(200, {"waiting": [asdict(waiting_item) for waiting_item in viewer.routes.waiting_route.waiting()]})
             return
         if route.path == SESSION_ROUTE:
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
@@ -177,7 +177,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(429, {"error": "too many wrong codes: wait a minute and try again"})
             return
         try:
-            token = viewer.login.phones.paired_token(PairingRequest.parsed(body).code)
+            token = viewer.login.phones.paired_token(PairRequest.parsed(body).code)
         except PhoneModuleError as error:
             limit.counted()
             self.answer(400, {"error": str(error)})

@@ -19,7 +19,7 @@ class SettingTree:
         for node in nodes:
             key = f"{prefix}.{node.key}"
             if isinstance(node, SettingGroup):
-                yield SettingEntry(key, module_name, parent, node.title, node.description, GROUP_TYPE, None, False, SettingScope.BOTH.value, False, (),
+                yield SettingEntry(key, module_name, parent, node.title, node.description, GROUP_TYPE, None, False, SettingScope.LAYERED.value, False, (),
                                    node.toggleable, node.enabled)
                 yield from self.walked(module_name, key, key, node.children)
                 if node.any_key is not None:

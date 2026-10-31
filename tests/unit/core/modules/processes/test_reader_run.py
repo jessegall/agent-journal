@@ -37,8 +37,8 @@ def test_a_journal_commands_own_output_is_read_by_no_reader():
 
 
 def test_a_pattern_picks_the_matching_lines_with_their_numbers():
-    picked = ReaderRun().lines(reader(lines_pattern="FAILED|error"), "ok\nFAILED a\nfine\nerror b\n", "finished")
-    assert picked == ["2: FAILED a", "4: error b"]
+    selected_lines = ReaderRun().lines(reader(lines_pattern="FAILED|error"), "ok\nFAILED a\nfine\nerror b\n", "finished")
+    assert selected_lines == ["2: FAILED a", "4: error b"]
 
 
 def test_the_summary_is_the_last_match_with_its_groups_joined_or_the_whole_match():

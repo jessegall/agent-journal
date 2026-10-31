@@ -10,8 +10,8 @@ from core.base.setting.setting_scope import SettingScope
 from core.modules.settings.commands.set_setting import SetSetting
 from core.modules.settings.commands.support.setting_store import SettingStore
 from core.modules.settings.models.secret_setting import SecretSetting
-from core.modules.settings.support.declared_settings import DeclaredSettings
-from core.modules.settings.support.declared_values import DeclaredValues
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.current_setting import CurrentSetting
 from core.modules.settings.support.setting_text import SettingText
 
@@ -22,7 +22,7 @@ class SetSettingHandler(Handler[SetSetting, CurrentSetting]):
 
     command = SetSetting
 
-    def __init__(self, declared: DeclaredSettings, values: DeclaredValues, store: SettingStore, queries: Queries, repository: Repository) -> None:
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, store: SettingStore, queries: Queries, repository: Repository) -> None:
         self.declared, self.values, self.store, self.queries, self.repository = declared, values, store, queries, repository
 
     def handle(self, command: SetSetting, context: Context) -> CurrentSetting:

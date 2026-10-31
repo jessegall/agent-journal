@@ -1,4 +1,4 @@
-from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_SHOW, OneReviewerAllowed, ReviewRequested, ReviewWithReviewer, reviewer_of
+from tests.stories.core.modules.reviews.support.review_fixtures import REVIEW_DETAILS, OneReviewerAllowed, ReviewRequested, ReviewWithReviewer, reviewer_of
 from tests.stories.core.support.fixtures import ThreeTasks
 
 
@@ -6,7 +6,7 @@ def test_a_reviewer_that_is_added_takes_the_next_queued_review_at_once(new_story
     story = new_story(fixture=ReviewRequested)
     story.run("setting make journal.core.reviews.reviewers-most 1 --environment main")
     reviewer_id = story.new_row_id("reviewer add --environment main", actor=story.agent)
-    story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {reviewer_id}")
+    story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {reviewer_id}")
     story.expect_success(f"agent show {reviewer_id}", "role: reviewer")
 
 
@@ -31,7 +31,7 @@ def test_a_queued_review_with_no_reviewer_gets_one_added(new_story):
 def test_a_reviewer_that_ends_while_reviewing_gives_its_review_back_as_abandoned(new_story):
     story = new_story(fixture=ReviewWithReviewer)
     story.run(f"agent end {reviewer_of(story).id}")
-    story.expect_success(REVIEW_SHOW, "state: abandoned")
+    story.expect_success(REVIEW_DETAILS, "state: abandoned")
 
 
 def test_the_reviewer_list_names_each_reviewer_and_the_waiting_reviews_in_order(new_story):

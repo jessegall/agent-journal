@@ -7,8 +7,8 @@ from tests.stories.core.support.fixtures import ThreeTasks
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
 REVIEWER_START = "agent start s-2 claude reviewer --environment main"
 REVIEWERS_ON = "setting make journal.core.reviews.reviewer true"
-NO_REVIEWERS = "setting make journal.core.reviews.reviewers-most 0"
-REVIEW_SHOW = "review show 1"
+EMPTY_REVIEWERS = "setting make journal.core.reviews.reviewers-most 0"
+REVIEW_DETAILS = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 
 
@@ -35,7 +35,7 @@ class NoReviewersAllowed(StoryFixture):
     parent = ReviewersOn
 
     def steps(self, story: Story) -> None:
-        story.run(NO_REVIEWERS)
+        story.run(EMPTY_REVIEWERS)
 
     def expect(self, story: Story) -> None:
         story.expect_text("setting list", "reviews.reviewers-most  0")
@@ -62,7 +62,7 @@ class ReviewWithReviewer(StoryFixture):
         story.run(REVIEW_REQUEST, actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: reviewing")
+        story.expect_success(REVIEW_DETAILS, "state: reviewing")
 
 
 class ReviewRequested(StoryFixture):
@@ -74,10 +74,10 @@ class ReviewRequested(StoryFixture):
         story.run(REVIEW_REQUEST, actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: queued", "subject_model: task", "subject_id: 1")
+        story.expect_success(REVIEW_DETAILS, "state: queued", "subject_model: task", "subject_id: 1")
 
 
-class ReviewTaken(StoryFixture):
+class ReviewInProgress(StoryFixture):
     """Review 1 given to a reviewer agent: reviewer_of(story)."""
 
     parent = ReviewRequested
@@ -87,4 +87,4 @@ class ReviewTaken(StoryFixture):
         story.run(f"review assign 1 --reviewer-id {reviewer_of(story).id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {reviewer_of(story).id}")
+        story.expect_success(REVIEW_DETAILS, "state: reviewing", f"reviewer_id: {reviewer_of(story).id}")

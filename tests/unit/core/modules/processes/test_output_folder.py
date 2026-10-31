@@ -37,9 +37,9 @@ def test_the_output_of_the_parts_is_counted_in_bytes_and_lines(tmp_path):
 def test_the_heartbeat_is_the_time_of_the_last_beat_and_a_removed_folder_is_gone(tmp_path):
     processes = folder(tmp_path)
     assert processes.heartbeat(4) is None
-    moment = Timestamp(datetime(2026, 11, 1, 9, 30, tzinfo=timezone.utc))
-    processes.beat(4, moment)
-    assert processes.heartbeat(4) == moment
+    timestamp = Timestamp(datetime(2026, 11, 1, 9, 30, tzinfo=timezone.utc))
+    processes.beat(4, timestamp)
+    assert processes.heartbeat(4) == timestamp
     processes.remove(4)
     assert processes.heartbeat(4) is None and processes.line(4) == ""
 

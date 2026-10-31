@@ -28,7 +28,7 @@ class PhoneSessionSubcommand(ReadSubcommand[Phone]):
             raise Refusal("only the viewer reads a phone's session")
         phones = list(self.queries.query(Phone).filter(token_digest=arguments.token_digest, state=PhoneState.PAIRED).all_rows())
         if not phones:
-            raise Refusal("no paired phone holds this session")
+            raise Refusal("no paired phone has this session")
         return phones[0]
 
     def write_output(self, value: object, output: Output) -> None:

@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from tests.stories.core.support.coding_fixtures import BuilderStarted
-from tests.stories.core.modules.chat.support.v4_looks import PLAN, expect_declared_look
+from tests.stories.core.modules.chat.support.v4_looks import PLAN, expect_declared_appearance
 import pytest
 
 from core.base.command.bus import Bus
@@ -39,10 +39,10 @@ def test_a_plan_closed_shows_a_mark(new_story):
 
 def test_a_refused_plan_move_shows_no_plan_mark(new_story):
     story = started_plan(new_story)
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.expect_refusal("plan close 1", "is approved", actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
 
 
 def test_the_plans_module_writes_only_its_own_marks(new_story):
@@ -52,7 +52,7 @@ def test_the_plans_module_writes_only_its_own_marks(new_story):
 
 
 def test_the_plan_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(fixture=BuilderStarted), PLAN)
+    expect_declared_appearance(new_story(fixture=BuilderStarted), PLAN)
 
 
 def test_a_started_plan_is_docked_and_undocked_when_it_ends(new_story):

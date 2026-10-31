@@ -1,6 +1,6 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_look
+from tests.stories.core.modules.chat.support.v4_looks import TASK, expect_declared_appearance
 import pytest
 
 from core.base.command.bus import Bus
@@ -38,10 +38,10 @@ def test_a_task_blocked_shows_a_mark(new_story):
 
 def test_a_refused_move_shows_no_task_mark(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
-    before = mark_count(story)
+    starting_text = mark_count(story)
     story.expect_refusal(lines.TASK_CLOSE, "is open", actor=story.agent)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_text
 
 
 def test_the_tasks_module_writes_only_its_own_marks(new_story):
@@ -51,14 +51,14 @@ def test_the_tasks_module_writes_only_its_own_marks(new_story):
 
 
 def test_the_task_mark_is_declared_as_version_4_showed_it(new_story):
-    expect_declared_look(new_story(fixture=BuilderWithOpenTask), TASK)
+    expect_declared_appearance(new_story(fixture=BuilderWithOpenTask), TASK)
 
 
 def test_a_task_is_docked_from_its_inspector_and_no_task_row_changes(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
-    before = story.run("task show 1").output_text
+    starting_text = story.run("task show 1").output_text
     story.expect_success("dock add tasks.task task 1 --environment main", actor=story.user)
-    assert story.run("task show 1").output_text == before
+    assert story.run("task show 1").output_text == starting_text
 
 
 def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):

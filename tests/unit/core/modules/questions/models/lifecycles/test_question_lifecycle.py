@@ -31,11 +31,11 @@ def test_a_text_over_its_limit_is_refused():
 
 def test_an_option_over_its_limit_or_empty_is_refused():
     with pytest.raises(Refusal, match="option is 1 to"):
-        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=("x" * (OPTION_LIMIT_CHARACTERS + 1),))
+        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=tuple(["x" * (OPTION_LIMIT_CHARACTERS + 1)]))
     with pytest.raises(Refusal, match="option is 1 to"):
-        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=("",))
+        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=tuple([""]))
 
 
 def test_a_recommended_choice_outside_the_options_is_refused():
     with pytest.raises(Refusal, match="one of the options"):
-        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=("a",), recommended="b")
+        Question(environment_id=1, agent_id=2, creator_id=2, text="Which?", options=tuple(["a"]), recommended="b")

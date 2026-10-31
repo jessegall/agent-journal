@@ -6,8 +6,8 @@ from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
-from core.modules.settings.support.declared_settings import DeclaredSettings
-from core.modules.settings.support.declared_values import DeclaredValues
+from core.modules.settings.support.setting_catalogue import SettingCatalogue
+from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_lines import SettingLines
 from core.modules.settings.support.current_setting import CurrentSetting
 
@@ -21,7 +21,7 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[CurrentSetting]]):
     cli_name = "setting"
     name = "tree"
 
-    def __init__(self, declared: DeclaredSettings, values: DeclaredValues, environment_names: EnvironmentNames) -> None:
+    def __init__(self, declared: SettingCatalogue, values: SettingReader, environment_names: EnvironmentNames) -> None:
         self.declared, self.values, self.environment_names = declared, values, environment_names
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -33,5 +33,5 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[CurrentSetting]]):
 
     def write_output(self, value: object, output: Output) -> None:
         settings = [setting for setting in value if isinstance(setting, CurrentSetting)] if is_tuple(value) else []
-        lines = [f"{INDENT * len(list(self.declared.groups_above(setting.entry)))}{setting.entry.key}: {SettingLines.shown(setting)}" for setting in settings]
+        lines = [f"{INDENT * len(list(self.declared.enclosing_groups(setting.entry)))}{setting.entry.key}: {SettingLines.shown(setting)}" for setting in settings]
         output.line("\n".join(lines))

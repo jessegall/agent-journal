@@ -32,16 +32,16 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story.run(PROGRESS, actor=story.agent)
     process = start_process(story, "make test")
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n")
     story.hook("s-1", AFTER)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
     story.expect_text(MARKS, "40%")
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n[ 80%]\n")
     story.hook("s-1", AFTER)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
     story.expect_text(MARKS, "80%")
 
 
@@ -60,10 +60,10 @@ def test_a_run_moved_to_the_background_updates_its_mark_in_place(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "make build")
     story.run_listeners()
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
     story.expect_text(MARKS, "process:1", "background")
 
 

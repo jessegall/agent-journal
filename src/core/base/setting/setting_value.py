@@ -10,8 +10,9 @@ SettingDefault = str | int | float | bool | tuple[str, ...] | tuple[int, ...] | 
 
 @dataclass(frozen=True)
 class SettingValue:
-    """One setting a module declares: its short key, the title and one plain sentence the settings window shows,
-    its type and default, whether it is a secret such as a token, where it may be set and whether an agent may set it."""
+    """One setting a module declares: its short key, the title and one plain sentence the settings window
+    shows, its type and default, whether it is a secret such as a token, where it may be set and whether an
+    agent may set it."""
 
     key: str
     title: str
@@ -19,7 +20,7 @@ class SettingValue:
     type: SettingType
     default: SettingDefault = None
     secret: bool = False
-    scope: SettingScope = SettingScope.BOTH
+    scope: SettingScope = SettingScope.LAYERED
     agent_writable: bool = False
     choices: Sequence[str] = ()
 

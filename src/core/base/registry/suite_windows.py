@@ -6,8 +6,9 @@ from core.base.viewer.layout_shape import LayoutShape
 
 
 class SuiteWindows:
-    """The viewer windows and default layouts a suite offers: its own, then those of the suites it requires; for a
-    page, the layout named for the driver wins over the plain page's; of two presets with one key the first is kept."""
+    """The viewer windows and default layouts a suite offers: its own, then those of the suites it requires;
+    for a page, the layout named for the driver wins over the plain page's; of two presets with one key the
+    first is kept."""
 
     def __init__(self, registry: Registry) -> None:
         self.registry = registry

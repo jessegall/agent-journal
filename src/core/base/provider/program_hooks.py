@@ -13,8 +13,8 @@ HOOK_TIMEOUT_SECONDS = 60
 @dataclass(frozen=True)
 class ProgramHooks:
     """One agent program's hook settings file: the journal's hooks in it are replaced by one per event the
-    program sends, each running the hook program with the program's name and the project root, beside the settings its
-    provider adds; the rest stays as it was."""
+    program sends, each running the hook program with the program's name and the project root, beside the
+    settings its provider adds; the rest stays as it was."""
 
     program: str
     path: Path

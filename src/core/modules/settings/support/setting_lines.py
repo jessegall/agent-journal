@@ -4,7 +4,7 @@ from core.base.type_guards import is_list, is_tuple
 from core.modules.settings.support.current_setting import CurrentSetting
 
 SET = "set"
-NO_VALUE_TEXT = "not set"
+UNSET_LABEL = "not set"
 
 
 class SettingLines:
@@ -21,9 +21,9 @@ class SettingLines:
         if setting.entry.type == GROUP_TYPE:
             return "on"
         if setting.entry.secret:
-            return NO_VALUE_TEXT if setting.value is None else SET
+            return UNSET_LABEL if setting.value is None else SET
         if setting.value is None:
-            return NO_VALUE_TEXT
+            return UNSET_LABEL
         if is_tuple(setting.value) or is_list(setting.value):
             return ", ".join(str(item) for item in setting.value)
         return str(setting.value)

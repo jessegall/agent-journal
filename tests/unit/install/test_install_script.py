@@ -99,6 +99,6 @@ def test_a_runner_whose_checksum_differs_stops_the_install_and_one_that_does_not
     project = tmp_path / "project"
     run = installed(project, with_runner(release(tmp_path / "release"), listed_checksum="0" * 64))
     assert run.returncode == 1 and "does not match" in run.stderr and not (project / ".claude").exists()
-    other = tmp_path / "other"
-    run = installed(other, with_runner(release(tmp_path / "second"), program="#!/bin/sh\nexit 1\n"))
-    assert run.returncode == 0 and "does not start on this machine" in run.stdout and not (other / ".journal" / "bin" / "journal-run").exists()
+    second_folder = tmp_path / "other"
+    run = installed(second_folder, with_runner(release(tmp_path / "second"), program="#!/bin/sh\nexit 1\n"))
+    assert run.returncode == 0 and "does not start on this machine" in run.stdout and not (second_folder / ".journal" / "bin" / "journal-run").exists()

@@ -24,9 +24,9 @@ FAMILY = MarkFamily("sample", "Samples", "words", MarkGroup.WORK)
 
 
 class SampleMarkType(StrEnum):
-    MOMENT = "chatsample.moment"
+    EVENT_TYPE = "chatsample.moment"
     PROCESS = "chatsample.process"
-    GHOST = "chatsample.ghost"
+    UNKNOWN_TYPE = "chatsample.ghost"
 
 
 class SampleMarkVariant(StrEnum):
@@ -34,17 +34,18 @@ class SampleMarkVariant(StrEnum):
 
 
 class ChatSampleModule(Module):
-    """A sample module the journal does not ship: a moment mark with a button and a process mark; its ghost type is declared by none."""
+    """A sample module the journal does not ship: a moment mark with a button and a process mark; its ghost
+    type is declared by none."""
 
     name = "chatsample"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.chat", "journal.core.tasks", "journal.core.memories", "journal.core.viewer"]
-    marks = [MarkDeclaration(SampleMarkType.MOMENT, SampleMarkVariant, FAMILY, "Sample moment", "words", buttons=[MarkButton("words", "Edit", "task edit {row_id}")]),
+    marks = [MarkDeclaration(SampleMarkType.EVENT_TYPE, SampleMarkVariant, FAMILY, "Sample moment", "words", buttons=[MarkButton("words", "Edit", "task edit {row_id}")]),
              MarkDeclaration(SampleMarkType.PROCESS, SampleMarkVariant, FAMILY, "Sample process", "words", process=True)]
 
 
 def module_actor(story: Story, name: str) -> Actor:
-    row = story.container.get(Database).rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = ?", (name,)))[0]
+    row = story.container.get(Database).rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = ?", [name]))[0]
     return Actor(row["id"], ActorType.MODULE)
 
 

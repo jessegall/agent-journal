@@ -14,11 +14,12 @@ TIMEOUT_SECONDS = 10
 
 class SampleDockType(StrEnum):
     TASK = "docksample.task"
-    GHOST = "docksample.ghost"
+    UNKNOWN_TYPE = "docksample.ghost"
 
 
 class DockSampleModule(Module):
-    """A sample module the journal does not ship: tasks may be docked, two at most, and leave ten seconds after they end."""
+    """A sample module the journal does not ship: tasks may be docked, two at most, and leave ten seconds
+    after they end."""
 
     name = "docksample"
     requires_core = ">=5,<6"

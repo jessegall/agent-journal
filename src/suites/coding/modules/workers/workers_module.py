@@ -1,3 +1,4 @@
+from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -60,7 +61,7 @@ class WorkersModule(Module):
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
     listeners = [EndedWorkerListener, ReleasedStopListener, WorkerProgramListener]
-    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
+    windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree list", "task show", "proof list"], events=["proof.*", "worker_worktree.*"]),
-               WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["todo-item list"],
+               WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"])]

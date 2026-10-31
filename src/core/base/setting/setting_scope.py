@@ -6,4 +6,4 @@ class SettingScope(StrEnum):
 
     PROJECT = "project"
     ENVIRONMENT = "environment"
-    BOTH = "both"
+    LAYERED = "both"

@@ -42,9 +42,9 @@ def test_require_makes_a_skill_read_in_an_older_text_due_again(new_story):
 
 def test_a_second_load_of_the_same_digest_changes_nothing(new_story):
     story = started(new_story)
-    bus, load = story.container.get(Bus), LoadSkill(story.agent.id, "journal-notes", "abc123")
-    bus.run(load, story.agent)
-    bus.run(load, story.agent)
+    bus, command = story.container.get(Bus), LoadSkill(story.agent.id, "journal-notes", "abc123")
+    bus.run(command, story.agent)
+    bus.run(command, story.agent)
     story.expect_success("agent-skill show 1", "state: loaded", "version: 2", "digest: abc123")
 
 
