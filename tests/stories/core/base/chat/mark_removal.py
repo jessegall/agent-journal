@@ -13,7 +13,7 @@ def test_a_removed_module_takes_its_mark_and_dock_entries_out_of_the_registry_wi
     story.home.module_list.write_text(json.dumps([module for module in modules if module != f"{PATH}:GoodModule"]))
     code, output = story.synced()
     registry = Registry.read(story.container.get(Database))
-    assert code == 0 and (registry.marks, registry.docks) == ((), ()), output
+    assert code == 0 and ([mark for mark in registry.marks if mark.module == "good"], [dock for dock in registry.docks if dock.module == "good"]) == ([], []), output
 
 
 def test_a_changed_declaration_replaces_the_old_type_in_the_registry(new_story):
@@ -23,4 +23,4 @@ def test_a_changed_declaration_replaces_the_old_type_in_the_registry(new_story):
     story.home.module_list.write_text(json.dumps([f"{PATH}:ChangedModule" if module == f"{PATH}:GoodModule" else module for module in modules]))
     code, output = story.synced()
     registry = Registry.read(story.container.get(Database))
-    assert code == 0 and [mark.type for mark in registry.marks] == ["good.memo"] and registry.docks == (), output
+    assert code == 0 and [mark.type for mark in registry.marks if mark.module == "good"] == ["good.memo"] and [dock for dock in registry.docks if dock.module == "good"] == [], output

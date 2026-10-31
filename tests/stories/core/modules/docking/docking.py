@@ -4,7 +4,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
-from core.modules.docking.commands.dock_item_keep import DockItemKeep
+from core.modules.docking.commands.keep_dock_item import KeepDockItem
 from tests.stories.core.modules.docking.support.dock_samples import SAMPLE, TIMEOUT_SECONDS, SampleDockType, docked, docked_state, ended_task, running_task
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -26,7 +26,7 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(new_s
     story = new_story(SAMPLE, fixture=UserJoined)
     first, second, third = ended_task(story, "First"), ended_task(story, "Second"), ended_task(story, "Third")
     oldest, newer = docked(story, first), docked(story, second)
-    story.container.get(Bus).run(DockItemKeep(oldest.id), story.user)
+    story.container.get(Bus).run(KeepDockItem(oldest.id), story.user)
     added = docked(story, third)
     assert (docked_state(story, oldest), docked_state(story, newer), docked_state(story, added)) == ("docked", "undocked", "docked")
 
@@ -34,7 +34,7 @@ def test_at_the_types_limit_the_oldest_ended_item_that_is_not_kept_undocks(new_s
 def test_with_every_item_kept_or_running_the_add_is_refused_naming_the_limit(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     kept, running, third = ended_task(story, "Kept"), running_task(story, "Running"), ended_task(story, "Third")
-    story.container.get(Bus).run(DockItemKeep(docked(story, kept).id), story.user)
+    story.container.get(Bus).run(KeepDockItem(docked(story, kept).id), story.user)
     docked(story, running)
     with pytest.raises(Refusal, match="docksample.task holds at most 2 items"):
         docked(story, third)
@@ -44,7 +44,7 @@ def test_an_item_leaves_after_its_time_unless_it_was_kept(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     leaving, staying = ended_task(story, "Leaving"), ended_task(story, "Staying")
     leaves, stays = docked(story, leaving), docked(story, staying)
-    story.container.get(Bus).run(DockItemKeep(stays.id), story.user)
+    story.container.get(Bus).run(KeepDockItem(stays.id), story.user)
     story.run_listeners()
     story.advance(timedelta(seconds=TIMEOUT_SECONDS + 1))
     story.run_listeners()

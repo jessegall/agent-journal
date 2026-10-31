@@ -1,3 +1,4 @@
+from tests.stories.core.modules.docking.support.dock_samples import SAMPLE
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -43,3 +44,10 @@ def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_run
     story = new_story(fixture=UserJoined)
     story.run_listeners()
     story.expect_text("dock list --environment 1", "1  1")
+
+
+def test_add_keep_and_remove_run_from_the_command_line(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    item_id = story.new_row_id("dock add docksample.task task 1 --environment main", actor=story.user)
+    story.expect_text(f"dock keep {item_id}", "kept: True")
+    story.expect_text(f"dock remove {item_id}", "state: undocked")
