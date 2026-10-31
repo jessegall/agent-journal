@@ -12,6 +12,12 @@ from suites.coding.modules.workers.commands.make_proof_handler import MakeProofH
 from suites.coding.modules.workers.commands.make_proof_subcommand import MakeProofSubcommand
 from suites.coding.modules.workers.commands.short_proof_handler import ShortProofHandler
 from suites.coding.modules.workers.guards.proof_point_guard import ProofPointGuard
+from suites.coding.modules.workers.guards.base_branch_guard import BaseBranchGuard
+from suites.coding.modules.workers.guards.merge_proof_guard import MergeProofGuard
+from suites.coding.modules.workers.guards.worker_task_guard import WorkerTaskGuard
+from suites.coding.modules.workers.rules.delivered_work_stop_rule import DeliveredWorkStopRule
+from suites.coding.modules.workers.rules.dispatch_allowance_rule import DispatchAllowanceRule
+from suites.coding.modules.workers.rules.merge_checkout_rule import MergeCheckoutRule
 from suites.coding.modules.workers.guards.dispatch_branch_guard import DispatchBranchGuard
 from suites.coding.modules.workers.guards.dispatch_worker_guard import DispatchWorkerGuard
 from suites.coding.modules.workers.migrations.m001_workers import WorkersTablesMigration
@@ -36,4 +42,5 @@ class WorkersModule(Module):
     migrations = [WorkersTablesMigration]
     handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler]
     subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
-    guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard]
+    guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
+    driver_rules = [DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule]

@@ -8,14 +8,13 @@ from core.modules.environments.models.environment import Environment
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker import MergeWorker
-from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.worker_merge import WorkerMerge
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.merge_checks import MergeChecks
 
 SOURCE = "workers.merge-clash"
 
@@ -25,8 +24,8 @@ class MergeWorkerHandler(Handler[MergeWorker, WorkerMerge]):
 
     command = MergeWorker
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, git: WorktreeGit) -> None:
-        self.queries, self.worktrees, self.proofs, self.repository, self.git = queries, worktrees, proofs, repository, git
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, checks: MergeChecks, repository: Repository, git: WorktreeGit) -> None:
+        self.queries, self.worktrees, self.checks, self.repository, self.git = queries, worktrees, checks, repository, git
 
     def handle(self, command: MergeWorker, context: Context) -> WorkerMerge:
         worktree = self.worktrees.worker_worktree(command.worker_id)
@@ -49,12 +48,8 @@ class MergeWorkerHandler(Handler[MergeWorker, WorkerMerge]):
         return WorkerMerge(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
-        unchecked = [str(proof.point) for proof in self.proofs.worktree_proofs(worktree.id).oldest().all_rows() if proof.state is not ProofState.CHECKED]
-        if unchecked:
-            raise Refusal(f"point {', '.join(unchecked)} is not checked", "journal proof check <proof> or journal proof short <proof> --shortfall \"<what is missing>\"")
-        if worktree.base_branch != environment.branch:
-            raise Refusal(f"environment {environment.name} now builds on {environment.branch}; worker worker-{worktree.agent_id} was cut from"
-                          f" {worktree.base_branch}", "release it and dispatch the task again")
+        self.checks.check_proofs(worktree)
+        self.checks.check_base_branch(worktree)
         head = self.git.head(environment.folder)
         if head != worktree.base_branch:
             raise Refusal(f"the checkout of environment {environment.name} is on {head}, not on {worktree.base_branch}; the merge waits until it is back",

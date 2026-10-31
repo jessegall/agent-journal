@@ -22,7 +22,7 @@ from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorke
 from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
-from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 WORKER_PROGRAM = "claude"
 LIBRARY_LINKS = "workers.library-links"

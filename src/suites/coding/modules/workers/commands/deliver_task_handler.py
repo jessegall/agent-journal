@@ -6,7 +6,7 @@ from core.base.repository.repository import Repository
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.deliver_task import DeliverTask
-from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.queries.proof_query import ProofQuery

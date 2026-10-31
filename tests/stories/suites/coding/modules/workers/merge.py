@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, repository_environment
@@ -71,10 +70,13 @@ def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_e
     story.expect_success("worktree show 1", "state: delivered")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     reminder = f"the merge of worker {worker.id} waits for the checkout of environment main to return to version-5"
-    story.expect_hook_allowed(MAIN_SESSION, HookSamples.tick(), reminder)
-    story.expect_absent_hook_line(MAIN_SESSION, HookSamples.tick(), reminder)
+    main_lines = f"agent-line list --agent {story.agent.id}"
+    story.tick(MAIN_SESSION)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 1)
     story.advance(timedelta(hours=1))
-    story.expect_hook_allowed(MAIN_SESSION, HookSamples.tick(), reminder)
+    story.tick(MAIN_SESSION)
+    story.expect_rows(story.run(main_lines).output_text.count(reminder) == 2)
     repository.checkout(ENVIRONMENT_BRANCH)
     story.expect_success(f"worker merge {worker.id}", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: completed")
