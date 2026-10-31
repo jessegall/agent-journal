@@ -19,7 +19,7 @@ from tests.unit.core.base.sample_container import sample_container
 
 
 def names(trail: Trail) -> list[str]:
-    return [name for name, _ in trail.stamps]
+    return [name for name, _ in trail.stamps or []]
 
 
 def test_a_stamp_with_no_trail_set_does_nothing():
