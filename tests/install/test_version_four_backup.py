@@ -23,7 +23,7 @@ def test_the_backup_holds_every_table_with_its_rows_and_the_version_file_beside_
     assert backup.path == journal / "version-4" / "4.28.0" / "journal.db" and not backup.kept
     assert (journal / "version-4" / "4.28.0" / "version.py").read_text() == 'VERSION = "4.28.0"\n'
     backup_connection = sqlite3.connect(backup.path)
-    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4 and backup.tables >= 8
+    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 5 and backup.tables >= 8
     backup_connection.close()
 
 
@@ -57,7 +57,7 @@ def test_a_second_upgrade_keeps_the_first_backup(tmp_path):
     second_backup = VersionFourBackup(journal).make()
     assert second_backup.kept and second_backup.path == first.path
     backup_connection = sqlite3.connect(first.path)
-    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 4
+    assert backup_connection.execute("SELECT count(*) FROM tasks").fetchone()[0] == 5
     backup_connection.close()
 
 

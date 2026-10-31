@@ -19,6 +19,7 @@ from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.upgrade.upgrade_report import UpgradeReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch_error import BackupMismatchError
+from install.backup_write_error import BackupWriteError
 from install.code_replacement import CodeReplacement
 from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
@@ -67,7 +68,7 @@ class UpgradeJournal:
                 CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines)])
         except UpgradeFailedError as error:
             return self.kept(UpgradeOutcome(1, "\n".join([*lines, str(error), *self.failure(error)])))
-        except (BackupMismatchError, ServerWontStopError) as error:
+        except (BackupMismatchError, BackupWriteError, ServerWontStopError) as error:
             return UpgradeOutcome(1, "\n".join([*lines, str(error)]))
         return self.kept(UpgradeOutcome(0, "\n".join(lines)), dry_run)
 

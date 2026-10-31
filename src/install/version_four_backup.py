@@ -6,6 +6,7 @@ from pathlib import Path
 
 from core.base.database.version_four_tables import VersionFourTables
 from install.backup_mismatch_error import BackupMismatchError
+from install.backup_write_error import BackupWriteError
 
 BACKUP_FOLDER = "version-4"
 DATABASE = "journal.db"
@@ -43,7 +44,13 @@ class VersionFourBackup:
         if target.exists():
             return BackupResult(target, len(self.counts(target)), True)
         folder.mkdir(parents=True, exist_ok=True)
-        self.copy(self.journal / DATABASE, target)
+        partial = folder / f"{DATABASE}.partial"
+        try:
+            self.copy(self.journal / DATABASE, partial)
+            partial.replace(target)
+        except OSError as error:
+            partial.unlink(missing_ok=True)
+            raise BackupWriteError(f"the backup of {self.journal / DATABASE} could not be made: {error}; nothing was changed") from error
         if (self.journal / VERSION_FILE).is_file():
             shutil.copy(self.journal / VERSION_FILE, folder / VERSION_FILE.name)
         original, copy = self.counts(self.journal / DATABASE), self.counts(target)

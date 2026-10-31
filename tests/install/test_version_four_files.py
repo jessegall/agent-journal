@@ -13,7 +13,7 @@ def test_the_database_its_side_files_and_the_code_move_into_version_4_and_the_re
     assert files.retire() == ["journal.db", "journal.db-wal", "src/journal"]
     assert files.are_retired() and (journal / "version-4" / "journal.db-wal").is_file() and (journal / "version-4" / "src" / "journal" / "version.py").is_file()
     assert not (journal / "journal.db").exists() and (journal / "keep.txt").read_text() == "stay"
-    assert sqlite3.connect(journal / "version-4" / "journal.db").execute("SELECT count(*) FROM tasks").fetchone()[0] == 4
+    assert sqlite3.connect(journal / "version-4" / "journal.db").execute("SELECT count(*) FROM tasks").fetchone()[0] == 5
 
 
 def test_retiring_what_is_not_there_moves_nothing(tmp_path):
