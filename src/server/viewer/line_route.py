@@ -16,29 +16,37 @@ from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake
 from server.viewer.line_answer import LineAnswer
+from server.viewer.share_refusal import ShareRefusal
+from server.viewer.share_scope import ShareScope
+from server.viewer.shared_row import SharedRow
 
 REFUSED_CODE = 1
 
 
 class LineRoute:
     """Answers POST /api/line: checks one command line against the window that sends it and the person at
-    the viewer, runs it through LineRun with --json as that person in the request's environment, and gives
-    back its exit code and its JSON value, or the reason it did not run."""
+    the viewer, or the link a share session opened, runs it through LineRun with --json as that person in the
+    request's environment, and gives back its exit code and its JSON value, or the reason it did not run."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread) -> None:
         self.line_run = LineRun(home, CLI_LIMIT_SECONDS, ListenerWake(listener_thread))
 
-    def answer(self, window: str, argv: list[str], person_id: int, environment: str) -> LineAnswer:
+    def answer(self, window: str, argv: list[str], person_id: int, environment: str, shared: SharedRow | None = None) -> LineAnswer:
         person, stream = Actor(person_id, ActorType.USER), io.StringIO()
 
         def checked_caller(container: Container) -> Caller:
-            container.get(WindowLines).check(window, argv, person, environment)
+            if shared is None:
+                container.get(WindowLines).check(window, argv, person, environment)
+            else:
+                container.get(ShareScope).check(shared, window, argv, environment)
             return Caller(person, container.get(EnvironmentNames).environment_id(environment))
 
         try:
             code = self.line_run.run_as([*argv, "--json"], checked_caller, stream)
         except UsageError as error:
             return LineAnswer(USAGE_CODE, error=str(error))
+        except ShareRefusal:
+            raise
         except Refusal as refusal:
             return LineAnswer(REFUSED_CODE, error=refusal.reason)
         if code != 0:

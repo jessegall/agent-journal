@@ -6,6 +6,7 @@ from core.base.timestamp import Timestamp
 
 from server.viewer.session_type import SessionType
 from server.viewer.share_link_session import ShareLinkSession
+from server.viewer.shared_row import SharedRow
 from server.viewer.share_session_error import ShareSessionError
 from server.viewer.viewer_login import ViewerLogin
 from tests.unit.server.viewer.no_phones import NoPhones, NoShares
@@ -54,7 +55,7 @@ class OneLink(NoShares):
         self.state = state
 
     def link(self, token: str) -> ShareLinkSession | None:
-        return ShareLinkSession(SHARE_ID, PERSON_ID, self.state, Timestamp(datetime.now(timezone.utc) + timedelta(days=1))) if token == "link" else None
+        return ShareLinkSession(SHARE_ID, PERSON_ID, self.state, Timestamp(datetime.now(timezone.utc) + timedelta(days=1)), SharedRow("plan", 1, 1)) if token == "link" else None
 
 
 def test_a_link_opens_a_share_session_again_and_again_naming_its_share_and_end():

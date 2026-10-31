@@ -88,7 +88,7 @@ class Registry:
             windows=tuple(WindowEntry(window["name"], window["module"], window["title"], window["entry"], window["loading"], window["place"], tuple(window["roles"]),
                                       tuple(window["reads"]), tuple(window["runs"]), tuple(window["events"]), window["shipped"], window["unavailable_reason"],
                                       window.get("icon", WindowIcon.WINDOW.value), window.get("float_width", DEFAULT_FLOAT_SIZE.width),
-                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""))
+                                      window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shareable", [])))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
@@ -124,7 +124,7 @@ class Registry:
             "windows": [{"name": window.name, "module": window.module, "title": window.title, "entry": window.entry, "loading": window.loading,
                          "place": window.place, "roles": list(window.roles), "reads": list(window.reads), "runs": list(window.runs), "events": list(window.events),
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
-                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count} for window in self.windows],
+                         "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shareable": list(window.shareable)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],

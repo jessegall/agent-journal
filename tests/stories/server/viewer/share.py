@@ -93,31 +93,31 @@ def test_a_share_session_reads_the_shared_plan_and_its_phases_as_the_person_who_
         visitor = opened(story, share)
         story.expect_viewer_line(visitor, read("1"), 200, '"code": 0')
         story.expect_viewer_line(visitor, phases("1"), 200, '"code": 0')
-        story.expect_viewer_line(visitor, read("2"), 403, "not shared")
-        story.expect_viewer_line(visitor, phases("2"), 403, "not shared")
+        story.expect_viewer_line(visitor, read("2"), 403, "not shared by the link")
+        story.expect_viewer_line(visitor, phases("2"), 403, "not shared by the link")
 
 
 def test_a_share_session_reads_only_the_lines_its_window_declares(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["task", "list"], "environment": "main"}, 403, "not shared")
-        story.expect_viewer_line(visitor, {"window": "tasks.tasks", "line": ["task", "list"], "environment": "main"}, 403, "not shared")
-        story.expect_viewer_line(visitor, {"window": "settings.settings", "line": ["setting", "tree"], "environment": "main"}, 403, "not shared")
+        story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["task", "list"], "environment": "main"}, 403, "not shared by the link")
+        story.expect_viewer_line(visitor, {"window": "tasks.tasks", "line": ["task", "list"], "environment": "main"}, 403, "not shared by the link")
+        story.expect_viewer_line(visitor, {"window": "settings.settings", "line": ["setting", "tree"], "environment": "main"}, 403, "not shared by the link")
 
 
 def test_a_share_session_reads_no_other_environment(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        story.expect_viewer_line(visitor, {**read("1"), "environment": "other"}, 403, "not shared")
+        story.expect_viewer_line(visitor, {**read("1"), "environment": "other"}, 403, "not shared by the link")
 
 
 def test_a_share_session_runs_no_command_with_or_without_waive(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        for line in (["plan", "start", "1"], ["plan", "start", "1", "--waive"], ["task", "make", "Sneaky", "--environment", "main"], ["share", "create", PLAN_WINDOW, "1"]):
+        for line in (["plan", "start", "1"], ["plan", "start", "1", "--waive"], ["task", "make", "Sneaky", "--environment", "main"], ["share", "make", "plans:1"]):
             story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": line, "environment": "main"}, 403, "a share link only reads")
 
 

@@ -7,7 +7,7 @@ class WindowEntry:
     """A registered window: its name, the module that declares it, its title, entry file, loading and place,
     the agent roles it is for, the read lines, commands and events it may use, whether the journal ships its
     module, why it is unavailable when its kit does not fit this viewer (empty when it does), and its icon,
-    float size, pane menu options and count line."""
+    float size, pane menu options, count line and the read lines a share link may use."""
 
     name: str
     module: str
@@ -26,3 +26,4 @@ class WindowEntry:
     float_height: int
     options: Sequence[Mapping[str, object]]
     count: str
+    shareable: Sequence[str] = ()

@@ -12,6 +12,7 @@ from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
+from server.viewer.share_refusal import ShareRefusal
 from server.viewer.share_route import OPEN
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
@@ -139,7 +140,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         except ViewerRequestError as error:
             self.answer(400, {"error": str(error)})
             return
-        self.answer(200, asdict(viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment)))
+        session = viewer.login.session(token)
+        try:
+            answered = viewer.routes.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment, session.shared)
+        except ShareRefusal as refusal:
+            self.answer(403, {"error": refusal.reason})
+            return
+        self.answer(200, asdict(answered))
 
     def answer_events(self, event_stream: EventStream, query: dict[str, list[str]]) -> None:
         request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))
