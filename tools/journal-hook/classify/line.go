@@ -6,8 +6,9 @@ import (
 )
 
 // Line reads a shell line into the prepared object's shell line: each command a part with its program, subcommand,
-// arguments and the files it reads and writes, and how it joins the next; a line no shell can read has no parts and
-// says why in parse_error.
+// arguments, classification and the files it reads and writes, and how it joins the next; the line is named by its
+// weightiest part, as version 4 names it. A line no shell can read has no parts, says why in parse_error and is
+// unknown.
 func (classifier *Classifier) Line(line string) event.ShellLine {
 	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}, Kind: unknown}
 	commands, redirects, err := shell.Split(line)
@@ -16,20 +17,25 @@ func (classifier *Classifier) Line(line string) event.ShellLine {
 		return prepared
 	}
 	prepared.Redirects = redirects
+	var classifications []Classification
 	for _, command := range commands {
-		prepared.Parts = append(prepared.Parts, classifier.part(command))
+		classification := classifier.Classify(command.Text)
+		classifications = append(classifications, classification)
+		prepared.Parts = append(prepared.Parts, classifier.part(command, classification))
 	}
+	prepared.Kind = Union(classifications).Kind
+	prepared.IsJournalOnly = isJournalOnly(commands)
 	return prepared
 }
 
-func (classifier *Classifier) part(command shell.Command) event.Part {
+func (classifier *Classifier) part(command shell.Command, classification Classification) event.Part {
 	program, subcommand, arguments := classifier.Program(command.Text)
 	prepared := event.Part{
 		Text:           command.Text,
 		Program:        program,
 		Subcommand:     subcommand,
 		Arguments:      arguments,
-		Classification: event.Classification{Kind: unknown, Effects: []string{}},
+		Classification: event.Classification{Kind: classification.Kind, Effects: classification.Effects},
 		ReadPaths:      nonEmpty(classifier.ReadPaths(command.Text)),
 		WritePaths:     nonEmpty(classifier.WritePaths(command.Text)),
 		JoinedBy:       command.JoinedBy,
@@ -39,6 +45,33 @@ func (classifier *Classifier) part(command shell.Command) event.Part {
 		prepared.PipedInto = &into
 	}
 	return prepared
+}
+
+// Runs are the parts of version 4's Chain: the commands joined by || or a pipe stay one part.
+func Runs(commands []shell.Command) [][]shell.Command {
+	var runs [][]shell.Command
+	for index, command := range commands {
+		if index == 0 || !joinsOn(commands[index-1]) {
+			runs = append(runs, nil)
+		}
+		runs[len(runs)-1] = append(runs[len(runs)-1], command)
+	}
+	return runs
+}
+
+func joinsOn(command shell.Command) bool {
+	return command.JoinedBy == "||" || command.PipedInto >= 0
+}
+
+// isJournalOnly is Chain.is_journal_line: every part of the line is a journal command.
+func isJournalOnly(commands []shell.Command) bool {
+	runs := Runs(commands)
+	for _, run := range runs {
+		if !isJournal(run[0].Text) {
+			return false
+		}
+	}
+	return len(runs) > 0
 }
 
 // nonEmpty leaves an empty list out of the object, where the schema makes it optional.
