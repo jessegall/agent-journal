@@ -8,7 +8,7 @@ from core.base.type_guards import is_tuple
 M = TypeVar("M", bound=Model)
 
 
-class ListedRows:
+class RowLines:
     """Writes the rows of one model that a list subcommand read, a line each, and all of them as JSON."""
 
     @staticmethod

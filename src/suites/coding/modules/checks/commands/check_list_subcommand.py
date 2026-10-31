@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Sequence
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.listed_rows import ListedRows
+from core.base.subcommand.row_lines import RowLines
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
@@ -26,4 +26,4 @@ class CheckListSubcommand(ReadSubcommand[Sequence[Check]]):
         return tuple(self.checks.kept())
 
     def write_output(self, value: object, output: Output) -> None:
-        ListedRows.write(output, value, Check, CheckLines.listed)
+        RowLines.write(output, value, Check, CheckLines.listed)
