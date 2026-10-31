@@ -32,4 +32,4 @@ class ReviewTaken(StoryFixture):
         story.run(f"review assign 1 --reviewer {story.reviewer.id}", actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success(REVIEW_SHOW, "state: in_progress", f"reviewer_id: {story.reviewer.id}")
+        story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {story.reviewer.id}")

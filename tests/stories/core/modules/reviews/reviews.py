@@ -41,7 +41,7 @@ def test_a_point_the_report_does_not_name_leaves_the_review_to_the_agent_that_as
 def test_a_report_from_an_agent_that_is_not_the_reviewer_is_refused(new_story):
     story = new_story(fixture=ReviewTaken)
     story.expect_refusal('review record "1 passed\n2 passed"', "not the reviewer", actor=story.agent)
-    story.expect_success(REVIEW_SHOW, "state: in_progress")
+    story.expect_success(REVIEW_SHOW, "state: reviewing")
 
 
 def test_a_second_report_is_refused(new_story):
