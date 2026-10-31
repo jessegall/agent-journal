@@ -9,9 +9,9 @@ FAULT_LISTENER = "listener chat.fault-mark"
 
 
 class ChatFaultSink(FaultSink):
-    """Records each fault the journal meets as a row of the chat module, except a fault of the listener that shows
-    faults, which would only make more of them. A fault met inside a transaction waits until the commit listeners
-    next run."""
+    """Records each fault the journal meets as a row of the chat module, except a fault of the listener
+    that shows faults, which would only make more of them. A fault met inside a transaction waits until
+    the commit listeners next run."""
 
     def __init__(self, bus: Bus, actors: ModuleActors, database: Database) -> None:
         self.bus, self.actors, self.database = bus, actors, database
