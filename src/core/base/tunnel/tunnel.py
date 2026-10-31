@@ -19,5 +19,8 @@ class Tunnel:
     def state(self) -> TunnelState:
         raise NotImplementedError
 
+    def reason(self) -> str:
+        raise NotImplementedError
+
     def close(self) -> None:
         raise NotImplementedError

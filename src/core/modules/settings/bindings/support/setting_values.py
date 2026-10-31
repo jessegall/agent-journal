@@ -1,9 +1,12 @@
 from collections.abc import Generator
 from contextlib import contextmanager
+from typing import TypeVar
 
 from core.base.type_guards import is_list, is_tuple
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_type_error import SettingTypeError
+
+T = TypeVar("T")
 
 
 class SettingValues:
@@ -26,10 +29,7 @@ class SettingValues:
         return self.value(key, None)
 
     def text(self, key: str, environment_id: int | None) -> str:
-        value = self.value(key, environment_id)
-        if not isinstance(value, str):
-            raise SettingTypeError(f"{key} holds {value!r}, not text")
-        return value
+        return self.typed(key, environment_id, str, "text")
 
     def texts(self, key: str, environment_id: int | None) -> tuple[str, ...]:
         value = self.value(key, environment_id)
@@ -44,13 +44,13 @@ class SettingValues:
         return tuple(int(str(item)) for item in value)
 
     def number(self, key: str, environment_id: int | None) -> int:
-        value = self.value(key, environment_id)
-        if not isinstance(value, int) or isinstance(value, bool):
-            raise SettingTypeError(f"{key} holds {value!r}, not a whole number")
-        return value
+        return self.typed(key, environment_id, int, "a whole number")
 
     def flag(self, key: str, environment_id: int | None) -> bool:
+        return self.typed(key, environment_id, bool, "on or off")
+
+    def typed(self, key: str, environment_id: int | None, value_type: type[T], label: str) -> T:
         value = self.value(key, environment_id)
-        if not isinstance(value, bool):
-            raise SettingTypeError(f"{key} holds {value!r}, not on or off")
+        if not isinstance(value, value_type) or (isinstance(value, bool) and value_type is not bool):
+            raise SettingTypeError(f"{key} holds {value!r}, not {label}")
         return value

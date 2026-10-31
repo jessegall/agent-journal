@@ -35,4 +35,4 @@ def test_a_service_no_module_declares_is_refused(new_story):
 
 def test_the_installed_tunnels_are_listed_with_no_tunnel_among_them(new_story):
     story = tunnel_story(new_story)
-    story.expect_rows([tunnel.name for tunnel in story.container.get(Tunnels).all()] == ["none", "sample"])
+    story.expect_rows([tunnel.name for tunnel in story.container.get(Tunnels).all()] == ["none", "sample", "tunler"])

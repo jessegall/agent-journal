@@ -54,4 +54,4 @@ class PhoneSessions:
 
     @staticmethod
     def digest(token: str) -> str:
-        return TextDigest().of(token)
+        return TextDigest().hex_digest(token)

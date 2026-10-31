@@ -27,8 +27,8 @@ SHOWN = {
 @pytest.mark.parametrize("module", sorted(SHOWN))
 def test_the_seeders_leave_each_modules_rows_where_its_window_shows_them(new_story, module):
     story = new_story(fixture=Demonstrated)
-    line, *words = SHOWN[module]
-    story.expect_text(line, *words)
+    command, *expected_texts = SHOWN[module]
+    story.expect_text(command, *expected_texts)
 
 
 def test_a_journal_that_holds_demo_rows_is_not_seeded_again(new_story):
@@ -45,6 +45,6 @@ def test_the_seeders_run_in_the_order_of_what_their_modules_depend_on(new_story)
 
 def test_every_module_that_seeds_is_named_in_the_demo(new_story):
     story = new_story()
-    named = story.run("demo seed --list").output_text.splitlines()
+    seeder_names = story.run("demo seed --list").output_text.splitlines()
     assert {"journal.core.tasks", "journal.core.plans", "journal.core.messages", "journal.core.questions", "journal.core.memories", "journal.core.reviews",
-            "journal.core.docking", "journal.core.processes", "journal.core.skills"} <= set(named)
+            "journal.core.docking", "journal.core.processes", "journal.core.skills"} <= set(seeder_names)

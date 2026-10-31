@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(core|server|suites)/"
+            },
+            {
+                "textMatches": "(?i)\\b(tunler|ngrok|cloudflared|tailscale|localtunnel)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "tunnel-named-outside-tunnels",
+        "description": "The core, the server or a suite names a tunnel service, so a second tunnel means finding every place that names the first.",
+        "rule": "Only a module under src/tunnels names its tunnel; everything else asks the Tunnel contract for its address, state and reason.",
+        "skill": "settings-architecture"
+    }
+}

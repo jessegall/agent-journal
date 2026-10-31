@@ -2,7 +2,7 @@ from core.base.module.module_removal import ModuleRemoval
 from tests.stories.core.base.setting.support.setting_samples import PATH
 from tests.stories.core.support.fixtures import UserJoined
 
-NOT_DECLARED = "Not declared by any installed module"
+UNDECLARED_HEADING = "Not declared by any installed module"
 
 
 def story_with_removed_module(new_story):
@@ -22,7 +22,7 @@ def test_a_sync_reports_the_rows_of_a_removed_module_by_key_and_module_and_delet
 
 def test_the_tree_lists_the_rows_of_a_removed_module_under_their_own_heading(new_story):
     story = story_with_removed_module(new_story)
-    story.expect_ordered_lines("setting tree", NOT_DECLARED, "good.limit: 60", actor=story.user)
+    story.expect_ordered_lines("setting tree", UNDECLARED_HEADING, "good.limit: 60", actor=story.user)
 
 
 def test_a_row_of_a_removed_module_is_readable_and_is_not_set_again(new_story):

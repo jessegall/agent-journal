@@ -24,6 +24,9 @@ class SampleTunnel(Tunnel):
     def state(self) -> TunnelState:
         return TunnelState.CONNECTED if self.opened_port is not None else TunnelState.DISCONNECTED
 
+    def reason(self) -> str:
+        return "" if self.opened_port is not None else "the sample tunnel is closed"
+
     def close(self) -> None:
         self.opened_port = None
 

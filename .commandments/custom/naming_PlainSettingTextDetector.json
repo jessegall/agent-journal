@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "of": "closest:call",
+                "nameIn": [
+                    "SettingValue",
+                    "SettingGroup"
+                ]
+            },
+            {
+                "not": {
+                    "position": "first"
+                }
+            },
+            {
+                "textMatches": "(?i)\\b(I|I'm|me|my|we|our|engine|hooks?|rows?|moments?|orchestrators?|inject(ed|s)?|steer(ed|ing)?|says|said|carries|carried|owed|ride|rides|whisper|muse)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "plain-setting-text",
+        "description": "A setting's title or description is written in the journal's voice or with a word from inside the journal.",
+        "rule": "Write a setting's title and description in plain words that say what the setting changes, for a reader seeing it the first time.",
+        "skill": "plain-viewer-text"
+    }
+}

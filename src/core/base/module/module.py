@@ -35,10 +35,11 @@ WEB_FOLDER = Path("web") / "dist"
 
 
 class Module:
-    """What a module adds to the journal, named by the classes themselves: its models, the modules it builds on,
-    the core version it needs, its migrations and views, its handlers, subcommands, guards and listeners, the
-    classes it binds in place of the core's interfaces, the migration that removes its tables, and the suites,
-    drivers, overlays, driver rules, windows, chat marks, docked items, skills, seeders and agent programs it adds."""
+    """What a module adds to the journal, named by the classes themselves: its models, the modules it builds
+    on, the core version it needs, its migrations and views, its handlers, subcommands, guards and
+    listeners, the classes it binds in place of the core's interfaces, the migration that removes its
+    tables, and the suites, drivers, overlays, driver rules, windows, chat marks, docked items, skills,
+    seeders and agent programs it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]

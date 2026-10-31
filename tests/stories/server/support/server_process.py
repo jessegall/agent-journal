@@ -5,6 +5,7 @@ import sys
 import time
 from pathlib import Path
 
+from core.base.child_process import ChildProcess
 from core.base.journal_home import JournalHome
 from server.server_files import ServerFiles, socket_path
 from tests.stories.server.support.server_client import request_answer
@@ -20,7 +21,7 @@ class ServerProcess:
 
     def __init__(self, home: JournalHome) -> None:
         self.home, self.socket = home, socket_path(home)
-        self.process: subprocess.Popen[str] | None = None
+        self.process: ChildProcess | None = None
 
     def __enter__(self) -> "ServerProcess":
         self.process = self.started()
@@ -30,14 +31,13 @@ class ServerProcess:
         return self
 
     def __exit__(self, *details: object) -> None:
-        if self.process is not None and self.process.poll() is None:
-            self.process.kill()
-            self.process.wait(TIMEOUT_SECONDS)
+        if self.process is not None:
+            self.process.stop(TIMEOUT_SECONDS)
 
-    def started(self) -> subprocess.Popen[str]:
+    def started(self) -> ChildProcess:
         environment = {"PATH": os.environ.get("PATH", ""), "PYTHONPATH": str(ROOT / "src")}
-        return subprocess.Popen([sys.executable, str(ROOT / "src" / "server" / "server.py"), "--home", str(self.home.folder)], env=environment, text=True,
-                                stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        return ChildProcess(subprocess.Popen([sys.executable, str(ROOT / "src" / "server" / "server.py"), "--home", str(self.home.folder)], env=environment, text=True,
+                                             stdout=subprocess.DEVNULL, stderr=subprocess.PIPE))
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket, "GET", "/health")

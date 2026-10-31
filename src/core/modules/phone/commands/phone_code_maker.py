@@ -16,7 +16,7 @@ class PhoneCodeMaker:
         return f"{letters[:HALF_LETTERS]}-{letters[HALF_LETTERS:]}"
 
     def digest(self, text: str) -> str:
-        return TextDigest().of(text.strip().upper())
+        return TextDigest().hex_digest(text.strip().upper())
 
     def link(self, code: str) -> str:
         return f"{PAIRING_PATH}{code}"

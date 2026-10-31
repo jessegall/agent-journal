@@ -17,5 +17,8 @@ class NoTunnel(Tunnel):
     def state(self) -> TunnelState:
         return TunnelState.DISCONNECTED
 
+    def reason(self) -> str:
+        return "no tunnel service is chosen: journal setting set journal.core.tunnel.service <name> --project chooses one"
+
     def close(self) -> None:
         return

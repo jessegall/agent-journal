@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "nameMatches": "^tunnels(\\.|$)"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/tunnels/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "tunnel-module-imported-outside-tunnels",
+        "description": "Code outside src/tunnels imports a tunnel module, so it depends on one tunnel instead of the Tunnel contract.",
+        "rule": "Reach a tunnel only through the Tunnel contract: Tunnels.chosen() or ServerTunnel; only the module finder lists src/tunnels.",
+        "skill": "settings-architecture"
+    }
+}

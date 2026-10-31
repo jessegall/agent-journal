@@ -1,0 +1,29 @@
+import subprocess
+from typing import Any
+
+
+class ChildProcess:
+    """A program the journal started: whether it still runs, its process id, and its end within a time limit."""
+
+    def __init__(self, process: "subprocess.Popen[Any]") -> None:
+        self.process = process
+
+    @property
+    def pid(self) -> int:
+        return self.process.pid
+
+    def running(self) -> bool:
+        return self.process.poll() is None
+
+    def wait(self, limit_seconds: float) -> int:
+        return self.process.wait(limit_seconds)
+
+    def stop(self, limit_seconds: float) -> None:
+        if not self.running():
+            return
+        self.process.terminate()
+        try:
+            self.process.wait(limit_seconds)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait(limit_seconds)

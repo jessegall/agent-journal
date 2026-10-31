@@ -27,8 +27,8 @@ class ModuleFinder:
 
     def listed_modules(self, path: DottedPath) -> tuple[type[Module], ...]:
         listed = path.value()
-        if not is_tuple(listed):
-            raise ModuleError(f"{path.text} is no tuple of modules")
+        if not (is_tuple(listed) or is_list(listed)):
+            raise ModuleError(f"{path.text} is no list of modules")
         return tuple(self.module(item, path.text) for item in listed)
 
     def plugin_paths(self) -> tuple[str, ...]:
