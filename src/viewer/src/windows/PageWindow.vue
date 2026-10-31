@@ -1,5 +1,5 @@
 <script setup>
-import {shallowRef, watch} from "vue";
+import {ref, shallowRef, watch} from "vue";
 import WindowHost from "./WindowHost.vue";
 
 const props = defineProps({
@@ -12,12 +12,19 @@ const props = defineProps({
     prompts: {type: Object, default: null},
 });
 const component = shallowRef(null);
+const loadFailure = ref("");
 
 watch(
     () => props.entry.entry_url,
     async (url) => {
         component.value = null;
-        if (!props.entry.unavailable_reason) component.value = (await import(/* @vite-ignore */ url)).default;
+        loadFailure.value = "";
+        if (props.entry.unavailable_reason) return;
+        try {
+            component.value = (await import(/* @vite-ignore */ url)).default;
+        } catch (error) {
+            loadFailure.value = `This window's file could not be loaded: ${error.message}`;
+        }
     },
     {immediate: true},
 );
@@ -35,6 +42,6 @@ watch(
         :permissions="permissions"
         :prompts="prompts"
         :events="entry.events"
-        :unavailable-reason="entry.unavailable_reason"
+        :unavailable-reason="entry.unavailable_reason || loadFailure"
     />
 </template>

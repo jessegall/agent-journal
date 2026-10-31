@@ -3,7 +3,6 @@ from collections.abc import Sequence
 from core.base.cli.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from core.base.cli.default_subcommands import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.module import Module
-from core.base.module.module_finder import ModuleFinder
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line
 from core.base.module.version_requirement import VersionRequirement
@@ -17,21 +16,16 @@ from core.base.viewer.window_declaration import WindowDeclaration
 class WindowCheck:
     """Checks the windows the modules declare before a sync writes anything: each name is used once and
     starts with its module's name, a file it loads is in its module's web/dist, it reads only read
-    subcommands and runs only commands, it follows only events of models it reads, and only a module the
-    journal ships loads one in the page."""
-
-    def __init__(self, finder: ModuleFinder) -> None:
-        self.finder = finder
+    subcommands and runs only commands, and it follows only events of models it reads."""
 
     def problems(self, modules: Sequence[type[Module]], events: Sequence[str]) -> tuple[str, ...]:
         names = [window.name for module in modules for window in module.windows]
-        shipped = set(self.finder.default_modules())
         reads, runs = self.lines(modules)
         provided = RegistryLines(frozenset(reads), frozenset(runs), events)
         problems = list(NameGroups.duplicates([("windows", names)]))
         for module in modules:
             for window in module.windows:
-                problems += window.problems(module.name, module.web_folder(), module in shipped, provided)
+                problems += window.problems(module.name, module.web_folder(), provided)
         return tuple(problems)
 
     @staticmethod

@@ -20,6 +20,9 @@ const props = defineProps({
 const entry = computed(() => props.catalogue.window(props.name));
 const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
 const access = ref(null);
+const trustReason = computed(
+    () => `This window runs in the page with the viewer's rights. Trust its module's code with journal window trust ${entry.value.module} to show it.`,
+);
 const permissions = computed(() =>
     access.value ? windowPermissions(access.value, ask) : {reads: entry.value?.reads || [], runs: entry.value?.runs || [], missing: [], ask: async () => true},
 );
@@ -47,7 +50,10 @@ watch(
 </script>
 
 <template>
-    <template v-if="entry && entry.loading === 'page'">
+    <template v-if="entry && entry.loading === 'page' && !entry.allowed && !access?.page_trusted">
+        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" :unavailable-reason="trustReason" />
+    </template>
+    <template v-else-if="entry && entry.loading === 'page'">
         <PageWindow
             :entry="entry"
             :subscriptions="subscriptions"

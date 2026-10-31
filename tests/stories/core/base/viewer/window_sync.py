@@ -30,8 +30,10 @@ def test_a_window_following_events_of_a_model_it_does_not_read_is_refused_at_syn
     new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UncoveredEventModule", "uncovered.board follows plan.* but reads no plan")
 
 
-def test_a_page_window_of_a_module_the_journal_does_not_ship_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:PageWindowModule", "pages.board loads in the page, which only a module the journal ships may do")
+def test_a_page_window_of_a_module_the_journal_does_not_ship_is_recorded_for_the_people_who_trust_it(new_story):
+    story = new_story(fixture=MainEnvironment)
+    story.expect_sync_success(f"{PATH}:PageWindowModule")
+    story.expect_registered_window("pages.board", "")
 
 
 def test_a_window_built_for_another_kit_is_recorded_as_unavailable_and_not_refused(new_story):

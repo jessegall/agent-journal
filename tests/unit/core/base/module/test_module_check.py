@@ -1,7 +1,4 @@
 from core.base.module.window_check import WindowCheck
-from core.base.module.module_finder import ModuleFinder
-from core.base.journal_home import JournalHome
-from pathlib import Path
 from dataclasses import dataclass
 
 import pytest
@@ -120,5 +117,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(ModuleFinder(JournalHome(Path("unused")))))
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck())
 

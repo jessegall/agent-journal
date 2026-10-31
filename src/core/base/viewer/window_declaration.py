@@ -24,7 +24,7 @@ class WindowDeclaration:
     runs: Sequence[str] = ()
     events: Sequence[str] = ()
 
-    def problems(self, module_name: str, web_folder: Path, shipped: bool, provided: RegistryLines) -> list[str]:
+    def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         short_name = module_name.rsplit(".", 1)[-1]
         problems = [f"the window {self.name} does not start with its module's name, {short_name}"] if not self.name.startswith(f"{short_name}.") else []
         if self.loading is not WindowLoading.DOCUMENT and not (web_folder / self.entry).exists():
@@ -35,6 +35,4 @@ class WindowDeclaration:
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}
         problems += [f"{self.name} follows {pattern} but reads no {pattern.split('.', 1)[0]}" for pattern in self.events
                      if provided.matches(pattern) and pattern.split(".", 1)[0] not in read_models]
-        if self.loading is WindowLoading.PAGE and not shipped:
-            problems.append(f"{self.name} loads in the page, which only a module the journal ships may do")
         return problems
