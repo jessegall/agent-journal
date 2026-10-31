@@ -21,7 +21,6 @@ class TaskState(StrEnum):
 
     OPEN = "open"
     STARTED = "started"
-    PAUSED = "paused"
     BLOCKED = "blocked"
     TESTING = "testing"
     COMPLETED = "completed"
@@ -39,17 +38,15 @@ class TaskPriority(StrEnum):
 class TaskLifecycle(Lifecycle):
     states = TaskState
     initial = [TaskState.OPEN]
-    editable = (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED, TaskState.BLOCKED, TaskState.TESTING)
+    editable = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
     deletable = (TaskState.OPEN, TaskState.CANCELLED)
 
     start = Move("start", [TaskState.OPEN], TaskState.STARTED)
-    pause = Move("pause", [TaskState.STARTED], TaskState.PAUSED)
-    resume = Move("resume", [TaskState.PAUSED], TaskState.STARTED)
-    block = Move("block", (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED), TaskState.BLOCKED)
+    block = Move("block", (TaskState.OPEN, TaskState.STARTED), TaskState.BLOCKED)
     unblock = Move("unblock", [TaskState.BLOCKED], TaskState.OPEN)
     test = Move("test", [TaskState.STARTED], TaskState.TESTING)
     close = Move("close", (TaskState.STARTED, TaskState.TESTING), TaskState.COMPLETED)
-    cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
+    cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
     reopen = Move("reopen", (TaskState.COMPLETED, TaskState.CANCELLED), TaskState.OPEN)
 
 
@@ -77,9 +74,6 @@ class Task(Model):
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
         return self.moved(TaskLifecycle.start, holder_id=actor.id)
-
-    def pause(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
-        return self.moved(TaskLifecycle.pause, reason=reason)
 
     def close(self, timestamp: Timestamp, actor: Actor, outcome: str) -> "Task":
         return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=timestamp, holder_id=None)

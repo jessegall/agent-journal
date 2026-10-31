@@ -5,12 +5,6 @@ from core.modules.plans.plan import Plan, PlanLifecycle
 
 
 @dataclass(frozen=True)
-class PlanPause(MoveCommand[Plan]):
-    move = PlanLifecycle.pause
-    reason: str
-
-
-@dataclass(frozen=True)
 class PlanBlock(MoveCommand[Plan]):
     move = PlanLifecycle.block
     reason: str

@@ -1,12 +1,13 @@
 from core.modules.tasks.blocked_work_refusal import BlockedWorkRefusal
 from core.modules.tasks.carry_on_refusal import CarryOnRefusal
-from core.modules.tasks.commands import TaskBlock, TaskCancel, TaskClose, TaskPause
+from core.modules.tasks.commands import TaskBlock, TaskCancel, TaskClose
 from core.modules.tasks.dependency_subcommands import TaskDependSubcommand, TaskUndependSubcommand
 from core.modules.tasks.guards.no_dependency_loop import NoDependencyLoop
 from core.modules.tasks.listeners.forget_dependencies import ForgetDependencies
 from core.modules.tasks.log_hold import LogHold
 from core.modules.tasks.log_request import LogRequest
 from core.modules.tasks.migrations.m001_tasks import TasksTables
+from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlocked
 from core.modules.tasks.quiet_task_reminder import QuietTaskReminder
 from core.modules.tasks.task_summary_line import TaskSummaryLine
 from core.modules.tasks.task_log_subcommand import TaskLogSubcommand
@@ -18,7 +19,7 @@ from core.modules.tasks.task import Task
 from core.modules.tasks.task_dependency import TaskDependency
 from core.modules.tasks.task_log import TaskLog
 
-TASK_COMMANDS = (TaskPause, TaskBlock, TaskClose, TaskCancel,)
+TASK_COMMANDS = (TaskBlock, TaskClose, TaskCancel)
 
 
 class TasksModule(Module):
@@ -29,7 +30,7 @@ class TasksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
-    migrations = [TasksTables]
+    migrations = [TasksTables, PausedTasksBlocked]
     subcommands = (TaskLogSubcommand, TaskDependSubcommand,
                    TaskUndependSubcommand)
     handlers = [TaskUndependHandler]

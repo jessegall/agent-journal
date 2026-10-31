@@ -16,7 +16,6 @@ class PlanState(StrEnum):
     READY = "ready"
     APPROVED = "approved"
     STARTED = "started"
-    PAUSED = "paused"
     BLOCKED = "blocked"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
@@ -25,18 +24,16 @@ class PlanState(StrEnum):
 class PlanLifecycle(Lifecycle):
     states = PlanState
     initial = [PlanState.DRAFT]
-    editable = (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.PAUSED, PlanState.BLOCKED)
+    editable = (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED)
     deletable = (PlanState.DRAFT, PlanState.CANCELLED)
 
     ready = Move("ready", [PlanState.DRAFT], PlanState.READY)
     approve = Move("approve", [PlanState.READY], PlanState.APPROVED)
     start = Move("start", [PlanState.APPROVED], PlanState.STARTED)
-    pause = Move("pause", [PlanState.STARTED], PlanState.PAUSED)
-    resume = Move("resume", [PlanState.PAUSED], PlanState.STARTED)
-    block = Move("block", (PlanState.STARTED, PlanState.PAUSED), PlanState.BLOCKED)
+    block = Move("block", [PlanState.STARTED], PlanState.BLOCKED)
     unblock = Move("unblock", [PlanState.BLOCKED], PlanState.STARTED)
     close = Move("close", [PlanState.STARTED], PlanState.COMPLETED)
-    cancel = Move("cancel", (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.PAUSED, PlanState.BLOCKED),
+    cancel = Move("cancel", (PlanState.DRAFT, PlanState.READY, PlanState.APPROVED, PlanState.STARTED, PlanState.BLOCKED),
                   PlanState.CANCELLED)
 
 

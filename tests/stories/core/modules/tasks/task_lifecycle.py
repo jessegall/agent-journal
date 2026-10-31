@@ -21,8 +21,6 @@ def test_a_task_without_an_environment_is_refused_with_the_flag_to_name_one(new_
 def test_a_task_moves_along_its_whole_lifecycle(new_story):
     story = new_story(fixture=OpenTask)
     story.expect_success(lines.TASK_START, "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
-    story.expect_success('task pause 1 --reason "waiting on the design"', "state: paused", "reason: waiting on the design", actor=story.agent)
-    story.expect_success("task resume 1", "state: started", actor=story.agent)
     story.expect_success("task test 1", "state: testing", actor=story.agent)
     story.expect_success('task close 1 --outcome "the total is right"', "state: completed", "closed_at: 2026-10-31T09:00:00.000000+00:00", actor=story.agent)
     story.expect_success("task reopen 1", "state: open", actor=story.agent)
@@ -56,3 +54,15 @@ def test_a_priority_outside_its_list_is_a_usage_error(new_story):
 def test_an_environment_its_tasks_refer_to_cannot_be_deleted(new_story):
     story = new_story(fixture=OpenTask)
     story.expect_refusal("environment delete 1", "this environment is still referred to by agents, hook_calls, messages, plans, settings, tasks")
+
+
+def test_a_started_task_blocks_and_unblocks_to_open(new_story):
+    story = new_story(fixture=AssignedTask)
+    story.expect_success('task block 1 --reason "waiting on the design"', "state: blocked", "reason: waiting on the design", actor=story.agent)
+    story.expect_success("task unblock 1", "state: open", actor=story.agent)
+
+
+def test_a_task_has_no_pause(new_story):
+    story = new_story(fixture=AssignedTask)
+    story.expect_usage_error('task pause 1 --reason "waiting on the design"', actor=story.agent)
+

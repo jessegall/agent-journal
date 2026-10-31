@@ -10,12 +10,6 @@ class TaskStart(MoveCommand[Task]):
 
 
 @dataclass(frozen=True)
-class TaskPause(MoveCommand[Task]):
-    move = TaskLifecycle.pause
-    reason: str
-
-
-@dataclass(frozen=True)
 class TaskBlock(MoveCommand[Task]):
     move = TaskLifecycle.block
     reason: str
