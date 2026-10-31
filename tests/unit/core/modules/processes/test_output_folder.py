@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from core.base.journal_home import JournalHome
 from core.modules.processes.support.output_folder import OutputFolder
 
@@ -37,3 +39,10 @@ def test_the_heartbeat_is_the_time_of_the_last_beat_and_a_removed_folder_is_gone
     assert processes.heartbeat(4) is not None
     processes.remove(4)
     assert processes.heartbeat(4) is None and processes.line(4) == ""
+
+
+def test_the_folder_the_go_runner_wrote_is_read_back():
+    processes = OutputFolder(JournalHome(Path(__file__).parents[5] / "tools" / "journal-run" / "testdata" / "home"))
+    assert (processes.line(4), processes.part_texts(4), processes.status(4, 1), processes.status(4, 2), processes.end(4), processes.pid(4)) == (
+        "echo one && echo two", ["echo one", "echo two"], 0, 0, 0, 321)
+    assert (processes.output(4, 1), processes.output(4, 2), processes.sizes(4)) == ("one\n", "two\n", (8, 2))

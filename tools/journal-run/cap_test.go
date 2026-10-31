@@ -29,3 +29,11 @@ func TestALineOfJournalCommandsIsShownWholeWhateverItsSize(t *testing.T) {
 		t.Fatalf("printed %d characters", strings.Count(output, "x"))
 	}
 }
+
+func TestPastTheCapTheTailIsShownFirstAndThenTheLineNamingTheOutput(t *testing.T) {
+	output, _ := run(t, options(t, "seq 1 400"), newClient())
+	lines := strings.Split(strings.TrimRight(output, "\n"), "\n")
+	if lines[len(lines)-2] != "400" || !strings.HasPrefix(lines[len(lines)-1], "output 4 is 400 lines") || len(output) > 400 {
+		t.Fatalf("printed %q", output)
+	}
+}

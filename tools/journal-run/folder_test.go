@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -46,4 +48,17 @@ func TestTheHeartbeatIsWrittenWhileTheShellLives(t *testing.T) {
 	first := modified(t, folderOf(setup)+"/heartbeat")
 	waitFor(t, 5*time.Second, "a later heartbeat", func() bool { return modified(t, folderOf(setup)+"/heartbeat").After(first) })
 	<-finished
+}
+
+// The files a run leaves are the format support/output_folder.py reads; tests/unit/core/modules/processes reads the same
+// example, so the two sides cannot drift apart.
+func TestTheFilesOfARunAreTheSharedExampleOfTheFormat(t *testing.T) {
+	setup := options(t, "echo one && echo two")
+	run(t, setup, newClient())
+	for _, name := range []string{"line", "parts", "1.out", "2.out", "1.status", "2.status", "end"} {
+		want, err := os.ReadFile(filepath.Join("testdata", "home", "processes", "4", name))
+		if err != nil || readFile(t, folderOf(setup)+"/"+name) != string(want) {
+			t.Errorf("%s holds %q, the example %q", name, readFile(t, folderOf(setup)+"/"+name), want)
+		}
+	}
 }

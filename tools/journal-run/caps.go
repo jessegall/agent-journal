@@ -9,7 +9,8 @@ import (
 const DefaultCapCharacters = 400
 
 // Shown is what the agent sees of a part's output: all of it up to the cap, or whole when the cap is lifted for a
-// line of journal commands; past the cap, one line naming the output and how to read it.
+// line of journal commands; past the cap, the tail that fits half the cap, from the start of a line, and one line
+// naming the output and how to read it.
 func Shown(text string, process, capCharacters int, whole bool) string {
 	if whole || len(text) <= capCharacters {
 		return text
@@ -18,5 +19,16 @@ func Shown(text string, process, capCharacters int, whole bool) string {
 	if !strings.HasSuffix(text, "\n") {
 		lines++
 	}
-	return fmt.Sprintf("output %d is %d lines, %d characters: journal output read %d --summary\n", process, lines, len(text), process)
+	return tail(text, capCharacters/2) + fmt.Sprintf("output %d is %d lines, %d characters: journal output read %d --summary\n", process, lines, len(text), process)
+}
+
+func tail(text string, characters int) string {
+	kept := text[len(text)-characters:]
+	if cut := strings.Index(kept, "\n"); cut >= 0 && cut < len(kept)-1 {
+		kept = kept[cut+1:]
+	}
+	if !strings.HasSuffix(kept, "\n") {
+		kept += "\n"
+	}
+	return kept
 }
