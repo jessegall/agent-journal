@@ -1,25 +1,13 @@
 <script setup>
 import {computed, watch} from "vue";
 import OutputLines from "../kit/OutputLines.vue";
-import FrameWindow from "../windows/FrameWindow.vue";
-import PageWindow from "../windows/PageWindow.vue";
-import {WindowSubscriptions} from "../windows/windowSubscriptions.js";
+import ModuleBody from "../windows/ModuleBody.vue";
 import {api} from "../api/client.js";
 import {useOutputPages} from "../composables/outputPages.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
 const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean});
 
-const subscriptions = new WindowSubscriptions();
-const permissions = {reads: [], runs: [], missing: [], ask: async () => true};
-const entry = computed(() => ({
-    name: `${props.declaration.module}.${props.declaration.type}`,
-    entry_url: props.declaration.body_url,
-    events: [],
-    options: [],
-}));
-// a module the journal ships or the person trusts is drawn as a component; any other body is drawn in a sandboxed frame
-const asComponent = computed(() => Boolean(props.declaration.shipped || props.declaration.trusted));
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
 const OUTPUT_MODEL = "output";
 const pages = useOutputPages((...page) => api.readOutput(props.mark.target_id, ...page));
@@ -31,19 +19,20 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
     <div :class="['mark-more', {open: shown}]" @click.stop>
         <div class="mark-more-inner">
             <template v-if="declaration.body_url">
-                <PageWindow v-if="asComponent" :entry="entry" :subscriptions="subscriptions" environment="" :permissions="permissions" />
-                <FrameWindow v-else :entry="entry" :subscriptions="subscriptions" environment="" :permissions="permissions" />
+                <ModuleBody :declaration="declaration" />
             </template>
             <template v-else>
                 <template v-if="hasOutput && pages.loaded.value">
                     <p class="mark-label">Output</p>
                     <OutputLines class="mark-terminal" :lines="pages.lines.value" @older="pages.older" />
                 </template>
-                <ul v-else-if="lines.length" class="mark-lines">
-                    <template v-for="line in lines" :key="line">
-                        <li class="mark-line">{{ line }}</li>
-                    </template>
-                </ul>
+                <template v-else-if="lines.length">
+                    <ul class="mark-lines">
+                        <template v-for="line in lines" :key="line">
+                            <li class="mark-line">{{ line }}</li>
+                        </template>
+                    </ul>
+                </template>
             </template>
         </div>
     </div>
