@@ -20,7 +20,15 @@ class Database:
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
         home.database.parent.mkdir(parents=True, exist_ok=True)
-        connection = sqlite3.connect(home.database, autocommit=True)
+        return cls.configured(sqlite3.connect(home.database, autocommit=True))
+
+    @classmethod
+    def shared(cls, home: JournalHome) -> "Database":
+        home.database.parent.mkdir(parents=True, exist_ok=True)
+        return cls.configured(sqlite3.connect(home.database, autocommit=True, check_same_thread=False))
+
+    @classmethod
+    def configured(cls, connection: sqlite3.Connection) -> "Database":
         connection.row_factory = sqlite3.Row
         for pragma in PRAGMAS:
             connection.execute(f"PRAGMA {pragma}")

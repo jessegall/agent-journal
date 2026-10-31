@@ -15,6 +15,7 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
+from server.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread
 from server.listener_work import ListenerWork
@@ -41,8 +42,9 @@ def main(argv: list[str]) -> int:
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     tick_round = JournalRound(home, "ticker", TickWork())
+    hook_database = HookDatabase(home)
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread))
+    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database))
     files.restrict_socket()
     files.write_pid()
     files.log_line(f"listening on {files.socket}")
@@ -56,6 +58,7 @@ def main(argv: list[str]) -> int:
     finally:
         ticker.stop()
         listener_thread.stop()
+        hook_database.close()
         files.remove_server_files()
         server.server_close()
         files.release_lock()

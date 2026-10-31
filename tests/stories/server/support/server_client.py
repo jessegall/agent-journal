@@ -22,6 +22,7 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
+from server.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread, ListenerWake
 from server.listener_work import ListenerWork
@@ -178,7 +179,8 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     files.clear_leftover_socket()
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
-    context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread)
+    context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
+                            HookDatabase(home))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
@@ -192,6 +194,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
         server.request_stop()
         thread.join(TIMEOUT_SECONDS)
         server.drain(DRAIN_LIMIT_SECONDS)
+        context.hook_database.close()
         files.remove_server_files()
         server.server_close()
         files.release_lock()

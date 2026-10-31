@@ -7,7 +7,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
-from core.base.journal_container import synced_container
+from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
 from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
@@ -19,8 +19,9 @@ PROGRAMS = ("claude", "codex")
 
 class HookEndpoint:
     """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook route on a
-    synced journal, waiting for another writer up to the hook limit. A stale registry, a wait past the limit
-    or a fault outside the rules lets the hook through with one line; a fault goes to the server log."""
+    synced journal over the connection the server's hooks share, waiting for another writer up to the hook
+    limit. A stale registry, a wait past the limit or a fault outside the rules lets the hook through with one
+    line; a fault goes to the server log."""
 
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
@@ -33,11 +34,18 @@ class HookEndpoint:
     def answer(self, event: HookEvent) -> HookReply:
         if event.program not in PROGRAMS:
             raise HookEventError(f"no agent program is named {event.program!r}")
+        with self.context.hook_database.used() as database:
+            try:
+                return self.routed_answer(event, database)
+            finally:
+                self.timing.stamp("hook_answered")
+                self.context.listener_thread.wake()
+
+    def routed_answer(self, event: HookEvent, database: Database) -> HookReply:
         try:
-            container = synced_container(self.context.home)
+            container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
-        database = container.get(Database)
         database.set_busy_timeout(HOOK_LIMIT_SECONDS)
         try:
             return container.get(HookRoute).answer(event)
@@ -47,10 +55,6 @@ class HookEndpoint:
             return self.failure(error)
         except Exception as error:
             return self.failure(error)
-        finally:
-            database.close()
-            self.timing.stamp("hook_answered")
-            self.context.listener_thread.wake()
 
     def failure(self, error: Exception) -> HookReply:
         self.context.files.log_line("".join(traceback.format_exception(error)))
