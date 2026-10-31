@@ -21,19 +21,20 @@ func version4Chain(line string) ([][]any, error) {
 	runs := Runs(commands)
 	parts := [][]any{}
 	for index, run := range runs {
-		before, after := "", run[len(run)-1].JoinedBy
+		preceding, following := "", run[len(run)-1].JoinedBy
 		if index > 0 {
-			before = runs[index-1][len(runs[index-1])-1].JoinedBy
+			preceding = runs[index-1][len(runs[index-1])-1].JoinedBy
 		}
 		recorded := map[bool]string{true: "R", false: "S"}[run[0].Recorded]
-		partType := recorded + map[bool]string{true: "&", false: ";"}[before == "&&"] + map[bool]string{true: "&", false: ";"}[after == "&&"]
+		partType := recorded + map[bool]string{true: "&", false: ";"}[preceding == "&&"] + map[bool]string{true: "&", false: ";"}[following == "&&"]
 		var stages []any
 		first := 0
 		for position, command := range run {
-			if position == len(run)-1 || command.PipedInto >= 0 {
-				stages = append(stages, stageText(run, run[first:position+1], position == len(run)-1))
-				first = position + 1
+			if position != len(run)-1 && command.PipedInto < 0 {
+				continue
 			}
+			stages = append(stages, stageText(run, run[first:position+1], position == len(run)-1))
+			first = position + 1
 		}
 		parts = append(parts, []any{runText(run), partType, stages})
 	}
@@ -65,7 +66,7 @@ func runText(run []shell.Command) string {
 func runEnd(run []shell.Command) int {
 	end := 0
 	for _, command := range run {
-		end = max(end, command.End, command.Through)
+		end = max(end, command.End, command.BodyEnd)
 	}
 	return end
 }
@@ -104,10 +105,10 @@ func TestTheSplitterFixtureIsSplitAsVersion4SplitsIt(t *testing.T) {
 		if !isCorrected {
 			want = fixture.Parts
 		}
-		got, err := version4Chain(fixture.Line)
-		if want == nil && err == nil || want != nil && (err != nil || !reflect.DeepEqual(toAny(got), want)) {
+		actual, err := version4Chain(fixture.Line)
+		if want == nil && err == nil || want != nil && (err != nil || !reflect.DeepEqual(toAny(actual), want)) {
 			differences++
-			t.Errorf("%q\n go        %v %v\n version 4 %v", fixture.Line, got, err, want)
+			t.Errorf("%q\n go        %v %v\n version 4 %v", fixture.Line, actual, err, want)
 		}
 	}
 	t.Logf("%d of %d fixture lines split differently, %d corrected", differences, len(lines), len(corrections))

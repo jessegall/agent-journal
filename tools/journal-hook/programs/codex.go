@@ -52,16 +52,16 @@ func codexEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 }
 
 func codexTool(name string, input toolInput, context Context) *event.Tool {
-	category, known := codexToolCategories[name]
-	if !known {
+	category, listed := codexToolCategories[name]
+	if !listed {
 		category = "other"
 	}
 	tool := &event.Tool{Name: name, Category: category, Files: []string{}}
 	switch category {
 	case "shell":
 		var command any = pythonText(input.values, "command")
-		if words, ok := input.values["command"].([]any); ok {
-			command = words
+		if items, present := input.values["command"].([]any); present {
+			command = items
 		}
 		line := context.Classifier.Line(codexShellLine(command, context.RunScript))
 		tool.Shell = &line
@@ -78,9 +78,9 @@ func codexTool(name string, input toolInput, context Context) *event.Tool {
 // codexShellLine is version 4's Codex.shell_line: the line a list of words hands a shell with -c or -lc, else the words
 // joined as a line; a line the journal rewrote to go through its runner is read back to the line it runs.
 func codexShellLine(command any, runScript string) string {
-	if words, ok := command.([]any); ok {
-		texts := make([]string, len(words))
-		for index, word := range words {
+	if items, present := command.([]any); present {
+		texts := make([]string, len(items))
+		for index, word := range items {
 			texts[index] = fmt.Sprint(word)
 		}
 		if len(texts) == 3 && scriptFlags[texts[1]] {
@@ -98,19 +98,20 @@ func codexShellLine(command any, runScript string) string {
 
 // patchPaths reads every file header of the patch from all the text the tool was given, each file once, in order.
 func patchPaths(texts []string) []string {
-	paths, seen := []string{}, map[string]bool{}
-	for _, found := range patchHeader.FindAllStringSubmatch(strings.Join(texts, "\n"), -1) {
-		if !seen[found[1]] {
-			seen[found[1]] = true
-			paths = append(paths, found[1])
+	paths, visited := []string{}, map[string]bool{}
+	for _, header := range patchHeader.FindAllStringSubmatch(strings.Join(texts, "\n"), -1) {
+		if visited[header[1]] {
+			continue
 		}
+		visited[header[1]] = true
+		paths = append(paths, header[1])
 	}
 	return paths
 }
 
 func firstText(input map[string]any, keys ...string) string {
 	for _, key := range keys {
-		if text, ok := input[key].(string); ok && text != "" {
+		if text, present := input[key].(string); present && text != "" {
 			return text
 		}
 	}

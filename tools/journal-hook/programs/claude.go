@@ -44,8 +44,8 @@ func claudeEvent(body []byte, context Context) (event.HookEvent, bool, error) {
 }
 
 func claudeTool(name string, input map[string]any, classifier *classify.Classifier) *event.Tool {
-	category, known := claudeToolCategories[name]
-	if !known {
+	category, listed := claudeToolCategories[name]
+	if !listed {
 		category = "other"
 	}
 	tool := &event.Tool{Name: name, Category: category, Files: []string{}}
@@ -61,9 +61,10 @@ func claudeTool(name string, input map[string]any, classifier *classify.Classifi
 
 func hasPrefix(text string, prefixes []string) bool {
 	for _, prefix := range prefixes {
-		if strings.HasPrefix(text, prefix) {
-			return true
+		if !strings.HasPrefix(text, prefix) {
+			continue
 		}
+		return true
 	}
 	return false
 }

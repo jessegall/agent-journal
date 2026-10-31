@@ -33,23 +33,24 @@ var shapeSeparators = []string{"&&", "||", ";", "|"}
 
 // shapeCommands is CommandShape.commands: the text cut at &&, ||, ; and | outside quotes.
 func shapeCommands(text string) []string {
-	var found []string
+	var commands []string
 	var command strings.Builder
 	openQuote := rune(0)
 	characters := []rune(text)
 	for index := 0; index < len(characters); {
 		separator := ""
 		if openQuote == 0 {
-			rest := string(characters[index:])
+			remainder := string(characters[index:])
 			for _, symbol := range shapeSeparators {
-				if strings.HasPrefix(rest, symbol) {
-					separator = symbol
-					break
+				if !strings.HasPrefix(remainder, symbol) {
+					continue
 				}
+				separator = symbol
+				break
 			}
 		}
 		if separator != "" {
-			found = append(found, command.String())
+			commands = append(commands, command.String())
 			command.Reset()
 			index += len(separator)
 			continue
@@ -64,33 +65,34 @@ func shapeCommands(text string) []string {
 		command.WriteRune(character)
 		index++
 	}
-	found = append(found, command.String())
-	kept := []string{}
-	for _, each := range found {
-		if stripped := pyre.Strip(each); stripped != "" {
-			kept = append(kept, stripped)
+	commands = append(commands, command.String())
+	retained := []string{}
+	for _, entry := range commands {
+		if stripped := pyre.Strip(entry); stripped != "" {
+			retained = append(retained, stripped)
 		}
 	}
-	return kept
+	return retained
 }
 
 func isSetup(command string) bool {
-	words := strings.FieldsFunc(command, pyre.IsSpace)
-	return len(words) > 0 && setupCommands[words[0]] || branchSwitch.MatchString(command)
+	items := strings.FieldsFunc(command, pyre.IsSpace)
+	return len(items) > 0 && setupCommands[items[0]] || branchSwitch.MatchString(command)
 }
 
 // pastSetup is the first command of a chain that is not setup, else its first.
 func pastSetup(chain string) string {
 	var commands []string
-	for _, each := range chainSeparator.Split(chain, -1) {
-		if stripped := pyre.Strip(each); stripped != "" {
+	for _, entry := range chainSeparator.Split(chain, -1) {
+		if stripped := pyre.Strip(entry); stripped != "" {
 			commands = append(commands, stripped)
 		}
 	}
 	for _, command := range commands {
-		if !isSetup(command) {
-			return command
+		if isSetup(command) {
+			continue
 		}
+		return command
 	}
 	if len(commands) > 0 {
 		return commands[0]
@@ -132,7 +134,7 @@ func withoutGitOptions(command string) string {
 	if start == nil {
 		return command
 	}
-	position, kept := start[1], -1
+	position, retained := start[1], -1
 	for {
 		option := gitOption.FindStringIndex(command[position:])
 		if option == nil {
@@ -140,19 +142,19 @@ func withoutGitOptions(command string) string {
 		}
 		position += option[1]
 		if position < len(command) && pyre.IsSpace([]rune(command[position:])[0]) {
-			kept = position
+			retained = position
 		}
 	}
-	if kept < 0 {
+	if retained < 0 {
 		return command
 	}
-	return command[:start[1]] + command[kept:]
+	return command[:start[1]] + command[retained:]
 }
 
 func replaceFirst(pattern *regexp.Regexp, text, replacement string) string {
-	found := pattern.FindStringIndex(text)
-	if found == nil {
+	span := pattern.FindStringIndex(text)
+	if span == nil {
 		return text
 	}
-	return text[:found[0]] + replacement + text[found[1]:]
+	return text[:span[0]] + replacement + text[span[1]:]
 }

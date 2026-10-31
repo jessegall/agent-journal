@@ -1,7 +1,9 @@
 package classify
 
 import (
+	"maps"
 	"regexp"
+	"slices"
 	"strings"
 	"unicode"
 
@@ -37,15 +39,12 @@ func (classifier *Classifier) row(tokens []string) *Row {
 	script := tokens[0]
 	if row != nil && row.Interpreted {
 		script = ""
-		for _, token := range tokens[1:] {
-			if !strings.HasPrefix(token, "-") {
-				script = token
-				break
-			}
+		if first := slices.IndexFunc(tokens[1:], isNotFlag); first >= 0 {
+			script = tokens[1+first]
 		}
 	}
-	if found := classifier.table.Script(script); found != nil {
-		return found
+	if scriptRow := classifier.table.Script(script); scriptRow != nil {
+		return scriptRow
 	}
 	return row
 }
@@ -63,15 +62,15 @@ func (classifier *Classifier) walked(row *Row, tokens []string) (rows []*Row, su
 		if strings.HasPrefix(token, "-") || strings.Contains(token, "=") {
 			continue
 		}
-		var below *Row
+		var child *Row
 		word := ""
 		if len(arguments) == 0 {
-			below, word = subcommand(rows[len(rows)-1], token)
+			child, word = subcommand(rows[len(rows)-1], token)
 		}
-		if below == nil {
+		if child == nil {
 			arguments = append(arguments, token)
 		} else {
-			rows = append(rows, below)
+			rows = append(rows, child)
 			subcommands = append(subcommands, word)
 		}
 	}
@@ -83,12 +82,16 @@ func (classifier *Classifier) walked(row *Row, tokens []string) (rows []*Row, su
 func subcommand(row *Row, token string) (*Row, string) {
 	space := strings.SplitN(token, " ", 2)[0]
 	colon := strings.SplitN(token, ":", 2)[0]
-	for _, word := range []string{token, strings.Trim(token, `'"`), baseName(token), colon, space} {
-		if below, ok := row.Subcommands[word]; ok {
-			return below, word
-		}
+	spellings := []string{token, strings.Trim(token, `'"`), baseName(token), colon, space}
+	listed := slices.IndexFunc(spellings, func(word string) bool { return row.Subcommands[word] != nil })
+	if listed < 0 {
+		return nil, ""
 	}
-	return nil, ""
+	return row.Subcommands[spellings[listed]], spellings[listed]
+}
+
+func isNotFlag(token string) bool {
+	return !strings.HasPrefix(token, "-")
 }
 
 // rowClassification is a command's classification from its row, its subcommands and the options it carries.
@@ -100,47 +103,51 @@ func (classifier *Classifier) rowClassification(text string) Classification {
 	}
 	rows, _, arguments := classifier.walked(row, tokens[1:])
 	label := ""
+	if labelled := lastIndex(rows, func(level *Row) bool { return level.Label != "" }); labelled >= 0 {
+		label = rows[labelled].Label
+	}
 	if len(rows) == 1 && len(arguments) == 0 && row.BareLabel != "" {
 		label = row.BareLabel
-	} else {
-		for index := len(rows) - 1; index >= 0; index-- {
-			if rows[index].Label != "" {
-				label = rows[index].Label
-				break
-			}
-		}
 	}
 	classification := Classification{Category: unknown, Effects: []string{}, Label: label}
-	for index := len(rows) - 1; index >= 0; index-- {
-		if rows[index].Category != "" || rows[index] == row {
-			classification = classification.withRow(rows[index])
-			break
-		}
-	}
+	categorised := lastIndex(rows, func(level *Row) bool { return level.Category != "" || level == row })
+	classification = classification.withRow(rows[categorised])
 	modifiers := map[string]*Row{}
 	for _, level := range rows {
-		for name, modifier := range level.Modifiers {
-			modifiers[name] = modifier
-		}
+		maps.Copy(modifiers, level.Modifiers)
 	}
 	for _, token := range tokens[1:] {
-		if strings.HasPrefix(token, "-") {
-			classification = modified(classification, modifiers, token)
+		if isNotFlag(token) {
+			continue
 		}
+		classification = modified(classification, modifiers, token)
 	}
 	return classification
 }
 
+// lastIndex is the index of the last row that matches, or -1.
+func lastIndex(rows []*Row, matches func(*Row) bool) int {
+	for index := len(rows) - 1; index >= 0; index-- {
+		if !matches(rows[index]) {
+			continue
+		}
+		return index
+	}
+	return -1
+}
+
 func modified(classification Classification, modifiers map[string]*Row, flag string) Classification {
 	for _, name := range flagNames(flag) {
-		if modifier, ok := modifiers[name]; ok {
-			label := modifier.Label
-			if label == "" {
-				label = classification.Label
-			}
-			classification = classification.withRow(modifier)
-			classification.Label = label
+		modifier, present := modifiers[name]
+		if !present {
+			continue
 		}
+		label := modifier.Label
+		if label == "" {
+			label = classification.Label
+		}
+		classification = classification.withRow(modifier)
+		classification.Label = label
 	}
 	return classification
 }
@@ -158,9 +165,10 @@ func flagNames(flag string) []string {
 	}
 	names := []string{name}
 	for _, letter := range characters[1:] {
-		if unicode.IsLetter(letter) {
-			names = append(names, "-"+string(letter))
+		if !unicode.IsLetter(letter) {
+			continue
 		}
+		names = append(names, "-"+string(letter))
 	}
 	return names
 }
@@ -168,9 +176,10 @@ func flagNames(flag string) []string {
 // isAlphanumeric is Python's str.isalnum.
 func isAlphanumeric(characters []rune) bool {
 	for _, character := range characters {
-		if !unicode.IsLetter(character) && !unicode.IsNumber(character) {
-			return false
+		if unicode.IsLetter(character) || unicode.IsNumber(character) {
+			continue
 		}
+		return false
 	}
 	return len(characters) > 0
 }
@@ -183,23 +192,25 @@ func (classifier *Classifier) arguments(text string) []string {
 	if row == nil {
 		return []string{}
 	}
-	_, _, words := classifier.walked(row, tokens[1:])
-	kept := []string{}
-	for _, word := range words {
-		if word != "" && !strings.HasPrefix(word, "<") && !strings.HasPrefix(word, "|") {
-			kept = append(kept, word)
+	_, _, items := classifier.walked(row, tokens[1:])
+	retained := []string{}
+	for _, word := range items {
+		if word == "" || strings.HasPrefix(word, "<") || strings.HasPrefix(word, "|") {
+			continue
 		}
+		retained = append(retained, word)
 	}
-	return kept
+	return retained
 }
 
 // redirectTargets are the files a command's redirects write.
 func (classifier *Classifier) redirectTargets(text string) []string {
 	targets := []string{}
-	for _, found := range classifier.table.redirection.FindAllStringSubmatch(blanked(text), -1) {
-		if classifier.table.RedirectWrites(found[2], found[3]) {
-			targets = append(targets, strings.Trim(found[3], "'"))
+	for _, redirect := range classifier.table.redirection.FindAllStringSubmatch(blanked(text), -1) {
+		if !classifier.table.RedirectWrites(redirect[2], redirect[3]) {
+			continue
 		}
+		targets = append(targets, strings.Trim(redirect[3], "'"))
 	}
 	return targets
 }
@@ -218,13 +229,14 @@ func (classifier *Classifier) targetArguments(text string) []string {
 		return []string{}
 	}
 	var paths []string
-	for _, found := range quotedPath.FindAllStringSubmatch(text, -1) {
-		paths = append(paths, found[1])
+	for _, quoted := range quotedPath.FindAllStringSubmatch(text, -1) {
+		paths = append(paths, quoted[1])
 	}
 	for _, word := range classifier.arguments(text) {
-		if strings.Contains(word, "/") {
-			paths = append(paths, word)
+		if !strings.Contains(word, "/") {
+			continue
 		}
+		paths = append(paths, word)
 	}
 	return paths
 }
@@ -240,9 +252,10 @@ func (classifier *Classifier) WritePaths(text string) []string {
 	paths := []string{}
 	for _, piped := range commands(text) {
 		for _, path := range append(classifier.redirectTargets(piped), classifier.targetArguments(piped)...) {
-			if path != "" {
-				paths = append(paths, path)
+			if path == "" {
+				continue
 			}
+			paths = append(paths, path)
 		}
 	}
 	return paths
@@ -252,9 +265,10 @@ func (classifier *Classifier) WritePaths(text string) []string {
 func (classifier *Classifier) ReadPaths(text string) []string {
 	paths := []string{}
 	for _, piped := range commands(text) {
-		if classifier.rowClassification(piped).has(printsFiles) {
-			paths = append(paths, classifier.arguments(piped)...)
+		if !classifier.rowClassification(piped).has(printsFiles) {
+			continue
 		}
+		paths = append(paths, classifier.arguments(piped)...)
 	}
 	return paths
 }
@@ -266,8 +280,8 @@ func (classifier *Classifier) Program(text string) (program string, subcommand s
 		return "", "", []string{}
 	}
 	if row := classifier.row(tokens); row != nil {
-		_, words, _ := classifier.walked(row, tokens[1:])
-		subcommand = strings.Join(words, " ")
+		_, items, _ := classifier.walked(row, tokens[1:])
+		subcommand = strings.Join(items, " ")
 	}
 	return baseName(tokens[0]), subcommand, tokens[1:]
 }

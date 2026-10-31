@@ -17,10 +17,10 @@ const diffTimeLimit = 500 * time.Millisecond
 
 // LineDiff counts the lines added and removed between two texts with a Myers diff over whole lines, a line's ending
 // part of the line, as git diff --numstat counts them.
-func LineDiff(before, after string) (added, removed int) {
+func LineDiff(original, changed string) (added, removed int) {
 	matcher := diffmatchpatch.New()
 	matcher.DiffTimeout = diffTimeLimit
-	beforeLines, afterLines, _ := matcher.DiffLinesToRunes(before, after)
+	beforeLines, afterLines, _ := matcher.DiffLinesToRunes(original, changed)
 	for _, difference := range matcher.DiffMainRunes(beforeLines, afterLines, false) {
 		lines := utf8.RuneCountInString(difference.Text)
 		switch difference.Type {
@@ -33,14 +33,14 @@ func LineDiff(before, after string) (added, removed int) {
 	return added, removed
 }
 
-// Counted is the diff of a file whose text was before, or which did not exist when before is nil, and is after.
-func Counted(path string, before *string, after string) *event.DiffCount {
+// Counted is the diff of a file whose text was existing, or which did not exist when existing is nil, and is changed.
+func Counted(path string, existing *string, changed string) *event.DiffCount {
 	original := ""
-	if before != nil {
-		original = *before
+	if existing != nil {
+		original = *existing
 	}
-	added, removed := LineDiff(original, after)
-	return &event.DiffCount{Path: path, Existed: before != nil, LinesAdded: added, LinesRemoved: removed}
+	added, removed := LineDiff(original, changed)
+	return &event.DiffCount{Path: path, Existed: existing != nil, LinesAdded: added, LinesRemoved: removed}
 }
 
 // OnDisk is the text of a file as it stands, or nil when there is none.
@@ -49,8 +49,8 @@ func OnDisk(path string) *string {
 	if err != nil {
 		return nil
 	}
-	found := string(text)
-	return &found
+	content := string(text)
+	return &content
 }
 
 // Replacement is one replace of an edit tool: the text it looks for, what it puts in its place, and whether it

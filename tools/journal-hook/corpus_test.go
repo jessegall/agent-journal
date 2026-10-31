@@ -42,9 +42,9 @@ type corpusRow struct {
 }
 
 type corpusSize struct {
-	bodies int
-	bytes  int
-	most   int
+	bodies  int
+	bytes   int
+	largest int
 }
 
 func TestCorpusHasEveryEventAndTool(t *testing.T) {
@@ -53,24 +53,26 @@ func TestCorpusHasEveryEventAndTool(t *testing.T) {
 		t.Fatalf("no recorded bodies under %s", recordedFolder)
 	}
 	sizes := map[corpusRow]*corpusSize{}
-	words := privateWords(t)
+	items := privateWords(t)
 	for _, file := range files {
-		readRecording(t, file, sizes, words)
+		readRecording(t, file, sizes, items)
 	}
 	t.Log("\n" + sizeTable(sizes))
 	for program, events := range requiredEvents {
 		for _, event := range events {
-			if !hasRow(sizes, func(row corpusRow) bool { return row.program == program && row.event == event }) {
-				t.Errorf("%s has no recorded body of the event %s", program, event)
+			if hasRow(sizes, func(row corpusRow) bool { return row.program == program && row.event == event }) {
+				continue
 			}
+			t.Errorf("%s has no recorded body of the event %s", program, event)
 		}
 	}
 	for program, tools := range requiredTools {
 		for _, tool := range tools {
 			for _, event := range []string{"pre_tool_use", "post_tool_use"} {
-				if !hasRow(sizes, func(row corpusRow) bool { return row.program == program && row.event == event && row.tool == tool }) {
-					t.Errorf("%s has no recorded %s body of the tool %s", program, event, tool)
+				if hasRow(sizes, func(row corpusRow) bool { return row.program == program && row.event == event && row.tool == tool }) {
+					continue
 				}
+				t.Errorf("%s has no recorded %s body of the tool %s", program, event, tool)
 			}
 		}
 	}
@@ -83,13 +85,13 @@ func privateWords(t *testing.T) []string {
 		t.Logf("no %s on this machine: the bodies are not checked for private words", privateWordsFile)
 		return nil
 	}
-	var words []string
+	var items []string
 	for _, line := range strings.Split(string(text), "\n") {
 		if word := strings.TrimSpace(line); word != "" {
-			words = append(words, strings.ToLower(word))
+			items = append(items, strings.ToLower(word))
 		}
 	}
-	return words
+	return items
 }
 
 // texts gives every string value inside a decoded body.
@@ -98,22 +100,22 @@ func texts(value any) []string {
 	case string:
 		return []string{value}
 	case map[string]any:
-		var found []string
+		var collected []string
 		for _, inner := range value {
-			found = append(found, texts(inner)...)
+			collected = append(collected, texts(inner)...)
 		}
-		return found
+		return collected
 	case []any:
-		var found []string
+		var collected []string
 		for _, inner := range value {
-			found = append(found, texts(inner)...)
+			collected = append(collected, texts(inner)...)
 		}
-		return found
+		return collected
 	}
 	return nil
 }
 
-func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, words []string) {
+func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, items []string) {
 	t.Helper()
 	opened, err := os.Open(file)
 	if err != nil {
@@ -131,21 +133,23 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, w
 			continue
 		}
 		for _, text := range texts(body) {
-			for _, found := range personal.FindAllString(text, -1) {
-				if found != "someone@example.com" {
-					t.Errorf("%s:%d holds a personal path or address: %q", file, number, found)
+			for _, personalText := range personal.FindAllString(text, -1) {
+				if personalText == "someone@example.com" {
+					continue
 				}
+				t.Errorf("%s:%d holds a personal path or address: %q", file, number, personalText)
 			}
-			for _, word := range words {
-				if strings.Contains(strings.ToLower(text), word) {
-					t.Errorf("%s:%d holds a private word", file, number)
+			for _, word := range items {
+				if !strings.Contains(strings.ToLower(text), word) {
+					continue
 				}
+				t.Errorf("%s:%d holds a private word", file, number)
 			}
 		}
 		hookEventName, _ := body["hook_event_name"].(string)
 		toolName, _ := body["tool_name"].(string)
-		event, known := programs.EventName(hookEventName)
-		if !known {
+		event, frozen := programs.EventName(hookEventName)
+		if !frozen {
 			event = hookEventName
 		}
 		row := corpusRow{program, event, toolName}
@@ -154,7 +158,7 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, w
 		}
 		sizes[row].bodies++
 		sizes[row].bytes += len(line)
-		sizes[row].most = max(sizes[row].most, len(line))
+		sizes[row].largest = max(sizes[row].largest, len(line))
 	}
 	if err := scanner.Err(); err != nil {
 		t.Fatalf("%s: %v", file, err)
@@ -163,9 +167,10 @@ func readRecording(t *testing.T, file string, sizes map[corpusRow]*corpusSize, w
 
 func hasRow(sizes map[corpusRow]*corpusSize, matches func(corpusRow) bool) bool {
 	for row := range sizes {
-		if matches(row) {
-			return true
+		if !matches(row) {
+			continue
 		}
+		return true
 	}
 	return false
 }
@@ -182,7 +187,7 @@ func sizeTable(sizes map[corpusRow]*corpusSize) string {
 	fmt.Fprintf(&table, "%-8s %-14s %-40s %7s %11s %11s %11s\n", "program", "event", "tool", "bodies", "bytes", "mean bytes", "most bytes")
 	for _, row := range rows {
 		size := sizes[row]
-		fmt.Fprintf(&table, "%-8s %-14s %-40s %7d %11d %11d %11d\n", row.program, row.event, row.tool, size.bodies, size.bytes, size.bytes/size.bodies, size.most)
+		fmt.Fprintf(&table, "%-8s %-14s %-40s %7d %11d %11d %11d\n", row.program, row.event, row.tool, size.bodies, size.bytes, size.bytes/size.bodies, size.largest)
 	}
 	return table.String()
 }

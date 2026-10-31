@@ -32,7 +32,7 @@ func TestTheAnswerIsPrintedAsHookShPrintsIt(t *testing.T) {
 	}
 	for _, sample := range cases {
 		var stdout, stderr strings.Builder
-		code := Printed(&stdout, &stderr, sample.program, sample.event, sample.status, []byte(sample.answer), root, LimitFor(sample.event))
+		code := ExitCode(&stdout, &stderr, sample.program, sample.event, sample.status, []byte(sample.answer), root, LimitFor(sample.event))
 		if code != sample.code || stdout.String() != sample.stdout || stderr.String() != sample.stderr {
 			t.Errorf("%s: exit %d\n stdout %q\n stderr %q", sample.name, code, stdout.String(), stderr.String())
 		}
@@ -41,9 +41,9 @@ func TestTheAnswerIsPrintedAsHookShPrintsIt(t *testing.T) {
 
 func TestTheJournalsOwnRepositoryIsAskedForThePanicWatch(t *testing.T) {
 	root := project(t, "8431")
-	write(t, filepath.Join(root, "src", "journal", "hooks", "hook.sh"), "#!/bin/sh\n")
+	writeFile(t, filepath.Join(root, "src", "journal", "hooks", "hook.sh"), "#!/bin/sh\n")
 	var stdout strings.Builder
-	Printed(&stdout, &strings.Builder{}, "claude", "prompt", 0, nil, root, 8*time.Second)
+	ExitCode(&stdout, &strings.Builder{}, "claude", "prompt", 0, nil, root, 8*time.Second)
 	if !strings.Contains(stdout.String(), `"hookEventName": "UserPromptSubmit"`) || !strings.Contains(stdout.String(), "within 8 seconds") || !strings.Contains(stdout.String(), "start the panic watch") {
 		t.Errorf("printed %s", stdout.String())
 	}

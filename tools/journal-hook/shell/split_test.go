@@ -41,7 +41,7 @@ func TestSplitGivesEachCommandWithItsJoinerAndPipe(t *testing.T) {
 			t.Errorf("split(%q): %v", sample.line, err)
 			continue
 		}
-		var got []string
+		var actual []string
 		for _, command := range commands {
 			text := command.Text
 			if command.JoinedBy != "" {
@@ -50,13 +50,13 @@ func TestSplitGivesEachCommandWithItsJoinerAndPipe(t *testing.T) {
 			if command.PipedInto >= 0 {
 				text += fmt.Sprintf(" >%d", command.PipedInto)
 			}
-			got = append(got, text)
+			actual = append(actual, text)
 			if !strings.HasPrefix(command.Text, strings.TrimSpace(sample.line[command.Start:command.End])) {
 				t.Errorf("split(%q): %q does not stand at %d-%d", sample.line, command.Text, command.Start, command.End)
 			}
 		}
-		if !reflect.DeepEqual(got, sample.commands) {
-			t.Errorf("split(%q)\n got  %q\n want %q", sample.line, got, sample.commands)
+		if !reflect.DeepEqual(actual, sample.commands) {
+			t.Errorf("split(%q)\n got  %q\n want %q", sample.line, actual, sample.commands)
 		}
 		if sample.redirects != nil && !reflect.DeepEqual(redirects, sample.redirects) {
 			t.Errorf("split(%q) redirects %q, want %q", sample.line, redirects, sample.redirects)

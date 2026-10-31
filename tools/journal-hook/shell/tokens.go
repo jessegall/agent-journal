@@ -13,23 +13,29 @@ import (
 // comment lines before it and the variable assignments in front of it left out; a line shlex cannot read (an unclosed
 // quote, a trailing backslash) is split at whitespace instead.
 func Tokens(text string) []string {
-	words, err := Words(CommandText(text))
+	tokens, err := Shlex(CommandText(text))
 	if err != nil {
-		words = strings.FieldsFunc(CommandText(text), pyre.IsSpace)
+		tokens = strings.FieldsFunc(CommandText(text), pyre.IsSpace)
 	}
-	for len(words) > 0 && strings.Contains(words[0], "=") && !strings.HasPrefix(words[0], "-") {
-		words = words[1:]
+	return Unassigned(tokens)
+}
+
+// Unassigned is version 4's Part.leads: the words before the first that is not a NAME=value assignment left out.
+func Unassigned(tokens []string) []string {
+	for len(tokens) > 0 && strings.Contains(tokens[0], "=") && !strings.HasPrefix(tokens[0], "-") {
+		tokens = tokens[1:]
 	}
-	return words
+	return tokens
 }
 
 // CommandText is Part.command_text: the text from its first line that is not a comment.
 func CommandText(text string) string {
 	lines := strings.Split(text, "\n")
 	for index, line := range lines {
-		if !strings.HasPrefix(strings.TrimLeftFunc(line, pyre.IsSpace), "#") {
-			return strings.Join(lines[index:], "\n")
+		if strings.HasPrefix(strings.TrimLeftFunc(line, pyre.IsSpace), "#") {
+			continue
 		}
+		return strings.Join(lines[index:], "\n")
 	}
 	return ""
 }
@@ -41,10 +47,10 @@ var (
 
 const shlexWhitespace = " \t\r\n"
 
-// Words is Python's shlex.split(text) in POSIX mode: words split at whitespace, quotes taken off, a backslash keeping
+// Shlex is Python's shlex.split(text) in POSIX mode: words split at whitespace, quotes taken off, a backslash keeping
 // the next character, and inside double quotes only before a backslash or a double quote.
-func Words(text string) ([]string, error) {
-	var words []string
+func Shlex(text string) ([]string, error) {
+	var tokens []string
 	var word strings.Builder
 	quoted, inWord := false, false
 	runes := []rune(text)
@@ -53,7 +59,7 @@ func Words(text string) ([]string, error) {
 		switch {
 		case strings.ContainsRune(shlexWhitespace, character):
 			if inWord || quoted {
-				words = append(words, word.String())
+				tokens = append(tokens, word.String())
 			}
 			word.Reset()
 			quoted, inWord = false, false
@@ -66,39 +72,46 @@ func Words(text string) ([]string, error) {
 			inWord = true
 		case character == '\'' || character == '"':
 			quoted, inWord = true, true
-			closed := false
-			for index++; index < len(runes); index++ {
-				inner := runes[index]
-				if inner == character {
-					closed = true
-					break
-				}
-				if character == '"' && inner == '\\' {
-					if index+1 >= len(runes) {
-						return nil, errNoClosingQuotation
-					}
-					next := runes[index+1]
-					if next != '\\' && next != '"' {
-						word.WriteRune('\\')
-					}
-					word.WriteRune(next)
-					index++
-					continue
-				}
-				word.WriteRune(inner)
+			closing, err := quotation(runes, index, &word)
+			if err != nil {
+				return nil, err
 			}
-			if !closed {
-				return nil, errNoClosingQuotation
-			}
+			index = closing
 		default:
 			word.WriteRune(character)
 			inWord = true
 		}
 	}
 	if inWord || quoted {
-		words = append(words, word.String())
+		tokens = append(tokens, word.String())
 	}
-	return words, nil
+	return tokens, nil
+}
+
+// quotation writes the quoted text that opens at runes[opening] into the word and gives the position of its closing
+// quote: inside double quotes a backslash keeps a backslash or a double quote after it, and stays before any other.
+func quotation(runes []rune, opening int, word *strings.Builder) (int, error) {
+	quote := runes[opening]
+	for index := opening + 1; index < len(runes); index++ {
+		inner := runes[index]
+		if inner == quote {
+			return index, nil
+		}
+		if quote != '"' || inner != '\\' {
+			word.WriteRune(inner)
+			continue
+		}
+		if index+1 >= len(runes) {
+			return 0, errNoClosingQuotation
+		}
+		next := runes[index+1]
+		if next != '\\' && next != '"' {
+			word.WriteRune('\\')
+		}
+		word.WriteRune(next)
+		index++
+	}
+	return 0, errNoClosingQuotation
 }
 
 var shlexSafe = regexp.MustCompile(`^[a-zA-Z0-9_@%+=:,./-]+$`)
@@ -115,9 +128,9 @@ func Quote(word string) string {
 }
 
 // Join is Python's shlex.join.
-func Join(words []string) string {
-	quoted := make([]string, len(words))
-	for index, word := range words {
+func Join(tokens []string) string {
+	quoted := make([]string, len(tokens))
+	for index, word := range tokens {
 		quoted[index] = Quote(word)
 	}
 	return strings.Join(quoted, " ")

@@ -47,14 +47,15 @@ func TestTheSchemaTakesTheDocumentsExampleAndOneOfEachToolCategory(t *testing.T)
 		if err := schemacheck.Problem(t, prepared); err != nil {
 			t.Errorf("%s does not validate: %v", example, err)
 		}
-		if found, ok := prepared["tool"].(map[string]any); ok {
-			categories[found["kind"].(string)] = true
+		if toolFields, present := prepared["tool"].(map[string]any); present {
+			categories[toolFields["kind"].(string)] = true
 		}
 	}
 	for _, category := range []string{"shell", "edit", "write", "read", "search", "agent", "other"} {
-		if !categories[category] {
-			t.Errorf("no example of the tool category %s", category)
+		if categories[category] {
+			continue
 		}
+		t.Errorf("no example of the tool category %s", category)
 	}
 }
 
@@ -84,20 +85,20 @@ func TestTheHookEventTypeWritesWhatTheSchemaReads(t *testing.T) {
 			t.Fatalf("%s: %v", example, err)
 		}
 		schemacheck.Fits(t, prepared)
-		written, _ := json.Marshal(prepared)
-		var original, again any
+		encoded, _ := json.Marshal(prepared)
+		var original, decoded any
 		_ = json.Unmarshal(text, &original)
-		_ = json.Unmarshal(written, &again)
-		if !jsonEqual(original, again) {
-			t.Errorf("%s changes when read into HookEvent and written again:\n%s", example, written)
+		_ = json.Unmarshal(encoded, &decoded)
+		if !jsonEqual(original, decoded) {
+			t.Errorf("%s changes when read into HookEvent and written again:\n%s", example, encoded)
 		}
 	}
 }
 
 func jsonEqual(first, second any) bool {
-	one, _ := json.Marshal(first)
+	firstText, _ := json.Marshal(first)
 	two, _ := json.Marshal(second)
-	return bytes.Equal(one, two)
+	return bytes.Equal(firstText, two)
 }
 
 func readExample(t *testing.T, path string) map[string]any {

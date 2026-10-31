@@ -84,19 +84,19 @@ func (tally *corpusTally) read(line string) {
 			tally.panics = append(tally.panics, fmt.Sprint(line, ": ", recovered))
 		}
 	}()
-	began := time.Now()
-	reading := shippedClassifier.Line(line)
-	if time.Since(began) > slowLine {
+	started := time.Now()
+	shellLine := shippedClassifier.Line(line)
+	if time.Since(started) > slowLine {
 		tally.slow++
 	}
 	tally.lines++
-	if reading.ParseError != "" {
+	if shellLine.ParseError != "" {
 		tally.parseErrors++
 	}
-	if reading.Category == unknown {
+	if shellLine.Category == unknown {
 		tally.unknownLines++
 	}
-	for _, part := range reading.Parts {
+	for _, part := range shellLine.Parts {
 		tally.parts++
 		if part.Classification.Category == unknown {
 			tally.unknownParts++

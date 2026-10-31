@@ -22,11 +22,11 @@ var (
 // The Claude hooks whose answer takes a line for the agent, which is told at once when the journal did not answer.
 var noticedEvents = map[string]string{"pre_tool_use": "PreToolUse", "post_tool_use": "PostToolUse", "prompt": "UserPromptSubmit", "session_start": "SessionStart"}
 
-// Printed writes the journal's answer for the agent program as hook.sh does and gives the exit code: 200 prints the
+// ExitCode writes the journal's answer for the agent program as hook.sh does and gives the exit code: 200 prints the
 // answer, which is JSON in the agent's own hook shape; 409 is a refusal, printed as it is when it starts with the
 // agent's own answer, else its error is the reason, on stderr, and exit 2 tells the agent to stop; anything else went
 // around the journal, and a Claude hook that takes a line is told so at once.
-func Printed(stdout, stderr io.Writer, program, eventName string, status int, answer []byte, root string, limit time.Duration) int {
+func ExitCode(stdout, stderr io.Writer, program, eventName string, status int, answer []byte, root string, limit time.Duration) int {
 	switch status {
 	case http.StatusOK:
 		stdout.Write(answer)
@@ -46,8 +46,8 @@ func Printed(stdout, stderr io.Writer, program, eventName string, status int, an
 		io.WriteString(stderr, strings.Join(lines, "\n"))
 		return 2
 	}
-	hookEventName, noticed := noticedEvents[eventName]
-	if program != "claude" || !noticed {
+	hookEventName, listed := noticedEvents[eventName]
+	if program != "claude" || !listed {
 		return 0
 	}
 	fmt.Fprintf(stdout, "{\"hookSpecificOutput\": {\"hookEventName\": \"%s\", \"additionalContext\": \"%s\"}}\n", hookEventName, missedLine(root, limit))
@@ -67,9 +67,10 @@ func missedLine(root string, limit time.Duration) string {
 
 func anyLine(lines []string, pattern *regexp.Regexp) bool {
 	for _, line := range lines {
-		if pattern.MatchString(line) {
-			return true
+		if !pattern.MatchString(line) {
+			continue
 		}
+		return true
 	}
 	return false
 }

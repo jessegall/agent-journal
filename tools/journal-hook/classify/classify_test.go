@@ -25,9 +25,9 @@ var classifyCases = []struct {
 
 func TestEachCommandIsClassifiedByItsRowSubcommandAndFlags(t *testing.T) {
 	for _, sample := range classifyCases {
-		got := shippedClassifier.Classify(sample.text)
-		if got.Category != sample.category || !reflect.DeepEqual(got.Effects, sample.effects) || got.Uncertain != sample.uncertain {
-			t.Errorf("%q: %+v, want %s %q uncertain %v", sample.text, got, sample.category, sample.effects, sample.uncertain)
+		actual := shippedClassifier.Classify(sample.text)
+		if actual.Category != sample.category || !reflect.DeepEqual(actual.Effects, sample.effects) || actual.Uncertain != sample.uncertain {
+			t.Errorf("%q: %+v, want %s %q uncertain %v", sample.text, actual, sample.category, sample.effects, sample.uncertain)
 		}
 	}
 }
@@ -73,8 +73,8 @@ func TestMixedLinesAreNamedByTheirWeightiestPart(t *testing.T) {
 		"curl -s https://example.com | jq . > a.json": "network",
 	}
 	for line, category := range cases {
-		if got := shippedClassifier.Line(line).Category; got != category {
-			t.Errorf("%q is %s, want %s", line, got, category)
+		if actual := shippedClassifier.Line(line).Category; actual != category {
+			t.Errorf("%q is %s, want %s", line, actual, category)
 		}
 	}
 }

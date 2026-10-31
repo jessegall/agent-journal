@@ -37,7 +37,7 @@ type joint struct {
 
 // jointsAt is Part.joints: the pipes and ors outside quotes at the given depth of brackets.
 func jointsAt(characters []rune, level int) []joint {
-	var found []joint
+	var positions []joint
 	quote, depth, passed := rune(0), 0, -1
 	for index, character := range characters {
 		if index <= passed || index > 0 && characters[index-1] == '\\' && quote != '\'' {
@@ -55,53 +55,55 @@ func jointsAt(characters []rune, level int) []joint {
 		case character == ')' || character == '}':
 			depth = max(depth-1, 0)
 		case character == '|' && depth == level:
-			rest := string(characters[index:])
+			remainder := string(characters[index:])
 			for _, symbol := range joints {
-				if strings.HasPrefix(rest, symbol) {
-					found = append(found, joint{index, symbol})
-					passed = index + len([]rune(symbol)) - 1
-					break
+				if !strings.HasPrefix(remainder, symbol) {
+					continue
 				}
+				positions = append(positions, joint{index, symbol})
+				passed = index + len([]rune(symbol)) - 1
+				break
 			}
 		}
 	}
-	return found
+	return positions
 }
 
 // commands is Part.commands: the commands of a pipe or of its || alternatives, a >| redirect left whole.
 func commands(text string) []string {
 	characters := []rune(text)
 	starts, ends := []int{0}, []int{}
-	for _, each := range jointsAt(characters, 0) {
-		if each.position > 0 && characters[each.position-1] == '>' {
+	for _, entry := range jointsAt(characters, 0) {
+		if entry.position > 0 && characters[entry.position-1] == '>' {
 			continue
 		}
-		ends = append(ends, each.position)
-		starts = append(starts, each.position+len([]rune(each.symbol)))
+		ends = append(ends, entry.position)
+		starts = append(starts, entry.position+len([]rune(entry.symbol)))
 	}
 	ends = append(ends, len(characters))
-	found := make([]string, len(starts))
+	parts := make([]string, len(starts))
 	for index := range starts {
-		found[index] = pyre.Strip(strings.TrimLeft(string(characters[starts[index]:ends[index]]), "&"))
+		parts[index] = pyre.Strip(strings.TrimLeft(string(characters[starts[index]:ends[index]]), "&"))
 	}
-	return found
+	return parts
 }
 
 // stages is Part.stages: the commands of the text's pipe, its || alternatives kept together.
 func stages(text string) []string {
 	characters := []rune(text)
 	cuts := []int{-1}
-	for _, each := range jointsAt(characters, 0) {
-		if each.symbol != "||" {
-			cuts = append(cuts, each.position)
+	for _, entry := range jointsAt(characters, 0) {
+		if entry.symbol == "||" {
+			continue
 		}
+		cuts = append(cuts, entry.position)
 	}
 	cuts = append(cuts, len(characters))
-	found := make([]string, len(cuts)-1)
-	for index := range found {
-		found[index] = pyre.Strip(strings.TrimLeft(string(characters[cuts[index]+1:cuts[index+1]]), "&"))
+	parts := make([]string, len(cuts)-1)
+	for index := range parts {
+		parts[index] = pyre.Strip(strings.TrimLeft(string(characters[cuts[index]+1:cuts[index+1]]), "&"))
 	}
-	return found
+	return parts
 }
 
 // isSubshell is Part.is_subshell: the text is one subshell, its opening bracket closed at its end.

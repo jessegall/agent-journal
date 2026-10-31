@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/internal/pyre"
+	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
 )
 
 // The command table version 4 ships, src/journal/support/command_table.json.
@@ -99,9 +100,10 @@ func LoadTable(projectFile string) *Table {
 			shipped.Wrappers = mergedRows(shipped.Wrappers, project.Wrappers)
 			shipped.Scripts = mergedRows(shipped.Scripts, project.Scripts)
 			for _, pattern := range orderedKeys(text, "scripts") {
-				if !contains(scriptOrder, pattern) {
-					scriptOrder = append(scriptOrder, pattern)
+				if contains(scriptOrder, pattern) {
+					continue
 				}
+				scriptOrder = append(scriptOrder, pattern)
 			}
 		}
 	}
@@ -149,19 +151,19 @@ func rowData(rows map[string]json.RawMessage, name string) map[string]json.RawMe
 	var data map[string]json.RawMessage
 	_ = json.Unmarshal(rows[name], &data)
 	for {
-		var other string
-		if json.Unmarshal(data["same_as"], &other) != nil {
+		var alias string
+		if json.Unmarshal(data["same_as"], &alias) != nil {
 			return data
 		}
 		data = nil
-		_ = json.Unmarshal(rows[other], &data)
+		_ = json.Unmarshal(rows[alias], &data)
 	}
 }
 
 func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 	data := rowData(rows, name)
 	base := data
-	if raw, ok := data["base"]; ok {
+	if raw, present := data["base"]; present {
 		base = nil
 		_ = json.Unmarshal(raw, &base)
 	}
@@ -175,11 +177,11 @@ func parsedRow(rows map[string]json.RawMessage, name string) *Row {
 	row.RedirectedLabel = textOf(base["redirected_label"])
 	row.Label = textOf(base["label"])
 	row.BareLabel = textOf(base["bare_label"])
-	for section, into := range map[string]map[string]*Row{"subcommands": row.Subcommands, "modifiers": row.Modifiers} {
-		var below map[string]json.RawMessage
-		_ = json.Unmarshal(data[section], &below)
-		for word := range below {
-			into[word] = parsedRow(below, word)
+	for section, target := range map[string]map[string]*Row{"subcommands": row.Subcommands, "modifiers": row.Modifiers} {
+		var child map[string]json.RawMessage
+		_ = json.Unmarshal(data[section], &child)
+		for word := range child {
+			target[word] = parsedRow(child, word)
 		}
 	}
 	return row
@@ -213,9 +215,10 @@ func (table *Table) RedirectWrites(operator, target string) bool {
 // Script is the row of the first script pattern the word matches, or nil.
 func (table *Table) Script(word string) *Row {
 	for _, script := range table.scripts {
-		if script.pattern.MatchString(word) {
-			return script.row
+		if !script.pattern.MatchString(word) {
+			continue
 		}
+		return script.row
 	}
 	return nil
 }
@@ -227,7 +230,7 @@ func (table *Table) Unwrapped(tokens []string) []string {
 		if wrapper == nil {
 			return tokens
 		}
-		inner := leads(wrapper.Wrapped(tokens))
+		inner := shell.Unassigned(wrapper.Wrapped(tokens))
 		if len(inner) == 0 || !isProgramWord(inner[0]) {
 			return tokens
 		}
@@ -261,7 +264,7 @@ func (table *Table) ShapeUnwrapped(tokens []string) []string {
 		if wrapper == nil || !wrapper.ShapeSkipped {
 			return tokens
 		}
-		inner := leads(wrapper.Wrapped(tokens))
+		inner := shell.Unassigned(wrapper.Wrapped(tokens))
 		if len(inner) == 0 || strings.ContainsAny(inner[0], operatorSigns) {
 			return tokens
 		}
@@ -294,10 +297,11 @@ func (wrapper *Wrapper) Wrapped(tokens []string) []string {
 	tokens = wrapper.pastOptions(tokens[len(matched):])
 	if wrapper.OptionsEnd != "" {
 		for index, token := range tokens {
-			if token == wrapper.OptionsEnd {
-				tokens = tokens[index+1:]
-				break
+			if token != wrapper.OptionsEnd {
+				continue
 			}
+			tokens = tokens[index+1:]
+			break
 		}
 	}
 	for len(tokens) > 0 && wrapper.Assignments && strings.Contains(tokens[0], "=") {
@@ -327,27 +331,20 @@ func (wrapper *Wrapper) pastOptions(tokens []string) []string {
 	return tokens
 }
 
-// leads is version 4's Part.leads: the words before the first that is not a NAME=value assignment left out.
-func leads(tokens []string) []string {
-	for len(tokens) > 0 && strings.Contains(tokens[0], "=") && !strings.HasPrefix(tokens[0], "-") {
-		tokens = tokens[1:]
-	}
-	return tokens
-}
-
 // baseName is a word's last path piece, as word.rsplit("/", 1)[-1].
 func baseName(word string) string {
 	return word[strings.LastIndex(word, "/")+1:]
 }
 
-func hasWords(tokens, words []string) bool {
-	if len(tokens) < len(words) {
+func hasWords(tokens, items []string) bool {
+	if len(tokens) < len(items) {
 		return false
 	}
-	for index, word := range words {
-		if tokens[index] != word {
-			return false
+	for index, word := range items {
+		if tokens[index] == word {
+			continue
 		}
+		return false
 	}
 	return true
 }
@@ -413,30 +410,32 @@ func truthOf(raw json.RawMessage) bool {
 	return false
 }
 
-func set(words []string) map[string]bool {
-	found := map[string]bool{}
-	for _, word := range words {
-		found[word] = true
+func set(items []string) map[string]bool {
+	members := map[string]bool{}
+	for _, word := range items {
+		members[word] = true
 	}
-	return found
+	return members
 }
 
-func unique(words []string) []string {
-	seen, kept := map[string]bool{}, []string{}
-	for _, word := range words {
-		if !seen[word] {
-			seen[word] = true
-			kept = append(kept, word)
+func unique(items []string) []string {
+	visited, retained := map[string]bool{}, []string{}
+	for _, word := range items {
+		if visited[word] {
+			continue
 		}
+		visited[word] = true
+		retained = append(retained, word)
 	}
-	return kept
+	return retained
 }
 
-func contains(words []string, word string) bool {
-	for _, each := range words {
-		if each == word {
-			return true
+func contains(items []string, word string) bool {
+	for _, entry := range items {
+		if entry != word {
+			continue
 		}
+		return true
 	}
 	return false
 }

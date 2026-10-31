@@ -85,7 +85,7 @@ func (input *toolInput) UnmarshalJSON(text []byte) error {
 			return err
 		}
 		input.values[key.(string)] = value
-		if text, ok := value.(string); ok {
+		if text, present := value.(string); present {
 			input.texts = append(input.texts, text)
 		}
 	}
@@ -93,8 +93,8 @@ func (input *toolInput) UnmarshalJSON(text []byte) error {
 }
 
 func preparedFrom(program string, body []byte, read commonBody, context Context) (event.HookEvent, bool, error) {
-	name, known := eventNames[read.HookEventName]
-	if !known {
+	name, listed := eventNames[read.HookEventName]
+	if !listed {
 		return event.HookEvent{}, true, fmt.Errorf("unknown hook event %q", read.HookEventName)
 	}
 	prepared := event.HookEvent{
@@ -128,7 +128,7 @@ func isToolEvent(name string) bool {
 func filePaths(input map[string]any) []string {
 	paths := []string{}
 	for _, key := range pathKeys {
-		if value, ok := input[key].(string); ok && value != "" {
+		if value, present := input[key].(string); present && value != "" {
 			paths = append(paths, value)
 		}
 	}
@@ -144,7 +144,7 @@ func pythonText(input map[string]any, key string) string {
 	case value == nil:
 		return "None"
 	}
-	if text, ok := value.(string); ok {
+	if text, present := value.(string); present {
 		return text
 	}
 	return fmt.Sprint(value)
@@ -152,6 +152,6 @@ func pythonText(input map[string]any, key string) string {
 
 // EventName is the prepared object's name for a hook event name an agent program sends.
 func EventName(hookEventName string) (string, bool) {
-	name, known := eventNames[hookEventName]
-	return name, known
+	name, listed := eventNames[hookEventName]
+	return name, listed
 }

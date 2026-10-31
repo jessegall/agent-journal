@@ -21,24 +21,24 @@ func claudeDiff(eventName string, read commonBody, tool *event.Tool) *event.Diff
 	if eventName == "post_tool_use" {
 		return claudePatched(path, read.ToolResponse, input)
 	}
-	before := edits.OnDisk(absolute(read.Cwd, path))
+	onDisk := edits.OnDisk(absolute(read.Cwd, path))
 	if tool.Category == "write" {
 		content, _ := input["content"].(string)
-		return edits.Counted(path, before, content)
+		return edits.Counted(path, onDisk, content)
 	}
-	original := ""
-	if before != nil {
-		original = *before
+	text := ""
+	if onDisk != nil {
+		text = *onDisk
 	}
-	return edits.Counted(path, before, edits.Replaced(original, replacements(tool.Name, input)))
+	return edits.Counted(path, onDisk, edits.Replaced(text, replacements(tool.Name, input)))
 }
 
 // claudePatched counts a tool's change from the structuredPatch Claude hands back after it ran, its hunks' + and -
 // lines; a file the tool made has no patch and counts the lines it was given. The file existed when Claude hands back
 // its original text.
 func claudePatched(path string, response any, input map[string]any) *event.DiffCount {
-	fields, ok := response.(map[string]any)
-	if !ok {
+	fields, isObject := response.(map[string]any)
+	if !isObject {
 		return nil
 	}
 	original, present := fields["originalFile"]
@@ -47,9 +47,9 @@ func claudePatched(path string, response any, input map[string]any) *event.DiffC
 	}
 	_, existed := original.(string)
 	count := &event.DiffCount{Path: path, Existed: existed}
-	hunks, _ := fields["structuredPatch"].([]any)
-	for _, hunk := range hunks {
-		lines, _ := hunk.(map[string]any)["lines"].([]any)
+	sections, _ := fields["structuredPatch"].([]any)
+	for _, section := range sections {
+		lines, _ := section.(map[string]any)["lines"].([]any)
 		for _, line := range lines {
 			text, _ := line.(string)
 			switch {
@@ -60,7 +60,7 @@ func claudePatched(path string, response any, input map[string]any) *event.DiffC
 			}
 		}
 	}
-	if len(hunks) == 0 && !existed {
+	if len(sections) == 0 && !existed {
 		content, _ := input["content"].(string)
 		count.LinesAdded, _ = edits.LineDiff("", content)
 	}
@@ -73,13 +73,13 @@ func replacements(toolName string, input map[string]any) []edits.Replacement {
 		return []edits.Replacement{replacementOf(input)}
 	}
 	rows, _ := input["edits"].([]any)
-	var found []edits.Replacement
+	var collected []edits.Replacement
 	for _, row := range rows {
-		if fields, ok := row.(map[string]any); ok {
-			found = append(found, replacementOf(fields))
+		if fields, present := row.(map[string]any); present {
+			collected = append(collected, replacementOf(fields))
 		}
 	}
-	return found
+	return collected
 }
 
 func replacementOf(fields map[string]any) edits.Replacement {

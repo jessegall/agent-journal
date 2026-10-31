@@ -1,7 +1,9 @@
 package classify
 
 import (
+	"cmp"
 	"encoding/json"
+	"slices"
 	"sort"
 )
 
@@ -45,10 +47,8 @@ func newClassification() Classification {
 }
 
 func categoryRank(category string) int {
-	for index, each := range CategoryOrder {
-		if each == category {
-			return index
-		}
+	if index := slices.Index(CategoryOrder, category); index >= 0 {
+		return index
 	}
 	return len(CategoryOrder)
 }
@@ -59,26 +59,20 @@ func Union(classifications []Classification) Classification {
 	if len(classifications) == 0 {
 		return newClassification()
 	}
-	category := classifications[0].Category
-	for _, each := range classifications[1:] {
-		if categoryRank(each.Category) < categoryRank(category) {
-			category = each.Category
-		}
-	}
+	category := slices.MinFunc(classifications, func(first, second Classification) int {
+		return cmp.Compare(categoryRank(first.Category), categoryRank(second.Category))
+	}).Category
 	united := Classification{Category: category}
 	var effects []string
-	for _, each := range classifications {
-		effects = append(effects, each.Effects...)
-		united.Uncertain = united.Uncertain || each.Uncertain
+	for _, entry := range classifications {
+		effects = append(effects, entry.Effects...)
+		united.Uncertain = united.Uncertain || entry.Uncertain
 	}
 	united.Effects = sortedUnique(effects)
 	ordered := append([]Classification{}, classifications...)
 	sort.SliceStable(ordered, func(i, j int) bool { return ordered[i].Category == category && ordered[j].Category != category })
-	for _, each := range ordered {
-		if each.Label != "" {
-			united.Label = each.Label
-			break
-		}
+	if labelled := slices.IndexFunc(ordered, func(entry Classification) bool { return entry.Label != "" }); labelled >= 0 {
+		united.Label = ordered[labelled].Label
 	}
 	return united
 }
@@ -106,12 +100,7 @@ func (classification Classification) withEffect(effect string) Classification {
 }
 
 func (classification Classification) has(effect string) bool {
-	for _, each := range classification.Effects {
-		if each == effect {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(classification.Effects, effect)
 }
 
 // IsWrite says the command changes files: not the journal's own, and it writes or deletes files or leaves its meaning
@@ -120,8 +109,8 @@ func (classification Classification) IsWrite() bool {
 	return classification.Category != journalCategory && (classification.has(writesFiles) || classification.has(deletesFiles) || classification.Uncertain)
 }
 
-func sortedUnique(words []string) []string {
-	kept := unique(words)
-	sort.Strings(kept)
-	return kept
+func sortedUnique(items []string) []string {
+	retained := unique(items)
+	sort.Strings(retained)
+	return retained
 }

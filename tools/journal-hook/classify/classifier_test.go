@@ -62,6 +62,6 @@ func TestAPartGetsItsPathsAndTheLineItsRedirects(t *testing.T) {
 	}
 }
 
-func sameWords(got, want []string) bool {
-	return len(got) == len(want) && (len(got) == 0 || reflect.DeepEqual(got, want))
+func sameWords(actual, want []string) bool {
+	return len(actual) == len(want) && (len(actual) == 0 || reflect.DeepEqual(actual, want))
 }

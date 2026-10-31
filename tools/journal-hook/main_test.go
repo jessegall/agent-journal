@@ -34,8 +34,8 @@ func TestTheBuiltBinaryRunsARecordedBody(t *testing.T) {
 		t.Error("the hook was not stamped and noted")
 	}
 
-	quiet := project(t, "")
-	if stdout, code := run(t, binary, quiet, body, "AGENT_JOURNAL_ACTIVE=0"); code != 0 || stdout != "" {
+	inactive := project(t, "")
+	if stdout, code := run(t, binary, inactive, body, "AGENT_JOURNAL_ACTIVE=0"); code != 0 || stdout != "" {
 		t.Errorf("an inactive project: exit %d, printed %q", code, stdout)
 	}
 }
@@ -48,7 +48,7 @@ func run(t *testing.T, binary, root string, body []byte, variables ...string) (s
 	command.Env = append(os.Environ(), variables...)
 	command.Stdin = bytes.NewReader(body)
 	output, err := command.Output()
-	if exit, ok := err.(*exec.ExitError); ok {
+	if exit, present := err.(*exec.ExitError); present {
 		return string(output), exit.ExitCode()
 	}
 	if err != nil {

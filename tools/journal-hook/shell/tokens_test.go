@@ -8,7 +8,7 @@ import (
 // Each line beside what Python's shlex.split gives for it, or nil where it raises.
 var wordSamples = []struct {
 	line  string
-	words []string
+	items []string
 }{
 	{"git status --short", []string{"git", "status", "--short"}},
 	{`grep -n "a b" 'c d' e\ f`, []string{"grep", "-n", "a b", "c d", "e f"}},
@@ -25,15 +25,15 @@ var wordSamples = []struct {
 
 func TestWordsAreReadAsShlexReadsThem(t *testing.T) {
 	for _, sample := range wordSamples {
-		words, err := Words(sample.line)
-		if sample.words == nil && sample.line != "" {
+		items, err := Shlex(sample.line)
+		if sample.items == nil && sample.line != "" {
 			if err == nil {
-				t.Errorf("words(%q) gave %q, shlex raises", sample.line, words)
+				t.Errorf("words(%q) gave %q, shlex raises", sample.line, items)
 			}
 			continue
 		}
-		if err != nil || !reflect.DeepEqual(words, sample.words) {
-			t.Errorf("words(%q) = %q, %v; want %q", sample.line, words, err, sample.words)
+		if err != nil || !reflect.DeepEqual(items, sample.items) {
+			t.Errorf("words(%q) = %q, %v; want %q", sample.line, items, err, sample.items)
 		}
 	}
 }
@@ -45,14 +45,14 @@ func TestTokensLeaveOutCommentLinesAndLeadingAssignments(t *testing.T) {
 		`echo "open`:                            {"echo", `"open`},
 	}
 	for line, want := range cases {
-		if got := Tokens(line); !reflect.DeepEqual(got, want) {
-			t.Errorf("tokens(%q) = %q, want %q", line, got, want)
+		if actual := Tokens(line); !reflect.DeepEqual(actual, want) {
+			t.Errorf("tokens(%q) = %q, want %q", line, actual, want)
 		}
 	}
 }
 
 func TestJoinQuotesAsShlexDoes(t *testing.T) {
-	if got := Join([]string{"bash", "-lc", "ls -la", "", "it's", "a/b.c=1:@%+,"}); got != `bash -lc 'ls -la' '' 'it'"'"'s' a/b.c=1:@%+,` {
-		t.Errorf("join gave %s", got)
+	if actual := Join([]string{"bash", "-lc", "ls -la", "", "it's", "a/b.c=1:@%+,"}); actual != `bash -lc 'ls -la' '' 'it'"'"'s' a/b.c=1:@%+,` {
+		t.Errorf("join gave %s", actual)
 	}
 }

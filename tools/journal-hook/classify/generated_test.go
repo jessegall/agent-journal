@@ -55,9 +55,9 @@ type rawRows map[string]map[string]json.RawMessage
 func resolvedRow(rows map[string]json.RawMessage, name string) map[string]json.RawMessage {
 	var row map[string]json.RawMessage
 	_ = json.Unmarshal(rows[name], &row)
-	var other string
-	if json.Unmarshal(row["same_as"], &other) == nil {
-		return resolvedRow(rows, other)
+	var alias string
+	if json.Unmarshal(row["same_as"], &alias) == nil {
+		return resolvedRow(rows, alias)
 	}
 	return row
 }
@@ -71,7 +71,7 @@ func sectionOf(row map[string]json.RawMessage, key string) map[string]json.RawMe
 // formClassification is version 4's classified(): the classification a form gives from the table, its program's base,
 // its subcommands and its options' modifiers applied; a wrapper's form says nothing of its own.
 func formClassification(table map[string]json.RawMessage, form generatedForm) (Classification, bool) {
-	words := strings.Fields(form.Form)[1:]
+	items := strings.Fields(form.Form)[1:]
 	var wrappers, programs map[string]json.RawMessage
 	_ = json.Unmarshal(table["wrappers"], &wrappers)
 	_ = json.Unmarshal(table["programs"], &programs)
@@ -81,9 +81,10 @@ func formClassification(table map[string]json.RawMessage, form generatedForm) (C
 			return Classification{}, true
 		}
 		for _, subcommand := range subcommands {
-			if hasWords(words, strings.Fields(subcommand)) {
-				return Classification{}, true
+			if !hasWords(items, strings.Fields(subcommand)) {
+				continue
 			}
+			return Classification{}, true
 		}
 	}
 	row := resolvedRow(programs, form.Program)
@@ -91,35 +92,35 @@ func formClassification(table map[string]json.RawMessage, form generatedForm) (C
 		return Classification{Category: unknown, Effects: []string{}}, false
 	}
 	base := row
-	if raw, ok := row["base"]; ok {
+	if raw, present := row["base"]; present {
 		base = nil
 		_ = json.Unmarshal(raw, &base)
 	}
 	levels, current := []map[string]json.RawMessage{base}, row
-	for _, word := range words {
+	for _, word := range items {
 		if strings.HasPrefix(word, "-") || strings.HasPrefix(word, "<") || strings.HasPrefix(word, "[") || strings.HasPrefix(word, "(") {
 			continue
 		}
-		below := resolvedRow(sectionOf(current, "subcommands"), word)
-		if len(below) == 0 {
+		child := resolvedRow(sectionOf(current, "subcommands"), word)
+		if len(child) == 0 {
 			break
 		}
-		levels, current = append(levels, below), below
+		levels, current = append(levels, child), child
 	}
-	named := 0
+	categoryLevel := 0
 	for index := len(levels) - 1; index >= 0; index-- {
-		if _, ok := levels[index]["kind"]; ok || index == 0 {
-			named = index
+		if _, present := levels[index]["kind"]; present || index == 0 {
+			categoryLevel = index
 			break
 		}
 	}
-	found := Classification{Category: textOf(levels[named]["kind"]), Effects: []string{}}
-	if found.Category == "" {
-		found.Category = unknown
+	expected := Classification{Category: textOf(levels[categoryLevel]["kind"]), Effects: []string{}}
+	if expected.Category == "" {
+		expected.Category = unknown
 	}
-	for _, level := range levels[named:] {
-		found.Effects = append(found.Effects, stringsOf(level["effects"])...)
-		found.Uncertain = found.Uncertain || truthOf(level["uncertain"])
+	for _, level := range levels[categoryLevel:] {
+		expected.Effects = append(expected.Effects, stringsOf(level["effects"])...)
+		expected.Uncertain = expected.Uncertain || truthOf(level["uncertain"])
 	}
 	modifiers := map[string]json.RawMessage{}
 	for _, level := range append([]map[string]json.RawMessage{row}, levels[1:]...) {
@@ -129,48 +130,48 @@ func formClassification(table map[string]json.RawMessage, form generatedForm) (C
 	}
 	for _, option := range formOptions(form.Form) {
 		modifier := resolvedRow(modifiers, option)
-		if raw, ok := modifier["kind"]; ok {
-			found.Effects = stringsOf(modifier["effects"])
-			found.Category = textOf(raw)
+		if raw, present := modifier["kind"]; present {
+			expected.Effects = stringsOf(modifier["effects"])
+			expected.Category = textOf(raw)
 		} else {
-			found.Effects = append(found.Effects, stringsOf(modifier["effects"])...)
+			expected.Effects = append(expected.Effects, stringsOf(modifier["effects"])...)
 		}
-		found.Uncertain = found.Uncertain || truthOf(modifier["uncertain"])
+		expected.Uncertain = expected.Uncertain || truthOf(modifier["uncertain"])
 	}
-	found.Effects = sortedUnique(found.Effects)
-	return found, false
+	expected.Effects = sortedUnique(expected.Effects)
+	return expected, false
 }
 
 // formOptions are the options a form names, each not right after a word character or a slot's <.
 func formOptions(form string) []string {
 	var options []string
-	for from := 0; from < len(form); {
-		found := formOption.FindStringIndex(form[from:])
-		if found == nil {
+	for searchStart := 0; searchStart < len(form); {
+		span := formOption.FindStringIndex(form[searchStart:])
+		if span == nil {
 			break
 		}
-		start, end := from+found[0], from+found[1]
+		start, end := searchStart+span[0], searchStart+span[1]
 		if start > 0 && (pyre.IsWord(rune(form[start-1])) || form[start-1] == '<') {
-			from = start + 1
+			searchStart = start + 1
 			continue
 		}
 		options = append(options, form[start:end])
-		from = end
+		searchStart = end
 	}
 	return options
 }
 
 // filledForm is version 4's filled(): each optional piece kept six times in ten, each slot given a value of its kind.
 func filledForm(form string, random *rand.Rand) string {
-	optional := optionalPiece.ReplaceAllStringFunc(form, func(piece string) string {
+	optional := optionalPiece.ReplaceAllStringFunc(form, func(bracketed string) string {
 		if random.Float64() < 0.6 {
-			return piece[1 : len(piece)-1]
+			return bracketed[1 : len(bracketed)-1]
 		}
 		return ""
 	})
-	filled := slot.ReplaceAllStringFunc(optional, func(found string) string {
-		values, ok := slotValues[found[1:len(found)-1]]
-		if !ok {
+	filled := slot.ReplaceAllStringFunc(optional, func(slotText string) string {
+		values, present := slotValues[slotText[1:len(slotText)-1]]
+		if !present {
 			values = []string{"value"}
 		}
 		return values[random.IntN(len(values))]
@@ -206,18 +207,18 @@ func generated(t *testing.T, seed uint64, count int) []generatedCommand {
 		if random.Float64() < 0.5 {
 			shape = fixture.Chains[random.IntN(len(fixture.Chains))]
 		}
-		var words []string
+		var items []string
 		var classifications []Classification
 		for _, token := range shape {
 			if token != "PART" {
-				words = append(words, token)
+				items = append(items, token)
 				continue
 			}
 			form := forms[random.IntN(len(forms))]
-			words = append(words, filledForm(form.Form, random))
+			items = append(items, filledForm(form.Form, random))
 			classifications = append(classifications, expectations[form.Form])
 		}
-		commands = append(commands, generatedCommand{strings.Join(words, " "), Union(classifications)})
+		commands = append(commands, generatedCommand{strings.Join(items, " "), Union(classifications)})
 	}
 	return commands
 }
@@ -225,35 +226,35 @@ func generated(t *testing.T, seed uint64, count int) []generatedCommand {
 // Every generated command is classified as its forms say, but for the ones in generated_differences.json, where the
 // reading differs from the forms with a reason recorded.
 func TestGeneratedCommandsAreClassifiedAsTheirFormsSay(t *testing.T) {
-	var known map[string]string
+	var frozen map[string]string
 	text, err := os.ReadFile(filepath.Join("..", "testdata", "version4", "generated_differences.json"))
-	if err != nil || json.Unmarshal(text, &known) != nil {
+	if err != nil || json.Unmarshal(text, &frozen) != nil {
 		t.Fatalf("generated_differences.json does not read: %v", err)
 	}
-	found := map[string]string{}
+	differences := map[string]string{}
 	for _, command := range generated(t, 7, generatedCommands) {
-		got := shippedClassifier.ClassifyLine(command.text)
+		actual := shippedClassifier.ClassifyLine(command.text)
 		want := command.expected
-		if got.Category != want.Category || !reflect.DeepEqual(nonNil(got.Effects), nonNil(want.Effects)) || got.Uncertain != want.Uncertain {
-			found[command.text] = describe(got) + " where the forms say " + describe(want)
+		if actual.Category != want.Category || !reflect.DeepEqual(nonNil(actual.Effects), nonNil(want.Effects)) || actual.Uncertain != want.Uncertain {
+			differences[command.text] = describe(actual) + " where the forms say " + describe(want)
 		}
 	}
 	var lines []string
-	for line, reading := range found {
-		if _, ok := known[line]; !ok {
-			lines = append(lines, line+"\n   "+reading)
+	for line, difference := range differences {
+		if _, present := frozen[line]; !present {
+			lines = append(lines, line+"\n   "+difference)
 		}
 	}
 	sort.Strings(lines)
 	for _, line := range lines {
 		t.Errorf("read otherwise than its forms say: %s", line)
 	}
-	for line := range known {
-		if _, ok := found[line]; !ok {
+	for line := range frozen {
+		if _, present := differences[line]; !present {
 			t.Errorf("a known difference is read as its forms say now; take it out of generated_differences.json: %s", line)
 		}
 	}
-	t.Logf("%d of %d generated commands differ from their forms, %d of them known", len(found), generatedCommands, len(known))
+	t.Logf("%d of %d generated commands differ from their forms, %d of them known", len(differences), generatedCommands, len(frozen))
 }
 
 func describe(classification Classification) string {
@@ -264,9 +265,9 @@ func describe(classification Classification) string {
 	return text
 }
 
-func nonNil(words []string) []string {
-	if words == nil {
+func nonNil(items []string) []string {
+	if items == nil {
 		return []string{}
 	}
-	return words
+	return items
 }

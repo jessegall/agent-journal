@@ -25,8 +25,8 @@ func TestACodexShellCommandIsReadBackToTheLineItRuns(t *testing.T) {
 		{"None", "None"},
 	}
 	for _, sample := range cases {
-		if got := codexShellLine(sample.command, runScript); got != sample.line {
-			t.Errorf("shell line of %v = %q, want %q", sample.command, got, sample.line)
+		if actual := codexShellLine(sample.command, runScript); actual != sample.line {
+			t.Errorf("shell line of %v = %q, want %q", sample.command, actual, sample.line)
 		}
 	}
 }

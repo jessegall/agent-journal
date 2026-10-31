@@ -75,17 +75,13 @@ func TestEveryRecordedShellLineIsSplitAsVersion4SplitIt(t *testing.T) {
 			lines++
 			var want []version4Part
 			for _, part := range call.Parts {
-				files := part.Files
-				if files == nil {
-					files = []string{}
-				}
-				want = append(want, version4Part{Text: part.Text, Writes: part.Writes, Files: files})
+				want = append(want, version4Part{Text: part.Text, Writes: part.Writes, Files: append([]string{}, part.Files...)})
 			}
-			got := classifier.version4Parts(call.Command)
-			if !reflect.DeepEqual(partTexts(got), partTexts(want)) {
+			actual := classifier.version4Parts(call.Command)
+			if !reflect.DeepEqual(partTexts(actual), partTexts(want)) {
 				differences++
-				t.Errorf("%s line %d %q\n go        %q\n version 4 %q", event, index+1, call.Command, partTexts(got), partTexts(want))
-			} else if !reflect.DeepEqual(got, want) {
+				t.Errorf("%s line %d %q\n go        %q\n version 4 %q", event, index+1, call.Command, partTexts(actual), partTexts(want))
+			} else if !reflect.DeepEqual(actual, want) {
 				classified++
 			}
 		}
@@ -110,9 +106,9 @@ func jsonLines(t *testing.T, path string) [][]byte {
 	defer opened.Close()
 	scanner := bufio.NewScanner(opened)
 	scanner.Buffer(make([]byte, 0, 1<<20), 64<<20)
-	var found [][]byte
+	var collected [][]byte
 	for scanner.Scan() {
-		found = append(found, []byte(strings.Clone(scanner.Text())))
+		collected = append(collected, []byte(strings.Clone(scanner.Text())))
 	}
-	return found
+	return collected
 }

@@ -23,48 +23,52 @@ func Compile(pattern string) *regexp.Regexp {
 
 // Translated writes Python's classes out in a pattern; every other escape is the same in Go.
 func Translated(pattern string) string {
-	classes := map[byte]string{'s': Space, 'w': Word, 'd': Digit}
-	var written strings.Builder
+	var encoded strings.Builder
 	inClass := false
 	for index := 0; index < len(pattern); index++ {
 		character := pattern[index]
 		switch {
 		case character == '\\' && index+1 < len(pattern):
-			next := pattern[index+1]
 			index++
-			if members, ok := classes[next]; ok {
-				if inClass {
-					written.WriteString(members)
-				} else {
-					written.WriteString("[" + members + "]")
-				}
-				continue
-			}
-			if members, ok := classes[next+'a'-'A']; ok && next >= 'A' && next <= 'Z' && !inClass {
-				written.WriteString("[^" + members + "]")
-				continue
-			}
-			written.WriteByte('\\')
-			written.WriteByte(next)
+			encoded.WriteString(escape(pattern[index], inClass))
 		case character == '[' && !inClass:
 			inClass = true
-			written.WriteByte(character)
+			encoded.WriteByte(character)
 			if strings.HasPrefix(pattern[index+1:], "^") {
-				written.WriteByte('^')
+				encoded.WriteByte('^')
 				index++
 			}
 			if strings.HasPrefix(pattern[index+1:], "]") {
-				written.WriteByte(']')
+				encoded.WriteByte(']')
 				index++
 			}
 		case character == ']' && inClass:
 			inClass = false
-			written.WriteByte(character)
+			encoded.WriteByte(character)
 		default:
-			written.WriteByte(character)
+			encoded.WriteByte(character)
 		}
 	}
-	return written.String()
+	return encoded.String()
+}
+
+// The Python classes a backslash and a letter name.
+var classes = map[byte]string{'s': Space, 'w': Word, 'd': Digit}
+
+// escape is the Go text of a backslash and the character after it: a Python class written out, inside a character
+// class as its members, outside it as a class of its own, and as its negation for the capital letter; any other escape
+// as it stands.
+func escape(character byte, inClass bool) string {
+	if members, present := classes[character]; present && inClass {
+		return members
+	}
+	if members, present := classes[character]; present {
+		return "[" + members + "]"
+	}
+	if members, present := classes[character+'a'-'A']; present && character >= 'A' && character <= 'Z' && !inClass {
+		return "[^" + members + "]"
+	}
+	return `\` + string(character)
 }
 
 // IsSpace is Python's str.isspace, which strip() trims and \s matches.
@@ -84,14 +88,14 @@ func IsWord(character rune) bool {
 
 // IsBoundary is Python's \b at a position of the text: a word character on one side and not on the other.
 func IsBoundary(text string, position int) bool {
-	before, after := false, false
+	preceding, following := false, false
 	if position > 0 {
 		character, _ := utf8.DecodeLastRuneInString(text[:position])
-		before = IsWord(character)
+		preceding = IsWord(character)
 	}
 	if position < len(text) {
 		character, _ := utf8.DecodeRuneInString(text[position:])
-		after = IsWord(character)
+		following = IsWord(character)
 	}
-	return before != after
+	return preceding != following
 }

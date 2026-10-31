@@ -13,7 +13,7 @@ import (
 
 // hookContext reads what the hook knows besides its body, as hook.sh does; skip says the hook is not the journal's:
 // the journal is not on for this shell, or the actor is one whose hooks never reach it.
-func hookContext(getenv func(string) string, root, folder string, processID int, begun time.Time) (programs.Context, bool) {
+func hookContext(getenv func(string) string, root, folder string, processID int, started time.Time) (programs.Context, bool) {
 	if getenv("AGENT_JOURNAL_ACTIVE") != "1" {
 		return programs.Context{}, true
 	}
@@ -28,7 +28,7 @@ func hookContext(getenv func(string) string, root, folder string, processID int,
 	if environment == "" {
 		environment = localEnvironment(folder)
 	}
-	firedAtMs := begun.UnixMilli()
+	firedAtMs := started.UnixMilli()
 	return programs.Context{
 		Environment: environment,
 		Actor:       actor,
@@ -45,9 +45,10 @@ func isJournalActor(actor string) bool {
 		return true
 	}
 	for _, prefix := range []string{"worker:", "verifier:", "reviewer:"} {
-		if strings.HasPrefix(actor, prefix) {
-			return true
+		if !strings.HasPrefix(actor, prefix) {
+			continue
 		}
+		return true
 	}
 	return false
 }
@@ -57,8 +58,8 @@ func isJournalActor(actor string) bool {
 func localEnvironment(folder string) string {
 	for current := folder; ; current = filepath.Dir(current) {
 		marker := filepath.Join(current, ".git")
-		if info, err := os.Stat(marker); err == nil {
-			if info.IsDir() || !isLinkedWorktree(marker) {
+		if details, err := os.Stat(marker); err == nil {
+			if details.IsDir() || !isLinkedWorktree(marker) {
 				return "main"
 			}
 			return filepath.Base(current)

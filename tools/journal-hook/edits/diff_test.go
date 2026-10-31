@@ -15,11 +15,11 @@ import (
 
 // Each pair of texts beside the counts git diff --numstat gives for it.
 var lineDiffCases = []struct {
-	name    string
-	before  string
-	after   string
-	added   int
-	removed int
+	name     string
+	original string
+	changed  string
+	added    int
+	removed  int
 }{
 	{"one line changed", "a\nb\nc\n", "a\nB\nc\n", 1, 1},
 	{"lines added in the middle", "a\nc\n", "a\nb1\nb2\nc\n", 2, 0},
@@ -32,11 +32,11 @@ var lineDiffCases = []struct {
 
 func TestLineDiffCountsAsGitDiffNumstat(t *testing.T) {
 	for _, sample := range lineDiffCases {
-		added, removed := LineDiff(sample.before, sample.after)
+		added, removed := LineDiff(sample.original, sample.changed)
 		if added != sample.added || removed != sample.removed {
 			t.Errorf("%s: +%d -%d, want +%d -%d", sample.name, added, removed, sample.added, sample.removed)
 		}
-		if gitAdded, gitRemoved, ok := gitNumstat(t, sample.before, sample.after); ok && (gitAdded != added || gitRemoved != removed) {
+		if gitAdded, gitRemoved, present := gitNumstat(t, sample.original, sample.changed); present && (gitAdded != added || gitRemoved != removed) {
 			t.Errorf("%s: git diff --numstat gives +%d -%d, the diff +%d -%d", sample.name, gitAdded, gitRemoved, added, removed)
 		}
 	}
@@ -45,8 +45,8 @@ func TestLineDiffCountsAsGitDiffNumstat(t *testing.T) {
 func TestAnEditOfAFileOnDiskIsCountedFromTheFile(t *testing.T) {
 	folder := t.TempDir()
 	path := filepath.Join(folder, "app.py")
-	write(t, path, "def a():\n    return 1\n\ndef b():\n    return 1\n")
-	before := OnDisk(path)
+	writeFile(t, path, "def a():\n    return 1\n\ndef b():\n    return 1\n")
+	original := OnDisk(path)
 	cases := []struct {
 		name         string
 		replacements []Replacement
@@ -58,29 +58,29 @@ func TestAnEditOfAFileOnDiskIsCountedFromTheFile(t *testing.T) {
 		{"a multi-edit, one after the other", []Replacement{{Old: "def a():", New: "def first():"}, {Old: "def first():\n", New: "def first():\n    \"\"\"The first.\"\"\"\n"}}, event.DiffCount{Path: path, Existed: true, LinesAdded: 2, LinesRemoved: 1}},
 	}
 	for _, sample := range cases {
-		if got := Counted(path, before, Replaced(*before, sample.replacements)); *got != sample.want {
-			t.Errorf("%s: %+v, want %+v", sample.name, *got, sample.want)
+		if actual := Counted(path, original, Replaced(*original, sample.replacements)); *actual != sample.want {
+			t.Errorf("%s: %+v, want %+v", sample.name, *actual, sample.want)
 		}
 	}
 }
 
 func TestANewFileDidNotExist(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "new.md")
-	if got := Counted(path, OnDisk(path), "# Title\n\nText.\n"); *got != (event.DiffCount{Path: path, Existed: false, LinesAdded: 3}) {
-		t.Errorf("%+v", *got)
+	if actual := Counted(path, OnDisk(path), "# Title\n\nText.\n"); *actual != (event.DiffCount{Path: path, Existed: false, LinesAdded: 3}) {
+		t.Errorf("%+v", *actual)
 	}
 }
 
 func TestACodexPatchIsCountedFromItsOwnLines(t *testing.T) {
 	folder := t.TempDir()
-	write(t, filepath.Join(folder, "old.txt"), "1\n2\n3\n")
+	writeFile(t, filepath.Join(folder, "old.txt"), "1\n2\n3\n")
 	onDisk := func(path string) *string { return OnDisk(filepath.Join(folder, path)) }
 	patch := "*** Begin Patch\n*** Update File: a.go\n@@\n-x\n+y\n+z\n*** Add File: b.go\n+package b\n*** Delete File: old.txt\n*** End Patch"
-	if got := Patched(patch, onDisk); *got != (event.DiffCount{Path: "a.go", Existed: true, LinesAdded: 3, LinesRemoved: 4}) {
-		t.Errorf("%+v", *got)
+	if actual := Patched(patch, onDisk); *actual != (event.DiffCount{Path: "a.go", Existed: true, LinesAdded: 3, LinesRemoved: 4}) {
+		t.Errorf("%+v", *actual)
 	}
-	if got := Patched("*** Begin Patch\n*** Add File: n.txt\n+one\n*** End Patch", onDisk); *got != (event.DiffCount{Path: "n.txt", Existed: false, LinesAdded: 1}) {
-		t.Errorf("%+v", *got)
+	if actual := Patched("*** Begin Patch\n*** Add File: n.txt\n+one\n*** End Patch", onDisk); *actual != (event.DiffCount{Path: "n.txt", Existed: false, LinesAdded: 1}) {
+		t.Errorf("%+v", *actual)
 	}
 	if Patched("not a patch", onDisk) != nil {
 		t.Error("a text with no file header counted as a patch")
@@ -88,14 +88,14 @@ func TestACodexPatchIsCountedFromItsOwnLines(t *testing.T) {
 }
 
 // gitNumstat asks git for its counts of the two texts, within ten seconds; ok is false where git is not at hand.
-func gitNumstat(t *testing.T, before, after string) (added, removed int, ok bool) {
+func gitNumstat(t *testing.T, original, changed string) (added, removed int, present bool) {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {
 		return 0, 0, false
 	}
 	folder := t.TempDir()
-	write(t, filepath.Join(folder, "before"), before)
-	write(t, filepath.Join(folder, "after"), after)
+	writeFile(t, filepath.Join(folder, "before"), original)
+	writeFile(t, filepath.Join(folder, "after"), changed)
 	limit, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	output, _ := exec.CommandContext(limit, "git", "diff", "--no-index", "--numstat", filepath.Join(folder, "before"), filepath.Join(folder, "after")).Output()
@@ -108,7 +108,7 @@ func gitNumstat(t *testing.T, before, after string) (added, removed int, ok bool
 	return added, removed, true
 }
 
-func write(t *testing.T, path, text string) {
+func writeFile(t *testing.T, path, text string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
 		t.Fatal(err)

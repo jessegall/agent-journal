@@ -8,7 +8,7 @@ import (
 )
 
 func TestTheHookIsSkippedOrPreparedAsHookShDecides(t *testing.T) {
-	begun := time.UnixMilli(1793395000123)
+	started := time.UnixMilli(1793395000123)
 	cases := []struct {
 		name        string
 		variables   map[string]string
@@ -26,10 +26,10 @@ func TestTheHookIsSkippedOrPreparedAsHookShDecides(t *testing.T) {
 		{"a sub-agent", map[string]string{"AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ACTOR": "sub-agent"}, true, "", ""},
 		{"a named environment", map[string]string{"AGENT_JOURNAL_ACTIVE": "1", "JOURNAL_ENV": "development"}, false, "agent", "development"},
 	}
-	outside := t.TempDir()
+	unrelated := t.TempDir()
 	for _, sample := range cases {
 		getenv := func(name string) string { return sample.variables[name] }
-		context, skip := hookContext(getenv, "/project", outside, 7731, begun)
+		context, skip := hookContext(getenv, "/project", unrelated, 7731, started)
 		if skip != sample.skip {
 			t.Errorf("%s: skip %v, want %v", sample.name, skip, sample.skip)
 			continue
@@ -51,14 +51,14 @@ func TestTheHookIsSkippedOrPreparedAsHookShDecides(t *testing.T) {
 
 func TestTheEnvironmentIsTheLinkedWorktreesFolderAndElseMain(t *testing.T) {
 	project := t.TempDir()
-	write(t, filepath.Join(project, ".git", "HEAD"), "ref: refs/heads/main\n")
+	writeFile(t, filepath.Join(project, ".git", "HEAD"), "ref: refs/heads/main\n")
 	worktreeState := filepath.Join(project, ".git", "worktrees", "feature")
-	write(t, filepath.Join(worktreeState, "commondir"), "../..\n")
+	writeFile(t, filepath.Join(worktreeState, "commondir"), "../..\n")
 	worktree := filepath.Join(project, ".journal", "worktrees", "1159-Konrad")
-	write(t, filepath.Join(worktree, ".git"), "gitdir: "+worktreeState+"\n")
+	writeFile(t, filepath.Join(worktree, ".git"), "gitdir: "+worktreeState+"\n")
 	submodule := filepath.Join(project, "vendor", "lib")
-	write(t, filepath.Join(project, ".git", "modules", "lib", "HEAD"), "ref: refs/heads/main\n")
-	write(t, filepath.Join(submodule, ".git"), "gitdir: ../../.git/modules/lib\n")
+	writeFile(t, filepath.Join(project, ".git", "modules", "lib", "HEAD"), "ref: refs/heads/main\n")
+	writeFile(t, filepath.Join(submodule, ".git"), "gitdir: ../../.git/modules/lib\n")
 	cases := map[string]string{
 		project:                          "main",
 		filepath.Join(project, "src"):    "main",
@@ -68,13 +68,13 @@ func TestTheEnvironmentIsTheLinkedWorktreesFolderAndElseMain(t *testing.T) {
 		t.TempDir():                      "main",
 	}
 	for folder, want := range cases {
-		if got := localEnvironment(folder); got != want {
-			t.Errorf("environment of %s = %q, want %q", folder, got, want)
+		if actual := localEnvironment(folder); actual != want {
+			t.Errorf("environment of %s = %q, want %q", folder, actual, want)
 		}
 	}
 }
 
-func write(t *testing.T, path, text string) {
+func writeFile(t *testing.T, path, text string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)

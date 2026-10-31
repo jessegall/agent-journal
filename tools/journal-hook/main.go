@@ -12,13 +12,13 @@ import (
 )
 
 func main() {
-	begun := time.Now()
+	started := time.Now()
 	if len(os.Args) < 3 {
 		os.Exit(0)
 	}
 	program, root := os.Args[1], os.Args[2]
 	folder, _ := os.Getwd()
-	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), begun)
+	context, skip := hookContext(os.Getenv, root, folder, os.Getpid(), started)
 	if skip {
 		os.Exit(0)
 	}
@@ -48,5 +48,5 @@ func main() {
 		body:        object,
 		limit:       limit,
 	}, nil, time.Now())
-	os.Exit(Printed(os.Stdout, os.Stderr, program, prepared.Event, status, answer, root, limit))
+	os.Exit(ExitCode(os.Stdout, os.Stderr, program, prepared.Event, status, answer, root, limit))
 }

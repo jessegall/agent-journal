@@ -59,10 +59,10 @@ func New(privateWords []string) Anonymiser {
 }
 
 func NewFor(home string, privateWords []string) Anonymiser {
-	words := append([]string(nil), privateWords...)
-	sort.SliceStable(words, func(i, j int) bool { return utf8.RuneCountInString(words[i]) > utf8.RuneCountInString(words[j]) })
-	patterns := make([]*regexp.Regexp, len(words))
-	for i, word := range words {
+	items := append([]string(nil), privateWords...)
+	sort.SliceStable(items, func(i, j int) bool { return utf8.RuneCountInString(items[i]) > utf8.RuneCountInString(items[j]) })
+	patterns := make([]*regexp.Regexp, len(items))
+	for i, word := range items {
 		patterns[i] = regexp.MustCompile(`(?i)` + regexp.QuoteMeta(word))
 	}
 	return Anonymiser{home: home, user: filepath.Base(home), privateWords: patterns}
@@ -91,33 +91,34 @@ func (anonymiser Anonymiser) Replaced(text string) string {
 // on from the next character.
 func (secret rule) apply(text string) string {
 	var replaced []byte
-	kept, from := 0, 0
-	for from <= len(text) {
-		found := secret.pattern.FindStringSubmatchIndex(text[from:])
-		if found == nil {
+	retained, searchStart := 0, 0
+	for searchStart <= len(text) {
+		span := secret.pattern.FindStringSubmatchIndex(text[searchStart:])
+		if span == nil {
 			break
 		}
-		for i := range found {
-			if found[i] >= 0 {
-				found[i] += from
+		for i := range span {
+			if span[i] < 0 {
+				continue
 			}
+			span[i] += searchStart
 		}
-		start, end := found[0], found[1]
+		start, end := span[0], span[1]
 		// every later start inside a refused run is a part of it, which the check refuses too
 		if secret.accepts != nil && !secret.accepts(text[start:end]) {
-			from = end
+			searchStart = end
 			continue
 		}
 		if (secret.boundaryStart && !pyre.IsBoundary(text, start)) || (secret.boundaryEnd && !pyre.IsBoundary(text, end)) {
 			_, size := utf8.DecodeRuneInString(text[start:])
-			from = start + max(size, 1)
+			searchStart = start + max(size, 1)
 			continue
 		}
-		replaced = append(replaced, text[kept:start]...)
-		replaced = secret.pattern.ExpandString(replaced, secret.template, text, found)
-		kept, from = end, end
+		replaced = append(replaced, text[retained:start]...)
+		replaced = secret.pattern.ExpandString(replaced, secret.template, text, span)
+		retained, searchStart = end, end
 	}
-	return string(append(replaced, text[kept:]...))
+	return string(append(replaced, text[retained:]...))
 }
 
 // A long run counts as a key only when it holds a lowercase letter, an uppercase letter and a digit.

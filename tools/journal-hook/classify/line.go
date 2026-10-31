@@ -41,8 +41,8 @@ func (classifier *Classifier) part(command shell.Command, classification Classif
 		JoinedBy:       command.JoinedBy,
 	}
 	if command.PipedInto >= 0 {
-		into := command.PipedInto
-		prepared.PipedInto = &into
+		target := command.PipedInto
+		prepared.PipedInto = &target
 	}
 	return prepared
 }
@@ -67,17 +67,18 @@ func joinsOn(command shell.Command) bool {
 func isJournalOnly(commands []shell.Command) bool {
 	runs := Runs(commands)
 	for _, run := range runs {
-		if !isJournal(run[0].Text) {
-			return false
+		if isJournal(run[0].Text) {
+			continue
 		}
+		return false
 	}
 	return len(runs) > 0
 }
 
 // nonEmpty leaves an empty list out of the object, where the schema makes it optional.
-func nonEmpty(words []string) []string {
-	if len(words) == 0 {
+func nonEmpty(items []string) []string {
+	if len(items) == 0 {
 		return nil
 	}
-	return words
+	return items
 }

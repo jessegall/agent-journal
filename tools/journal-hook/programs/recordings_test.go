@@ -29,7 +29,7 @@ func checkRecordings(t *testing.T, program string) {
 	}
 	for _, recording := range recordings {
 		expectedFile := filepath.Join("testdata", "prepared", program, filepath.Base(recording))
-		var given []string
+		var outputs []string
 		for number, body := range lines(t, recording) {
 			prepared, skip, err := Prepared(program, body, testContext)
 			if err != nil {
@@ -37,7 +37,7 @@ func checkRecordings(t *testing.T, program string) {
 				continue
 			}
 			if skip {
-				given = append(given, "skip")
+				outputs = append(outputs, "skip")
 				continue
 			}
 			schemacheck.Fits(t, prepared)
@@ -46,24 +46,25 @@ func checkRecordings(t *testing.T, program string) {
 			}
 			prepared.Raw = nil
 			text, _ := json.Marshal(prepared)
-			given = append(given, strings.Replace(string(text), `,"raw":null`, "", 1))
+			outputs = append(outputs, strings.Replace(string(text), `,"raw":null`, "", 1))
 		}
 		if *update {
 			_ = os.MkdirAll(filepath.Dir(expectedFile), 0o755)
-			if err := os.WriteFile(expectedFile, []byte(strings.Join(given, "\n")+"\n"), 0o644); err != nil {
+			if err := os.WriteFile(expectedFile, []byte(strings.Join(outputs, "\n")+"\n"), 0o644); err != nil {
 				t.Fatal(err)
 			}
 			continue
 		}
 		expected := lines(t, expectedFile)
-		if len(expected) != len(given) {
-			t.Errorf("%s gives %d objects, %s holds %d", recording, len(given), expectedFile, len(expected))
+		if len(expected) != len(outputs) {
+			t.Errorf("%s gives %d objects, %s holds %d", recording, len(outputs), expectedFile, len(expected))
 			continue
 		}
-		for index := range given {
-			if given[index] != string(expected[index]) {
-				t.Errorf("%s:%d gives\n %s\nwant\n %s", recording, index+1, given[index], expected[index])
+		for index := range outputs {
+			if outputs[index] == string(expected[index]) {
+				continue
 			}
+			t.Errorf("%s:%d gives\n %s\nwant\n %s", recording, index+1, outputs[index], expected[index])
 		}
 	}
 }
@@ -77,12 +78,12 @@ func lines(t *testing.T, path string) [][]byte {
 	defer opened.Close()
 	scanner := bufio.NewScanner(opened)
 	scanner.Buffer(make([]byte, 0, 1<<20), 64<<20)
-	var found [][]byte
+	var collected [][]byte
 	for scanner.Scan() {
-		found = append(found, append([]byte(nil), scanner.Bytes()...))
+		collected = append(collected, append([]byte(nil), scanner.Bytes()...))
 	}
 	if err := scanner.Err(); err != nil {
 		t.Fatal(err)
 	}
-	return found
+	return collected
 }

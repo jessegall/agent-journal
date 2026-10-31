@@ -20,13 +20,13 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-	var words []string
+	var items []string
 	for _, line := range strings.Split(string(text), "\n") {
 		if word := strings.TrimSpace(line); word != "" {
-			words = append(words, word)
+			items = append(items, word)
 		}
 	}
-	if err := anonymise.New(words).Bodies(os.Stdin, os.Stdout); err != nil {
+	if err := anonymise.New(items).Bodies(os.Stdin, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

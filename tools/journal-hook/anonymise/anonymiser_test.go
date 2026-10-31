@@ -40,16 +40,16 @@ var samples = []struct {
 func TestAnonymisedMatchesVersion4(t *testing.T) {
 	anonymiser := NewFor("/Users/alice", []string{"Acme", "acme-corp"})
 	for _, sample := range samples {
-		if got := anonymiser.Anonymised(sample.line); got != sample.expected {
-			t.Errorf("anonymised(%q)\n got  %q\n want %q", sample.line, got, sample.expected)
+		if actual := anonymiser.Anonymised(sample.line); actual != sample.expected {
+			t.Errorf("anonymised(%q)\n got  %q\n want %q", sample.line, actual, sample.expected)
 		}
 	}
 }
 
 func TestReplacedKeepsTheWhitespace(t *testing.T) {
 	anonymiser := NewFor("/Users/alice", nil)
-	if got := anonymiser.Replaced("  cat /Users/alice/a\n"); got != "  cat ~/a\n" {
-		t.Errorf("replaced gave %q", got)
+	if actual := anonymiser.Replaced("  cat /Users/alice/a\n"); actual != "  cat ~/a\n" {
+		t.Errorf("replaced gave %q", actual)
 	}
 }
 

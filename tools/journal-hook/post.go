@@ -50,39 +50,39 @@ type delivery struct {
 // post sends the hook to the server of the project at root, as hook.sh does: it first stamps the time the hook fired,
 // and the version a session start runs on, then posts within the limit; a hook the server does not answer with 200 or
 // 409 in time goes on without it and is noted in bypass.log. The transport is the network's, or a test's.
-func post(sent delivery, transport http.RoundTripper, now time.Time) (status int, answer []byte) {
-	stamped(sent, now)
-	status, answer = posted(sent, transport)
+func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (status int, answer []byte) {
+	stamped(outgoing, firedTime)
+	status, answer = posted(outgoing, transport)
 	if status != http.StatusOK && status != http.StatusConflict {
-		noteBypass(sent.root, sent.program, now)
+		noteBypass(outgoing.root, outgoing.program, firedTime)
 	}
 	return status, answer
 }
 
-func posted(sent delivery, transport http.RoundTripper) (int, []byte) {
-	port, err := os.ReadFile(filepath.Join(sent.root, ".journal", "port"))
+func posted(outgoing delivery, transport http.RoundTripper) (int, []byte) {
+	port, err := os.ReadFile(filepath.Join(outgoing.root, ".journal", "port"))
 	if err != nil || strings.TrimSpace(string(port)) == "" {
 		return 0, nil
 	}
 	if transport == nil {
 		transport = &http.Transport{DialContext: (&net.Dialer{Timeout: connectLimit}).DialContext}
 	}
-	limit, cancel := context.WithTimeout(context.Background(), sent.limit)
+	limit, cancel := context.WithTimeout(context.Background(), outgoing.limit)
 	defer cancel()
-	address := fmt.Sprintf("http://127.0.0.1:%s/hooks/%s", strings.TrimSpace(string(port)), sent.program)
-	request, err := http.NewRequestWithContext(limit, http.MethodPost, address, bytes.NewReader(sent.body))
+	address := fmt.Sprintf("http://127.0.0.1:%s/hooks/%s", strings.TrimSpace(string(port)), outgoing.program)
+	request, err := http.NewRequestWithContext(limit, http.MethodPost, address, bytes.NewReader(outgoing.body))
 	if err != nil {
 		return 0, nil
 	}
 	for name, value := range map[string]string{
 		"Content-Type":          "application/json",
-		"X-Journal-Env":         sent.environment,
-		"X-Journal-Project":     sent.root,
-		"X-Journal-Launch":      sent.launch,
-		"X-Journal-Actor":       sent.actor,
-		"X-Journal-Actor-Token": sent.actorToken,
-		"X-Journal-Request-At":  strconv.FormatInt(sent.firedAtMs, 10),
-		"X-Journal-Hook-Id":     sent.firing,
+		"X-Journal-Env":         outgoing.environment,
+		"X-Journal-Project":     outgoing.root,
+		"X-Journal-Launch":      outgoing.launch,
+		"X-Journal-Actor":       outgoing.actor,
+		"X-Journal-Actor-Token": outgoing.actorToken,
+		"X-Journal-Request-At":  strconv.FormatInt(outgoing.firedAtMs, 10),
+		"X-Journal-Hook-Id":     outgoing.firing,
 	} {
 		request.Header.Set(name, value)
 	}
@@ -103,29 +103,29 @@ var versionLine = regexp.MustCompile(`(?m)^VERSION = "(.*)"`)
 
 // stamped writes the time of every hook that goes to the server, which the server's health compares with the last
 // hook it took, and, for a session start, the version the agent started on.
-func stamped(sent delivery, now time.Time) {
-	hooks := filepath.Join(sent.root, ".journal", "runtime", "hooks")
+func stamped(outgoing delivery, firedTime time.Time) {
+	hooks := filepath.Join(outgoing.root, ".journal", "runtime", "hooks")
 	if os.MkdirAll(hooks, 0o755) == nil {
-		_ = os.WriteFile(filepath.Join(hooks, sent.environment+".fired"), []byte(strconv.FormatInt(now.Unix(), 10)+"\n"), 0o644)
+		_ = os.WriteFile(filepath.Join(hooks, outgoing.environment+".fired"), []byte(strconv.FormatInt(firedTime.Unix(), 10)+"\n"), 0o644)
 	}
-	if sent.event != "session_start" {
+	if outgoing.event != "session_start" {
 		return
 	}
 	version := ""
-	if text, err := os.ReadFile(filepath.Join(sent.root, ".journal", "src", "journal", "version.py")); err == nil {
-		if found := versionLine.FindSubmatch(text); found != nil {
-			version = string(found[1])
+	if text, err := os.ReadFile(filepath.Join(outgoing.root, ".journal", "src", "journal", "version.py")); err == nil {
+		if captured := versionLine.FindSubmatch(text); captured != nil {
+			version = string(captured[1])
 		}
 	}
-	_ = os.WriteFile(filepath.Join(sent.root, ".journal", "runtime", "session-version"), []byte("SessionStart "+version+"\n"), 0o644)
+	_ = os.WriteFile(filepath.Join(outgoing.root, ".journal", "runtime", "session-version"), []byte("SessionStart "+version+"\n"), 0o644)
 }
 
 // noteBypass appends the hook that went around the journal to bypass.log, for the journal to say once it is back.
-func noteBypass(root, program string, now time.Time) {
+func noteBypass(root, program string, firedTime time.Time) {
 	log, err := os.OpenFile(filepath.Join(root, ".journal", "runtime", "bypass.log"), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 	if err != nil {
 		return
 	}
 	defer log.Close()
-	fmt.Fprintf(log, "%d hook %s\n", now.Unix(), program)
+	fmt.Fprintf(log, "%d hook %s\n", firedTime.Unix(), program)
 }

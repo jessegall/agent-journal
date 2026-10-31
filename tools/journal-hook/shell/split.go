@@ -15,8 +15,8 @@ type Command struct {
 	Source string
 	Start  int
 	End    int
-	// Through is where the command's text ends with its here-documents' bodies, which may follow other commands.
-	Through int
+	// BodyEnd is where the command's text ends with its here-documents' bodies, which may follow other commands.
+	BodyEnd int
 	// JoinedBy is &&, ||, ; or & between this command and the next, or empty after the last.
 	JoinedBy string
 	// PipedInto is the index of the command this one's output is piped into, or -1.
@@ -47,9 +47,10 @@ func Split(line string) ([]Command, []string, error) {
 		return nil, nil, err
 	}
 	for _, command := range commands {
-		if evalWrapped.MatchString(command.Text) {
-			return unwrapped(commands), redirects, nil
+		if !evalWrapped.MatchString(command.Text) {
+			continue
 		}
+		return unwrapped(commands), redirects, nil
 	}
 	return commands, redirects, nil
 }
@@ -66,16 +67,16 @@ func read(line string) ([]Command, []string, error) {
 	}
 	reader := splitter{line: line}
 	for index, statement := range file.Stmts {
-		after := ""
+		following := ""
 		if statement.Background {
-			after = "&"
+			following = "&"
 		} else if index < len(file.Stmts)-1 {
-			after = ";"
+			following = ";"
 		}
-		reader.statement(statement, after)
+		reader.statement(statement, following)
 	}
 	syntax.Walk(file, func(node syntax.Node) bool {
-		if redirect, ok := node.(*syntax.Redirect); ok {
+		if redirect, present := node.(*syntax.Redirect); present {
 			reader.redirects = append(reader.redirects, line[redirect.Pos().Offset():redirect.Word.End().Offset()])
 		}
 		return true
@@ -89,54 +90,56 @@ func read(line string) ([]Command, []string, error) {
 // unwrapped reads each command that evals a line as the commands of that line, as Chain.build does: they are the
 // agent's own, the commands around them the shell's wrapping.
 func unwrapped(commands []Command) []Command {
-	var found []Command
+	var expanded []Command
 	// where each command of the line begins among the commands found, so a pipe into it still points at it
 	begins := make([]int, len(commands)+1)
 	outer := map[int]bool{}
 	for index, command := range commands {
-		begins[index] = len(found)
+		begins[index] = len(expanded)
 		wrapped := evalWrapped.FindStringSubmatch(command.Text)
 		if wrapped == nil {
 			command.Recorded = false
-			outer[len(found)] = true
-			found = append(found, command)
+			outer[len(expanded)] = true
+			expanded = append(expanded, command)
 			continue
 		}
-		inside := wrapped[1]
-		if inside == "" {
-			inside = wrapped[2]
+		content := wrapped[1]
+		if content == "" {
+			content = wrapped[2]
 		}
-		inner, _, err := read(strings.ReplaceAll(inside, evalQuote, "'"))
+		inner, _, err := read(strings.ReplaceAll(content, evalQuote, "'"))
 		if err != nil || len(inner) == 0 {
-			outer[len(found)] = true
-			found = append(found, command)
+			outer[len(expanded)] = true
+			expanded = append(expanded, command)
 			continue
 		}
 		for position := range inner {
-			if inner[position].PipedInto >= 0 {
-				inner[position].PipedInto += len(found)
+			if inner[position].PipedInto < 0 {
+				continue
 			}
+			inner[position].PipedInto += len(expanded)
 		}
 		inner[len(inner)-1].JoinedBy = command.JoinedBy
-		found = append(found, inner...)
+		expanded = append(expanded, inner...)
 	}
-	begins[len(commands)] = len(found)
-	for index := range found {
-		if outer[index] && found[index].PipedInto >= 0 {
-			found[index].PipedInto = begins[found[index].PipedInto]
+	begins[len(commands)] = len(expanded)
+	for index := range expanded {
+		if !outer[index] || expanded[index].PipedInto < 0 {
+			continue
 		}
+		expanded[index].PipedInto = begins[expanded[index].PipedInto]
 	}
-	return found
+	return expanded
 }
 
 // foreachJoined keeps a zsh foreach loop whole: the commands from its foreach to its end, which the parser reads as
 // commands of their own, become one.
 func foreachJoined(commands []Command) []Command {
-	var found []Command
+	var joined []Command
 	for index := 0; index < len(commands); index++ {
 		command := commands[index]
 		if !strings.HasPrefix(command.Text, "foreach ") {
-			found = append(found, command)
+			joined = append(joined, command)
 			continue
 		}
 		last := index
@@ -144,16 +147,16 @@ func foreachJoined(commands []Command) []Command {
 			last++
 		}
 		if last == len(commands) {
-			found = append(found, command)
+			joined = append(joined, command)
 			continue
 		}
 		closing := commands[last]
 		command.Text = strings.TrimSpace(command.Source[command.Start:closing.End])
-		command.End, command.Through, command.JoinedBy, command.PipedInto = closing.End, max(closing.Through, closing.End), closing.JoinedBy, closing.PipedInto
-		found = append(found, command)
+		command.End, command.BodyEnd, command.JoinedBy, command.PipedInto = closing.End, max(closing.BodyEnd, closing.End), closing.JoinedBy, closing.PipedInto
+		joined = append(joined, command)
 		index = last
 	}
-	return found
+	return joined
 }
 
 func parsed(line string, language syntax.LangVariant) (*syntax.File, error) {
@@ -167,37 +170,37 @@ type splitter struct {
 }
 
 // statement adds the commands of one statement; after is the operator that joins its last command to what follows.
-func (reader *splitter) statement(statement *syntax.Stmt, after string) {
-	binary, ok := statement.Cmd.(*syntax.BinaryCmd)
-	if !ok || statement.Negated || len(statement.Redirs) > 0 {
-		reader.whole(statement, after)
+func (reader *splitter) statement(statement *syntax.Stmt, following string) {
+	binary, present := statement.Cmd.(*syntax.BinaryCmd)
+	if !present || statement.Negated || len(statement.Redirs) > 0 {
+		reader.single(statement, following)
 		return
 	}
 	switch binary.Op {
 	case syntax.AndStmt, syntax.OrStmt:
 		reader.statement(binary.X, binary.Op.String())
-		reader.statement(binary.Y, after)
+		reader.statement(binary.Y, following)
 	case syntax.Pipe, syntax.PipeAll:
 		reader.statement(binary.X, "")
 		reader.commands[len(reader.commands)-1].PipedInto = len(reader.commands)
-		reader.statement(binary.Y, after)
+		reader.statement(binary.Y, following)
 	}
 }
 
-// whole adds a statement as one command, its text running from its start to its end without a closing ;, with a
+// single adds a statement as one command, its text running from its start to its end without a closing ;, with a
 // comment that ends its line and the bodies of its here-documents: a body right after the command runs on in the line,
 // and a body that follows other commands of the line, as one piped on (cat <<EOF | grep x), is added to the text
 // after a newline.
-func (reader *splitter) whole(statement *syntax.Stmt, after string) {
+func (reader *splitter) single(statement *syntax.Stmt, following string) {
 	start, end := int(statement.Pos().Offset()), ownEnd(statement)
 	if comment := trailingComment.FindString(reader.line[end:]); comment != "" && !statement.Background {
 		end += len(comment)
 	}
-	through := end
+	textEnd := end
 	var bodies []string
 	syntax.Walk(statement, func(node syntax.Node) bool {
-		redirect, ok := node.(*syntax.Redirect)
-		if !ok || redirect.Hdoc == nil {
+		redirect, present := node.(*syntax.Redirect)
+		if !present || redirect.Hdoc == nil {
 			return true
 		}
 		bodyStart, bodyEnd := int(redirect.Hdoc.Pos().Offset()), int(redirect.Hdoc.End().Offset())
@@ -209,7 +212,7 @@ func (reader *splitter) whole(statement *syntax.Stmt, after string) {
 		} else {
 			bodies = append(bodies, reader.line[bodyStart:bodyEnd])
 		}
-		through = max(through, bodyEnd)
+		textEnd = max(textEnd, bodyEnd)
 		return true
 	})
 	reader.commands = append(reader.commands, Command{
@@ -217,8 +220,8 @@ func (reader *splitter) whole(statement *syntax.Stmt, after string) {
 		Source:    reader.line,
 		Start:     start,
 		End:       end,
-		Through:   max(through, end),
-		JoinedBy:  after,
+		BodyEnd:   max(textEnd, end),
+		JoinedBy:  following,
 		PipedInto: -1,
 		Recorded:  true,
 	})
