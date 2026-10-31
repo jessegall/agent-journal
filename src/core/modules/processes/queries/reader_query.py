@@ -12,7 +12,7 @@ class ReaderQuery(Query[Reader]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Reader)
 
-    def named(self, name: str) -> Self:
+    def with_name(self, name: str) -> Self:
         return self.filter(name=name)
 
     def defaults(self) -> Self:

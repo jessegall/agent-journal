@@ -13,7 +13,8 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 
 
 class ProcessProgressRule(DriverRule):
-    """On each hook of an agent, notes how far its running outputs have come, as the reader of each reads the progress."""
+    """On each hook of an agent, notes how far its running outputs have come, as the reader of each reads the
+    progress."""
 
     name = "processes.process-progress"
     hook = HookWildcard.ALL_HOOKS
@@ -24,12 +25,12 @@ class ProcessProgressRule(DriverRule):
         self.processes, self.readers, self.folder, self.run = processes, readers, folder, run
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        noted = [NoteProgress(process.id, percent) for process in self.processes.agent(hook.agent_id).running().oldest().all_rows() if (percent := self.percent(process)) != process.progress]
-        return RuleAnswer.allowed().running(*noted)
+        progress_commands = [NoteProgress(process.id, percent) for process in self.processes.agent(hook.agent_id).running().oldest().all_rows() if (percent := self.percent(process)) != process.progress]
+        return RuleAnswer.allowed().running(*progress_commands)
 
     def percent(self, process: Process) -> int:
-        reader = ReaderSelection.of(tuple(self.readers.all_rows()), process)
+        reader = ReaderSelection.choose(tuple(self.readers.all_rows()), process)
         if reader is None:
             return process.progress
-        text = "".join(self.folder.output(process.id, position) for position in range(1, len(self.folder.part_texts(process.id)) + 1))
+        text = self.folder.all_output(process.id)
         return self.run.progress(reader, text, process.progress)

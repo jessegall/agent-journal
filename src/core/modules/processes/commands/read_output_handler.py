@@ -7,7 +7,7 @@ from core.modules.processes.commands.output_lines import OutputLines
 from core.modules.processes.commands.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.support.output_reading import OutputReading
+from core.modules.processes.commands.output_texts import OutputTexts
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
@@ -15,11 +15,11 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
 
     command = ReadOutput
 
-    def __init__(self, reading: OutputReading, outputs: OutputQuery, repository: Repository) -> None:
-        self.reading, self.outputs, self.repository = reading, outputs, repository
+    def __init__(self, texts: OutputTexts, outputs: OutputQuery, repository: Repository) -> None:
+        self.texts, self.outputs, self.repository = texts, outputs, repository
 
     def handle(self, command: ReadOutput, context: Context) -> OutputLines:
-        lines = self.reading.lines(context.actor, command)
+        lines = self.texts.lines(context.actor, command)
         kept = self.outputs.process(command.process_id).filter(state=OutputState.KEPT).page(1, 1).rows
         if kept:
             self.repository.save(replace(kept[0], read_at=context.timestamp), context)

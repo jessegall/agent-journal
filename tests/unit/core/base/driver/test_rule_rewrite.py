@@ -16,7 +16,7 @@ def test_an_answer_carries_the_new_input_of_the_tool_and_names_the_outcome_rewri
 
 def test_one_rewrite_on_a_hook_is_the_hooks_new_input_and_names_its_rule():
     answers = RuleAnswers(["lead"], [record("a.run", RuleAnswer.rewritten({"command": "x"})), record("b.line", RuleAnswer.with_lines("a line"))])
-    assert dict(answers.updated_input) == {"command": "x"} and answers.rewritten_by == "a.run" and answers.refusal == ""
+    assert dict(answers.updated_input) == {"command": "x"} and answers.rewriter_name == "a.run" and answers.refusal == ""
 
 
 def test_two_rules_that_rewrite_one_hook_are_refused_naming_both():

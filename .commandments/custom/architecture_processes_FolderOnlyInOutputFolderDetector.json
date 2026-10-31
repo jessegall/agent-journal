@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/|samples/processes/)"
+            },
+            {
+                "textMatches": "^heartbeat$|^run\\.sh$|\\.(out|status)$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "processes/support/output_folder\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "process-folder-layout-outside-output-folder",
+        "description": "Python code outside OutputFolder names a file of a run's folder, so the format the runner writes is known in two places.",
+        "rule": "Read and write the files of .journal/processes/<number>/ through OutputFolder, the one class that knows them.",
+        "skill": "processes-architecture"
+    }
+}

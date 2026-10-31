@@ -15,4 +15,4 @@ class ProcessLifecycle(Lifecycle):
     finish = Move("finish", OPEN, ProcessState.FINISHED)
     fail = Move("fail", OPEN, ProcessState.FAILED)
     stop = Move("stop", OPEN, ProcessState.STOPPED)
-    lose = Move("lose", OPEN, ProcessState.LOST)
+    orphan = Move("orphan", OPEN, ProcessState.ORPHANED)

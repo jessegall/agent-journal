@@ -49,16 +49,16 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		return 127
 	}
 	go waitForLeader(leader, folder)
-	go beat(folder, leader.Process.Pid, options.HeartbeatEvery)
+	go writeHeartbeats(folder, leader.Process.Pid, options.HeartbeatEvery)
 	if options.ShellAlive == nil {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	follower := Follower{Options: options, Client: client, Folder: folder, Parts: len(parts), Reported: map[int]bool{}}
-	return follower.Run(stdout)
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: len(parts), Reported: map[int]bool{}}
+	return tracker.Run(stdout)
 }
 
-// start runs the script in a shell of its own group; the outer shell writes the end when the inner one is gone, even
+// start runs the script in a shell of its own group; the outer shell writes the end when the inner one is dead, even
 // when the line execs.
 func start(options Options, folder Folder) (*exec.Cmd, error) {
 	command := exec.Command("/bin/sh", "-c", `"$1" "$2"; printf '%s' "$?" > "$3/end"`, "journal-run", options.Shell, folder.Script(), folder.Path)
@@ -85,13 +85,13 @@ func waitForLeader(leader *exec.Cmd, folder Folder) {
 	_ = folder.WriteEnd(code)
 }
 
-func beat(folder Folder, pid int, every time.Duration) {
+func writeHeartbeats(folder Folder, pid int, interval time.Duration) {
 	for {
 		if _, ended := folder.End(); ended || syscall.Kill(pid, 0) != nil {
 			return
 		}
-		folder.Beat()
-		time.Sleep(every)
+		folder.WriteHeartbeat()
+		time.Sleep(interval)
 	}
 }
 

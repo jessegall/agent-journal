@@ -1,0 +1,39 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "fileMatches": "(^|/)(src/core/modules/processes|samples/processes)/rules/"
+            },
+            {
+                "nameIn": [
+                    "run",
+                    "dispatch",
+                    "save",
+                    "delete",
+                    "insert",
+                    "update",
+                    "Popen",
+                    "system",
+                    "check_output",
+                    "check_call",
+                    "call",
+                    "execute"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "process-rule-runs-or-writes",
+        "description": "A rule of the processes module runs a shell, a command or a write itself, so the work escapes the hook call's transaction and its record.",
+        "rule": "A rule only answers; the commands it wants run go in its answer with running(), and the hook record runs each one alone.",
+        "skill": "processes-architecture"
+    }
+}

@@ -6,13 +6,17 @@ const percent = computed(() => Math.round((props.row?.fraction ?? 0) * 100));
 </script>
 
 <template>
-    <div v-if="row" class="output-body">
-        <template v-if="row.figure">
-            <div class="progress"><span class="bar" :style="{width: `${percent}%`}"></span></div>
-            <span class="figure">{{ row.figure }}</span>
-        </template>
-        <pre v-if="row.lines" class="last-lines">{{ row.lines }}</pre>
-    </div>
+    <template v-if="row">
+        <div class="output-body">
+            <template v-if="row.figure">
+                <div class="progress"><span class="bar" :style="{width: `${percent}%`}"></span></div>
+                <span class="figure">{{ row.figure }}</span>
+            </template>
+            <template v-if="row.lines">
+                <pre class="last-lines">{{ row.lines }}</pre>
+            </template>
+        </div>
+    </template>
 </template>
 
 <style scoped>

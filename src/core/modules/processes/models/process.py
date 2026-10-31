@@ -10,8 +10,8 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 
 @dataclass(frozen=True, kw_only=True)
 class Process(Model):
-    """One shell line an agent ran through the runner: its line, folder and shell, the hook call that started it,
-    its foreground limit, and how it ended; its id is the output number the agent reads."""
+    """One shell line an agent ran through the runner: its line, folder and shell, the hook call that started
+    it, its foreground limit, and how it ended; its id is the output number the agent reads."""
 
     model_name = "process"
     cli_name = "process"
@@ -45,5 +45,5 @@ class Process(Model):
     def stop(self, timestamp: Timestamp, actor: Actor) -> "Process":
         return self.moved(ProcessLifecycle.stop, ended_at=timestamp)
 
-    def lose(self, timestamp: Timestamp, actor: Actor) -> "Process":
-        return self.moved(ProcessLifecycle.lose, ended_at=timestamp)
+    def orphan(self, timestamp: Timestamp, actor: Actor) -> "Process":
+        return self.moved(ProcessLifecycle.orphan, ended_at=timestamp)

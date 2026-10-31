@@ -37,8 +37,8 @@ func (client *recordingClient) reported() []string {
 	return append([]string(nil), client.lines...)
 }
 
-// within fails a test that takes longer than the limit, so no test of the runner can hang the run.
-func within(t *testing.T, limit time.Duration, body func()) {
+// bounded fails a test that takes longer than the limit, so no test of the runner can hang the run.
+func bounded(t *testing.T, limit time.Duration, body func()) {
 	t.Helper()
 	finished := make(chan struct{})
 	go func() {
@@ -75,12 +75,12 @@ func exists(path string) bool {
 	return err == nil
 }
 
-func waitFor(t *testing.T, limit time.Duration, what string, ready func() bool) {
+func waitFor(t *testing.T, limit time.Duration, subject string, ready func() bool) {
 	t.Helper()
 	deadline := time.Now().Add(limit)
 	for !ready() {
 		if time.Now().After(deadline) {
-			t.Fatalf("%s did not happen within %s", what, limit)
+			t.Fatalf("%s did not happen within %s", subject, limit)
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
@@ -90,6 +90,6 @@ func run(t *testing.T, options Options, client Client) (string, int) {
 	t.Helper()
 	var output strings.Builder
 	var code int
-	within(t, 20*time.Second, func() { code = Run(options, client, &output) })
+	bounded(t, 20*time.Second, func() { code = Run(options, client, &output) })
 	return output.String(), code
 }

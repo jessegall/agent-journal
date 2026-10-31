@@ -8,10 +8,10 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
 
 
-class PartReportedByItsAgentGuard(Guard):
+class RunOwnerPartsGuard(Guard):
     """Refuses the end of a part reported by an agent that did not run its process."""
 
-    name = "processes.part-reported-by-its-agent"
+    name = "processes.run-owner-parts"
     event = "process_part.*"
 
     def __init__(self, queries: Queries) -> None:

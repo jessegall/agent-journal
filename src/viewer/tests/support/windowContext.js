@@ -25,12 +25,21 @@ export function context(answers, agent = null) {
     };
 }
 
-export async function drawn(component, windowContext) {
-    const element = document.createElement("div");
-    const app = createApp({render: () => h(component)});
-    app.provide(WINDOW_CONTEXT, windowContext);
-    app.mount(element);
+export async function settle() {
     for (let round = 0; round < 5; round++) await nextTick();
     await new Promise((resolve) => setTimeout(resolve));
-    return element.textContent;
+}
+
+// the element a window component is drawn into once it has settled, given the props its host gives it
+export async function mounted(component, windowContext, props = {}) {
+    const element = document.createElement("div");
+    const app = createApp({render: () => h(component, props)});
+    app.provide(WINDOW_CONTEXT, windowContext);
+    app.mount(element);
+    await settle();
+    return element;
+}
+
+export async function drawn(component, windowContext) {
+    return (await mounted(component, windowContext)).textContent;
 }

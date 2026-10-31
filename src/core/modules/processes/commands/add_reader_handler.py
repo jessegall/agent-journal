@@ -19,7 +19,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         self.readers, self.repository = readers, repository
 
     def handle(self, command: AddReader, context: Context) -> Reader:
-        existing = self.readers.named(command.name).page(1, 1).rows
+        existing = self.readers.with_name(command.name).page(1, 1).rows
         if existing:
             return self.repository.save(self.changed(existing[0], command), context)
         if not command.commands or not (command.lines or command.script):

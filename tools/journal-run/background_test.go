@@ -42,10 +42,10 @@ func TestAnAtOnceRunMovesBeforeItsFirstOutput(t *testing.T) {
 }
 
 func TestALimitOf0NeverMoves(t *testing.T) {
-	setup := options(t, "sleep 1; echo whole")
+	setup := options(t, "sleep 1; echo uncapped")
 	setup.LimitSeconds = 0
 	output, code := run(t, setup, newClient())
-	if code != 0 || !strings.Contains(output, "whole") || strings.Contains(output, "moved to the background") {
+	if code != 0 || !strings.Contains(output, "uncapped") || strings.Contains(output, "moved to the background") {
 		t.Fatalf("printed %q with code %d", output, code)
 	}
 }

@@ -5,14 +5,14 @@ import (
 	"strings"
 )
 
-// DefaultCapCharacters is how much of a part's output the agent sees whole, as version 4's command output cap.
+// DefaultCapCharacters is how much of a part's output the agent sees uncapped, as version 4's command output cap.
 const DefaultCapCharacters = 400
 
-// Shown is what the agent sees of a part's output: all of it up to the cap, or whole when the cap is lifted for a
+// Shown is what the agent sees of a part's output: all of it up to the cap, or uncapped when the cap is lifted for a
 // line of journal commands; past the cap, the tail that fits half the cap, from the start of a line, and one line
 // naming the output and how to read it.
-func Shown(text string, process, capCharacters int, whole bool) string {
-	if whole || len(text) <= capCharacters {
+func Shown(text string, process, capCharacters int, uncapped bool) string {
+	if uncapped || len(text) <= capCharacters {
 		return text
 	}
 	lines := strings.Count(text, "\n")

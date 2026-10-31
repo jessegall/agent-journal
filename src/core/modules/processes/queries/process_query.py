@@ -5,7 +5,6 @@ from core.base.model.tables import Tables
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.query import Query
-from core.base.timestamp import Timestamp
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 
@@ -29,9 +28,6 @@ class ProcessQuery(Query[Process]):
 
     def ended(self) -> Self:
         return self.matching(Among("state", [state for state in ProcessState if state not in OPEN]))
-
-    def ended_since(self, moment: Timestamp) -> Self:
-        return self.ended().matching(Greater("ended_at", moment.text))
 
     def line(self, line: str) -> Self:
         return self.filter(line=line)

@@ -1,7 +1,7 @@
-import {createApp, defineComponent, h, nextTick} from "vue";
+import {createApp, defineComponent, h} from "vue";
 import {expect, test} from "vitest";
 import {useRows} from "@journal/window-kit";
-import {context, page} from "./support/windowContext.js";
+import {context, page, settle} from "./support/windowContext.js";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 
 const dock = defineComponent({
@@ -10,11 +10,6 @@ const dock = defineComponent({
         return () => h("p", rows.value.map((row) => `item ${row.id}`).join(", "));
     },
 });
-
-const settle = async () => {
-    for (let round = 0; round < 5; round++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve));
-};
 
 test("the dock reads its items at load and reads them again on each dock_item.* event", async () => {
     let items = [{id: 1}];

@@ -22,7 +22,7 @@ func TestAMissingProcessLineOrNumberIsRefused(t *testing.T) {
 	}
 }
 
-func TestADetachedFollowerNeedsNoLine(t *testing.T) {
+func TestADetachedTrackerNeedsNoLine(t *testing.T) {
 	flags, err := ParseFlags([]string{"--follow", "--process", "7", "--folder", "/work/.journal", "--parts", "3"})
 	if err != nil || !flags.Follow || flags.Parts != 3 || flags.Folder != "/work/.journal" {
 		t.Fatalf("read %+v, %v", flags, err)

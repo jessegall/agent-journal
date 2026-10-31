@@ -7,7 +7,8 @@ from core.modules.processes.models.process import Process
 
 
 class EndProcessSubcommand(Subcommand[EndProcess, Process]):
-    """`journal process end <process> --exit-code <code> --bytes <count> --lines <count>`: the runner reports how the line ended."""
+    """`journal process end <process> --exit-code <code> --bytes <count> --lines <count>`: the runner reports
+    how the line ended."""
 
     cli_name = "process"
     name = "end"

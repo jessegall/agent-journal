@@ -14,8 +14,8 @@ SLEEP = "sleep"
 
 
 class SleepPollRefusal(DriverRule):
-    """A line that only sleeps, or sleeps in a loop to check again, is refused: the agent watches the process or waits
-    on it instead."""
+    """A line that only sleeps, or sleeps in a loop to check again, is refused: the agent watches the process
+    or waits on it instead."""
 
     name = "processes.sleep-poll-refusal"
     hook = HookEventName.PRE_TOOL_USE
@@ -27,14 +27,14 @@ class SleepPollRefusal(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or len(shell.parts) != 1 or not self.only_sleeps(shell.parts[0]):
+        if shell is None or shell.parse_error or len(shell.parts) != 1 or not self.is_sleep_poll(shell.parts[0]):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"a sleep with nothing to wait on is refused: {self.way_on(hook)}")
+        return RuleAnswer.refused(f"a sleep with nothing to wait on is refused: {self.watch_advice(hook)}")
 
-    def only_sleeps(self, part: Part) -> bool:
+    def is_sleep_poll(self, part: Part) -> bool:
         return part.program == SLEEP or (part.program in LOOPS and SLEEP_LOOP.match(part.text) is not None)
 
-    def way_on(self, hook: AgentHook) -> str:
+    def watch_advice(self, hook: AgentHook) -> str:
         running = self.processes.agent(hook.agent_id).running().newest().page(1, 1).rows
         if running:
             return f"watch process {running[0].id} with `journal output watch {running[0].id}`, or wait on it with `journal await \"<what>\" --until \"<script>\"`"

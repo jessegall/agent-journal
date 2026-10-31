@@ -18,8 +18,8 @@ BACKGROUND_FLAG = "run_in_background"
 
 
 class RunnerRewrite(DriverRule):
-    """Every shell line of a main agent or a worker runs through the journal's runner: the run is made a process,
-    and the agent's command is rewritten to hand the runner its process, its limit and its line."""
+    """Every shell line of a main agent or a worker runs through the journal's runner: the run is made a
+    process, and the agent's command is rewritten to hand the runner its process, its limit and its line."""
 
     name = "processes.runner-rewrite"
     hook = HookEventName.PRE_TOOL_USE
@@ -36,15 +36,15 @@ class RunnerRewrite(DriverRule):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
-        run = self.limits.of(hook.environment_id, shell)
-        return RuleAnswer.allowed().running(StartProcess.of(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
+        run = self.limits.decide(hook.environment_id, shell)
+        return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
-        process = next((result for result in results if isinstance(result, Process)), None)
+        process = next((made for made in results if isinstance(made, Process)), None)
         if process is None:
             return {}
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
-        return {**kept, "command": RunnerLine.of(str(self.runner.path), process.id, run, shell.line)}
+        return {**kept, "command": RunnerLine.build(str(self.runner.path), process.id, run, shell.line)}
 
     def missing(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref)) is not None:

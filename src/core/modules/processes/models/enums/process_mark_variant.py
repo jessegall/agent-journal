@@ -9,4 +9,4 @@ class ProcessMarkVariant(StrEnum):
     FINISHED = "finished"
     FAILED = "failed"
     STOPPED = "stopped"
-    LOST = "lost"
+    ORPHANED = "orphaned"

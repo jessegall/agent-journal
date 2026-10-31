@@ -16,15 +16,15 @@ from core.modules.processes.support.output_folder import OutputFolder
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
 LAST_LINES = 5
-OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: MarkOutcome.FAILED, ProcessState.STOPPED: MarkOutcome.WARNED, ProcessState.LOST: MarkOutcome.FAILED}
-WORDS = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
-         ProcessState.STOPPED: "Stopped", ProcessState.LOST: "Lost"}
-ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.LOST)
+OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: MarkOutcome.FAILED, ProcessState.STOPPED: MarkOutcome.WARNED, ProcessState.ORPHANED: MarkOutcome.FAILED}
+PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
+         ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
+ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED)
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A run shows one mark, kept up to date in place by the key process:<id>: running, with the reader's progress as
-    its figure, moved to the background, then ended with its outcome."""
+    """A run shows one mark, kept up to date in place by the key process:<id>: running, with the reader's
+    progress as its figure, moved to the background, then ended with its outcome."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -40,7 +40,7 @@ class ProcessEndMarkListener(CommitListener):
             return
         variant = ProcessMarkVariant(process.state.value)
         figure = f"{process.progress}%" if process.progress and process.state not in ENDED else ""
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{WORDS[process.state]} {process.line[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{PHRASES[process.state]} {process.line[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)

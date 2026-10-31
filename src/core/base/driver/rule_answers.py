@@ -39,12 +39,16 @@ class RuleAnswers:
         return rewriters[0] if len(rewriters) == 1 else None
 
     @property
+    def refused_rewriters(self) -> set[str]:
+        return {rule.name for rule in self.rewriters} if self.refusal else set()
+
+    @property
     def updated_input(self) -> Mapping[str, object]:
         rewriter = self.rewriter
         return rewriter.answer.updated_input if rewriter is not None and rewriter.answer is not None else {}
 
     @property
-    def rewritten_by(self) -> str:
+    def rewriter_name(self) -> str:
         rewriter = self.rewriter
         return rewriter.name if rewriter is not None else ""
 

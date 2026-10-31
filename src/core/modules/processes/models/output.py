@@ -9,8 +9,8 @@ from core.modules.processes.models.lifecycles.output_lifecycle import OutputLife
 
 @dataclass(frozen=True, kw_only=True)
 class Output(Model):
-    """What a process printed, kept in its folder under .journal/processes/<id>/ until pruned: its size in bytes and
-    lines, and when the agent last read it."""
+    """What a process printed, kept in its folder under .journal/processes/<id>/ until pruned: its size in
+    bytes and lines, and when the agent last read it."""
 
     model_name = "output"
     cli_name = "output"

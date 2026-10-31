@@ -67,11 +67,11 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewritten_by}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name}})), context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
-        outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in self.unneeded_rules(answers)]
+        outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
         updated_input = self.updated_input(answers, outcomes)
         if updated_input != answers.updated_input:
@@ -85,9 +85,6 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=rule), context)
         return HookReply("", [], call_id)
 
-    def unneeded_rules(self, answers: RuleAnswers) -> set[str]:
-        return {rule.name for rule in answers.rewriters} if answers.refusal else set()
-
     def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:
         try:
             with self.database.savepoint(type(rule_command).__name__):
@@ -100,7 +97,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         build = rewriter.answer.input_after_commands if rewriter is not None and rewriter.answer is not None else None
         if rewriter is None or build is None or any(rule == rewriter.name and line for rule, line, _ in outcomes):
             return answers.updated_input
-        return build([result for rule, _, result in outcomes if rule == rewriter.name])
+        return build([made for rule, _, made in outcomes if rule == rewriter.name])
 
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool

@@ -3,7 +3,7 @@ from core.modules.processes.commands.end_process import EndProcess
 from core.modules.processes.commands.end_process_part import EndProcessPart
 from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.stop_process import StopProcess
-from core.modules.processes.commands.lose_process import LoseProcess
+from core.modules.processes.commands.orphan_process import OrphanProcess
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, BYTES_SHORT, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -57,9 +57,9 @@ def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end
     start_process(story)
     start_process(story, "make build")
     bus(story).run(StopProcess(1), story.agent, environment_id=1)
-    bus(story).run(LoseProcess(2), story.agent, environment_id=1)
+    bus(story).run(OrphanProcess(2), story.agent, environment_id=1)
     story.expect_success(PROCESS, "state: stopped")
-    story.expect_success("process show 2", "state: lost")
+    story.expect_success("process show 2", "state: orphaned")
     story.expect_refusal("output stop 1", "stopped", actor=story.agent)
 
 

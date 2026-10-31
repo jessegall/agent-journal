@@ -26,11 +26,11 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
 
     def read(self, arguments: Namespace, caller: Caller) -> OutputLines:
         if arguments.process_id is not None:
-            return OutputLines((self.line(self.access.process(caller.actor, arguments.process_id)),))
+            return OutputLines([self.line(self.access.process(caller.actor, arguments.process_id))])
         query = self.processes.environment(self.access.environment(caller.actor, caller.environment_id)).oldest()
-        if self.access.is_own_only(caller.actor):
+        if self.access.is_worker(caller.actor):
             query = query.agent(caller.actor.id)
-        return OutputLines(tuple(self.line(process) for process in query.all_rows()))
+        return OutputLines([self.line(process) for process in query.all_rows()])
 
     def line(self, process: Process) -> str:
         if process.state in RUNNING:
@@ -41,4 +41,4 @@ class ShowOutputStatusSubcommand(ReadSubcommand[OutputLines]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, OutputLines):
-            output.write("\n".join(value.lines) if value.lines else "nothing found", {"lines": list(value.lines)})
+            value.write(output, "nothing found")

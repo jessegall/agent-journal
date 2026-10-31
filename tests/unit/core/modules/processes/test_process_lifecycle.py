@@ -6,7 +6,7 @@ from core.modules.processes.models.lifecycles.process_lifecycle import ProcessLi
 from core.modules.processes.models.lifecycles.watch_lifecycle import WatchLifecycle
 from core.modules.processes.models.enums.watch_state import WatchState
 
-ENDINGS = (ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.lose)
+ENDINGS = (ProcessLifecycle.finish, ProcessLifecycle.fail, ProcessLifecycle.stop, ProcessLifecycle.orphan)
 
 
 def test_a_process_starts_running_and_moves_to_the_background_only_from_running():
@@ -17,8 +17,8 @@ def test_a_process_starts_running_and_moves_to_the_background_only_from_running(
 def test_a_running_or_background_process_ends_in_one_of_four_states_and_an_ended_one_goes_no_further():
     for move in ENDINGS:
         assert set(move.sources) == {ProcessState.RUNNING, ProcessState.BACKGROUND}
-    assert {move.target for move in ENDINGS} == {ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.LOST}
-    assert all(not ProcessLifecycle.outgoing_moves(state) for state in (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.LOST))
+    assert {move.target for move in ENDINGS} == {ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED}
+    assert all(not ProcessLifecycle.outgoing_moves(state) for state in (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED))
 
 
 def test_an_output_is_kept_then_pruned_once_and_a_watch_is_open_then_ended_once():

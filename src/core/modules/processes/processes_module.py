@@ -11,7 +11,7 @@ from core.modules.processes.commands.peek_output_subcommand import PeekOutputSub
 from core.modules.processes.commands.read_output_handler import ReadOutputHandler
 from core.modules.processes.commands.read_output_subcommand import ReadOutputSubcommand
 from core.modules.processes.commands.show_output_status_subcommand import ShowOutputStatusSubcommand
-from core.modules.processes.commands.mark_watch_seen_handler import MarkWatchSeenHandler
+from core.modules.processes.commands.record_given_lines_handler import RecordGivenLinesHandler
 from core.modules.processes.commands.unwatch_output_handler import UnwatchOutputHandler
 from core.modules.processes.commands.unwatch_output_subcommand import UnwatchOutputSubcommand
 from core.modules.processes.commands.watch_output_handler import WatchOutputHandler
@@ -21,15 +21,15 @@ from core.modules.processes.rules.watch_lines import WatchLines
 from core.modules.processes.commands.prune_outputs_handler import PruneOutputsHandler
 from core.modules.processes.listeners.output_prune_listener import OutputPruneListener
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
-from core.modules.processes.rules.lost_process_rule import LostProcessRule
+from core.modules.processes.rules.orphan_process_rule import OrphanProcessRule
 from core.modules.processes.commands.note_progress_handler import NoteProgressHandler
 from core.modules.processes.listeners.output_dock_listener import OutputDockListener
 from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
 from core.modules.processes.rules.process_progress_rule import ProcessProgressRule
 from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
-from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
-from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
-from core.modules.processes.commands.lose_process import LoseProcess
+from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
+from core.modules.processes.guards.run_owner_reports_guard import RunOwnerReportsGuard
+from core.modules.processes.commands.orphan_process import OrphanProcess
 from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.start_process_handler import StartProcessHandler
 from core.modules.processes.commands.stop_process_handler import StopProcessHandler
@@ -46,7 +46,7 @@ from core.modules.processes.commands.remove_reader_handler import RemoveReaderHa
 from core.modules.processes.commands.remove_reader_subcommand import RemoveReaderSubcommand
 from core.modules.processes.guards.reader_owner_guard import ReaderOwnerGuard
 from core.modules.processes.migrations.m002_readers import ReadersTableMigration
-from core.modules.processes.migrations.m003_shipped_readers import ShippedReadersMigration
+from core.modules.processes.migrations.m003_stock_readers import StockReadersMigration
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
@@ -64,17 +64,18 @@ WINDOW_EVENTS = ["process.*", "output.*"]
 
 
 class ProcessesModule(Module):
-    """Adds processes: every shell line an agent runs is kept as a numbered process with its parts and its output."""
+    """Adds processes: every shell line an agent runs is kept as a numbered process with its parts and its
+    output."""
 
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
-    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [ProcessesTablesMigration, ReadersTableMigration, ShippedReadersMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, MarkWatchSeenHandler, PruneOutputsHandler, NoteProgressHandler]
+    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
+    migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, NoteProgressHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
-    guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, LostProcessRule, ProcessProgressRule]
+    guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
+    driver_rules = [SleepPollRefusal, RunnerRewrite, EndedOutputLine, UnreadOutputReminder, WatchLines, OrphanProcessRule, ProcessProgressRule]
     listeners = [EndedProcessWatchListener, OutputPruneListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     docks = PROCESS_DOCKS

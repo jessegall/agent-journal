@@ -18,19 +18,19 @@ class OutputAccess:
             return None
         return self.queries.query(Agent).find(actor.id)
 
-    def environment(self, actor: Actor, named: int | None) -> int:
+    def environment(self, actor: Actor, fallback: int | None) -> int:
         agent = self.agent(actor)
-        environment_id = agent.environment_id if agent is not None else named
+        environment_id = agent.environment_id if agent is not None else fallback
         if environment_id is None:
             raise Refusal("outputs are read in an environment", "name one with --environment")
         return environment_id
 
-    def is_own_only(self, actor: Actor) -> bool:
+    def is_worker(self, actor: Actor) -> bool:
         agent = self.agent(actor)
         return agent is not None and agent.role is AgentRole.WORKER
 
     def process(self, actor: Actor, process_id: int) -> Process:
         process = self.queries.query(Process).find(process_id)
-        if self.is_own_only(actor) and process.agent_id != actor.id:
+        if self.is_worker(actor) and process.agent_id != actor.id:
             raise Refusal(f"output {process_id} is not yours", "a worker reads the outputs of its own lines")
         return process

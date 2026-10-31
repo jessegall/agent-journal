@@ -7,7 +7,8 @@ from core.modules.processes.models.watch import Watch
 
 
 class WatchOutputSubcommand(Subcommand[WatchOutput, Watch]):
-    """`journal output watch <n>`: after every tool use you are given the reader's new lines of the run, until it ends."""
+    """`journal output watch <n>`: after every tool use you are given the reader's new lines of the run, until
+    it ends."""
 
     cli_name = "output"
     name = "watch"

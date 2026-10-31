@@ -73,6 +73,11 @@
         "architecture_reviews_ReviewMovedByCommandDetector",
         "architecture_reviews_StepsOnlyFromListenersDetector",
         "architecture_reviews_ParserIsPureDetector",
+        "architecture_processes_OnlyRunnerRewritesShellDetector",
+        "architecture_processes_FolderOnlyInOutputFolderDetector",
+        "architecture_processes_RunnerWritesNoRowsDetector",
+        "architecture_processes_RulesNeverRunDetector",
+        "architecture_processes_ProgramNamesOnlyInProgramsDetector",
         "test_UnitTestBoundaryDetector"
     ],
     "parallel": 2,

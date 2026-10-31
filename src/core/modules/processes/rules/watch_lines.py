@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
-from core.modules.processes.commands.mark_watch_seen import MarkWatchSeen
+from core.modules.processes.commands.record_given_lines import RecordGivenLines
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.reader_query import ReaderQuery
@@ -33,12 +33,11 @@ class WatchLines(DriverRule):
 
     def watched(self, answer: RuleAnswer, watch: Watch) -> RuleAnswer:
         process = self.queries.query(Process).find(watch.process_id)
-        text = "".join(self.folder.output(process.id, position) for position in range(1, len(self.folder.part_texts(process.id)) + 1))
-        seen = text.splitlines()
-        reader = ReaderSelection.of(tuple(self.readers.all_rows()), process)
-        if len(seen) <= watch.seen_lines:
+        all_lines = self.folder.all_output(process.id).splitlines()
+        reader = ReaderSelection.choose(tuple(self.readers.all_rows()), process)
+        if len(all_lines) <= watch.given_lines:
             return answer
-        fresh = "\n".join(seen[watch.seen_lines:]) + "\n"
-        lines = self.run.lines(reader, fresh, process.state.value, watch.seen_lines + 1) if reader is not None else []
-        told = RuleAnswer.with_lines(*(f"output {process.id}: {line}" for line in lines))
-        return RuleAnswer(refusal=answer.refusal, lines=[*answer.lines, *told.lines], commands=[*answer.commands, MarkWatchSeen(watch.id, len(seen))])
+        new_text = "\n".join(all_lines[watch.given_lines:]) + "\n"
+        reader_lines = self.run.lines(reader, new_text, process.state.value, watch.given_lines + 1) if reader is not None else []
+        given = [f"output {process.id}: {line}" for line in reader_lines]
+        return RuleAnswer(refusal=answer.refusal, lines=[*answer.lines, *given], commands=[*answer.commands, RecordGivenLines(watch.id, len(all_lines))])

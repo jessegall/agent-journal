@@ -9,10 +9,10 @@ from core.modules.processes.models.process import Process
 ENDING_MOVES = (ProcessLifecycle.finish, ProcessLifecycle.fail)
 
 
-class ReportedByItsAgentGuard(Guard):
+class RunOwnerReportsGuard(Guard):
     """Refuses the end of a process reported by an agent that did not run it."""
 
-    name = "processes.reported-by-its-agent"
+    name = "processes.run-owner-reports"
     event = "process.*"
 
     def check(self, change: Change[Model]) -> None:

@@ -5,7 +5,8 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.commands.end_process import EndProcess
 from core.modules.processes.commands.end_process_part import EndProcessPart
-from core.modules.processes.commands.lose_process import LoseProcess
+from core.modules.processes.commands.orphan_process import OrphanProcess
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
@@ -13,11 +14,12 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
-class LostProcessRule(DriverRule):
-    """On each tick, a run of the agent whose shell has given no sign of life for longer than the limit is ended lost
-    and the agent is told; a run whose folder holds an end the server never heard of is ended from the folder."""
+class OrphanProcessRule(DriverRule):
+    """On each tick, a run of the agent whose shell has given no sign of life for longer than the limit is
+    ended lost and the agent is told; a run whose folder holds an end the server never heard of is ended
+    from the folder."""
 
-    name = "processes.lost-process"
+    name = "processes.orphan-process"
     hook = HookEventName.TICK
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
@@ -36,10 +38,10 @@ class LostProcessRule(DriverRule):
         if code is not None:
             return answer.running(*self.parts_ended(process), self.ended(process, code))
         last_sign = self.folder.heartbeat(process.id) or process.created_at
-        if last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.lost_seconds(hook.environment_id):
+        if last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
             return answer
-        told = RuleAnswer.with_lines(*answer.lines, f"process {process.id} was lost: its shell is gone; journal output read {process.id} --summary")
-        return RuleAnswer(refusal=answer.refusal, lines=told.lines, commands=[*answer.commands, LoseProcess(process.id)])
+        line = f"process {process.id} was lost: its shell is gone; journal output read {process.id} --summary"
+        return RuleAnswer(refusal=answer.refusal, lines=[*answer.lines, line], commands=[*answer.commands, OrphanProcess(process.id)])
 
     def parts_ended(self, process: Process) -> list[EndProcessPart]:
         ended: list[EndProcessPart] = []

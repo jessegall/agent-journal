@@ -2,15 +2,13 @@ from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.support.foreground_limit import ForegroundLimit, ForegroundRun
 
 
 class Settings:
-    def waiting_seconds(self, environment_id: int) -> int:
-        return 10
-
-    def foreground_seconds(self, environment_id: int) -> int:
-        return 30
+    def integer(self, setting: ProcessSetting, environment_id: int) -> int:
+        return setting.default
 
 
 class Background:
@@ -70,22 +68,22 @@ def limit(went_past: bool = False, waiting: bool = False, journal_verbs: bool = 
 
 
 def test_a_journal_only_line_has_no_limit_to_move_at():
-    assert limit().of(1, line(part("journal", CommandCategory.JOURNAL), journal_only=True)) == ForegroundRun(0, False)
+    assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_only=True)) == ForegroundRun(0, False)
 
 
 def test_a_journal_command_its_module_marks_goes_to_the_background_at_once():
-    assert limit(journal_verbs=True).of(1, line(part("journal", CommandCategory.JOURNAL), journal_only=True)) == ForegroundRun(30, True)
+    assert limit(journal_verbs=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_only=True)) == ForegroundRun(30, True)
 
 
 def test_a_test_run_and_a_build_go_to_the_background_at_once():
-    assert limit().of(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(30, True)
-    assert limit().of(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(30, True)
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(30, True)
+    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(30, True)
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(went_past=True).of(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, True)
+    assert limit(went_past=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, True)
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().of(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, False)
-    assert limit(waiting=True).of(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False)
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, False)
+    assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False)

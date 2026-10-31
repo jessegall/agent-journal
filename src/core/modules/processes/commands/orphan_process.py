@@ -6,5 +6,5 @@ from core.modules.processes.models.process import Process
 
 
 @dataclass(frozen=True)
-class LoseProcess(MoveCommand[Process]):
-    move = ProcessLifecycle.lose
+class OrphanProcess(MoveCommand[Process]):
+    move = ProcessLifecycle.orphan

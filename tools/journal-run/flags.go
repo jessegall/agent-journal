@@ -9,7 +9,7 @@ import (
 )
 
 // Flags are what the rewritten command line says: the process, the foreground limit, whether to move at once and the
-// line after --; --follow with --folder and --parts is the detached follower of a moved run.
+// line after --; --follow with --folder and --parts is the detached tracker of a moved run.
 type Flags struct {
 	Process    int
 	Limit      int
@@ -20,7 +20,7 @@ type Flags struct {
 	Parts      int
 }
 
-// Home is the journal's folder: the one a follower was handed, else JOURNAL_HOME, else .journal here.
+// Home is the journal's folder: the one a tracker was handed, else JOURNAL_HOME, else .journal here.
 func (flags Flags) Home() string {
 	home := flags.Folder
 	if home == "" {

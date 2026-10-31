@@ -12,16 +12,12 @@ let timer = null;
 
 const isRunning = () => run.value !== null && (run.value.state === "running" || run.value.state === "background");
 
-async function chosen() {
-    if (outputId.value) return outputId.value;
-    const saved = await context.setting("output", 0);
-    if (saved) return saved;
-    const newest = await context.read("process list --limit 1");
-    return newest.ok && newest.value.rows.length ? newest.value.rows[0].id : 0;
-}
-
 async function load() {
-    outputId.value = await chosen();
+    outputId.value = outputId.value || (await context.setting("output", 0));
+    if (!outputId.value) {
+        const listed = await context.read("process list --limit 1");
+        outputId.value = listed.ok && listed.value.rows.length ? listed.value.rows[0].id : 0;
+    }
     if (!outputId.value) return;
     const shown = await context.read(`process show ${outputId.value}`);
     run.value = shown.ok ? shown.value : null;

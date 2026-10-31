@@ -2,6 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.prune_outputs import PruneOutputs
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
@@ -16,7 +17,7 @@ class PruneOutputsHandler(Handler[PruneOutputs, int]):
         self.outputs, self.repository, self.folder, self.settings = outputs, repository, folder, settings
 
     def handle(self, command: PruneOutputs, context: Context) -> int:
-        excess = self.outputs.kept().count() - self.settings.outputs_kept(command.environment_id)
+        excess = self.outputs.kept().count() - self.settings.integer(ProcessSetting.OUTPUTS_KEPT_COUNT, command.environment_id)
         if excess <= 0:
             return 0
         for output in tuple(self.outputs.kept().oldest().page(1, excess).rows):

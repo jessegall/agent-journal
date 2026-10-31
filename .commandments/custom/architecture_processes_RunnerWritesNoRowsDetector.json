@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "go",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(database/sql|sqlite)"
+            },
+            {
+                "file": "**/tools/journal-run/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "runner-reaches-the-database",
+        "description": "The runner opens the journal's database itself, so its rows change with no guard, event or lifecycle.",
+        "rule": "The runner reports through the journal client's subcommands, process part-end, process end and process background, and keeps files in the run's folder.",
+        "skill": "processes-architecture"
+    }
+}

@@ -26,8 +26,8 @@ func main() {
 	home := flags.Home()
 	client := JournalClient{Home: home}
 	if flags.Follow {
-		follower := Follower{Options: Options{Process: flags.Process, Home: home}, Client: client, Folder: NewFolder(home, flags.Process), Parts: flags.Parts, Reported: map[int]bool{}}
-		follower.Watch()
+		tracker := Tracker{Options: Options{Process: flags.Process, Home: home}, Client: client, Folder: NewFolder(home, flags.Process), Parts: flags.Parts, Reported: map[int]bool{}}
+		tracker.Watch()
 		return
 	}
 	os.Exit(Run(Options{Process: flags.Process, LimitSeconds: flags.Limit, Background: flags.Background, Line: flags.Line, Home: home, Shell: userShell(),

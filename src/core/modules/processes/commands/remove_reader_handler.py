@@ -16,8 +16,8 @@ class RemoveReaderHandler(Handler[RemoveReader, Reader]):
         self.readers, self.repository = readers, repository
 
     def handle(self, command: RemoveReader, context: Context) -> Reader:
-        found = self.readers.named(command.name).page(1, 1).rows
-        if not found:
+        matching = self.readers.with_name(command.name).page(1, 1).rows
+        if not matching:
             raise Refusal(f"there is no reader {command.name}", "journal reader list shows them")
-        self.repository.delete(found[0], context)
-        return found[0]
+        self.repository.delete(matching[0], context)
+        return matching[0]

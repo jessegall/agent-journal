@@ -6,8 +6,9 @@ from core.modules.processes.models.enums.reader_type import ReaderType
 
 @dataclass(frozen=True, kw_only=True)
 class Reader(Model):
-    """A named way to read outputs of one shape: by a pattern of lines or by a script the output is handed to, with
-    the commands it reads, how it sees progress, a finish, a failure and a summary, and its card's title."""
+    """A named way to read outputs of one shape: by a pattern of lines or by a script the output is handed to,
+    with the commands it reads, how it sees progress, a finish, a failure and a summary, and its card's
+    title."""
 
     model_name = "reader"
     cli_name = "reader"

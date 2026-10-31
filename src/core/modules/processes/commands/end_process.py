@@ -6,7 +6,8 @@ from core.modules.processes.models.process import Process
 
 @dataclass(frozen=True)
 class EndProcess(Command[Process]):
-    """Ends a process finished on exit code 0 or failed on another, and keeps its output unless the run was short."""
+    """Ends a process finished on exit code 0 or failed on another, and keeps its output unless the run was
+    short."""
 
     row_id: int
     exit_code: int

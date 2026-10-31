@@ -9,8 +9,8 @@ from core.modules.processes.models.lifecycles.watch_lifecycle import WatchLifecy
 
 @dataclass(frozen=True, kw_only=True)
 class Watch(Model):
-    """An agent watching one running process: after every tool use it is given the reader's lines, until the process
-    ends or it stops watching."""
+    """An agent watching one running process: after every tool use it is given the reader's lines, until the
+    process ends or it stops watching."""
 
     model_name = "watch"
     cli_name = "watch"
@@ -19,7 +19,7 @@ class Watch(Model):
     agent_id: int
     process_id: int
     creator_id: int
-    seen_lines: int = 0
+    given_lines: int = 0
     state: WatchState = WatchState.OPEN
 
     def end(self, timestamp: Timestamp, actor: Actor) -> "Watch":

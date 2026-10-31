@@ -25,8 +25,8 @@ class EndedOutputLine(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
-        told_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
+        answered_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
         ended = self.processes.agent(hook.agent_id).moved().ended()
-        if told_at is not None:
-            ended = ended.matching(Greater("ended_at", told_at.text))
+        if answered_at is not None:
+            ended = ended.matching(Greater("ended_at", answered_at.text))
         return RuleAnswer.with_lines(*(self.text.line(process) for process in ended.oldest().all_rows()))

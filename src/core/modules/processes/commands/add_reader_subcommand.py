@@ -7,7 +7,8 @@ from core.modules.processes.models.reader import Reader
 
 
 class AddReaderSubcommand(Subcommand[AddReader, Reader]):
-    """`journal reader add <name> --commands <pattern> --lines <pattern>|--script <path>`: adds a reader of outputs, or changes the fields given of the one with that name."""
+    """`journal reader add <name> --commands <pattern> --lines <pattern>|--script <path>`: adds a reader of
+    outputs, or changes the fields given of the one with that name."""
 
     cli_name = "reader"
     name = "add"

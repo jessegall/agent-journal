@@ -3,6 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.end_process import EndProcess
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.models.process_part import ProcessPart
@@ -29,4 +30,4 @@ class EndProcessHandler(Handler[EndProcess, Process]):
 
     def is_short(self, process: Process, command: EndProcess) -> bool:
         is_piped = self.queries.query(ProcessPart).filter(process_id=process.id, piped=True).exists()
-        return command.byte_count < self.settings.short_output_bytes(process.environment_id) and not is_piped
+        return command.byte_count < self.settings.integer(ProcessSetting.SHORT_OUTPUT_BYTES, process.environment_id) and not is_piped

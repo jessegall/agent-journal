@@ -1,26 +1,10 @@
-import {createApp, h, nextTick} from "vue";
-import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {expect, test} from "vitest";
 import OutputBody from "../../core/modules/processes/web/src/OutputBody.vue";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
-import {context, page} from "./support/windowContext.js";
+import {context, mounted, page, settle} from "./support/windowContext.js";
 
 const run = (id, line, state, extra = {}) => ({id, line, state, exit_code: null, ...extra});
-
-async function mounted(component, windowContext) {
-    const element = document.createElement("div");
-    const app = createApp({render: () => h(component)});
-    app.provide(WINDOW_CONTEXT, windowContext);
-    app.mount(element);
-    await settle();
-    return element;
-}
-
-async function settle() {
-    for (let round = 0; round < 5; round++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve));
-}
 
 // a window context that keeps the lines it ran and the functions that follow events
 function recording(answers, options = {}) {
@@ -104,12 +88,7 @@ test("a pruned output says so, and the output window has its stop and watch butt
 });
 
 test("the body of a command mark shows the progress and the last lines of its output", async () => {
-    const windowContext = recording({});
-    const element = document.createElement("div");
-    const app = createApp({render: () => h(OutputBody, {row: {figure: "40%", fraction: 0.4, lines: "step 3\nFAILED a"}})});
-    app.provide(WINDOW_CONTEXT, windowContext);
-    app.mount(element);
-    await settle();
+    const element = await mounted(OutputBody, recording({}), {row: {figure: "40%", fraction: 0.4, lines: "step 3\nFAILED a"}});
     expect(element.querySelector(".figure").textContent).toBe("40%");
     expect(element.querySelector(".bar").style.width).toBe("40%");
     expect(element.querySelector(".last-lines").textContent).toBe("step 3\nFAILED a");

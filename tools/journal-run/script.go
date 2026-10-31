@@ -13,18 +13,18 @@ func Script(parts []Part, folder string) string {
 	script.WriteString("__journal_code=0\n")
 	for index, part := range parts {
 		position := index + 1
-		out, status := quoted(fmt.Sprintf("%s/%d.out", folder, position)), quoted(fmt.Sprintf("%s/%d.status", folder, position))
+		outputFile, statusFile := quoted(fmt.Sprintf("%s/%d.out", folder, position)), quoted(fmt.Sprintf("%s/%d.status", folder, position))
 		indent := ""
 		if index > 0 && parts[index-1].JoinedBy == "&&" {
 			script.WriteString("if [ \"$__journal_code\" -eq 0 ]; then\n")
 			indent = "  "
 		}
 		if part.JoinedBy == "&&" {
-			fmt.Fprintf(&script, "%s__journal_code=0\n%s{ %s\n} > %s 2>&1 || __journal_code=$?\n", indent, indent, part.Text, out)
+			fmt.Fprintf(&script, "%s__journal_code=0\n%s{ %s\n} > %s 2>&1 || __journal_code=$?\n", indent, indent, part.Text, outputFile)
 		} else {
-			fmt.Fprintf(&script, "%s{ %s\n} > %s 2>&1\n%s__journal_code=$?\n", indent, part.Text, out, indent)
+			fmt.Fprintf(&script, "%s{ %s\n} > %s 2>&1\n%s__journal_code=$?\n", indent, part.Text, outputFile, indent)
 		}
-		fmt.Fprintf(&script, "%sprintf '%%s' \"$__journal_code\" > %s\n", indent, status)
+		fmt.Fprintf(&script, "%sprintf '%%s' \"$__journal_code\" > %s\n", indent, statusFile)
 		if indent != "" {
 			script.WriteString("fi\n")
 		}

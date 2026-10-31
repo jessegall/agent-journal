@@ -6,11 +6,12 @@ from core.base.query.queries import Queries
 from core.base.query.conditions.is_null import IsNull
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
+from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
 from core.modules.processes.support.process_settings import ProcessSettings
 
-AT_ONCE = (CommandCategory.TEST_RUN, CommandCategory.BUILD)
+BACKGROUND_CATEGORIES = frozenset((CommandCategory.TEST_RUN, CommandCategory.BUILD))
 
 
 @dataclass(frozen=True)
@@ -22,25 +23,24 @@ class ForegroundRun:
 
 
 class ForegroundLimit:
-    """How a shell line is run: none to move for a line of journal commands, at once in the background for a journal
-    command its module marks, a test run, a build or a command whose last run went past the limit, else the seconds
-    the settings give, fewer while the user waits on a message."""
+    """How a shell line is run: no limit to move at for a line of journal commands, in the background at once
+    for a journal command its module marks, a test run, a build or a command whose last run went past the
+    limit, else the seconds the settings give, fewer while the user waits on a message."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries
 
-    def of(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
+    def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
         is_journal_background = self.background.includes(shell)
         if shell.is_journal_line and not is_journal_background:
             return ForegroundRun(0, False)
-        seconds = self.waiting_or_usual(environment_id)
-        return ForegroundRun(seconds, is_journal_background or self.is_at_once(environment_id, shell))
+        categories = frozenset(part.classification.category for part in shell.parts)
+        is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell.line)
+        return ForegroundRun(self.seconds_allowed(environment_id), is_journal_background or is_long)
 
-    def is_at_once(self, environment_id: int, shell: ShellLine) -> bool:
-        if any(part.classification.category in AT_ONCE for part in shell.parts):
-            return True
-        return self.processes.environment(environment_id).line(shell.line).moved().exists()
+    def has_moved_run(self, environment_id: int, line: str) -> bool:
+        return self.processes.environment(environment_id).line(line).moved().exists()
 
-    def waiting_or_usual(self, environment_id: int) -> int:
+    def seconds_allowed(self, environment_id: int) -> int:
         is_waiting = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(IsNull("read_at")).exists()
-        return self.settings.waiting_seconds(environment_id) if is_waiting else self.settings.foreground_seconds(environment_id)
+        return self.settings.integer(ProcessSetting.WAITING_FOREGROUND_SECONDS if is_waiting else ProcessSetting.FOREGROUND_SECONDS, environment_id)

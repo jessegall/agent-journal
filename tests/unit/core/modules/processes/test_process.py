@@ -20,4 +20,4 @@ def test_moving_to_the_background_notes_when():
 def test_each_end_keeps_its_state_and_when_and_a_finished_or_failed_one_its_exit_code():
     assert (RUNNING.finish(NOW, ACTOR, 0).state, RUNNING.finish(NOW, ACTOR, 0).exit_code) == (ProcessState.FINISHED, 0)
     assert (RUNNING.fail(NOW, ACTOR, 2).state, RUNNING.fail(NOW, ACTOR, 2).exit_code) == (ProcessState.FAILED, 2)
-    assert RUNNING.stop(NOW, ACTOR).state == ProcessState.STOPPED and RUNNING.lose(NOW, ACTOR).ended_at == NOW
+    assert RUNNING.stop(NOW, ACTOR).state == ProcessState.STOPPED and RUNNING.orphan(NOW, ACTOR).ended_at == NOW
