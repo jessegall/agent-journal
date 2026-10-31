@@ -1,11 +1,11 @@
 from core.modules.actors.actor_record import ActorRecord
 from core.base.module.module import Module
-from core.base.module.noun import Noun
+from core.base.module.model_declaration import ModelDeclaration
 
 
 class ActorsModule(Module):
-    """Gives the actors table, which the core owns, its noun: journal actor make, show, list, edit and delete."""
+    """Gives the actors table, which the core owns, its commands: journal actor make, show, list, edit and delete."""
 
     name = "actors"
     requires_core = ">=5,<6"
-    nouns = (Noun(ActorRecord),)
+    models = [ModelDeclaration(ActorRecord)]

@@ -8,7 +8,7 @@ from core.base.registry.dotted_path import DottedPath
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
-from tests.core.base.harness import harness
+from tests.core.base.sample_container import sample_container
 from tests.core.base.command.test_bus import BlockedItem, BlockedItemHandler
 
 AGENT = Actor(7, ActorType.AGENT)
@@ -16,7 +16,7 @@ AGENT = Actor(7, ActorType.AGENT)
 
 def test_a_refused_command_leaves_no_change_and_one_refusal_row(tmp_path):
     registry = Registry("abc", {}, {DottedPath.class_path(BlockedItem).text: DottedPath.class_path(BlockedItemHandler)}, {}, (), ())
-    container = harness(tmp_path, registry)
+    container = sample_container(tmp_path, registry)
     database = container.get(Database)
     with pytest.raises(Refusal) as raised:
         container.get(Bus).run(BlockedItem(title="Emma"), AGENT)

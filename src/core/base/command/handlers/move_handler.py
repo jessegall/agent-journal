@@ -25,7 +25,7 @@ class MoveHandler(Handler[MoveCommand[Model], Model]):
         method = getattr(row, command.move.name, None)
         if not callable(method):
             return self.repository.save(row.moved(command.move, **fields), context)
-        moved = method(context.moment, context.actor, **fields)
+        moved = method(context.timestamp, context.actor, **fields)
         if not isinstance(moved, Model):
             raise MoveMethodError(f"{type(row).__name__}.{command.move.name} gave back a {type(moved).__name__}, not a model")
         return self.repository.save(moved, context)

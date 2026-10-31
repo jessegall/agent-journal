@@ -41,8 +41,8 @@ class PhaseMoveHandler(Handler[PhaseMove, Phase]):
         old_position, new_position = phase.position, command.position
         phase = self.repository.save(phase.changed(position=len(phases) + 1), context)
         step = 1 if new_position < old_position else -1
-        shifted_phases = [row for row in phases if row.id != phase.id and min(old_position, new_position) <= row.position <= max(old_position, new_position)]
-        for row in sorted(shifted_phases, key=lambda row: row.position, reverse=step == 1):
+        moved_phases = [row for row in phases if row.id != phase.id and min(old_position, new_position) <= row.position <= max(old_position, new_position)]
+        for row in sorted(moved_phases, key=lambda row: row.position, reverse=step == 1):
             self.repository.save(row.changed(position=row.position + step), context)
         return self.repository.save(phase.changed(position=new_position), context)
 

@@ -22,8 +22,8 @@ class ProtectedTaskGuard(Guard):
 class ProtectedTasksModule(Module):
     name = "protected-tasks"
     requires_core = ">=5,<6"
-    dependencies = ("tasks",)
-    guards = ("tests.core.modules.plans.samples:ProtectedTaskGuard",)
+    dependencies = ["tasks"]
+    guards = [ProtectedTaskGuard]
 
 
 class FailingWorkerNotice(CommitListener):
@@ -40,5 +40,5 @@ class FailingWorkerNotice(CommitListener):
 class FailingNoticeModule(Module):
     name = "failing-notice"
     requires_core = ">=5,<6"
-    dependencies = ("tasks",)
-    listeners = ("tests.core.modules.plans.samples:FailingWorkerNotice",)
+    dependencies = ["tasks"]
+    listeners = [FailingWorkerNotice]

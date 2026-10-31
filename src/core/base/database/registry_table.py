@@ -19,9 +19,9 @@ class RegistryTable:
         rows = self.database.rows(ROW) if self.database.rows(TABLE) else []
         return rows[0] if rows else None
 
-    def write(self, fingerprint: str, entries: str, moment: str) -> bool:
+    def write(self, fingerprint: str, entries: str, timestamp: str) -> bool:
         row = self.row()
         if row is not None and (row["fingerprint"], row["entries"]) == (fingerprint, entries):
             return False
-        self.database.update(Statement(UPSERT.sql, (fingerprint, entries, moment)))
+        self.database.update(Statement(UPSERT.sql, (fingerprint, entries, timestamp)))
         return True

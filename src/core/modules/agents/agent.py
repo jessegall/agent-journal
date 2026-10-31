@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.model.model import Model
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 
 class AgentRole(StrEnum):
@@ -21,7 +21,7 @@ class Agent(Model):
     in every row and every event."""
 
     model_name = "agent"
-    cli_noun = "agent"
+    cli_name = "agent"
 
     environment_id: int
     parent_id: int | None = None
@@ -29,4 +29,4 @@ class Agent(Model):
     session: str
     program: str
     role: AgentRole
-    ended_at: Moment | None = None
+    ended_at: Timestamp | None = None

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.base.clock import Clock
-from core.base.command.command import Command
 from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
 from core.base.command.handlers.delete_handler import DeleteHandler
@@ -15,9 +14,7 @@ from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.schema import ModuleMigrations, Schema
 from core.base.database.triggers import Triggers
-from core.base.database.view import View
 from core.base.guard.lifecycle_guard import LifecycleGuard
-from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.database.actor_table import ActorTable
 from core.base.database.listener_cursor_table import ListenerCursorTable
@@ -28,11 +25,10 @@ from core.base.registry.dotted_path import DottedPath
 from core.base.change.event_pattern import EventPattern
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
-from core.base.registry.noun_entry import NounEntry
+from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
-from core.base.module.module import Module
-from core.base.module.module_check import ModuleCheck
-from core.base.module.module_error import ModuleError
+from core.base.module.module import ListenerClass, Module
+from core.base.module.module_check import ModuleCheck, subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
 
@@ -47,18 +43,18 @@ class SyncReport:
     registry changed."""
 
     modules: tuple[str, ...]
-    migrations: tuple[str, ...]
+    migrations: list[str]
     registry_changed: bool
 
     @property
     def text(self) -> str:
         migrations = ", ".join(self.migrations) if self.migrations else "none"
-        registry = "written anew" if self.registry_changed else "unchanged"
+        registry = "rewritten" if self.registry_changed else "unchanged"
         return f"modules: {', '.join(self.modules) or 'none'}\nmigrations run: {migrations}\nregistry: {registry}"
 
 
 class ModuleSync:
-    """Brings the database and the registry in line with the installed modules: finds, orders and checks them,
+    """Updates the database and the registry to match the installed modules: finds, orders and checks them,
     runs the schema, gives each module its actor and each new commit listener its cursor, and writes the
     registry."""
 
@@ -73,51 +69,42 @@ class ModuleSync:
         self.check.check(modules)
         models = self.check.models(modules)
         migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
-        self.schema.rebuild_views(tuple(self.view(path) for module in modules for path in module.views))
+        self.schema.rebuild_views(tuple(view for module in modules for view in module.views))
         self.triggers.rebuild(models)
         self.schema.check_tables(models)
         with self.database.transaction():
-            moment = self.clock.moment().text
-            self.actors.core_actor(moment)
-            actor_ids = {module.name: self.actors.module_actor(module.name, moment) for module in modules}
+            timestamp = self.clock.timestamp().text
+            self.actors.core_actor(timestamp)
+            actor_ids = {module.name: self.actors.module_actor(module.name, timestamp) for module in modules}
             for module in modules:
-                for path in module.listeners:
-                    if self.timing(self.check.listener(path)) is ListenerTiming.COMMIT:
-                        self.cursors.start(self.check.listener(path).name)
+                for listener in module.listeners:
+                    if self.timing(listener) is ListenerTiming.COMMIT:
+                        self.cursors.start(listener.name)
             registry = self.registry(modules, actor_ids)
-            registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), moment)
+            registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), timestamp)
         return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
-        loaded = tuple(DottedPath(path).loaded() for path in module.migrations)
-        return tuple(migration() for migration in loaded if issubclass(migration, Migration))
-
-    def view(self, path: str) -> View:
-        value = DottedPath(path).value()
-        if not isinstance(value, View):
-            raise ModuleError(f"{path} is no view")
-        return value
+        return tuple(migration() for migration in module.migrations)
 
     def registry(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> Registry:
-        guards = [(path, self.check.guard(path)) for module in modules for path in module.guards]
-        listeners = [(module, path, self.check.listener(path)) for module in modules for path in module.listeners]
+        guards = [guard for module in modules for guard in module.guards]
+        listeners = [(module, listener) for module in modules for listener in module.listeners]
         return Registry(
             fingerprint=self.fingerprint.text(modules),
-            nouns={noun.model.cli_noun: NounEntry(module.name, DottedPath.class_path(noun.model), noun.commands, noun.excluded_subcommands) for module in modules for noun in module.nouns},
-            handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(self.command(path)).text: DottedPath(path) for module in modules for path in module.handlers}},
-            subcommands={self.check.subcommand_line(path): DottedPath(path) for module in modules for path in module.subcommands},
+            models={declaration.model.cli_name: ModelEntry(module.name, DottedPath.class_path(declaration.model), tuple(DottedPath.class_path(command).text for command in declaration.commands),
+                                                  declaration.excluded_subcommands) for module in modules for declaration in module.models},
+            handlers={**DEFAULT_HANDLERS, **{DottedPath.class_path(handler.command).text: DottedPath.class_path(handler) for module in modules for handler in module.handlers}},
+            subcommands={subcommand_line(subcommand): DottedPath.class_path(subcommand) for module in modules for subcommand in module.subcommands},
             guards=(GuardEntry(LifecycleGuard.name, EventPattern(LifecycleGuard.event), DottedPath.class_path(LifecycleGuard), 0, LifecycleGuard.short_flag),
-                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath(path), position, guard.short_flag)
-                      for position, (path, guard) in enumerate(guards, 1))),
-            listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath(path), position, actor_ids[module.name])
-                            for position, (module, path, listener) in enumerate(listeners, 1)),
-            bindings={interface: DottedPath(implementation) for module in modules for interface, implementation in module.bindings},
+                    *(GuardEntry(guard.name, EventPattern(guard.event), DottedPath.class_path(guard), position, guard.short_flag)
+                      for position, guard in enumerate(guards, 1))),
+            listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
+                                          actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
+            bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings},
         )
 
-    def command(self, handler_path: str) -> type[Command[object]]:
-        return self.check.handler(handler_path).command
-
-    def timing(self, listener: type[DeletionListener] | type[SaveListener] | type[CommitListener]) -> ListenerTiming:
+    def timing(self, listener: ListenerClass) -> ListenerTiming:
         if issubclass(listener, DeletionListener):
             return ListenerTiming.DELETION
         if issubclass(listener, SaveListener):

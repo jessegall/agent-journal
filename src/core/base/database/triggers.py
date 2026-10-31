@@ -32,25 +32,25 @@ class Triggers:
         lifecycle = model.lifecycle
         if lifecycle is None:
             return ()
-        table, noun = self.tables.table(model).name, model.cli_noun
+        table, cli_name = self.tables.table(model).name, model.cli_name
         pairs = listed(tuple(f"{source.value}>{move.target.value}" for move in lifecycle.moves() for source in move.sources))
         return (
             f"CREATE TRIGGER {table}_rule_state_insert BEFORE INSERT ON {table} WHEN NEW.{STATE} NOT IN ({listed(tuple(lifecycle.initial))})"
-            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}a new {noun} starts as {' or '.join(lifecycle.initial)}'); END",
+            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}a new {cli_name} starts as {' or '.join(lifecycle.initial)}'); END",
             f"CREATE TRIGGER {table}_rule_state_move BEFORE UPDATE OF {STATE} ON {table}"
             f" WHEN OLD.{STATE} != NEW.{STATE} AND OLD.{STATE} || '>' || NEW.{STATE} NOT IN ({pairs})"
-            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}no move of {indefinite_article(noun)} {noun} leads from that state to that state'); END",
+            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}no move of {indefinite_article(cli_name)} {cli_name} leads from that state to that state'); END",
             f"CREATE TRIGGER {table}_rule_state_delete BEFORE DELETE ON {table} WHEN OLD.{STATE} NOT IN ({listed(tuple(lifecycle.deletable))})"
-            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(noun)} {noun} in that state cannot be deleted'); END",
+            f" BEGIN SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(cli_name)} {cli_name} in that state cannot be deleted'); END",
         )
 
     def enum_triggers(self, model: type[Model]) -> tuple[str, ...]:
         table = self.tables.table(model)
-        enums = {column: kind for column, kind in table.types.items() if issubclass(kind, StrEnum) and column != STATE}
+        enums = {column: value_type for column, value_type in table.types.items() if issubclass(value_type, StrEnum) and column != STATE}
         triggers: list[str] = []
-        for column, kind in enums.items():
-            allowed = listed(tuple(member.value for member in kind))
-            refusal = f"SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(model.cli_noun)} {model.cli_noun}''s {column} is one of {', '.join(member.value for member in kind)}')"
+        for column, value_type in enums.items():
+            allowed = listed(tuple(member.value for member in value_type))
+            refusal = f"SELECT RAISE(ABORT, '{RULE_PREFIX}{indefinite_article(model.cli_name)} {model.cli_name}''s {column} is one of {', '.join(member.value for member in value_type)}')"
             triggers.append(f"CREATE TRIGGER {table.name}_rule_{column}_insert BEFORE INSERT ON {table.name} WHEN NEW.{column} NOT IN ({allowed}) BEGIN {refusal}; END")
             triggers.append(f"CREATE TRIGGER {table.name}_rule_{column}_update BEFORE UPDATE OF {column} ON {table.name} WHEN NEW.{column} NOT IN ({allowed}) BEGIN {refusal}; END")
         return tuple(triggers)

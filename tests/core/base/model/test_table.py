@@ -8,23 +8,23 @@ from core.base.metadata import Metadata
 from core.base.model.model import Model
 from core.base.model.table import Table, plural
 from core.base.model.tables import Tables
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True, kw_only=True)
 class LogEntry(Model):
     model_name = "log_entry"
-    cli_noun = "entry"
+    cli_name = "entry"
     lifecycle = ItemLifecycle
 
     title: str
     shelf_id: int | None = None
     state: ItemState = ItemState.OPEN
     is_rare: bool = False
-    due_at: Moment | None = None
+    due_at: Timestamp | None = None
 
 
 def test_a_table_is_named_as_the_plural_of_its_model():
@@ -38,7 +38,7 @@ def test_the_columns_are_the_stored_fields_without_the_move():
 
 def test_the_fields_a_new_row_needs_are_told_from_those_with_a_default():
     table = Table.build(LogEntry)
-    assert table.required_fields == ("title",)
+    assert table.required_fields == ["title"]
     assert table.optional_fields == ("shelf_id", "state", "is_rare", "due_at")
 
 

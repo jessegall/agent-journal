@@ -14,13 +14,13 @@ class BookkeepingTable:
     """Reads and writes one of the core's own tables, which hold records and no models: a row by id, the rows
     past an id, a page newest first, the count, and a new row."""
 
-    def __init__(self, database: Database, table: str, noun: str) -> None:
-        self.database, self.table, self.noun = database, table, noun
+    def __init__(self, database: Database, table: str, cli_name: str) -> None:
+        self.database, self.table, self.cli_name = database, table, cli_name
 
     def row(self, row_id: int) -> sqlite3.Row:
-        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", (row_id,)))
+        rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
         if not rows:
-            raise MissingRows(self.noun, (row_id,))
+            raise MissingRows(self.cli_name, [row_id])
         return rows[0]
 
     def newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]:

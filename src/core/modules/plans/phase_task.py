@@ -8,7 +8,7 @@ class PhaseTask(Model):
     """A task's place in a phase; a task has at most one."""
 
     model_name = "phase_task"
-    cli_noun = "phase-task"
+    cli_name = "phase-task"
 
     phase_id: int
     task_id: int

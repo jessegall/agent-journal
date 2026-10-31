@@ -8,7 +8,7 @@ class Environment(Model):
     """A place the work happens: a checkout folder and its branch, named uniquely."""
 
     model_name = "environment"
-    cli_noun = "environment"
+    cli_name = "environment"
 
     name: str
     folder: str

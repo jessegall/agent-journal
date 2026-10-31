@@ -12,21 +12,21 @@ class ItemState(StrEnum):
 
 class ItemLifecycle(Lifecycle):
     states = ItemState
-    initial = (ItemState.OPEN,)
+    initial = [ItemState.OPEN]
     editable = (ItemState.OPEN, ItemState.PAUSED)
-    deletable = (ItemState.OPEN,)
+    deletable = [ItemState.OPEN]
 
-    pause = Move("pause", (ItemState.OPEN,), ItemState.PAUSED)
+    pause = Move("pause", [ItemState.OPEN], ItemState.PAUSED)
     close = Move("close", (ItemState.OPEN, ItemState.PAUSED), ItemState.CLOSED)
 
 
 class MisnamedLifecycle(Lifecycle):
     states = ItemState
-    initial = (ItemState.OPEN,)
+    initial = [ItemState.OPEN]
     editable = ()
     deletable = ()
 
-    pause = Move("overdo", (ItemState.OPEN,), ItemState.PAUSED)
+    pause = Move("overdo", [ItemState.OPEN], ItemState.PAUSED)
 
 
 def test_the_moves_are_listed_in_the_order_they_are_written():
@@ -34,8 +34,8 @@ def test_the_moves_are_listed_in_the_order_they_are_written():
 
 
 def test_a_move_named_unlike_its_attribute_is_found():
-    assert ItemLifecycle.misnamed_moves() == ()
-    assert MisnamedLifecycle.misnamed_moves() == ("pause",)
+    assert ItemLifecycle.misnamed_moves() == []
+    assert MisnamedLifecycle.misnamed_moves() == ["pause"]
 
 
 def test_the_way_out_names_every_move_from_the_state_a_row_is_in():

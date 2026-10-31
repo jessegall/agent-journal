@@ -41,4 +41,4 @@ class MessageReadHandler(Handler[MessageRead, Message]):
         message = self.queries.query(Message).find(command.message_id)
         if message.read_at is not None:
             return message
-        return self.repository.save(message.changed(read_at=context.moment), context)
+        return self.repository.save(message.changed(read_at=context.timestamp), context)

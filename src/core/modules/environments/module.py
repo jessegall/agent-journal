@@ -1,5 +1,8 @@
+from core.base.environment_names import EnvironmentNames
+from core.modules.environments.environment_table_names import EnvironmentTableNames
+from core.modules.environments.migrations.m001_environments import EnvironmentsTable
 from core.base.module.module import Module
-from core.base.module.noun import Noun
+from core.base.module.model_declaration import ModelDeclaration
 from core.modules.environments.environment import Environment
 
 
@@ -8,7 +11,7 @@ class EnvironmentsModule(Module):
 
     name = "environments"
     requires_core = ">=5,<6"
-    dependencies = ("actors",)
-    nouns = (Noun(Environment),)
-    migrations = ("core.modules.environments.migrations.m001_environments:EnvironmentsTable",)
-    bindings = (("core.base.environment_names:EnvironmentNames", "core.modules.environments.environment_table_names:EnvironmentTableNames"),)
+    dependencies = ["actors"]
+    models = [ModelDeclaration(Environment)]
+    migrations = [EnvironmentsTable]
+    bindings = [(EnvironmentNames, EnvironmentTableNames)]

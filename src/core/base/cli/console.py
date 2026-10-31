@@ -21,8 +21,8 @@ SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 
 
 class Console:
-    """Runs one `journal <noun> <subcommand>`: checks the registry is current, chooses the subcommand,
-    reads or runs its command, and turns a refusal, a usage error or an unexpected error into its line
+    """Runs one `journal <model> <subcommand>`: checks the registry is current, chooses the subcommand,
+    reads or runs its command, and converts a refusal, a usage error or an unexpected error into its line
     and exit code. A write runs the commit listeners before and after it; an error after the commit is
     logged and never changes the exit code of a write that was saved."""
 
@@ -38,7 +38,7 @@ class Console:
         try:
             self.registry.require_current(self.fingerprint.text(self.finder.modules()))
             if len(argv) < 2:
-                raise UsageError("write journal <noun> <subcommand>; journal --help lists them")
+                raise UsageError("write journal <model> <subcommand>; journal --help lists them")
             return self.chosen_run(argv, caller, output)
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))

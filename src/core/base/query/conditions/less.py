@@ -11,4 +11,4 @@ class Less:
     value: object
 
     def statement(self) -> Statement:
-        return Statement(f"{self.column} < ?", (self.value,))
+        return Statement(f"{self.column} < ?", [self.value])

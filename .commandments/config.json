@@ -42,7 +42,8 @@
         "naming_GoSentenceMethodNameDetector",
         "naming_GoSentenceVariableNameDetector",
         "naming_GoSentenceParameterNameDetector",
-        "naming_GoUnitlessQuantityNameDetector"
+        "naming_GoUnitlessQuantityNameDetector",
+        "syntax_OneElementTupleDetector"
     ],
     "parallel": 2,
     "configure": {
@@ -177,6 +178,13 @@
             }
         ],
         "naming_LongDocstringLineDetector": [
+            {
+                "judges": [
+                    "tests"
+                ]
+            }
+        ],
+        "syntax_OneElementTupleDetector": [
             {
                 "judges": [
                     "tests"

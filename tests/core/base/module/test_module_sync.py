@@ -31,13 +31,13 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     container = synced(JournalHome(tmp_path), ITEMS, ITEM_COUNT)
     database = container.get(Database)
     registry = Registry.read(database)
-    assert (registry.nouns["item"].module, registry.nouns["item"].model.text) == ("items", "tests.core.base.model.test_model:Item")
+    assert (registry.models["item"].module, registry.models["item"].model.text) == ("items", "tests.core.base.model.test_model:Item")
     assert {"core.base.command.make_command:MakeCommand", "core.base.command.move_command:MoveCommand"} <= set(registry.handlers)
     assert [guard.name for guard in registry.guards][:2] == ["core.lifecycle", "items.paused-only"]
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'item-count'"))[0]["id"]
     assert [(listener.name, listener.timing.value, listener.actor_id) for listener in registry.listeners if listener.name == "items.paused-count"] == [("items.paused-count", "commit", module_actor)]
     actors = [tuple(row) for row in database.rows(Statement("SELECT id, type, name FROM actors ORDER BY id"))]
-    assert actors[0] == (1, "core", "core") and {(kind, name) for _, kind, name in actors[1:]} >= {("module", "items"), ("module", "item-count")}
+    assert actors[0] == (1, "core", "core") and {(actor_type, name) for _, actor_type, name in actors[1:]} >= {("module", "items"), ("module", "item-count")}
 
 
 def test_a_second_sync_changes_nothing(tmp_path):

@@ -8,14 +8,15 @@ from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
 from core.base.version import CORE_VERSION
 
-DEFAULT_MODULES: tuple[str, ...] = ("core.modules.actors.module:ActorsModule", "core.modules.environments.module:EnvironmentsModule",
-                                   "core.modules.agents.module:AgentsModule", "core.modules.tasks.module:TasksModule",
-                                   "core.modules.plans.module:PlansModule", "core.modules.messages.module:MessagesModule",
-                                   "core.modules.settings.module:SettingsModule")
+DEFAULT_MODULE_LIST = DottedPath("core.modules:DEFAULT_MODULES")
 
 
 def is_list(value: object) -> TypeIs[list[object]]:
     return isinstance(value, list)
+
+
+def is_tuple(value: object) -> TypeIs[tuple[object, ...]]:
+    return isinstance(value, tuple)
 
 
 class ModuleFinder:
@@ -26,7 +27,13 @@ class ModuleFinder:
         self.home = home
 
     def modules(self) -> tuple[type[Module], ...]:
-        return tuple(self.checked(DottedPath(path)) for path in DEFAULT_MODULES + self.plugin_paths())
+        return (*self.default_modules(), *(self.checked(DottedPath(path)) for path in self.plugin_paths()))
+
+    def default_modules(self) -> tuple[type[Module], ...]:
+        listed = DEFAULT_MODULE_LIST.value()
+        if not is_tuple(listed):
+            raise ModuleError(f"{DEFAULT_MODULE_LIST.text} is no tuple of modules")
+        return tuple(self.module(item, DEFAULT_MODULE_LIST.text) for item in listed)
 
     def plugin_paths(self) -> tuple[str, ...]:
         if not self.home.module_list.exists():
@@ -42,9 +49,11 @@ class ModuleFinder:
         return tuple(paths)
 
     def checked(self, path: DottedPath) -> type[Module]:
-        module = path.loaded()
-        if not issubclass(module, Module):
-            raise ModuleError(f"{path.text} is no module")
-        if not VersionRequirement(module.requires_core).allows(CORE_VERSION):
-            raise ModuleError(f"module {module.name} needs core {module.requires_core}, and this core is {'.'.join(map(str, CORE_VERSION))}")
-        return module
+        return self.module(path.loaded(), path.text)
+
+    def module(self, value: object, source: str) -> type[Module]:
+        if not isinstance(value, type) or not issubclass(value, Module):
+            raise ModuleError(f"{source} names {value!r}, which is no module")
+        if not VersionRequirement(value.requires_core).allows(CORE_VERSION):
+            raise ModuleError(f"module {value.name} needs core {value.requires_core}, and this core is {'.'.join(map(str, CORE_VERSION))}")
+        return value

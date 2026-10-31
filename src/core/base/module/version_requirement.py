@@ -21,6 +21,6 @@ class VersionRequirement:
             raise ModuleError(f"{bound} is no version bound; write it like >=5.0 or <6")
         operator, number = match.groups()
         parts = tuple(int(part) for part in number.split("."))
-        wanted = parts + (0,) * (3 - len(parts))
+        wanted = tuple([*parts, 0, 0, 0][:3])
         comparisons = {">=": version >= wanted, "<=": version <= wanted, ">": version > wanted, "<": version < wanted, "==": version == wanted}
         return comparisons[operator]

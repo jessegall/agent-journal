@@ -24,7 +24,7 @@ def test_a_row_prints_its_fields_plain_and_as_json():
 
 
 def test_a_page_prints_a_line_a_row_and_how_to_reach_the_next_page():
-    page: Page[object] = Page((ITEM,), 1, 1, 2)
+    page: Page[object] = Page([ITEM], 1, 1, 2)
     assert output_text(False, lambda output: output.page(page)) == "3  Dune  open\npage 1, 1 of 2 rows: --page 2 for the next\n"
     assert json.loads(output_text(True, lambda output: output.page(page)))["total"] == 2
 

@@ -17,4 +17,4 @@ class MoveCommand(Command[M]):
     row_id: int
 
     def move_fields(self) -> dict[str, object]:
-        return self.field_values((ROW_ID,))
+        return self.field_values([ROW_ID])

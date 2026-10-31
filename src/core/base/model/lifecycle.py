@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from enum import StrEnum
 from typing import ClassVar
 
@@ -8,7 +9,7 @@ class Lifecycle:
     """The states a row can be in and the moves allowed between them."""
 
     states: ClassVar[type[StrEnum]]
-    initial: ClassVar[tuple[StrEnum, ...]]
+    initial: ClassVar[Sequence[StrEnum]]
     editable: ClassVar[tuple[StrEnum, ...]]
     deletable: ClassVar[tuple[StrEnum, ...]]
 
@@ -17,14 +18,14 @@ class Lifecycle:
         return tuple(value for value in vars(cls).values() if isinstance(value, Move))
 
     @classmethod
-    def misnamed_moves(cls) -> tuple[str, ...]:
-        return tuple(attribute for attribute, value in vars(cls).items() if isinstance(value, Move) and value.name != attribute)
+    def misnamed_moves(cls) -> list[str]:
+        return [attribute for attribute, value in vars(cls).items() if isinstance(value, Move) and value.name != attribute]
 
     @classmethod
     def outgoing_moves(cls, state: StrEnum) -> tuple[Move, ...]:
         return tuple(move for move in cls.moves() if state in move.sources)
 
     @classmethod
-    def suggestion(cls, cli_noun: str, row_id: int, state: StrEnum) -> str:
-        lines = [f"journal {cli_noun} {move.name} {row_id}" for move in cls.outgoing_moves(state)]
+    def suggestion(cls, cli_name: str, row_id: int, state: StrEnum) -> str:
+        lines = [f"journal {cli_name} {move.name} {row_id}" for move in cls.outgoing_moves(state)]
         return f"from {state.value} it can only go on with {', '.join(lines)}" if lines else f"{state.value} is final"

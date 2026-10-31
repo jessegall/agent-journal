@@ -11,9 +11,9 @@ from core.base.guard_refusal import GuardRefusal
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.repository.repository import Repository
-from tests.core.base.harness import context, harness
+from tests.core.base.sample_container import context, sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.core.base.model.test_model import Item
@@ -21,7 +21,7 @@ from tests.core.base.model.test_model import Item
 
 @dataclass(frozen=True, kw_only=True)
 class ReturnableItem(Item):
-    def close(self, moment: Moment, actor: Actor) -> "ReturnableItem":
+    def close(self, timestamp: Timestamp, actor: Actor) -> "ReturnableItem":
         return self.moved(ItemLifecycle.close, title=f"{self.title} (closed)")
 
 
@@ -38,7 +38,7 @@ class ItemClose(MoveCommand[ReturnableItem]):
 @pytest.fixture
 def container(tmp_path):
     lifecycle = GuardEntry(LifecycleGuard.name, EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")
-    built = harness(tmp_path, Registry("abc", {}, {}, {}, (lifecycle,), ()))
+    built = sample_container(tmp_path, Registry("abc", {}, {}, {}, [lifecycle], ()))
     built.get(Repository).save(ReturnableItem(title="Dune"), context(ItemMake(title="Dune")))
     return built
 

@@ -17,9 +17,9 @@ class Bell:
         self.tower = tower
 
 
-class Unhinted:
-    def __init__(self, something) -> None:
-        self.something = something
+class UntypedParameter:
+    def __init__(self, value) -> None:
+        self.value = value
 
 
 def test_each_class_is_built_once_with_what_its_constructor_asks_for():
@@ -46,8 +46,8 @@ def test_the_container_gives_itself():
 
 
 def test_a_parameter_without_a_type_is_a_clear_fault():
-    with pytest.raises(MissingHintError, match="something"):
-        Container().get(Unhinted)
+    with pytest.raises(MissingHintError, match="value"):
+        Container().get(UntypedParameter)
 
 
 def test_a_value_bound_for_a_class_must_be_one_of_it():

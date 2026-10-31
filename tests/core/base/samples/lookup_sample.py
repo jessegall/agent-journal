@@ -7,7 +7,7 @@ from tests.core.base.model.test_model import Item
 
 
 class ItemMakeOwn(Subcommand[ItemMake, Item]):
-    cli_noun = "item"
+    cli_name = "item"
     name = "make"
 
     def arguments(self, parser: ArgumentParser) -> None:

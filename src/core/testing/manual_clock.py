@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 
 from core.base.clock import Clock
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 STORY_START = datetime(2026, 10, 31, 9, tzinfo=timezone.utc)
 
@@ -12,8 +12,8 @@ class ManualClock(Clock):
     def __init__(self) -> None:
         self.current = STORY_START
 
-    def moment(self) -> Moment:
-        return Moment(self.current)
+    def timestamp(self) -> Timestamp:
+        return Timestamp(self.current)
 
     def advance(self, duration: timedelta) -> None:
         self.current += duration

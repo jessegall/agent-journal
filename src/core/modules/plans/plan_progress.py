@@ -12,7 +12,7 @@ class PlanProgress(ViewModel):
     """How far a plan is: its tasks not cancelled, its tasks completed, and the first phase with a task open, read
     from the plan_progress view, the one place these counts are worked out."""
 
-    cli_noun = "plan"
+    cli_name = "plan"
     view = "plan_progress"
     key = "plan_id"
 
@@ -25,7 +25,7 @@ class PlanProgress(ViewModel):
 class PlanProgressSubcommand(ReadSubcommand[PlanProgress]):
     """`journal plan progress <plan>`: the plan's task counts and its current phase."""
 
-    cli_noun = "plan"
+    cli_name = "plan"
     name = "progress"
 
     def __init__(self, queries: Queries) -> None:

@@ -9,13 +9,13 @@ from core.base.database.table_statements import TableStatements
 from core.base.journal_home import JournalHome
 from core.base.missing_rows import MissingRows
 from core.base.model.tables import Tables
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.query.query import Query, UnknownColumnError
 from tests.core.base.model.test_table import LogEntry
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @pytest.fixture

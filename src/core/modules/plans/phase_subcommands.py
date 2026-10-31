@@ -11,7 +11,7 @@ class PhaseMakeSubcommand(Subcommand[PhaseMake, Phase]):
     """`journal phase make --plan <plan> "<title>" [--goal "<what is true when done>"] [--checkpoint]`: adds a
     phase at the end of the plan."""
 
-    cli_noun = "phase"
+    cli_name = "phase"
     name = "make"
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -27,7 +27,7 @@ class PhaseMakeSubcommand(Subcommand[PhaseMake, Phase]):
 class PhaseMoveSubcommand(Subcommand[PhaseMove, Phase]):
     """`journal phase move <phase> --to <place>`: moves a phase to another place in its plan."""
 
-    cli_noun = "phase"
+    cli_name = "phase"
     name = "move"
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -41,7 +41,7 @@ class PhaseMoveSubcommand(Subcommand[PhaseMove, Phase]):
 class PhasePlaceSubcommand(Subcommand[PhasePlace, PhaseTask]):
     """`journal phase place <task> --phase <phase>`: puts a task at the end of a phase, out of any other."""
 
-    cli_noun = "phase"
+    cli_name = "phase"
     name = "place"
 
     def arguments(self, parser: ArgumentParser) -> None:

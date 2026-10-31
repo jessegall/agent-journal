@@ -13,9 +13,9 @@ class ActorTable:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def core_actor(self, moment: str) -> None:
-        self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, moment, moment)))
+    def core_actor(self, timestamp: str) -> None:
+        self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, timestamp, timestamp)))
 
-    def module_actor(self, module: str, moment: str) -> int:
-        self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, moment, moment)))
+    def module_actor(self, module: str, timestamp: str) -> int:
+        self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module, timestamp, timestamp)))
         return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]

@@ -29,4 +29,4 @@ class CoreTables(Migration):
     )
 
 
-CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, (CoreTables(),))
+CORE_MIGRATIONS = ModuleMigrations(CORE_MODULE, [CoreTables()])

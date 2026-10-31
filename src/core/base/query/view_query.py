@@ -18,7 +18,7 @@ class ViewQuery(Generic[V]):
         self.types = {name: plain_type(hint) for name, hint in get_type_hints(view_model).items() if name in {field.name for field in fields(view_model)}}
 
     def find(self, key: int) -> V:
-        rows = self.database.rows(Statement(f"SELECT * FROM {self.view_model.view} WHERE {self.view_model.key} = ?", (key,)))
+        rows = self.database.rows(Statement(f"SELECT * FROM {self.view_model.view} WHERE {self.view_model.key} = ?", [key]))
         if not rows:
-            raise MissingRows(self.view_model.cli_noun, (key,))
-        return self.view_model(**{name: loaded(kind, rows[0][name]) for name, kind in self.types.items()})
+            raise MissingRows(self.view_model.cli_name, [key])
+        return self.view_model(**{name: loaded(value_type, rows[0][name]) for name, value_type in self.types.items()})

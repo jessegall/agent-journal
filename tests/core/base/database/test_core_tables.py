@@ -17,7 +17,7 @@ def database(tmp_path):
 
 def test_a_fresh_database_gets_every_bookkeeping_table_once(database):
     schema = Schema(database, Tables())
-    assert schema.migrate((CORE_MIGRATIONS,)) == ("core 1",)
-    assert schema.migrate((CORE_MIGRATIONS,)) == ()
+    assert schema.migrate([CORE_MIGRATIONS]) == ["core 1"]
+    assert schema.migrate([CORE_MIGRATIONS]) == []
     names = [row["name"] for row in database.rows(Statement("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"))]
     assert names == ["actors", "events", "listener_cursors", "listener_skips", "migrations", "refusals", "registry"]

@@ -35,10 +35,10 @@ class LifecycleGuard(Guard):
     def check_start(self, lifecycle: type[Lifecycle], row: Model) -> None:
         if row.current_state() not in lifecycle.initial:
             starts = " or ".join(state.value for state in lifecycle.initial)
-            raise Refusal(f"a new {row.cli_noun} starts as {starts}, not {row.current_state().value}")
+            raise Refusal(f"a new {row.cli_name} starts as {starts}, not {row.current_state().value}")
 
-    def require(self, allowed: bool, row: Model, lifecycle: type[Lifecycle], consequence: str) -> None:
+    def require(self, allowed: bool, row: Model, lifecycle: type[Lifecycle], reason: str) -> None:
         if allowed:
             return
         state: StrEnum = row.current_state()
-        raise Refusal(f"{row.cli_noun} {row.id} is {state.value}, {consequence}", lifecycle.suggestion(row.cli_noun, row.id, state))
+        raise Refusal(f"{row.cli_name} {row.id} is {state.value}, {reason}", lifecycle.suggestion(row.cli_name, row.id, state))

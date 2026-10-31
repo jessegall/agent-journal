@@ -1,11 +1,20 @@
+from core.modules.plans.commands import PlanBlock, PlanCancel, PlanPause
+from core.modules.plans.listeners.cancel_open_plan_tasks import CancelOpenPlanTasks
+from core.modules.plans.listeners.forget_place import ForgetPlace
+from core.modules.plans.listeners.next_plan_task_starter import NextPlanTaskStarter
+from core.modules.plans.migrations.m001_plans import PlansTables
+from core.modules.plans.phase_handlers import PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler
+from core.modules.plans.phase_subcommands import PhaseMakeSubcommand, PhaseMoveSubcommand, PhasePlaceSubcommand
+from core.modules.plans.plan_progress import PlanProgressSubcommand
+from core.modules.plans.plan_query import PlanQuery
+from core.modules.plans.views import PLAN_PROGRESS
 from core.base.module.module import Module
-from core.base.module.noun import Noun
-from core.base.registry.dotted_path import DottedPath
+from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.phase import Phase
 from core.modules.plans.phase_task import PhaseTask
 from core.modules.plans.plan import Plan
 
-PLAN_COMMANDS = tuple(f"core.modules.plans.commands:{name}" for name in ("PlanPause", "PlanBlock", "PlanCancel"))
+PLAN_COMMANDS = (PlanPause, PlanBlock, PlanCancel,)
 
 
 class PlansModule(Module):
@@ -14,11 +23,11 @@ class PlansModule(Module):
     name = "plans"
     requires_core = ">=5,<6"
     dependencies = ("actors", "environments", "agents", "tasks")
-    nouns = (Noun(Plan, query=DottedPath("core.modules.plans.plan_query:PlanQuery"), commands=PLAN_COMMANDS), Noun(Phase), Noun(PhaseTask))
-    migrations = ("core.modules.plans.migrations.m001_plans:PlansTables",)
-    handlers = ("core.modules.plans.phase_handlers:PhaseMakeHandler", "core.modules.plans.phase_handlers:PhaseMoveHandler", "core.modules.plans.phase_handlers:PhasePlaceHandler")
-    subcommands = ("core.modules.plans.phase_subcommands:PhaseMakeSubcommand", "core.modules.plans.phase_subcommands:PhaseMoveSubcommand",
-                   "core.modules.plans.phase_subcommands:PhasePlaceSubcommand", "core.modules.plans.plan_progress:PlanProgressSubcommand")
-    views = ("core.modules.plans.views:PLAN_PROGRESS",)
-    listeners = ("core.modules.plans.listeners.forget_place:ForgetPlace", "core.modules.plans.listeners.cancel_open_plan_tasks:CancelOpenPlanTasks",
-                 "core.modules.plans.listeners.next_plan_task_starter:NextPlanTaskStarter")
+    models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask))
+    migrations = [PlansTables]
+    handlers = (PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler)
+    subcommands = (PhaseMakeSubcommand, PhaseMoveSubcommand,
+                   PhasePlaceSubcommand, PlanProgressSubcommand)
+    views = [PLAN_PROGRESS]
+    listeners = (ForgetPlace, CancelOpenPlanTasks,
+                 NextPlanTaskStarter)

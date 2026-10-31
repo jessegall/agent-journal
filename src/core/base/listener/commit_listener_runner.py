@@ -27,7 +27,7 @@ class CommitListenerRunner:
     def run(self) -> None:
         entries = tuple(entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT)
         for _ in range(CHAIN_LIMIT_ROUNDS):
-            if not self.cursors.has_gap():
+            if not self.cursors.has_unhandled_events():
                 return
             progress = [self.run_listener(entry) for entry in entries]
             if not any(progress):

@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
@@ -20,16 +21,16 @@ class ModuleMigrations:
     """The migrations of one module."""
 
     module: str
-    migrations: tuple[Migration, ...]
+    migrations: Sequence[Migration]
 
 
 class Schema:
-    """Brings the database's tables, views and checks up to date with the code."""
+    """Updates the database's tables, views and checks to match the code."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         self.database, self.tables = database, tables
 
-    def migrate(self, ordered: tuple[ModuleMigrations, ...]) -> tuple[str, ...]:
+    def migrate(self, ordered: Sequence[ModuleMigrations]) -> list[str]:
         self.database.update(Statement(MIGRATIONS_TABLE))
         highest_numbers = {row["module"]: row["number"] for row in self.database.rows(LAST_NUMBERS)}
         run_names: list[str] = []
@@ -38,7 +39,7 @@ class Schema:
             for migration in pending:
                 self.run_one(module.module, migration)
                 run_names.append(f"{module.module} {migration.number}")
-        return tuple(run_names)
+        return run_names
 
     def run_one(self, module: str, migration: Migration) -> None:
         record = Statement("INSERT INTO migrations (module, number, ran_at) VALUES (?, ?, ?)", (module, migration.number, datetime.now(timezone.utc).isoformat()))
@@ -52,7 +53,7 @@ class Schema:
             self.database.insert(record)
 
     def remove_migration_records(self, module: str) -> None:
-        self.database.update(Statement("DELETE FROM migrations WHERE module = ?", (module,)))
+        self.database.update(Statement("DELETE FROM migrations WHERE module = ?", [module]))
 
     def drop_views(self) -> None:
         for row in self.database.rows(VIEWS):
@@ -69,11 +70,11 @@ class Schema:
         if differences:
             raise SchemaMismatchError(differences)
 
-    def differences(self, model: type[Model]) -> tuple[str, ...]:
+    def differences(self, model: type[Model]) -> Sequence[str]:
         table = self.tables.table(model)
         stored = {row["name"] for row in self.database.rows(Statement(f"PRAGMA table_info({table.name})"))}
         if not stored:
-            return (f"{model.__name__} has no table {table.name}",)
+            return [f"{model.__name__} has no table {table.name}"]
         missing = tuple(f"{model.__name__}.{column} has no column in {table.name}" for column in table.columns if column not in stored)
         extra = tuple(f"{table.name}.{column} has no field in {model.__name__}" for column in sorted(stored) if not table.has_column(column))
         return missing + extra

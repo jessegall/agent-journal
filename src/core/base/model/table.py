@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 import sqlite3
 from collections.abc import Mapping
 from dataclasses import MISSING, fields
@@ -7,10 +8,10 @@ from typing import Any, Union, get_args, get_origin, get_type_hints
 
 from core.base.metadata import Metadata
 from core.base.model.model import Model
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 BASE_FIELDS = ("id", "version", "metadata", "created_at", "updated_at")
-UNSTORED_FIELDS = ("move",)
+TRANSIENT_FIELDS = ["move"]
 VOWELS = "aeiou"
 
 
@@ -19,12 +20,12 @@ class Table:
 
     def __init__(self, model: type[Model], name: str, types: dict[str, type]) -> None:
         self.model, self.name, self.types = model, name, types
-        self.noun = model.cli_noun
+        self.cli_name = model.cli_name
 
     @classmethod
     def build(cls, model: type[Model]) -> "Table":
         hints = get_type_hints(model)
-        column_types = {field.name: plain_type(hints[field.name]) for field in fields(model) if field.name not in UNSTORED_FIELDS}
+        column_types = {field.name: plain_type(hints[field.name]) for field in fields(model) if field.name not in TRANSIENT_FIELDS}
         return cls(model, getattr(model, "table", plural(model.model_name)), column_types)
 
     @property
@@ -32,8 +33,8 @@ class Table:
         return tuple(self.types)
 
     @property
-    def required_fields(self) -> tuple[str, ...]:
-        return tuple(field.name for field in fields(self.model) if self.is_model_field(field.name) and field.default is MISSING and field.default_factory is MISSING)
+    def required_fields(self) -> list[str]:
+        return [field.name for field in fields(self.model) if self.is_model_field(field.name) and field.default is MISSING and field.default_factory is MISSING]
 
     @property
     def optional_fields(self) -> tuple[str, ...]:
@@ -45,13 +46,13 @@ class Table:
     def has_column(self, column: str) -> bool:
         return column in self.types
 
-    def row(self, model: Model, columns: tuple[str, ...]) -> dict[str, object]:
+    def row(self, model: Model, columns: Sequence[str]) -> dict[str, object]:
         return {column: stored(getattr(model, column)) for column in columns}
 
     def new_model(self, values: Mapping[str, Any]) -> Model:
         unknown = [name for name in values if not self.has_column(name)]
         if unknown:
-            raise UnstorableTypeError(f"{self.model.__name__} has no field {', '.join(unknown)}")
+            raise UnsupportedColumnTypeError(f"{self.model.__name__} has no field {', '.join(unknown)}")
         return self.model(**values)
 
     def row_model(self, row: sqlite3.Row) -> Model:
@@ -64,11 +65,11 @@ def plural(name: str) -> str:
     return name + ("es" if name.endswith(("s", "x", "sh", "ch")) else "s")
 
 
-def indefinite_article(noun: str) -> str:
-    return "an" if noun[:1].lower() in "aeiou" else "a"
+def indefinite_article(cli_name: str) -> str:
+    return "an" if cli_name[:1].lower() in "aeiou" else "a"
 
 
-class UnstorableTypeError(Exception):
+class UnsupportedColumnTypeError(Exception):
     """Raised when a model has a field whose type cannot be stored in the database."""
 
 
@@ -77,11 +78,11 @@ def plain_type(hint: object) -> type:
         hint = next(arg for arg in get_args(hint) if arg is not NoneType)
     if isinstance(hint, type):
         return hint
-    raise UnstorableTypeError(f"a field typed {hint} cannot be stored")
+    raise UnsupportedColumnTypeError(f"a field typed {hint} cannot be stored")
 
 
 def stored(value: object) -> object:
-    if isinstance(value, Moment):
+    if isinstance(value, Timestamp):
         return value.text
     if isinstance(value, Metadata):
         return value.text
@@ -92,15 +93,15 @@ def stored(value: object) -> object:
     return value
 
 
-def loaded(kind: type, value: object) -> Any:
+def loaded(value_type: type, value: object) -> Any:
     if value is None:
         return None
-    if kind is Moment and isinstance(value, str):
-        return Moment.parsed(value)
-    if kind is Metadata and isinstance(value, str):
+    if value_type is Timestamp and isinstance(value, str):
+        return Timestamp.parsed(value)
+    if value_type is Metadata and isinstance(value, str):
         return Metadata.parsed(value)
-    if issubclass(kind, StrEnum) and isinstance(value, str):
-        return kind(value)
-    if kind is bool:
+    if issubclass(value_type, StrEnum) and isinstance(value, str):
+        return value_type(value)
+    if value_type is bool:
         return bool(value)
     return value

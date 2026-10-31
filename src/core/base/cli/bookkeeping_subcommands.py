@@ -17,7 +17,7 @@ def page_arguments(parser: ArgumentParser) -> None:
 class EventShowSubcommand(ReadSubcommand[LoggedEvent]):
     """`journal event show <id>`: one logged change in full."""
 
-    cli_noun, name = "event", "show"
+    cli_name, name = "event", "show"
 
     def __init__(self, log: EventLog) -> None:
         self.log = log
@@ -32,7 +32,7 @@ class EventShowSubcommand(ReadSubcommand[LoggedEvent]):
 class EventListSubcommand(ReadSubcommand[Page[LoggedEvent]]):
     """`journal event list`: the logged changes, newest first, a page at a time."""
 
-    cli_noun, name = "event", "list"
+    cli_name, name = "event", "list"
 
     def __init__(self, log: EventLog) -> None:
         self.log = log
@@ -47,7 +47,7 @@ class EventListSubcommand(ReadSubcommand[Page[LoggedEvent]]):
 class RefusalShowSubcommand(ReadSubcommand[RecordedRefusal]):
     """`journal refusal show <id>`: one recorded refusal."""
 
-    cli_noun, name = "refusal", "show"
+    cli_name, name = "refusal", "show"
 
     def __init__(self, refusals: RefusalLog) -> None:
         self.refusals = refusals
@@ -62,7 +62,7 @@ class RefusalShowSubcommand(ReadSubcommand[RecordedRefusal]):
 class RefusalListSubcommand(ReadSubcommand[Page[RecordedRefusal]]):
     """`journal refusal list`: the recorded refusals, newest first, a page at a time."""
 
-    cli_noun, name = "refusal", "list"
+    cli_name, name = "refusal", "list"
 
     def __init__(self, refusals: RefusalLog) -> None:
         self.refusals = refusals
@@ -75,6 +75,6 @@ class RefusalListSubcommand(ReadSubcommand[Page[RecordedRefusal]]):
 
 
 BOOKKEEPING_SUBCOMMANDS: dict[str, type[ReadSubcommand[object]]] = {
-    f"{subcommand.cli_noun} {subcommand.name}": subcommand
+    f"{subcommand.cli_name} {subcommand.name}": subcommand
     for subcommand in (EventShowSubcommand, EventListSubcommand, RefusalShowSubcommand, RefusalListSubcommand)
 }

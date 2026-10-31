@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from argparse import ArgumentParser, Namespace
 import dataclasses
 from dataclasses import MISSING, Field, field, fields
@@ -18,7 +19,7 @@ from core.base.model.move import Move
 from core.base.model.table import Table, plain_type
 from core.base.registry.dotted_path import DottedPath
 from core.base.model.tables import Tables
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.page import Page
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
@@ -29,14 +30,14 @@ HANDLER_COLUMNS = (CREATOR_COLUMN, ENVIRONMENT_COLUMN)
 
 
 class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
-    """The `make` subcommand the core builds for a noun: the model's required fields as arguments, its optional
+    """The `make` subcommand the core builds for a model: the model's required fields as arguments, its optional
     fields as flags, run as a make command of that model."""
 
     name = "make"
 
     def __init__(self, table: Table) -> None:
         self.table = table
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
         self.command_class = creation_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -52,13 +53,13 @@ class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
 
 
 class ShowSubcommand(ReadSubcommand[Model]):
-    """The `show <id>` subcommand the core builds for a noun: one row in full."""
+    """The `show <id>` subcommand the core builds for a model: one row in full."""
 
     name = "show"
 
     def __init__(self, table: Table, queries: Queries) -> None:
         self.table, self.queries = table, queries
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
@@ -68,14 +69,14 @@ class ShowSubcommand(ReadSubcommand[Model]):
 
 
 class ListSubcommand(ReadSubcommand[Page[Model]]):
-    """The `list` subcommand the core builds for a noun: rows newest first, a page at a time, with a filter flag
+    """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with a filter flag
     for each enum column and each foreign key, named without its _id."""
 
     name = "list"
 
     def __init__(self, table: Table, queries: Queries) -> None:
         self.table, self.queries = table, queries
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--page", type=int, default=1)
@@ -90,19 +91,19 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         return (query.oldest() if arguments.oldest else query.newest()).page(arguments.page, arguments.limit)
 
     def filter_columns(self) -> tuple[str, ...]:
-        return tuple(column for column, kind in self.table.types.items()
-                     if column != "id" and (issubclass(kind, StrEnum) or (column.endswith(FOREIGN_KEY_SUFFIX) and kind is int)))
+        return tuple(column for column, value_type in self.table.types.items()
+                     if column != "id" and (issubclass(value_type, StrEnum) or (column.endswith(FOREIGN_KEY_SUFFIX) and value_type is int)))
 
 
 class EditSubcommand(Subcommand[EditCommand[Model], Model]):
-    """The `edit <id>` subcommand the core builds for a noun: a flag for each field but the state, and only the
+    """The `edit <id>` subcommand the core builds for a model: a flag for each field but the state, and only the
     fields named are changed."""
 
     name = "edit"
 
     def __init__(self, table: Table) -> None:
         self.table = table
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
         self.command_class = edit_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -116,13 +117,13 @@ class EditSubcommand(Subcommand[EditCommand[Model], Model]):
 
 
 class DeleteSubcommand(Subcommand[DeleteCommand, None]):
-    """The `delete <id>` subcommand the core builds for a noun, refused while other rows refer to the row."""
+    """The `delete <id>` subcommand the core builds for a model, refused while other rows refer to the row."""
 
     name = "delete"
 
     def __init__(self, table: Table) -> None:
         self.table = table
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
         self.command_class = deletion_command(table)
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -132,16 +133,16 @@ class DeleteSubcommand(Subcommand[DeleteCommand, None]):
         return self.command_class(row_id=arguments.row_id)
 
     def write_output(self, value: object, output: Output) -> None:
-        output.line(f"the {self.cli_noun} is deleted")
+        output.line(f"the {self.cli_name} is deleted")
 
 
 class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
-    """The subcommand the core builds for one move of a noun's lifecycle, named for the move: the row's id, and
+    """The subcommand the core builds for one move of a model's lifecycle, named for the move: the row's id, and
     a flag for each field of the move's typed command, if the module gives one."""
 
     def __init__(self, table: Table, command_class: type[MoveCommand[Model]]) -> None:
         self.table, self.command_class = table, command_class
-        self.cli_noun = table.model.cli_noun
+        self.cli_name = table.model.cli_name
         self.name = command_class.move.name.replace("_", "-")
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -164,7 +165,7 @@ class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
 
 
 class DefaultSubcommands:
-    """Builds the subcommands every noun gets from its model, so a module writes only the ones that differ."""
+    """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""
 
     def __init__(self, tables: Tables, queries: Queries) -> None:
         self.tables, self.queries = tables, queries
@@ -184,11 +185,11 @@ class DefaultSubcommands:
     def delete(self, model: type[Model]) -> DeleteSubcommand:
         return DeleteSubcommand(self.tables.table(model))
 
-    def moves(self, model: type[Model], command_paths: tuple[str, ...]) -> tuple[MoveSubcommand, ...]:
+    def moves(self, model: type[Model], command_paths: Sequence[str]) -> tuple[MoveSubcommand, ...]:
         lifecycle = model.lifecycle
         if lifecycle is None:
             return ()
-        command_index = {command.move.name: command for command in noun_move_commands(command_paths)}
+        command_index = {command.move.name: command for command in model_move_commands(command_paths)}
         table = self.tables.table(model)
         return tuple(MoveSubcommand(table, command_index.get(move.name) or move_command(table, move)) for move in lifecycle.moves())
 
@@ -202,35 +203,35 @@ def creation_command(table: Table) -> type[MakeCommand[Model]]:
     model_fields = {model_field.name: model_field for model_field in fields(table.model)}
     command_fields = [(column, hints[column]) for column in argument_columns(table)]
     command_fields += [(column, hints[column], copied_default(model_fields[column])) for column in flag_columns(table)]
-    return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=(generic_base(MakeCommand[table.model]),), frozen=True)
+    return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=tuple([generic_base(MakeCommand[table.model])]), frozen=True)
 
 
 def edit_command(table: Table) -> type[EditCommand[Model]]:
     hints = get_type_hints(table.model)
     command_fields = [(column, hints[column] | None, field(default=None)) for column in editable_columns(table)]
-    return dataclasses.make_dataclass(f"{table.model.__name__}Edit", command_fields, bases=(generic_base(EditCommand[table.model]),), frozen=True)
+    return dataclasses.make_dataclass(f"{table.model.__name__}Edit", command_fields, bases=tuple([generic_base(EditCommand[table.model])]), frozen=True)
 
 
 def deletion_command(table: Table) -> type[DeleteCommand]:
-    return dataclasses.make_dataclass(f"{table.model.__name__}Delete", [], bases=(DeleteCommand,), namespace={"deleted_model": table.model}, frozen=True)
+    return dataclasses.make_dataclass(f"{table.model.__name__}Delete", [], bases=tuple([DeleteCommand]), namespace={"deleted_model": table.model}, frozen=True)
 
 
 def move_command(table: Table, move: Move) -> type[MoveCommand[Model]]:
     class_name = f"{table.model.__name__}{move.name.title().replace('_', '')}"
-    return dataclasses.make_dataclass(class_name, [], bases=(generic_base(MoveCommand[table.model]),), namespace={"move": move}, frozen=True)
+    return dataclasses.make_dataclass(class_name, [], bases=tuple([generic_base(MoveCommand[table.model])]), namespace={"move": move}, frozen=True)
 
 
-def noun_move_commands(command_paths: tuple[str, ...]) -> tuple[type[MoveCommand[Model]], ...]:
+def model_move_commands(command_paths: Sequence[str]) -> tuple[type[MoveCommand[Model]], ...]:
     loaded = tuple(DottedPath(path).loaded() for path in command_paths)
     return tuple(command for command in loaded if is_move_command(command))
 
 
-def is_move_command(kind: type) -> TypeIs[type[MoveCommand[Model]]]:
-    return issubclass(kind, MoveCommand)
+def is_move_command(class_type: type) -> TypeIs[type[MoveCommand[Model]]]:
+    return issubclass(class_type, MoveCommand)
 
 
 def generic_base(base: object) -> type:
-    return new_class(f"{base}Base", (base,))
+    return new_class(f"{base}Base", tuple([base]))
 
 
 def editable_columns(table: Table) -> tuple[str, ...]:
@@ -251,12 +252,12 @@ def copied_default(model_field: Field[Any]) -> Field[Any]:
     return field(default_factory=model_field.default_factory)
 
 
-def parser_argument(parser: ArgumentParser, flag: str, kind: type[object]) -> None:
-    if kind is bool:
+def parser_argument(parser: ArgumentParser, flag: str, value_type: type[object]) -> None:
+    if value_type is bool:
         parser.add_argument(flag, action="store_true", default=None)
-    elif issubclass(kind, StrEnum):
-        parser.add_argument(flag, type=kind, choices=tuple(kind.__members__.values()))
-    elif kind is Moment:
-        parser.add_argument(flag, type=Moment.parsed)
+    elif issubclass(value_type, StrEnum):
+        parser.add_argument(flag, type=value_type, choices=tuple(value_type.__members__.values()))
+    elif value_type is Timestamp:
+        parser.add_argument(flag, type=Timestamp.parsed)
     else:
-        parser.add_argument(flag, type=kind)
+        parser.add_argument(flag, type=value_type)

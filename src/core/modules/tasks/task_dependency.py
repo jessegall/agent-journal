@@ -8,7 +8,7 @@ class TaskDependency(Model):
     """One task waiting on another; a loop of tasks waiting on each other is refused."""
 
     model_name = "task_dependency"
-    cli_noun = "task-dependency"
+    cli_name = "task-dependency"
 
     task_id: int
     dependency_id: int

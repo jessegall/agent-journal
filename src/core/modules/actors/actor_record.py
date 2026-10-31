@@ -10,7 +10,7 @@ class ActorRecord(Model):
     value in core.base is what a command carries; this is the row it points to."""
 
     model_name = "actor"
-    cli_noun = "actor"
+    cli_name = "actor"
     table = "actors"
 
     type: ActorType

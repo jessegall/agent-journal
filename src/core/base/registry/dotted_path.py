@@ -10,13 +10,13 @@ class DottedPathError(Exception):
 
 @dataclass(frozen=True)
 class DottedPath:
-    """Where a class lives, written module:Class, so it can be named without being imported."""
+    """The location of a class, written module:Class, so it can be named without being imported."""
 
     text: str
 
     @classmethod
-    def class_path(cls, kind: type) -> "DottedPath":
-        return cls(f"{kind.__module__}:{kind.__qualname__}")
+    def class_path(cls, class_type: type) -> "DottedPath":
+        return cls(f"{class_type.__module__}:{class_type.__qualname__}")
 
     def loaded(self) -> type:
         target = self.value()

@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 
 class Clock:
-    """Tells the current time; tests swap it for a clock they set by hand."""
+    """Tells the current time; tests replace it with a clock they set by hand."""
 
-    def moment(self) -> Moment:
-        return Moment(datetime.now(timezone.utc))
+    def timestamp(self) -> Timestamp:
+        return Timestamp(datetime.now(timezone.utc))

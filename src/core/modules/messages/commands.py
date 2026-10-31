@@ -14,6 +14,6 @@ class MessageSend(Command[Message]):
 
 @dataclass(frozen=True)
 class MessageRead(Command[Message]):
-    """Marks a message read at the command's moment."""
+    """Marks a message read at the command's timestamp."""
 
     message_id: int

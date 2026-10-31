@@ -29,14 +29,14 @@ def test_the_pragmas_are_set_as_it_opens(database):
 
 def test_a_transaction_that_ends_well_is_kept(database):
     with database.transaction():
-        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("kept",)))
+        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["kept"]))
     assert count(database) == 1 and not database.has_transaction
 
 
 def test_an_error_rolls_everything_back_and_is_raised_as_it_was(database):
     with pytest.raises(KeyError, match="first"):
         with database.transaction():
-            database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("lost",)))
+            database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["lost"]))
             raise KeyError("first")
     assert count(database) == 0 and not database.has_transaction
 
@@ -46,7 +46,7 @@ def test_a_commit_that_fails_is_rolled_back(database):
     database.update(Statement("CREATE TABLE children (id INTEGER PRIMARY KEY, parent_id INTEGER REFERENCES parents(id) DEFERRABLE INITIALLY DEFERRED) STRICT"))
     with pytest.raises(sqlite3.IntegrityError):
         with database.transaction():
-            database.insert(Statement("INSERT INTO children (parent_id) VALUES (?)", (99,)))
+            database.insert(Statement("INSERT INTO children (parent_id) VALUES (?)", [99]))
     assert not database.has_transaction
     assert database.rows(Statement("SELECT count(*) FROM children"))[0][0] == 0
 
@@ -54,7 +54,7 @@ def test_a_commit_that_fails_is_rolled_back(database):
 def test_a_second_connection_waits_for_the_write_lock_instead_of_writing_halfway(database, tmp_path):
     second_connection = sqlite3.connect(tmp_path / "journal.db", autocommit=True, timeout=0.2)
     with database.transaction():
-        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("first",)))
+        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["first"]))
         with pytest.raises(sqlite3.OperationalError, match="locked"):
             second_connection.execute("BEGIN IMMEDIATE")
     second_connection.execute("BEGIN IMMEDIATE")
@@ -64,10 +64,10 @@ def test_a_second_connection_waits_for_the_write_lock_instead_of_writing_halfway
 
 def test_an_inner_rollback_keeps_the_outer_work(database):
     with database.transaction():
-        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("outer",)))
+        database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["outer"]))
         with pytest.raises(KeyError):
             with database.savepoint("CancelTask"):
-                database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("inner",)))
+                database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["inner"]))
                 raise KeyError("inner refused")
     assert [row["text"] for row in database.rows(Statement("SELECT text FROM notes"))] == ["outer"]
 
@@ -76,7 +76,7 @@ def test_inner_work_is_lost_when_the_outer_rolls_back(database):
     with pytest.raises(KeyError):
         with database.transaction():
             with database.savepoint("CancelTask"):
-                database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ("inner",)))
+                database.insert(Statement("INSERT INTO notes (text) VALUES (?)", ["inner"]))
             raise KeyError("outer refused")
     assert count(database) == 0
 

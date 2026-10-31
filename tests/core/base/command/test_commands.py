@@ -7,11 +7,11 @@ from core.base.command.delete_command import DeleteCommand
 from core.base.command.edit_command import EditCommand
 from core.base.command.make_command import MakeCommand
 from core.base.command.move_command import MoveCommand
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from tests.core.base.model.test_lifecycle import ItemLifecycle
 from tests.core.base.model.test_model import Item
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True)
@@ -51,5 +51,5 @@ def test_an_edit_hands_on_only_the_fields_given():
 def test_a_nested_context_keeps_who_when_and_the_skipped_guards_and_names_its_own_command():
     outer = Context(Actor(7, ActorType.AGENT), AT, ItemMake(title="Dune"), frozenset({"messages.one-reply-per-message"}), cause_id=12)
     inner = outer.nested(ItemPause(row_id=4, reason="paused"))
-    assert (inner.actor, inner.moment, inner.skipped_guards, inner.cause_id) == (outer.actor, outer.moment, outer.skipped_guards, 12)
+    assert (inner.actor, inner.timestamp, inner.skipped_guards, inner.cause_id) == (outer.actor, outer.timestamp, outer.skipped_guards, 12)
     assert inner.command == ItemPause(row_id=4, reason="paused")

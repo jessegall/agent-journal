@@ -10,5 +10,5 @@ class GuardRefusal(Refusal):
 
     @property
     def text(self) -> str:
-        skip = f" (to pass it knowingly: {self.skip_flag})" if self.skip_flag else ""
+        skip = f" (to pass it: {self.skip_flag})" if self.skip_flag else ""
         return f"refused by {self.guard}: {super().text}{skip}"

@@ -55,21 +55,21 @@ class Repository:
             return None
         stored = self.queries.query(type(model)).find(model.id)
         if stored.version != model.version:
-            raise StaleRow(model.cli_noun, model.id)
+            raise StaleRow(model.cli_name, model.id)
         return stored
 
     def persist(self, model: M, change: Change[M]) -> M:
         table = self.tables.table(type(model))
         statements = TableStatements(table)
-        moment = change.context.moment
+        timestamp = change.context.timestamp
         if change.old_row is None:
-            row_id = self.guarded(lambda: self.database.insert(statements.insert(table.row(model, table.columns), moment)), table, False)
-            return model.saved(row_id, 1, moment)
+            row_id = self.guarded(lambda: self.database.insert(statements.insert(table.row(model, table.columns), timestamp)), table, False)
+            return model.saved(row_id, 1, timestamp)
         changed = table.row(model, change.fields)
-        updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, moment)), table, False)
+        updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, timestamp)), table, False)
         if updated_count == 0:
-            raise StaleRow(model.cli_noun, model.id)
-        return model.saved(model.id, model.version + 1, moment)
+            raise StaleRow(model.cli_name, model.id)
+        return model.saved(model.id, model.version + 1, timestamp)
 
     def guarded(self, statement_run: Callable[[], int], table: Table, deletion: bool) -> int:
         try:

@@ -19,14 +19,14 @@ from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
-from tests.core.base.harness import harness
+from tests.core.base.sample_container import sample_container
 from tests.core.base.samples.listener_sample import ShelfCounter
 from tests.core.base.command.test_commands import ItemMake
 
 AGENT = Actor(7, ActorType.AGENT)
 
 
-class NoDune(Guard):
+class ForbiddenTitleGuard(Guard):
     name = "items.no-dune"
     event = "item.create"
 
@@ -44,24 +44,24 @@ class NoItemsToday(Guard):
 
 
 def registry() -> Registry:
-    guards = (GuardEntry(NoDune.name, EventPattern(NoDune.event), DottedPath.class_path(NoDune), 1, ""),
+    guards = (GuardEntry(ForbiddenTitleGuard.name, EventPattern(ForbiddenTitleGuard.event), DottedPath.class_path(ForbiddenTitleGuard), 1, ""),
               GuardEntry(NoItemsToday.name, EventPattern(NoItemsToday.event), DottedPath.class_path(NoItemsToday), 2, "today"))
-    listeners = (ListenerEntry("items.count", EventPattern("item.create"), ListenerTiming.COMMIT, DottedPath.class_path(ShelfCounter), 1),)
+    listeners = [ListenerEntry("items.count", EventPattern("item.create"), ListenerTiming.COMMIT, DottedPath.class_path(ShelfCounter), 1)]
     handlers = {DottedPath.class_path(MakeCommand).text: DottedPath.class_path(MakeHandler)}
     return Registry("abc", {}, handlers, {}, guards, listeners)
 
 
 def test_explain_lists_every_refusal_and_listener_and_writes_nothing(tmp_path):
-    container = harness(tmp_path, registry())
+    container = sample_container(tmp_path, registry())
     explanation = container.get(Bus).explain(ItemMake(title="Dune"), AGENT)
     assert [refusal.guard for refusal in explanation.refusals] == ["items.no-dune", "items.closed-today"]
-    assert [(event.event, event.listeners) for event in explanation.events] == [("item.create", ("items.count",))]
+    assert [(event.event, event.listeners) for event in explanation.events] == [("item.create", ["items.count"])]
     assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0
     assert container.get(Database).rows(Statement("SELECT count(*) FROM events"))[0][0] == 0
 
 
 def test_a_skipped_guard_and_a_short_flag_reach_the_context(tmp_path):
-    container = harness(tmp_path, registry())
+    container = sample_container(tmp_path, registry())
     flags, parser = WriteFlags(registry()), ArgumentParser()
     flags.add(parser)
     skipped = flags.skipped_guards(parser.parse_args(["--skip-guard", "items.no-dune", "--today"]))
@@ -73,4 +73,4 @@ def test_a_skipped_guard_and_a_short_flag_reach_the_context(tmp_path):
 
 def test_without_explain_the_first_refusal_stops_the_command(tmp_path):
     with pytest.raises(GuardRefusal, match="no item may be titled Dune"):
-        harness(tmp_path, registry()).get(Bus).run(ItemMake(title="Dune"), AGENT)
+        sample_container(tmp_path, registry()).get(Bus).run(ItemMake(title="Dune"), AGENT)

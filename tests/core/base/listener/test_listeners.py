@@ -8,7 +8,7 @@ from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
 from core.base.container import Container
-from core.base.guard.applicability import Applicability
+from core.base.guard.change_filter import ChangeFilter
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.listeners import Listeners
 from core.base.listener.save_listener import SaveListener
@@ -16,7 +16,7 @@ from core.base.model.model import Model
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.registry import Registry
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_model import Item
 
@@ -55,12 +55,12 @@ def entry(listener: type[SaveListener] | type[DeletionListener], timing: Listene
 UNUSED = ListenerEntry("shelves.count", EventPattern("shelf.create"), ListenerTiming.SAVE, DottedPath("tests.core.base.samples.listener_sample:ShelfCounter"), 9)
 REGISTRY = Registry("abc", {}, {}, {}, (), (entry(SecondOnSave, ListenerTiming.SAVE, 2), entry(FirstOnSave, ListenerTiming.SAVE, 1),
                                           entry(ClearItemNotes, ListenerTiming.DELETION, 1), UNUSED))
-CONTEXT = Context(Actor(7, ActorType.AGENT), Moment(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"))
+CONTEXT = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"))
 
 
 def listeners() -> Listeners:
     HANDLED.clear()
-    return Listeners(REGISTRY, Container(), Applicability())
+    return Listeners(REGISTRY, Container(), ChangeFilter())
 
 
 def test_save_listeners_run_in_order_and_an_error_reaches_the_caller():

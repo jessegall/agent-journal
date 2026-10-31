@@ -13,7 +13,7 @@ from core.base.query.queries import Queries
 
 @dataclass(frozen=True, kw_only=True)
 class ShelfCount(ViewModel):
-    cli_noun = "shelf"
+    cli_name = "shelf"
     view = "shelf_counts"
     key = "shelf_id"
 

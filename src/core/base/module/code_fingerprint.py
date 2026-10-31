@@ -1,22 +1,22 @@
 import hashlib
+import inspect
+from pathlib import Path
 
-from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.version import CORE_VERSION
 
+CORE_FOLDER = Path(__file__).resolve().parents[2]
+
 
 class CodeFingerprint:
-    """A hash of the core version and of every file the modules name, by path, size and change time, so a run
-    can tell without importing anything that the registry was built from other code."""
+    """A hash of the core version and of every Python file in the core's folder and in each module's folder, by
+    path, size and change time, so a run can tell that the registry was built from other code; a file that
+    appears, changes or is gone is a change, never an error."""
 
     def text(self, modules: tuple[type[Module], ...]) -> str:
         digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
-        for file in sorted({DottedPath(path).source_file() for module in modules for path in self.module_paths(module)}):
+        folders = {CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in modules)}
+        for file in sorted({file for folder in folders for file in folder.rglob("*.py")}):
             status = file.stat()
             digest.update(f"{file}:{status.st_size}:{status.st_mtime_ns}".encode())
         return digest.hexdigest()
-
-    def module_paths(self, module: type[Module]) -> tuple[str, ...]:
-        declared_paths = (*module.migrations, *module.views, *module.handlers, *module.subcommands, *module.guards, *module.listeners)
-        nouns = tuple(DottedPath.class_path(noun.model).text for noun in module.nouns)
-        return (DottedPath.class_path(module).text, *nouns, *declared_paths)

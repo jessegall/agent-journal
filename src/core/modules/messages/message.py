@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.model.model import Model
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 
 class MessageType(StrEnum):
@@ -18,7 +18,7 @@ class Message(Model):
     """One message in an environment's chat; a reply names the message it answers as its parent."""
 
     model_name = "message"
-    cli_noun = "message"
+    cli_name = "message"
 
     environment_id: int
     agent_id: int | None = None
@@ -26,4 +26,4 @@ class Message(Model):
     creator_id: int
     type: MessageType
     text: str
-    read_at: Moment | None = None
+    read_at: Timestamp | None = None

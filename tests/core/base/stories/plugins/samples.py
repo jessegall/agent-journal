@@ -10,7 +10,7 @@ from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.module.module import Module
-from core.base.module.noun import Noun
+from core.base.module.model_declaration import ModelDeclaration
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
@@ -24,20 +24,20 @@ class ReviewState(StrEnum):
 
 class ReviewLifecycle(Lifecycle):
     states = ReviewState
-    initial = (ReviewState.REQUESTED,)
-    editable = (ReviewState.REQUESTED,)
-    deletable = (ReviewState.REQUESTED,)
+    initial = [ReviewState.REQUESTED]
+    editable = [ReviewState.REQUESTED]
+    deletable = [ReviewState.REQUESTED]
 
-    passed = Move("passed", (ReviewState.REQUESTED,), ReviewState.PASSED)
-    failed = Move("failed", (ReviewState.REQUESTED,), ReviewState.FAILED)
+    passed = Move("passed", [ReviewState.REQUESTED], ReviewState.PASSED)
+    failed = Move("failed", [ReviewState.REQUESTED], ReviewState.FAILED)
 
 
 @dataclass(frozen=True, kw_only=True)
 class Review(Model):
-    """A request that a task's work be reviewed, and its verdict."""
+    """A request that a task's work be reviewed, and its result."""
 
     model_name = "review"
-    cli_noun = "review"
+    cli_name = "review"
     lifecycle = ReviewLifecycle
 
     task_id: int
@@ -93,8 +93,8 @@ class ForgetTaskReviews(DeletionListener):
 class ReviewsModule(Module):
     name = "reviews"
     requires_core = ">=5.0,<6"
-    dependencies = ("tasks",)
-    nouns = (Noun(Review, commands=("tests.core.base.stories.plugins.samples:ReviewFailed",)),)
-    migrations = ("tests.core.base.stories.plugins.samples:ReviewsTable",)
-    guards = ("tests.core.base.stories.plugins.samples:ReviewedTaskGuard",)
-    listeners = ("tests.core.base.stories.plugins.samples:ForgetTaskReviews",)
+    dependencies = ["tasks"]
+    models = [ModelDeclaration(Review, commands=[ReviewFailed])]
+    migrations = [ReviewsTable]
+    guards = [ReviewedTaskGuard]
+    listeners = [ForgetTaskReviews]

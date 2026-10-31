@@ -1,5 +1,8 @@
+from core.base.guard.guard_switches import GuardSwitches
+from core.modules.settings.migrations.m001_settings import SettingsTable
+from core.modules.settings.setting_guard_switches import SettingGuardSwitches
 from core.base.module.module import Module
-from core.base.module.noun import Noun
+from core.base.module.model_declaration import ModelDeclaration
 from core.modules.settings.setting import Setting
 
 
@@ -9,6 +12,6 @@ class SettingsModule(Module):
     name = "settings"
     requires_core = ">=5,<6"
     dependencies = ("actors", "environments")
-    nouns = (Noun(Setting),)
-    migrations = ("core.modules.settings.migrations.m001_settings:SettingsTable",)
-    bindings = (("core.base.guard.guard_switches:GuardSwitches", "core.modules.settings.setting_guard_switches:SettingGuardSwitches"),)
+    models = [ModelDeclaration(Setting)]
+    migrations = [SettingsTable]
+    bindings = [(GuardSwitches, SettingGuardSwitches)]

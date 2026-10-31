@@ -1,6 +1,6 @@
 from core.base.change.change import Change
 from core.base.container import Container
-from core.base.guard.applicability import Applicability
+from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.explanation import EventListeners
 from core.base.guard.guard import Guard
 from core.base.guard.guard_switches import GuardSwitches
@@ -22,13 +22,13 @@ class Guards:
     """Asks every guard registered for a change's event, in their fixed order, and stops at the first refusal;
     with --explain it collects every refusal instead."""
 
-    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, applicability: Applicability) -> None:
-        self.registry, self.container, self.switches, self.applicability = registry, container, switches, applicability
+    def __init__(self, registry: Registry, container: Container, switches: GuardSwitches, change_filter: ChangeFilter) -> None:
+        self.registry, self.container, self.switches, self.change_filter = registry, container, switches, change_filter
 
     def ask(self, change: Change[Model]) -> frozenset[str]:
         explanation = change.context.explanation
         if explanation is not None:
-            listeners = tuple(entry.name for timing in ListenerTiming for entry in self.registry.event_listeners(change.event, timing))
+            listeners = [entry.name for timing in ListenerTiming for entry in self.registry.event_listeners(change.event, timing)]
             explanation.events.append(EventListeners(change.event, listeners))
         skipped: set[str] = set()
         for entry in self.registry.event_guards(change.event):
@@ -41,7 +41,7 @@ class Guards:
     def is_checked(self, entry: GuardEntry, change: Change[Model]) -> bool:
         if entry.name == LIFECYCLE_GUARD:
             return True
-        return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name) and self.applicability.applies(entry.name, change)
+        return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name) and self.change_filter.applies(entry.name, change)
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
         guard_class = entry.path.loaded()

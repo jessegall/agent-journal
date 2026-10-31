@@ -7,12 +7,12 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 
 
-class RowlessChangeError(Exception):
+class MissingRowError(Exception):
     """Raised when a change is made without any row, old or new."""
 
 M = TypeVar("M", bound=Model, covariant=True)
 METADATA = "metadata"
-UNCOMPARED_FIELDS = ("id", "version", METADATA, "created_at", "updated_at", "move")
+BOOKKEEPING_FIELDS = ("id", "version", METADATA, "created_at", "updated_at", "move")
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class Change(Generic[M]):
 
     def __post_init__(self) -> None:
         if self.old_row is None and self.new_row is None:
-            raise RowlessChangeError("a change needs an old row, a new row or both")
+            raise MissingRowError("a change needs an old row, a new row or both")
 
     @property
     def row(self) -> M:
@@ -33,7 +33,7 @@ class Change(Generic[M]):
             return self.new_row
         if self.old_row is not None:
             return self.old_row
-        raise RowlessChangeError("a change needs an old row, a new row or both")
+        raise MissingRowError("a change needs an old row, a new row or both")
 
     @property
     def actor(self) -> Actor:
@@ -44,10 +44,10 @@ class Change(Generic[M]):
         return self.new_row.move if self.new_row else None
 
     @property
-    def fields(self) -> tuple[str, ...]:
+    def fields(self) -> list[str]:
         if self.old_row is None or self.new_row is None:
-            return ()
-        return tuple(field.name for field in fields(self.row) if field.name not in UNCOMPARED_FIELDS and getattr(self.old_row, field.name) != getattr(self.new_row, field.name))
+            return []
+        return [field.name for field in fields(self.row) if field.name not in BOOKKEEPING_FIELDS and getattr(self.old_row, field.name) != getattr(self.new_row, field.name)]
 
     @property
     def is_empty(self) -> bool:

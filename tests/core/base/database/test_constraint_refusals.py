@@ -23,14 +23,14 @@ def database(tmp_path):
     opened.close()
 
 
-def sample_table(name: str, noun: str) -> Table:
-    return Table(type(noun.title(), (), {"cli_noun": noun}), name, {})
+def sample_table(name: str, cli_name: str) -> Table:
+    return Table(type(cli_name.title(), (), {"cli_name": cli_name}), name, {})
 
 
-def refusal_of(database: Database, sql: str, table: str, noun: str):
+def refusal_of(database: Database, sql: str, table: str, cli_name: str):
     with pytest.raises(sqlite3.IntegrityError) as raised:
         database.update(Statement(sql))
-    return ConstraintRefusals(database).refusal(raised.value, sample_table(table, noun), sql.startswith("DELETE"))
+    return ConstraintRefusals(database).refusal(raised.value, sample_table(table, cli_name), sql.startswith("DELETE"))
 
 
 def test_a_rule_raised_by_a_trigger_is_printed_as_written(database):

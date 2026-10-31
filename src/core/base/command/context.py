@@ -3,16 +3,16 @@ from dataclasses import dataclass, replace
 from core.base.actor import Actor
 from core.base.command.command import Command
 from core.base.guard.explanation import Explanation
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True)
 class Context:
-    """The circumstances a command runs in: who asked, when, which guards they chose to pass, and, with
-    --explain, where every verdict is collected instead of the first refusal stopping the command."""
+    """What a command runs with: who asked, when, which guards they chose to pass, and, with
+    --explain, where every refusal is collected instead of the first one stopping the command."""
 
     actor: Actor
-    moment: Moment
+    timestamp: Timestamp
     command: Command[object]
     skipped_guards: frozenset[str] = frozenset()
     cause_id: int | None = None

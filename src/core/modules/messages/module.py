@@ -1,6 +1,10 @@
+from core.modules.messages.guards.one_reply_per_message import OneReplyPerMessage
+from core.modules.messages.handlers import MessageReadHandler, MessageSendHandler
+from core.modules.messages.message_query import MessageQuery
+from core.modules.messages.migrations.m001_messages import MessagesTable
+from core.modules.messages.subcommands import MessageReadSubcommand, MessageReplySubcommand, MessageSendSubcommand
 from core.base.module.module import Module
-from core.base.module.noun import Noun
-from core.base.registry.dotted_path import DottedPath
+from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.message import Message
 
 
@@ -10,8 +14,8 @@ class MessagesModule(Module):
     name = "messages"
     requires_core = ">=5,<6"
     dependencies = ("actors", "environments", "agents")
-    nouns = (Noun(Message, query=DottedPath("core.modules.messages.message_query:MessageQuery"), excluded_subcommands=("make",)),)
-    migrations = ("core.modules.messages.migrations.m001_messages:MessagesTable",)
-    guards = ("core.modules.messages.guards.one_reply_per_message:OneReplyPerMessage",)
-    handlers = ("core.modules.messages.handlers:MessageSendHandler", "core.modules.messages.handlers:MessageReadHandler")
-    subcommands = tuple(f"core.modules.messages.subcommands:{name}" for name in ("MessageSendSubcommand", "MessageReplySubcommand", "MessageReadSubcommand"))
+    models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
+    migrations = [MessagesTable]
+    guards = [OneReplyPerMessage]
+    handlers = (MessageSendHandler, MessageReadHandler)
+    subcommands = (MessageSendSubcommand, MessageReplySubcommand, MessageReadSubcommand,)

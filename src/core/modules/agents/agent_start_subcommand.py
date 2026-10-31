@@ -10,7 +10,7 @@ class AgentStartSubcommand(Subcommand[AgentStart, Agent]):
     """`journal agent start <session> <program> <role> [--parent <id>]`, run when a session of an agent program
     begins; agents have no make subcommand."""
 
-    cli_noun = "agent"
+    cli_name = "agent"
     name = "start"
 
     def arguments(self, parser: ArgumentParser) -> None:

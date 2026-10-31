@@ -8,7 +8,7 @@ from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
 from core.base.container import Container
-from core.base.guard.applicability import Applicability
+from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.guard import Guard
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.guard.guards import Guards
@@ -17,7 +17,7 @@ from core.base.model.model import Model
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_model import Item
@@ -25,8 +25,8 @@ from tests.core.base.model.test_model import Item
 GUARD_CALLS: list[str] = []
 
 
-class LifecycleStandIn(Guard):
-    """A stand-in for the lifecycle guard, which is always asked."""
+class PlaceholderLifecycleGuard(Guard):
+    """A placeholder for the lifecycle guard, which is always asked."""
 
     name = "core.lifecycle"
     event = "*"
@@ -61,24 +61,24 @@ def entry(guard: type[Guard], position: int, short_flag: str = "") -> GuardEntry
 
 
 UNUSED = GuardEntry("shelves.weekdays-only", EventPattern("shelf.update"), DottedPath("tests.core.base.samples.unused_guard_sample:ShelfGuard"), 9, "")
-REGISTRY = Registry("abc", {}, {}, {}, (entry(SecondGuard, 3), entry(NoSecondItem, 2, "confirm"), entry(LifecycleStandIn, 1), UNUSED), ())
+REGISTRY = Registry("abc", {}, {}, {}, (entry(SecondGuard, 3), entry(NoSecondItem, 2, "confirm"), entry(PlaceholderLifecycleGuard, 1), UNUSED), ())
 
 
 def change(skipped: frozenset[str] = frozenset()) -> Change[Model]:
-    context = Context(Actor(7, ActorType.AGENT), Moment(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), skipped)
+    context = Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), skipped)
     return Change(None, Item(title="Dune"), context)
 
 
-def guards(switches: GuardSwitches = GuardSwitches(), applicability: Applicability = Applicability()) -> Guards:
+def guards(switches: GuardSwitches = GuardSwitches(), change_filter: ChangeFilter = ChangeFilter()) -> Guards:
     GUARD_CALLS.clear()
-    return Guards(REGISTRY, Container(), switches, applicability)
+    return Guards(REGISTRY, Container(), switches, change_filter)
 
 
 def test_guards_are_asked_in_order_and_the_first_refusal_stops_the_rest():
     with pytest.raises(GuardRefusal) as raised:
         guards().ask(change())
     assert GUARD_CALLS == ["core.lifecycle", "items.no-second-item"]
-    assert raised.value.text == "refused by items.no-second-item: an item titled Dune is open already: close it first (to pass it knowingly: --confirm)"
+    assert raised.value.text == "refused by items.no-second-item: an item titled Dune is open already: close it first (to pass it: --confirm)"
 
 
 def test_a_guard_asked_to_be_skipped_is_passed_over_and_recorded():
@@ -96,11 +96,11 @@ def test_a_switched_off_guard_is_passed_over():
 
 
 def test_a_guard_that_does_not_apply_is_passed_over_but_the_lifecycle_never_is():
-    class ExcludingApplicability(Applicability):
+    class RejectingChangeFilter(ChangeFilter):
         def applies(self, entry_name: str, change: Change[Model]) -> bool:
             return False
 
-    guards(applicability=ExcludingApplicability()).ask(change(frozenset({"core.lifecycle"})))
+    guards(change_filter=RejectingChangeFilter()).ask(change(frozenset({"core.lifecycle"})))
     assert GUARD_CALLS == ["core.lifecycle"]
 
 

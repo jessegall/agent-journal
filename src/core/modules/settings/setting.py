@@ -8,7 +8,7 @@ class Setting(Model):
     """One setting: a key and its value as JSON, for one environment or, without one, for the whole project."""
 
     model_name = "setting"
-    cli_noun = "setting"
+    cli_name = "setting"
 
     environment_id: int | None = None
     creator_id: int

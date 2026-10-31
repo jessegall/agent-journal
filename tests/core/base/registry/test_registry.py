@@ -16,7 +16,7 @@ from tests.core.base.command.test_commands import ItemMake
 
 SAMPLE = "tests.core.base.samples.registry_sample:SampleGuard"
 ENTRIES = {
-    "nouns": {"item": {"module": "items", "model": "tests.core.base.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
+    "models": {"item": {"module": "items", "model": "tests.core.base.model.test_model:Item", "commands": [], "excluded_subcommands": []}},
     "handlers": {DottedPath.class_path(ItemMake).text: "tests.core.base.command.test_commands:ItemMake"},
     "subcommands": {"item make": "tests.core.base.command.test_commands:ItemMake"},
     "guards": [
@@ -35,8 +35,8 @@ ENTRIES = {
 @pytest.fixture
 def database(tmp_path):
     opened = Database.opened(JournalHome(tmp_path))
-    Schema(opened, Tables()).migrate((CORE_MIGRATIONS,))
-    opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", (json.dumps(ENTRIES),)))
+    Schema(opened, Tables()).migrate([CORE_MIGRATIONS])
+    opened.insert(Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, 'abc', ?, '2026-10-31')", [json.dumps(ENTRIES)]))
     yield opened
     opened.close()
 
@@ -73,7 +73,7 @@ def test_a_registry_built_from_other_code_is_refused(database):
 
 def test_a_journal_never_synced_is_told_to_sync(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
-    Schema(database, Tables()).migrate((CORE_MIGRATIONS,))
+    Schema(database, Tables()).migrate([CORE_MIGRATIONS])
     with pytest.raises(StaleRegistryError, match="never been synced"):
         Registry.read(database)
 

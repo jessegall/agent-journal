@@ -28,7 +28,7 @@ class ExplanationRollback(Exception):
 
 class Bus:
     """Runs commands: a command at the top runs in a transaction of its own; a command run inside another, by a
-    handler or a listener, runs in a savepoint of that transaction with the same actor and moment."""
+    handler or a listener, runs in a savepoint of that transaction with the same actor and timestamp."""
 
     def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock) -> None:
         self.container, self.database, self.registry, self.clock = container, database, registry, clock
@@ -39,7 +39,7 @@ class Bus:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
         with self.database.transaction():
-            context = Context(actor, self.clock.moment(), command, skipped_guards, cause_id, environment_id)
+            context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
             return self.result(handler.handle(command, context), command)
 
     def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
@@ -48,7 +48,7 @@ class Bus:
         handler, explanation = self.handler(command), Explanation()
         try:
             with self.database.transaction():
-                handler.handle(command, Context(actor, self.clock.moment(), command, skipped_guards, None, environment_id, explanation))
+                handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, environment_id, explanation))
                 raise ExplanationRollback()
         except ExplanationRollback:
             return explanation
@@ -61,7 +61,7 @@ class Bus:
             return self.result(handler.handle(command, context.nested(command)), command)
 
     def handler(self, command: Command[object]) -> Handler[Command[object], object]:
-        command_class = next((kind for kind in type(command).__mro__ if self.registry.has_handler(kind)), None)
+        command_class = next((command_type for command_type in type(command).__mro__ if self.registry.has_handler(command_type)), None)
         if command_class is None:
             raise MissingHandlerError(f"no handler carries out {command.label()}")
         handler_class = self.registry.command_handler(command_class).loaded()
@@ -70,6 +70,6 @@ class Bus:
         return self.container.get(handler_class)
 
     def result(self, value: object, command: Command[R]) -> R:
-        if command.owns_result(value):
+        if command.is_result(value):
             return value
-        raise TypeError(f"{command.label()} gave back a {type(value).__name__}, not what it promises")
+        raise TypeError(f"{command.label()} gave back a {type(value).__name__}, not the result its command names")

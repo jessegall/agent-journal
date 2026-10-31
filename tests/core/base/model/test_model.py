@@ -5,16 +5,16 @@ import pytest
 
 from core.base.model.model import Model, ModelError
 from core.base.model.move import Move
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True, kw_only=True)
 class Item(Model):
     model_name = "item"
-    cli_noun = "item"
+    cli_name = "item"
     lifecycle = ItemLifecycle
 
     title: str
@@ -39,10 +39,10 @@ def test_a_move_sets_the_state_and_carries_the_move():
 
 def test_a_move_of_another_lifecycle_is_refused():
     with pytest.raises(ModelError, match="no move of Item"):
-        Item(title="Dune").moved(Move("pause", (ItemState.OPEN,), ItemState.CLOSED))
+        Item(title="Dune").moved(Move("pause", [ItemState.OPEN], ItemState.CLOSED))
 
 
-def test_saving_gives_the_id_version_and_moments_and_drops_the_move():
+def test_saving_gives_the_id_version_and_timestamps_and_drops_the_move():
     saved = Item(title="Dune").moved(ItemLifecycle.pause).saved(4, 1, AT)
     assert (saved.id, saved.version, saved.created_at, saved.updated_at, saved.move) == (4, 1, AT, AT, None)
     assert saved.is_saved and not Item(title="Dune").is_saved

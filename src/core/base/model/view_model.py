@@ -6,6 +6,6 @@ from typing import ClassVar
 class ViewModel:
     """A read-only row from a database view."""
 
-    cli_noun: ClassVar[str]
+    cli_name: ClassVar[str]
     view: ClassVar[str]
     key: ClassVar[str]

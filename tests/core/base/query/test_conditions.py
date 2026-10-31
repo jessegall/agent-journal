@@ -13,13 +13,13 @@ from core.base.query.conditions.metadata_equal import MetadataEqual, MetadataKey
 
 
 def test_each_condition_gives_its_sql_and_parameters():
-    assert Equal("state", "open").statement() == Statement("state = ?", ("open",))
-    assert Equal("state", "open", negated=True).statement() == Statement("state IS NOT ?", ("open",))
-    assert Less("id", 12).statement() == Statement("id < ?", (12,))
-    assert Greater("id", 12).statement() == Statement("id > ?", (12,))
+    assert Equal("state", "open").statement() == Statement("state = ?", ["open"])
+    assert Equal("state", "open", negated=True).statement() == Statement("state IS NOT ?", ["open"])
+    assert Less("id", 12).statement() == Statement("id < ?", [12])
+    assert Greater("id", 12).statement() == Statement("id > ?", [12])
     assert IsNull("closed_at").statement() == Statement("closed_at IS NULL")
     assert Among("id", (3, 4)).statement() == Statement("id IN (?, ?)", (3, 4))
-    assert SubqueryMatch("id", Equal("plan_id", 4)).statement() == Statement("id IN (plan_id = ?)", (4,))
+    assert SubqueryMatch("id", Equal("plan_id", 4)).statement() == Statement("id IN (plan_id = ?)", [4])
 
 
 def test_equal_and_unlike_none_read_as_null():
@@ -34,8 +34,8 @@ def test_among_nothing_matches_nothing():
 def test_metadata_is_matched_by_module_and_key_on_a_stored_row(tmp_path):
     database = Database.opened(JournalHome(tmp_path))
     database.update(Statement("CREATE TABLE notes (id INTEGER PRIMARY KEY, metadata TEXT NOT NULL) STRICT"))
-    database.insert(Statement("INSERT INTO notes (metadata) VALUES (?)", ('{"reviews": {"asked": "yes"}}',)))
-    database.insert(Statement("INSERT INTO notes (metadata) VALUES (?)", ('{"reviews": {"asked": "no"}}',)))
+    database.insert(Statement("INSERT INTO notes (metadata) VALUES (?)", ['{"reviews": {"asked": "yes"}}']))
+    database.insert(Statement("INSERT INTO notes (metadata) VALUES (?)", ['{"reviews": {"asked": "no"}}']))
     condition = MetadataEqual("reviews", "asked", "yes").statement()
     assert [row["id"] for row in database.rows(Statement(f"SELECT id FROM notes WHERE {condition.sql}", condition.parameters))] == [1]
 

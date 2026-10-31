@@ -8,7 +8,7 @@ from core.base.database.registry_table import RegistryTable
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
-from core.base.registry.noun_entry import NounEntry
+from core.base.registry.model_entry import ModelEntry
 
 
 
@@ -18,11 +18,11 @@ class StaleRegistryError(Exception):
 
 @dataclass(frozen=True)
 class Registry:
-    """What sync found in every module: which module owns each noun, which handler runs each command, which
+    """What sync found in every module: which module owns each entry, which handler runs each command, which
     class answers each subcommand, and every guard and listener with the events it covers."""
 
     fingerprint: str
-    nouns: dict[str, NounEntry]
+    models: dict[str, ModelEntry]
     handlers: dict[str, DottedPath]
     subcommands: dict[str, DottedPath]
     guards: tuple[GuardEntry, ...]
@@ -37,7 +37,7 @@ class Registry:
         entries = json.loads(row["entries"])
         return cls(
             fingerprint=row["fingerprint"],
-            nouns={cli_noun: NounEntry(noun["module"], DottedPath(noun["model"]), tuple(noun["commands"]), tuple(noun["excluded_subcommands"])) for cli_noun, noun in entries["nouns"].items()},
+            models={cli_name: ModelEntry(entry["module"], DottedPath(entry["model"]), tuple(entry["commands"]), tuple(entry["excluded_subcommands"])) for cli_name, entry in entries["models"].items()},
             handlers={command: DottedPath(path) for command, path in entries["handlers"].items()},
             subcommands={line: DottedPath(path) for line, path in entries["subcommands"].items()},
             guards=tuple(GuardEntry(guard["name"], EventPattern(guard["event"]), DottedPath(guard["path"]), guard["position"], guard["short_flag"])
@@ -49,7 +49,7 @@ class Registry:
 
     def entries_text(self) -> str:
         return json.dumps({
-            "nouns": {cli_noun: {"module": noun.module, "model": noun.model.text, "commands": list(noun.commands), "excluded_subcommands": list(noun.excluded_subcommands)} for cli_noun, noun in self.nouns.items()},
+            "models": {cli_name: {"module": entry.module, "model": entry.model.text, "commands": list(entry.commands), "excluded_subcommands": list(entry.excluded_subcommands)} for cli_name, entry in self.models.items()},
             "handlers": {command: path.text for command, path in self.handlers.items()},
             "subcommands": {line: path.text for line, path in self.subcommands.items()},
             "guards": [{"name": guard.name, "event": guard.event.text, "path": guard.path.text, "position": guard.position, "short_flag": guard.short_flag}

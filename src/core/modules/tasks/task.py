@@ -5,15 +5,15 @@ from core.base.actor import Actor
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
 from core.base.model.move import Move
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 
 TITLE_LIMIT_CHARACTERS = 80
 
 
-def check_title(cli_noun: str, title: str) -> None:
+def check_title(cli_name: str, title: str) -> None:
     if not 1 <= len(title) <= TITLE_LIMIT_CHARACTERS:
-        raise Refusal(f"a {cli_noun}'s title is 1 to {TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
+        raise Refusal(f"a {cli_name}'s title is 1 to {TITLE_LIMIT_CHARACTERS} characters, not {len(title)}", "say it shorter, and put the rest in --brief")
 
 
 class TaskState(StrEnum):
@@ -38,16 +38,16 @@ class TaskPriority(StrEnum):
 
 class TaskLifecycle(Lifecycle):
     states = TaskState
-    initial = (TaskState.OPEN,)
+    initial = [TaskState.OPEN]
     editable = (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED, TaskState.BLOCKED, TaskState.TESTING)
     deletable = (TaskState.OPEN, TaskState.CANCELLED)
 
-    start = Move("start", (TaskState.OPEN,), TaskState.STARTED)
-    pause = Move("pause", (TaskState.STARTED,), TaskState.PAUSED)
-    resume = Move("resume", (TaskState.PAUSED,), TaskState.STARTED)
+    start = Move("start", [TaskState.OPEN], TaskState.STARTED)
+    pause = Move("pause", [TaskState.STARTED], TaskState.PAUSED)
+    resume = Move("resume", [TaskState.PAUSED], TaskState.STARTED)
     block = Move("block", (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED), TaskState.BLOCKED)
-    unblock = Move("unblock", (TaskState.BLOCKED,), TaskState.OPEN)
-    test = Move("test", (TaskState.STARTED,), TaskState.TESTING)
+    unblock = Move("unblock", [TaskState.BLOCKED], TaskState.OPEN)
+    test = Move("test", [TaskState.STARTED], TaskState.TESTING)
     close = Move("close", (TaskState.STARTED, TaskState.TESTING), TaskState.COMPLETED)
     cancel = Move("cancel", (TaskState.OPEN, TaskState.STARTED, TaskState.PAUSED, TaskState.BLOCKED, TaskState.TESTING), TaskState.CANCELLED)
     reopen = Move("reopen", (TaskState.COMPLETED, TaskState.CANCELLED), TaskState.OPEN)
@@ -58,7 +58,7 @@ class Task(Model):
     """One unit of work; its state moves only as TaskLifecycle allows."""
 
     model_name = "task"
-    cli_noun = "task"
+    cli_name = "task"
     lifecycle = TaskLifecycle
 
     environment_id: int
@@ -70,22 +70,22 @@ class Task(Model):
     priority: TaskPriority = TaskPriority.NORMAL
     reason: str = ""
     outcome: str = ""
-    closed_at: Moment | None = None
+    closed_at: Timestamp | None = None
 
     def __post_init__(self) -> None:
-        check_title(self.cli_noun, self.title)
+        check_title(self.cli_name, self.title)
 
-    def start(self, moment: Moment, actor: Actor) -> "Task":
+    def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
         return self.moved(TaskLifecycle.start, holder_id=actor.id)
 
-    def pause(self, moment: Moment, actor: Actor, reason: str) -> "Task":
+    def pause(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
         return self.moved(TaskLifecycle.pause, reason=reason)
 
-    def close(self, moment: Moment, actor: Actor, outcome: str) -> "Task":
-        return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=moment, holder_id=None)
+    def close(self, timestamp: Timestamp, actor: Actor, outcome: str) -> "Task":
+        return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=timestamp, holder_id=None)
 
-    def cancel(self, moment: Moment, actor: Actor, reason: str) -> "Task":
-        return self.moved(TaskLifecycle.cancel, reason=reason, closed_at=moment, holder_id=None)
+    def cancel(self, timestamp: Timestamp, actor: Actor, reason: str) -> "Task":
+        return self.moved(TaskLifecycle.cancel, reason=reason, closed_at=timestamp, holder_id=None)
 
-    def reopen(self, moment: Moment, actor: Actor) -> "Task":
+    def reopen(self, timestamp: Timestamp, actor: Actor) -> "Task":
         return self.moved(TaskLifecycle.reopen, closed_at=None, outcome="", reason="")

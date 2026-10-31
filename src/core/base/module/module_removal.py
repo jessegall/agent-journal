@@ -39,8 +39,8 @@ class ModuleRemoval:
         with self.database.transaction():
             if removal is not None:
                 removal.run(self.database)
-            for path in module.listeners:
-                self.cursors.remove(self.check.listener(path).name)
+            for listener in module.listeners:
+                self.cursors.remove(listener.name)
             self.schema.remove_migration_records(module.name)
             for model in self.check.models(remaining_modules):
                 self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
@@ -51,15 +51,10 @@ class ModuleRemoval:
         return self.finder.checked(DottedPath(path))
 
     def removal_migration(self, module: type[Module]) -> Migration | None:
-        if not module.removal:
-            return None
-        loaded = DottedPath(module.removal).loaded()
-        if not issubclass(loaded, Migration):
-            raise ModuleError(f"{module.removal} is no migration")
-        return loaded()
+        return module.removal() if module.removal else None
 
     def refuse_rows(self, module: type[Module]) -> None:
-        for model in self.check.models((module,)):
+        for model in self.check.models([module]):
             table = self.tables.table(model)
             count = self.database.rows(TableStatements(table).count())[0][0]
             if count:

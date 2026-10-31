@@ -16,7 +16,7 @@ class TaskLogMake(MakeCommand[TaskLog]):
 class TaskLogSubcommand(Subcommand[TaskLogMake, TaskLog]):
     """`journal task log <task> "<line>"`: writes a line on a task."""
 
-    cli_noun = "task"
+    cli_name = "task"
     name = "log"
 
     def arguments(self, parser: ArgumentParser) -> None:

@@ -22,7 +22,7 @@ from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from tests.core.base.harness import harness
+from tests.core.base.sample_container import sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle
 from tests.core.base.model.test_model import Item
@@ -89,8 +89,8 @@ def handlers(*pairs: tuple[type, type]) -> dict[str, DottedPath]:
 @pytest.fixture
 def container(tmp_path):
     registry = Registry("abc", {}, handlers((MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (ItemPair, ItemPairHandler), (BlockedItem, BlockedItemHandler)), {}, (),
-                        (ListenerEntry(TryARefusedItem.name, EventPattern(TryARefusedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryARefusedItem), 1),))
-    return harness(tmp_path, registry)
+                        [ListenerEntry(TryARefusedItem.name, EventPattern(TryARefusedItem.event), ListenerTiming.SAVE, DottedPath.class_path(TryARefusedItem), 1)])
+    return sample_container(tmp_path, registry)
 
 
 def titles(container) -> list[str]:
@@ -104,10 +104,10 @@ def test_a_command_finds_its_handler_along_its_bases_and_a_more_specific_one_win
         container.get(Bus).run(BlockedItem(title="Emma"), AGENT)
 
 
-def test_every_row_a_command_writes_carries_one_moment(container):
+def test_every_row_a_command_writes_carries_one_timestamp(container):
     container.get(Bus).run(ItemPair(first="Dune", second="Emma"), AGENT)
-    moments = {row["updated_at"] for row in container.get(Database).rows(Statement("SELECT updated_at FROM items"))}
-    assert len(moments) == 1
+    timestamps = {row["updated_at"] for row in container.get(Database).rows(Statement("SELECT updated_at FROM items"))}
+    assert len(timestamps) == 1
 
 
 def test_a_nested_refusal_a_listener_catches_leaves_the_outer_work(container):
@@ -127,7 +127,7 @@ def test_a_command_is_run_at_the_top_outside_a_transaction_and_nested_only_insid
         with pytest.raises(TransactionError, match="dispatch it"):
             bus.run(ItemMake(title="Dune"), AGENT)
     with pytest.raises(TransactionError, match="run it instead"):
-        bus.dispatch(ItemMake(title="Dune"), Context(AGENT, bus.clock.moment(), ItemMake(title="Dune")))
+        bus.dispatch(ItemMake(title="Dune"), Context(AGENT, bus.clock.timestamp(), ItemMake(title="Dune")))
 
 
 def test_a_command_no_handler_carries_out_is_a_clear_fault(container):

@@ -6,7 +6,7 @@ CORE_ACTOR_ID = 1
 
 
 class ActorType(StrEnum):
-    """The kinds of actor: a person, an agent, a module or the core."""
+    """The types of actor: a person, an agent, a module or the core."""
 
     USER = "user"
     AGENT = "agent"

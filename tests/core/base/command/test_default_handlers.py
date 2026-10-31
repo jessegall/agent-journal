@@ -16,7 +16,7 @@ from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
-from tests.core.base.harness import context, harness
+from tests.core.base.sample_container import context, sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.core.base.model.test_model import Item
@@ -35,7 +35,7 @@ class ItemDelete(DeleteCommand):
 @pytest.fixture
 def container(tmp_path):
     lifecycle = GuardEntry(LifecycleGuard.name, EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")
-    return harness(tmp_path, Registry("abc", {}, {}, {}, (lifecycle,), ()))
+    return sample_container(tmp_path, Registry("abc", {}, {}, {}, [lifecycle], ()))
 
 
 def test_a_make_command_builds_and_saves_a_new_row(container):

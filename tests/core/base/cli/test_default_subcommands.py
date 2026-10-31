@@ -30,7 +30,7 @@ NOTE = "INSERT INTO notes (item_id, amount, version, created_at, updated_at) VAL
 @dataclass(frozen=True, kw_only=True)
 class Note(Model):
     model_name = "note"
-    cli_noun = "note"
+    cli_name = "note"
 
     item_id: int
     amount: int
@@ -43,7 +43,7 @@ def container(tmp_path) -> Container:
         built.get(Bus).run(ItemMake(title=title), CALLER.actor)
     built.get(Database).update(Statement(NOTES))
     for item_id in (1, 1, 2):
-        built.get(Database).insert(Statement(NOTE, (item_id,)))
+        built.get(Database).insert(Statement(NOTE, [item_id]))
     return built
 
 
@@ -120,7 +120,7 @@ class ItemClose(MoveCommand[Item]):
 
 
 def test_each_move_is_a_subcommand_and_a_typed_command_gives_its_fields_as_flags(container):
-    pause, close = container.get(DefaultSubcommands).moves(Item, ("tests.core.base.cli.test_default_subcommands:ItemClose",))
+    pause, close = container.get(DefaultSubcommands).moves(Item, ["tests.core.base.cli.test_default_subcommands:ItemClose"])
     assert (pause.name, close.name) == ("pause", "close")
     assert run(container, pause, "1").state == ItemState.PAUSED
     with pytest.raises(SystemExit):

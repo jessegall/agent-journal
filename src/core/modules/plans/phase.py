@@ -8,7 +8,7 @@ class Phase(Model):
     """One step of a plan, at its place in the plan's order, with what is true when it is done."""
 
     model_name = "phase"
-    cli_noun = "phase"
+    cli_name = "phase"
 
     plan_id: int
     creator_id: int

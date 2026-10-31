@@ -13,10 +13,10 @@ R = TypeVar("R", covariant=True)
 
 
 class Subcommand(Generic[C, R]):
-    """One `journal <noun> <subcommand>` that changes something: its arguments, the command they make, and how
+    """One `journal <model> <subcommand>` that changes something: its arguments, the command they make, and how
     the result is printed. It holds no rule; the command's guards do."""
 
-    cli_noun: str
+    cli_name: str
     name: str
     help: str = ""
 
@@ -31,10 +31,10 @@ class Subcommand(Generic[C, R]):
 
 
 class ReadSubcommand(Generic[R]):
-    """One `journal <noun> <subcommand>` that only reads: its arguments, the query it runs, and how the rows are
+    """One `journal <model> <subcommand>` that only reads: its arguments, the query it runs, and how the rows are
     printed. It never runs a command."""
 
-    cli_noun: str
+    cli_name: str
     name: str
     help: str = ""
 
@@ -57,5 +57,5 @@ def render_value(value: object, output: Output) -> None:
         output.line(str(value))
 
 
-def is_subcommand_class(kind: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
-    return issubclass(kind, (Subcommand, ReadSubcommand))
+def is_subcommand_class(class_type: type) -> TypeIs[type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]]:
+    return issubclass(class_type, (Subcommand, ReadSubcommand))

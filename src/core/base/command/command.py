@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, fields
 from typing import Generic, TypeIs, TypeVar, get_args
 
@@ -24,14 +25,14 @@ class Command(Generic[R]):
 
     @classmethod
     def model(cls) -> type[Model]:
-        kind = cls.result_type()
-        if isinstance(kind, type) and issubclass(kind, Model):
-            return kind
-        raise CommandError(f"{cls.__name__} names no model as its result: {kind}")
+        model_type = cls.result_type()
+        if isinstance(model_type, type) and issubclass(model_type, Model):
+            return model_type
+        raise CommandError(f"{cls.__name__} names no model as its result: {model_type}")
 
-    def owns_result(self, value: object) -> TypeIs[R]:
+    def is_result(self, value: object) -> TypeIs[R]:
         expected = self.result_type()
         return value is None or not isinstance(expected, type) or isinstance(value, expected)
 
-    def field_values(self, exclusions: tuple[str, ...]) -> dict[str, object]:
+    def field_values(self, exclusions: Sequence[str]) -> dict[str, object]:
         return {field.name: getattr(self, field.name) for field in fields(self) if field.name not in exclusions}

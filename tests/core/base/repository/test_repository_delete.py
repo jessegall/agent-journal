@@ -13,7 +13,7 @@ from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from tests.core.base.harness import context, empty_registry, harness
+from tests.core.base.sample_container import context, empty_registry, sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_model import Item
 
@@ -30,21 +30,21 @@ class ClearItemNotes(DeletionListener):
         self.database = database
 
     def handle(self, change: Change[Model]) -> None:
-        self.database.update(Statement("DELETE FROM item_notes WHERE item_id = ?", (change.row.id,)))
+        self.database.update(Statement("DELETE FROM item_notes WHERE item_id = ?", [change.row.id]))
 
 
 def with_note(container: Container) -> Item:
     database = container.get(Database)
     database.update(Statement(NOTES))
     item = container.get(Repository).save(Item(title="Dune"), context(ItemMake(title="Dune")))
-    database.insert(Statement("INSERT INTO item_notes (item_id) VALUES (?)", (item.id,)))
+    database.insert(Statement("INSERT INTO item_notes (item_id) VALUES (?)", [item.id]))
     return item
 
 
 def test_a_deletion_listener_clears_what_points_at_the_row_first(tmp_path):
     registry = Registry("abc", {}, {}, {}, (), (ListenerEntry(ClearItemNotes.name, EventPattern(ClearItemNotes.event), ListenerTiming.DELETION,
                                                                DottedPath.class_path(ClearItemNotes), 1),))
-    container = harness(tmp_path, registry)
+    container = sample_container(tmp_path, registry)
     item = with_note(container)
     with container.get(Database).transaction():
         container.get(Repository).delete(item, context(ItemMake(title="Dune")))
@@ -53,7 +53,7 @@ def test_a_deletion_listener_clears_what_points_at_the_row_first(tmp_path):
 
 
 def test_a_row_still_pointed_at_is_refused_naming_the_table_that_points(tmp_path):
-    container = harness(tmp_path, empty_registry())
+    container = sample_container(tmp_path, empty_registry())
     item = with_note(container)
     with pytest.raises(Refusal, match="this item is still referred to by item_notes"):
         container.get(Repository).delete(item, context(ItemMake(title="Dune")))

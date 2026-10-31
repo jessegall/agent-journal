@@ -23,7 +23,7 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.registry import Registry
-from tests.core.base.harness import harness
+from tests.core.base.sample_container import sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle
 from tests.core.base.model.test_model import Item
@@ -37,7 +37,7 @@ class ItemPause(MoveCommand[Item]):
     move = ItemLifecycle.pause
 
 
-class NewItemPauser(CommitListener):
+class NewItemPause(CommitListener):
     """Pauses every new item, which raises an event of its own."""
 
     name = "items.mark-pause"
@@ -81,14 +81,14 @@ def container_with(tmp_path, *listeners: type[CommitListener]):
     pairs = ((MakeCommand, MakeHandler), (MoveCommand, MoveHandler), (EditCommand, EditHandler), (DeleteCommand, DeleteHandler))
     handlers = {DottedPath.class_path(command).text: DottedPath.class_path(handler) for command, handler in pairs}
     registry = Registry("abc", {}, handlers, {}, (), tuple(entry(listener, position) for position, listener in enumerate(listeners, 1)))
-    container = harness(tmp_path, registry)
+    container = sample_container(tmp_path, registry)
     for listener in listeners:
         container.get(ListenerCursorTable).start(listener.name)
     return container
 
 
 def cursor(container, name: str) -> int:
-    return container.get(Database).rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = ?", (name,)))[0][0]
+    return container.get(Database).rows(Statement("SELECT event_id FROM listener_cursors WHERE listener = ?", [name]))[0][0]
 
 
 def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
@@ -99,7 +99,7 @@ def test_a_listener_passes_over_the_events_it_does_not_cover(tmp_path):
 
 
 def test_listeners_catch_up_and_follow_a_chain_to_its_end(tmp_path):
-    container = container_with(tmp_path, NewItemPauser, PausedItemCounter)
+    container = container_with(tmp_path, NewItemPause, PausedItemCounter)
     container.get(CommitListenerRunner).run()
     container.get(Bus).run(ItemMake(title="Dune"), AGENT)
     container.get(CommitListenerRunner).run()

@@ -8,7 +8,7 @@ class EventListeners:
     """An event a change would raise, with the listeners registered for it."""
 
     event: str
-    listeners: tuple[str, ...]
+    listeners: list[str]
 
 
 @dataclass

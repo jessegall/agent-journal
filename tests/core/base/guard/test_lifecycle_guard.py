@@ -7,7 +7,7 @@ from core.base.change.change import Change
 from core.base.change.event_pattern import EventPattern
 from core.base.command.context import Context
 from core.base.container import Container
-from core.base.guard.applicability import Applicability
+from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.guard_switches import GuardSwitches
 from core.base.guard.guards import Guards
 from core.base.guard.lifecycle_guard import LifecycleGuard
@@ -17,7 +17,7 @@ from core.base.model.model import Model
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from core.base.refusal import Refusal
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
@@ -25,7 +25,7 @@ from tests.core.base.model.test_model import Item
 
 
 def change(old_row: Item | None, new_row: Item | None, skipped: frozenset[str] = frozenset()) -> Change[Model]:
-    return Change(old_row, new_row, Context(Actor(7, ActorType.AGENT), Moment(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), skipped))
+    return Change(old_row, new_row, Context(Actor(7, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), skipped))
 
 
 OPEN = Item(id=4, version=1, title="Dune")
@@ -69,8 +69,8 @@ def test_the_lifecycle_guard_can_be_neither_skipped_nor_switched_off():
         def enabled(self, guard_name: str) -> bool:
             return False
 
-    registry = Registry("abc", {}, {}, {}, (GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, ""),), ())
-    guards = Guards(registry, Container(), AllOff(), Applicability())
+    registry = Registry("abc", {}, {}, {}, [GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, "")], ())
+    guards = Guards(registry, Container(), AllOff(), ChangeFilter())
     with pytest.raises(GuardRefusal) as raised:
         guards.ask(change(CLOSED, None, frozenset({"core.lifecycle"})))
     assert raised.value.text == "refused by core.lifecycle: item 4 is closed, so it cannot be deleted: closed is final"

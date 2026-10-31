@@ -1,0 +1,16 @@
+{
+    "engine": "python",
+    "sin": {
+        "name": "syntax-one-element-tuple",
+        "description": "A tuple of one element written on one line, which needs a trailing comma: (X,).",
+        "rule": "Write a list instead: [X]. Where Python demands a tuple, such as the bases of a class built at run time, write tuple([X]).",
+        "skill": "plain-code-words"
+    },
+    "find": {
+        "select": "kind:Tuple",
+        "where": [
+            {"count": {"child": {"any": [{"is": "literal"}, {"not": {"is": "literal"}}]}, "field": "elts", "atLeast": 1, "atMost": 1}},
+            {"lines": {"atMost": 1}}
+        ]
+    }
+}

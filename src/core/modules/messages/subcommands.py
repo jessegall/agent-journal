@@ -9,7 +9,7 @@ from core.modules.messages.message import Message
 class MessageSendSubcommand(Subcommand[MessageSend, Message]):
     """`journal message send "<text>"`: writes a message as the caller; messages have no make subcommand."""
 
-    cli_noun = "message"
+    cli_name = "message"
     name = "send"
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -22,7 +22,7 @@ class MessageSendSubcommand(Subcommand[MessageSend, Message]):
 class MessageReplySubcommand(Subcommand[MessageSend, Message]):
     """`journal message reply <message> "<text>"`: writes a message that answers another."""
 
-    cli_noun = "message"
+    cli_name = "message"
     name = "reply"
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -36,7 +36,7 @@ class MessageReplySubcommand(Subcommand[MessageSend, Message]):
 class MessageReadSubcommand(Subcommand[MessageRead, Message]):
     """`journal message read <message>`: marks a message read."""
 
-    cli_noun = "message"
+    cli_name = "message"
     name = "read"
 
     def arguments(self, parser: ArgumentParser) -> None:

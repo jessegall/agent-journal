@@ -24,7 +24,7 @@ def test_a_loop_of_three_is_refused_by_its_guard_with_the_flag_that_passes_it(ne
     story.run(lines.FIRST_TASK_DEPENDENCY)
     story.run("task depend 2 --on 3")
     story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "refused by tasks.no-dependency-loop: task 1 already waits on task 3, so this would be a loop")
-    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "(to pass it knowingly: --skip-guard tasks.no-dependency-loop)")
+    story.expect_refusal(lines.THIRD_TASK_DEPENDENCY, "(to pass it: --skip-guard tasks.no-dependency-loop)")
 
 
 def test_the_same_dependency_twice_is_refused(new_story):

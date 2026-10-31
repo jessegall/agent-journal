@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.base.database.statement import Statement
@@ -8,7 +9,7 @@ class Among:
     """Matches rows whose column has one of the given values."""
 
     column: str
-    values: tuple[object, ...]
+    values: Sequence[object]
 
     def statement(self) -> Statement:
         if not self.values:

@@ -26,6 +26,9 @@
             },
             {
                 "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"
+            },
+            {
+                "resolvesLike": "typing.*"
             }
         ]
     },

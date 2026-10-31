@@ -19,7 +19,7 @@ from core.base.repository.stale_row import StaleRow
 from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
-from tests.core.base.harness import context, empty_registry, harness
+from tests.core.base.sample_container import context, empty_registry, sample_container
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle
 from tests.core.base.model.test_model import Item
@@ -27,7 +27,7 @@ from tests.core.base.model.test_model import Item
 EVENT_COUNTS: list[str] = []
 
 
-class NoTitleDune(Guard):
+class ForbiddenTitleGuard(Guard):
     """No item is titled Dune Messiah."""
 
     name = "items.no-dune-messiah"
@@ -54,16 +54,16 @@ class EventCounter(SaveListener):
 @pytest.fixture
 def container(tmp_path):
     EVENT_COUNTS.clear()
-    registry = Registry("abc", {}, {}, {}, (GuardEntry(NoTitleDune.name, EventPattern(NoTitleDune.event), DottedPath.class_path(NoTitleDune), 1, ""),),
-                        (ListenerEntry(EventCounter.name, EventPattern(EventCounter.event), ListenerTiming.SAVE, DottedPath.class_path(EventCounter), 1),))
-    return harness(tmp_path, registry)
+    registry = Registry("abc", {}, {}, {}, [GuardEntry(ForbiddenTitleGuard.name, EventPattern(ForbiddenTitleGuard.event), DottedPath.class_path(ForbiddenTitleGuard), 1, "")],
+                        [ListenerEntry(EventCounter.name, EventPattern(EventCounter.event), ListenerTiming.SAVE, DottedPath.class_path(EventCounter), 1)])
+    return sample_container(tmp_path, registry)
 
 
 def save(container: Container, item: Item) -> Item:
     return container.get(Repository).save(item, context(ItemMake(title=item.title)))
 
 
-def test_a_new_row_gets_an_id_a_first_version_and_both_moments(container: Container):
+def test_a_new_row_gets_an_id_a_first_version_and_both_timestamps(container: Container):
     saved = save(container, Item(title="Dune"))
     assert (saved.id, saved.version, saved.created_at is not None) == (1, 1, True)
 
@@ -107,7 +107,7 @@ def test_a_constraint_failure_becomes_a_refusal(container: Container):
 
 
 def test_a_deleted_row_is_gone_and_logged(tmp_path):
-    container = harness(tmp_path, empty_registry())
+    container = sample_container(tmp_path, empty_registry())
     saved = container.get(Repository).save(Item(title="Dune"), context(ItemMake(title="Dune")))
     with pytest.raises(StaleRow):
         container.get(Repository).delete(replace(saved, version=5), context(ItemMake(title="Dune")))

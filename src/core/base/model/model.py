@@ -5,7 +5,7 @@ from typing import ClassVar, Self
 from core.base.metadata import Metadata
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.move import Move
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
 STATE = "state"
 
@@ -19,14 +19,14 @@ class Model:
     """A row of the database as an object that cannot be changed in place; every change makes a copy."""
 
     model_name: ClassVar[str]
-    cli_noun: ClassVar[str]
+    cli_name: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
 
     id: int = 0
     version: int = 0
     metadata: Metadata = field(default_factory=Metadata)
-    created_at: Moment | None = None
-    updated_at: Moment | None = None
+    created_at: Timestamp | None = None
+    updated_at: Timestamp | None = None
     move: Move | None = field(default=None, compare=False)
 
     @property
@@ -43,8 +43,8 @@ class Model:
             raise ModelError(f"{move.name} is no move of {type(self).__name__}")
         return replace(self, **{STATE: move.target, "move": move, **values})
 
-    def saved(self, id: int, version: int, moment: Moment) -> Self:
-        return replace(self, id=id, version=version, created_at=self.created_at or moment, updated_at=moment, move=None)
+    def saved(self, id: int, version: int, timestamp: Timestamp) -> Self:
+        return replace(self, id=id, version=version, created_at=self.created_at or timestamp, updated_at=timestamp, move=None)
 
     def current_state(self) -> StrEnum:
         return getattr(self, STATE)

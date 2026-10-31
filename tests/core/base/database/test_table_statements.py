@@ -9,15 +9,15 @@ from core.base.database.table_statements import TableStatements
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 
 
 @dataclass(frozen=True, kw_only=True)
 class Shelf(Model):
     model_name = "shelf"
-    cli_noun = "shelf"
+    cli_name = "shelf"
     table = "shelves"
 
     label: str
@@ -38,7 +38,7 @@ def database(tmp_path):
     opened.close()
 
 
-def test_an_insert_writes_the_first_version_and_both_moments(statements):
+def test_an_insert_writes_the_first_version_and_both_timestamps(statements):
     statement = statements.insert({"id": 0, "label": "top", "level": 2}, AT)
     assert statement.sql == "INSERT INTO shelves (label, level, version, created_at, updated_at) VALUES (?, ?, ?, ?, ?)"
     assert statement.parameters == ("top", 2, 1, AT.text, AT.text)
@@ -59,4 +59,4 @@ def test_an_update_at_a_stale_version_changes_no_row(statements, database):
 
 def test_a_delete_and_a_read_name_the_row(statements):
     assert statements.delete(4, 2) == Statement("DELETE FROM shelves WHERE id = ? AND version = ?", (4, 2))
-    assert statements.read(4) == Statement("SELECT * FROM shelves WHERE id = ?", (4,))
+    assert statements.read(4) == Statement("SELECT * FROM shelves WHERE id = ?", [4])

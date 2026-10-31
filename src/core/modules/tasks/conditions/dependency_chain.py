@@ -14,4 +14,4 @@ class DependencyChain:
     task_id: int
 
     def statement(self) -> Statement:
-        return Statement(CHAIN, (self.task_id,))
+        return Statement(CHAIN, [self.task_id])

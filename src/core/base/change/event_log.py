@@ -1,7 +1,7 @@
 import json
 from dataclasses import fields
 
-from core.base.change.change import UNCOMPARED_FIELDS, Change
+from core.base.change.change import BOOKKEEPING_FIELDS, Change
 from core.base.change.logged_event import LoggedEvent
 from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
@@ -25,11 +25,11 @@ class EventLog:
         return self.table.insert({
             "actor_id": context.actor.id, "environment_id": context.environment_id, "row_id": change.row.id, "name": change.event,
             "row_table": self.tables.table(type(change.row)).name, "command": context.command.label(), "cause_id": context.cause_id,
-            "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.moment.text,
+            "skipped_guards": json.dumps(sorted(skipped_guards)), "data": json.dumps(self.data(change)), "created_at": context.timestamp.text,
         })
 
     def data(self, change: Change[Model]) -> dict[str, list[object]]:
-        names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in UNCOMPARED_FIELDS)
+        names = change.fields if change.old_row and change.new_row else tuple(field.name for field in fields(change.row) if field.name not in BOOKKEEPING_FIELDS)
         return {name: [stored(getattr(change.old_row, name, None)), stored(getattr(change.new_row, name, None))] for name in names}
 
     def event(self, event_id: int) -> LoggedEvent:

@@ -3,12 +3,12 @@ from datetime import datetime, timezone
 from core.base.actor import Actor, ActorType
 from core.base.change.change import Change
 from core.base.command.context import Context
-from core.base.moment import Moment
+from core.base.timestamp import Timestamp
 from tests.core.base.command.test_commands import ItemMake
 from tests.core.base.model.test_lifecycle import ItemLifecycle, ItemState
 from tests.core.base.model.test_model import Item
 
-AT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
+AT = Timestamp(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))
 CONTEXT = Context(Actor(7, ActorType.AGENT), AT, ItemMake(title="Dune"))
 STORED = Item(id=4, version=1, title="Dune")
 
@@ -27,7 +27,7 @@ def test_a_move_is_named_for_the_move():
 
 def test_changed_fields_without_a_move_are_an_update_and_metadata_is_not_one_of_them():
     change = Change(STORED, STORED.changed(title="Dune Messiah"), CONTEXT)
-    assert (change.event, change.fields) == ("item.update", ("title",))
+    assert (change.event, change.fields) == ("item.update", ["title"])
 
 
 def test_a_save_that_changes_nothing_is_empty():

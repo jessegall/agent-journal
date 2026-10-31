@@ -11,7 +11,7 @@ def test_journal_module_sync_syncs_a_journal_never_synced_and_then_commands_run(
     assert main(["item", "list"]) == 2
     assert main(["module", "sync"]) == 0
     first_sync = capsys.readouterr().out
-    assert "items, item-count" in first_sync and "items 1" in first_sync and first_sync.endswith("registry: written anew\n")
+    assert "items, item-count" in first_sync and "items 1" in first_sync and first_sync.endswith("registry: rewritten\n")
     assert main(["module", "sync"]) == 0
     assert capsys.readouterr().out.endswith("migrations run: none\nregistry: unchanged\n")
     assert main(["item", "make", "Dune"]) == 0

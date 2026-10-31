@@ -10,7 +10,7 @@ CALLER = Caller(Actor(7, ActorType.AGENT), environment_id=2)
 
 
 class ItemMakeSubcommand(Subcommand[ItemMake, Item]):
-    cli_noun = "item"
+    cli_name = "item"
     name = "make"
 
     def arguments(self, parser: ArgumentParser) -> None:

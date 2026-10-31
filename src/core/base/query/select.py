@@ -17,10 +17,10 @@ class Select:
     offset: int = 0
 
     def matching(self, condition: Condition) -> "Select":
-        return replace(self, conditions=self.conditions + (condition,))
+        return replace(self, conditions=(*self.conditions, condition))
 
     def ordered(self, column: str, descending: bool) -> "Select":
-        return replace(self, orders=self.orders + (Order(column, descending),))
+        return replace(self, orders=(*self.orders, Order(column, descending)))
 
     def sliced(self, limit: int, offset: int) -> "Select":
         return replace(self, limit=limit, offset=offset)
@@ -28,10 +28,10 @@ class Select:
     def column(self, column: str) -> "Select":
         return replace(self, columns=column)
 
-    def filtered(self, head: Statement) -> Statement:
+    def filtered(self, statement: Statement) -> Statement:
         if not self.conditions:
-            return head
-        return head.joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), " WHERE ")
+            return statement
+        return statement.joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), " WHERE ")
 
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""

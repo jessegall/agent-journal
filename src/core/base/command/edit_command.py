@@ -15,4 +15,4 @@ class EditCommand(Command[M]):
     row_id: int
 
     def changed_fields(self) -> dict[str, object]:
-        return {name: value for name, value in self.field_values((ROW_ID,)).items() if value is not None}
+        return {name: value for name, value in self.field_values([ROW_ID]).items() if value is not None}

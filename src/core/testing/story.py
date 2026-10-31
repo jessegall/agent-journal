@@ -22,7 +22,7 @@ M = TypeVar("M", bound=Model)
 
 @dataclass(frozen=True)
 class StoryState:
-    """What a story knows beside its database, carried from a fixture to the stories that start from it: the
+    """The state a story keeps besides its database, passed from a fixture to the stories that start from it: the
     agent and the person it acts as."""
 
     agent: Actor = field(default_factory=Actor.core)
@@ -41,7 +41,8 @@ class LineOutcome:
 class Story:
     """One story on its own copy of the template database, the public entry a plugin's stories use: it loads the
     modules named, runs command lines as text through the same console, container and registry as a real run,
-    moves its clock by hand, reads rows and refusals, and checks what came back. It knows no noun of the core."""
+    moves its clock by hand, reads rows and refusals, and checks what came back. It knows no model of the
+    core."""
 
     def __init__(self, home: JournalHome, container: Container, clock: ManualClock, state: StoryState) -> None:
         self.home, self.container, self.clock = home, container, clock

@@ -15,7 +15,7 @@ def dependency_arguments(parser: ArgumentParser) -> None:
 class TaskDependSubcommand(Subcommand[TaskDependencyMake, TaskDependency]):
     """`journal task depend <task> --on <other task>`: the task waits on the other."""
 
-    cli_noun = "task"
+    cli_name = "task"
     name = "depend"
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -28,7 +28,7 @@ class TaskDependSubcommand(Subcommand[TaskDependencyMake, TaskDependency]):
 class TaskUndependSubcommand(Subcommand[TaskUndepend, None]):
     """`journal task undepend <task> --on <other task>`: the task no longer waits on the other."""
 
-    cli_noun = "task"
+    cli_name = "task"
     name = "undepend"
 
     def arguments(self, parser: ArgumentParser) -> None:
