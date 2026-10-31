@@ -3,6 +3,7 @@ export {default as FoldGroup} from "../src/kit/FoldGroup.vue";
 export {default as Btn} from "../src/kit/Btn.vue";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as RowList} from "./RowList.vue";
+export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
 export {default as Segmented} from "../src/kit/Segmented.vue";

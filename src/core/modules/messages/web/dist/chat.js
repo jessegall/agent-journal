@@ -1,71 +1,71 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-252c38ebd808")) { const style = document.createElement("style"); style.id = "window-styles-252c38ebd808"; style.textContent = ".chat[data-v-72dde1a0]{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}.history[data-v-72dde1a0]{flex:1;min-height:0;overflow-y:auto}.from[data-v-72dde1a0]{min-width:56px;color:var(--text-3);font-size:12px}.text[data-v-72dde1a0]{white-space:pre-wrap}.composer[data-v-72dde1a0]{display:flex;gap:8px}.composer-input[data-v-72dde1a0]{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.composer-failure[data-v-72dde1a0]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { computed as w, onMounted as N, ref as y, openBlock as l, createElementBlock as k, createVNode as p, unref as e, withCtx as x, createBlock as V, Fragment as B, createElementVNode as n, toDisplayString as _, withModifiers as S, withDirectives as b, vModelText as E, createTextVNode as F, createCommentVNode as R } from "vue";
-import { useRows as f, shownMarks as T, markDeclaration as H, interleaved as I, fetchMarkDeclarations as L, fetchDockDeclarations as O, DockStack as P, RowList as U, MarkHost as W, Btn as j } from "@journal/window-kit";
-const q = (c, i) => {
-  const a = c.__vccOpts || c;
-  for (const [d, m] of i)
-    a[d] = m;
-  return a;
-}, z = { class: "chat" }, A = { class: "from" }, G = { class: "text" }, J = {
+if (!document.getElementById("window-styles-423684fcc483")) { const style = document.createElement("style"); style.id = "window-styles-423684fcc483"; style.textContent = ".chat[data-v-c05c41eb]{display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}.history[data-v-c05c41eb]{flex:1;min-height:0;overflow-y:auto}.composer[data-v-c05c41eb]{display:flex;gap:8px}.composer-input[data-v-c05c41eb]{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--line);border-radius:6px;color:var(--text);background:transparent}.composer-failure[data-v-c05c41eb]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { computed as f, onMounted as N, ref as _, openBlock as l, createElementBlock as w, createVNode as m, unref as e, withCtx as h, createBlock as g, createElementVNode as y, withModifiers as V, withDirectives as b, vModelText as B, createTextVNode as S, toDisplayString as E, createCommentVNode as R } from "vue";
+import { useRows as k, shownMarks as T, markDeclaration as F, interleaved as H, fetchMarkDeclarations as I, fetchDockDeclarations as L, DockStack as O, RowList as P, MarkHost as U, MessageCard as W, Btn as j } from "@journal/window-kit";
+const q = (n, c) => {
+  const o = n.__vccOpts || n;
+  for (const [i, d] of c)
+    o[i] = d;
+  return o;
+}, z = { class: "chat" }, A = {
   key: 0,
   class: "composer-failure"
-}, K = {
+}, G = {
   __name: "Chat",
-  setup(c) {
-    const { rows: i, failure: a, loaded: d, load: m, context: v } = f("message list", ["message.*"]), { rows: g } = f("chat-mark list", ["chat_mark.*"]), { rows: D } = f("dock-item list", ["dock_item.*"]), M = w(() => T(g.value, H, (t) => v.option(t).value)), C = w(() => I(i.value, M.value));
-    N(() => Promise.all([L(), O()]));
-    const o = y(""), u = y("");
-    async function h() {
-      const t = await v.run(["message", "send", o.value]);
-      u.value = t.ok ? "" : t.error, t.ok && (o.value = ""), m();
+  setup(n) {
+    const { rows: c, failure: o, loaded: i, load: d, context: p } = k("message list", ["message.*"]), { rows: x } = k("chat-mark list", ["chat_mark.*"]), { rows: M } = k("dock-item list", ["dock_item.*"]), D = f(() => T(x.value, F, (t) => p.option(t).value)), C = f(() => H(c.value, D.value));
+    N(() => Promise.all([I(), L()]));
+    const s = _(""), u = _("");
+    async function v() {
+      const t = await p.run(["message", "send", s.value]);
+      u.value = t.ok ? "" : t.error, t.ok && (s.value = ""), d();
     }
-    return (t, r) => (l(), k("div", z, [
-      p(e(P), { items: e(D) }, null, 8, ["items"]),
-      p(e(U), {
+    return (t, r) => (l(), w("div", z, [
+      m(e(O), { items: e(M) }, null, 8, ["items"]),
+      m(e(P), {
         class: "history",
         rows: C.value,
-        failure: e(a),
-        loaded: e(d),
+        failure: e(o),
+        loaded: e(i),
         empty: "No messages yet"
       }, {
-        default: x(({ row: s }) => [
-          s.kind === "mark" ? (l(), V(e(W), {
+        default: h(({ row: a }) => [
+          a.kind === "mark" ? (l(), g(e(U), {
             key: 0,
-            mark: s.row
-          }, null, 8, ["mark"])) : (l(), k(B, { key: 1 }, [
-            n("span", A, _(s.row.type), 1),
-            n("span", G, _(s.row.text), 1)
-          ], 64))
+            mark: a.row
+          }, null, 8, ["mark"])) : (l(), g(e(W), {
+            key: 1,
+            message: a.row
+          }, null, 8, ["message"]))
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"]),
-      n("form", {
+      y("form", {
         class: "composer",
-        onSubmit: S(h, ["prevent"])
+        onSubmit: V(v, ["prevent"])
       }, [
-        b(n("input", {
-          "onUpdate:modelValue": r[0] || (r[0] = (s) => o.value = s),
+        b(y("input", {
+          "onUpdate:modelValue": r[0] || (r[0] = (a) => s.value = a),
           class: "composer-input",
           placeholder: "Write a message"
         }, null, 512), [
-          [E, o.value]
+          [B, s.value]
         ]),
-        p(e(j), {
+        m(e(j), {
           kind: "primary",
-          disabled: !o.value.trim(),
-          onClick: h
+          disabled: !s.value.trim(),
+          onClick: v
         }, {
-          default: x(() => [...r[1] || (r[1] = [
-            F("Send", -1)
+          default: h(() => [...r[1] || (r[1] = [
+            S("Send", -1)
           ])]),
           _: 1
         }, 8, ["disabled"])
       ], 32),
-      u.value ? (l(), k("p", J, _(u.value), 1)) : R("", !0)
+      u.value ? (l(), w("p", A, E(u.value), 1)) : R("", !0)
     ]));
   }
-}, Y = /* @__PURE__ */ q(K, [["__scopeId", "data-v-72dde1a0"]]);
+}, Q = /* @__PURE__ */ q(G, [["__scopeId", "data-v-c05c41eb"]]);
 export {
-  Y as default
+  Q as default
 };

@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, DockStack, MarkHost, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
+import {Btn, DockStack, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, context} = useRows("message list", ["message.*"]);
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
@@ -28,8 +28,7 @@ async function send() {
                     <MarkHost :mark="row.row" />
                 </template>
                 <template v-else>
-                    <span class="from">{{ row.row.type }}</span>
-                    <span class="text">{{ row.row.text }}</span>
+                    <MessageCard :message="row.row" />
                 </template>
             </template>
         </RowList>
@@ -56,16 +55,6 @@ async function send() {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
-}
-
-.from {
-    min-width: 56px;
-    color: var(--text-3);
-    font-size: 12px;
-}
-
-.text {
-    white-space: pre-wrap;
 }
 
 .composer {
