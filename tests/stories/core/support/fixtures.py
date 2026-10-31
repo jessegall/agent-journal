@@ -89,6 +89,20 @@ class PlanWithPhases(StoryFixture):
         story.expect_success("phase show 3", "position: 3", "title: Queries")
 
 
+class PhaseWithThreeTasks(StoryFixture):
+    """Phase 1, Values, of plan 1 holds tasks First (1), Second (2) and Third (3) at places 1, 2 and 3."""
+
+    parent = PlanWithPhases
+
+    def steps(self, story: Story) -> None:
+        for task_id, title in enumerate(("First", "Second", "Third"), 1):
+            story.run(f'task make "{title}" --environment main')
+            story.run(f"phase place {task_id} --phase 1")
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("phase-task list --phase 1 --oldest", "1  1  1  1", "3  1  3  3")
+
+
 class PlanWithTasks(StoryFixture):
     """The plan with phases, and two open tasks not yet placed: First (1) and Second (2)."""
 

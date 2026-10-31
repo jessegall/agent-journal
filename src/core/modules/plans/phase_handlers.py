@@ -1,12 +1,12 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.query.conditions.equal import Equal
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.plans.phase import Phase
 from core.modules.plans.phase_commands import PhaseMake, PhaseMove, PhasePlace
 from core.modules.plans.phase_task import PhaseTask
+from core.modules.plans.positions import Positions
 
 
 class PhaseMakeHandler(Handler[PhaseMake, Phase]):
@@ -14,13 +14,12 @@ class PhaseMakeHandler(Handler[PhaseMake, Phase]):
 
     command = PhaseMake
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, positions: Positions, repository: Repository) -> None:
+        self.positions, self.repository = positions, repository
 
     def handle(self, command: PhaseMake, context: Context) -> Phase:
-        position = self.queries.query(Phase).matching(Equal("plan_id", command.plan_id)).count() + 1
-        phase = Phase(plan_id=command.plan_id, creator_id=context.actor.id, position=position, title=command.title, goal=command.goal,
-                      checkpoint=command.checkpoint)
+        phase = Phase(plan_id=command.plan_id, creator_id=context.actor.id, position=self.positions.next_phase_position(command.plan_id),
+                      title=command.title, goal=command.goal, checkpoint=command.checkpoint)
         return self.repository.save(phase, context)
 
 
@@ -35,7 +34,7 @@ class PhaseMoveHandler(Handler[PhaseMove, Phase]):
 
     def handle(self, command: PhaseMove, context: Context) -> Phase:
         phase = self.queries.query(Phase).find(command.phase_id)
-        phases = list(self.queries.query(Phase).matching(Equal("plan_id", phase.plan_id)).oldest().all_rows())
+        phases = list(self.queries.query(Phase).filter(plan_id=phase.plan_id).oldest().all_rows())
         if not 1 <= command.position <= len(phases):
             raise Refusal(f"plan {phase.plan_id} has places 1 to {len(phases)}, not {command.position}")
         old_position, new_position = phase.position, command.position
@@ -53,15 +52,15 @@ class PhasePlaceHandler(Handler[PhasePlace, PhaseTask]):
 
     command = PhasePlace
 
-    def __init__(self, queries: Queries, repository: Repository) -> None:
-        self.queries, self.repository = queries, repository
+    def __init__(self, queries: Queries, repository: Repository, positions: Positions) -> None:
+        self.queries, self.repository, self.positions = queries, repository, positions
 
     def handle(self, command: PhasePlace, context: Context) -> PhaseTask:
-        places = self.queries.query(PhaseTask)
-        current = places.filter(task_id=command.task_id).page(1, 1).rows
+        current = self.queries.query(PhaseTask).filter(task_id=command.task_id).page(1, 1).rows
         if current and current[0].phase_id == command.phase_id:
             return current[0]
         if current:
             self.repository.delete(current[0], context)
-        position = places.filter(phase_id=command.phase_id).count() + 1
-        return self.repository.save(PhaseTask(phase_id=command.phase_id, task_id=command.task_id, creator_id=context.actor.id, position=position), context)
+            self.positions.renumber_places(current[0].phase_id, current[0].position, context)
+        return self.repository.save(PhaseTask(phase_id=command.phase_id, task_id=command.task_id, creator_id=context.actor.id,
+                                              position=self.positions.next_place(command.phase_id)), context)

@@ -28,6 +28,15 @@ def test_a_place_outside_the_plan_is_refused(new_story):
     story.expect_refusal("phase move 1 --to 4", "plan 1 has places 1 to 3, not 4")
 
 
-def test_two_phases_cannot_share_a_place(new_story):
+def test_a_phase_changes_place_only_by_a_move(new_story):
     story = plan_with_three_phases(new_story)
-    story.expect_refusal("phase edit 1 --position 2", "a phase with that plan_id, position exists already")
+    story.expect_refusal("phase edit 1 --position 2", "a phase changes its place only with journal phase move")
+    story.expect_success('phase edit 1 --title "Value objects"', "title: Value objects", "position: 1")
+
+
+def test_a_phase_deleted_from_the_middle_closes_its_place_and_the_next_phase_takes_the_end(new_story):
+    story = plan_with_three_phases(new_story)
+    story.expect_success("phase delete 2", "the phase is deleted")
+    story.expect_success("phase show 3", "position: 2")
+    story.expect_success('phase make --plan 1 "Commands"', "position: 3")
+    story.expect_success("phase move 3 --to 1", "position: 1")
