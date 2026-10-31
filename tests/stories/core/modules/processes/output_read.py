@@ -26,7 +26,7 @@ def test_the_summary_says_how_the_run_ended_with_the_default_readers_lines(new_s
     story.run('reader add tests --commands "pytest*" --lines "FAILED|passed" --summary "([0-9]+ failed.*)"', actor=story.agent)
     story.run("reader default tests", actor=story.agent)
     process = ended_run(story, PYTEST, REPORT, exit_code=1)
-    story.expect_success(f"output read {process.id} --summary", f"output {process.id} failed with exit code 1", "3: test_b FAILED", "4: 2 failed, 1 passed in 0.4s", actor=story.agent)
+    story.expect_text(f"output read {process.id} --summary", f"output {process.id} failed with exit code 1", "3: test_b FAILED", "4: 2 failed, 1 passed in 0.4s", actor=story.agent)
 
 
 def test_a_named_reader_reads_the_output_whatever_the_default_is(new_story):

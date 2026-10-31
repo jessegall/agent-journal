@@ -4,6 +4,8 @@ from core.modules.processes.commands.end_process_handler import EndProcessHandle
 from core.modules.processes.commands.end_process_part_handler import EndProcessPartHandler
 from core.modules.processes.commands.end_process_part_subcommand import EndProcessPartSubcommand
 from core.modules.processes.commands.end_process_subcommand import EndProcessSubcommand
+from core.modules.processes.commands.read_output_subcommand import ReadOutputSubcommand
+from core.modules.processes.commands.show_output_status_subcommand import ShowOutputStatusSubcommand
 from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
 from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
 from core.modules.processes.commands.lose_process import LoseProcess
@@ -42,6 +44,6 @@ class ProcessesModule(Module):
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration]
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler]
-    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand]
+    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand]
     guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard, ReaderOwnerGuard]
     driver_rules = [SleepPollRefusal, RunnerRewrite]
