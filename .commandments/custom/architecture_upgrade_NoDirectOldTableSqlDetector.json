@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "(?i)\\b(FROM|INTO|UPDATE|JOIN|TABLE)\\s+(users|links|phone_codes|plan_reviews|task_logs|note_drafts)\\b"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/[a-z_]+/upgrade/"
+            },
+            {
+                "fileMatches": "(^|/)src/core/base/database/version_four_tables\\.py$"
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "version-four-table-in-sql",
+        "description": "SQL names a table only version 4 had outside a module's upgrade folder.",
+        "rule": "A version 4 table is named only in a move's upgrade/ folder and in the fixture builder.",
+        "skill": "plain-code-words"
+    }
+}

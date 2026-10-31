@@ -30,7 +30,7 @@ class ViewerMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
+        report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         person, environments = self.first_user(source, map), source.rows("environments")
         for row in [row for row in source.rows("settings") if row["key"] in LAYOUT_PAGES]:
             windows = self.windows(row["value"])

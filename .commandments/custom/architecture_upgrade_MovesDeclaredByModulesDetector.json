@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "rows"
+            },
+            {
+                "argument": {
+                    "at": 0,
+                    "is": "literal"
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/core/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/modules/[a-z_]+/upgrade/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "version-four-table-read-outside-a-move",
+        "description": "A version 4 table is read by name outside the move class of the module that owns its rows, so the base upgrade code or another module knows version 4's tables.",
+        "rule": "Read a version 4 table only in a VersionFourMove in the upgrade/ folder of the module that owns the rows; the runner and the base classes name no table.",
+        "skill": "plain-code-words"
+    }
+}

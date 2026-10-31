@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["copytree", "rmtree", "move", "copy2", "copy", "unlink", "write_text", "write_bytes"]
+            },
+            {
+                "fileMatches": "(^|/)src/install/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/install/(install_journal|version_four_files|version_four_backup|restore_version_four|upgrade_report_file|hook_writer)\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "code-replaced-outside-the-steps",
+        "description": "Install or upgrade copies, moves or removes files outside the step classes CodeReplacement runs with the server stopped and server.lock kept.",
+        "rule": "Put a file change in a step class and run it through CodeReplacement, which holds server.lock.",
+        "skill": "plain-code-words"
+    }
+}

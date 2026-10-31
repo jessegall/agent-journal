@@ -31,7 +31,7 @@ class PlansMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.tasks"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
+        report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
             state = RENAMED.get(row["state"]) or STATES.get(row["state"])
             if state is None:

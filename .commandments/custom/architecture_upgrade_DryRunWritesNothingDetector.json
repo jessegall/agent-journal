@@ -1,0 +1,52 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "retire",
+                    "copy_code",
+                    "make",
+                    "finish",
+                    "save",
+                    "write_text",
+                    "copytree",
+                    "rmtree",
+                    "move",
+                    "restore"
+                ]
+            },
+            {
+                "inside": {
+                    "all": [
+                        {
+                            "is": "function"
+                        },
+                        {
+                            "nameIn": [
+                                "preview",
+                                "rehearse"
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/install/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "dry-run-writes",
+        "description": "The preview or rehearsal of an upgrade makes a backup, copies code, retires files or saves a report, when a dry run writes nothing.",
+        "rule": "The dry run only runs the moves inside the transaction the runner rolls back; everything else belongs to the upgrade itself.",
+        "skill": "plain-code-words"
+    }
+}

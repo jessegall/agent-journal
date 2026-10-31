@@ -19,7 +19,7 @@ class EnvironmentsMove(VersionFourMove):
     id_modules = ["journal.core.actors"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
+        report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: rows.insert(TABLE, {
                 "id": row["id"], "creator_id": creators.actor_id(row["creator"]), "name": row["name"], "folder": context.project_folder, "branch": row["branch"] or "",

@@ -25,7 +25,7 @@ class SettingsMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows, moved_scopes = MoveReport(), CreatorResolver(source, map), RowInsert(target), set[tuple[str, int | None]]()
+        report, creators, rows, moved_scopes = MoveReport(), CreatorResolver(target, map), RowInsert(target), set[tuple[str, int | None]]()
         for row in [row for row in source.rows(TABLE) if row["key"] not in LAYOUT_KEYS]:
             key = RENAMED.get(row["key"], row["key"])
             if key not in context.setting_keys:

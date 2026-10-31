@@ -26,7 +26,7 @@ class AgentsMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
+        report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = [role.value for role in AgentRole]
         for row in source.rows(TABLE):
             if not row["session"]:

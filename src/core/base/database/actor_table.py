@@ -23,3 +23,7 @@ class ActorTable:
 
     def module_actor_id(self, module: str) -> int:
         return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module)))[0]["id"]
+
+    def agent_actor_id(self, session: str) -> int | None:
+        rows = self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.AGENT.value, session)))
+        return int(rows[0]["id"]) if rows else None

@@ -29,7 +29,7 @@ class MessagesMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows = MoveReport(), CreatorResolver(source, map), RowInsert(target)
+        report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         for row in source.rows(TABLE):
             card_type = self.card_type(row["data"])
             if card_type and CARD_MARKS.get(card_type) in context.mark_variants:

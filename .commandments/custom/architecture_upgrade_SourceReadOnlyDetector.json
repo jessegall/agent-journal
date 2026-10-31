@@ -1,0 +1,31 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": ["insert", "update", "execute", "executescript", "executemany", "commit"]
+            },
+            {
+                "descendant": {
+                    "name": "source"
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/core/(modules/[a-z_]+/upgrade|base/upgrade)/"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "version-four-source-written",
+        "description": "A move writes through the version 4 source, which is opened read-only and is only read.",
+        "rule": "Write only to the target database a move is given; read the source with source.rows.",
+        "skill": "plain-code-words"
+    }
+}
