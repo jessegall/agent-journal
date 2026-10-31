@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, onUnmounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import {usePaneActions} from "../composables/paneActions.js";
 import DragGhost from "../panes/DragGhost.vue";
@@ -18,7 +18,14 @@ const props = defineProps({
     shellRead: {type: Function, default: null},
 });
 
+const PHONE_WIDTH = 700;
+const CHAT_WINDOW = "messages.chat";
 const grid = ref(null);
+const narrow = ref(window.innerWidth < PHONE_WIDTH);
+const measure = () => (narrow.value = window.innerWidth < PHONE_WIDTH);
+const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
+onMounted(() => window.addEventListener("resize", measure));
+onUnmounted(() => window.removeEventListener("resize", measure));
 const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, reopen} = usePaneActions({
     store: props.store,
     area: grid,
@@ -32,7 +39,7 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
 <template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="store.layout.value">
-            <PaneGrid ref="grid" :full="full" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
+            <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
                     <PaneTabs
                         :tabs="tabsOf(id, pane)"

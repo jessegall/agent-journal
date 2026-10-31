@@ -254,3 +254,12 @@ test("f makes the focused pane full screen and Escape returns it", async () => {
     await settled();
     expect(element.querySelector("section.pane.full")).toBeNull();
 });
+
+test("at phone width the panes stack one to a screen, the chat first, and no resize separator is drawn", async () => {
+    vi.stubGlobal("innerWidth", 400);
+    const {element} = await stage({dir: "row", r: 0.5, a: {tabs: ["a.tasks"], active: "a.tasks"}, b: {tabs: ["messages.chat"], active: "messages.chat"}}, {offers: ["a.tasks", "messages.chat"]});
+    expect(element.querySelector(".pane-grid.stacked")).not.toBeNull();
+    expect(element.querySelector(".pane-split")).toBeNull();
+    const order = [...element.querySelectorAll("section.pane")].map((section) => [section.querySelector("[data-tab]").dataset.tab, Number(section.style.order)]);
+    expect(order.find(([name]) => name === "messages.chat")[1]).toBeLessThan(order.find(([name]) => name === "a.tasks")[1]);
+});
