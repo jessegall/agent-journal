@@ -60,7 +60,7 @@ def test_a_process_stopped_or_lost_ends_so_and_a_process_that_ended_does_not_end
     bus(story).run(LoseProcess(2), story.agent, environment_id=1)
     story.expect_success(PROCESS, "state: stopped")
     story.expect_success("process show 2", "state: lost")
-    story.expect_refusal("process finish 1", "stopped")
+    story.expect_refusal("process stop 1", "stopped", actor=story.agent)
 
 
 def test_the_end_of_a_long_run_keeps_its_output_and_a_short_one_keeps_none(new_story):
@@ -69,7 +69,7 @@ def test_the_end_of_a_long_run_keeps_its_output_and_a_short_one_keeps_none(new_s
     start_process(story, "make build")
     bus(story).run(EndProcess(1, 0, BYTES_LONG, 80), story.agent, environment_id=1)
     bus(story).run(EndProcess(2, 0, BYTES_SHORT, 1), story.agent, environment_id=1)
-    story.expect_success(OUTPUTS, "kept")
+    story.expect_text(OUTPUTS, "kept")
     story.expect_success("output show 1", "process_id: 1", f"byte_count: {BYTES_LONG}", "line_count: 80", "state: kept")
     story.expect_text("output list --process 2", "nothing found")
 

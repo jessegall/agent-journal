@@ -1,6 +1,7 @@
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
-from core.modules.processes.commands.start_process import PartSpec, StartProcess
+from core.modules.processes.commands.part_spec import PartSpec
+from core.modules.processes.commands.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.testing.story import Story
 

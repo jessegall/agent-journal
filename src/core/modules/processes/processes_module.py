@@ -1,5 +1,12 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.processes.commands.end_process_handler import EndProcessHandler
+from core.modules.processes.commands.end_process_part_handler import EndProcessPartHandler
+from core.modules.processes.commands.lose_process import LoseProcess
+from core.modules.processes.commands.move_process import MoveProcess
+from core.modules.processes.commands.start_process_handler import StartProcessHandler
+from core.modules.processes.commands.stop_process_handler import StopProcessHandler
+from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
@@ -16,5 +23,7 @@ class ProcessesModule(Module):
     name = "journal.core.processes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits"]
-    models = (ModelDeclaration(Process, query=ProcessQuery), ModelDeclaration(ProcessPart), ModelDeclaration(Output, query=OutputQuery), ModelDeclaration(Watch, query=WatchQuery))
+    models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery))
     migrations = [ProcessesTablesMigration]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler]
+    subcommands = [StopProcessSubcommand]
