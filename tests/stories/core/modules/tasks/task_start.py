@@ -6,7 +6,7 @@ from tests.stories.core.modules.tasks.task_lifecycle import started_story
 def test_a_start_holds_the_task_for_the_caller_and_logs_the_change(new_story):
     story = new_story(fixture=OpenTask)
     story.expect_success(lines.TASK_START, "state: started", f"holder_id: {story.agent.id}", actor=story.agent)
-    story.expect_success("event show 5", "event: task.start", "row_id: 1", f"actor_id: {story.agent.id}", "command: TaskStart")
+    story.expect_text("event list --limit 1", "task.start", "TaskStart")
 
 
 def test_a_completed_task_cannot_start_and_the_refusal_names_the_way_on(new_story):

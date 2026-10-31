@@ -8,8 +8,8 @@ def test_event_and_refusal_lists_show_what_a_command_wrote_and_refused(tmp_path)
     run(container, "item", "make", "Dune")
     run(container, "item", "make", "Dune")
     code, output_text = run(container, "event", "list", "--json")
-    assert code == 0 and [(row["event"], row["row_id"]) for row in json.loads(output_text)["rows"]] == [("item.create", 1)]
-    code, output_text = run(container, "event", "show", "1")
+    assert code == 0 and [(row["event"], row["row_id"]) for row in json.loads(output_text)["rows"]] == [("item.create", 1), ("registry.sync", 1)]
+    code, output_text = run(container, "event", "show", "2")
     assert code == 0 and "event: item.create\n" in output_text
     code, output_text = run(container, "refusal", "list", "--json")
     assert code == 0 and [(row["command"], row["reason"]) for row in json.loads(output_text)["rows"]] == [("item make", "an item with that title exists already")]
