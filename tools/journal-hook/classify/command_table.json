@@ -15,6 +15,20 @@
   "journal",
   "unknown"
  ],
+ "kind_order": [
+  "test run",
+  "build",
+  "package",
+  "edit",
+  "network",
+  "version control",
+  "check",
+  "process",
+  "journal",
+  "unknown",
+  "search",
+  "read"
+ ],
  "effects": [
   "reads_files",
   "prints_files",

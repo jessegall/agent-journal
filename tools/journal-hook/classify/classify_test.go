@@ -51,3 +51,30 @@ func TestALineIsNamedByItsWeightiestPartAndKnowsAJournalOnlyLine(t *testing.T) {
 		}
 	}
 }
+
+// Version 4's KIND_ORDER in src/journal/support/classification.py, which the table's kind_order must keep.
+func TestTheKindOrderIsVersion4s(t *testing.T) {
+	version4 := []string{"test run", "build", "package", "edit", "network", "version control", "check", "process", "journal", "unknown", "search", "read"}
+	if !reflect.DeepEqual(KindOrder, version4) {
+		t.Errorf("kind_order is %q", KindOrder)
+	}
+}
+
+func TestMixedLinesAreNamedByTheirWeightiestPart(t *testing.T) {
+	cases := map[string]string{
+		"cat a.txt | grep x":                          "search",
+		"cat a.txt | head -5":                         "read",
+		"grep -rn x src | head":                       "search",
+		"cd src && git log":                           "version control",
+		"npm install && npm test":                     "test run",
+		"echo start; make build; ./deploy.sh":         "build",
+		"journal task show 1 && nosuchtool --run":     "journal",
+		"ls && nosuchtool":                            "unknown",
+		"curl -s https://example.com | jq . > a.json": "network",
+	}
+	for line, kind := range cases {
+		if got := shippedClassifier.Line(line).Kind; got != kind {
+			t.Errorf("%q is %s, want %s", line, got, kind)
+		}
+	}
+}

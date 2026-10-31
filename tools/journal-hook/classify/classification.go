@@ -1,6 +1,9 @@
 package classify
 
-import "sort"
+import (
+	"encoding/json"
+	"sort"
+)
 
 const (
 	unknown      = "unknown"
@@ -11,8 +14,19 @@ const (
 )
 
 // KindOrder names a line by its weightiest part: a test run over the tee that keeps its log, an edit over a read, a
-// journal command or a program the table does not know over a read; version 4's KIND_ORDER.
-var KindOrder = []string{"test run", "build", "package", "edit", "network", "version control", "check", "process", journalKind, unknown, "search", "read"}
+// journal command or a program the table does not know over a read. It is version 4's KIND_ORDER, kept in the table's
+// kind_order, the one place Go and Python both read it from.
+var KindOrder = shippedKindOrder()
+
+func shippedKindOrder() []string {
+	var table struct {
+		KindOrder []string `json:"kind_order"`
+	}
+	if err := json.Unmarshal(shippedTable, &table); err != nil || len(table.KindOrder) == 0 {
+		panic("the shipped command table names no kind_order")
+	}
+	return table.KindOrder
+}
 
 // The kinds whose words name the files they write, as rm build and sed -i s/a/b/ notes.txt do.
 var namingKinds = map[string]bool{"edit": true, "version control": true}
