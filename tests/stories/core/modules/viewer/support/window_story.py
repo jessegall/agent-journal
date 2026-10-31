@@ -12,6 +12,7 @@ from core.base.database.statement import Statement
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.module_removal import ModuleRemoval
 from core.base.refusal import Refusal
+from core.base.registry.registry import Registry
 from core.modules.viewer.window_lines import WindowLines
 from core.testing.story import Story
 
@@ -37,6 +38,12 @@ class WindowStory:
             assert reason in refusal.reason, f"{window} {line!r} was refused, but not for {reason!r}: {refusal.reason}"
             return
         raise AssertionError(f"{window} {line!r} was not refused")
+
+    def expect_declared_window(self, name: str, loading: str, place: str) -> None:
+        registry = Registry.read(self.story.container.get(Database))
+        assert registry.has_window(name), f"no installed module declares the window {name}"
+        window = registry.window(name)
+        assert (window.loading, window.place, window.shipped) == (loading, place, True), f"{name} is declared as {window}"
 
     def expect_row_count(self, table: str, count: int) -> None:
         counted = self.story.container.get(Database).rows(Statement(f"SELECT count(*) FROM {table}"))[0][0]
