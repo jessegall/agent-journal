@@ -9,10 +9,11 @@ from core.base.viewer.window_icon import WindowIcon
 
 
 class MarkCheck:
-    """Checks the chat marks the modules declare before a sync writes anything: each type starts with its module's name
-    and is used once, each has variants no other type of its module shares, a family belongs to one module and is
-    declared the same way each time, its icons are in the shell's icon set, its buttons run commands, its body is in the
-    module's web/dist and a click that opens a row has a row to open."""
+    """Checks the chat marks the modules declare before a sync writes anything: each type starts with its
+    module's name and is used once, each has variants no other type of its module shares, a family belongs
+    to one module and is declared the same way each time, its icons are in the shell's icon set, its
+    buttons run commands, its body is in the module's web/dist and a click that opens a row has a row to
+    open."""
 
     def __init__(self, buttons: ButtonCheck) -> None:
         self.buttons = buttons

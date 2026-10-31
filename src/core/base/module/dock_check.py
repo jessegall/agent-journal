@@ -8,9 +8,9 @@ from core.base.viewer.window_icon import WindowIcon
 
 
 class DockCheck:
-    """Checks the docked items the modules declare before a sync writes anything: each type starts with its module's
-    name and is used once, it holds at least one item, its icon is in the shell's icon set, its body is in the module's
-    web/dist, its buttons run commands and its reads are read subcommands."""
+    """Checks the docked items the modules declare before a sync writes anything: each type starts with
+    its module's name and is used once, it holds at least one item, its icon is in the shell's icon set,
+    its body is in the module's web/dist, its buttons run commands and its reads are read subcommands."""
 
     def __init__(self, buttons: ButtonCheck) -> None:
         self.buttons = buttons

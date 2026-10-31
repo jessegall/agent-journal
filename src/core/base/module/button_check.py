@@ -8,8 +8,8 @@ ROW_PLACEHOLDER = "row_id"
 
 
 class ButtonCheck:
-    """Checks the buttons a mark or a docked item declares: each shows an icon of the shell's icon set, runs a command,
-    and fills nothing but {row_id}."""
+    """Checks the buttons a mark or a docked item declares: each shows an icon of the shell's icon set,
+    runs a command, and fills nothing but {row_id}."""
 
     def problems(self, owner: str, buttons: Sequence[MarkButton], runs: frozenset[str]) -> list[str]:
         problems: list[str] = []

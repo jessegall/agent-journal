@@ -5,9 +5,10 @@ from typing import Any
 
 @dataclass(frozen=True)
 class MarkEntry:
-    """A registered chat mark type: its type and the module that declares it, its family with that family's title,
-    icon, group and colouring, its variants, label and mark icon, what a click and a fold do, the buttons, body file and
-    flags it declares, whether the journal ships its module, and why it is unavailable (empty when it is available)."""
+    """A registered chat mark type: its type and the module that declares it, its family with that
+    family's title, icon, group and colouring, its variants, label and mark icon, what a click and a fold
+    do, the buttons, body file and flags it declares, whether the journal ships its module, and why it is
+    unavailable (empty when it is available)."""
 
     type: str
     module: str

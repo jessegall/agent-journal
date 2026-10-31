@@ -7,9 +7,9 @@ from core.base.registry.registry import Registry
 
 
 class ChatDeclarationsRoute:
-    """Answers GET /api/marks and GET /api/docks: every chat mark type and dockable item type the modules declare,
-    each with the URL of its body file carrying its module's fingerprint, so a page reloads a body after an install or
-    an upgrade."""
+    """Answers GET /api/marks and GET /api/docks: every chat mark type and dockable item type the modules
+    declare, each with the URL of its body file carrying its module's fingerprint, so a page reloads a
+    body after an install or an upgrade."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

@@ -5,8 +5,8 @@ ROW_ID = "{row_id}"
 
 @dataclass(frozen=True)
 class ButtonLine:
-    """The command line a module's button may run, with the module that declared it: {row_id} stands for a row's
-    number."""
+    """The command line a module's button may run, with the module that declared it: {row_id} stands for a
+    row's number."""
 
     module: str
     template: str
