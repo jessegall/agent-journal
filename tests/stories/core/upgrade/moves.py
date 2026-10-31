@@ -81,3 +81,14 @@ def test_the_version_4_database_is_never_written_by_a_run(new_story, tmp_path):
     before = source.read_bytes()
     upgrade.run(source)
     assert source.read_bytes() == before
+
+
+def test_moved_rows_write_one_upgrade_moved_event_per_module_and_no_event_of_their_own(new_story, tmp_path):
+    story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
+    before = story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM events"))[0]["total"]
+    upgrade.run(source)
+    events = story.container.get(Database).rows(Statement("SELECT name, data FROM events WHERE id > (SELECT max(id) - 2 FROM events) ORDER BY id"))
+    names = [row["name"] for row in story.container.get(Database).rows(Statement("SELECT name FROM events ORDER BY id"))]
+    assert names.count("upgrade.moved") == 2 and "note.create" not in names and "tag.create" not in names
+    assert len(names) == before + 2 and '"movenotes"' in events[0]["data"] and '"moved": {"notes": 2}' in events[0]["data"]
+    assert story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM chat_marks"))[0]["total"] == 0

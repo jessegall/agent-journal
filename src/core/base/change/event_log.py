@@ -17,6 +17,9 @@ REGISTRY_SYNC_EVENT = "registry.sync"
 REGISTRY_TABLE = "registry"
 REGISTRY_ROW_ID = 1
 SYNC_COMMAND = "module sync"
+UPGRADE_MOVED_EVENT = "upgrade.moved"
+UPGRADE_COMMAND = "journal upgrade"
+UPGRADE_TABLE = "version_four_moves"
 
 
 class EventLog:
@@ -38,6 +41,13 @@ class EventLog:
         return self.table.insert({
             "actor_id": actor_id, "environment_id": None, "row_id": REGISTRY_ROW_ID, "name": REGISTRY_SYNC_EVENT, "row_table": REGISTRY_TABLE,
             "command": SYNC_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"fingerprint": [None, fingerprint]}), "created_at": timestamp,
+        })
+
+    def write_upgrade_moved(self, actor_id: int, module: str, counts: dict[str, dict[str, int]], timestamp: str) -> int:
+        return self.table.insert({
+            "actor_id": actor_id, "environment_id": None, "row_id": 0, "name": UPGRADE_MOVED_EVENT, "row_table": UPGRADE_TABLE,
+            "command": UPGRADE_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"module": [None, module], "counts": [None, counts]}),
+            "created_at": timestamp,
         })
 
     def data(self, change: Change[Model]) -> dict[str, list[object]]:

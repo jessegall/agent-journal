@@ -3,6 +3,7 @@ from contextlib import AbstractContextManager
 from pathlib import Path
 
 from core.base.actor import CORE_ACTOR_ID
+from core.base.change.event_log import EventLog
 from core.base.clock import Clock
 from core.base.database.database import Database
 from core.base.registry.move_entry import MoveEntry
@@ -22,8 +23,8 @@ class MoveRunner:
     finished row, skips a move already finished, and gathers what they did. A dry run rolls every move back,
     so the counts are real and nothing stays; a move that raises is rolled back and the moves before it stay."""
 
-    def __init__(self, registry: Registry, database: Database, clock: Clock) -> None:
-        self.registry, self.database, self.clock = registry, database, clock
+    def __init__(self, registry: Registry, database: Database, clock: Clock, events: EventLog) -> None:
+        self.registry, self.database, self.clock, self.events = registry, database, clock, events
 
     def run(self, version_four: Path, dry_run: bool = False) -> UpgradeReport:
         report, moved = UpgradeReport(), MoveMap(self.database)
@@ -66,7 +67,9 @@ class MoveRunner:
         try:
             with scope(entry.module):
                 outcome = move.move(source, self.database, moved, context)
-                moved.finish(entry.module, move.name, {"moved": outcome.moved, "repeated": outcome.repeated, "dropped": outcome.dropped})
+                counts = {"moved": outcome.moved, "repeated": outcome.repeated, "dropped": outcome.dropped}
+                moved.finish(entry.module, move.name, counts)
+                self.events.write_upgrade_moved(CORE_ACTOR_ID, entry.module, counts, context.timestamp)
         except Exception as error:
             raise UpgradeFailed(f"the move of {entry.module} failed: {error}") from error
         return outcome
