@@ -8,7 +8,7 @@ from core.modules.drivers.hook_call import HookCall
 from core.modules.memories.memory_fade import MemoryFade
 
 
-class FadeAtCompaction(CommitListener):
+class CompactionFader(CommitListener):
     """When an agent's context window is compacted, its memories of a fading type each lose one weight; a listener
     and not a driver rule, so an overlay that silences the rules, such as a wait, never stops the fading."""
 
