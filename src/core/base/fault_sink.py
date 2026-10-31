@@ -3,3 +3,6 @@ class FaultSink:
 
     def record(self, source: str, message: str, environment_id: int | None) -> None:
         return
+
+    def flush(self) -> None:
+        return

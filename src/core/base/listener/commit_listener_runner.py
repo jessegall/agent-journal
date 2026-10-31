@@ -2,6 +2,7 @@ from core.base.change.event_log import EventLog
 from core.base.change.logged_event import LoggedEvent
 from core.base.container import Container
 from core.base.error_log import ErrorLog
+from core.base.fault_sink import FaultSink
 from core.base.listener.commit_listener import CommitListener
 from core.base.database.listener_cursor_table import ListenerCursorTable
 from core.base.registry.listener_entry import ListenerEntry
@@ -18,10 +19,15 @@ class CommitListenerRunner:
     handles the same one; an event that fails is given back to be tried again, and one that fails three
     times is skipped."""
 
-    def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable) -> None:
-        self.registry, self.log, self.container, self.errors, self.cursors = registry, log, container, errors, cursors
+    def __init__(self, registry: Registry, log: EventLog, container: Container, errors: ErrorLog, cursors: ListenerCursorTable,
+                 faults: FaultSink) -> None:
+        self.registry, self.log, self.container, self.errors, self.cursors, self.faults = registry, log, container, errors, cursors, faults
 
     def run(self) -> None:
+        try:
+            self.faults.flush()
+        except Exception as failure:
+            self.errors.noted(f"waiting faults could not be recorded: {type(failure).__name__}: {failure}")
         entries = tuple(entry for entry in self.registry.listeners if entry.timing is ListenerTiming.COMMIT)
         for _ in range(CHAIN_LIMIT_ROUNDS):
             if not self.cursors.has_unhandled_events():
