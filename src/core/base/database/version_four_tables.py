@@ -15,3 +15,8 @@ class VersionFourTables:
         if table not in self.names():
             return []
         return self.connection.execute(f'SELECT * FROM "{table}" ORDER BY rowid').fetchall()
+
+    def count(self, table: str) -> int:
+        if table not in self.names():
+            return 0
+        return int(self.connection.execute(f'SELECT count(*) FROM "{table}"').fetchone()[0])

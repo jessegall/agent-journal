@@ -24,3 +24,6 @@ class VersionFourSource:
 
     def rows(self, table: str) -> list[sqlite3.Row]:
         return self.version_four.rows(table)
+
+    def count(self, table: str) -> int:
+        return self.version_four.count(table)

@@ -4,7 +4,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.upgrade_failed import UpgradeFailed
-from core.base.upgrade.upgrade_runner import UpgradeRunner
+from core.base.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.core.upgrade.support.move_samples import ORDER, PATH, version_four_database
 
@@ -18,7 +18,7 @@ def count(story, table: str) -> int:
 def runner(new_story, tmp_path, *modules: str):
     story = new_story(*modules, fixture=MainEnvironment)
     ORDER.clear()
-    return story, story.container.get(UpgradeRunner), version_four_database(tmp_path)
+    return story, story.container.get(MoveRunner), version_four_database(tmp_path)
 
 
 def test_the_runner_orders_the_moves_by_module_dependency_whatever_order_the_modules_are_named_in(new_story, tmp_path):
@@ -56,4 +56,28 @@ def test_a_move_that_raises_rolls_back_its_modules_rows_and_leaves_the_earlier_m
 
 def test_a_version_4_table_no_module_claims_is_listed(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
-    assert upgrade.run(source).unclaimed == ("old_reports",)
+    assert upgrade.run(source).unclaimed == {"old_reports": 1}
+
+
+def test_a_dry_run_gives_the_real_counts_and_leaves_nothing_behind(new_story, tmp_path):
+    story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
+    report = upgrade.run(source, dry_run=True)
+    assert report.moved == {"movenotes": 2, "movetags": 2}
+    assert (count(story, "notes"), count(story, "tags")) == (0, 0) and MoveMap(story.container.get(Database)).count() == 0
+    assert upgrade.run(source).moved == {"movenotes": 2, "movetags": 2}
+
+
+def test_a_dry_run_leaves_the_database_file_byte_equal(new_story, tmp_path):
+    story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
+    story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    before = story.home.database.read_bytes()
+    upgrade.run(source, dry_run=True)
+    story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+    assert story.home.database.read_bytes() == before
+
+
+def test_the_version_4_database_is_never_written_by_a_run(new_story, tmp_path):
+    story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
+    before = source.read_bytes()
+    upgrade.run(source)
+    assert source.read_bytes() == before
