@@ -6,6 +6,7 @@ from core.modules.questions.commands.ask_question_handler import AskQuestionHand
 from core.modules.questions.commands.ask_question_subcommand import AskQuestionSubcommand
 from core.modules.questions.commands.question_list_subcommand import QuestionListSubcommand
 from core.modules.questions.commands.question_show_subcommand import QuestionShowSubcommand
+from core.modules.questions.support.question_marks import QUESTION_MARKS
 from core.modules.questions.queries.question_query import QuestionQuery
 from core.modules.questions.rules.question_answered_rule import QuestionAnsweredRule
 from core.modules.questions.rules.own_question_tool_rule import OwnQuestionToolRule
@@ -29,3 +30,4 @@ class QuestionsModule(Module):
     handlers = [AskQuestionHandler]
     guards = [MainAgentGuard, ActorOptionsGuard]
     driver_rules = [QuestionAnsweredRule, QuestionClosedRule, OwnQuestionToolRule]
+    marks = QUESTION_MARKS

@@ -1,3 +1,5 @@
+from core.base.database.database import Database
+from core.base.registry.registry import Registry
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -48,3 +50,9 @@ def test_a_failed_ask_shows_no_mark(new_story):
     story.expect_refusal('question ask "Which way?" --options "I will fix it" --environment main', "name who acts", actor=story.agent)
     story.run_listeners()
     assert mark_count(story) == 0
+
+
+def test_the_question_mark_is_declared_as_a_process_in_its_family(new_story):
+    story = new_story(fixture=BuilderStarted)
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "questions.question")
+    assert mark.family == "questions.questions" and mark.process
