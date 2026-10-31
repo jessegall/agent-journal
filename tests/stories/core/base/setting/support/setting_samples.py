@@ -1,5 +1,6 @@
 from core.base.module.module import Module
 from core.base.setting.setting_group import SettingGroup
+from core.base.setting.setting_reference import SettingReference
 from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
@@ -54,3 +55,21 @@ class SecretDefaultModule(Module):
     name = "leaky"
     requires_core = ">=5,<6"
     settings = [SettingValue("token", "Token", "The token the service gave you.", SettingType.TEXT, default="abc123", secret=True)]
+
+
+class RemoteModule(Module):
+    name = "remote"
+    requires_core = ">=5,<6"
+    settings = [SettingGroup("access", "Access", "How you reach this computer from outside.", children=[SettingReference("good.sharing.tunnel")])]
+
+
+class DanglingModule(Module):
+    name = "dangling"
+    requires_core = ">=5,<6"
+    settings = [SettingGroup("access", "Access", "How you reach this computer from outside.", children=[SettingReference("good.sharing.nothing")])]
+
+
+class LoopModule(Module):
+    name = "loop"
+    requires_core = ">=5,<6"
+    settings = [SettingGroup("again", "Again", "A group that holds itself.", children=[SettingReference("loop.again")])]
