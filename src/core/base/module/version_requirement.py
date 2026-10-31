@@ -12,10 +12,10 @@ class VersionRequirement:
 
     text: str
 
-    def is_met(self, version: tuple[int, int, int]) -> bool:
-        return all(self.bound_met(bound.strip(), version) for bound in self.text.split(","))
+    def allows(self, version: tuple[int, int, int]) -> bool:
+        return all(self.bound_allows(bound.strip(), version) for bound in self.text.split(","))
 
-    def bound_met(self, bound: str, version: tuple[int, int, int]) -> bool:
+    def bound_allows(self, bound: str, version: tuple[int, int, int]) -> bool:
         match = BOUND.match(bound)
         if match is None:
             raise ModuleError(f"{bound} is no version bound; write it like >=5.0 or <6")

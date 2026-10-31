@@ -51,6 +51,9 @@ class Schema:
             migration.run(self.database)
             self.database.insert(record)
 
+    def remove_migration_records(self, module: str) -> None:
+        self.database.update(Statement("DELETE FROM migrations WHERE module = ?", (module,)))
+
     def drop_views(self) -> None:
         for row in self.database.rows(VIEWS):
             self.database.update(Statement(f"DROP VIEW {row['name']}"))

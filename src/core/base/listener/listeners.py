@@ -4,8 +4,8 @@ from core.base.guard.applicability import Applicability
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.module.listener_entry import ListenerTiming
-from core.base.module.registry import Registry
+from core.base.registry.listener_entry import ListenerTiming
+from core.base.registry.registry import Registry
 
 
 class ListenerClassError(Exception):

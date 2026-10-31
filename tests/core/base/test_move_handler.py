@@ -8,9 +8,9 @@ from core.base.command.handlers.move_handler import MoveHandler
 from core.base.command.move_command import MoveCommand
 from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.guard_refusal import GuardRefusal
-from core.base.module.dotted_path import DottedPath
-from core.base.module.guard_entry import GuardEntry
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.guard_entry import GuardEntry
+from core.base.registry.registry import Registry
 from core.base.moment import Moment
 from core.base.repository.repository import Repository
 from tests.core.base.harness import context, harness

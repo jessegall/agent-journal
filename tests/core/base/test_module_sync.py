@@ -10,7 +10,7 @@ from core.base.journal_home import JournalHome
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync
-from core.base.module.registry import Registry, StaleRegistryError
+from core.base.registry.registry import Registry, StaleRegistryError
 from tests.core.base import sync_sample
 
 LOANS = "tests.core.base.sync_sample:LoansModule"
@@ -31,7 +31,7 @@ def test_the_registry_after_a_sync_names_every_noun_handler_guard_and_listener(t
     container = synced(JournalHome(tmp_path), LOANS, LOAN_COUNT)
     database = container.get(Database)
     registry = Registry.read(database)
-    assert registry.nouns == {"loan": "loans"}
+    assert {noun: (entry.module, entry.model.text) for noun, entry in registry.nouns.items()} == {"loan": ("loans", "tests.core.base.test_model:Loan")}
     assert list(registry.handlers) == ["core.base.command.make_command:MakeCommand"]
     assert [guard.name for guard in registry.guards] == ["loans.late-only"]
     module_actor = database.rows(Statement("SELECT id FROM actors WHERE type = 'module' AND name = 'loan-count'"))[0]["id"]

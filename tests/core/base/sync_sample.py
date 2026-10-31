@@ -22,7 +22,7 @@ class LoansModule(Module):
 class LoanCountModule(Module):
     name = "loan-count"
     requires_core = ">=5,<6"
-    depends_on = ("loans",)
+    dependencies = ("loans",)
     listeners = ("tests.core.base.test_commit_listener_runner:CountOverdue",)
 
 

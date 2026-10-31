@@ -2,7 +2,7 @@ import json
 from typing import TypeIs
 
 from core.base.journal_home import JournalHome
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 from core.base.module.version_requirement import VersionRequirement
@@ -42,6 +42,6 @@ class ModuleFinder:
         module = path.loaded()
         if not issubclass(module, Module):
             raise ModuleError(f"{path.text} is no module")
-        if not VersionRequirement(module.requires_core).is_met(CORE_VERSION):
+        if not VersionRequirement(module.requires_core).allows(CORE_VERSION):
             raise ModuleError(f"module {module.name} needs core {module.requires_core}, and this core is {'.'.join(map(str, CORE_VERSION))}")
         return module

@@ -9,14 +9,14 @@ from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.module.dotted_path import DottedPath, DottedPathError
-from core.base.module.listener_entry import ListenerTiming
-from core.base.module.registry import Registry, StaleRegistryError
+from core.base.registry.dotted_path import DottedPath, DottedPathError
+from core.base.registry.listener_entry import ListenerTiming
+from core.base.registry.registry import Registry, StaleRegistryError
 from tests.core.base.test_commands import LoanMake
 
 SAMPLE = "tests.core.base.registry_sample:SampleGuard"
 ENTRIES = {
-    "nouns": {"loan": "loans"},
+    "nouns": {"loan": {"module": "loans", "model": "tests.core.base.test_model:Loan", "commands": []}},
     "handlers": {DottedPath.class_path(LoanMake).text: "tests.core.base.test_commands:LoanMake"},
     "subcommands": {"loan make": "tests.core.base.test_commands:LoanMake"},
     "guards": [

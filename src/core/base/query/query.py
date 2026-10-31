@@ -10,7 +10,7 @@ from core.base.model.tables import Tables
 from core.base.query.condition import Condition
 from core.base.query.conditions.among import Among
 from core.base.query.conditions.equal import Equal
-from core.base.query.page import Page
+from core.base.page import Page
 from core.base.query.select import Select
 
 M = TypeVar("M", bound=Model)

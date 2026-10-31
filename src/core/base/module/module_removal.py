@@ -2,19 +2,18 @@ import json
 
 from core.base.database.database import Database
 from core.base.database.migration import Migration
-from core.base.database.statement import Statement
+from core.base.database.listener_cursor_table import ListenerCursorTable
+from core.base.database.schema import Schema
+from core.base.database.table_statements import TableStatements
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_sync import ModuleSync
 
-CURSOR_DELETION = Statement("DELETE FROM listener_cursors WHERE listener = ?")
-SKIP_DELETION = Statement("DELETE FROM listener_skips WHERE listener = ?")
-MIGRATION_RECORD_DELETION = Statement("DELETE FROM migrations WHERE module = ?")
 
 
 class ModuleRemoval:
@@ -22,8 +21,10 @@ class ModuleRemoval:
     migration that removes them; its listener cursors, migration records and metadata keys go with it, then
     the rest is synced."""
 
-    def __init__(self, database: Database, home: JournalHome, finder: ModuleFinder, check: ModuleCheck, tables: Tables, sync: ModuleSync) -> None:
+    def __init__(self, database: Database, home: JournalHome, finder: ModuleFinder, check: ModuleCheck, tables: Tables, sync: ModuleSync,
+                 cursors: ListenerCursorTable, schema: Schema) -> None:
         self.database, self.home, self.finder, self.check, self.tables, self.sync = database, home, finder, check, tables, sync
+        self.cursors, self.schema = cursors, schema
 
     def remove(self, name: str) -> None:
         listed = self.finder.plugin_paths()
@@ -39,13 +40,10 @@ class ModuleRemoval:
             if removal is not None:
                 removal.run(self.database)
             for path in module.listeners:
-                listener = self.check.listener(path).name
-                self.database.update(Statement(CURSOR_DELETION.sql, (listener,)))
-                self.database.update(Statement(SKIP_DELETION.sql, (listener,)))
-            self.database.update(Statement(MIGRATION_RECORD_DELETION.sql, (module.name,)))
-            for table in (self.tables.table(model).name for model in self.check.models(remaining_modules)):
-                self.database.update(Statement(f"UPDATE {table} SET metadata = json_remove(metadata, ?) WHERE json_type(metadata, ?) IS NOT NULL",
-                                               (f'$."{module.name}"', f'$."{module.name}"')))
+                self.cursors.remove(self.check.listener(path).name)
+            self.schema.remove_migration_records(module.name)
+            for model in self.check.models(remaining_modules):
+                self.database.update(TableStatements(self.tables.table(model)).metadata_removal(module.name))
         self.home.module_list.write_text(json.dumps([path for path in listed if path != module_paths[0]]))
         self.sync.run()
 
@@ -62,7 +60,7 @@ class ModuleRemoval:
 
     def refuse_rows(self, module: type[Module]) -> None:
         for model in self.check.models((module,)):
-            table = self.tables.table(model).name
-            count = self.database.rows(Statement(f"SELECT count(*) FROM {table}"))[0][0]
+            table = self.tables.table(model)
+            count = self.database.rows(TableStatements(table).count())[0][0]
             if count:
-                raise ModuleError(f"{module.name} still has {count} rows in {table}: delete them first, or give the module a removal migration")
+                raise ModuleError(f"{module.name} still has {count} rows in {table.name}: delete them first, or give the module a removal migration")

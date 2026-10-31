@@ -28,18 +28,18 @@ class Select:
     def column(self, column: str) -> "Select":
         return replace(self, columns=column)
 
-    def filter_clause(self) -> Statement:
+    def filtered(self, head: Statement) -> Statement:
         if not self.conditions:
-            return Statement("")
-        return Statement(" WHERE ").joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), "")
+            return head
+        return head.joined(Statement.all_joined(tuple(condition.statement() for condition in self.conditions), " AND "), " WHERE ")
 
     def statement(self) -> Statement:
         order = f" ORDER BY {', '.join(order.sql for order in self.orders)}" if self.orders else ""
         page = f" LIMIT {self.limit} OFFSET {self.offset}" if self.limit else ""
-        return Statement(f"SELECT {self.columns} FROM {self.table}").joined(self.filter_clause(), "").joined(Statement(order + page), "")
+        return self.filtered(Statement(f"SELECT {self.columns} FROM {self.table}")).joined(Statement(order + page), "")
 
     def count_statement(self) -> Statement:
-        return Statement(f"SELECT count(*) FROM {self.table}").joined(self.filter_clause(), "")
+        return self.filtered(Statement(f"SELECT count(*) FROM {self.table}"))
 
     def exists_statement(self) -> Statement:
-        return Statement(f"SELECT 1 FROM {self.table}").joined(self.filter_clause(), "").joined(Statement(" LIMIT 1"), "")
+        return self.filtered(Statement(f"SELECT 1 FROM {self.table}")).joined(Statement(" LIMIT 1"), "")

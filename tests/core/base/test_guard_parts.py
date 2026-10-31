@@ -15,12 +15,12 @@ CHANGE = Change(None, Loan(title="Dune"), Context(Actor(7, ActorType.AGENT), Mom
 
 
 def test_every_guard_is_on_and_everything_applies_until_something_else_is_bound():
-    assert GuardSwitches().is_on("loans.no-second-loan")
+    assert GuardSwitches().enabled("loans.no-second-loan")
     assert Applicability().applies("loans.no-second-loan", CHANGE)
 
 
 class SwitchedOff(GuardSwitches):
-    def is_on(self, guard_name: str) -> bool:
+    def enabled(self, guard_name: str) -> bool:
         return guard_name != "loans.no-second-loan"
 
 
@@ -33,5 +33,5 @@ def test_a_layer_above_the_core_binds_its_own_switches_and_applicability():
     container = Container()
     container.bind(GuardSwitches, SwitchedOff())
     container.bind(Applicability, OnlyOnSundays())
-    assert not container.get(GuardSwitches).is_on("loans.no-second-loan")
+    assert not container.get(GuardSwitches).enabled("loans.no-second-loan")
     assert not container.get(Applicability).applies("loans.no-second-loan", CHANGE)

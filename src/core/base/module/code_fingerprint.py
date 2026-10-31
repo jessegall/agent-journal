@@ -1,6 +1,6 @@
 import hashlib
 
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.version import CORE_VERSION
 

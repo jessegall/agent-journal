@@ -7,7 +7,8 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler, is_handler_class
 from core.base.container import Container
 from core.base.database.database import Database
-from core.base.module.registry import Registry
+from core.base.guard.explanation import Explanation
+from core.base.registry.registry import Registry
 
 R = TypeVar("R")
 
@@ -19,6 +20,10 @@ class MissingHandlerError(Exception):
 
 class TransactionError(Exception):
     """Raised when a command is run at the top inside a transaction, or nested outside one."""
+
+
+class ExplanationRollback(Exception):
+    """Raised at the end of a command run with --explain, so its transaction rolls back."""
 
 
 class Bus:
@@ -36,6 +41,17 @@ class Bus:
         with self.database.transaction():
             context = Context(actor, self.clock.moment(), command, skipped_guards, cause_id, environment_id)
             return self.result(handler.handle(command, context), command)
+
+    def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
+        if self.database.has_transaction:
+            raise TransactionError(f"{command.label()} was explained inside a transaction")
+        handler, explanation = self.handler(command), Explanation()
+        try:
+            with self.database.transaction():
+                handler.handle(command, Context(actor, self.clock.moment(), command, skipped_guards, None, environment_id, explanation))
+                raise ExplanationRollback()
+        except ExplanationRollback:
+            return explanation
 
     def dispatch(self, command: Command[R], context: Context) -> R:
         if not self.database.has_transaction:

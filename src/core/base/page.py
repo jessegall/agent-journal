@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeIs, TypeVar
 
 M = TypeVar("M")
 
@@ -17,3 +17,7 @@ class Page(Generic[M]):
     @property
     def is_last(self) -> bool:
         return self.number * self.size >= self.total
+
+
+def is_page(value: object) -> TypeIs[Page[object]]:
+    return isinstance(value, Page)

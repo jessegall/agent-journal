@@ -5,7 +5,7 @@ from core.base.query.condition import Condition
 
 
 @dataclass(frozen=True)
-class InSelect:
+class SubqueryMatch:
     """Matches rows whose column is among the results of another query."""
 
     column: str

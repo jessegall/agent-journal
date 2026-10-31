@@ -1,7 +1,7 @@
 {
     "$schema": "./config.schema.json",
     "paths": [
-        "src"
+        "src/core"
     ],
     "base": "main",
     "disable": {
@@ -31,221 +31,102 @@
         "UnitlessQuantityNameDetector",
         "LongDocstringLineDetector",
         "PlainSettingsGroupTitleDetector",
-        "PlainSettingsTabTitleDetector"
+        "PlainSettingsTabTitleDetector",
+        "SqlOutsideDatabaseLayerDetector"
     ],
     "parallel": 2,
     "configure": {
         "python/NamespaceDependencyDetector": [
             {
                 "layer": [
-                    "supervisor"
+                    "core.base"
                 ]
             },
             {
                 "layer": [
-                    "resources"
-                ]
-            },
-            {
-                "layer": [
-                    "engine",
+                    "core.actors",
                     [
-                        "resources",
-                        "supervisor",
-                        "install"
+                        "core.base"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "controllers",
+                    "core.environments",
                     [
-                        "resources",
-                        "engine"
+                        "core.base",
+                        "core.actors"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "providers",
+                    "core.agents",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "supervisor"
+                        "core.base",
+                        "core.actors",
+                        "core.environments"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "agents",
+                    "core.tasks",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "supervisor"
+                        "core.base",
+                        "core.actors",
+                        "core.environments",
+                        "core.agents"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "runner",
+                    "core.plans",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "agents",
-                        "supervisor",
-                        "features",
-                        "migrations",
-                        "overview"
+                        "core.base",
+                        "core.actors",
+                        "core.environments",
+                        "core.agents",
+                        "core.tasks"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "overview",
+                    "core.messages",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "agents"
+                        "core.base",
+                        "core.actors",
+                        "core.environments",
+                        "core.agents"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "features",
+                    "core.settings",
                     [
-                        "resources",
-                        "engine",
-                        "install",
-                        "controllers",
-                        "providers",
-                        "agents",
-                        "supervisor",
-                        "overview"
+                        "core.base",
+                        "core.actors"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "migrations",
+                    "core.journal_module",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "features",
-                        "overview"
+                        "core.base",
+                        "core.actors",
+                        "core.settings"
                     ]
                 ]
             },
             {
                 "layer": [
-                    "surfaces",
+                    "core.journal",
                     [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "agents",
-                        "features",
-                        "overview"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "commands",
-                    [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "agents",
-                        "runner",
-                        "features",
-                        "migrations",
-                        "surfaces",
-                        "install",
-                        "skills",
-                        "serve",
-                        "overview"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "skills",
-                    [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "features",
-                        "overview"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "install",
-                    [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "features",
-                        "migrations",
-                        "commands",
-                        "skills",
-                        "overview"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "serve",
-                    [
-                        "resources",
-                        "engine",
-                        "controllers",
-                        "providers",
-                        "runner",
-                        "features",
-                        "migrations",
-                        "surfaces",
-                        "commands",
-                        "overview"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "worker",
-                    [
-                        "commands",
-                        "runner"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "journal",
-                    [
-                        "commands"
-                    ]
-                ]
-            },
-            {
-                "layer": [
-                    "channel",
-                    [
-                        "providers"
+                        "core.base"
                     ]
                 ]
             }

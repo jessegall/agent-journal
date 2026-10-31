@@ -11,7 +11,7 @@ from core.base.database.schema import Schema
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
-from core.base.module.registry import Registry
+from core.base.registry.registry import Registry
 from core.base.moment import Moment
 
 MOMENT = Moment(datetime(2026, 10, 31, 9, tzinfo=timezone.utc))

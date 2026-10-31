@@ -1,34 +1,48 @@
-import json
+from dataclasses import dataclass
 
-from core.base.actor import CORE_ACTOR_ID, ActorType
 from core.base.clock import Clock
 from core.base.command.command import Command
 from core.base.database.core_tables import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.schema import ModuleMigrations, Schema
-from core.base.database.statement import Statement
 from core.base.database.triggers import Triggers
 from core.base.database.view import View
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
-from core.base.listener.listener_cursors import ListenerCursors
+from core.base.database.actor_table import ActorTable
+from core.base.database.listener_cursor_table import ListenerCursorTable
+from core.base.database.registry_table import RegistryTable
 from core.base.listener.save_listener import SaveListener
 from core.base.module.code_fingerprint import CodeFingerprint
-from core.base.module.dotted_path import DottedPath
-from core.base.module.listener_entry import ListenerTiming
+from core.base.registry.dotted_path import DottedPath
+from core.base.change.event_pattern import EventPattern
+from core.base.registry.guard_entry import GuardEntry
+from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.noun_entry import NounEntry
+from core.base.registry.registry import Registry
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
 
-CORE_ACTOR = Statement("INSERT OR IGNORE INTO actors (id, type, name, created_at, updated_at) VALUES (?, ?, 'core', ?, ?)")
-MODULE_ACTOR = Statement("INSERT OR IGNORE INTO actors (created_by, type, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)")
-MODULE_ACTOR_ID = Statement("SELECT id FROM actors WHERE type = ? AND name = ?")
-REGISTRY_ROW = Statement("SELECT fingerprint, entries FROM registry WHERE id = 1")
-REGISTRY_UPSERT = Statement("INSERT INTO registry (id, fingerprint, entries, synced_at) VALUES (1, ?, ?, ?)"
-                           " ON CONFLICT (id) DO UPDATE SET fingerprint = excluded.fingerprint, entries = excluded.entries, synced_at = excluded.synced_at")
+
+
+@dataclass(frozen=True)
+class SyncReport:
+    """What a sync found and changed: the modules in their order, the migrations it ran, and whether the
+    registry changed."""
+
+    modules: tuple[str, ...]
+    migrations: tuple[str, ...]
+    registry_changed: bool
+
+    @property
+    def text(self) -> str:
+        migrations = ", ".join(self.migrations) if self.migrations else "none"
+        registry = "written anew" if self.registry_changed else "unchanged"
+        return f"modules: {', '.join(self.modules) or 'none'}\nmigrations run: {migrations}\nregistry: {registry}"
 
 
 class ModuleSync:
@@ -37,28 +51,30 @@ class ModuleSync:
     registry."""
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
-                 triggers: Triggers, cursors: ListenerCursors, fingerprint: CodeFingerprint) -> None:
+                 triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint) -> None:
         self.database, self.clock, self.finder, self.order, self.check = database, clock, finder, order, check
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
+        self.actors, self.registry_table = actors, registry_table
 
-    def run(self) -> None:
+    def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.found())
         self.check.check(modules)
         models = self.check.models(modules)
-        self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
+        migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
         self.schema.rebuild_views(tuple(self.view(path) for module in modules for path in module.views))
         self.triggers.rebuild(models)
         self.schema.check_tables(models)
         with self.database.transaction():
             moment = self.clock.moment().text
-            self.database.update(Statement(CORE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.CORE.value, moment, moment)))
-            actor_ids = {module.name: self.module_actor(module, moment) for module in modules}
+            self.actors.core_actor(moment)
+            actor_ids = {module.name: self.actors.module_actor(module.name, moment) for module in modules}
             for module in modules:
                 for path in module.listeners:
                     if self.timing(self.check.listener(path)) is ListenerTiming.COMMIT:
                         self.cursors.start(self.check.listener(path).name)
-            entries = self.entries(modules, actor_ids)
-            self.write_registry(self.fingerprint.text(modules), json.dumps(entries, sort_keys=True), moment)
+            registry = self.registry(modules, actor_ids)
+            registry_changed = self.registry_table.write(registry.fingerprint, registry.entries_text(), moment)
+        return SyncReport(tuple(module.name for module in modules), migrations, registry_changed)
 
     def migrations(self, module: type[Module]) -> tuple[Migration, ...]:
         loaded = tuple(DottedPath(path).loaded() for path in module.migrations)
@@ -70,22 +86,19 @@ class ModuleSync:
             raise ModuleError(f"{path} is no view")
         return value
 
-    def module_actor(self, module: type[Module], moment: str) -> int:
-        self.database.update(Statement(MODULE_ACTOR.sql, (CORE_ACTOR_ID, ActorType.MODULE.value, module.name, moment, moment)))
-        return self.database.rows(Statement(MODULE_ACTOR_ID.sql, (ActorType.MODULE.value, module.name)))[0]["id"]
-
-    def entries(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> dict[str, object]:
-        guards = [(module, path, self.check.guard(path)) for module in modules for path in module.guards]
+    def registry(self, modules: tuple[type[Module], ...], actor_ids: dict[str, int]) -> Registry:
+        guards = [(path, self.check.guard(path)) for module in modules for path in module.guards]
         listeners = [(module, path, self.check.listener(path)) for module in modules for path in module.listeners]
-        return {
-            "nouns": {noun.model.name: module.name for module in modules for noun in module.nouns},
-            "handlers": {DottedPath.class_path(self.command(path)).text: path for module in modules for path in module.handlers},
-            "subcommands": {},
-            "guards": [{"name": guard.name, "event": guard.event, "path": path, "position": position, "short_flag": guard.short_flag}
-                       for position, (_, path, guard) in enumerate(guards, 1)],
-            "listeners": [{"name": listener.name, "event": listener.event, "timing": self.timing(listener).value, "path": path, "position": position,
-                           "actor_id": actor_ids[module.name]} for position, (module, path, listener) in enumerate(listeners, 1)],
-        }
+        return Registry(
+            fingerprint=self.fingerprint.text(modules),
+            nouns={noun.model.cli_noun: NounEntry(module.name, DottedPath.class_path(noun.model), noun.commands) for module in modules for noun in module.nouns},
+            handlers={DottedPath.class_path(self.command(path)).text: DottedPath(path) for module in modules for path in module.handlers},
+            subcommands={self.check.subcommand_line(path): DottedPath(path) for module in modules for path in module.subcommands},
+            guards=tuple(GuardEntry(guard.name, EventPattern(guard.event), DottedPath(path), position, guard.short_flag)
+                         for position, (path, guard) in enumerate(guards, 1)),
+            listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath(path), position, actor_ids[module.name])
+                            for position, (module, path, listener) in enumerate(listeners, 1)),
+        )
 
     def command(self, handler_path: str) -> type[Command[object]]:
         return self.check.handler(handler_path).command
@@ -96,9 +109,3 @@ class ModuleSync:
         if issubclass(listener, SaveListener):
             return ListenerTiming.SAVE
         return ListenerTiming.COMMIT
-
-    def write_registry(self, fingerprint: str, entries: str, moment: str) -> None:
-        rows = self.database.rows(REGISTRY_ROW)
-        if rows and (rows[0]["fingerprint"], rows[0]["entries"]) == (fingerprint, entries):
-            return
-        self.database.update(Statement(REGISTRY_UPSERT.sql, (fingerprint, entries, moment)))

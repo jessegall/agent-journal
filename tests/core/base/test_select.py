@@ -1,6 +1,6 @@
 from core.base.database.statement import Statement
 from core.base.query.conditions.equal import Equal
-from core.base.query.conditions.in_select import InSelect
+from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.select import Select
 
@@ -28,5 +28,5 @@ def test_count_and_exists_keep_the_conditions_and_drop_order_and_page():
 
 def test_one_select_can_filter_by_another():
     placed = Select("phase_tasks").column("task_id").matching(Equal("phase_id", 3))
-    statement = Select("tasks").matching(InSelect("id", placed)).statement()
+    statement = Select("tasks").matching(SubqueryMatch("id", placed)).statement()
     assert statement == Statement("SELECT * FROM tasks WHERE id IN (SELECT task_id FROM phase_tasks WHERE phase_id = ?)", (3,))

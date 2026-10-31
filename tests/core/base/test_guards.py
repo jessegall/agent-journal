@@ -14,9 +14,9 @@ from core.base.guard.guard_switches import GuardSwitches
 from core.base.guard.guards import Guards
 from core.base.guard_refusal import GuardRefusal
 from core.base.model.model import Model
-from core.base.module.dotted_path import DottedPath
-from core.base.module.guard_entry import GuardEntry
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.guard_entry import GuardEntry
+from core.base.registry.registry import Registry
 from core.base.moment import Moment
 from core.base.refusal import Refusal
 from tests.core.base.test_commands import LoanMake
@@ -88,7 +88,7 @@ def test_a_guard_asked_to_be_skipped_is_passed_over_and_recorded():
 
 def test_a_switched_off_guard_is_passed_over():
     class Off(GuardSwitches):
-        def is_on(self, guard_name: str) -> bool:
+        def enabled(self, guard_name: str) -> bool:
             return guard_name != "loans.no-second-loan"
 
     guards(switches=Off()).ask(change())

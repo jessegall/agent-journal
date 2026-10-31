@@ -9,7 +9,7 @@ from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.tables import Tables
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_check import ModuleCheck
 from core.base.module.module_error import ModuleError

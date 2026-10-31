@@ -106,3 +106,84 @@ Traceback (most recent call last):
     raise RuntimeError("the reader is away")
 RuntimeError: the reader is away
 
+2026-10-31T00:42:52+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:42:52+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:42:52+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:19+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:19+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:19+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 67, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:30+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 71, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:30+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 71, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+
+2026-10-31T00:43:30+00:00 journal listener loans.always-fails event 1
+Traceback (most recent call last):
+  File "/Users/jessegall/projects/agent-journal/src/core/base/listener/commit_listener_runner.py", line 51, in handle_event
+    self.container.get(listener_class).handle(event)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/Users/jessegall/projects/agent-journal/tests/core/base/test_commit_listener_runner.py", line 71, in handle
+    raise RuntimeError("the reader is away")
+RuntimeError: the reader is away
+

@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^\\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|WITH)\\s"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)core/base/(database|query)/"
+            },
+            {
+                "fileMatches": "(^|/)migrations/"
+            },
+            {
+                "fileMatches": "(^|/)conditions/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "sql-outside-database-layer",
+        "description": "SQL text is written outside base/database, base/query, a migration or a module's conditions, so its table and column names go unchecked.",
+        "rule": "Name the statement in the database layer (base/database) or build it with the query builder, and use it from there.",
+        "skill": "sql-in-the-database-layer"
+    }
+}

@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_pattern import EventPattern
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 
 
 class ListenerTiming(StrEnum):

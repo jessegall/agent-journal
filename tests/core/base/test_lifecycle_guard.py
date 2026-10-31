@@ -14,9 +14,9 @@ from core.base.guard.lifecycle_guard import LifecycleGuard
 from core.base.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
 from core.base.model.model import Model
-from core.base.module.dotted_path import DottedPath
-from core.base.module.guard_entry import GuardEntry
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.guard_entry import GuardEntry
+from core.base.registry.registry import Registry
 from core.base.moment import Moment
 from core.base.refusal import Refusal
 from tests.core.base.test_commands import LoanMake
@@ -66,7 +66,7 @@ def test_a_change_of_metadata_alone_is_no_edit_and_raises_no_event():
 
 def test_the_lifecycle_guard_can_be_neither_skipped_nor_switched_off():
     class AllOff(GuardSwitches):
-        def is_on(self, guard_name: str) -> bool:
+        def enabled(self, guard_name: str) -> bool:
             return False
 
     registry = Registry("abc", {}, {}, {}, (GuardEntry("core.lifecycle", EventPattern("*"), DottedPath.class_path(LifecycleGuard), 1, ""),), ())

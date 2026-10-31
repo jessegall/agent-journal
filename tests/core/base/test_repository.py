@@ -9,10 +9,10 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.guard_refusal import GuardRefusal
 from core.base.model.model import Model
-from core.base.module.dotted_path import DottedPath
-from core.base.module.guard_entry import GuardEntry
-from core.base.module.listener_entry import ListenerEntry, ListenerTiming
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.guard_entry import GuardEntry
+from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.repository.stale_row import StaleRow

@@ -10,8 +10,8 @@ from core.base.module.module_order import ModuleOrder
 from core.base.module.version_requirement import VersionRequirement
 
 
-def module(name: str, depends_on: tuple[str, ...] = (), requires_core: str = ">=5.0,<6") -> type[Module]:
-    return type(name.title() + "Module", (Module,), {"name": name, "depends_on": depends_on, "requires_core": requires_core})
+def module(name: str, dependencies: tuple[str, ...] = (), requires_core: str = ">=5.0,<6") -> type[Module]:
+    return type(name.title() + "Module", (Module,), {"name": name, "dependencies": dependencies, "requires_core": requires_core})
 
 
 def test_every_module_comes_after_the_modules_it_depends_on():
@@ -30,11 +30,11 @@ def test_a_dependency_that_is_not_installed_is_refused():
 
 
 def test_core_versions_are_checked_against_the_bounds_a_module_gives():
-    assert VersionRequirement(">=5.0,<6").is_met((5, 2, 1))
-    assert not VersionRequirement(">=5.3").is_met((5, 2, 1))
-    assert not VersionRequirement("<5").is_met((5, 0, 0))
+    assert VersionRequirement(">=5.0,<6").allows((5, 2, 1))
+    assert not VersionRequirement(">=5.3").allows((5, 2, 1))
+    assert not VersionRequirement("<5").allows((5, 0, 0))
     with pytest.raises(ModuleError, match="no version bound"):
-        VersionRequirement("about five").is_met((5, 0, 0))
+        VersionRequirement("about five").allows((5, 0, 0))
 
 
 class LoansNeedSix(Module):

@@ -4,8 +4,8 @@ from core.base.actor import Actor, ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.module.dotted_path import DottedPath
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 from tests.core.base.harness import harness

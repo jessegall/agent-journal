@@ -27,3 +27,10 @@ class TableStatements:
 
     def read(self, row_id: int) -> Statement:
         return Statement(f"SELECT * FROM {self.table.name} WHERE id = ?", (row_id,))
+
+    def count(self) -> Statement:
+        return Statement(f"SELECT count(*) FROM {self.table.name}")
+
+    def metadata_removal(self, module: str) -> Statement:
+        key = f'$."{module}"'
+        return Statement(f"UPDATE {self.table.name} SET metadata = json_remove(metadata, ?) WHERE json_type(metadata, ?) IS NOT NULL", (key, key))

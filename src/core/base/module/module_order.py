@@ -8,7 +8,7 @@ class ModuleOrder:
     def ordered(self, modules: tuple[type[Module], ...]) -> tuple[type[Module], ...]:
         module_index = {module.name: module for module in modules}
         for module in modules:
-            missing = [name for name in module.depends_on if name not in module_index]
+            missing = [name for name in module.dependencies if name not in module_index]
             if missing:
                 raise ModuleError(f"module {module.name} depends on {', '.join(missing)}, which is not installed")
         placed: list[type[Module]] = []
@@ -21,6 +21,6 @@ class ModuleOrder:
             return
         if module.name in path:
             raise ModuleError(f"modules depend on one another in a loop: {' > '.join((*path, module.name))}")
-        for name in sorted(module.depends_on):
+        for name in sorted(module.dependencies):
             self.place(module_index[name], module_index, placed, (*path, module.name))
         placed.append(module)

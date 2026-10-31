@@ -1,4 +1,5 @@
 from core.base.change.event_pattern import EventPattern
+from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
 from core.base.command.command import Command
 from core.base.command.handler import Handler, is_handler_class
 from core.base.guard.guard import Guard
@@ -7,7 +8,7 @@ from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.model.tables import Tables
-from core.base.module.dotted_path import DottedPath
+from core.base.registry.dotted_path import DottedPath
 from core.base.module.module import Module
 from core.base.module.module_error import ModuleError
 
@@ -31,7 +32,8 @@ class ModuleCheck:
         return tuple(events)
 
     def check(self, modules: tuple[type[Module], ...]) -> None:
-        problems = self.name_clashes(modules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.handler_clashes(modules)
+        problems = (self.name_clashes(modules) + self.lifecycle_problems(modules) + self.event_problems(modules) + self.handler_clashes(modules)
+                    + self.subcommand_clashes(modules))
         if problems:
             raise ModuleError("the modules cannot be synced: " + "; ".join(problems))
 
@@ -75,6 +77,16 @@ class ModuleCheck:
     def handler_clashes(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
         commands = [DottedPath.class_path(self.handler(path).command).text for module in modules for path in module.handlers]
         return tuple(f"two handlers carry out {command}" for command in sorted({command for command in commands if commands.count(command) > 1}))
+
+    def subcommand_clashes(self, modules: tuple[type[Module], ...]) -> tuple[str, ...]:
+        lines = [self.subcommand_line(path) for module in modules for path in module.subcommands]
+        return tuple(f"two subcommands answer journal {line}" for line in sorted({line for line in lines if lines.count(line) > 1}))
+
+    def subcommand_line(self, path: str) -> str:
+        loaded = DottedPath(path).loaded()
+        if not issubclass(loaded, (Subcommand, ReadSubcommand)):
+            raise ModuleError(f"{path} is no subcommand")
+        return f"{loaded.cli_noun} {loaded.name}"
 
     def guard(self, path: str) -> type[Guard]:
         loaded = DottedPath(path).loaded()

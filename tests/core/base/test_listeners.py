@@ -13,9 +13,9 @@ from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.listeners import Listeners
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.base.module.dotted_path import DottedPath
-from core.base.module.listener_entry import ListenerEntry, ListenerTiming
-from core.base.module.registry import Registry
+from core.base.registry.dotted_path import DottedPath
+from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
+from core.base.registry.registry import Registry
 from core.base.moment import Moment
 from tests.core.base.test_commands import LoanMake
 from tests.core.base.test_model import Loan
