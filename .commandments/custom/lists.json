@@ -1039,6 +1039,7 @@
         "coding.terminal"
     ],
     "command_verbs": [
+        "Bind",
         "Allow",
         "Block",
         "Cancel",

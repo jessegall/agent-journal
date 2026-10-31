@@ -2,6 +2,7 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.hook_event import HookEvent
+from core.base.error_log import ErrorLog
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
@@ -9,6 +10,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
+from core.modules.agents.commands.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent import StartAgent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall
@@ -16,13 +18,13 @@ from core.modules.environments.models.environment import Environment
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, or by the subagent the
-    hook names, starts the main agent at its session's first hook and a subagent at its first, gives
-    back the stored answer of a hook sent twice, and lets through, without a record, a hook from an
-    agent it does not know."""
+    """Answers a hook as the agent that sent it: finds its open agent by session, then by the launch name it
+    was started under, saving the real session on it, or by the subagent the hook names, starts the main
+    agent at its session's first hook and a subagent at its first, gives back the stored answer of a hook
+    sent twice, and lets through, without a record, a hook from an agent it does not know."""
 
-    def __init__(self, bus: Bus, queries: Queries) -> None:
-        self.bus, self.queries = bus, queries
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog) -> None:
+        self.bus, self.queries, self.errors = bus, queries, errors
 
     def answer(self, event: HookEvent) -> HookReply:
         stored_calls = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
@@ -34,12 +36,21 @@ class AgentHookRoute(HookRoute):
         return self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
 
     def agent(self, event: HookEvent) -> Agent | None:
-        main = self.open_agent(event.session)
-        if main is None and event.event == HookEventName.SESSION_START and not event.subagent:
+        main = self.open_agent(event.session) or self.launched_agent(event)
+        if main is None and event.event == HookEventName.SESSION_START and not event.subagent and not event.launch:
             main = self.started(event, event.session, AgentRole.MAIN, None)
         if main is None or not event.subagent:
             return main
         return self.open_agent(event.subagent) or self.started(event, event.subagent, AgentRole.SUBAGENT, main.id)
+
+    def launched_agent(self, event: HookEvent) -> Agent | None:
+        if not event.launch:
+            return None
+        agent = self.open_agent(event.launch)
+        if agent is None:
+            self.errors.noted(f"a {event.program} session {event.session} came under launch name {event.launch}, which no open agent holds; let through")
+            return None
+        return self.bus.run(BindAgentSession(agent.id, event.session), Actor.core(), environment_id=agent.environment_id)
 
     def open_agent(self, session: str) -> Agent | None:
         rows = self.queries.query(Agent).filter(session=session).matching(IsNull("ended_at")).page(1, 1).rows

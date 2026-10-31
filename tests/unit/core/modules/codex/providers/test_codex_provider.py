@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from core.base.provider.session_line import SessionLine
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
 from core.base.provider.program_folders import ProgramFolders
@@ -63,3 +64,7 @@ def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared
     pairs = [(json.loads(body)["hook_event_name"], json.loads(prepared)["event"]) for path in sorted(RECORDED.glob("*.jsonl"))
              for body, prepared in zip(path.read_text().splitlines(), (PREPARED / path.name).read_text().splitlines(), strict=True)]
     assert len(pairs) > 10 and all(provider.hook_events[name] == event for name, event in pairs)
+
+
+def test_codex_takes_no_line_while_it_runs_so_the_line_waits_for_the_next_hook(provider):
+    assert provider.line_sent(SessionLine("t-1", "the journal", "log your task")) is False

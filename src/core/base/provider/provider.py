@@ -16,6 +16,7 @@ from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.refusal_style import RefusalStyle
+from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_row import TranscriptRow
 
 
@@ -72,5 +73,5 @@ class Provider(ABC):
         path = event.raw.get("transcript_path")
         return Path(path).expanduser() if isinstance(path, str) and path else None
 
-    def line_sent(self, session: str, sender: str, line: str) -> bool:
+    def line_sent(self, line: SessionLine) -> bool:
         return False
