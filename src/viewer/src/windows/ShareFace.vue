@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref, shallowRef, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import Notice from "../kit/Notice.vue";
 import ShareStrip from "./ShareStrip.vue";
@@ -23,7 +23,11 @@ const failed = ref(false);
 const reconnecting = ref(false);
 const share = computed(() => props.session?.share ?? null);
 const look = computed(() => LOOKS[share.value?.row_model] ?? null);
-const arrangement = computed(() => (window.innerWidth >= WIDE_SCREEN ? "beside" : "stacked"));
+const screenWidth = ref(window.innerWidth);
+const arrangement = computed(() => (screenWidth.value >= WIDE_SCREEN ? "beside" : "stacked"));
+const measure = () => (screenWidth.value = window.innerWidth);
+onMounted(() => window.addEventListener("resize", measure));
+onUnmounted(() => window.removeEventListener("resize", measure));
 const ends = computed(() => (share.value ? new Date(share.value.ends_at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : ""));
 const gone = computed(() => failed.value || !share.value || !look.value);
 const options = computed(() => ({open: `${share.value.row_model}:${share.value.row_id}`}));

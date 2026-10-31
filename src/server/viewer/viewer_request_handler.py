@@ -190,7 +190,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_share(self, viewer: ViewerServer, token: str) -> None:
         status = viewer.routes.share_route.status(token)
-        cookie = {"Set-Cookie": f"{SHARE_COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"} if status == OPEN else {}
+        kept = f"{SHARE_COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"
+        ended = f"{SHARE_COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
+        cookie = {"Set-Cookie": kept if status == OPEN else ended}
         self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status, ENDED_LINK_MARK if status != OPEN else b"")
 
     def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str, headers: Mapping[str, str] = MappingProxyType({}), status: int = 200, head_mark: bytes = b"") -> None:

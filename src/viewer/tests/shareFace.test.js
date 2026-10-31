@@ -136,3 +136,12 @@ test("the plans window mounted as a share reads the shared plan alone, never the
     expect(asked).toEqual([["plan", "show", "1"]]);
     expect(element.querySelector(".window").textContent).toContain("Version 5 core");
 });
+
+test("the arrangement follows the screen when its width changes", async () => {
+    const {element} = await face({width: WIDE_WIDTH});
+    expect(element.querySelector("[data-share-body]").dataset.arrangement).toBe("beside");
+    vi.stubGlobal("innerWidth", PHONE_WIDTH);
+    window.dispatchEvent(new Event("resize"));
+    await settled();
+    expect(element.querySelector("[data-share-body]").dataset.arrangement).toBe("stacked");
+});

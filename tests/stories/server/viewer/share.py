@@ -127,6 +127,14 @@ def test_a_live_link_page_carries_no_gone_mark(new_story):
         assert "journal-share" not in page, page
 
 
+def test_a_dead_link_page_clears_the_share_cookie_a_visitor_holds(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        _, headers, _ = viewer_answer(story.viewer_port(), "/viewer/share/not-a-link", visitor, "")
+        assert "journal_share=;" in headers.get("Set-Cookie", "") and "Max-Age=0" in headers["Set-Cookie"], headers
+
+
 def test_a_revoked_link_ends_the_sessions_it_opened(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
