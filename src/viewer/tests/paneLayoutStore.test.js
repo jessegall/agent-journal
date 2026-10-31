@@ -140,3 +140,29 @@ test("a save the server refuses keeps the tab copy and shows the refusal", async
     expect(layouts.refusal.value).toBe("only a person keeps a layout");
     expect(firstPane(copies[tabKey(KEY)]).tabs).toEqual(["tasks.tasks"]);
 });
+
+test("switching builder, orchestrator and worker mid-save flushes each pending save to its own key and never writes one layout into another", async () => {
+    const saved = new Map();
+    const layouts = paneLayout({
+        saved: async (at) => (saved.has(at.driver) ? {layout: saved.get(at.driver), version: 1} : null),
+        defaults: async () => shapeOf("messages.chat"),
+        save: async (at, layout) => {
+            saved.set(at.driver, layout);
+            return {ok: true, version: 1};
+        },
+        tab: {read: () => null, write: () => {}},
+        entry: (name) => [CHAT, TASKS].find((window) => window.name === name) || null,
+    });
+    const drivers = {"coding.builder": "tasks.tasks", "coding.orchestrator": "messages.chat", "coding.worker": "tasks.tasks"};
+    for (const [driver, window] of Object.entries(drivers)) {
+        await layouts.load({...KEY, driver});
+        layouts.replace(layoutOf(window, window === "tasks.tasks" ? "messages.chat" : "tasks.tasks"));
+    }
+    await layouts.flush();
+    expect([...saved.keys()]).toEqual(["coding.builder", "coding.orchestrator", "coding.worker"]);
+    for (const [driver, window] of Object.entries(drivers)) expect(firstPane(saved.get(driver)).tabs[0]).toBe(window);
+    await layouts.load({...KEY, driver: "coding.builder"});
+    expect(firstPane(layouts.layout.value).tabs[0]).toBe("tasks.tasks");
+    await layouts.load({...KEY, driver: "coding.orchestrator"});
+    expect(firstPane(layouts.layout.value).tabs[0]).toBe("messages.chat");
+});
