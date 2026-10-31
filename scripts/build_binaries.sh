@@ -6,6 +6,7 @@ out="${1:-dist}"
 version="${2:-dev}"
 mkdir -p "$out"
 out=$(cd "$out" && pwd)
+(cd tools/journal-hook && go generate ./classify)
 for target in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64 windows/amd64; do
     os=${target%/*}
     arch=${target#*/}

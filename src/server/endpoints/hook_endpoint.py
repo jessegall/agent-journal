@@ -42,11 +42,14 @@ class HookEndpoint:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
+        container.bind(Timing, self.timing)
         self.timing.stamp("hook_synced")
         event = self.event(data, program, headers, container.get(Providers))
         database.set_busy_timeout(self.context.hook_limit_seconds)
         try:
-            return container.get(HookRoute).answer(event)
+            route = container.get(HookRoute)
+            self.timing.stamp("route_ready")
+            return route.answer(event)
         except sqlite3.OperationalError as error:
             if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
                 return HookReply.allowed(f"the journal let this through unchecked: {error}")

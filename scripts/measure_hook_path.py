@@ -37,6 +37,10 @@ STEPS = (("go context (go_start -> go_context)", "go_start", "go_context"), ("go
          ("server database lock (hook_json -> hook_locked)", "hook_json", "hook_locked"),
          ("server registry sync (hook_locked -> hook_synced)", "hook_locked", "hook_synced"),
          ("server event parse (hook_synced -> hook_read)", "hook_synced", "hook_read"),
+         ("route built (hook_read -> route_ready)", "hook_read", "route_ready"), ("route lookups (route_ready -> write_started)", "route_ready", "write_started"),
+         ("write agent and suite (write_started -> hook_built)", "write_started", "hook_built"), ("write rules asked (hook_built -> rules_asked)", "hook_built", "rules_asked"),
+         ("write history (rules_asked -> history_recorded)", "rules_asked", "history_recorded"), ("write call saved (history_recorded -> call_saved)", "history_recorded", "call_saved"),
+         ("write lines and commands (call_saved -> handled)", "call_saved", "handled"), ("commit (handled -> committed)", "handled", "committed"), ("after commit (committed -> hook_answered)", "committed", "hook_answered"),
          ("rules and write (hook_read -> hook_answered)", "hook_read", "hook_answered"), ("server answer (hook_answered -> answered)", "hook_answered", "answered"),
          ("stamped hook (go_start -> answered)", "go_start", "answered"))
 WHOLE_HOOK = "whole hook (process start to exit)"
@@ -106,7 +110,8 @@ def replayed(binary: Path, root: Path) -> dict[str, tuple[str, float]]:
                 process.kill()
                 process.wait(HOOK_TIMEOUT_SECONDS)
                 continue
-            runs[str(process.pid)] = (event, (time.perf_counter() - started_at) * 1000)
+            label = f"{event} (Bash)" if '"tool_name":"Bash"' in body else event
+            runs[str(process.pid)] = (label, (time.perf_counter() - started_at) * 1000)
     return runs
 
 
@@ -128,7 +133,8 @@ def figures(values: list[float]) -> str:
 
 def tables(runs: dict[str, tuple[str, float]], timing_log: Path) -> str:
     entries = [json.loads(line) for line in timing_log.read_text().splitlines()]
-    by_event: dict[str, dict[str, list[float]]] = {event: {name: [] for name, _, _ in STEPS} | {WHOLE_HOOK: []} for event in EVENTS}
+    labels = sorted({label for label, _ in runs.values()}, key=lambda label: (EVENTS.index(label.removesuffix(" (Bash)")), label))
+    by_event: dict[str, dict[str, list[float]]] = {label: {name: [] for name, _, _ in STEPS} | {WHOLE_HOOK: []} for label in labels}
     for entry in entries:
         run = runs.get(entry["request_id"].split("-")[0])
         if run is None:
@@ -140,9 +146,10 @@ def tables(runs: dict[str, tuple[str, float]], timing_log: Path) -> str:
             gap = stamp_gap(timing, first, second)
             if gap is not None:
                 by_event[event][name].append(gap)
-    everything = {name: [value for event in EVENTS for value in by_event[event][name]] for name in by_event[EVENTS[0]]}
+    everything = {name: [value for label in labels for value in by_event[label][name]] for name in by_event[labels[0]]}
+    bash = {name: [value for label in labels if label.endswith("(Bash)") for value in by_event[label][name]] for name in everything}
     rows = []
-    for title, group in [("all events", everything), *[(event, by_event[event]) for event in EVENTS]]:
+    for title, group in [("all events", everything), ("Bash hooks", bash), *[(label, by_event[label]) for label in labels]]:
         rows.append(f"{title}")
         rows.append(f"  {'step':48} {'median ms':>8} {'p95 ms':>8} {'hooks':>5}")
         rows.extend(f"  {name:48} {figures(values)}" for name, values in group.items())

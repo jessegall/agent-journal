@@ -60,7 +60,7 @@ def test_a_write_with_a_timing_set_stamps_the_lock_then_the_commit(container):
     timing = Timing.started("server_received")
     container.bind(Timing, timing)
     container.get(Bus).run(MakeItem(title="Dune"), Actor(7, ActorType.AGENT))
-    assert names(timing) == ["server_received", "write_started", "committed"]
+    assert names(timing) == ["server_received", "write_started", "handled", "committed"]
 
 
 def test_an_explained_write_stamps_nothing(container):
@@ -76,4 +76,4 @@ def test_a_line_run_stamps_the_command_start_before_its_write(tmp_path):
     assert LineRun(home).run(["module", "sync"], CallerRequest(), io.StringIO()) == 0
     timing = Timing.started("server_received")
     assert LineRun(home).run(["item", "make", "Dune"], CallerRequest(), io.StringIO(), timing=timing) == 0
-    assert names(timing) == ["server_received", "command_started", "write_started", "committed"]
+    assert names(timing) == ["server_received", "command_started", "write_started", "handled", "committed"]

@@ -46,4 +46,4 @@ def test_the_answer_stamps_the_timing_the_request_carries(tmp_path):
     endpoint = CliEndpoint(home, synced_container(home).get(CommitListenerRunner))
     timing = Timing.parsed("go_sent=1761904800015420")
     assert endpoint.answer(CliRequest(["item", "make", "Dune"], CallerRequest(), timing=timing), io.StringIO()) == 0
-    assert [name for name, _ in timing.stamps] == ["go_sent", "command_started", "write_started", "committed"]
+    assert [name for name, _ in timing.stamps] == ["go_sent", "command_started", "write_started", "handled", "committed"]

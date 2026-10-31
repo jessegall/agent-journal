@@ -54,7 +54,7 @@ def test_a_write_sent_with_a_timing_leaves_one_log_line_with_every_stamp_in_orde
     with server_story(story) as server:
         server.post_timed_line('task make "Fourth" --environment main', "go_start=1;go_sent=2")
     expect_timing_lines(story.home, [(f"{os.getpid()}-1", ["go_start", "go_sent", "server_accepted", "server_received", "command_started", "write_started",
-                                                          "committed", "command_done", "answered"])])
+                                                          "handled", "committed", "command_done", "answered"])])
     expect_timing_report_steps(story.home, "/cli task make", ["go_start -> go_sent", "go_sent -> server_accepted", "server_accepted -> server_received",
                                                              "server_received -> command_started", "command_started -> write_started",
                                                              "write_started -> committed", "committed -> command_done", "command_done -> answered",

@@ -34,6 +34,7 @@ class Bus:
             self.timing.stamp("write_started")
             context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
             command_output = self.result(handler.handle(command, context), command)
+            self.timing.stamp("handled")
             self.deadline.check()
         self.timing.stamp("committed")
         return command_output

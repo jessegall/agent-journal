@@ -85,9 +85,20 @@ type rawTable struct {
 	} `json:"redirects"`
 }
 
-// LoadTable reads the shipped table and merges the project's own table at projectFile over it, when there is one
-// that reads; a project table that does not read is left out, as version 4 leaves out one that breaks its schema.
+// LoadTable is the shipped table with the project's own table at projectFile merged over it, when there is one that
+// reads; a project table that does not read is left out, as version 4 leaves out one that breaks its schema. Without
+// a project table it is the shipped table as the release built it, which needs no parse.
 func LoadTable(projectFile string) *Table {
+	if _, err := os.Stat(projectFile); err != nil {
+		if table := preparedShipped(); table != nil {
+			return table
+		}
+	}
+	return builtTable(projectFile)
+}
+
+// builtTable reads the shipped table's JSON and merges the project's table over it.
+func builtTable(projectFile string) *Table {
 	var shipped rawTable
 	if err := json.Unmarshal(shippedTable, &shipped); err != nil {
 		panic("the shipped command table does not read: " + err.Error())

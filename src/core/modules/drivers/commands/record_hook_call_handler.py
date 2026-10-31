@@ -9,6 +9,7 @@ from core.base.driver.hook_reply import HookReply
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
 from core.base.query.queries import Queries
+from core.base.timing import Timing
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
@@ -16,6 +17,7 @@ from core.modules.drivers.commands.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.models.enums.agent_line_state import AgentLineState
 from core.base.driver.hook_event_name import HookEventName
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
+from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall
@@ -34,17 +36,21 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
 
     def __init__(self, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter) -> None:
+                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues) -> None:
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
-        self.rules, self.choice, self.history = rules, choice, history
+        self.rules, self.choice, self.history, self.timing, self.settings = rules, choice, history, timing, settings
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.queries.query(Agent).find(command.agent_id)
         suite, driver = self.choice.suite(agent.environment_id), self.choice.driver(agent.environment_id, agent.role)
         hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
                          suite=suite.name if suite is not None else "")
-        answers = self.rules.ask(hook)
+        self.timing.stamp("hook_built")
+        with self.settings.remembered():
+            answers = self.rules.ask(hook)
+        self.timing.stamp("rules_asked")
         self.history.record(agent.id, answers, context)
+        self.timing.stamp("history_recorded")
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):
             return HookReply.allowed()
         waiting = self.queries.query(AgentLine).filter(agent_id=agent.id, state=AgentLineState.WAITING).oldest().all_rows()
@@ -57,6 +63,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped)}})), context)
+        self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
         refused = [(rule, line) for rule, rule_command in moves.runnable if (line := self.refusal_line(rule_command, context))]
