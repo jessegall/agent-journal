@@ -52,6 +52,10 @@ TABLES = (
     f"CREATE TABLE timings ({COMMON}, method TEXT, route TEXT, ms INTEGER, time REAL, loads TEXT)",
     f"CREATE TABLE statistics ({COMMON}, key TEXT, value INTEGER)",
     f"CREATE TABLE reader_reports ({COMMON}, environment_id INTEGER, reader TEXT, output INTEGER, command TEXT, session TEXT, findings TEXT, fixes TEXT, read_at TEXT, dismissal TEXT, is_refuted INTEGER, verdict TEXT, judged_at TEXT)",
+    f"CREATE TABLE triggers ({COMMON}, phrases TEXT, action TEXT, text TEXT, is_scheduled INTEGER, next_at TEXT, interval_minutes INTEGER, cron_line TEXT, end_at TEXT,"
+    " fire_limit INTEGER, fired_count INTEGER)",
+    f"CREATE TABLE checks ({COMMON}, title TEXT, brief TEXT, command TEXT, interval REAL, last_passed INTEGER, last_output TEXT, last_run_at TEXT, wait_target INTEGER,"
+    " is_retired INTEGER, failure_reported_at REAL)",
     f"CREATE TABLE reader_suggestions ({COMMON}, part TEXT, suggested_at REAL)",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
@@ -159,6 +163,15 @@ ROWS = (
     ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "", "merged.py", "edit", 4, 1, STAMP, USER)),
     ("edits", "(environment_id, session, path, edit_type, added, removed, created_at, creator)", (1, "gone-session", "lost.py", "edit", 1, 1, STAMP, "agent:gone-session")),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "layout", '{"tree": "a", "panes": {"a": {"tabs": ["chat", "tasks", "weather"]}}}', STAMP, USER)),
+    ("triggers", "(phrases, action, text, is_scheduled, created_at, creator)", ('["deploy", "release"]', "nudge", "Run the release sequence", 0, STAMP, USER)),
+    ("triggers", "(phrases, action, text, is_scheduled, created_at, creator)", ('["rm -rf"]', "deny", "never remove folders", 0, STAMP, USER)),
+    ("triggers", "(phrases, action, text, is_scheduled, next_at, interval_minutes, fire_limit, fired_count, created_at, creator)", ("[]", "nudge", "Check the build", 1, JANUARY_2036, 30, 0, 2, STAMP, USER)),
+    ("triggers", "(phrases, action, text, is_scheduled, fire_limit, fired_count, created_at, updated_at, creator)", ("[]", "nudge", "Said once", 1, 1, 1, STAMP, STAMP, USER)),
+    ("triggers", "(phrases, action, text, is_scheduled, created_at, creator)", ('["empty"]', "nudge", "", 0, STAMP, USER)),
+    ("checks", "(title, brief, command, interval, last_passed, last_output, last_run_at, wait_target, is_retired, created_at, creator)", ("Suite", "all green", "true", 0, 1, "", STAMP, 0, 0, STAMP, USER)),
+    ("checks", "(title, brief, command, interval, last_passed, last_output, last_run_at, wait_target, is_retired, failure_reported_at, created_at, creator)", ("Lint", "", "echo two problems; false", 15, 0, "two problems", STAMP, 1, 0, 1788000000.0, STAMP, USER)),
+    ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("Old check", "", "true", 0, 1, STAMP, USER)),
+    ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("", "", "true", 0, 0, STAMP, USER)),
 )
 
 
