@@ -20,8 +20,8 @@ async function mounted(component, windowContext) {
 function recording(answers) {
     const windowContext = context(answers);
     const runs = [];
-    windowContext.run = async (line) => {
-        runs.push(line);
+    windowContext.run = async (words) => {
+        runs.push(words);
         return {ok: true, value: null};
     };
     return {windowContext, runs};
@@ -53,7 +53,7 @@ test("a click on a choice answers the question with it", async () => {
     const element = await mounted(Questions, windowContext);
     element.querySelectorAll("button.question-choice")[1].click();
     await nextTick();
-    expect(runs).toEqual(["question answer 1 --answer sqlite"]);
+    expect(runs).toEqual([["question", "answer", "1", "--answer", "sqlite"]]);
 });
 
 test("a typed answer answers the question with the text", async () => {
@@ -64,7 +64,7 @@ test("a typed answer answers the question with the text", async () => {
     input.dispatchEvent(new Event("input"));
     element.querySelector("button.question-send").click();
     await nextTick();
-    expect(runs).toEqual(["question answer 1 --answer MariaDB"]);
+    expect(runs).toEqual([["question", "answer", "1", "--answer", "MariaDB"]]);
 });
 
 test("the close button closes the question", async () => {
@@ -72,7 +72,7 @@ test("the close button closes the question", async () => {
     const element = await mounted(Questions, windowContext);
     element.querySelector("button.question-close").click();
     await nextTick();
-    expect(runs).toEqual(["question close 1"]);
+    expect(runs).toEqual([["question", "close", "1"]]);
 });
 
 test("an empty questions list shows an empty state", async () => {

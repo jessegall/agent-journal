@@ -17,6 +17,9 @@ from core.modules.questions.listeners.question_answered_mark_listener import Que
 from core.modules.questions.listeners.question_open_mark_listener import QuestionOpenMarkListener
 from core.modules.questions.listeners.question_closed_mark_listener import QuestionClosedMarkListener
 from core.modules.questions.listeners.question_edited_mark_listener import QuestionEditedMarkListener
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
 from core.modules.questions.migrations.m001_questions import QuestionsTablesMigration
 from core.modules.questions.migrations.m002_answer_message import AnswerMessageMigration
 from core.modules.questions.models.question import Question
@@ -37,3 +40,7 @@ class QuestionsModule(Module):
     marks = QUESTION_MARKS
     listeners = [QuestionOpenMarkListener, QuestionEditedMarkListener, QuestionAnsweredMarkListener, QuestionClosedMarkListener]
     docks = QUESTION_DOCKS
+    windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
+                                 reads=["question list", "question show"], runs=["question answer", "question close"], events=["question.*"]),
+               WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
+                                 reads=["wait list", "wait-target list"], events=["wait.*", "wait_target.*"])]
