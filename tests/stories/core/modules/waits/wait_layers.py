@@ -15,7 +15,7 @@ def test_a_wait_on_a_task_takes_control_and_the_drivers_ordinary_rules_go_quiet(
 def test_a_wait_ends_when_its_task_closes_and_the_history_rule_speaks_once_after_it(new_story):
     story = new_story(SAMPLES, fixture=LeadWaiting)
     story.hook("s-1", HookSamples.stop())
-    story.expect_success("task start 1", "state: started", actor=story.agent)
+    story.expect_success(lines.TASK_START, "state: started", actor=story.agent)
     story.expect_success(lines.TASK_CLOSE, "state: completed", actor=story.agent)
     story.expect_text("wait show 1", "state: ended")
     story.expect_hook_allowed("s-1", HookSamples.prompt("go on"), "you are back at your own work")

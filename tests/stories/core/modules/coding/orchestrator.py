@@ -22,5 +22,5 @@ def test_the_agent_starts_its_task_again_once_the_builder_drives_it(new_story):
 
 def test_an_orchestrator_with_nothing_open_stops(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
-    story.run('task cancel 1 --reason "not needed"')
+    story.run(lines.TASK_CANCEL)
     story.expect_hook_allowed("s-1", HookSamples.stop())

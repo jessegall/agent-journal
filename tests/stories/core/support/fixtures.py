@@ -48,7 +48,7 @@ class ThreeTasks(StoryFixture):
             story.run(f'task make "{title}" --environment main')
 
     def expect(self, story: Story) -> None:
-        story.expect_success("task list --oldest", "1  First  open  normal", "3  Third  open  normal")
+        story.expect_success(lines.TASK_LIST, "1  First  open  normal", "3  Third  open  normal")
 
 
 class TaskWaitingOnSecond(StoryFixture):
@@ -100,7 +100,7 @@ class PhaseWithThreeTasks(StoryFixture):
             story.run(f"phase place {task_id} --phase 1")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("phase-task list --phase 1 --oldest", "1  1  1  1", "3  1  3  3")
+        story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "3  1  3  3")
 
 
 class PlanWithTasks(StoryFixture):
@@ -113,7 +113,7 @@ class PlanWithTasks(StoryFixture):
             story.run(f'task make "{title}" --environment main')
 
     def expect(self, story: Story) -> None:
-        story.expect_success("task show 2", "title: Second", "state: open")
+        story.expect_success(lines.SECOND_TASK_DETAILS, "title: Second", "state: open")
 
 
 class OpenTask(StoryFixture):
@@ -165,7 +165,7 @@ class PlanTasksPlaced(StoryFixture):
             story.run(f"phase place {task_id} --phase 1")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("phase-task list --phase 1 --oldest", "1  1  1  1", "2  1  2  2")
+        story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "2  1  2  2")
 
 
 class PlanAcrossPhases(StoryFixture):
@@ -194,11 +194,11 @@ class PlanFirstTaskClosed(StoryFixture):
     parent = PlanAcrossPhases
 
     def steps(self, story: Story) -> None:
-        story.run("task start 2", actor=story.agent)
+        story.run(lines.SECOND_TASK_START, actor=story.agent)
         story.run('task close 2 --outcome "done"', actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success("task show 2", "state: completed")
+        story.expect_success(lines.SECOND_TASK_DETAILS, "state: completed")
 
 
 class PlanTaskWaiting(StoryFixture):
@@ -210,7 +210,7 @@ class PlanTaskWaiting(StoryFixture):
         story.run("task depend 3 --on 1")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("task show 3", "state: open")
+        story.expect_success(lines.THIRD_TASK_DETAILS, "state: open")
 
 
 class PlanTasksWaitingOutside(StoryFixture):
@@ -272,7 +272,7 @@ class StartedPlanTask(StoryFixture):
         story.run(lines.TASK_START, actor=story.agent)
 
     def expect(self, story: Story) -> None:
-        story.expect_success("task show 1", "state: started")
+        story.expect_success(lines.TASK_DETAILS, "state: started")
 
 
 class DependencyChain(StoryFixture):

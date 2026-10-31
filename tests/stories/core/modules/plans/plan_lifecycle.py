@@ -47,5 +47,5 @@ def test_a_plan_with_open_tasks_is_not_closed_and_points_to_its_progress(new_sto
 def test_a_plan_whose_tasks_are_all_completed_or_cancelled_is_closed(new_story):
     story = new_story(fixture=PlanFirstTaskClosed)
     story.run('task close 3 --outcome "done"', actor=story.agent)
-    story.run('task cancel 1 --reason "not needed"')
+    story.run(lines.TASK_CANCEL)
     story.expect_success("plan close 1", "state: completed", actor=story.agent)

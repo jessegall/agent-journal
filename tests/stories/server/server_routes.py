@@ -1,3 +1,4 @@
+from tests.stories.core.support import story_lines as lines
 import os
 
 from core.base.cli.console import REFUSED_CODE
@@ -40,7 +41,7 @@ def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cl
 
 def test_a_write_whose_deadline_passed_before_the_commit_writes_nothing(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
-        story.expect_deadline_rollback('task make "Late" --environment main', "task list --oldest", "4  Late  open  normal")
+        story.expect_deadline_rollback('task make "Late" --environment main', lines.TASK_LIST, "4  Late  open  normal")
 
 
 def test_an_error_outside_a_command_is_answered_500_with_one_line_and_logged_with_its_traceback(new_story):

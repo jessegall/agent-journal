@@ -12,7 +12,7 @@ def test_cancelling_a_plan_cancels_its_open_tasks_in_the_same_transaction(new_st
     story = plan_with_placed_tasks(new_story)
     story.expect_success(lines.PLAN_CANCEL, "state: cancelled")
     story.expect_success(lines.TASK_DETAILS, "state: cancelled", "reason: plan 1 was cancelled")
-    story.expect_success("task show 2", "state: cancelled")
+    story.expect_success(lines.SECOND_TASK_DETAILS, "state: cancelled")
 
 
 def test_a_refused_task_cancel_undoes_the_whole_plan_cancel(new_story):
@@ -30,7 +30,7 @@ def test_closing_a_task_of_a_started_plan_starts_the_next_for_the_same_agent(new
         story.run(f"plan {move} 1")
     story.run(lines.TASK_START, actor=story.agent)
     story.run(lines.TASK_CLOSE, actor=story.agent)
-    story.expect_success("task show 2", "state: started", f"holder_id: {story.agent.id}")
+    story.expect_success(lines.SECOND_TASK_DETAILS, "state: started", f"holder_id: {story.agent.id}")
 
 
 def test_a_commit_listener_that_fails_three_times_is_skipped_and_the_cancel_stands(new_story):

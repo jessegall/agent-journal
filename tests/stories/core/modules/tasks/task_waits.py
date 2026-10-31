@@ -10,7 +10,7 @@ def test_a_task_that_waits_on_an_open_task_cannot_start_and_is_told_how_to_stop_
 
 def test_a_task_starts_once_the_task_it_waits_on_is_completed(new_story):
     story = new_story(fixture=TaskWaitingOnSecond)
-    story.run("task start 2", actor=story.agent)
+    story.run(lines.SECOND_TASK_START, actor=story.agent)
     story.run('task close 2 --outcome "done"', actor=story.agent)
     story.expect_success(lines.TASK_START, "state: started", actor=story.agent)
 

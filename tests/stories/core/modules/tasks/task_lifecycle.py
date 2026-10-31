@@ -26,7 +26,7 @@ def test_a_task_moves_along_its_whole_lifecycle(new_story):
     story.expect_success("task reopen 1", "state: open", actor=story.agent)
     story.expect_success('task block 1 --reason "the API is down"', "state: blocked", actor=story.agent)
     story.expect_success("task unblock 1", "state: open", actor=story.agent)
-    story.expect_success('task cancel 1 --reason "not needed"', "state: cancelled", actor=story.agent)
+    story.expect_success(lines.TASK_CANCEL, "state: cancelled", actor=story.agent)
 
 
 def test_closing_clears_the_holder(new_story):
@@ -37,7 +37,7 @@ def test_closing_clears_the_holder(new_story):
 def test_a_move_out_of_a_wrong_state_is_refused_with_the_moves_that_go_on(new_story):
     story = new_story(fixture=OpenTask)
     story.expect_refusal(lines.TASK_CLOSE, "from open it can only go on with journal task start 1")
-    story.run('task cancel 1 --reason "not needed"')
+    story.run(lines.TASK_CANCEL)
     story.expect_refusal(lines.TASK_START, "from cancelled it can only go on with journal task reopen 1")
 
 

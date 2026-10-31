@@ -1,3 +1,4 @@
+from tests.stories.core.support import story_lines as lines
 from tests.stories.core.base.drivers.support.fixtures import LeadStarted
 from tests.stories.core.base.drivers.support.samples import SAMPLES
 from tests.stories.core.support.fixtures import MainEnvironment
@@ -5,7 +6,7 @@ from tests.stories.core.support.fixtures import MainEnvironment
 
 def test_with_several_top_suites_installed_none_runs_until_one_is_chosen(new_story):
     story = new_story(SAMPLES, fixture=MainEnvironment)
-    story.expect_success("suite current main", "suite: none, choose one with journal suite choose coding or control or samples")
+    story.expect_success(lines.CURRENT_SUITE, "suite: none, choose one with journal suite choose coding or control or samples")
 
 
 def test_choosing_a_suite_no_module_ships_is_refused_naming_the_installed_ones(new_story):
@@ -16,7 +17,7 @@ def test_choosing_a_suite_no_module_ships_is_refused_naming_the_installed_ones(n
 def test_a_chosen_suite_runs_in_its_environment_and_gives_each_role_its_default_driver(new_story):
     story = new_story(SAMPLES, fixture=MainEnvironment)
     story.run("suite choose samples --environment main")
-    story.expect_success("suite current main", "suite: samples", "drivers: main: samples.lead")
+    story.expect_success(lines.CURRENT_SUITE, "suite: samples", "drivers: main: samples.lead")
 
 
 def test_suite_show_names_its_defaults_and_the_overlays_it_includes(new_story):
