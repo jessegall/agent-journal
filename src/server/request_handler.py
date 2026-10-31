@@ -1,4 +1,5 @@
 import json
+from collections.abc import Callable
 import traceback
 from dataclasses import asdict
 from http.server import BaseHTTPRequestHandler
@@ -8,6 +9,7 @@ from core.base.cli.console import ERROR_CODE
 from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 from server.endpoints.health_endpoint import HealthEndpoint
 from server.journal_server import JournalServer
+from server.listener_thread import ListenerWake
 from server.peer_pid import peer_pid
 
 EXIT_CODE_TRAILER = "Journal-Exit-Code"
@@ -27,12 +29,25 @@ class RequestHandler(BaseHTTPRequestHandler):
         return self.server
 
     def do_GET(self) -> None:
+        self.answered_safely(self.answer_get)
+
+    def do_POST(self) -> None:
+        self.answered_safely(self.answer_post)
+
+    def answered_safely(self, answer: Callable[[], None]) -> None:
+        try:
+            answer()
+        except Exception as error:
+            self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
+            self.answer_json(500, {"error": f"{type(error).__name__}: {error}"})
+
+    def answer_get(self) -> None:
         if self.path == "/health":
             self.answer_json(200, asdict(HealthEndpoint(self.journal_server().context).answer()))
             return
         self.answer_json(404, {"error": f"no route {self.path}"})
 
-    def do_POST(self) -> None:
+    def answer_post(self) -> None:
         body = self.rfile.read(int(self.headers.get("Content-Length", "0") or "0"))
         if self.journal_server().context.code_version.is_stale():
             self.answer_json(409, {"error": "newer code: the server restarts, send the request again"})
@@ -59,7 +74,8 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_header("Trailer", EXIT_CODE_TRAILER)
         self.end_headers()
         try:
-            code = CliEndpoint(self.journal_server().context.home).answer(request, ChunkStream(self.send_chunk))
+            context = self.journal_server().context
+            code = CliEndpoint(context.home, ListenerWake(context.listener_thread)).answer(request, ChunkStream(self.send_chunk))
         except Exception as error:
             self.journal_server().context.files.log_line("".join(traceback.format_exception(error)))
             self.send_chunk(f"{type(error).__name__}: {error}\n".encode())

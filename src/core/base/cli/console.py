@@ -9,6 +9,7 @@ from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.subcommand_lookup import SubcommandLookup, UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
+from core.base.deadline import DeadlinePassedError
 from core.base.environment_names import EnvironmentNames
 from core.base.error_log import ErrorLog
 from core.base.listener.commit_listener_runner import CommitListenerRunner
@@ -45,6 +46,9 @@ class Console:
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
             return USAGE_CODE
+        except DeadlinePassedError as error:
+            output.error(str(error))
+            return ERROR_CODE
         except Refusal as refusal:
             self.refusals.record(caller.actor, " ".join(argv[:2]), refusal)
             output.refusal(refusal)

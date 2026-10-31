@@ -34,3 +34,13 @@ def test_two_writes_sent_at_once_are_both_saved(new_story):
 def test_a_command_line_through_the_server_waits_for_another_writer_up_to_the_cli_limit(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
         story.expect_busy_timeout(CLI_LIMIT_SECONDS)
+
+
+def test_a_write_whose_deadline_passed_before_the_commit_writes_nothing(new_story):
+    with server_story(new_story(fixture=ThreeTasks)) as story:
+        story.expect_deadline_rollback('task make "Late" --environment main', "task list --oldest", "4  Late  open  normal")
+
+
+def test_an_error_outside_a_command_is_answered_500_with_one_line_and_logged_with_its_traceback(new_story):
+    with server_story(new_story(fixture=ThreeTasks)) as story:
+        story.expect_raw_request_error(b"POST /cli HTTP/1.1\r\nHost: journal\r\nContent-Length: many\r\nConnection: close\r\n\r\n", "ValueError")

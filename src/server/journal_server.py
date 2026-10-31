@@ -9,6 +9,7 @@ from typing import Any
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
+from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
 
 DRAIN_LIMIT_SECONDS = 10
@@ -17,12 +18,13 @@ DRAIN_LIMIT_SECONDS = 10
 @dataclass(frozen=True)
 class ServerContext:
     """What every request of one server shares: the journal's folder, the code the server started with, its
-    files and when it started."""
+    files, when it started, and its listener thread."""
 
     home: JournalHome
     code_version: CodeVersion
     files: ServerFiles
     started_at: Timestamp
+    listener_thread: ListenerThread
 
 
 class JournalServer(ThreadingMixIn, UnixStreamServer):

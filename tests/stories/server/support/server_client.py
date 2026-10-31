@@ -3,12 +3,14 @@ from datetime import datetime, timezone
 import os
 import shlex
 import socket
+import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
 
+from core.base.cli.console import ERROR_CODE
 from core.base.journal_home import JournalHome
 from server.endpoints.cli_endpoint import CliEndpoint
 from core.base.timestamp import Timestamp
@@ -17,10 +19,12 @@ from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
+from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
 
 TIMEOUT_SECONDS = 10
+POLL_SECONDS = 0.05
 
 
 @dataclass(frozen=True)
@@ -64,7 +68,8 @@ class ServerStory:
         assert all(answer.exit_code == 0 for answer in answers), answers
 
     def expect_busy_timeout(self, seconds: float) -> None:
-        assert CliEndpoint(self.story.home).line_run.busy_timeout_seconds == seconds
+        idle_thread = ListenerThread(lambda: None, lambda error: None)
+        assert CliEndpoint(self.story.home, ListenerWake(idle_thread)).line_run.busy_timeout_seconds == seconds
 
     def expect_stale_answer_and_released_files(self, line: str) -> None:
         first_task_list = self.story.run("task list --environment main").output_text
@@ -79,29 +84,59 @@ class ServerStory:
         answer = request_answer(self.socket_path, "POST", "/stop", None)
         assert answer.status == 200 and answer.json() == {"status": "stopping"}, answer
 
+    def expect_raw_request_error(self, raw_request: bytes, error_name: str) -> None:
+        answer = answer_from(raw_answer(self.socket_path, raw_request))
+        assert answer.status == 500 and error_name in answer.text and answer.text.count("\n") <= 1, answer
+        assert "Traceback" in ServerFiles(self.story.home).log.read_text()
+
+    def expect_deadline_rollback(self, line: str, check_line: str, absent_line: str) -> None:
+        answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/", "deadline_seconds": 0})
+        assert answer.exit_code == ERROR_CODE and "deadline passed" in answer.text, answer
+        assert absent_line not in self.story.run(check_line).output_text.splitlines(), self.story.run(check_line).output_text
+
+    def run_as(self, line: str, session: str) -> ServerAnswer:
+        return request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "variables": {"JOURNAL_AGENT_SESSION": session}, "folder": "/"})
+
+    def expect_eventually(self, line: str, expected_line: str) -> None:
+        deadline = time.monotonic() + TIMEOUT_SECONDS
+        while time.monotonic() < deadline:
+            if expected_line in self.story.run(line).output_text.splitlines():
+                return
+            time.sleep(POLL_SECONDS)
+        raise AssertionError(f"{line} never printed {expected_line!r}: {self.story.run(line).output_text}")
+
+    def expect_line(self, line: str, expected_line: str) -> None:
+        assert expected_line in self.story.run(line).output_text.splitlines(), self.story.run(line).output_text
+
     def expect_status(self, method: str, route: str, body: object, status: int) -> None:
         answer = request_answer(self.socket_path, method, route, body)
         assert answer.status == status, answer
 
 
 @contextmanager
-def server_story(story: Story, code_folders: CodeFolders | None = None):
-    with started_server(story.home, code_folders) as socket_path:
+def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
+    with started_server(story.home, code_folders, listener_thread_started) as socket_path:
         yield ServerStory(story, socket_path)
 
 
 @contextmanager
-def started_server(home: JournalHome, code_folders: CodeFolders | None = None):
+def started_server(home: JournalHome, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
     files = ServerFiles(home)
     assert files.acquire_lock(), "a server already holds the lock of this journal"
     files.clear_leftover_socket()
-    server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc))))
+    listener_round = ListenerRound(home)
+    listener_thread = ListenerThread(listener_round.run, listener_round.report)
+    context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread)
+    server = JournalServer(str(files.socket), RequestHandler, context)
+    if listener_thread_started:
+        listener_thread.start()
     files.write_pid()
     thread = Thread(target=server.serve_requests, daemon=True)
     thread.start()
     try:
         yield files.socket
     finally:
+        listener_thread.stop()
         server.request_stop()
         thread.join(TIMEOUT_SECONDS)
         server.drain(DRAIN_LIMIT_SECONDS)
@@ -112,14 +147,19 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None):
 
 def request_answer(socket_path: Path, method: str, route: str, body: object = None) -> ServerAnswer:
     data = json.dumps(body).encode() if body is not None else b""
+    head = f"{method} {route} HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode()
+    return answer_from(raw_answer(socket_path, head + data))
+
+
+def raw_answer(socket_path: Path, raw_request: bytes) -> bytes:
     with socket.socket(socket.AF_UNIX) as connection:
         connection.settimeout(TIMEOUT_SECONDS)
         connection.connect(str(socket_path))
-        connection.sendall(f"{method} {route} HTTP/1.1\r\nHost: journal\r\nContent-Length: {len(data)}\r\nConnection: close\r\n\r\n".encode() + data)
+        connection.sendall(raw_request)
         raw = b""
         while received := connection.recv(65536):
             raw += received
-    return answer_from(raw)
+    return raw
 
 
 def answer_from(raw: bytes) -> ServerAnswer:
