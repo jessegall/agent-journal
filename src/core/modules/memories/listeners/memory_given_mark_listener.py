@@ -21,8 +21,7 @@ class MemoryGivenMarkListener(MemoryMarkListener):
     event = "memory_delivery.create"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        super().__init__(bus, actors)
-        self.queries = queries
+        super().__init__(bus, actors, queries)
 
     def handle(self, event: LoggedEvent) -> None:
         delivery = self.queries.query(MemoryDelivery).find(event.row_id)

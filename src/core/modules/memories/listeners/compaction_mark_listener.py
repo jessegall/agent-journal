@@ -16,8 +16,7 @@ class CompactionMarkListener(MemoryMarkListener):
     event = "hook_call.create"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        super().__init__(bus, actors)
-        self.queries = queries
+        super().__init__(bus, actors, queries)
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)

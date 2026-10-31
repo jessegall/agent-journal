@@ -16,8 +16,8 @@ class MemoryFadedMarkListener(MemoryMarkListener):
     event = "hook_call.create"
 
     def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, scope: FadingScope) -> None:
-        super().__init__(bus, actors)
-        self.queries, self.scope = queries, scope
+        super().__init__(bus, actors, queries)
+        self.scope = scope
 
     def handle(self, event: LoggedEvent) -> None:
         call = self.queries.query(HookCall).find(event.row_id)

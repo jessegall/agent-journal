@@ -10,4 +10,4 @@ class MemoryRemovedMarkListener(MemoryMarkListener):
     event = "memory.remove"
 
     def handle(self, event: LoggedEvent) -> None:
-        self.show(event, MemoryMarkVariant.REMOVED, f"Memory {event.row_id} removed", row_id=event.row_id)
+        self.show(event, MemoryMarkVariant.REMOVED, f"Memory {event.row_id} removed", environment_id=self.memory_environment(event), row_id=event.row_id)

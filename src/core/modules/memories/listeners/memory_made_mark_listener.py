@@ -10,4 +10,4 @@ class MemoryMadeMarkListener(MemoryMarkListener):
     event = "memory.create"
 
     def handle(self, event: LoggedEvent) -> None:
-        self.show(event, MemoryMarkVariant.MADE, f"Memory {event.row_id} made", row_id=event.row_id)
+        self.show(event, MemoryMarkVariant.MADE, f"Memory {event.row_id} made", environment_id=self.memory_environment(event), row_id=event.row_id)
