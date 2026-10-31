@@ -24,6 +24,7 @@ from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerCont
 from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
+from scripts.trail_report import report
 
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
@@ -130,6 +131,11 @@ class ServerStory:
     def send_with_trail(self, line: str, trail_text: str) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TRAIL_HEADER: trail_text})
         assert answer.exit_code == 0, answer
+
+
+def expect_trail_report_steps(home: JournalHome, route_line: str, steps: list[str]) -> None:
+    printed = report(TrailLog(home).path.read_text().splitlines()).splitlines()
+    assert printed[0] == f"{route_line}  (1 requests)" and [row.split("  ")[1].strip() for row in printed[2:]] == steps, printed
 
 
 def expect_trail_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -> None:
