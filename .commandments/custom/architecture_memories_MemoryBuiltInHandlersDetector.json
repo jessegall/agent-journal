@@ -1,0 +1,32 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "name": "Memory"
+            },
+            {
+                "file": "src/core/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/core/modules/memories/*_handler.py"
+            },
+            {
+                "file": "src/core/modules/memories/memory.py"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "memory-built-outside-handlers",
+        "description": "A memory row is built outside the memory module's handlers, so it skips the commands, their guards and their events.",
+        "rule": "A memory is made only through the memory module's commands: build a Memory in a handler, or run MemoryMake.",
+        "skill": "plain-code-words"
+    }
+}

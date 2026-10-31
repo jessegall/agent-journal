@@ -1,0 +1,38 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "any": [
+                    {
+                        "nameLike": "core.modules.memories*"
+                    },
+                    {
+                        "descendant": {
+                            "nameLike": "core.modules.memories*"
+                        }
+                    },
+                    {
+                        "resolvesLike": "core.modules.memories*"
+                    }
+                ]
+            },
+            {
+                "file": "src/core/modules/agents/**"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "agents-know-memories",
+        "description": "The agents module imports the memory module, so an agent keeps what it was given instead of the givings answering it.",
+        "rule": "What an agent was given is read from memory_givings and the memories_in_context view; the agents module never imports core.modules.memories.",
+        "skill": "plain-code-words"
+    }
+}
