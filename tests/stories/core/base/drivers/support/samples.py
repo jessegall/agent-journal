@@ -20,6 +20,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
+from core.modules.settings.setting_values import SettingValues
 
 SAMPLES = "tests.stories.core.base.drivers.support.samples:SamplesModule"
 LEAD = "samples.lead"
@@ -160,6 +161,19 @@ class SecondLockRelease(DriverRule):
         return RuleAnswer.allowed().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
 
 
+class StopRefusal(DriverRule):
+    """While the project setting samples.refuse-stops is true, the lead's stop is refused."""
+
+    name = "samples.stop-refusal"
+    hook = "stop"
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer.refused("the sample lead may not stop yet") if self.settings.project_value("samples.refuse-stops", False) is True else RuleAnswer.allowed()
+
+
 class ReopeningClaim(DriverRule):
     """On a compaction, asks to reopen the edit lock it is asked for, which is open, so the lifecycle refuses it."""
 
@@ -209,7 +223,7 @@ class Lead(Driver):
     suite = "samples"
     role = "main"
     limits = [RemovalLimit]
-    rules = [StopLine]
+    rules = [StopLine, StopRefusal]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 

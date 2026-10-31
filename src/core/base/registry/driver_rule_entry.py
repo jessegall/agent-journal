@@ -23,6 +23,7 @@ class DriverRuleEntry:
     limit: bool = False
     essential: bool = False
     history: bool = False
+    claims_essential: bool = False
 
     @property
     def is_standing(self) -> bool:

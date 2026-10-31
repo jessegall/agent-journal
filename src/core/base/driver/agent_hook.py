@@ -16,6 +16,7 @@ class AgentHook:
     driver: str
     timestamp: Timestamp
     layer: OpenRow | None = None
+    suite: str = ""
     regained_control: bool = False
 
     @property

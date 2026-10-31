@@ -9,6 +9,7 @@ from core.base.container import Container
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.driver_rules import DriverRules
+from core.base.driver.essential_allowances import EssentialAllowances
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.layers import Layers
 from core.base.driver.open_row import OpenRow
@@ -130,7 +131,7 @@ def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, lim
 def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type[Overlay]] = (), off: Sequence[str] = (), history=None) -> list[tuple[str, str, str]]:
     entries = tuple(OverlayEntry(f"samples.{overlay.__name__}", DottedPath.class_path(overlay), position, ["*"]) for position, overlay in enumerate(overlays, 1))
     registry = empty_registry().with_overlays(entries).with_rules(tuple(rules))
-    walker = DriverRules(registry, Container(), Switches(off), Layers(registry, Container()), history or RegainedHistory(), ErrorLog(JournalHome(tmp_path)))
+    walker = DriverRules(registry, Container(), Switches(off), Layers(registry, Container()), history or RegainedHistory(), ErrorLog(JournalHome(tmp_path)), EssentialAllowances())
     event = HookEvent(1, "claude", "stop", "s1", "f1", 1, "agent", "main", "", None, None, {})
     answers = walker.ask(AgentHook(event, 3, 1, "main", DRIVER, at(30)))
     return [(record.name, record.layer, record.outcome) for record in answers.rules]

@@ -9,7 +9,7 @@ from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.suite_entry import SuiteEntry
 
-DRIVERS_MODULE = "drivers"
+DRIVERS_MODULE = "journal.core.drivers"
 
 
 class DriverEntries:
@@ -41,4 +41,5 @@ class DriverEntries:
         return tuple(replace(entry, position=position) for position, entry in enumerate(declared, 1))
 
     def entry(self, rule: type[DriverRule], owner: str, limit: bool = False, essential: bool = False) -> DriverRuleEntry:
-        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), limit, essential, rule.history)
+        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), limit, essential, rule.history,
+                               rule.essential)

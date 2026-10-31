@@ -1,3 +1,4 @@
+from core.base.actor import ActorType
 import json
 
 from core.base.change.change import Change
@@ -5,6 +6,7 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
+from core.modules.drivers.setting_essential_allowances import ALLOWANCE_SETTINGS
 from core.modules.drivers.suite_choice import SUITE_SETTING, SuiteChoice
 from core.modules.settings.setting import Setting
 
@@ -24,6 +26,10 @@ class DriverSettingGuard(Guard):
     def check(self, change: Change[Model]) -> None:
         setting = change.row
         if not isinstance(setting, Setting) or not setting.key.startswith(DRIVER_SETTINGS) or change.event.endswith(".delete"):
+            return
+        if setting.key.startswith(ALLOWANCE_SETTINGS):
+            if change.context.actor.type is ActorType.AGENT:
+                raise Refusal("only a person allows a rule to be essential", "ask the user to run journal driver allow-essential")
             return
         value = json.loads(setting.value)
         if setting.key == SUITE_SETTING:

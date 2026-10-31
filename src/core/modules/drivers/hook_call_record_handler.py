@@ -42,7 +42,8 @@ class HookCallRecordHandler(Handler[HookCallRecord, HookReply]):
     def handle(self, command: HookCallRecord, context: Context) -> HookReply:
         agent = self.queries.query(Agent).find(command.agent_id)
         suite, driver = self.choice.suite(agent.environment_id), self.choice.driver(agent.environment_id, agent.role)
-        hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp)
+        hook = AgentHook(command.event, agent.id, agent.environment_id, agent.role, driver.name if driver is not None else "", context.timestamp,
+                         suite=suite.name if suite is not None else "")
         answers = self.rules.ask(hook)
         self.history.record(agent.id, answers, context)
         if command.event.event == HookEventName.TICK and not (answers.refusal or answers.lines or answers.commands):

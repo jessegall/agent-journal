@@ -1,3 +1,4 @@
+from core.base.driver.essential_allowances import EssentialAllowances
 from core.base.driver.hook_history import HookHistory
 from core.base.guard.change_filter import ChangeFilter
 from core.base.driver.hook_route import HookRoute
@@ -6,9 +7,12 @@ from core.base.module.module import Module
 from core.modules.drivers.agent_hook_route import AgentHookRoute
 from core.modules.drivers.agent_line import AgentLine
 from core.modules.drivers.agent_line_give import AgentLineGive
+from core.modules.drivers.driver_allow_essential_handler import DriverAllowEssentialHandler
+from core.modules.drivers.driver_allow_essential_subcommand import DriverAllowEssentialSubcommand
 from core.modules.drivers.driver_change_filter import DriverChangeFilter
 from core.modules.drivers.driver_choose_handler import DriverChooseHandler
 from core.modules.drivers.driver_choose_subcommand import DriverChooseSubcommand
+from core.modules.drivers.driver_show_subcommand import DriverShowSubcommand
 from core.modules.drivers.hook_call import HookCall
 from core.modules.drivers.hook_call_prune_handler import HookCallPruneHandler
 from core.modules.drivers.hook_call_prune_subcommand import HookCallPruneSubcommand
@@ -18,7 +22,11 @@ from core.modules.drivers.hook_call_show_subcommand import HookCallShowSubcomman
 from core.modules.drivers.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTables
 from core.modules.drivers.new_driver_lines import NewDriverLines
+from core.modules.drivers.opening_lines_rule import OpeningLinesRule
+from core.modules.drivers.repeated_stop_release import RepeatedStopRelease
 from core.modules.drivers.rule_history import RuleHistory
+from core.modules.drivers.session_end_rule import SessionEndRule
+from core.modules.drivers.setting_essential_allowances import SettingEssentialAllowances
 from core.modules.drivers.suite_choose_handler import SuiteChooseHandler
 from core.modules.drivers.suite_choose_subcommand import SuiteChooseSubcommand
 from core.modules.drivers.suite_current_subcommand import SuiteCurrentSubcommand
@@ -35,8 +43,11 @@ class DriversModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineGive]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTables]
-    handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler]
-    subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand]
+    handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler, DriverAllowEssentialHandler]
+    subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand, DriverShowSubcommand,
+                   DriverAllowEssentialSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLines]
-    bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter)]
+    driver_rules = [RepeatedStopRelease, SessionEndRule, OpeningLinesRule]
+    bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
+                (EssentialAllowances, SettingEssentialAllowances)]
