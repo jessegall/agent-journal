@@ -20,6 +20,7 @@ SYNC_COMMAND = "module sync"
 UPGRADE_MOVED_EVENT = "upgrade.moved"
 UPGRADE_COMMAND = "journal upgrade"
 UPGRADE_TABLE = "version_four_moves"
+UPGRADE_FINISHED_EVENT = "upgrade.finished"
 
 
 class EventLog:
@@ -47,6 +48,13 @@ class EventLog:
         return self.table.insert({
             "actor_id": actor_id, "environment_id": None, "row_id": 0, "name": UPGRADE_MOVED_EVENT, "row_table": UPGRADE_TABLE,
             "command": UPGRADE_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"module": [None, module], "counts": [None, counts]}),
+            "created_at": timestamp,
+        })
+
+    def write_upgrade_finished(self, actor_id: int, counts: dict[str, int], report: str, timestamp: str) -> int:
+        return self.table.insert({
+            "actor_id": actor_id, "environment_id": None, "row_id": 0, "name": UPGRADE_FINISHED_EVENT, "row_table": UPGRADE_TABLE,
+            "command": UPGRADE_COMMAND, "cause_id": None, "skipped_guards": "[]", "data": json.dumps({"counts": [None, counts], "report": [None, report]}),
             "created_at": timestamp,
         })
 

@@ -42,3 +42,20 @@ def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(new
     second = upgrade(story)
     assert second.code == 0 and saved.read_text().strip() == second.text.strip()
     assert (story.home.folder / "upgrade-report.1.txt").read_text().strip() == first.text.strip()
+
+
+def test_the_first_start_after_an_upgrade_shows_one_chat_mark_with_the_counts_and_a_second_start_shows_none(new_story):
+    from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text
+    from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+
+    story = upgraded_story(new_story)
+    story.run_listeners()
+    assert mark_count(story) >= 1
+    text = marks_text(story)
+    assert "Upgraded from version 4: 3 tasks, 3 plans, 2 messages, 4 memories moved" in text, text
+    before = mark_count(story)
+    story.run_listeners()
+    assert mark_count(story) == before
+    UpgradeJournal(story.home).run(confirmed=True)
+    story.run_listeners()
+    assert mark_count(story) == before

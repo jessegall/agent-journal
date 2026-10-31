@@ -66,6 +66,8 @@ class MoveRunner:
         report.moved[entry.module], report.repeated[entry.module] = sum(outcome.moved.values()), sum(outcome.repeated.values())
         report.dropped[entry.module] = sum(outcome.dropped.values())
         self.add_dropped(report, entry.module, outcome.dropped)
+        for table, rows in outcome.moved.items():
+            report.tables[table] = report.tables.get(table, 0) + rows
         report.skipped.extend(outcome.skipped)
         report.notes.extend(outcome.notes)
 

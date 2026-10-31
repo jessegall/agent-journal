@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.change.event_log import REGISTRY_SYNC_EVENT
+from core.base.change.event_log import REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT
 from core.base.change.event_pattern import EventPattern
 from core.base.model.model import Model
 from core.base.model.tables import Tables
@@ -79,7 +79,7 @@ class ModuleCheck:
     def event_problems(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         events = self.known_events(modules)
         guards = [(guard.name, guard.event, events) for module in modules for guard in module.guards]
-        listeners = [(listener.name, listener.event, (*events, REGISTRY_SYNC_EVENT)) for module in modules for listener in module.listeners]
+        listeners = [(listener.name, listener.event, (*events, REGISTRY_SYNC_EVENT, UPGRADE_FINISHED_EVENT)) for module in modules for listener in module.listeners]
         return tuple(f"{name} covers {event}, which no model raises" for name, event, raised in guards + listeners
                      if not any(EventPattern(event).matches(event_name) for event_name in raised))
 

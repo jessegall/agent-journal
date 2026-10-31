@@ -3,6 +3,10 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 
+from core.base.actor import CORE_ACTOR_ID
+from core.base.change.event_log import EventLog
+from core.base.clock import Clock
+from core.base.container import Container
 from core.base.database.database import Database
 from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
@@ -11,6 +15,7 @@ from core.base.registry.registry import Registry
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_runner import MoveRunner
 from core.base.upgrade.upgrade_failed import UpgradeFailed
+from core.base.upgrade.upgrade_report import UpgradeReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch import BackupMismatch
 from install.code_replacement import CodeReplacement
@@ -120,14 +125,19 @@ class UpgradeJournal:
             if not finished:
                 backup = VersionFourBackup(self.home.folder).make()
                 lines.extend([f"backup: {backup.path}", f"backup checked: {backup.tables} tables"])
-                text = UpgradeText(container.get(MoveRunner).run(version_four))
+                report = container.get(MoveRunner).run(version_four)
+                text = UpgradeText(report)
                 lines.extend([*text.table("what moved"), *text.lines()])
+                self.finish(container, report, lines)
         finally:
             container.get(Database).close()
         retired = VersionFourFiles(self.home.folder).retire()
         if retired:
             lines.append(f"version 4's files moved into {self.home.folder / BACKUP_FOLDER}: {', '.join(retired)}")
         lines.append(FINISHED_LINE if finished else "upgraded")
+
+    def finish(self, container: Container, report: UpgradeReport, lines: list[str]) -> None:
+        container.get(EventLog).write_upgrade_finished(CORE_ACTOR_ID, report.tables, "\n".join(lines), container.get(Clock).timestamp().text)
 
     def sync(self, home: JournalHome) -> None:
         container = opened_container(home)

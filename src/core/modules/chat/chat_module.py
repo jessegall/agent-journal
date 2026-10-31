@@ -4,6 +4,7 @@ from core.modules.chat.support.chat_marks import CHAT_MARKS
 from core.base.fault_sink import FaultSink
 from core.modules.chat.commands.record_journal_fault_handler import RecordJournalFaultHandler
 from core.modules.chat.listeners.journal_fault_mark_listener import JournalFaultMarkListener
+from core.modules.chat.listeners.upgrade_mark_listener import UpgradeMarkListener
 from core.modules.chat.migrations.m002_journal_faults import JournalFaultTableMigration
 from core.modules.chat.models.journal_fault import JournalFault
 from core.modules.chat.support.chat_fault_sink import ChatFaultSink
@@ -26,5 +27,5 @@ class ChatModule(Module):
     handlers = [ShowMarkHandler, RecordJournalFaultHandler]
     guards = [MarkTypeGuard, AgentChatGuard]
     marks = CHAT_MARKS
-    listeners = [JournalFaultMarkListener]
+    listeners = [JournalFaultMarkListener, UpgradeMarkListener]
     bindings = [(FaultSink, ChatFaultSink)]
