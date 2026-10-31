@@ -27,6 +27,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         run: (line) => lineResult(window, line, environment),
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),
         open,
+        face: document.documentElement.classList.contains("phone") ? "phone" : "person",
         option: (key) => computed(() => options.value[key] ?? declared.find((option) => option.key === key)?.default),
         setting: async (key, fallback) => {
             const answer = await read(`window setting ${window} ${key}`);

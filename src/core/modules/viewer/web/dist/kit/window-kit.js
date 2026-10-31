@@ -2777,6 +2777,7 @@ function Fo({ window: e, environment: t, agent: n, visible: s, permissions: r, e
     run: (b) => Me(e, b, t),
     follow: (b, $) => o.follow(e, b.filter((j) => a.some((E) => zn(E, j))), $, s),
     open: i,
+    face: document.documentElement.classList.contains("phone") ? "phone" : "person",
     option: (b) => f(() => {
       var $;
       return d.value[b] ?? (($ = l.find((j) => j.key === b)) == null ? void 0 : $.default);

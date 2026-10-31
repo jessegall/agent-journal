@@ -9,6 +9,7 @@ from core.base.type_guards import is_tuple
 from core.modules.settings.support.setting_catalogue import SettingCatalogue
 from core.modules.settings.support.setting_reader import SettingReader
 from core.modules.settings.support.setting_lines import SettingLines
+from core.modules.settings.commands.setting_tree_row import SettingTreeRow
 from core.modules.settings.support.current_setting import CurrentSetting
 
 INDENT = "  "
@@ -34,4 +35,4 @@ class SettingTreeSubcommand(ReadSubcommand[Sequence[CurrentSetting]]):
     def write_output(self, value: object, output: Output) -> None:
         settings = [setting for setting in value if isinstance(setting, CurrentSetting)] if is_tuple(value) else []
         lines = [f"{INDENT * len(list(self.declared.enclosing_groups(setting.entry)))}{setting.entry.key}: {SettingLines.shown(setting)}" for setting in settings]
-        output.line("\n".join(lines))
+        output.write("\n".join(lines), {"rows": [output.values(SettingTreeRow.listed(setting)) for setting in settings]})

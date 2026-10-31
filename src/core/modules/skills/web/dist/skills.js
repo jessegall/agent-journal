@@ -1,32 +1,33 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-403b7b06f6c1")) { const style = document.createElement("style"); style.id = "window-styles-403b7b06f6c1"; style.textContent = ".skills[data-v-e0d1d692]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-e0d1d692]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-e0d1d692]{display:flex;gap:8px;align-items:center;width:100%;text-align:left}.skills-catalogue[data-v-0c3947df]{margin:0;padding:0;list-style:none}.skill-entry[data-v-0c3947df]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left}.skill-description[data-v-0c3947df]{color:var(--text-3);font-size:12px}.skills-title[data-v-b646e030]{margin:0;font-size:13px}.skills-text[data-v-b646e030]{margin:0;white-space:pre-wrap;font-size:12px}\n"; document.head.appendChild(style); }
-import { computed as b, openBlock as c, createElementBlock as k, createElementVNode as s, createVNode as h, unref as x, withCtx as $, createTextVNode as C, toDisplayString as p, Fragment as B, renderList as S, ref as v, createBlock as L, resolveDynamicComponent as N, normalizeProps as O, guardReactiveProps as R } from "vue";
+if (!document.getElementById("window-styles-3beb632489b2")) { const style = document.createElement("style"); style.id = "window-styles-3beb632489b2"; style.textContent = ".skills[data-v-20887a9e]{display:flex;flex-direction:column;gap:8px}.skills-note[data-v-20887a9e]{margin:0;font-size:12px;color:var(--text-3)}.skill-row[data-v-20887a9e]{display:flex;gap:8px;align-items:center;width:100%;text-align:left}.skills-catalogue[data-v-0c3947df]{margin:0;padding:0;list-style:none}.skill-entry[data-v-0c3947df]{display:flex;gap:8px;align-items:baseline;width:100%;text-align:left}.skill-description[data-v-0c3947df]{color:var(--text-3);font-size:12px}.skills-title[data-v-b646e030]{margin:0;font-size:13px}.skills-text[data-v-b646e030]{margin:0;white-space:pre-wrap;font-size:12px}\n"; document.head.appendChild(style); }
+import { computed as b, openBlock as c, createElementBlock as k, createElementVNode as t, createVNode as x, unref as $, withCtx as C, createTextVNode as B, toDisplayString as p, Fragment as S, renderList as L, ref as v, createBlock as N, resolveDynamicComponent as O, normalizeProps as R, guardReactiveProps as q } from "vue";
 import { RowList as I, useWindow as T, useRows as V } from "@journal/window-kit";
-const _ = (t, o) => {
-  const l = t.__vccOpts || t;
-  for (const [i, e] of o)
-    l[i] = e;
-  return l;
-}, q = { class: "skills" }, z = ["onClick"], A = {
+const _ = (e, l) => {
+  const o = e.__vccOpts || e;
+  for (const [i, n] of l)
+    o[i] = n;
+  return o;
+}, z = { class: "skills" }, A = ["onClick"], D = {
   __name: "LoadedSkills",
-  props: { rows: { type: Array, required: !0 }, failure: { type: String, default: "" } },
+  props: { rows: { type: Array, required: !0 }, failure: { type: String, default: "" }, answered: { type: Boolean, required: !0 } },
   emits: ["open", "browse"],
-  setup(t, { emit: o }) {
-    const l = t, i = o, e = b(() => [...l.rows].reverse());
-    return (n, a) => (c(), k("div", q, [
-      a[2] || (a[2] = s("p", { class: "skills-note" }, "Loaded in this window, newest last. Compacting the conversation empties it.", -1)),
-      h(x(I), {
-        rows: e.value,
-        failure: t.failure,
+  setup(e, { emit: l }) {
+    const o = e, i = l, n = b(() => [...o.rows].reverse());
+    return (s, a) => (c(), k("div", z, [
+      a[2] || (a[2] = t("p", { class: "skills-note" }, "Loaded in this window, newest last. Compacting the conversation empties it.", -1)),
+      x($(I), {
+        rows: n.value,
+        failure: e.failure,
+        loaded: e.answered,
         empty: "No skill is loaded in this conversation."
       }, {
-        default: $(({ row: r }) => [
-          s("button", {
+        default: C(({ row: r }) => [
+          t("button", {
             type: "button",
             class: "skill-row",
-            onClick: (f) => i("open", r.skill)
+            onClick: (w) => i("open", r.skill)
           }, [
-            a[1] || (a[1] = s("svg", {
+            a[1] || (a[1] = t("svg", {
               class: "skill-book",
               viewBox: "0 0 16 16",
               width: "14",
@@ -36,87 +37,87 @@ const _ = (t, o) => {
               "stroke-width": "1.4",
               "aria-hidden": "true"
             }, [
-              s("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
-              s("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
+              t("path", { d: "M3 2.5h7a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z" }),
+              t("path", { d: "M3 11.5a2 2 0 0 1 2-2h7" })
             ], -1)),
-            C(" " + p(r.skill), 1)
-          ], 8, z)
+            B(" " + p(r.skill), 1)
+          ], 8, A)
         ]),
         _: 1
-      }, 8, ["rows", "failure"]),
-      s("button", {
+      }, 8, ["rows", "failure", "loaded"]),
+      t("button", {
         type: "button",
         class: "skills-browse",
         onClick: a[0] || (a[0] = (r) => i("browse"))
       }, "Browse every skill")
     ]));
   }
-}, D = /* @__PURE__ */ _(A, [["__scopeId", "data-v-e0d1d692"]]), E = { class: "skills" }, F = { class: "skills-catalogue" }, M = ["onClick"], P = { class: "skill-name" }, j = { class: "skill-description" }, H = {
+}, E = /* @__PURE__ */ _(D, [["__scopeId", "data-v-20887a9e"]]), F = { class: "skills" }, M = { class: "skills-catalogue" }, P = ["onClick"], j = { class: "skill-name" }, H = { class: "skill-description" }, W = {
   __name: "SkillCatalogue",
   props: { rows: { type: Array, required: !0 } },
   emits: ["open", "back"],
-  setup(t, { emit: o }) {
-    const l = o;
-    return (i, e) => (c(), k("div", E, [
-      s("button", {
+  setup(e, { emit: l }) {
+    const o = l;
+    return (i, n) => (c(), k("div", F, [
+      t("button", {
         type: "button",
         class: "skills-back",
-        onClick: e[0] || (e[0] = (n) => l("back"))
+        onClick: n[0] || (n[0] = (s) => o("back"))
       }, "Back"),
-      s("ul", F, [
-        (c(!0), k(B, null, S(t.rows, (n) => (c(), k("li", {
-          key: n.folder
+      t("ul", M, [
+        (c(!0), k(S, null, L(e.rows, (s) => (c(), k("li", {
+          key: s.folder
         }, [
-          s("button", {
+          t("button", {
             type: "button",
             class: "skill-entry",
-            onClick: (a) => l("open", n.folder)
+            onClick: (a) => o("open", s.folder)
           }, [
-            s("span", P, p(n.folder), 1),
-            s("span", j, p(n.description), 1)
-          ], 8, M)
+            t("span", j, p(s.folder), 1),
+            t("span", H, p(s.description), 1)
+          ], 8, P)
         ]))), 128))
       ])
     ]));
   }
-}, W = /* @__PURE__ */ _(H, [["__scopeId", "data-v-0c3947df"]]), G = { class: "skills" }, J = { class: "skills-title" }, K = { class: "skills-text" }, Q = {
+}, G = /* @__PURE__ */ _(W, [["__scopeId", "data-v-0c3947df"]]), J = { class: "skills" }, K = { class: "skills-title" }, Q = { class: "skills-text" }, U = {
   __name: "SkillText",
   props: { skill: { type: Object, default: null }, failure: { type: String, default: "" } },
   emits: ["back"],
-  setup(t, { emit: o }) {
-    const l = o;
-    return (i, e) => (c(), k("div", G, [
-      s("button", {
+  setup(e, { emit: l }) {
+    const o = l;
+    return (i, n) => (c(), k("div", J, [
+      t("button", {
         type: "button",
         class: "skills-back",
-        onClick: e[0] || (e[0] = (n) => l("back"))
+        onClick: n[0] || (n[0] = (s) => o("back"))
       }, "Back"),
-      s("h3", J, p(t.skill ? t.skill.folder : ""), 1),
-      s("pre", K, p(t.skill ? t.skill.text : t.failure), 1)
+      t("h3", K, p(e.skill ? e.skill.folder : ""), 1),
+      t("pre", Q, p(e.skill ? e.skill.text : e.failure), 1)
     ]));
   }
-}, U = /* @__PURE__ */ _(Q, [["__scopeId", "data-v-b646e030"]]), Z = {
+}, X = /* @__PURE__ */ _(U, [["__scopeId", "data-v-b646e030"]]), ee = {
   __name: "SkillRows",
-  setup(t) {
-    const o = T(), { rows: l, failure: i } = V(`agent-skill list --agent ${o.agent}`, ["agent_skill.*"]), e = v("loaded"), n = v([]), a = v(null), r = v(""), f = { loaded: D, catalogue: W, text: U }, y = b(() => ({
-      loaded: { rows: l.value, failure: i.value, onOpen: w, onBrowse: g },
-      catalogue: { rows: n.value, onOpen: w, onBack: m },
-      text: { skill: a.value, failure: r.value, onBack: m }
-    })[e.value]);
-    function m() {
-      e.value = "loaded";
+  setup(e) {
+    const l = T(), { rows: o, failure: i, loaded: n } = V(`agent-skill list --agent ${l.agent}`, ["agent_skill.*"]), s = v("loaded"), a = v([]), r = v(null), w = v(""), y = { loaded: E, catalogue: G, text: X }, g = b(() => ({
+      loaded: { rows: o.value, failure: i.value, answered: n.value, onOpen: m, onBrowse: h },
+      catalogue: { rows: a.value, onOpen: m, onBack: f },
+      text: { skill: r.value, failure: w.value, onBack: f }
+    })[s.value]);
+    function f() {
+      s.value = "loaded";
     }
-    async function g() {
-      const u = await o.read("skill list");
-      n.value = u.ok ? u.value.rows : [], e.value = "catalogue";
+    async function h() {
+      const u = await l.read("skill list");
+      a.value = u.ok ? u.value.rows : [], s.value = "catalogue";
     }
-    async function w(u) {
-      const d = await o.read(`skill show ${u}`);
-      r.value = d.ok ? "" : d.error, a.value = d.ok ? d.value : null, e.value = "text";
+    async function m(u) {
+      const d = await l.read(`skill show ${u}`);
+      w.value = d.ok ? "" : d.error, r.value = d.ok ? d.value : null, s.value = "text";
     }
-    return (u, d) => (c(), L(N(f[e.value]), O(R(y.value)), null, 16));
+    return (u, d) => (c(), N(O(y[s.value]), R(q(g.value)), null, 16));
   }
 };
 export {
-  Z as default
+  ee as default
 };
