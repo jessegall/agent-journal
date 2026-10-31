@@ -1,5 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.commands.file_edit_record import FileEditRecord
 
@@ -9,7 +10,7 @@ class RecordFileEditRule(DriverRule):
     file feed and the file edits windows."""
 
     name = "coding.record-file-edit"
-    hook = "post_tool_use"
+    hook = HookEventName.POST_TOOL_USE
     drivers = ["coding.*"]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

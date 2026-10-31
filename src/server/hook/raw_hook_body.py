@@ -6,6 +6,7 @@ from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_fields import mapping, text
 from core.base.driver.tool import Tool
+from core.base.driver.tool_type import ToolType
 from server.hook.hook_headers import HookHeaders
 
 RAW_BODY_VERSION = 0
@@ -39,8 +40,8 @@ class RawHookBody:
 
     def event(self, program: str, headers: HookHeaders) -> HookEvent:
         event = EVENT_NAMES[self.hook_name]
-        tool = Tool(self.tool_name, "other", (), None, None) if event in TOOL_EVENTS else None
-        prompt = self.prompt if event == "prompt" else None
+        tool = Tool(self.tool_name, ToolType.UNCATEGORISED, (), None, None) if event in TOOL_EVENTS else None
+        prompt = self.prompt if event is HookEventName.PROMPT else None
         return HookEvent(RAW_BODY_VERSION, program, event, self.session, headers.firing, headers.hook_timestamp_ms, headers.actor,
                          headers.environment, self.subagent, tool, prompt, self.raw)
 

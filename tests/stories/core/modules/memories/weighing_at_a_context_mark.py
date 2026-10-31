@@ -4,7 +4,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 CONTEXT_55_EDIT = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", raw={"context_percent": 55})
 CONTEXT_60_EDIT = CONTEXT_55_EDIT.with_fields(raw={"context_percent": 60})
 EDIT = HookSamples.edit("src/cart.py")
-READ = HookSamples.sample("pre_tool_use", {"name": "Read", "kind": "read", "files": ["src/cart.py"], "diff": None})
+READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["src/cart.py"], "diff": None})
 
 
 def fact_mark(story) -> int:

@@ -1,10 +1,11 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.delivery_cause import DeliveryCause
+from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_give import MemoryGive
 from core.modules.memories.memory_lines import MemoryLines
-from core.modules.memories.hook_memories import HookMemories
 
 
 class StartDeliveryRule(DriverRule):
@@ -12,7 +13,7 @@ class StartDeliveryRule(DriverRule):
     project's whose type gives at start and that has no due time: rules first, facts heaviest first."""
 
     name = "memories.start-delivery"
-    hook = "session_start"
+    hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = ["main", "worker"]
 

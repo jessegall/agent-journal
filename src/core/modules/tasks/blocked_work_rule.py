@@ -1,9 +1,10 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.hook_call_query import HookCallQuery
-from core.modules.tasks.task_state import TaskState
 from core.modules.tasks.task_query import TaskQuery
+from core.modules.tasks.task_state import TaskState
 
 BLOCKED_TASK_PAGE_SIZE = 10
 
@@ -13,7 +14,7 @@ class BlockedWorkRule(DriverRule):
     to name them; the next stop goes through."""
 
     name = "tasks.blocked-work-at-stop"
-    hook = "stop"
+    hook = HookEventName.STOP
     drivers = ["*"]
     roles = ["main"]
 

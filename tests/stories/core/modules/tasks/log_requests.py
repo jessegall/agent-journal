@@ -1,3 +1,4 @@
+from core.base.driver.command_category import CommandCategory
 from datetime import timedelta
 
 from core.modules.tasks.unlogged_write_rule import UNLOGGED_WRITES_CEILING
@@ -7,7 +8,7 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 
 CART_EDIT = HookSamples.edit("src/cart.py")
-CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", "search", ["-n", "total", "src/cart.py"]))
+CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", CommandCategory.SEARCH, ["-n", "total", "src/cart.py"]))
 
 
 def edits(story, count: int) -> None:

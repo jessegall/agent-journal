@@ -1,5 +1,6 @@
 from core.base.command.bus import Bus
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.commands import TaskStart
 from core.modules.tasks.task_query import TaskQuery
@@ -7,7 +8,7 @@ from core.modules.tasks.task_query import TaskQuery
 
 class SampleStart(DriverRule):
     name = "samples.start"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def __init__(self, bus: Bus, tasks: TaskQuery) -> None:
         self.bus, self.tasks = bus, tasks
@@ -21,7 +22,7 @@ class SampleStart(DriverRule):
 
 class SampleReader(DriverRule):
     name = "samples.reader"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def answer(self, hook):
         # @sin architecture_drivers_RuleBuildsNoReaderDetector

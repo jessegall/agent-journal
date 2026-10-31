@@ -1,8 +1,9 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
-from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.rule_history_key import RuleHistoryKey
 from core.modules.drivers.hook_call_query import HookCallQuery
 from core.modules.tasks.current_tasks import CurrentTasks
 
@@ -15,7 +16,7 @@ class InactiveTaskReminderRule(DriverRule):
     the task waits, once per quiet stretch."""
 
     name = "tasks.quiet-task"
-    hook = "tick"
+    hook = HookEventName.TICK
     drivers = ["*"]
     roles = ["main"]
 

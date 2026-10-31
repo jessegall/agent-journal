@@ -18,5 +18,5 @@ def test_an_edit_the_agent_is_about_to_make_leaves_no_file_edit(new_story):
 
 def test_a_tool_that_reads_files_leaves_no_file_edit(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.hook("s-1", HookSamples.sample("post_tool_use", {"name": "Read", "kind": "read", "files": ["src/cart.py"], "diff": None}))
+    story.hook("s-1", HookSamples.sample("post_tool_use", {"name": "Read", "category": "read", "files": ["src/cart.py"], "diff": None}))
     story.expect_success("file-edit list", "nothing found")

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, text, texts
 from core.base.driver.part import Part
@@ -14,7 +15,7 @@ class ShellLine:
     line: str
     parts: tuple[Part, ...]
     redirects: tuple[str, ...]
-    category: str
+    category: CommandCategory
     is_journal_line: bool
     parse_error: str
 
@@ -24,5 +25,8 @@ class ShellLine:
         parts = fields.get("parts", [])
         if not is_list(parts):
             raise HookEventError("parts is a list")
-        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), text(fields, "kind"),
+        category = text(fields, "category")
+        if category not in CommandCategory:
+            raise HookEventError(f"a shell line's category is one of {', '.join(CommandCategory)}, not {category!r}")
+        return cls(text(fields, "line"), tuple(Part.parsed(part) for part in parts), texts(fields, "redirects"), CommandCategory(category),
                    fields.get("is_journal_only") is True, text(fields, "parse_error"))

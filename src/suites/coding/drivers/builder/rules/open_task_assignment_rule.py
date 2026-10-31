@@ -1,8 +1,9 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.task_start import TaskStart
 from core.modules.tasks.task_query import TaskQuery
+from core.modules.tasks.task_start import TaskStart
 
 
 class OpenTaskAssignmentRule(DriverRule):
@@ -10,7 +11,7 @@ class OpenTaskAssignmentRule(DriverRule):
     own, and goes on with it."""
 
     name = "coding.builder-next-task-at-stop"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def __init__(self, tasks: TaskQuery) -> None:
         self.tasks = tasks

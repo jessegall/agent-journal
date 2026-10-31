@@ -12,7 +12,7 @@
   "launch": "",
   "tool": {
     "name": "Agent",
-    "kind": "agent",
+    "category": "agent",
     "files": [],
     "diff": null
   },

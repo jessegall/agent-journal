@@ -12,7 +12,7 @@
   "launch": "",
   "tool": {
     "name": "Bash",
-    "kind": "shell",
+    "category": "shell",
     "shell": {
       "line": "git status && grep -n foo src/app.py | head -5",
       "parts": [
@@ -24,7 +24,7 @@
             "status"
           ],
           "classification": {
-            "kind": "version control",
+            "category": "version control",
             "effects": [
               "reads_files"
             ]
@@ -40,7 +40,7 @@
             "src/app.py"
           ],
           "classification": {
-            "kind": "search",
+            "category": "search",
             "effects": [
               "reads_files"
             ]
@@ -57,13 +57,13 @@
             "-5"
           ],
           "classification": {
-            "kind": "read",
+            "category": "read",
             "effects": []
           }
         }
       ],
       "redirects": [],
-      "kind": "search",
+      "category": "search",
       "is_journal_only": false,
       "parse_error": ""
     },

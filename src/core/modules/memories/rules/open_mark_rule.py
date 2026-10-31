@@ -1,10 +1,11 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.memories.memory_lines import MemoryLines
 from core.modules.memories.hook_memories import HookMemories
-from core.modules.memories.memory_mark_open import MemoryMarkOpen
 from core.modules.memories.mark_tracker import DEFAULT_MARKS, MarkTracker
+from core.modules.memories.memory_lines import MemoryLines
+from core.modules.memories.memory_mark_open import MemoryMarkOpen
 from core.modules.settings.setting_values import SettingValues
 
 MARKS_SETTING = "memories.marks"
@@ -15,7 +16,7 @@ class OpenMarkRule(DriverRule):
     a mark opens and the agent is given its memories of a type given at a mark, heaviest first, to weigh."""
 
     name = "memories.open-mark"
-    hook = "post_tool_use"
+    hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = ["main", "worker"]
 

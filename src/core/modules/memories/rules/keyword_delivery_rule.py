@@ -1,14 +1,15 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.memories.delivery_cause import DeliveryCause
 from core.modules.memories.hook_keywords import hook_keywords
-from core.modules.memories.memory_give import MemoryGive
-from core.modules.memories.memory_lines import MemoryLines
 from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.keyword_memory import KeywordMemory
+from core.modules.memories.memory_give import MemoryGive
+from core.modules.memories.memory_lines import MemoryLines
 from core.modules.settings.setting_values import SettingValues
 
 KEYWORD_LIMIT = "memories.keyword-limit"
@@ -20,7 +21,7 @@ class KeywordDeliveryRule(DriverRule):
     compaction, the agent is given that memory, at most memories.keyword-limit of them on one hook."""
 
     name = "memories.keyword-delivery"
-    hook = "*"
+    hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = ["main", "worker"]
 

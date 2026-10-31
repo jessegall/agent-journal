@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
@@ -16,7 +17,7 @@ class StopThrough(DriverRule):
     """Lets every stop through."""
 
     name = "coding.carry-on"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.allowed()
@@ -26,7 +27,7 @@ class NoGit(DriverRule):
     """Lets every tool use through in this sample."""
 
     name = "coding.no-git"
-    hook = "pre_tool_use"
+    hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.allowed()
@@ -36,7 +37,7 @@ class AnyMain(DriverRule):
     """A rule a module adds for every main driver."""
 
     name = "safety.any-main"
-    hook = "stop"
+    hook = HookEventName.STOP
     drivers = ["*"]
     roles = ["main"]
 

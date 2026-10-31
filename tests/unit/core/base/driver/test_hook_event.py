@@ -18,7 +18,7 @@ def test_each_example_of_the_schema_is_read(example):
     event = HookEvent.parsed(data)
     assert (event.program, event.event, event.session) == (data["program"], data["event"], data["session"])
     if data["tool"] is not None:
-        assert event.tool is not None and event.tool.category == data["tool"]["kind"]
+        assert event.tool is not None and event.tool.category == data["tool"]["category"]
 
 
 def test_every_object_the_go_program_prepared_from_the_recorded_bodies_is_read():

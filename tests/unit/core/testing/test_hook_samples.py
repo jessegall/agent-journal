@@ -1,3 +1,4 @@
+from core.base.driver.command_category import CommandCategory
 import json
 import os
 from pathlib import Path
@@ -15,8 +16,8 @@ SAMPLES = {
     "prompt": HookSamples.prompt("go on"),
     "session_start": HookSamples.session_start(),
     "edit": HookSamples.edit("src/cart.py", 3, 1),
-    "shell": HookSamples.shell("git status && journal task show 1", ShellPart("git", "version control", ["status"], subcommand="status"),
-                               ShellPart("journal", "journal", ["task", "show", "1"])),
+    "shell": HookSamples.shell("git status && journal task show 1", ShellPart("git", CommandCategory.VERSION_CONTROL, ["status"], subcommand="status"),
+                               ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"])),
     "subagent": HookSamples.subagent(),
 }
 

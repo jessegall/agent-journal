@@ -1,10 +1,11 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.delivery_cause import DeliveryCause
+from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_give import MemoryGive
 from core.modules.memories.memory_lines import MemoryLines
-from core.modules.memories.hook_memories import HookMemories
 from core.modules.memories.memory_remove import MemoryRemove
 
 DUE_REASON = "given at its due time"
@@ -15,7 +16,7 @@ class DueDeliveryRule(DriverRule):
     come, once, and the memory is then removed."""
 
     name = "memories.due-delivery"
-    hook = "*"
+    hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
     roles = ["main", "worker"]
 

@@ -1,5 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.hook_call_query import HookCallQuery
 from core.modules.tasks.current_tasks import CurrentTasks
@@ -12,7 +13,7 @@ class TaskStopRule(DriverRule):
     the stop after that goes through."""
 
     name = "tasks.carry-on-at-stop"
-    hook = "stop"
+    hook = HookEventName.STOP
     drivers = ["*"]
     roles = ["main"]
 

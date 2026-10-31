@@ -1,3 +1,4 @@
+from core.base.driver.tool_type import ToolType
 from core.testing.hook_sample import HookSample
 from core.testing.shell_part import ShellPart
 
@@ -29,20 +30,20 @@ class HookSamples:
     @staticmethod
     def edit(path: str, added: int = 1, removed: int = 0) -> HookSample:
         diff = {"path": path, "existed": True, "lines_added": added, "lines_removed": removed}
-        return HookSamples.sample("pre_tool_use", {"name": "Edit", "kind": "edit", "files": [path], "diff": diff})
+        return HookSamples.sample("pre_tool_use", {"name": "Edit", "category": ToolType.EDIT, "files": [path], "diff": diff})
 
     @staticmethod
     def shell(line: str, *parts: ShellPart) -> HookSample:
         texts = [text.strip() for text in line.split("&&")]
         prepared = [part.prepared(text) for part, text in zip(parts, texts, strict=True)]
         joined = [{**part, "joined_by": "&&"} if index < len(prepared) - 1 else part for index, part in enumerate(prepared)]
-        shell = {"line": line, "parts": joined, "redirects": [], "kind": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
+        shell = {"line": line, "parts": joined, "redirects": [], "category": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
                  "parse_error": ""}
-        return HookSamples.sample("pre_tool_use", {"name": "Bash", "kind": "shell", "files": [], "shell": shell, "diff": None})
+        return HookSamples.sample("pre_tool_use", {"name": "Bash", "category": ToolType.SHELL, "files": [], "shell": shell, "diff": None})
 
     @staticmethod
     def subagent() -> HookSample:
-        return HookSamples.sample("pre_tool_use", {"name": "Agent", "kind": "agent", "files": [], "diff": None})
+        return HookSamples.sample("pre_tool_use", {"name": "Agent", "category": ToolType.AGENT, "files": [], "diff": None})
 
     @staticmethod
     def tick() -> HookSample:

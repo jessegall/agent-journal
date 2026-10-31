@@ -11,7 +11,7 @@ from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.registry import Registry
-from tests.unit.core.base.samples import sync_sample
+from tests.unit.core.base.samples.module_copy import items_module_copy
 from tests.unit.core.base.module.test_module_sync import ITEMS, synced
 
 CALLER = Caller(Actor(1, ActorType.CORE))
@@ -54,14 +54,13 @@ def test_an_unexpected_error_exits_with_three_and_is_written_to_the_error_log(tm
     assert JournalHome(tmp_path).error_log.exists()
 
 
-def test_a_stale_registry_is_refused(tmp_path):
-    container = console(tmp_path)
-    status = os.stat(sync_sample.__file__)
-    os.utime(sync_sample.__file__, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
-    try:
-        assert run(container, "item", "list") == (2, "the journal's modules changed: journal module sync\n")
-    finally:
-        os.utime(sync_sample.__file__, ns=(status.st_atime_ns, status.st_mtime_ns))
+def test_a_stale_registry_is_refused(tmp_path, monkeypatch):
+    module_path, copy = items_module_copy(tmp_path, monkeypatch)
+    container = synced(JournalHome(tmp_path), module_path)
+    container.bind(Registry, Registry.read(container.get(Database)))
+    status = os.stat(copy)
+    os.utime(copy, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
+    assert run(container, "item", "list") == (2, "the journal's modules changed: journal module sync\n")
 
 
 class BrokenListenerRunner(CommitListenerRunner):

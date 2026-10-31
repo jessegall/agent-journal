@@ -1,11 +1,13 @@
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.support.coding_fixtures import SubagentStarted
 
 SUBAGENT = {"subagent": "sub-1"}
-CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", "search", ["-n", "total", "src/cart.py"])).with_fields(**SUBAGENT)
+CART_SEARCH = HookSamples.shell("grep -n total src/cart.py", ShellPart("grep", CommandCategory.SEARCH, ["-n", "total", "src/cart.py"])).with_fields(**SUBAGENT)
 CART_EDIT = HookSamples.edit("src/cart.py").with_fields(**SUBAGENT)
-CART_REMOVAL = HookSamples.shell("rm src/cart.py", ShellPart("rm", "files", ["src/cart.py"], effects=["writes_files"])).with_fields(**SUBAGENT)
+CART_REMOVAL = HookSamples.shell("rm src/cart.py", ShellPart("rm", CommandCategory.EDIT, ["src/cart.py"], effects=[CommandEffect.WRITES_FILES])).with_fields(**SUBAGENT)
 
 
 def test_a_subagent_reads_and_searches(new_story):

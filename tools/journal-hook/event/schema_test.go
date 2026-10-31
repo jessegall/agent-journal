@@ -23,11 +23,11 @@ var wrongShapes = map[string]func(prepared map[string]any){
 	"fired_at_ms as text":                 func(prepared map[string]any) { prepared["fired_at_ms"] = "1793395000123" },
 	"a tool event without a tool":         func(prepared map[string]any) { prepared["tool"] = nil },
 	"a prompt on a tool event":            func(prepared map[string]any) { prepared["prompt"] = "go on" },
-	"an unknown tool kind":                func(prepared map[string]any) { tool(prepared)["kind"] = "browser" },
+	"an unknown tool category":            func(prepared map[string]any) { tool(prepared)["category"] = "browser" },
 	"a shell tool without its shell line": func(prepared map[string]any) { delete(tool(prepared), "shell") },
-	"a read tool with a shell line":       func(prepared map[string]any) { tool(prepared)["kind"] = "read" },
+	"a read tool with a shell line":       func(prepared map[string]any) { tool(prepared)["category"] = "read" },
 	"no parse_error":                      func(prepared map[string]any) { delete(shell(prepared), "parse_error") },
-	"a line kind not in the table":        func(prepared map[string]any) { shell(prepared)["kind"] = "browse" },
+	"a line category not in the table":    func(prepared map[string]any) { shell(prepared)["category"] = "browse" },
 	"a part joined by a pipe":             func(prepared map[string]any) { part(prepared, 0)["joined_by"] = "|" },
 	"a part piped into a negative index":  func(prepared map[string]any) { part(prepared, 1)["piped_into"] = json.Number("-1") },
 	"a part without arguments":            func(prepared map[string]any) { delete(part(prepared, 2), "arguments") },
@@ -35,7 +35,7 @@ var wrongShapes = map[string]func(prepared map[string]any){
 		tool(prepared)["diff"] = map[string]any{"path": "a", "existed": true, "lines_added": json.Number("1"), "lines_removed": json.Number("0")}
 	},
 	"an effect not in the table": func(prepared map[string]any) {
-		part(prepared, 0)["classification"] = map[string]any{"kind": "read", "effects": []any{"reads_minds"}}
+		part(prepared, 0)["classification"] = map[string]any{"category": "read", "effects": []any{"reads_minds"}}
 	},
 }
 
@@ -48,7 +48,7 @@ func TestTheSchemaTakesTheDocumentsExampleAndOneOfEachToolCategory(t *testing.T)
 			t.Errorf("%s does not validate: %v", example, err)
 		}
 		if toolFields, present := prepared["tool"].(map[string]any); present {
-			categories[toolFields["kind"].(string)] = true
+			categories[toolFields["category"].(string)] = true
 		}
 	}
 	for _, category := range []string{"shell", "edit", "write", "read", "search", "agent", "other"} {

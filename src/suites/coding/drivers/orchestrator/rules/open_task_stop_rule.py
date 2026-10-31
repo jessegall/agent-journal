@@ -1,5 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.task_query import TaskQuery
 
@@ -9,7 +10,7 @@ class OpenTaskStopRule(DriverRule):
     a worker it sends."""
 
     name = "coding.orchestrator-open-tasks-at-stop"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def __init__(self, tasks: TaskQuery) -> None:
         self.tasks = tasks

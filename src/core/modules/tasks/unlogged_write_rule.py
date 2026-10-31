@@ -1,5 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.task_write_count import TaskWriteCount
 
@@ -11,7 +12,7 @@ class UnloggedWriteRule(DriverRule):
     line; reads and journal commands go through."""
 
     name = "tasks.log-before-more-writes"
-    hook = "pre_tool_use"
+    hook = HookEventName.PRE_TOOL_USE
     drivers = ["*"]
     roles = ["main"]
 

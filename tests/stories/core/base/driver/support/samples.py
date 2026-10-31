@@ -8,10 +8,13 @@ from core.base.database.migration import Migration
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_wildcard import HookWildcard
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.suite import Suite
+from core.base.driver.tool_type import ToolType
 from core.base.guard.guard import Guard
 from core.base.model.lifecycle import Lifecycle
 from core.base.model.model import Model
@@ -75,7 +78,7 @@ class StopLine(DriverRule):
     """The lead is told one line at every stop."""
 
     name = "samples.stop-line"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.with_lines("the lead stops here")
@@ -85,7 +88,7 @@ class RemovalRule(DriverRule):
     """The lead removes no folder with rm -rf."""
 
     name = "samples.removal-limit"
-    hook = "pre_tool_use"
+    hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
@@ -98,10 +101,10 @@ class LockedEditRefusal(DriverRule):
     """An open edit lock refuses every edit."""
 
     name = "samples.locked-edit-refusal"
-    hook = "pre_tool_use"
+    hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is not None and hook.event.tool.category == "edit":
+        if hook.event.tool is not None and hook.event.tool.category is ToolType.EDIT:
             return RuleAnswer.refused(f"{hook.layer_ref} refuses every edit")
         return RuleAnswer.allowed()
 
@@ -110,7 +113,7 @@ class ReturnLine(DriverRule):
     """Once an edit lock above it ends, the lead is told it is back at its own work, once."""
 
     name = "samples.return-line"
-    hook = "*"
+    hook = HookWildcard.ALL_HOOKS
     drivers = ["samples.*"]
     history = True
 
@@ -122,7 +125,7 @@ class FailingRule(DriverRule):
     """Fails on every stop."""
 
     name = "samples.failing-rule"
-    hook = "stop"
+    hook = HookEventName.STOP
     drivers = ["samples.*"]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -133,7 +136,7 @@ class EssentialClaim(DriverRule):
     """A rule its module marks essential, ordinary until the user allows it."""
 
     name = "samples.essential-claim"
-    hook = "stop"
+    hook = HookEventName.STOP
     drivers = ["*"]
     essential = True
 
@@ -145,7 +148,7 @@ class LockRelease(DriverRule):
     """A prompt ends the edit lock it is asked for."""
 
     name = "samples.lock-release"
-    hook = "prompt"
+    hook = HookEventName.PROMPT
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.allowed().ending_layer(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
@@ -155,7 +158,7 @@ class SecondLockRelease(DriverRule):
     """A second rule that also ends the edit lock on a prompt, so one row gets two moves on one hook."""
 
     name = "samples.second-lock-release"
-    hook = "prompt"
+    hook = HookEventName.PROMPT
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.allowed().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
@@ -165,7 +168,7 @@ class StopRefusal(DriverRule):
     """While the project setting samples.refuse-stops is true, the lead's stop is refused."""
 
     name = "samples.stop-refusal"
-    hook = "stop"
+    hook = HookEventName.STOP
 
     def __init__(self, settings: SettingValues) -> None:
         self.settings = settings
@@ -178,7 +181,7 @@ class ReopeningClaim(DriverRule):
     """On a compaction, asks to reopen the edit lock it is asked for, which is open, so the lifecycle refuses it."""
 
     name = "samples.reopening-claim"
-    hook = "compact"
+    hook = HookEventName.COMPACT
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         return RuleAnswer.allowed().running(EditLockReopen(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()

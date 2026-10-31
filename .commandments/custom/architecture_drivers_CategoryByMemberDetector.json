@@ -1,0 +1,37 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "comparison",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "member-access"
+                        },
+                        {
+                            "name": "category"
+                        }
+                    ]
+                }
+            },
+            {
+                "descendant": {
+                    "is": "literal"
+                }
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "tool-category-compared-with-a-string",
+        "description": "A tool's category is compared with a string, though the categories are the members of ToolType.",
+        "rule": "Compare with the member: tool.category is ToolType.AGENT.",
+        "skill": "plain-code-words"
+    }
+}

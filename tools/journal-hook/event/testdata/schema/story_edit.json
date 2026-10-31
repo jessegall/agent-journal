@@ -12,7 +12,7 @@
   "launch": "",
   "tool": {
     "name": "Edit",
-    "kind": "edit",
+    "category": "edit",
     "files": [
       "src/cart.py"
     ],

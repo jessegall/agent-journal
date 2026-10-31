@@ -1,5 +1,6 @@
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.current_tasks import CurrentTasks
 
@@ -9,7 +10,7 @@ class TaskSummaryLineRule(DriverRule):
     newest log line."""
 
     name = "tasks.session-start-summary"
-    hook = "session_start"
+    hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = ["main"]
 

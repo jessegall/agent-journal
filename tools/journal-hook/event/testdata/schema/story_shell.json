@@ -12,7 +12,7 @@
   "launch": "",
   "tool": {
     "name": "Bash",
-    "kind": "shell",
+    "category": "shell",
     "files": [],
     "shell": {
       "line": "git status && journal task show 1",
@@ -24,7 +24,7 @@
             "status"
           ],
           "classification": {
-            "kind": "version control",
+            "category": "version control",
             "effects": [
               "reads_files"
             ]
@@ -41,7 +41,7 @@
             "1"
           ],
           "classification": {
-            "kind": "journal",
+            "category": "journal",
             "effects": [
               "reads_files"
             ]
@@ -49,7 +49,7 @@
         }
       ],
       "redirects": [],
-      "kind": "version control",
+      "category": "version control",
       "is_journal_only": false,
       "parse_error": ""
     },

@@ -143,7 +143,7 @@
     }
   ],
   "$defs": {
-    "kind": {
+    "category": {
       "enum": [
         "search",
         "read",
@@ -164,7 +164,7 @@
       "additionalProperties": false,
       "required": [
         "name",
-        "kind",
+        "category",
         "files",
         "diff"
       ],
@@ -173,7 +173,7 @@
           "type": "string",
           "minLength": 1
         },
-        "kind": {
+        "category": {
           "enum": [
             "shell",
             "edit",
@@ -208,7 +208,7 @@
         {
           "if": {
             "properties": {
-              "kind": {
+              "category": {
                 "const": "shell"
               }
             }
@@ -229,7 +229,7 @@
         {
           "if": {
             "properties": {
-              "kind": {
+              "category": {
                 "enum": [
                   "edit",
                   "write"
@@ -261,7 +261,7 @@
         "line",
         "parts",
         "redirects",
-        "kind",
+        "category",
         "is_journal_only",
         "parse_error"
       ],
@@ -281,8 +281,8 @@
             "type": "string"
           }
         },
-        "kind": {
-          "$ref": "#/$defs/kind"
+        "category": {
+          "$ref": "#/$defs/category"
         },
         "is_journal_only": {
           "type": "boolean"
@@ -350,12 +350,12 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "kind",
+        "category",
         "effects"
       ],
       "properties": {
-        "kind": {
-          "$ref": "#/$defs/kind"
+        "category": {
+          "$ref": "#/$defs/category"
         },
         "effects": {
           "type": "array",
