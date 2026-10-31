@@ -85,10 +85,10 @@ def test_a_run_moves_every_declared_module_in_order(new_story):
     assert ORDER == ["notes", "tags"] and (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
-def test_a_second_run_says_already_upgraded_and_moves_nothing(new_story):
+def test_a_second_run_says_nothing_is_left_to_move_and_moves_nothing(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     upgrade(story)
-    expect_upgrade(story, "already upgraded; nothing moved")
+    expect_upgrade(story, "nothing left to move")
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
@@ -114,3 +114,18 @@ def test_the_upgrade_of_an_empty_version_4_journal_works(new_story):
 def test_the_upgrade_of_a_project_with_no_version_4_journal_is_refused_with_what_it_looked_for(new_story):
     story = new_story(NOTES, TAGS)
     expect_refusal(story, "no version 4 journal: journal.db is not in")
+
+
+def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_to_version_4_since(new_story):
+    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    first = upgrade(story)
+    assert first.code == 1
+    backups = [path for path in story.home.folder.rglob("journal.db") if path != version_four]
+    assert len(backups) == 1
+    original = content(backups[0])
+    connection = sqlite3.connect(version_four)
+    connection.execute("INSERT INTO notes VALUES (11, 'Added after the first run')")
+    connection.commit()
+    connection.close()
+    expect_upgrade(story, "movetags: moved 2, already moved 0", "upgraded")
+    assert content(backups[0]) == original and count(story, "notes") == 2

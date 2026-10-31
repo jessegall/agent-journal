@@ -23,7 +23,7 @@ from install.version_four_backup import DATABASE, VersionFourBackup
 from server.server_files import ServerFiles
 
 DRY_RUN_LINE = "dry run: nothing was changed"
-FINISHED_LINE = "already upgraded; nothing moved"
+FINISHED_LINE = "nothing left to move"
 QUESTION = "move these rows into version 5? [y/N] "
 AGREEMENTS = ("y", "yes")
 
