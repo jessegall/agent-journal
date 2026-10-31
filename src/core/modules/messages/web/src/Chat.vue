@@ -22,7 +22,7 @@ async function send() {
 <template>
     <div class="chat">
         <DockStack :items="docked" />
-        <RowList :rows="rows" :failure="failure" empty="No messages yet">
+        <RowList class="history" :rows="rows" :failure="failure" empty="No messages yet">
             <template #default="{row}">
                 <template v-if="row.kind === 'mark'">
                     <MarkHost :mark="row.row" />
@@ -48,6 +48,14 @@ async function send() {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    height: 100%;
+    min-height: 0;
+}
+
+.history {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .from {

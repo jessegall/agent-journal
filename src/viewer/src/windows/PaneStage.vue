@@ -212,6 +212,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 }
 
 .pane-body > :deep(.window) {
+    box-sizing: border-box;
+    height: 100%;
     padding: 16px;
 }
 
