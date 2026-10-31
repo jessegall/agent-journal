@@ -22,10 +22,10 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
-def runner_line(process_id: int, line: str, limit: int = 30, background: bool = False) -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 30, background: bool = False) -> str:
     """The line the rule gives the agent's tool to run in place of its own."""
     flag = " --background" if background else ""
-    return f"journal-run --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
+    return f"{shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"
 
 
 def with_parse_error(sample: HookSample, error: str = "unbalanced quote") -> HookSample:
@@ -38,3 +38,12 @@ def user_waits(story: Story) -> None:
     """A person sends a message the agent has not read."""
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
+
+
+def install_runner(story: Story) -> Story:
+    """Places a runner where the installer does, so the rule rewrites lines."""
+    binary = story.home.folder.resolve() / "bin" / "journal-run"
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    binary.write_text("#!/bin/sh\n")
+    binary.chmod(0o755)
+    return story

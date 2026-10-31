@@ -12,6 +12,9 @@
 #
 # JOURNAL_RELEASE_URL names another place to download from, a file:// folder among them; JOURNAL_PLATFORM names the
 # platform as os/arch instead of the one uname reports.
+#
+# The release's journal-run, the program that runs every shell line of an agent, is downloaded beside it into
+# .journal/bin/journal-run and checked the same way; without it the shell lines run as the agent wrote them.
 set -eu
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -73,6 +76,23 @@ mkdir -p "$BIN"
 chmod +x "$download/$name"
 mv "$download/$name" "$BIN/journal-hook"
 "$BIN/journal-hook" --version >/dev/null 2>&1 || fall_back "$BIN/journal-hook does not start on this machine"
+
+runner="journal-run-${target%/*}-${target#*/}"
+if curl -fsSL "$RELEASE/$runner" -o "$download/$runner" 2>/dev/null; then
+  expected=$(awk -v name="$runner" '$2 == name {print $1}' "$download/checksums.txt")
+  [ -n "$expected" ] || fail "the release's checksums.txt names no $runner"
+  [ "$(checksum "$download/$runner")" = "$expected" ] || fail "the checksum of $runner does not match the release's, so it is not installed"
+  chmod +x "$download/$runner"
+  mv "$download/$runner" "$BIN/journal-run"
+  if "$BIN/journal-run" --version >/dev/null 2>&1; then
+    echo "shell lines run through $BIN/journal-run"
+  else
+    rm -f "$BIN/journal-run"
+    echo "$BIN/journal-run does not start on this machine, so shell lines run as the agent wrote them"
+  fi
+else
+  echo "the release has no $runner, so shell lines run as the agent wrote them"
+fi
 
 PYTHONPATH="$HERE/src" python3 -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
 echo "the hooks of Claude Code and Codex call $BIN/journal-hook"

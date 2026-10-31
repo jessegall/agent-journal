@@ -12,7 +12,9 @@ for target in darwin/arm64 darwin/amd64 linux/arm64 linux/amd64 windows/amd64; d
     arch=${target#*/}
     suffix=""
     [ "$os" = "windows" ] && suffix=".exe"
-    for program in journal-hook journal; do
+    programs="journal-hook journal"
+    [ "$os" = "windows" ] || programs="$programs journal-run"
+    for program in $programs; do
         (cd "tools/$program" && CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath -ldflags="-s -w -X main.version=$version" -o "$out/$program-$os-$arch$suffix" .)
     done
 done
