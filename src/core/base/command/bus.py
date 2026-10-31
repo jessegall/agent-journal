@@ -10,6 +10,7 @@ from core.base.database.database import Database
 from core.base.deadline import Deadline
 from core.base.guard.explanation import Explanation
 from core.base.registry.registry import Registry
+from core.base.trail import Trail
 
 R = TypeVar("R")
 
@@ -29,11 +30,12 @@ class ExplanationRollback(Exception):
 
 class Bus:
     """Runs commands: a command at the top runs in a transaction of its own, rolled back when the caller's
-    deadline passes before its commit; a command run inside another, by a handler or a listener, runs in a
-    savepoint of that transaction with the same actor and timestamp."""
+    deadline passes before its commit, and stamps the request's trail when its write lock is held and when it
+    has committed; a command run inside another, by a handler or a listener, runs in a savepoint of that
+    transaction with the same actor and timestamp."""
 
-    def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline) -> None:
-        self.container, self.database, self.registry, self.clock, self.deadline = container, database, registry, clock, deadline
+    def __init__(self, container: Container, database: Database, registry: Registry, clock: Clock, deadline: Deadline, trail: Trail) -> None:
+        self.container, self.database, self.registry, self.clock, self.deadline, self.trail = container, database, registry, clock, deadline, trail
 
     def run(self, command: Command[R], actor: Actor, skipped_guards: frozenset[str] = frozenset(), cause_id: int | None = None,
             environment_id: int | None = None) -> R:
@@ -41,10 +43,12 @@ class Bus:
             raise TransactionError(f"{command.label()} was run at the top inside a transaction: dispatch it with the context instead")
         handler = self.handler(command)
         with self.database.transaction():
+            self.trail.stamp("write_started")
             context = Context(actor, self.clock.timestamp(), command, skipped_guards, cause_id, environment_id)
             command_output = self.result(handler.handle(command, context), command)
             self.deadline.check()
-            return command_output
+        self.trail.stamp("committed")
+        return command_output
 
     def explain(self, command: Command[object], actor: Actor, skipped_guards: frozenset[str] = frozenset(), environment_id: int | None = None) -> Explanation:
         if self.database.has_transaction:

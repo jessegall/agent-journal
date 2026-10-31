@@ -9,18 +9,21 @@ from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.registry import StaleRegistryError
+from core.base.trail import Trail
 
 
 class LineRun:
     """Runs one journal command line for a caller on a journal's folder, as a direct run and the server both
     do: a module sync on an opened database, any other line on a synced one that waits for another writer up
     to its busy timeout, or the time left before the caller's deadline, and the database closed after. The
-    server hands it the runner its commit listeners go to."""
+    server hands it the runner its commit listeners go to and the request's trail, stamped once the container
+    is built; a direct run has no trail set, so it stamps nothing."""
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
 
-    def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None) -> int:
+    def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
+            trail: Trail | None = None) -> int:
         if argv[:2] == SYNC_ARGV:
             container = opened_container(self.home)
             try:
@@ -38,6 +41,9 @@ class LineRun:
             container.bind(Deadline, deadline)
         if self.listener_runner is not None:
             container.bind(CommitListenerRunner, self.listener_runner)
+        if trail is not None:
+            container.bind(Trail, trail)
+        container.get(Trail).stamp("command_started")
         try:
             return container.get(Console).requested_run(argv, request, stream)
         finally:

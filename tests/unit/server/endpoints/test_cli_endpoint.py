@@ -1,8 +1,17 @@
+import io
+import json
+
 import pytest
 
-from core.base.caller.caller_request import CallerRequestError
+from core.base.caller.caller_request import CallerRequest, CallerRequestError
+from core.base.cli.line_run import LineRun
+from core.base.journal_container import synced_container
+from core.base.journal_home import JournalHome
+from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.trail import Trail
+from tests.unit.core.base.module.test_module_sync import ITEMS
 
-from server.endpoints.cli_endpoint import ChunkStream, CliRequest, CliRequestError
+from server.endpoints.cli_endpoint import ChunkStream, CliEndpoint, CliRequest, CliRequestError
 
 
 def test_each_piece_of_output_is_handed_on_as_it_is_written():
@@ -24,3 +33,13 @@ def test_a_request_takes_its_pid_from_the_socket_never_from_the_body():
 def test_a_body_that_is_no_command_line_is_refused(body):
     with pytest.raises((CliRequestError, CallerRequestError)):
         CliRequest.parsed(body, 1)
+
+
+def test_the_answer_stamps_the_trail_the_request_carries(tmp_path):
+    home = JournalHome(tmp_path)
+    home.module_list.write_text(json.dumps([ITEMS]))
+    assert LineRun(home).run(["module", "sync"], CallerRequest(), io.StringIO()) == 0
+    endpoint = CliEndpoint(home, synced_container(home).get(CommitListenerRunner))
+    trail = Trail.parsed("go_sent=1761904800015420")
+    assert endpoint.answer(CliRequest(["item", "make", "Dune"], CallerRequest(), trail=trail), io.StringIO()) == 0
+    assert [name for name, _ in trail.stamps or []] == ["go_sent", "command_started", "write_started", "committed"]

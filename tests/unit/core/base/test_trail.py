@@ -51,6 +51,13 @@ def test_a_write_with_a_trail_set_stamps_the_lock_then_the_commit(container):
     assert names(trail) == ["write_started", "committed"]
 
 
+def test_an_explained_write_stamps_nothing(container):
+    trail = Trail.parsed("")
+    container.bind(Trail, trail)
+    container.get(Bus).explain(ItemMake(title="Dune"), Actor(7, ActorType.AGENT))
+    assert names(trail) == []
+
+
 def test_a_line_run_stamps_the_command_start_before_its_write(tmp_path):
     home = JournalHome(tmp_path)
     home.module_list.write_text(json.dumps([ITEMS]))

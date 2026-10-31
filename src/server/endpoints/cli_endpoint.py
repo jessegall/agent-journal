@@ -8,6 +8,7 @@ from core.base.cli.line_run import LineRun
 from core.base.deadline import Deadline
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.trail import Trail
 from core.base.type_guards import is_mapping, is_text_list
 
 
@@ -21,11 +22,12 @@ class CliRequestError(Exception):
 @dataclass(frozen=True)
 class CliRequest:
     """One /cli request: the command line's words, what the server knows of its caller, the pid read from the
-    socket rather than sent, and how long the caller waits, when it says."""
+    socket rather than sent, how long the caller waits, when it says, and the request's trail."""
 
     argv: list[str]
     caller: CallerRequest
     deadline: Deadline | None = None
+    trail: Trail | None = None
 
     @classmethod
     def parsed(cls, data: object, pid: int) -> "CliRequest":
@@ -62,4 +64,4 @@ class CliEndpoint:
         self.line_run = LineRun(home, CLI_LIMIT_SECONDS, listener_runner)
 
     def answer(self, request: CliRequest, stream: TextIO) -> int:
-        return self.line_run.run(request.argv, request.caller, stream, request.deadline)
+        return self.line_run.run(request.argv, request.caller, stream, request.deadline, request.trail)
