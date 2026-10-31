@@ -15,6 +15,7 @@ export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {interleaved} from "../src/domain/chatTimeline.js";
 export {useRows} from "./useRows.js";
+export {useOpenRow} from "./useOpenRow.js";
 export {WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version

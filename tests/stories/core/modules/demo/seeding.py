@@ -24,6 +24,8 @@ SHOWN = {
     "documents": ("doc list", "Cart rules", "Release steps"),
     "document revisions": ("doc revisions 1", "added Returns"),
     "reports": ("link list --source report:1", "about  task:1"),
+    "sequences": ("sequence show 1", "Release steps", "Run the whole suite"),
+    "templates": ("template list", "Find what is missing (for plan, critique)", "Full suite (for any, testing)"),
 }
 
 
@@ -50,4 +52,4 @@ def test_every_module_that_seeds_is_named_in_the_demo(new_story):
     story = new_story()
     seeder_names = story.run("demo seed --list").output_text.splitlines()
     assert {"journal.core.tasks", "journal.core.plans", "journal.core.messages", "journal.core.questions", "journal.core.memories", "journal.core.reviews",
-            "journal.core.docking", "journal.core.processes", "journal.core.skills", "journal.core.documents"} <= set(seeder_names)
+            "journal.core.docking", "journal.core.processes", "journal.core.skills", "journal.core.documents", "journal.core.sequences", "journal.core.templates"} <= set(seeder_names)
