@@ -21,6 +21,8 @@ class DockItem(Model):
     type: str
     target_model: str
     target_id: int
+    title: str = ""
+    text: str = ""
     kept: bool = False
     state: DockItemState = DockItemState.DOCKED
     leaves_at: Timestamp | None = None

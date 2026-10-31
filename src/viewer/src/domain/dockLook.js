@@ -1,7 +1,8 @@
 import {meta} from "./tables.js";
 
-// the title of a docked item: its declaration's words with {row_id} and {row_title} filled
+// the title of a docked item: the one it was docked with, else its declaration's words with {row_id} and {row_title} filled
 export const dockTitle = (item, declaration) =>
+    item.title ||
     (declaration?.title || "").replace("{row_id}", String(item.target_id)).replace("{row_title}", item.row_title || "");
 
 const own = (action, icon, label, runs) => ({action, icon, label, runs});
@@ -10,7 +11,7 @@ const own = (action, icon, label, runs) => ({action, icon, label, runs});
 export function dockButtons(item, declaration) {
     return [
         ...(item.leaves_at && !item.kept ? [own("keep", "pin", "Keep", `dock keep ${item.id}`)] : []),
-        ...(meta(item.target_model) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
+        ...(declaration?.reads?.length || meta(item.target_model) ? [{action: "open", icon: "open", label: "Open", runs: ""}] : []),
         ...(declaration?.buttons || []).map((button) => ({...button, action: "declared"})),
         own("undock", "close", "Undock", `dock remove ${item.id}`),
     ];

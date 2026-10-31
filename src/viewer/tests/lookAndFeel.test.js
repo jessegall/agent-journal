@@ -23,8 +23,8 @@ const FIRST_MESSAGE = {id: 1, type: "user", text: "Fix the `cart` total first", 
 const SECOND_MESSAGE = {id: 2, type: "agent", text: "On it, **now**", created_at: new Date((NOW - 300) * 1000).toISOString()};
 const MARK = {id: 1, type: "task", variant: "made", key: "task:1", text: "Task 1 made: Fix the cart total", detail: "", lines: "", target_model: "tasks", target_id: 1, outcome: "none", state: "shown", created_at: NOW - 100};
 const MARK_FAMILY = {type: "task", family_icon: "task", mark_icon: "task", group: "tasks", colouring: "group", click: "open row", process: false};
-const REPORT_DOCK = {id: 1, type: "report", target_model: "reports", target_id: 1146, kept: false, state: "docked", leaves_at: null, row_title: "What the review found", row_text: "Two reviewers found 17 gaps in the plan"};
-const REPORT_FAMILY = {type: "report", icon: "report", title: "Report {row_id}: {row_title}", buttons: [], leaves_after_seconds: 0};
+const REPORT_DOCK = {id: 1, type: "report", target_model: "reports", target_id: 1146, kept: false, state: "docked", leaves_at: null, title: "Report 1146: What the review found", text: "Two reviewers found 17 gaps in the plan"};
+const REPORT_FAMILY = {type: "report", icon: "report", title: "Report {row_id}: {row_title}", buttons: [], leaves_after_seconds: 0, reads: ["report show"]};
 
 let mounted = [];
 let lines;

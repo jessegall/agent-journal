@@ -104,3 +104,16 @@ def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
     window = Registry.read(story.container.get(Database)).window("messages.chat")
     assert "dock-item list" in window.reads and "dock_item.*" in window.events
     WindowStory(story).expect_window_allowed("messages.chat", "dock-item list")
+
+
+def test_an_item_carries_the_title_and_the_text_of_its_row(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    item = docked(story, running_task(story, "Fix the cart"))
+    assert story.row(type(item), item.id).title == "Task 1" and "Task 1" in story.run("dock-item list").output_text
+
+
+def test_an_item_whose_type_gives_it_no_title_is_refused_and_says_where_to_fix_it(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    task_id = running_task(story, "Fix the cart")
+    with pytest.raises(Refusal, match="has no title"):
+        docked(story, task_id, SampleDockType.UNTITLED)

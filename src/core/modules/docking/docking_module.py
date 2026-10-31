@@ -10,6 +10,7 @@ from core.modules.docking.commands.make_dock_handler import MakeDockHandler
 from core.modules.docking.guards.kept_item_guard import KeptItemGuard
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
 from core.modules.docking.guards.dock_limit_guard import DockLimitGuard
+from core.modules.docking.guards.dock_title_guard import DockTitleGuard
 from core.modules.docking.guards.dock_type_guard import DockTypeGuard
 from core.modules.docking.guards.one_item_per_row_guard import OneItemPerRowGuard
 from core.modules.docking.guards.type_limit_guard import TypeLimitGuard
@@ -19,6 +20,7 @@ from core.modules.docking.listeners.dock_item_leave_listener import DockItemLeav
 from core.modules.docking.listeners.environment_dock_listener import EnvironmentDockListener
 from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
+from core.modules.docking.migrations.m003_dock_item_labels import DockItemLabelsMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
 from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
@@ -33,9 +35,9 @@ class DockingModule(Module):
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
-    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration]
+    migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration]
     handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
     subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
-    guards = [DockTypeGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard, OwnEnvironmentGuard, KeptItemGuard]
+    guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeLimitGuard, DockLimitGuard, OwnEnvironmentGuard, KeptItemGuard]
     seeders = [DockingSeeder]

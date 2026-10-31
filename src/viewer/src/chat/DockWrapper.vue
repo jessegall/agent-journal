@@ -33,10 +33,13 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             <span class="dock-title">{{ look.title }}</span>
             <span class="chat-dock-acts dock-acts">
                 <template v-for="button in buttons" :key="button.action + button.runs">
-                    <Btn small @click="press(button)">{{ button.label }}</Btn>
+                    <Btn small :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
                 </template>
             </span>
-            <CloseButton :title="undock.label" @click="press(undock)" />
+            <CloseButton :title="undock.label" data-dock-action="undock" @click="press(undock)" />
+        </template>
+        <template v-if="item.text">
+            <p class="dock-text">{{ item.text }}</p>
         </template>
         <template v-if="declaration?.body_url">
             <MarkBody :declaration="declaration" :mark="item" shown />
@@ -56,6 +59,15 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     color: var(--text);
     font-weight: 500;
     text-overflow: ellipsis;
+}
+
+.dock-text {
+    margin: 0 14px 10px 44px;
+    overflow: hidden;
+    color: var(--text-2);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dock-acts {

@@ -15,6 +15,7 @@ TIMEOUT_SECONDS = 10
 class SampleDockType(StrEnum):
     TASK = "docksample.task"
     UNKNOWN_TYPE = "docksample.ghost"
+    UNTITLED = "docksample.untitled"
 
 
 class DockSampleModule(Module):
@@ -24,7 +25,8 @@ class DockSampleModule(Module):
     name = "docksample"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.docking", "journal.core.tasks"]
-    docks = [DockDeclaration(SampleDockType.TASK, "task", "Task {row_id}", "task.js", most=2, leaves_after_seconds=TIMEOUT_SECONDS, reads=["task show"])]
+    docks = [DockDeclaration(SampleDockType.TASK, "task", "Task {row_id}", "task.js", most=2, leaves_after_seconds=TIMEOUT_SECONDS, reads=["task show"]),
+             DockDeclaration(SampleDockType.UNTITLED, "task", "", "task.js", most=2, reads=["task show"])]
 
 
 def ended_task(story: Story, title: str) -> int:
