@@ -1,13 +1,7 @@
-from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
 from tests.stories.core.support import story_lines as lines
 from core.testing.hook_samples import HookSamples
-from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import LeadLocked, LeadStarted
-from tests.stories.core.base.driver.support.samples import SAMPLES
-
-REMOVAL = HookSamples.shell("rm -rf build", ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.WRITES_FILES]))
-
+from tests.stories.core.base.driver.support.samples import REMOVAL, SAMPLES
 
 def test_an_exclusive_edit_lock_refuses_an_edit_and_its_hook_call_names_the_layer_and_each_outcome(new_story):
     story = new_story(SAMPLES, fixture=LeadLocked)

@@ -1,7 +1,6 @@
 import json
 from collections.abc import Mapping
 from dataclasses import replace
-
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -9,26 +8,29 @@ from core.base.command.handler import Handler
 from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rules import DriverRules
+from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
+from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
+from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
-from core.base.timing import Timing
 from core.base.repository.repository import Repository
+from core.base.timing import Timing
 from core.modules.agents.models.agent import Agent
-from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.commands.deliver_agent_line import DeliverAgentLine
-from core.modules.drivers.models.enums.agent_line_state import AgentLineState
-from core.base.driver.hook_event_name import HookEventName
-from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
-from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall
+from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.models.enums.agent_line_state import AgentLineState
+from core.modules.drivers.models.enums.hook_answer import HookAnswer
+from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.support.suite_choice import SuiteChoice
+from core.modules.settings.bindings.support.setting_values import SettingValues
+
 
 DRIVERS_MODULE = "journal.core.drivers"
 SUMMARY_CHARACTERS = 200
@@ -41,9 +43,9 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
 
     def __init__(self, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues) -> None:
+                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers) -> None:
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
-        self.rules, self.choice, self.history, self.timing, self.settings = rules, choice, history, timing, settings
+        self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
 
     def handle(self, command: RecordHookCall, context: Context) -> HookReply:
         agent = self.queries.query(Agent).find(command.agent_id)
@@ -73,7 +75,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
         outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable if rule not in answers.refused_rewriters]
         refused = [(rule, line) for rule, line, _ in outcomes if line]
-        updated_input = self.updated_input(answers, outcomes)
+        output_tools = self.providers.provider(command.event.program).refusal_output_tools
+        updated_input = RefusalLine.tool_input(command.event, answers.refusal, output_tools) or self.updated_input(answers, outcomes)
         if updated_input != answers.updated_input:
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:

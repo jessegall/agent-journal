@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
+from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -9,10 +10,12 @@ from core.base.command.handler import Handler
 from core.base.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.base.driver.rule_answer import RuleAnswer
@@ -26,13 +29,17 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.base.agent_role import AgentRole
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
+
+
+REMOVAL = HookSamples.shell("rm -rf build", ShellPart("rm", CommandCategory.EDIT, ["-rf", "build"], effects=[CommandEffect.WRITES_FILES]))
 
 
 class EditLockState(StrEnum):
