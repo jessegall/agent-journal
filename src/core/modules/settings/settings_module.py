@@ -12,6 +12,7 @@ from core.modules.settings.commands.switch_setting_group_handler import SwitchSe
 from core.modules.settings.commands.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
 from core.modules.settings.commands.setting_show_subcommand import SettingShowSubcommand
 from core.modules.settings.commands.setting_tree_subcommand import SettingTreeSubcommand
+from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
 
 
 class SettingsModule(Module):
@@ -20,6 +21,7 @@ class SettingsModule(Module):
 
     name = "journal.core.settings"
     requires_core = ">=5,<6"
+    settings = SETTINGS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]

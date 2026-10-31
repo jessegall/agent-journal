@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from core.base.command.command import Command
 from core.modules.settings.models.setting import Setting
 
-ALLOWANCE_SETTINGS = "drivers.essential."
 
 
 @dataclass(frozen=True)

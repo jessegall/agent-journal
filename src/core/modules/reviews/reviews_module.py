@@ -37,6 +37,7 @@ from core.modules.reviews.models.review_step import ReviewStep
 from core.modules.reviews.models.reviewer import Reviewer
 from core.modules.reviews.models.review_point import ReviewPoint
 from core.modules.reviews.queries.review_query import ReviewQuery
+from core.modules.reviews.support.review_settings import REVIEW_SETTINGS
 
 
 class ReviewsModule(Module):
@@ -44,6 +45,7 @@ class ReviewsModule(Module):
 
     name = "journal.core.reviews"
     requires_core = ">=5,<6"
+    settings = REVIEW_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]
     models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]

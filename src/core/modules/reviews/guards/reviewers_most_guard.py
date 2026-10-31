@@ -22,4 +22,4 @@ class ReviewersMostGuard(Guard):
             return
         active = self.reviewers.environment(reviewer.environment_id).active().count()
         if active >= self.settings.limit(reviewer.environment_id):
-            raise Refusal(f"{active} reviewers are out, the limit {REVIEWERS_MOST_SETTING} sets", f"retire one with journal reviewer retire, or raise the limit with journal setting make {REVIEWERS_MOST_SETTING} <count>")
+            raise Refusal(f"{active} reviewers are out, the limit {REVIEWERS_MOST_SETTING} sets", f"retire one with journal reviewer retire, or raise the limit with journal setting set {REVIEWERS_MOST_SETTING} <count>")

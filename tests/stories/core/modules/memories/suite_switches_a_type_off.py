@@ -4,7 +4,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 SESSION_START = HookSamples.session_start()
 FACT_COMMAND = 'memory make "The cart total is in cents" --type fact --environment main'
-FACT_OFF = "setting make memories.type.fact false --environment main"
+FACT_OFF = "setting make journal.core.memories.type.fact false --environment main"
 
 
 def test_a_type_switched_off_in_an_environment_cannot_be_made_there(new_story):
@@ -26,7 +26,7 @@ def test_a_switched_off_type_s_rows_stay_but_are_not_given_and_come_back_when_sw
 def test_a_rule_switched_off_by_its_full_name_gives_nothing(new_story):
     story = new_story(fixture=BuilderStarted)
     story.run(FACT_COMMAND, actor=story.agent)
-    story.run("setting make memories.start-delivery false")
+    story.run("setting make journal.core.settings.guard.memories.start-delivery false")
     reply = story.hook("s-1", SESSION_START)
     story.expect_rows(not any("The cart total is in cents" in line for line in reply.lines))
 

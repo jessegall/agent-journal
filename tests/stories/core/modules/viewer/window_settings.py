@@ -13,7 +13,7 @@ def window_story(new_story) -> WindowStory:
 def test_a_window_reads_back_the_setting_it_saved(new_story):
     window = window_story(new_story)
     window.story.expect_success(ZOOM_SAVE, actor=window.story.user)
-    window.story.expect_success(ZOOM_READ, "key: viewer.window.notes.board.zoom", "value: 2", actor=window.story.user)
+    window.story.expect_success(ZOOM_READ, "key: journal.core.viewer.window.notes.board.zoom", "value: 2", actor=window.story.user)
 
 
 def test_a_window_saves_and_reads_its_own_settings_with_no_declaration_or_allowance(new_story):

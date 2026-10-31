@@ -14,7 +14,7 @@ def test_a_rule_with_history_is_told_once_that_it_has_control_again_after_the_lo
 
 def test_a_switched_off_rule_is_neither_asked_nor_passed_over_and_never_regains_control(new_story):
     story = new_story(SAMPLES, fixture=LeadLocked)
-    story.run("setting make samples.return-line false")
+    story.run("setting make journal.core.settings.guard.samples.return-line false")
     story.hook("s-1", HookSamples.stop())
     story.expect_absent(lines.SECOND_HOOK_CALL, "samples.return-line")
     story.run("edit-lock ended 1")

@@ -25,10 +25,8 @@ from suites.coding.modules.workers.commands.support.library_folders import Libra
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
+from suites.coding.modules.workers.support.worker_settings import LIBRARY_COPIES, LIBRARY_LINKS, WORKTREE_COMMANDS
 
-LIBRARY_LINKS = "workers.library-links"
-LIBRARY_COPIES = "workers.library-copies"
-WORKTREE_COMMANDS = "workers.worktree-commands"
 WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
@@ -47,8 +45,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         if task.state is not TaskState.OPEN:
             raise Refusal(f"task {task.id} is {task.state.value}", "a worker is dispatched to an open task")
         environment = self.queries.query(Environment).find(task.environment_id)
-        links = (*self.settings.texts(LIBRARY_LINKS, environment.id, ()), *command.library_links)
-        copies = (*self.settings.texts(LIBRARY_COPIES, environment.id, ()), *command.library_copies)
+        links = (*self.settings.texts(LIBRARY_LINKS, environment.id), *command.library_links)
+        copies = (*self.settings.texts(LIBRARY_COPIES, environment.id), *command.library_copies)
         self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
         callers = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
@@ -66,7 +64,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         try:
             self.git.cut(environment.folder, worktree)
             self.libraries.place(environment.folder, worktree, links, copies)
-            self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id, ()), (*links, *copies))
+            self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id), (*links, *copies))
             worktree = self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
             self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Exception:

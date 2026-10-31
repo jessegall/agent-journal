@@ -2,8 +2,8 @@ from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.registry import Registry
 from core.base.registry.suite_entry import SuiteEntry
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 
-SUITE_SETTING = "drivers.suite"
 
 
 class SuiteChoice:
@@ -14,7 +14,7 @@ class SuiteChoice:
         self.registry, self.settings = registry, settings
 
     def suite(self, environment_id: int) -> SuiteEntry | None:
-        value = self.settings.text(SUITE_SETTING, environment_id, "")
+        value = self.settings.text(SUITE_SETTING, environment_id)
         if value:
             return self.registry.suite(value)
         tops = self.registry.top_suites()
@@ -24,7 +24,7 @@ class SuiteChoice:
         suite = self.suite(environment_id)
         if suite is None:
             return None
-        value = self.settings.text(f"drivers.{role}", environment_id, suite.defaults.get(role, ""))
+        value = self.settings.text(f"{DRIVER_SETTINGS}{role}", environment_id) or suite.defaults.get(role, "")
         return self.registry.driver(value)
 
     def suite_names(self) -> str:

@@ -9,7 +9,7 @@ SKILLS = ("journal", "journal-etiquette", "journal-messages", "journal-notes")
 
 def nothing_due(new_story):
     story = environment(new_story)
-    story.run("setting make skills.session-start '[]'")
+    story.run("setting make journal.core.skills.session-start '[]'")
     start(story)
     return story
 

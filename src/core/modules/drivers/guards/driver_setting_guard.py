@@ -6,11 +6,11 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.modules.drivers.commands.allow_essential_rule import ALLOWANCE_SETTINGS
-from core.modules.drivers.support.suite_choice import SUITE_SETTING, SuiteChoice
+from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS
+from core.modules.drivers.support.driver_settings import MODULE_KEY, SUITE_SETTING
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 
-DRIVER_SETTINGS = "drivers."
 
 
 class DriverSettingGuard(Guard):
@@ -25,7 +25,7 @@ class DriverSettingGuard(Guard):
 
     def check(self, change: Change[Model]) -> None:
         setting = change.row
-        if not isinstance(setting, Setting) or not setting.key.startswith(DRIVER_SETTINGS) or change.event.endswith(".delete"):
+        if not isinstance(setting, Setting) or not setting.key.startswith(f"{MODULE_KEY}.") or change.event.endswith(".delete"):
             return
         if setting.key.startswith(ALLOWANCE_SETTINGS):
             if change.context.actor.type is ActorType.AGENT:

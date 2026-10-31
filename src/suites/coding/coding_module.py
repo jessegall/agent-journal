@@ -15,6 +15,7 @@ from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import O
 from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
+from suites.coding.coding_settings import CODING_SETTINGS
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show"]
 
@@ -25,6 +26,7 @@ class CodingModule(Module):
 
     name = "journal.suites.coding"
     requires_core = ">=5,<6"
+    settings = CODING_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.plans", "journal.core.settings"]
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]

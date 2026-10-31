@@ -1,8 +1,9 @@
 from collections.abc import Iterator
+from dataclasses import replace
 
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.base.registry.setting_entry import GROUP_TYPE, SettingEntry
+from core.base.registry.setting_entry import ANY_KEY, GROUP_TYPE, SettingEntry
 
 
 class DeclaredSettings:
@@ -15,6 +16,10 @@ class DeclaredSettings:
         for entry in self.registry.settings:
             if entry.key == key:
                 return entry
+        for entry in self.registry.settings:
+            group = entry.key.removesuffix(f".{ANY_KEY}")
+            if entry.key.endswith(f".{ANY_KEY}") and key.startswith(f"{group}."):
+                return replace(entry, key=key)
         raise Refusal(f"no module declares the setting {key}", "journal setting tree lists every setting")
 
     def value(self, key: str) -> SettingEntry:

@@ -4,8 +4,8 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from suites.coding.coding_settings import SENDS_SUBAGENTS_SETTING
 
-SENDS_SUBAGENTS_SETTING = "coding.builder-sends-subagents"
 
 
 class SubagentAllowanceRule(DriverRule):
@@ -20,6 +20,6 @@ class SubagentAllowanceRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.category is not ToolType.AGENT or self.settings.project_value(SENDS_SUBAGENTS_SETTING, True) is not False:
+        if tool is None or tool.category is not ToolType.AGENT or self.settings.project_value(SENDS_SUBAGENTS_SETTING) is not False:
             return RuleAnswer.allowed()
         return RuleAnswer.refused("the builder sends no subagents here: read and search yourself")

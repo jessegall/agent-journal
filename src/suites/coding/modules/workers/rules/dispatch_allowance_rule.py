@@ -5,8 +5,8 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
+from suites.coding.modules.workers.support.worker_settings import DISPATCHES_WORKERS_SETTING
 
-DISPATCHES_WORKERS_SETTING = "coding.builder-dispatches-workers"
 DISPATCH_ARGUMENTS = ("worker", "dispatch")
 
 
@@ -25,6 +25,6 @@ class DispatchAllowanceRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         dispatches = shell is not None and any(part.classification.category is CommandCategory.JOURNAL and part.arguments[:2] == DISPATCH_ARGUMENTS
                                                for part in shell.parts)
-        if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING, hook.environment_id, True) is not False:
+        if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING, hook.environment_id) is not False:
             return RuleAnswer.allowed()
         return RuleAnswer.refused("this builder builds its tasks itself: coding.builder-dispatches-workers is false")

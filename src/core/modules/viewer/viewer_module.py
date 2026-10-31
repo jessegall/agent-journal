@@ -31,6 +31,7 @@ from core.modules.viewer.commands.trust_window_handler import TrustWindowHandler
 from core.modules.viewer.commands.trust_window_subcommand import TrustWindowSubcommand
 from core.modules.viewer.models.viewer_layout import ViewerLayout
 from core.modules.viewer.models.window_permission import WindowPermission
+from core.modules.viewer.commands.support.window_setting_keys import VIEWER_SETTINGS
 
 SHELL_RUNS = ["setting make", "viewer-layout save", "window allow"]
 SHELL_READS = ["environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
@@ -43,6 +44,7 @@ class ViewerModule(Module):
 
     name = "journal.core.viewer"
     requires_core = ">=5,<6"
+    settings = VIEWER_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(ViewerLayout, excluded_subcommands=["make", "edit"]), ModelDeclaration(PersonPreset, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(WindowPermission, excluded_subcommands=["edit"])]
     migrations = [ViewerTablesMigration, PersonPresetsMigration]

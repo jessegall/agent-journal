@@ -4,7 +4,7 @@ from tests.stories.core.support.fixtures import ThreeTasks
 
 def test_a_reviewer_that_is_added_takes_the_next_queued_review_at_once(new_story):
     story = new_story(fixture=ReviewRequested)
-    story.run("setting make reviews.reviewers-most 1 --environment main")
+    story.run("setting make journal.core.reviews.reviewers-most 1 --environment main")
     reviewer_id = story.new_row_id("reviewer add --environment main", actor=story.agent)
     story.expect_success(REVIEW_SHOW, "state: reviewing", f"reviewer_id: {reviewer_id}")
     story.expect_success(f"agent show {reviewer_id}", "role: reviewer")
@@ -13,7 +13,7 @@ def test_a_reviewer_that_is_added_takes_the_next_queued_review_at_once(new_story
 def test_a_reviewer_past_the_limit_is_refused(new_story):
     story = new_story(fixture=OneReviewerAllowed)
     story.run("reviewer add --environment main", actor=story.agent)
-    story.expect_refusal("reviewer add --environment main", "1 reviewers are out, the limit reviews.reviewers-most sets", actor=story.agent)
+    story.expect_refusal("reviewer add --environment main", "1 reviewers are out, the limit journal.core.reviews.reviewers-most sets", actor=story.agent)
 
 
 def test_an_idle_reviewer_is_let_go_and_none_idle_is_refused(new_story):

@@ -9,3 +9,5 @@ class SettingType(StrEnum):
     FLAG = "flag"
     CHOICE = "choice"
     LIST = "list"
+    NUMBER_LIST = "number list"
+    ANY = "any"

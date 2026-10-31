@@ -12,7 +12,7 @@ JOURNAL_AGENT_LIST = HookSamples.shell("journal agent list", ShellPart("journal"
 
 def notes_due(new_story):
     story = environment(new_story)
-    story.run("setting make skills.session-start '[\"journal-notes\"]'")
+    story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start(story)
     return story
 
@@ -53,7 +53,7 @@ def test_a_journal_command_of_a_noun_whose_skill_is_unread_is_refused_until_it_i
 
 def test_with_nothing_due_nothing_is_refused(new_story):
     story = environment(new_story)
-    story.run("setting make skills.session-start '[]'")
+    story.run("setting make journal.core.skills.session-start '[]'")
     start(story)
     story.expect_hook_allowed("s-1", EDIT)
     story.expect_hook_allowed("s-1", HookSamples.stop())

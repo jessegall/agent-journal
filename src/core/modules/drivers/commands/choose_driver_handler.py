@@ -5,6 +5,7 @@ from core.base.registry.registry import Registry
 from core.modules.drivers.commands.choose_driver import ChooseDriver
 from core.modules.settings.models.setting import Setting
 from core.modules.settings.commands.support.setting_store import SettingStore
+from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS
 
 
 class ChooseDriverHandler(Handler[ChooseDriver, Setting]):
@@ -22,4 +23,4 @@ class ChooseDriverHandler(Handler[ChooseDriver, Setting]):
         driver = self.registry.driver(command.driver)
         if driver is None:
             raise Refusal(f"no installed module ships driver {command.driver}", "journal suite show <name> lists a suite's drivers")
-        return self.store.write(f"drivers.{driver.role}", driver.name, context.environment_id, context)
+        return self.store.write(f"{DRIVER_SETTINGS}{driver.role}", driver.name, context.environment_id, context)

@@ -1,6 +1,6 @@
 from core.base.driver.essential_allowances import EssentialAllowances
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.drivers.commands.allow_essential_rule import ALLOWANCE_SETTINGS
+from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS
 
 
 class SettingEssentialAllowances(EssentialAllowances):
@@ -10,4 +10,4 @@ class SettingEssentialAllowances(EssentialAllowances):
         self.settings = settings
 
     def allowed(self, rule: str) -> bool:
-        return self.settings.project_value(f"{ALLOWANCE_SETTINGS}{rule}", False) is True
+        return self.settings.project_value(f"{ALLOWANCE_SETTINGS}{rule}") is True

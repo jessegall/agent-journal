@@ -42,6 +42,7 @@ from core.modules.drivers.commands.suite_show_subcommand import SuiteShowSubcomm
 from core.modules.drivers.commands.suite_layout_subcommand import SuiteLayoutSubcommand
 from core.modules.drivers.commands.suite_presets_subcommand import SuitePresetsSubcommand
 from core.modules.drivers.bindings.table_hook_history import TableHookHistory
+from core.modules.drivers.support.driver_settings import DRIVERS_SETTINGS
 
 
 class DriversModule(Module):
@@ -50,6 +51,7 @@ class DriversModule(Module):
 
     name = "journal.core.drivers"
     requires_core = ">=5,<6"
+    settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration]

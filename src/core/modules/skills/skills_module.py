@@ -25,6 +25,7 @@ from core.modules.skills.commands.reset_skills_handler import ResetSkillsHandler
 from core.modules.skills.commands.skill_list_subcommand import SkillListSubcommand
 from core.modules.skills.commands.skill_show_subcommand import SkillShowSubcommand
 from core.modules.skills.commands.skill_write_subcommand import SkillWriteSubcommand
+from core.modules.skills.support.start_skills import SKILL_SETTINGS
 
 
 class SkillsModule(Module):
@@ -33,6 +34,7 @@ class SkillsModule(Module):
 
     name = "journal.core.skills"
     requires_core = ">=5,<6"
+    settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat"]
     models = [ModelDeclaration(AgentSkill, commands=[LoadAgentSkill])]
     migrations = [SkillsTablesMigration]

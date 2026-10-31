@@ -47,6 +47,7 @@ from core.modules.memories.models.keyword_memory import KeywordMemory
 from core.modules.memories.migrations.m001_memories import MemoriesTablesMigration
 from core.modules.memories.models.active_memory import ActiveMemory
 from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARKS
+from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 
 
 class MemoriesModule(Module):
@@ -55,6 +56,7 @@ class MemoriesModule(Module):
 
     name = "journal.core.memories"
     requires_core = ">=5,<6"
+    settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers"]
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),

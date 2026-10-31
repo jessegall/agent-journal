@@ -6,7 +6,6 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState
 from core.modules.memories.models.memory_mark import MemoryMark
 
-DEFAULT_MARKS = (50, 80, 90)
 
 
 class MarkTracker:

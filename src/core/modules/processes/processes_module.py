@@ -57,6 +57,7 @@ from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
+from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
 
 WINDOW_READS = ["output list", "process list", "process show", "output peek"]
 WINDOW_RUNS = ["output stop", "output watch"]
@@ -69,6 +70,7 @@ class ProcessesModule(Module):
 
     name = "journal.core.processes"
     requires_core = ">=5,<6"
+    settings = PROCESS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration]

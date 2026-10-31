@@ -28,6 +28,8 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
+from core.base.setting.setting_type import SettingType
+from core.base.setting.setting_value import SettingValue
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"
@@ -112,7 +114,7 @@ class ShellRewrite(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is not None and self.settings.project_value("samples.rewrite", False) is True:
+        if shell is not None and self.settings.project_value("samples.rewrite") is True:
             return RuleAnswer.rewritten({"command": f"sample-run -- {shell.line}"})
         return RuleAnswer.allowed()
 
@@ -123,7 +125,7 @@ class SecondShellRewrite(ShellRewrite):
     name = "samples.second-shell-rewrite"
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if self.settings.project_value("samples.rewrite-twice", False) is True and hook.event.tool is not None and hook.event.tool.shell is not None:
+        if self.settings.project_value("samples.rewrite-twice") is True and hook.event.tool is not None and hook.event.tool.shell is not None:
             return RuleAnswer.rewritten({"command": "sample-run-again"})
         return RuleAnswer.allowed()
 
@@ -150,7 +152,7 @@ class NumberedRewrite(DriverRule):
         self.settings = settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is None or hook.event.tool.shell is None or self.settings.project_value("samples.rewrite-after", False) is not True:
+        if hook.event.tool is None or hook.event.tool.shell is None or self.settings.project_value("samples.rewrite-after") is not True:
             return RuleAnswer.allowed()
         line = hook.event.tool.shell.line
         return RuleAnswer.allowed().running(SampleNumber()).rewriting_after_commands(lambda results: {"command": f"sample-run --process {results[0]} -- {line}"})
@@ -169,7 +171,7 @@ class ForegroundRun(DriverRule):
         tool_input = hook.event.tool_input()
         if hook.event.tool is None or hook.event.tool.shell is None or tool_input.get("run_in_background") is not True:
             return RuleAnswer.allowed()
-        if self.settings.project_value("samples.foreground", False) is not True:
+        if self.settings.project_value("samples.foreground") is not True:
             return RuleAnswer.allowed()
         return RuleAnswer.rewritten({str(field): value for field, value in tool_input.items() if field != "run_in_background"})
 
@@ -185,7 +187,7 @@ class CodingRewrite(DriverRule):
         self.settings = settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.event.tool is not None and hook.event.tool.shell is not None and self.settings.project_value("samples.rewrite-coding", False) is True:
+        if hook.event.tool is not None and hook.event.tool.shell is not None and self.settings.project_value("samples.rewrite-coding") is True:
             return RuleAnswer.rewritten({"command": "sample-run"})
         return RuleAnswer.allowed()
 
@@ -267,7 +269,7 @@ class StopRefusal(DriverRule):
         self.settings = settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.refused("the sample lead may not stop yet") if self.settings.project_value("samples.refuse-stops", False) is True else RuleAnswer.allowed()
+        return RuleAnswer.refused("the sample lead may not stop yet") if self.settings.project_value("samples.refuse-stops") is True else RuleAnswer.allowed()
 
 
 class ReopenClaim(DriverRule):
@@ -342,9 +344,14 @@ class ControlLead(Driver):
     opening_lines = ["You are the control lead"]
 
 
+SAMPLE_SETTINGS = [SettingValue(key, key.replace("-", " ").capitalize(), "Whether the sample rule of this name acts.", SettingType.FLAG, default=False)
+                   for key in ("rewrite", "rewrite-twice", "rewrite-after", "foreground", "rewrite-coding", "refuse-stops")]
+
+
 class SamplesModule(Module):
     name = "samples"
     requires_core = ">=5.0,<6"
+    settings = SAMPLE_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]
     migrations = [EditLocksTable]

@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.base.registry.setting_entry import SettingEntry
-from core.base.setting.setting_value import SettingDefault
 
 
 @dataclass(frozen=True)
@@ -10,5 +9,5 @@ class CurrentSetting:
     default, or a group above it that is switched off."""
 
     entry: SettingEntry
-    value: SettingDefault
+    value: object
     source: str

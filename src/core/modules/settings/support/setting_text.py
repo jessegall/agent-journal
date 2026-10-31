@@ -8,7 +8,7 @@ FLAG_WORDS = {"on": True, "true": True, "yes": True, "off": False, "false": Fals
 class SettingText:
     """Turns the text a person types after journal setting set into a value of the setting's type, or refuses it."""
 
-    def value(self, entry: SettingEntry, text: str) -> str | int | float | bool | tuple[str, ...]:
+    def value(self, entry: SettingEntry, text: str) -> str | int | float | bool | tuple[str, ...] | tuple[int, ...]:
         match SettingType(entry.type):
             case SettingType.NUMBER:
                 return self.number(entry, text)
@@ -18,11 +18,13 @@ class SettingText:
                 return FLAG_WORDS[text.lower()]
             case SettingType.LIST:
                 return tuple(item.strip() for item in text.split(",") if item.strip())
+            case SettingType.NUMBER_LIST:
+                return tuple(int(self.number(entry, item.strip())) for item in text.split(",") if item.strip())
             case SettingType.CHOICE:
                 if text not in entry.choices:
                     raise Refusal(f"{entry.key} is one of {', '.join(entry.choices)}, not '{text}'")
                 return text
-            case SettingType.TEXT:
+            case SettingType.TEXT | SettingType.ANY:
                 return text
 
     def number(self, entry: SettingEntry, text: str) -> int | float:

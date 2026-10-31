@@ -10,9 +10,8 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.prune_hook_calls import PruneHookCalls
 from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.drivers.support.driver_settings import DAYS_SETTING
 
-DAYS_SETTING = "drivers.hook-call-days"
-DEFAULT_DAYS = 30
 
 
 class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
@@ -25,8 +24,8 @@ class PruneHookCallsHandler(Handler[PruneHookCalls, int]):
         self.queries, self.repository, self.settings = queries, repository, settings
 
     def handle(self, command: PruneHookCalls, context: Context) -> int:
-        days = self.settings.project_value(DAYS_SETTING, DEFAULT_DAYS)
-        cutoff = Timestamp(context.timestamp.value - timedelta(days=days if isinstance(days, int) else DEFAULT_DAYS))
+        days = self.settings.number(DAYS_SETTING, None)
+        cutoff = Timestamp(context.timestamp.value - timedelta(days=days))
         calls = tuple(self.queries.query(HookCall).matching(Less("created_at", cutoff.text)).all_rows())
         for call in calls:
             for line in tuple(self.queries.query(AgentLine).filter(hook_call_id=call.id).all_rows()):

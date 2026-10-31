@@ -52,7 +52,7 @@ def test_a_session_start_makes_due_the_skills_of_the_session_start_setting_which
 
 def test_the_session_start_setting_names_the_skills_instead(new_story):
     story = environment(new_story)
-    story.run("setting make skills.session-start '[\"journal-notes\"]'")
+    story.run("setting make journal.core.skills.session-start '[\"journal-notes\"]'")
     start(story)
     expect_due(story, "journal-notes")
     expect_not_due(story, *DEFAULTS)
@@ -60,7 +60,7 @@ def test_the_session_start_setting_names_the_skills_instead(new_story):
 
 def test_a_start_after_a_compaction_makes_due_the_skills_of_the_after_compaction_setting(new_story):
     story = environment(new_story)
-    story.run("setting make skills.after-compaction '[\"journal-tasks\"]'")
+    story.run("setting make journal.core.skills.after-compaction '[\"journal-tasks\"]'")
     start(story)
     story.hook("s-1", HookSamples.sample("compact"))
     story.hook("s-1", HookSamples.session_start())

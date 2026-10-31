@@ -5,13 +5,13 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.journal_home import JournalHome
 from core.base.provider.providers import Providers
 from core.modules.memories.rules.support.hook_memories import HookMemories
-from core.modules.memories.support.mark_tracker import DEFAULT_MARKS, MarkTracker
+from core.modules.memories.support.mark_tracker import MarkTracker
+from core.modules.memories.support.memory_settings import MARKS_SETTING
 from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.memories.commands.open_memory_mark import OpenMemoryMark
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
 
-MARKS_SETTING = "memories.marks"
 
 
 class OpenMarkRule(DriverRule):
@@ -31,7 +31,7 @@ class OpenMarkRule(DriverRule):
         percent = self.providers.provider(hook.event.program).context_percent(self.home, hook.event.session)
         if percent is None:
             return RuleAnswer.allowed()
-        reached = self.marks.next_reached(hook.agent_id, percent, self.settings.numbers(MARKS_SETTING, hook.environment_id, DEFAULT_MARKS))
+        reached = self.marks.next_reached(hook.agent_id, percent, self.settings.numbers(MARKS_SETTING, hook.environment_id))
         if reached is None:
             return RuleAnswer.allowed()
         memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())

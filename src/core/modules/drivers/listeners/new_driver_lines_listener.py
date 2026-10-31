@@ -6,7 +6,7 @@ from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
-from core.modules.drivers.guards.driver_setting_guard import DRIVER_SETTINGS
+from core.modules.drivers.support.driver_settings import DRIVER_SETTINGS, SUITE_SETTING
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 
@@ -23,7 +23,7 @@ class NewDriverLinesListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         setting = change.row
-        if not isinstance(setting, Setting) or setting.environment_id is None or not setting.key.startswith(DRIVER_SETTINGS):
+        if not isinstance(setting, Setting) or setting.environment_id is None or not (setting.key == SUITE_SETTING or setting.key.startswith(DRIVER_SETTINGS)):
             return
         agents = self.queries.query(Agent).filter(environment_id=setting.environment_id).matching(IsNull("ended_at")).all_rows()
         for agent in tuple(agents):

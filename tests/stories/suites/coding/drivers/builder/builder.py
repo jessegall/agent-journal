@@ -23,5 +23,5 @@ def test_a_builder_is_told_it_is_the_builder_when_its_session_starts(new_story):
 def test_a_builder_sends_subagents_only_while_its_setting_allows(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_hook_allowed("s-1", HookSamples.subagent())
-    story.run("setting make coding.builder-sends-subagents false")
+    story.run("setting make journal.suites.coding.builder-sends-subagents false")
     story.expect_hook_refusal("s-1", HookSamples.subagent(), "the builder sends no subagents here")

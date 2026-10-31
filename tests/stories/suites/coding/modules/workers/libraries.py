@@ -18,7 +18,7 @@ def test_a_folder_the_environment_copies_is_a_copy_in_the_worktree_that_git_neve
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
-    story.expect_success("""setting make workers.library-copies '["vendor"]' --environment main""", "key: workers.library-copies")
+    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
     worker_id = dispatched_worker(story).id
     repository.expect_copy(worker_id, "vendor", LIBRARY_FILE, LIBRARY_TEXT)
     repository.expect_excluded(worker_id, "vendor")
@@ -38,7 +38,7 @@ def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
     repository = repository_environment(story)
     repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
     (repository.folder / "vendor" / LIBRARY_FILE).chmod(0)
-    story.expect_success("""setting make workers.library-copies '["vendor"]' --environment main""", "key: workers.library-copies")
+    story.expect_success("""setting make journal.suites.coding.workers.library-copies '["vendor"]' --environment main""", "key: journal.suites.coding.workers.library-copies")
     outcome = story.run(DISPATCH, actor=story.agent)
     (repository.folder / "vendor" / LIBRARY_FILE).chmod(0o644)
     story.expect_rows(outcome.code != 0)

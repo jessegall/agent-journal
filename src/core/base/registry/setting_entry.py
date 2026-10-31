@@ -5,6 +5,7 @@ from typing import Any
 from core.base.setting.setting_value import SettingDefault
 
 GROUP_TYPE = "group"
+ANY_KEY = "*"
 
 
 @dataclass(frozen=True)

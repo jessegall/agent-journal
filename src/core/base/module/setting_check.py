@@ -31,7 +31,7 @@ class SettingCheck:
             if len(node.description) > DESCRIPTION_LIMIT_CHARACTERS:
                 yield f"the description of {key} is {len(node.description)} characters; a description is at most {DESCRIPTION_LIMIT_CHARACTERS}"
             if isinstance(node, SettingGroup):
-                if not node.children:
+                if not node.children and node.any_key is None:
                     yield f"the setting group {key} holds no setting"
                 yield from self.node_problems(key, node.children)
             elif node.secret and node.default is not None:

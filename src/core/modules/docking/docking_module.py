@@ -21,6 +21,7 @@ from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.migrations.m002_docks_of_existing_environments import ExistingEnvironmentDocksMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
+from core.modules.docking.support.dock_limits import DOCKING_SETTINGS
 
 
 class DockingModule(Module):
@@ -28,6 +29,7 @@ class DockingModule(Module):
 
     name = "journal.core.docking"
     requires_core = ">=5,<6"
+    settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
     migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration]

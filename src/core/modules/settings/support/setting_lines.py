@@ -1,9 +1,10 @@
 from core.base.registry.setting_entry import GROUP_TYPE
 from core.base.subcommand.output import Output
+from core.base.type_guards import is_list, is_tuple
 from core.modules.settings.support.current_setting import CurrentSetting
 
 SET = "set"
-NOT_SET = "not set"
+NO_VALUE_TEXT = "not set"
 
 
 class SettingLines:
@@ -20,9 +21,9 @@ class SettingLines:
         if setting.entry.type == GROUP_TYPE:
             return "on"
         if setting.entry.secret:
-            return NOT_SET if setting.value is None else SET
+            return NO_VALUE_TEXT if setting.value is None else SET
         if setting.value is None:
-            return NOT_SET
-        if isinstance(setting.value, tuple | list):
+            return NO_VALUE_TEXT
+        if is_tuple(setting.value) or is_list(setting.value):
             return ", ".join(str(item) for item in setting.value)
         return str(setting.value)

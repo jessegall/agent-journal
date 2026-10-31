@@ -72,7 +72,7 @@ def test_a_type_no_module_declares_is_refused(new_story):
 
 def test_a_dock_holds_no_more_items_than_its_setting_allows(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
-    story.expect_success("setting make docking.most-items 1 --environment main")
+    story.expect_success("setting make journal.core.docking.most-items 1 --environment main")
     docked(story, running_task(story, "First"))
     with pytest.raises(Refusal, match="the dock allows at most 1 items"):
         docked(story, running_task(story, "Second"))

@@ -39,6 +39,7 @@ from suites.coding.modules.workers.commands.short_proof import ShortProof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
+from suites.coding.modules.workers.support.worker_settings import WORKER_SETTINGS
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
 
@@ -48,6 +49,7 @@ class WorkersModule(Module):
 
     name = "journal.suites.coding.workers"
     requires_core = ">=5,<6"
+    settings = WORKER_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers"]
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),

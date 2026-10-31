@@ -1,11 +1,18 @@
+from core.base.setting.setting_type import SettingType
+from core.base.setting.setting_value import SettingValue
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
-REVIEWER_SETTING = "reviews.reviewer"
-REVIEWERS_MOST_SETTING = "reviews.reviewers-most"
-PROGRAM_SETTING = "reviews.program"
-MODEL_SETTING = "reviews.model"
-DEFAULT_REVIEWERS_MOST = 1
-DEFAULT_PROGRAM = "claude"
+MODULE_KEY = "journal.core.reviews"
+REVIEWER_SETTING = f"{MODULE_KEY}.reviewer"
+REVIEWERS_MOST_SETTING = f"{MODULE_KEY}.reviewers-most"
+PROGRAM_SETTING = f"{MODULE_KEY}.program"
+MODEL_SETTING = f"{MODULE_KEY}.model"
+REVIEW_SETTINGS = [
+    SettingValue("reviewer", "Reviewers", "Whether finished work is reviewed by a reviewer before it is merged.", SettingType.FLAG, default=False),
+    SettingValue("reviewers-most", "Reviewers at once", "How many reviewers may work at the same time.", SettingType.NUMBER, default=1),
+    SettingValue("program", "Reviewer program", "The agent program a reviewer runs in.", SettingType.TEXT, default="claude"),
+    SettingValue("model", "Reviewer model", "The model a reviewer uses; empty uses the program's own.", SettingType.TEXT, default=""),
+]
 
 
 class ReviewSettings:
@@ -16,14 +23,13 @@ class ReviewSettings:
         self.settings = settings
 
     def enabled(self, environment_id: int) -> bool:
-        return self.settings.value(REVIEWER_SETTING, environment_id, False) is True
+        return self.settings.flag(REVIEWER_SETTING, environment_id)
 
     def limit(self, environment_id: int) -> int:
-        value = self.settings.value(REVIEWERS_MOST_SETTING, environment_id, DEFAULT_REVIEWERS_MOST)
-        return value if isinstance(value, int) and not isinstance(value, bool) else DEFAULT_REVIEWERS_MOST
+        return self.settings.number(REVIEWERS_MOST_SETTING, environment_id)
 
     def program(self, environment_id: int) -> str:
-        return self.settings.text(PROGRAM_SETTING, environment_id, DEFAULT_PROGRAM)
+        return self.settings.text(PROGRAM_SETTING, environment_id)
 
     def model(self, environment_id: int) -> str:
-        return self.settings.text(MODEL_SETTING, environment_id, "")
+        return self.settings.text(MODEL_SETTING, environment_id)
