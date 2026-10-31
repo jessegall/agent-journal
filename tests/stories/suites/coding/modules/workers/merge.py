@@ -52,7 +52,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     base_tip = repository.tip(ENVIRONMENT_BRANCH)
-    story.expect_refusal(f"worker merge {worker.id}", "cart.py", actor=story.agent)
+    story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worktree show 1", "state: cut")
     story.expect_text(f"agent-line list --agent {worker.id}", "cart.py")

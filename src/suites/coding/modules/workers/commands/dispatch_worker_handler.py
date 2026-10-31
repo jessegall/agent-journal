@@ -10,14 +10,14 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.agents.agent import Agent
-from core.modules.agents.agent_role import AgentRole
-from core.modules.agents.agent_start import AgentStart
-from core.modules.environments.environment import Environment
-from core.modules.settings.setting_values import SettingValues
-from core.modules.tasks.task import Task
-from core.modules.tasks.task_start import TaskStart
-from core.modules.tasks.task_state import TaskState
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.enums.agent_role import AgentRole
+from core.modules.agents.commands.start_agent import StartAgent
+from core.modules.environments.models.environment import Environment
+from core.modules.settings.bindings.support.setting_values import SettingValues
+from core.modules.tasks.models.task import Task
+from core.modules.tasks.commands.start_task import StartTask
+from core.modules.tasks.models.enums.task_state import TaskState
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
 from suites.coding.modules.workers.commands.support.library_folders import LibraryFolders
 from suites.coding.modules.workers.models.worktree import Worktree
@@ -50,7 +50,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
         copies = (*self.settings.texts(LIBRARY_COPIES, environment.id, ()), *command.library_copies)
         self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
-        start = AgentStart(str(uuid4()), self.program(context.actor), AgentRole.WORKER, context.actor.id)
+        start = StartAgent(str(uuid4()), self.program(context.actor), AgentRole.WORKER, context.actor.id)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
         worktree = self.repository.save(Worktree(agent_id=worker.id, environment_id=environment.id, task_id=task.id, creator_id=context.actor.id,
@@ -62,7 +62,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, Agent]):
             self.libraries.place(environment.folder, worktree, links, copies)
             self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id, ()), (*links, *copies))
             self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
-            self.bus.dispatch(TaskStart(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
+            self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Refusal:
             self.git.remove(environment.folder, worktree)
             raise

@@ -16,7 +16,7 @@ from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import Proo
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from tests.unit.core.base.command.test_commands import ItemMake
+from tests.unit.core.base.command.test_commands import MakeItem
 
 WORKTREE = Worktree(id=1, version=1, agent_id=2, environment_id=1, task_id=1, creator_id=1, folder="/work/journal/.journal/worktrees/main/worker-2",
                     branch="journal/main/worker-2", base_branch="version-5")
@@ -24,7 +24,7 @@ PROOF = Proof(id=1, version=1, task_id=1, worktree_id=1, creator_id=2, point=1, 
 
 
 def moved(old_row: Model, new_row: Model) -> Change[Model]:
-    return Change(old_row, new_row, Context(Actor(2, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), ItemMake(title="Dune"), frozenset()))
+    return Change(old_row, new_row, Context(Actor(2, ActorType.AGENT), Timestamp(datetime(2026, 10, 31, tzinfo=timezone.utc)), MakeItem(title="Dune"), frozenset()))
 
 
 def refusal(old_row: Model, new_row: Model) -> str:

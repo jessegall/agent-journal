@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.tasks.task import Task
+from core.modules.tasks.models.task import Task
 
 
 @dataclass(frozen=True)

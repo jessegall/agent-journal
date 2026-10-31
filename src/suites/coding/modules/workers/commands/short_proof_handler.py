@@ -2,9 +2,9 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.agent_line import AgentLine
-from core.modules.tasks.task import Task
-from core.modules.tasks.task_lifecycle import TaskLifecycle
+from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.short_proof import ShortProof
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle

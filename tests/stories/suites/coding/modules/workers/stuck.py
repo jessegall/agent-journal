@@ -1,4 +1,4 @@
-from core.modules.drivers.repeated_stop_release import STOP_REFUSAL_COUNT
+from core.modules.drivers.rules.repeated_stop_release_rule import STOP_REFUSAL_COUNT
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask

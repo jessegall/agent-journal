@@ -3,8 +3,8 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.environments.environment import Environment
-from core.modules.tasks.task import Task
+from core.modules.environments.models.environment import Environment
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.release_worker import ReleaseWorker
 from suites.coding.modules.workers.commands.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.commands.worker_release import WorkerRelease

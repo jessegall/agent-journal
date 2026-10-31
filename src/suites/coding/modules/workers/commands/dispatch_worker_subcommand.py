@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.agents.agent import Agent
+from core.modules.agents.models.agent import Agent
 from suites.coding.modules.workers.commands.dispatch_worker import DispatchWorker
 
 

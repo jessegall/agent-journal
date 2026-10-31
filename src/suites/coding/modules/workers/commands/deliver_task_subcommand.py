@@ -1,8 +1,8 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.tasks.task import Task
+from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task import DeliverTask
 
 

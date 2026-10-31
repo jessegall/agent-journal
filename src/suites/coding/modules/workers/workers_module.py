@@ -2,6 +2,8 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from suites.coding.modules.workers.commands.dispatch_worker_handler import DispatchWorkerHandler
 from suites.coding.modules.workers.commands.dispatch_worker_subcommand import DispatchWorkerSubcommand
+from suites.coding.modules.workers.commands.merge_worker_handler import MergeWorkerHandler
+from suites.coding.modules.workers.commands.merge_worker_subcommand import MergeWorkerSubcommand
 from suites.coding.modules.workers.commands.release_worker_handler import ReleaseWorkerHandler
 from suites.coding.modules.workers.commands.release_worker_subcommand import ReleaseWorkerSubcommand
 from suites.coding.modules.workers.commands.deliver_task_handler import DeliverTaskHandler
@@ -32,6 +34,6 @@ class WorkersModule(Module):
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"])]
     migrations = [WorkersTablesMigration]
-    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler]
-    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand]
+    handlers = [DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler]
+    subcommands = [DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard]

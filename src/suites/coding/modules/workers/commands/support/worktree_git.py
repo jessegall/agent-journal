@@ -27,6 +27,27 @@ class WorktreeGit:
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
 
+    def head(self, folder: str) -> str:
+        return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
+
+    def rebase(self, worktree: Worktree) -> tuple[str, ...]:
+        if self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0:
+            return ()
+        conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.split()
+        self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+        return tuple(conflicts)
+
+    def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
+        changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())
+        uncommitted = {line[3:] for line in self.checked(folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.splitlines()}
+        return tuple(sorted(changed & uncommitted))
+
+    def merge(self, folder: str, worktree: Worktree, message: str) -> None:
+        finished = self.git(folder, CHECKOUT_LIMIT_SECONDS, "merge", "--no-ff", "-m", message, worktree.branch)
+        if finished.returncode != 0:
+            self.git(folder, GIT_LIMIT_SECONDS, "merge", "--abort")
+            raise Refusal(f"git merge of {worktree.branch} failed in {folder}", (finished.stderr or finished.stdout).strip())
+
     def exclude_file(self, worktree: Worktree) -> Path:
         return Path(worktree.folder) / self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rev-parse", "--git-path", "info/exclude").stdout.strip()
 

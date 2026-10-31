@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.commands.release_worker import ReleaseWorker

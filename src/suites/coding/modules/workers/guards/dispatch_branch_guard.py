@@ -3,7 +3,7 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.environments.environment import Environment
+from core.modules.environments.models.environment import Environment
 from suites.coding.modules.workers.models.worktree import Worktree
 
 

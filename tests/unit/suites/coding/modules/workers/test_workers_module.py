@@ -1,5 +1,5 @@
 from suites import DEFAULT_SUITES
-from suites.coding.module import CodingModule
+from suites.coding.coding_module import CodingModule
 from suites.coding.modules.workers.workers_module import WorkersModule
 
 
