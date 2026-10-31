@@ -22,3 +22,19 @@ test("an outcome-coloured family tones the mark by its outcome, and a process ma
     expect(markLook({id: 1, text: "x", outcome: "failed", state: "shown"}, check)).toMatchObject({tone: "danger", active: true, action: "", handlers: {}});
     expect(markLook({id: 1, text: "x", outcome: "passed", state: "ended"}, check)).toMatchObject({tone: "good", active: false, ended: true});
 });
+
+import {vi} from "vitest";
+import {go, peekRef} from "../src/route.js";
+
+vi.mock("../src/route.js", () => ({go: vi.fn(), peekRef: vi.fn()}));
+
+test("a click on an open-row mark opens its row, on an open-page mark the page its row names, and on the others does nothing of its own", () => {
+    const row = {id: 1, text: "x", target_model: "tasks", target_id: 8};
+    markLook(row, {click: "open row"}).handlers.onAct();
+    expect(peekRef).toHaveBeenCalledWith("tasks:8");
+    markLook({...row, target_model: "search", target_id: 0}, {click: "open page"}).handlers.onAct();
+    expect(go).toHaveBeenCalledWith("search", 0);
+    expect(markLook(row, {click: "unfold"})).toMatchObject({action: "", handlers: {}});
+    expect(markLook(row, {click: "nothing"})).toMatchObject({action: "", handlers: {}});
+    expect(markLook(row, {click: "open row"}).action).toBe("Open the task");
+});

@@ -1,12 +1,19 @@
-import {peekRef} from "../route.js";
-import {refAction} from "./markAction.js";
+import {go, peekRef} from "../route.js";
+import {actionLabel, refAction} from "./markAction.js";
 
 const OUTCOME_TONES = {passed: "good", failed: "danger", warned: "warn", running: ""};
+
+// what a click does besides unfolding a second line, which ChatMark does itself: open the row or the page the mark names
+const OPENERS = {
+    "open row": (mark) => peekRef(`${mark.target_model}:${mark.target_id}`),
+    "open page": (mark) => go(mark.target_model, mark.target_id || 0),
+};
+const ACTIONS = {"open row": (mark) => refAction(mark.target_model), "open page": () => actionLabel("pages")};
 
 // the mark object ChatMark draws, from a chat mark row and its type's declaration: the fields Turn.vue built in version 4
 export function markLook(mark, declaration) {
     const kind = declaration || {};
-    const opensRow = kind.click === "open row" && Boolean(mark.target_model && mark.target_id);
+    const opens = OPENERS[kind.click] && mark.target_model ? kind.click : "";
     return {
         key: `chat_mark:${mark.id}`,
         icon: kind.family_icon || "",
@@ -20,7 +27,7 @@ export function markLook(mark, declaration) {
         ended: mark.state === "ended",
         active: Boolean(kind.process) && mark.state === "shown",
         time: mark.created_at,
-        action: opensRow ? refAction(mark.target_model) : "",
-        handlers: opensRow ? {onAct: () => peekRef(`${mark.target_model}:${mark.target_id}`)} : {},
+        action: opens ? ACTIONS[opens](mark) : "",
+        handlers: opens ? {onAct: () => OPENERS[opens](mark)} : {},
     };
 }

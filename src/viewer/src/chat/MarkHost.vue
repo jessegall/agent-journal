@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import ChatMark from "../kit/ChatMark.vue";
 import MarkBody from "./MarkBody.vue";
 import MarkButtons from "./MarkButtons.vue";
@@ -10,13 +10,15 @@ import {markLook} from "../domain/markLook.js";
 const props = defineProps({mark: {type: Object, required: true}});
 const declaration = computed(() => markDeclaration(props.mark.type));
 const look = computed(() => markLook(props.mark, declaration.value));
+// a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
 const opens = computed(() => Boolean(props.mark.lines || props.mark.target_model === "output" || declaration.value?.body_url));
+const opened = ref(false);
 </script>
 
 <template>
     <div class="thread-turn card" :data-ref="`chat_mark:${mark.id}`">
         <span class="mark-row">
-            <ChatMark :mark="look" v-on="look.handlers">
+            <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
                 <template v-if="opens" #default="{shown}">
                     <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                 </template>
