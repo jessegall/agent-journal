@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal/socket"
@@ -112,8 +114,15 @@ func PythonPath() string {
 	return "python3"
 }
 
-// InMaintenance is whether a change of the journal's code has the server stopped, by a mark not older than MaintenanceLimit.
+// InMaintenance is whether a change of the journal's code has the server stopped: its mark names the process making
+// the change, and counts while that process runs and the mark is not older than MaintenanceLimit.
 func InMaintenance(home string) bool {
-	info, err := os.Stat(filepath.Join(home, MaintenanceMark))
-	return err == nil && time.Since(info.ModTime()) < MaintenanceLimit
+	path := filepath.Join(home, MaintenanceMark)
+	info, err := os.Stat(path)
+	if err != nil || time.Since(info.ModTime()) >= MaintenanceLimit {
+		return false
+	}
+	text, err := os.ReadFile(path)
+	pid, parsed := strconv.Atoi(strings.TrimSpace(string(text)))
+	return err != nil || parsed != nil || ProcessAlive(pid)
 }

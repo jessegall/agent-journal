@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"testing"
@@ -113,7 +114,7 @@ func TestAServerThatNeverAnswersEndsTheWaitWithNoServer(t *testing.T) {
 
 func TestAMaintenanceMarkMeansNoServerIsStartedWhileTheLockIsFree(t *testing.T) {
 	home := shortHome(t)
-	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), nil, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), []byte(strconv.Itoa(os.Getpid())), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	starts := 0
@@ -147,5 +148,15 @@ func TestAMaintenanceMarkLongForgottenIsIgnored(t *testing.T) {
 	})
 	if err != nil || starts != 1 {
 		t.Fatalf("starts %d, err %v", starts, err)
+	}
+}
+
+func TestAMaintenanceMarkOfAProcessThatIsGoneIsIgnored(t *testing.T) {
+	home := shortHome(t)
+	if err := os.WriteFile(filepath.Join(home, MaintenanceMark), []byte("2147483646"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if InMaintenance(home) {
+		t.Fatal("the mark of a process that is gone held the clients off")
 	}
 }

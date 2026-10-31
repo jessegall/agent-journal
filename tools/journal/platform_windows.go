@@ -16,3 +16,8 @@ func LockIsFree(path string) bool {
 func DetachedProcess() *syscall.SysProcAttr {
 	return nil
 }
+
+// ProcessAlive is never true on Windows, where no server is started.
+func ProcessAlive(pid int) bool {
+	return false
+}

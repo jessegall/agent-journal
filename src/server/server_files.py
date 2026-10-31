@@ -78,7 +78,7 @@ class ServerFiles:
             log.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')} {text}\n")
 
     def mark_maintenance(self) -> None:
-        self.maintenance.touch()
+        self.maintenance.write_text(str(os.getpid()))
 
     def clear_maintenance(self) -> None:
         self.maintenance.unlink(missing_ok=True)

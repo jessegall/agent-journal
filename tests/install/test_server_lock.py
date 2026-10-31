@@ -54,7 +54,7 @@ def test_a_client_started_while_the_lock_is_held_waits_and_starts_the_new_server
     journal.wait_healthy()
     assert running.returncode == 0, stdout + stderr
     assert (journal.home.folder / "server.pid").exists()
-    subprocess.run([str(client), "server", "stop"], env=journal.environment(), capture_output=True, timeout=60)
+    journal.stop_through(client)
 
 
 def test_a_server_cannot_start_on_its_own_while_the_lock_is_held(journal):

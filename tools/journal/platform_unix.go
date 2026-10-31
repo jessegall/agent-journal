@@ -28,3 +28,9 @@ func LockIsFree(path string) bool {
 func DetachedProcess() *syscall.SysProcAttr {
 	return &syscall.SysProcAttr{Setsid: true}
 }
+
+// ProcessAlive is whether a process of that number still runs.
+func ProcessAlive(pid int) bool {
+	err := syscall.Kill(pid, 0)
+	return err == nil || err == syscall.EPERM
+}
