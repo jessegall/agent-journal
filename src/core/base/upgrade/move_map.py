@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from core.base.database.database import Database
 from core.base.database.upgrade_map_table import UpgradeMapTable
+from core.base.database.moved_row import MovedRow
 
 
 class MoveMap:
@@ -14,13 +15,13 @@ class MoveMap:
     def new_id(self, old_table: str, old_id: int) -> int | None:
         return self.table.new_id(old_table, old_id)
 
-    def record(self, old_table: str, old_id: int, new_table: str, new_id: int) -> None:
-        self.table.record(old_table, old_id, new_table, new_id)
+    def record(self, moved: MovedRow) -> None:
+        self.table.record(moved)
 
     def transfer(self, old_table: str, old_id: int, new_table: str, insert: Callable[[], int]) -> bool:
         if self.new_id(old_table, old_id) is not None:
             return False
-        self.record(old_table, old_id, new_table, insert())
+        self.record(MovedRow(old_table, old_id, new_table, insert()))
         return True
 
     def count(self) -> int:

@@ -43,7 +43,7 @@ class TasksMove(VersionFourMove):
                 report.skip(TABLE, row["id"], f"state {row['state']} is none of {', '.join(member.value for member in TaskState)}")
             else:
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, state, creators.actor_id(row["creator"]), holders.get(row["id"]), context)))
-        self.logs(source, rows, creators, map, report, context)
+        self.move_logs(source, rows, creators, map, report, context)
         self.dependencies(source, rows, creators, map, report, context)
         return report
 
@@ -80,7 +80,7 @@ class TasksMove(VersionFourMove):
             rows.set_state(TABLE, task_id, step.value)
         return task_id
 
-    def logs(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
+    def move_logs(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
         for row in source.rows("task_logs"):
             task_id = map.new_id(TABLE, row["task_id"]) if row["task_id"] is not None else None
             if task_id is None or not row["line"]:

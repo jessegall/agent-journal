@@ -2,6 +2,7 @@ import json
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.base.database.moved_row import MovedRow
 
 MAP = "version_four_map"
 MOVES = "version_four_moves"
@@ -18,8 +19,9 @@ class UpgradeMapTable:
         rows = self.database.rows(Statement(f"SELECT new_id FROM {MAP} WHERE old_table = ? AND old_id = ?", (old_table, old_id)))
         return int(rows[0]["new_id"]) if rows else None
 
-    def record(self, old_table: str, old_id: int, new_table: str, new_id: int) -> None:
-        self.database.update(Statement(f"INSERT OR IGNORE INTO {MAP} (old_table, old_id, new_table, new_id) VALUES (?, ?, ?, ?)", (old_table, old_id, new_table, new_id)))
+    def record(self, moved: MovedRow) -> None:
+        self.database.update(Statement(f"INSERT OR IGNORE INTO {MAP} (old_table, old_id, new_table, new_id) VALUES (?, ?, ?, ?)",
+                                       (moved.old_table, moved.old_id, moved.new_table, moved.new_id)))
 
     def count(self) -> int:
         return int(self.database.rows(Statement(f"SELECT count(*) AS total FROM {MAP}"))[0]["total"])
