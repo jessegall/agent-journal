@@ -22,5 +22,5 @@ class SkillCheck:
                 if not (module.folder() / SKILLS_FOLDER / skill.folder / skill.file).exists():
                     problems.append(f"{name} has no {skill.file} in its module's {SKILLS_FOLDER} folder")
                 problems += [f"{name} names {event}, which no model's events match" for event in skill.events
-                             if not any(EventPattern(event).matches(known) for known in events)]
+                             if not any(EventPattern(event).matches(raised) for raised in events)]
         return tuple(problems)

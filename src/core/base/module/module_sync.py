@@ -148,7 +148,7 @@ class ModuleSync:
             for skill in module.skills:
                 path = module.folder() / SKILLS_FOLDER / skill.folder / skill.file
                 entries.append(SkillEntry(skill.folder, module.name, skill.description, tuple(skill.keywords), tuple(skill.commands), tuple(skill.events),
-                                          SkillDigest.of(path.read_text()), str(path), module in shipped))
+                                          SkillDigest.digest(path.read_text()), str(path), module in shipped))
         return tuple(entries)
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:

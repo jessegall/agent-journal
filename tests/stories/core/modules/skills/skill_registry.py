@@ -13,7 +13,7 @@ def test_the_registry_keeps_a_skill_entry_for_every_declaration_of_two_modules(n
     skills = {skill.folder: skill for skill in Registry.read(story.container.get(Database)).skills}
     assert sorted(skills) == ["journal-notes", "journal-plans", "journal-tasks"]
     assert skills["journal-plans"].module == "planskills" and not skills["journal-plans"].shipped
-    assert skills["journal-notes"].digest == SkillDigest.of("---\nname: journal-notes\ndescription: How to take notes\n---\n\nWrite a note for every decision.\n")
+    assert skills["journal-notes"].digest == SkillDigest.digest("---\nname: journal-notes\ndescription: How to take notes\n---\n\nWrite a note for every decision.\n")
 
 
 def test_api_skills_lists_the_skills_of_two_modules_behind_the_login(new_story):

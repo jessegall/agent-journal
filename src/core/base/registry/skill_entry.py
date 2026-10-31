@@ -5,8 +5,9 @@ from typing import Any
 
 @dataclass(frozen=True)
 class SkillEntry:
-    """A registered skill: its folder and the module that declares it, its description, keywords, command nouns
-    and event patterns, the digest of its text, the file the text is in, and whether the journal ships its module."""
+    """A registered skill: its folder and the module that declares it, its description, keywords, command
+    nouns and event patterns, the digest of its text, the file the text is in, and whether the journal ships
+    its module."""
 
     folder: str
     module: str

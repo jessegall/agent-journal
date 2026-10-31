@@ -15,6 +15,10 @@ class JournalHome:
     folder: Path
 
     @property
+    def project_folder(self) -> Path:
+        return self.folder.resolve().parent
+
+    @property
     def database(self) -> Path:
         return self.folder / "journal.db"
 
