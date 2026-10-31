@@ -2,33 +2,52 @@
 import {computed} from "vue";
 import {RowList, useRows} from "@journal/window-kit";
 
-const {rows: waits, failure} = useRows("wait list", ["wait.*"]);
+const {rows: waits, failure} = useRows("wait list", ["wait.*", "question.*"]);
 const {rows: targets} = useRows("wait-target list", ["wait_target.*"]);
-const rows = computed(() => waits.value.map((wait) => ({
+
+function waited(openedAt) {
+    const minutes = Math.max(0, Math.round((Date.now() - Date.parse(openedAt)) / 60000));
+    return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
+}
+
+const rows = computed(() => waits.value.filter((wait) => wait.state === "open").map((wait) => ({
     id: wait.id,
     label: wait.focus,
     status: wait.state,
     where: targets.value.filter((target) => target.wait_id === wait.id).map((target) => `${target.row_table}:${target.row_id}`).join(", "),
+    waited: waited(wait.opened_at),
 })));
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" empty="Nothing is waiting">
-        <template #default="{row}">
-            <span class="label">{{ row.label }}</span>
-            <span class="status">{{ row.status }}</span>
-            <span class="where">{{ row.where }}</span>
-        </template>
-    </RowList>
+    <div class="waiting">
+        <h3 class="waiting-heading">What the agent is waiting on</h3>
+        <RowList :rows="rows" :failure="failure" empty="Nothing is waiting">
+            <template #default="{row}">
+                <span class="label">{{ row.label }}</span>
+                <span class="status">{{ row.status }}</span>
+                <span class="where">{{ row.where }}</span>
+                <span class="waited">{{ row.waited }}</span>
+            </template>
+        </RowList>
+    </div>
 </template>
 
 <style scoped>
+.waiting-heading {
+    margin: 0 8px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+}
+
 .label {
     flex: 1;
 }
 
 .status,
-.where {
+.where,
+.waited {
     color: var(--text-3);
     font-size: 12px;
 }

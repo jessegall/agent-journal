@@ -29,12 +29,15 @@ function recording(answers) {
 
 test("the waiting list shows each item with its label, its status and where it waits", async () => {
     const text = await drawn(Waiting, context({
-        "wait list": page([{id: 1, focus: "Which database?", state: "open"}]),
+        "wait list": page([{id: 1, focus: "Which database?", state: "open", opened_at: new Date(Date.now() - 5 * 60000).toISOString()}, {id: 2, focus: "Old wait", state: "ended", opened_at: "2026-10-31T09:00:00+00:00"}]),
         "wait-target list": page([{id: 1, wait_id: 1, row_table: "questions", row_id: 1}]),
     }));
     expect(text).toContain("Which database?");
     expect(text).toContain("open");
     expect(text).toContain("questions:1");
+    expect(text).toContain("5 min");
+    expect(text).toContain("What the agent is waiting on");
+    expect(text).not.toContain("Old wait");
 });
 
 test("an empty waiting list shows an empty state", async () => {

@@ -43,4 +43,4 @@ class QuestionsModule(Module):
     windows = [WindowDeclaration("questions.questions", "Questions", "questions.js", WindowLoading.COMPONENT, icon=WindowIcon.QUESTION,
                                  reads=["question list", "question show"], runs=["question answer", "question close"], events=["question.*"]),
                WindowDeclaration("questions.waiting", "Waiting", "waiting.js", WindowLoading.COMPONENT, icon=WindowIcon.HALT,
-                                 reads=["wait list", "wait-target list"], events=["wait.*", "wait_target.*"])]
+                                 reads=["wait list", "wait-target list", "question list"], events=["wait.*", "wait_target.*", "question.*"])]
