@@ -118,8 +118,12 @@ class Story:
     def expect_hook_through(self, session: str, sample: dict[str, object], *expected_lines: str) -> None:
         reply = self.hook(session, sample)
         assert reply.refusal == "", f"the hook was refused: {reply.refusal}"
-        missing = [line for line in expected_lines if not any(line in given for given in reply.lines)]
+        missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
         assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
+
+    def expect_absent_hook_line(self, session: str, sample: dict[str, object], line: str) -> None:
+        reply = self.hook(session, sample)
+        assert not any(line in reply_line for reply_line in reply.lines), f"the hook's lines {list(reply.lines)} hold {line!r}"
 
     def expect_hook_refusal(self, session: str, sample: dict[str, object], reason: str) -> None:
         reply = self.hook(session, sample)

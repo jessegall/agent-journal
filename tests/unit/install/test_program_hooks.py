@@ -20,3 +20,9 @@ def test_a_missing_settings_file_is_made_with_the_hooks_alone(tmp_path):
     settings = tmp_path / ".codex" / "hooks.json"
     ProgramHooks("codex", settings, ["Stop"], 60).write('"/p/.journal/bin/journal-hook"', Path("/p"))
     assert list(json.loads(settings.read_text())) == ["hooks"]
+
+
+def test_a_programs_own_entry_fields_ride_on_each_hook_so_codex_reads_whole_lines(tmp_path):
+    settings = tmp_path / ".codex" / "hooks.json"
+    ProgramHooks("codex", settings, ["Stop"], 60, {"additionalContextLimit": 0}).write('"/p/.journal/bin/journal-hook"', Path("/p"))
+    assert json.loads(settings.read_text())["hooks"]["Stop"][0]["hooks"][0]["additionalContextLimit"] == 0
