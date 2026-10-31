@@ -26,6 +26,22 @@
             },
             {
                 "nameMatches": "^(tmp_path|tmp_path_factory|capsys|monkeypatch|request)$"
+            },
+            {
+                "of": "parent",
+                "kind": "SelectorExpr"
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "kind": "CallExpr"
+                    },
+                    {
+                        "of": "child:fun",
+                        "is": "identifier"
+                    }
+                ]
             }
         ]
     },

@@ -25,7 +25,24 @@
                 ]
             }
         ],
-        "reject": []
+        "reject": [
+            {
+                "of": "parent",
+                "kind": "SelectorExpr"
+            },
+            {
+                "of": "parent",
+                "all": [
+                    {
+                        "kind": "CallExpr"
+                    },
+                    {
+                        "of": "child:fun",
+                        "is": "identifier"
+                    }
+                ]
+            }
+        ]
     },
     "sin": {
         "name": "go-unitless-quantity-name",
