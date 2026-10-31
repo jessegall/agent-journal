@@ -1,5 +1,8 @@
 import fcntl
 import os
+import time
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import IO
@@ -8,12 +11,14 @@ from server.server_files_error import ServerFilesError
 
 
 SOCKET_FILE_MODE = 0o600
+LOCK_POLL_SECONDS = 0.05
 def socket_path(home: JournalHome, name: str = SERVER_SOCKET) -> Path:
     return home.socket(name)
 class ServerFiles:
-    """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, held for the
-    server's whole life; and its pid file. Only the server that holds the lock removes a leftover socket, and
-    a stopping server removes the socket and pid file only while the pid file still names it."""
+    """The files a running server keeps in the journal's folder: its socket, owner-only; its lock, kept for
+    the server's whole life or, for a while, by a helper; and its pid file. Only the server that keeps the
+    lock removes a leftover socket, and a stopping server removes the socket and pid file only while the pid file
+    still names it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.socket = socket_path(home)
@@ -31,6 +36,23 @@ class ServerFiles:
             return False
         self.lock_file = lock_file
         return True
+
+    def acquire_waiting(self, wait_seconds: float) -> bool:
+        deadline = time.monotonic() + wait_seconds
+        while not self.acquire_lock():
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(LOCK_POLL_SECONDS)
+        return True
+
+    @contextmanager
+    def locked(self, wait_seconds: float) -> Generator[None]:
+        if not self.acquire_waiting(wait_seconds):
+            raise ServerFilesError(f"the server lock {self.lock} was not free in {wait_seconds:g} seconds")
+        try:
+            yield
+        finally:
+            self.release_lock()
 
     def clear_leftover_socket(self) -> None:
         if self.lock_file is None:

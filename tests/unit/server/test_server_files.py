@@ -6,6 +6,10 @@ import socket
 import stat
 import subprocess
 import sys
+import threading
+import time
+
+import pytest
 
 from core.base.journal_home import JournalHome
 from server.server_files import ServerFiles, socket_path
@@ -71,3 +75,32 @@ def test_a_journal_folder_too_deep_for_a_socket_path_gets_a_short_one_named_for_
     shallow_home = JournalHome(Path("/tmp/j"))
     assert len(str(socket_path(deep_home))) < 100 and socket_path(deep_home) == socket_path(JournalHome(tmp_path / ("deep-folder-" * 10)))
     assert socket_path(shallow_home) == Path("/tmp/j/server.sock").resolve()
+
+
+def test_acquire_waiting_waits_for_a_lock_another_process_releases_within_the_limit(tmp_path):
+    first, second = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    assert first.acquire_lock()
+    releaser = threading.Timer(0.3, first.release_lock)
+    releaser.start()
+    assert second.acquire_waiting(5)
+    releaser.join()
+    second.release_lock()
+
+
+def test_acquire_waiting_gives_up_at_its_limit_while_the_lock_is_held(tmp_path):
+    first, second = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    assert first.acquire_lock()
+    started = time.monotonic()
+    assert not second.acquire_waiting(0.3)
+    assert 0.25 <= time.monotonic() - started < 3
+    first.release_lock()
+
+
+def test_locked_releases_the_lock_when_its_block_ends_and_refuses_when_it_cannot_take_it(tmp_path):
+    files, other = ServerFiles(JournalHome(tmp_path)), ServerFiles(JournalHome(tmp_path))
+    with files.locked(1):
+        assert subprocess_lock_state(files.lock) == "held"
+        with pytest.raises(ServerFilesError, match="was not free in 0.2 seconds"):
+            with other.locked(0.2):
+                pytest.fail("the lock was taken twice")
+    assert subprocess_lock_state(files.lock) == "taken"
