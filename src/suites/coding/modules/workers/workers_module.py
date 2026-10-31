@@ -54,7 +54,7 @@ class WorkersModule(Module):
     name = "journal.suites.coding.workers"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers"]
+    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins"]
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]

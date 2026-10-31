@@ -66,6 +66,11 @@ class WorktreeGit:
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
         return False
 
+    def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
+        tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_commit).stdout.splitlines()
+        untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
+        return tuple(dict.fromkeys(path for path in (*tracked, *untracked) if path))
+
     def checked(self, folder: str, limit_seconds: int, *arguments: str) -> subprocess.CompletedProcess[str]:
         finished = self.git(folder, limit_seconds, *arguments)
         if finished.returncode != 0:
