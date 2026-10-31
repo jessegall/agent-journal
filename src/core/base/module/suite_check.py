@@ -47,15 +47,15 @@ class SuiteCheck:
         for module in modules:
             reachable = {module.name, *module.dependencies}
             for driver in module.drivers:
-                if driver.suite not in owners:
-                    problems.append(f"driver {driver.name} names suite {driver.suite}, which no installed module ships")
-                elif owners[driver.suite] not in reachable:
-                    problems.append(f"driver {driver.name} names suite {driver.suite} of module {owners[driver.suite]}, which module {module.name} does not depend on")
+                if driver.suite.name not in owners:
+                    problems.append(f"driver {driver.name} names suite {driver.suite.name}, which no installed module ships")
+                elif owners[driver.suite.name] not in reachable:
+                    problems.append(f"driver {driver.name} names suite {driver.suite.name} of module {owners[driver.suite.name]}, which module {module.name} does not depend on")
         return tuple(problems)
 
     def misnamed_drivers(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
-        return tuple(f"driver {driver.name} belongs to suite {driver.suite}, so its name starts {driver.suite}."
-                     for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite)
+        return tuple(f"driver {driver.name} belongs to suite {driver.suite.name}, so its name starts {driver.suite.name}."
+                     for module in modules for driver in module.drivers if driver.name.partition(".")[0] != driver.suite.name)
 
     def wrong_defaults(self, modules: Sequence[type[Module]]) -> tuple[str, ...]:
         roles = {driver.name: driver.role for module in modules for driver in module.drivers}

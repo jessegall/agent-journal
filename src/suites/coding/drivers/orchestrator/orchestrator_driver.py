@@ -1,4 +1,5 @@
 from core.base.driver.driver import Driver
+from suites.coding.coding_suite import CodingSuite
 from suites.coding.drivers.orchestrator.rules.open_task_stop_rule import OpenTaskStopRule
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 
@@ -7,7 +8,7 @@ class OrchestratorDriver(Driver):
     """Drives the coding suite's main agent as the orchestrator, which gives every task to a worker."""
 
     name = "coding.orchestrator"
-    suite = "coding"
+    suite = CodingSuite
     role = "main"
     rules = [OpenTaskStopRule]
     guards = [OrchestratorStartGuard]

@@ -223,7 +223,7 @@ class Lead(Driver):
     """Drives the sample suite's main agent."""
 
     name = LEAD
-    suite = "samples"
+    suite = SampleSuite
     role = "main"
     permanent_rules = [RemovalRule]
     rules = [StopLine, StopRefusal]
@@ -244,7 +244,7 @@ class ControlLead(Driver):
     """Drives the control suite's main agent, with no rules of its own."""
 
     name = "control.lead"
-    suite = "control"
+    suite = ControlSuite
     role = "main"
     opening_lines = ["You are the control lead"]
 
