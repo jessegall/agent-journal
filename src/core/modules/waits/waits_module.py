@@ -21,6 +21,7 @@ class WaitsModule(Module):
     is open it takes control of the agent as an exclusive overlay."""
 
     name = "journal.core.waits"
+    move_reason = "version 4 had no table for waits"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]

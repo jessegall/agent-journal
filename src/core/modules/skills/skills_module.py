@@ -38,6 +38,7 @@ class SkillsModule(Module):
     the agent programs."""
 
     name = "journal.core.skills"
+    move_reason = "version 4 kept skills as files, not as a table"
     requires_core = ">=5,<6"
     settings = SKILL_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.settings", "journal.core.chat"]

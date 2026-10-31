@@ -100,7 +100,9 @@
         "architecture_tunnels_TunnelModuleImportedOutsideTunnelsDetector",
         "architecture_tunnels_TunnelNamedOutsideTunnelsDetector",
         "architecture_tunnels_SecretLiteralInTunnelsDetector",
-        "naming_PlainSettingTextDetector"
+        "naming_PlainSettingTextDetector",
+        "architecture_modules_ModuleMovesDetector",
+        "architecture_modules_MoveInUpgradeFolderDetector"
     ],
     "parallel": 2,
     "configure": {

@@ -45,6 +45,7 @@ class ReviewsModule(Module):
     """Adds reviews, requests to have a row's work checked point by point by a reviewer."""
 
     name = "journal.core.reviews"
+    move_reason = "version 4 kept plan reviews in plan_reviews, which the plans module moves"
     requires_core = ">=5,<6"
     settings = REVIEW_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]

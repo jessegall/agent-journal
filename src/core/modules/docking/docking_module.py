@@ -31,6 +31,7 @@ class DockingModule(Module):
     """Adds the dock above an environment's chat and the items modules dock in it."""
 
     name = "journal.core.docking"
+    move_reason = "version 4 had no docked items, its dock was drawn from open rows"
     requires_core = ">=5,<6"
     settings = DOCKING_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]

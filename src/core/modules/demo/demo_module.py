@@ -7,6 +7,7 @@ class DemoModule(Module):
     """Adds the demo: a journal filled by the seeders of the modules, and a scratch server that shows it."""
 
     name = "journal.core.demo"
+    move_reason = "version 4 had no demo rows"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
     subcommands = [DemoSeedSubcommand, DemoStartSubcommand]

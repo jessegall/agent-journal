@@ -20,6 +20,7 @@ class ChatModule(Module):
     """Adds the marks in an environment's chat, of the types modules declare."""
 
     name = "journal.core.chat"
+    move_reason = "version 4 kept its chat as messages, which the messages module moves"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalFault, excluded_subcommands=["make", "edit", "delete"])]

@@ -51,6 +51,7 @@ class DriversModule(Module):
     the suites, drivers and rules of the installed modules."""
 
     name = "journal.core.drivers"
+    move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
