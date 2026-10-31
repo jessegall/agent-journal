@@ -44,9 +44,9 @@ test("a run gathers wherever its marks arrive, in step order, and continues furt
     const between = mark("compaction");
     const c = mark("step", {run_key: "r", run_step: 3});
     const items = groupMarks([a, between, b, c], declarationOf);
-    expect(items[0]).toMatchObject({kind: "mark"});
-    expect(items[1]).toMatchObject({kind: "group", label: "3 steps", news: 2});
-    expect(items[1].marks.map((m) => m.run_step)).toEqual([1, 2, 3]);
+    expect(items[1]).toMatchObject({kind: "mark"});
+    expect(items[0]).toMatchObject({kind: "group", label: "3 steps", news: 2});
+    expect(items[0].marks.map((m) => m.run_step)).toEqual([1, 2, 3]);
 
     const far = [mark("step", {run_key: "q", run_step: 1}), ...Array.from({length: 11}, () => mark("compaction")), mark("step", {run_key: "q", run_step: 2})];
     const later = groupMarks(far, declarationOf).at(-1);
