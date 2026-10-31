@@ -1,9 +1,23 @@
+from core.base.change.change import Change
 from core.base.driver.suite import Suite
+from core.base.guard.guard import Guard
+from core.base.model.model import Model
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_loading import WindowLoading
 
 NOTES = "tests.stories.core.modules.viewer.support.window_samples:NotesModule"
+
+
+class NotesStartCheck(Guard):
+    """A sample guard on a task start that a short flag lets a person pass."""
+
+    name = "notes.start-check"
+    event = "task.start"
+    short_flag = "anyway"
+
+    def check(self, change: Change[Model]) -> None:
+        return
 
 
 class NotesSuite(Suite):
@@ -19,5 +33,6 @@ class NotesModule(Module):
     name = "notes"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.tasks", "journal.core.viewer", "journal.core.drivers"]
+    guards = [NotesStartCheck]
     suites = [NotesSuite]
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"])]

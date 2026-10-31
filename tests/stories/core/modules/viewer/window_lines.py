@@ -19,6 +19,10 @@ def test_a_window_is_refused_a_line_that_skips_a_guard(new_story):
     window_story(new_story).expect_window_refusal("notes.board", "task start 1 --skip-guard tasks.dependencies-closed", "may not skip a guard")
 
 
+def test_a_window_is_refused_a_line_that_skips_a_guard_by_its_short_flag(new_story):
+    window_story(new_story).expect_window_refusal("notes.board", "task start 1 --anyway", "may not skip a guard")
+
+
 def test_a_window_is_refused_a_line_that_names_another_environment(new_story):
     window_story(new_story).expect_window_refusal("notes.board", "task start 1 --environment staging", "name another environment")
 
