@@ -19,6 +19,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.hook_route import HookRoute
 from core.base.journal_container import synced_container
+from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
 from core.base.query.queries import Queries
@@ -86,6 +87,9 @@ class Story:
         firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
         event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
         return self.container.get(HookRoute).answer(event)
+
+    def run_listeners(self) -> None:
+        self.container.get(CommitListenerRunner).run()
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
