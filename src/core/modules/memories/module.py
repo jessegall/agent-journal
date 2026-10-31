@@ -12,6 +12,12 @@ from core.modules.memories.task_memory_remover import TaskMemoryRemover
 from core.modules.memories.memory import Memory
 from core.modules.memories.memory_fade_handler import MemoryFadeHandler
 from core.modules.memories.memory_give_handler import MemoryGiveHandler
+from core.modules.memories.mark_closer import MarkCloser
+from core.modules.memories.memory_mark_open_handler import MemoryMarkOpenHandler
+from core.modules.memories.memory_skip_handler import MemorySkipHandler
+from core.modules.memories.memory_skip_subcommand import MemorySkipSubcommand
+from core.modules.memories.rules.open_mark import OpenMark
+from core.modules.memories.weighing import Weighing
 from core.modules.memories.rules.give_at_start import GiveAtStart
 from core.modules.memories.rules.give_by_keyword import GiveByKeyword
 from core.modules.memories.rules.give_when_due import GiveWhenDue
@@ -47,7 +53,8 @@ class MemoriesModule(Module):
     migrations = [MemoriesTables]
     views = [StandingMemory, MemoryInContext, MemoryWord]
     guards = [TypeMakers, TypeOn, AgentScopeGuard, WeightOnlyRises, TypesByUser, SwitchesByUser, KeywordScope]
-    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler, MemoryGiveHandler]
-    driver_rules = [GiveAtStart, GiveByKeyword, GiveWhenDue]
-    listeners = [CompactionFader, TaskMemoryRemover]
-    subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand, MemoryFadedSubcommand]
+    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler, MemoryGiveHandler, MemoryMarkOpenHandler, MemorySkipHandler]
+    driver_rules = [GiveAtStart, GiveByKeyword, GiveWhenDue, OpenMark]
+    overlays = [Weighing]
+    listeners = [CompactionFader, TaskMemoryRemover, MarkCloser]
+    subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, MemorySkipSubcommand]
