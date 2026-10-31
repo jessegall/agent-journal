@@ -16,10 +16,13 @@ from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerContext
 from server.listener_thread import ListenerRound, ListenerThread
+from server.tick_round import TickRound
 from server.request_handler import RequestHandler
 from server.server_files import ServerFiles
 
 SECOND_SERVER_CODE = 0
+
+TICK_PERIOD_SECONDS = 60.0
 
 
 def main(argv: list[str]) -> int:
@@ -35,6 +38,8 @@ def main(argv: list[str]) -> int:
     files.clear_leftover_socket()
     listener_round = ListenerRound(home)
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
+    tick_round = TickRound(home)
+    ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread))
     files.restrict_socket()
     files.write_pid()
@@ -42,10 +47,12 @@ def main(argv: list[str]) -> int:
     if threading.current_thread() is threading.main_thread():
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
     listener_thread.start()
+    ticker.start()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
+        ticker.stop()
         listener_thread.stop()
         files.remove_server_files()
         server.server_close()
