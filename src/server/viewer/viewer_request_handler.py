@@ -4,6 +4,7 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import parse_qs, urlsplit
 
+from server.viewer.event_stream import EventStream
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_error import ViewerRequestError
@@ -12,6 +13,7 @@ from server.viewer.viewer_server import ViewerServer
 COOKIE_NAME = "journal_viewer"
 VIEWER_ROOT = "/viewer/"
 LINE_ROUTE = "/api/line"
+EVENTS_ROUTE = "/api/events"
 
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
@@ -31,6 +33,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         token = self.cookie_token()
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
+            return
+        if route.path == EVENTS_ROUTE:
+            self.answer_events(viewer.event_stream, parse_qs(route.query))
             return
         if route.path in ("/", VIEWER_ROOT) or route.path.startswith(VIEWER_ROOT):
             self.answer(200, {"person_id": viewer.login.person_id(token)})
@@ -56,6 +61,22 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(400, {"error": str(error)})
             return
         self.answer(200, asdict(viewer.line_route.answer(request.window, request.line, viewer.login.person_id(token), request.environment)))
+
+    def answer_events(self, event_stream: EventStream, query: dict[str, list[str]]) -> None:
+        cursor_text = self.headers.get("Last-Event-ID") or query.get("cursor", ["0"])[0]
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        event_stream.follow(query.get("environment", [""])[0], int(cursor_text) if cursor_text.isdigit() else 0, self.stream_message)
+
+    def stream_message(self, message: str) -> bool:
+        try:
+            self.wfile.write(message.encode())
+            self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            return False
+        return True
 
     def answer_login(self, login: ViewerLogin, key: str) -> None:
         if not login.has_key(key):

@@ -1,5 +1,6 @@
 from typing import Protocol, runtime_checkable
 
+from server.viewer.event_stream import EventStream
 from server.viewer.line_route import LineRoute
 from server.viewer.viewer_login import ViewerLogin
 
@@ -11,4 +12,5 @@ class ViewerServer(Protocol):
 
     login: ViewerLogin
     line_route: LineRoute
+    event_stream: EventStream
     host: str

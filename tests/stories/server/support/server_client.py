@@ -29,6 +29,7 @@ from server.listener_thread import ListenerThread, ListenerWake
 from server.listener_work import ListenerWork
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
+from server.viewer.event_stream import EventStream
 from server.viewer.line_route import LineRoute
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_login import ViewerLogin
@@ -100,6 +101,24 @@ class ServerStory:
     def expect_viewer_line(self, cookie: str, body: dict[str, object], status: int, text: str) -> None:
         answered, headers, answer = viewer_answer(self.viewer_port(), "/api/line", cookie, "", body)
         assert answered == status and text in answer, (answered, headers, answer)
+
+    def viewer_event_ids(self, cookie: str, cursor_id: int, count: int) -> list[int]:
+        port = self.viewer_port()
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=TIMEOUT_SECONDS)
+        try:
+            connection.request("GET", f"/api/events?cursor={cursor_id}&environment=main", headers={"Host": f"127.0.0.1:{port}", "Cookie": cookie})
+            response = connection.getresponse()
+            ids: list[int] = []
+            while len(ids) < count:
+                line = response.readline().decode()
+                if line.startswith("id: "):
+                    ids.append(int(line[4:]))
+            return ids
+        finally:
+            connection.close()
+
+    def expect_viewer_event_ids(self, cookie: str, cursor_id: int, count: int, ids: list[int]) -> None:
+        assert self.viewer_event_ids(cookie, cursor_id, count) == ids
 
     def expect_health(self) -> None:
         answer = request_answer(self.socket_path, "GET", "/health")
@@ -208,7 +227,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(ViewerLogin(), LineRoute(home, listener_thread)))
+                            HookDatabase(home), ViewerListener(ViewerLogin(), LineRoute(home, listener_thread), EventStream(home)))
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
