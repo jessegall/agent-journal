@@ -2,27 +2,28 @@ import json
 from pathlib import Path
 
 from core.base.type_guards import is_mapping
+from core.modules.plugins.support.plugin_answer import PluginAnswer
 
 
 class PluginQueue:
-    """A plugin's queue, the folder queue in its data folder: each file holds one line out for an environment,
-    read oldest first and deleted once read; a line for another environment stays."""
+    """A plugin's queue, the folder queue in its data folder: each file holds one answer for an environment, read
+    oldest first and deleted once read; an answer for another environment stays."""
 
     def __init__(self, data_folder: Path) -> None:
         self.folder = data_folder / "queue"
 
-    def lines(self, environment: str) -> list[str]:
+    def answers(self, environment: str) -> list[PluginAnswer]:
         if not self.folder.is_dir():
             return []
-        lines: list[str] = []
+        answers: list[PluginAnswer] = []
         for path in sorted(self.folder.glob("*.json"), key=lambda path: path.stat().st_mtime_ns):
-            fields: object = json.loads(path.read_text() or "null")
+            text = path.read_text()
+            fields: object = json.loads(text or "null")
             if is_mapping(fields) and "env" in fields and fields["env"] != environment:
                 continue
-            if is_mapping(fields) and "tell" in fields and fields["tell"]:
-                lines.append(str(fields["tell"]))
+            answers.append(PluginAnswer.parsed(text))
             path.unlink()
-        return lines
+        return answers
 
     def add(self, environment: str, text: str, name: str) -> None:
         self.folder.mkdir(parents=True, exist_ok=True)

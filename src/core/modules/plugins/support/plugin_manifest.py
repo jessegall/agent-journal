@@ -1,4 +1,5 @@
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -14,8 +15,8 @@ REQUIRED_FIELDS = ("name", "title", "version")
 @dataclass(frozen=True)
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
-    version, the program run for each event, the events it takes and the ones it answers inside a window, and
-    the settings its settings file lists."""
+    version, the program run for each event, the events it takes and the ones it answers inside a window, the
+    settings its settings file lists, and the tone of each kind of card it shows."""
 
     name: str
     title: str
@@ -25,6 +26,7 @@ class PluginManifest:
     event_windows: tuple[EventWindow, ...]
     settings: tuple[ManifestSetting, ...]
     files: tuple[str, ...]
+    card_tones: Mapping[str, str]
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -40,7 +42,13 @@ class PluginManifest:
         windows: object = fields["holds"] if "holds" in fields else None
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
-                   cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file))
+                   cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
+                   cls.read_card_tones(fields["cards"] if "cards" in fields else None))
+
+    @staticmethod
+    def read_card_tones(cards: object) -> dict[str, str]:
+        entries = [entry for entry in cards if is_mapping(entry) and "kind" in entry] if is_list(cards) else []
+        return {str(entry["kind"]): str(entry["tone"]) if "tone" in entry else "" for entry in entries}
 
     @staticmethod
     def event_window(entry: object) -> EventWindow:

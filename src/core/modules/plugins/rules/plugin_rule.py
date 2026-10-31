@@ -6,6 +6,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
+from core.modules.plugins.commands.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.deliver_plugin_event import DeliverPluginEvent
 from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
@@ -53,7 +54,9 @@ class PluginRule(DriverRule):
                 continue
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if hook.event.accepts_lines:
-                lines.extend(f"[plugin {plugin.name}] {text}" for text in PluginQueue(self.folders.data(plugin.name)).lines(hook.event.environment))
+                for queued in PluginQueue(self.folders.data(plugin.name)).answers(hook.event.environment):
+                    lines.extend([f"[plugin {plugin.name}] {queued.line}"] if queued.line else [])
+                    commands.extend([AddPluginOutput(plugin.id, hook.environment_id, queued.output)] if queued.has_output() else [])
             for event in [event for event in events if event.name in manifest.event_names]:
                 if event.name not in manifest.window_names():
                     commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, event.name, json.dumps(dict(event.data))))
@@ -74,6 +77,8 @@ class PluginRule(DriverRule):
             return ""
         if plugin.fault_count:
             commands.append(ClearPluginFaults(plugin.id))
+        if answer.has_output():
+            commands.append(AddPluginOutput(plugin.id, hook.environment_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
         if answer.is_refusal() and event.name in REFUSABLE_EVENTS and not journal_line:

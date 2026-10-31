@@ -9,6 +9,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.type_guards import is_mapping
 from core.modules.environments.models.environment import Environment
+from core.modules.plugins.commands.add_plugin_output import AddPluginOutput
 from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
 from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
@@ -55,6 +56,8 @@ class PluginDeliveryListener(CommitListener):
             self.record(event, delivery, ClearPluginFaults(delivery.plugin_id))
         if answer.line:
             PluginQueue(self.folders.data(plugin.name)).add(environment, answer.line, f"delivery-{delivery.id}")
+        if answer.has_output():
+            self.record(event, delivery, AddPluginOutput(plugin.id, delivery.environment_id, answer.output))
 
-    def record(self, event: LoggedEvent, delivery: PluginDelivery, command: Command[Plugin]) -> None:
+    def record(self, event: LoggedEvent, delivery: PluginDelivery, command: Command[object]) -> None:
         self.bus.run(command, self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=delivery.environment_id)
