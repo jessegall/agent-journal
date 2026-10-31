@@ -24,7 +24,7 @@ def database(tmp_path):
 
 
 def sample_table(name: str, cli_name: str) -> Table:
-    return Table(type(cli_name.title(), (), {"cli_name": cli_name}), name, {})
+    return Table(type(cli_name.title(), (), {"cli_name": cli_name}), name, {}, "id")
 
 
 def refusal_of(database: Database, sql: str, table: str, cli_name: str):

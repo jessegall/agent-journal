@@ -4,29 +4,34 @@ from collections.abc import Mapping
 from dataclasses import MISSING, fields
 from types import NoneType, UnionType
 from enum import StrEnum
-from typing import Any, Union, get_args, get_origin, get_type_hints
+from typing import Any, Generic, TypeVar, Union, get_args, get_origin, get_type_hints
 
 from core.base.metadata import Metadata
 from core.base.model.model import Model
+from core.base.model.view_model import ViewModel
 from core.base.timestamp import Timestamp
 
+R = TypeVar("R", bound=Model | ViewModel, covariant=True)
+T = TypeVar("T", bound=Model | ViewModel)
 BASE_FIELDS = ("id", "version", "metadata", "created_at", "updated_at")
 TRANSIENT_FIELDS = ["move"]
 VOWELS = "aeiou"
 
 
-class Table:
-    """How a model maps to its database table and columns."""
+class Table(Generic[R]):
+    """How a model or a view model maps to its table or view, its columns and its key column."""
 
-    def __init__(self, model: type[Model], name: str, types: dict[str, type]) -> None:
-        self.model, self.name, self.types = model, name, types
+    def __init__(self, model: type[R], name: str, types: dict[str, type], key: str) -> None:
+        self.model, self.name, self.types, self.key = model, name, types, key
         self.cli_name = model.cli_name
 
     @classmethod
-    def build(cls, model: type[Model]) -> "Table":
+    def build(cls, model: type[T]) -> "Table[T]":
         hints = get_type_hints(model)
         column_types = {field.name: plain_type(hints[field.name]) for field in fields(model) if field.name not in TRANSIENT_FIELDS}
-        return cls(model, getattr(model, "table", plural(model.model_name)), column_types)
+        if issubclass(model, ViewModel):
+            return Table(model, model.view, column_types, model.key)
+        return Table(model, getattr(model, "table", plural(model.model_name)), column_types, "id")
 
     @property
     def columns(self) -> tuple[str, ...]:
@@ -49,13 +54,13 @@ class Table:
     def row(self, model: Model, columns: Sequence[str]) -> dict[str, object]:
         return {column: stored(getattr(model, column)) for column in columns}
 
-    def new_model(self, values: Mapping[str, Any]) -> Model:
+    def new_model(self, values: Mapping[str, Any]) -> R:
         unknown = [name for name in values if not self.has_column(name)]
         if unknown:
             raise UnsupportedColumnTypeError(f"{self.model.__name__} has no field {', '.join(unknown)}")
         return self.model(**values)
 
-    def row_model(self, row: sqlite3.Row) -> Model:
+    def row_model(self, row: sqlite3.Row) -> R:
         return self.model(**{column: loaded(self.types[column], row[column]) for column in self.columns})
 
 

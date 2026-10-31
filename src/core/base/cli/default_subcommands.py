@@ -35,7 +35,7 @@ class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
 
     name = "make"
 
-    def __init__(self, table: Table) -> None:
+    def __init__(self, table: Table[Model]) -> None:
         self.table = table
         self.cli_name = table.model.cli_name
         self.command_class = creation_command(table)
@@ -57,7 +57,7 @@ class ShowSubcommand(ReadSubcommand[Model]):
 
     name = "show"
 
-    def __init__(self, table: Table, queries: Queries) -> None:
+    def __init__(self, table: Table[Model], queries: Queries) -> None:
         self.table, self.queries = table, queries
         self.cli_name = table.model.cli_name
 
@@ -74,7 +74,7 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
 
     name = "list"
 
-    def __init__(self, table: Table, queries: Queries) -> None:
+    def __init__(self, table: Table[Model], queries: Queries) -> None:
         self.table, self.queries = table, queries
         self.cli_name = table.model.cli_name
 
@@ -101,7 +101,7 @@ class EditSubcommand(Subcommand[EditCommand[Model], Model]):
 
     name = "edit"
 
-    def __init__(self, table: Table) -> None:
+    def __init__(self, table: Table[Model]) -> None:
         self.table = table
         self.cli_name = table.model.cli_name
         self.command_class = edit_command(table)
@@ -121,7 +121,7 @@ class DeleteSubcommand(Subcommand[DeleteCommand, None]):
 
     name = "delete"
 
-    def __init__(self, table: Table) -> None:
+    def __init__(self, table: Table[Model]) -> None:
         self.table = table
         self.cli_name = table.model.cli_name
         self.command_class = deletion_command(table)
@@ -140,7 +140,7 @@ class MoveSubcommand(Subcommand[MoveCommand[Model], Model]):
     """The subcommand the core builds for one move of a model's lifecycle, named for the move: the row's id, and
     a flag for each field of the move's typed command, if the module gives one."""
 
-    def __init__(self, table: Table, command_class: type[MoveCommand[Model]]) -> None:
+    def __init__(self, table: Table[Model], command_class: type[MoveCommand[Model]]) -> None:
         self.table, self.command_class = table, command_class
         self.cli_name = table.model.cli_name
         self.name = command_class.move.name.replace("_", "-")
@@ -198,7 +198,7 @@ def filter_flag(column: str) -> str:
     return column.removesuffix(FOREIGN_KEY_SUFFIX).replace("_", "-")
 
 
-def creation_command(table: Table) -> type[MakeCommand[Model]]:
+def creation_command(table: Table[Model]) -> type[MakeCommand[Model]]:
     hints = get_type_hints(table.model)
     model_fields = {model_field.name: model_field for model_field in fields(table.model)}
     command_fields = [(column, hints[column]) for column in argument_columns(table)]
@@ -206,17 +206,17 @@ def creation_command(table: Table) -> type[MakeCommand[Model]]:
     return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=tuple([generic_base(MakeCommand[table.model])]), frozen=True)
 
 
-def edit_command(table: Table) -> type[EditCommand[Model]]:
+def edit_command(table: Table[Model]) -> type[EditCommand[Model]]:
     hints = get_type_hints(table.model)
     command_fields = [(column, hints[column] | None, field(default=None)) for column in editable_columns(table)]
     return dataclasses.make_dataclass(f"{table.model.__name__}Edit", command_fields, bases=tuple([generic_base(EditCommand[table.model])]), frozen=True)
 
 
-def deletion_command(table: Table) -> type[DeleteCommand]:
+def deletion_command(table: Table[Model]) -> type[DeleteCommand]:
     return dataclasses.make_dataclass(f"{table.model.__name__}Delete", [], bases=tuple([DeleteCommand]), namespace={"deleted_model": table.model}, frozen=True)
 
 
-def move_command(table: Table, move: Move) -> type[MoveCommand[Model]]:
+def move_command(table: Table[Model], move: Move) -> type[MoveCommand[Model]]:
     class_name = f"{table.model.__name__}{move.name.title().replace('_', '')}"
     return dataclasses.make_dataclass(class_name, [], bases=tuple([generic_base(MoveCommand[table.model])]), namespace={"move": move}, frozen=True)
 
@@ -234,15 +234,15 @@ def generic_base(base: object) -> type:
     return new_class(f"{base}Base", tuple([base]))
 
 
-def editable_columns(table: Table) -> tuple[str, ...]:
+def editable_columns(table: Table[Model]) -> tuple[str, ...]:
     return tuple(column for column in (*argument_columns(table), *flag_columns(table)) if column != STATE_COLUMN)
 
 
-def argument_columns(table: Table) -> tuple[str, ...]:
+def argument_columns(table: Table[Model]) -> tuple[str, ...]:
     return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS)
 
 
-def flag_columns(table: Table) -> tuple[str, ...]:
+def flag_columns(table: Table[Model]) -> tuple[str, ...]:
     return tuple(column for column in table.optional_fields if column not in HANDLER_COLUMNS)
 
 

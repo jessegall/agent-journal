@@ -1,4 +1,5 @@
 from core.base.database.statement import Statement
+from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.timestamp import Timestamp
 
@@ -8,7 +9,7 @@ FIRST_VERSION = 1
 class TableStatements:
     """Writes the SQL to insert, update, delete and read the rows of one model's table."""
 
-    def __init__(self, table: Table) -> None:
+    def __init__(self, table: Table[Model]) -> None:
         self.table = table
 
     def insert(self, row: dict[str, object], timestamp: Timestamp) -> Statement:

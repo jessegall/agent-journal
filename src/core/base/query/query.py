@@ -5,6 +5,7 @@ from typing import Generic, Self, TypeVar
 from core.base.database.database import Database
 from core.base.missing_rows import MissingRows
 from core.base.model.model import Model
+from core.base.model.view_model import ViewModel
 from core.base.model.table import stored
 from core.base.model.tables import Tables
 from core.base.query.condition import Condition
@@ -13,7 +14,7 @@ from core.base.query.conditions.equal import Equal
 from core.base.page import Page
 from core.base.query.select import Select
 
-M = TypeVar("M", bound=Model, covariant=True)
+M = TypeVar("M", bound=Model | ViewModel, covariant=True)
 PAGE_SIZE_ROWS = 50
 
 
@@ -22,7 +23,7 @@ class UnknownColumnError(Exception):
 
 
 class Query(Generic[M]):
-    """Reads the rows of one model: by id, by its own columns, newest first, one page at a time."""
+    """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time."""
 
     def __init__(self, database: Database, tables: Tables, model: type[M]) -> None:
         self.database, self.model, self.table = database, model, tables.table(model)
@@ -32,7 +33,7 @@ class Query(Generic[M]):
         return self.find_many([row_id])[0]
 
     def find_many(self, row_ids: Sequence[int]) -> list[M]:
-        row_index = {row.id: row for row in self.rows(self.select.matching(Among("id", row_ids)))}
+        row_index = {getattr(row, self.table.key): row for row in self.rows(self.select.matching(Among(self.table.key, row_ids)))}
         missing = tuple(row_id for row_id in row_ids if row_id not in row_index)
         if missing:
             raise MissingRows(self.model.cli_name, missing)
@@ -55,6 +56,12 @@ class Query(Generic[M]):
 
     def oldest(self) -> Self:
         return self.with_select(self.select.ordered("id", False))
+
+    def ordered(self, *columns: str) -> Self:
+        select = self.select
+        for column in columns:
+            select = select.ordered(column, False)
+        return self.with_select(select)
 
     def page(self, number: int = 1, size: int = PAGE_SIZE_ROWS) -> Page[M]:
         return Page(tuple(self.rows(self.select.sliced(size, (number - 1) * size))), number, size, self.count())
@@ -79,7 +86,7 @@ class Query(Generic[M]):
     def rows(self, select: Select) -> list[M]:
         return [self.typed(self.table.row_model(row)) for row in self.database.rows(select.statement())]
 
-    def typed(self, row: Model) -> M:
+    def typed(self, row: Model | ViewModel) -> M:
         if isinstance(row, self.model):
             return row
         raise TypeError(f"{self.table.name} gave a {type(row).__name__}, not a {self.model.__name__}")

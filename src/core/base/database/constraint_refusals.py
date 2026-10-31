@@ -3,6 +3,7 @@ import sqlite3
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
+from core.base.model.model import Model
 from core.base.model.table import Table, indefinite_article
 from core.base.refusal import Refusal
 
@@ -21,7 +22,7 @@ class ConstraintRefusals:
     def __init__(self, database: Database) -> None:
         self.database = database
 
-    def refusal(self, error: sqlite3.IntegrityError, table: Table, deletion: bool) -> Refusal:
+    def refusal(self, error: sqlite3.IntegrityError, table: Table[Model], deletion: bool) -> Refusal:
         message, cli_name = str(error), table.cli_name
         if message.startswith(RULE_PREFIX):
             return Refusal(message.removeprefix(RULE_PREFIX))

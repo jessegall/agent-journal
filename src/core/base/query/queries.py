@@ -5,10 +5,8 @@ from core.base.model.model import Model
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
 from core.base.query.query import Query
-from core.base.query.view_query import ViewQuery
 
-M = TypeVar("M", bound=Model)
-V = TypeVar("V", bound=ViewModel)
+M = TypeVar("M", bound=Model | ViewModel)
 
 
 class Queries:
@@ -19,6 +17,3 @@ class Queries:
 
     def query(self, model: type[M]) -> Query[M]:
         return Query(self.database, self.tables, model)
-
-    def view_query(self, view_model: type[V]) -> ViewQuery[V]:
-        return ViewQuery(self.database, view_model)

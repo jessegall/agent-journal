@@ -37,4 +37,4 @@ class PlanProgressSubcommand(ReadSubcommand[PlanProgress]):
         parser.add_argument("plan_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanProgress:
-        return self.queries.view_query(PlanProgress).find(arguments.plan_id)
+        return self.queries.query(PlanProgress).find(arguments.plan_id)

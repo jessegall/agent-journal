@@ -71,7 +71,7 @@ class Repository:
             raise StaleRow(model.cli_name, model.id)
         return model.saved(model.id, model.version + 1, timestamp)
 
-    def guarded(self, statement_run: Callable[[], int], table: Table, deletion: bool) -> int:
+    def guarded(self, statement_run: Callable[[], int], table: Table[Model], deletion: bool) -> int:
         try:
             return statement_run()
         except sqlite3.IntegrityError as error:
