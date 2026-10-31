@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 
 from core.base.command.command import Command
@@ -15,6 +15,7 @@ class RuleAnswer:
     last: bool = False
     ends_layer: bool = False
     updated_input: Mapping[str, object] = field(default_factory=dict)
+    input_after_commands: Callable[[Sequence[object]], Mapping[str, object]] | None = None
 
     @classmethod
     def allowed(cls) -> "RuleAnswer":
@@ -39,8 +40,15 @@ class RuleAnswer:
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])
 
+    def rewriting_after_commands(self, build: Callable[[Sequence[object]], Mapping[str, object]]) -> "RuleAnswer":
+        return replace(self, input_after_commands=build)
+
     def ending_layer(self, command: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, command], ends_layer=True)
+
+    @property
+    def rewrites(self) -> bool:
+        return bool(self.updated_input) or self.input_after_commands is not None
 
     @property
     def is_final_allowance(self) -> bool:
@@ -52,4 +60,4 @@ class RuleAnswer:
             return "refused"
         if self.lines:
             return "lines"
-        return "rewritten" if self.updated_input else "allowed"
+        return "rewritten" if self.rewrites else "allowed"

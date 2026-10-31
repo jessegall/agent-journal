@@ -25,3 +25,4 @@ class HookCall(Model):
     answer: HookAnswer = HookAnswer.ALLOWED
     refusal: str = ""
     lines: str = ""
+    updated_input: str = "{}"

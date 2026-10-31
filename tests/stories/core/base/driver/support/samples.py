@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.change.change import Change
+from core.base.command.command import Command
+from core.base.command.context import Context
+from core.base.command.handler import Handler
 from core.base.command.move_command import MoveCommand
 from core.base.database.migration import Migration
 from core.base.driver.agent_hook import AgentHook
@@ -123,6 +126,34 @@ class SecondShellRewrite(ShellRewrite):
         if self.settings.project_value("samples.rewrite-twice", False) is True and hook.event.tool is not None and hook.event.tool.shell is not None:
             return RuleAnswer.rewritten({"command": "sample-run-again"})
         return RuleAnswer.allowed()
+
+
+@dataclass(frozen=True)
+class SampleNumber(Command[int]):
+    """A sample command whose result, 7, a rule puts in the tool's new input."""
+
+
+class SampleNumberHandler(Handler[SampleNumber, int]):
+    command = SampleNumber
+
+    def handle(self, command: SampleNumber, context: Context) -> int:
+        return 7
+
+
+class NumberedRewrite(DriverRule):
+    """While samples.rewrite-after is true, runs SampleNumber and rewrites the shell line with the number it made."""
+
+    name = "samples.numbered-rewrite"
+    hook = HookEventName.PRE_TOOL_USE
+
+    def __init__(self, settings: SettingValues) -> None:
+        self.settings = settings
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        if hook.event.tool is None or hook.event.tool.shell is None or self.settings.project_value("samples.rewrite-after", False) is not True:
+            return RuleAnswer.allowed()
+        line = hook.event.tool.shell.line
+        return RuleAnswer.allowed().running(SampleNumber()).rewriting_after_commands(lambda results: {"command": f"sample-run --process {results[0]} -- {line}"})
 
 
 class LockedEditRefusal(DriverRule):
@@ -254,7 +285,7 @@ class Lead(Driver):
     suite = SampleSuite
     role = AgentRole.MAIN
     permanent_rules = [RemovalRule]
-    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite]
+    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 
@@ -284,6 +315,7 @@ class SamplesModule(Module):
     models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopen])]
     migrations = [EditLocksTable]
     guards = [LeadLockGuard]
+    handlers = [SampleNumberHandler]
     suites = [SampleSuite, ControlSuite]
     drivers = [Lead, ControlLead]
     overlays = [EditLockOverlay]

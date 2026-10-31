@@ -1,3 +1,7 @@
+import json
+from collections.abc import Mapping
+from dataclasses import replace
+
 from core.base.command.bus import Bus
 from core.base.command.command import Command
 from core.base.command.context import Context
@@ -6,6 +10,7 @@ from core.base.database.database import Database
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rules import DriverRules
 from core.base.driver.hook_reply import HookReply
+from core.base.driver.rule_answers import RuleAnswers
 from core.base.guard.guard_refusal import GuardRefusal
 from core.base.metadata import Metadata
 from core.base.query.queries import Queries
@@ -61,28 +66,38 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              firing=command.event.firing, tool=tool.name if tool is not None else "", summary=self.summary(command),
                                              writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
-                                             lines="\n".join([*answers.lines, *handed_lines.texts]),
+                                             lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
                                              metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewritten_by}})), context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
-        refused = [(rule, line) for rule, rule_command in moves.runnable if (line := self.refusal_line(rule_command, context))]
+        outcomes = [(rule, *self.run_command(rule_command, context)) for rule, rule_command in moves.runnable]
+        refused = [(rule, line) for rule, line, _ in outcomes if line]
+        updated_input = self.updated_input(answers, outcomes)
+        if updated_input != answers.updated_input:
+            self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
-        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, answers.updated_input)
+        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input)
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:
             self.repository.save(AgentLine(agent_id=agent_id, creator_id=context.actor.id, text=text, source=rule), context)
         return HookReply("", [], call_id)
 
-    def refusal_line(self, rule_command: Command[object], context: Context) -> str:
+    def run_command(self, rule_command: Command[object], context: Context) -> tuple[str, object]:
         try:
             with self.database.savepoint(type(rule_command).__name__):
-                self.bus.dispatch(rule_command, context.nested(rule_command))
+                return "", self.bus.dispatch(rule_command, context.nested(rule_command))
         except GuardRefusal as refusal:
-            return f"the journal could not run {type(rule_command).__name__}: {refusal}"
-        return ""
+            return f"the journal could not run {type(rule_command).__name__}: {refusal}", None
+
+    def updated_input(self, answers: RuleAnswers, outcomes: list[tuple[str, str, object]]) -> Mapping[str, object]:
+        rewriter = answers.rewriter
+        build = rewriter.answer.input_after_commands if rewriter is not None and rewriter.answer is not None else None
+        if rewriter is None or build is None or any(rule == rewriter.name and line for rule, line, _ in outcomes):
+            return answers.updated_input
+        return build([result for rule, _, result in outcomes if rule == rewriter.name])
 
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool
