@@ -9,4 +9,4 @@ class MarkGrouping(StrEnum):
     TYPE = "type"
     ROW = "row"
     RUN = "run"
-    NEVER = "never"
+    NONE = "never"

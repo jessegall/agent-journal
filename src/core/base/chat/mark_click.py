@@ -8,4 +8,4 @@ class MarkClick(StrEnum):
     UNFOLD = "unfold"
     OPEN_ROW = "open row"
     OPEN_PAGE = "open page"
-    NOTHING = "nothing"
+    NONE = "nothing"
