@@ -1,3 +1,4 @@
+import {readMarkDeclarations} from "../domain/markRegistry.js";
 import {AllowancePrompts} from "./allowancePrompts.js";
 import {lineResult} from "./windowContext.js";
 import {WindowCatalogue, fetchWindowCatalogue, followEvents} from "./windowCatalogue.js";
@@ -12,7 +13,7 @@ export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, l
 // prompts, and the environment's event stream, which feeds the catalogue, any `listeners` given later, and the
 // windows; `stop` ends the stream
 export function startWindows({environment, catalogue = null, events = followEvents}) {
-    const offers = catalogue || new WindowCatalogue(() => fetchWindowCatalogue(environment), () => fetch("/api/marks").then((response) => response.json()).catch(() => []));
+    const offers = catalogue || new WindowCatalogue(() => fetchWindowCatalogue(environment), readMarkDeclarations);
     const subscriptions = new WindowSubscriptions();
     const shellLine = shellReader(environment);
     const prompts = new AllowancePrompts(shellLine);

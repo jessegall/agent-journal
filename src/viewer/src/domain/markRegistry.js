@@ -7,12 +7,17 @@ export function loadMarkDeclarations(list) {
     declarations.value = new Map(list.map((declaration) => [declaration.type, declaration]));
 }
 
-export async function fetchMarkDeclarations() {
+// the mark declarations /api/marks lists, none when the server cannot be read
+export async function readMarkDeclarations() {
     try {
-        loadMarkDeclarations(await (await fetch("/api/marks")).json());
+        return (await (await fetch("/api/marks")).json()).marks || [];
     } catch (error) {
-        loadMarkDeclarations([]);
+        return [];
     }
+}
+
+export async function fetchMarkDeclarations() {
+    loadMarkDeclarations(await readMarkDeclarations());
 }
 
 // a mark whose type no module declares any more is drawn as a quiet line

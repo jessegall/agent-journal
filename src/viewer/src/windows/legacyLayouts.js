@@ -1,3 +1,4 @@
+import {readMarkDeclarations} from "../domain/markRegistry.js";
 import {leaves, wellShaped} from "../domain/panes.js";
 import {mainDriver} from "./homeLayout.js";
 import {optionsFromHidden} from "../domain/markFamilies.js";
@@ -54,7 +55,7 @@ export async function moveLegacyLayouts(shellLine, environment) {
     const run = await shellLine(["suite", "current", environment]);
     if (!run.ok) return;
     const drivers = {main: mainDriver(run.value.drivers), worker: workerDriver(run.value.drivers)};
-    const marks = await fetch("/api/marks").then((response) => response.json()).catch(() => []);
+    const marks = await readMarkDeclarations();
     for (const {setting, page, driver} of OLD) {
         const old = await shellLine(["window", "setting", SHELL_WINDOW, setting]);
         if (!old.ok || !old.value.value || !drivers[driver]) continue;

@@ -9,7 +9,7 @@ export function loadDockDeclarations(list) {
 
 export async function fetchDockDeclarations() {
     try {
-        loadDockDeclarations(await (await fetch("/api/docks")).json());
+        loadDockDeclarations((await (await fetch("/api/docks")).json()).docks || []);
     } catch (error) {
         loadDockDeclarations([]);
     }
