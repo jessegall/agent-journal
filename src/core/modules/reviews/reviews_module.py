@@ -1,5 +1,12 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.reviews.commands.add_reviewer_handler import AddReviewerHandler
+from core.modules.reviews.commands.add_reviewer_subcommand import AddReviewerSubcommand
+from core.modules.reviews.commands.retire_reviewer_handler import RetireReviewerHandler
+from core.modules.reviews.commands.retire_reviewer_subcommand import RetireReviewerSubcommand
+from core.modules.reviews.guards.reviewer_is_on_guard import ReviewerIsOnGuard
+from core.modules.reviews.guards.reviewers_most_guard import ReviewersMostGuard
+from core.modules.reviews.queries.reviewer_query import ReviewerQuery
 from core.modules.reviews.commands.request_review_subcommand import RequestReviewSubcommand
 from core.modules.reviews.commands.assign_review import AssignReview
 from core.modules.reviews.commands.record_review_handler import RecordReviewHandler
@@ -19,9 +26,9 @@ class ReviewsModule(Module):
 
     name = "journal.core.reviews"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
-    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview,)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer))
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
+    models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview,)), ModelDeclaration(ReviewPoint), ModelDeclaration(Reviewer, query=ReviewerQuery, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration]
-    subcommands = (RequestReviewSubcommand, RecordReviewSubcommand)
-    guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard]
-    handlers = [RecordReviewHandler]
+    subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand)
+    guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
+    handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler]

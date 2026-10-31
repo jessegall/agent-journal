@@ -6,15 +6,28 @@ from tests.stories.core.support.fixtures import ThreeTasks
 
 REVIEW_REQUEST = "review request task 1 --points 2 --environment main"
 REVIEWER_START = "agent start s-2 claude reviewer --environment main"
+REVIEWERS_ON = "setting make reviews.reviewer true"
 NO_REVIEWERS = "setting make reviews.reviewers-most 0"
 REVIEW_SHOW = "review show 1"
 REVIEW_POINTS = "review-point list --review 1"
 
 
-class NoReviewersAllowed(StoryFixture):
-    """Three open tasks, and no reviewer allowed in the project, so a review waits queued."""
+class ReviewersOn(StoryFixture):
+    """Three open tasks, and the reviewers switched on."""
 
     parent = ThreeTasks
+
+    def steps(self, story: Story) -> None:
+        story.run(REVIEWERS_ON)
+
+    def expect(self, story: Story) -> None:
+        story.expect_success("setting list", "reviews.reviewer")
+
+
+class NoReviewersAllowed(StoryFixture):
+    """Reviewers on, and none allowed in the project, so a review waits queued."""
+
+    parent = ReviewersOn
 
     def steps(self, story: Story) -> None:
         story.run(NO_REVIEWERS)
