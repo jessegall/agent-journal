@@ -102,3 +102,12 @@ def test_memory_marks_fold_in_the_declarations_words_from_three(new_story):
     story = new_story(fixture=BuilderStarted)
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "memories.memory")
     assert (mark.family_title, mark.grouping, mark.group_label, mark.click) == ("Memories", "family", "{family}: {count} updates", "open row")
+
+
+def test_a_memory_is_docked_with_dock_add_and_the_guards_pass(new_story):
+    story = new_story(fixture=BuilderStarted)
+    memory_id = story.new_row_id(FACT, actor=story.agent)
+    item_id = story.new_row_id(f"dock add memories.memory memory {memory_id} --environment main", actor=story.user)
+    story.expect_text(f"dock-item show {item_id}", "type: memories.memory", f"target_id: {memory_id}")
+    story.expect_refusal(f"dock add memories.memory memory {memory_id} --environment main", "is docked already", actor=story.user)
+    story.expect_refusal(f"dock add memories.memory task 1 --environment main", "reads no task", actor=story.user)
