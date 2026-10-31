@@ -16,6 +16,7 @@ from server.viewer.viewer_server import ViewerServer
 COOKIE_NAME = "journal_viewer"
 VIEWER_ROOT = "/viewer/"
 VIEWER_MODULE = "journal.core.viewer"
+KIT_ROUTE = "/viewer/kit/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 EVENTS_ROUTE = "/api/events"
@@ -27,7 +28,8 @@ FRAME_POLICY = ("sandbox allow-scripts; default-src 'none'; script-src {listener
 
 class ViewerRequestHandler(BaseHTTPRequestHandler):
     """Answers the viewer's requests: refuses one whose Host is not the listener's own address, turns a login key
-    into a session cookie once, and answers the viewer's pages only with that cookie."""
+    into a session cookie once, serves module and window kit files, which hold code and no data, to any origin
+    so a frame with no origin loads its own, and answers the viewer's pages and data only with that cookie."""
 
     def do_GET(self) -> None:
         viewer = self.viewer()
@@ -44,6 +46,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
                 return
             self.answer_session(token)
             return
+        if route.path.startswith(MODULES_ROUTE):
+            module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
+            self.answer_module_file(viewer, module_name, path)
+            return
+        if route.path.startswith(KIT_ROUTE):
+            self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT))
+            return
         token = self.cookie_token()
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
@@ -51,10 +60,6 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == WINDOWS_ROUTE:
             windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
             self.answer(200, {"windows": [asdict(window) for window in windows]})
-            return
-        if route.path.startswith(MODULES_ROUTE):
-            module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
-            self.answer_module_file(viewer, module_name, path)
             return
         if route.path == EVENTS_ROUTE:
             self.answer_events(viewer.routes.event_stream, parse_qs(route.query))
@@ -102,6 +107,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", module_file.content_type)
         self.send_header("Content-Length", str(len(module_file.content)))
         self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Access-Control-Allow-Origin", "*")
         if module_file.frame:
             self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=f"http://{viewer.host}"))
         self.end_headers()

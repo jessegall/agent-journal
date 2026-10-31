@@ -2,6 +2,7 @@
 import {computed, h, ref, watch} from "vue";
 import {windowPermissions} from "./allowancePrompts.js";
 import DocumentWindow from "./DocumentWindow.vue";
+import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
 import WindowHost from "./WindowHost.vue";
 
@@ -15,7 +16,6 @@ const props = defineProps({
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
 });
-const FRAME_REASON = "This window loads in a frame, which the viewer cannot show yet.";
 
 const entry = computed(() => props.catalogue.window(props.name));
 const documentComponent = computed(() => entry.value && {render: () => h(DocumentWindow, {line: entry.value.line})});
@@ -58,6 +58,17 @@ watch(
             :prompts="prompts"
         />
     </template>
+    <template v-else-if="entry && entry.loading === 'frame'">
+        <FrameWindow
+            :entry="entry"
+            :subscriptions="subscriptions"
+            :environment="environment"
+            :agent="agent"
+            :visible="visible"
+            :permissions="permissions"
+            :prompts="prompts"
+        />
+    </template>
     <template v-else-if="entry">
         <WindowHost
             :key="entry.line || entry.entry_url"
@@ -70,7 +81,7 @@ watch(
             :permissions="permissions"
             :prompts="prompts"
             :events="entry.events"
-            :unavailable-reason="entry.unavailable_reason || (entry.loading === 'frame' ? FRAME_REASON : '')"
+            :unavailable-reason="entry.unavailable_reason"
         />
     </template>
     <template v-else>

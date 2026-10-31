@@ -40,3 +40,10 @@ def test_a_frame_window_reads_nothing_until_the_person_allows_its_reads(new_stor
         story.expect_viewer_line(cookie, line, 200, "notes.board may run task list once you allow it")
         story.story.run("window allow notes.board --type reads --environment main", actor=story.story.user)
         story.expect_viewer_line(cookie, line, 200, '"code": 0')
+
+
+def test_a_frame_loads_its_own_files_and_the_bridge_without_the_session_cookie_from_any_origin(new_story):
+    with server_story(new_story(NOTES, fixture=UserJoined)) as story:
+        story.expect_viewer_headers("/modules/notes/board.html", "", {"Content-Type": "text/html", "Access-Control-Allow-Origin": "*"})
+        story.expect_viewer_headers("/viewer/kit/frame-bridge.js", "", {"Content-Type": "text/javascript", "Access-Control-Allow-Origin": "*"})
+        story.expect_viewer_status("/viewer/", 401)
