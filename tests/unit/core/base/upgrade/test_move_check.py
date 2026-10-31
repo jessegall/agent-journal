@@ -1,5 +1,5 @@
 from core.base.module.module import Module
-from core.base.upgrade.move_check import MoveCheck
+from core.base.module.move_check import MoveCheck
 from core.base.upgrade.version_four_move import VersionFourMove
 
 
@@ -49,5 +49,14 @@ def test_a_move_reading_ids_of_a_module_not_installed_or_not_depended_on_is_name
         requires_core = ">=5,<6"
         moves = [move(["solo"], id_modules=["first", "absent"])]
 
-    assert MoveCheck().problems([First, Lonely]) == ("the move of lonely reads ids of first, and lonely does not depend on it",
-                                                     "the move of lonely reads ids of absent, which is not installed")
+    assert MoveCheck().problems([First, Lonely]) == ("the move of lonely reads ids of absent, which is not installed",
+                                                     "the move of lonely reads ids of first, and lonely does not depend on it")
+
+
+def test_a_move_without_a_name_or_without_tables_it_reads_is_refused():
+    class Unnamed(Module):
+        name = "unnamed"
+        requires_core = ">=5,<6"
+        moves = [type("Bare", (VersionFourMove,), {})]
+
+    assert MoveCheck().problems([Unnamed]) == ("the move Bare of unnamed states no name or no tables it reads",)

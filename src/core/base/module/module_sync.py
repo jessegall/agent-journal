@@ -30,6 +30,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.registry.dock_entry import DockEntry
+from core.base.registry.move_entry import MoveEntry
 from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
 from core.base.skill.skill_digest import SkillDigest
@@ -121,6 +122,8 @@ class ModuleSync:
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
             tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),
             skills=self.skills(modules),
+            moves=tuple(MoveEntry(module.name, DottedPath.class_path(move), tuple(move.reads), tuple(move.drops), tuple(move.id_modules))
+                        for module in modules for move in module.moves),
         )
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:

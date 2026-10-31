@@ -21,18 +21,6 @@ def runner(new_story, tmp_path, *modules: str):
     return story, story.container.get(UpgradeRunner), version_four_database(tmp_path)
 
 
-def test_a_valid_move_passes_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_success(NOTES)
-
-
-def test_a_move_reading_the_ids_of_a_module_that_is_not_installed_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:GhostReaderModule", "the move of moveghost reads ids of nothing-installed, which is not installed")
-
-
-def test_a_move_reading_the_ids_of_a_module_it_does_not_depend_on_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:StrangerReaderModule", "the move of movestranger reads ids of journal.core.environments, and movestranger does not depend on it")
-
-
 def test_the_runner_orders_the_moves_by_module_dependency_whatever_order_the_modules_are_named_in(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, TAGS, NOTES)
     upgrade.run(source)

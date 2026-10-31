@@ -20,6 +20,7 @@ from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.provider.provider import Provider
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
@@ -39,7 +40,7 @@ class Module:
     on, the core version it needs, its migrations and views, its handlers, subcommands, guards and
     listeners, the classes it binds in place of the core's interfaces, the migration that removes its
     tables, and the suites, drivers, overlays, driver rules, windows, chat marks, docked items, skills,
-    seeders and agent programs it adds."""
+    seeders, the moves of its rows from version 4 and agent programs it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -65,6 +66,7 @@ class Module:
     tunnels: ClassVar[Sequence[type[Tunnel]]] = ()
     skills: ClassVar[Sequence[SkillDeclaration]] = ()
     seeders: ClassVar[Sequence[type[Seeder]]] = ()
+    moves: ClassVar[Sequence[type[VersionFourMove]]] = ()
 
     @classmethod
     def folder(cls) -> Path:

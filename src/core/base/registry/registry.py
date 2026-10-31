@@ -18,6 +18,7 @@ from core.base.registry.mark_entry import MarkEntry
 from core.base.registry.setting_entry import SettingEntry
 from core.base.registry.tunnel_entry import TunnelEntry
 from core.base.registry.model_entry import ModelEntry
+from core.base.registry.move_entry import MoveEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
 from core.base.registry.skill_entry import SkillEntry
@@ -53,6 +54,7 @@ class Registry:
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
     skills: tuple[SkillEntry, ...] = ()
+    moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
     @classmethod
@@ -94,6 +96,7 @@ class Registry:
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             tunnels=tuple(TunnelEntry(tunnel["name"], DottedPath(tunnel["path"]), tunnel["module"], tunnel["title"]) for tunnel in entries.get("tunnels", [])),
             skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
+            moves=tuple(MoveEntry.restored(move) for move in entries.get("moves", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
 
@@ -128,6 +131,7 @@ class Registry:
             "settings": [asdict(setting) for setting in self.settings],
             "tunnels": [{"name": tunnel.name, "path": tunnel.path.text, "module": tunnel.module, "title": tunnel.title} for tunnel in self.tunnels],
             "skills": [asdict(skill) for skill in self.skills],
+            "moves": [dict(move.stored()) for move in self.moves],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
 
