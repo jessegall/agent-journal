@@ -25,5 +25,9 @@ class JournalHome:
         return self.folder / "modules.json"
 
     @property
+    def status_folder(self) -> Path:
+        return self.folder / "runtime" / "status"
+
+    @property
     def program_table(self) -> Path:
         return self.folder / "programs.json"

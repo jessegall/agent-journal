@@ -1,15 +1,15 @@
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-CONTEXT_55_EDIT = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use", raw={"context_percent": 55})
-CONTEXT_60_EDIT = CONTEXT_55_EDIT.with_fields(raw={"context_percent": 60})
+EDITED = HookSamples.edit("src/cart.py").with_fields(event="post_tool_use")
 EDIT = HookSamples.edit("src/cart.py")
 READ = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["src/cart.py"], "diff": None})
 
 
 def fact_mark(story) -> int:
     fact_id = story.new_row_id('memory make "The cart total is in cents" --type fact --environment main', actor=story.agent)
-    story.expect_hook_allowed("s-1", CONTEXT_55_EDIT, "The cart total is in cents", "journal memory weigh")
+    story.report_context_percent("s-1", 55)
+    story.expect_hook_allowed("s-1", EDITED, "The cart total is in cents", "journal memory weigh")
     return fact_id
 
 
@@ -42,4 +42,11 @@ def test_the_same_mark_does_not_open_twice_before_a_compaction(new_story):
     story = new_story(fixture=BuilderStarted)
     fact_id = fact_mark(story)
     story.expect_success(f"memory weigh {fact_id} 6", actor=story.agent)
-    story.expect_hook_silent("s-1", CONTEXT_60_EDIT)
+    story.report_context_percent("s-1", 60)
+    story.expect_hook_silent("s-1", EDITED)
+
+
+def test_a_session_whose_status_line_never_reported_opens_no_mark(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.new_row_id('memory make "The cart total is in cents" --type fact --environment main', actor=story.agent)
+    story.expect_hook_silent("s-1", EDITED)

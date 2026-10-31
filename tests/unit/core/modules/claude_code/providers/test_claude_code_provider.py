@@ -7,6 +7,7 @@ from core.base.provider.session_line import SessionLine
 from core.base.driver.hook_event import HookEvent
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
+from core.base.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
@@ -68,3 +69,16 @@ def test_a_line_for_a_session_with_no_registry_entry_under_the_config_folder_wai
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "claude"))
     (tmp_path / "claude" / "sessions").mkdir(parents=True)
     assert provider.line_sent(SessionLine("s-1", "the journal", "log your task")) is False
+
+
+def test_the_context_percent_is_read_from_the_file_the_status_line_keeps_for_the_session(provider, tmp_path):
+    home = JournalHome(tmp_path)
+    home.status_folder.mkdir(parents=True)
+    (home.status_folder / "s-1.json").write_text(json.dumps({"session_id": "s-1", "context_window": {"used_percentage": 55.6}}))
+    assert (provider.context_percent(home, "s-1"), provider.context_percent(home, "s-2")) == (55, None)
+
+
+def test_the_hook_file_runs_the_hook_program_as_the_status_line(provider, tmp_path):
+    provider.folder_prepared(tmp_path, tmp_path, '"/p/.journal/bin/journal-hook"')
+    settings = json.loads((tmp_path / ".claude" / "settings.local.json").read_text())
+    assert settings["statusLine"] == {"type": "command", "command": f'"/p/.journal/bin/journal-hook" --status "{tmp_path}"', "padding": 0}

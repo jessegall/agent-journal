@@ -6,6 +6,7 @@ import pytest
 from core.base.provider.session_line import SessionLine
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.launch import Launch
+from core.base.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
@@ -68,3 +69,12 @@ def test_every_recorded_hook_name_is_mapped_to_the_event_the_go_program_prepared
 
 def test_codex_takes_no_line_while_it_runs_so_the_line_waits_for_the_next_hook(provider):
     assert provider.line_sent(SessionLine("t-1", "the journal", "log your task")) is False
+
+
+def test_the_context_percent_is_the_last_token_count_of_the_sessions_rollout(provider, tmp_path, monkeypatch):
+    monkeypatch.setenv("CODEX_HOME", str(tmp_path / "codex"))
+    rollout = tmp_path / "codex" / "sessions" / "2026" / "10" / "31" / "rollout-2026-10-31T09-00-00-t-1.jsonl"
+    rollout.parent.mkdir(parents=True)
+    counts = [{"type": "event_msg", "payload": {"type": "token_count", "info": {"model_context_window": 200000, "last_token_usage": {"total_tokens": tokens}}}} for tokens in (20000, 50000)]
+    rollout.write_text("".join(json.dumps(row) + "\n" for row in counts))
+    assert (provider.context_percent(JournalHome(tmp_path), "t-1"), provider.context_percent(JournalHome(tmp_path), "t-2")) == (25, None)

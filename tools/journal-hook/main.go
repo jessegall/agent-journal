@@ -1,5 +1,6 @@
 // Command journal-hook is the hook the agent programs run: it reads the hook body on stdin, prepares the HookEvent,
-// hands it to the journal's Python server and prints the answer. Run as journal-hook <program> <project root>.
+// hands it to the journal's Python server and prints the answer. Run as journal-hook <program> <project root>, or as
+// journal-hook --status <project root> by Claude Code's status line.
 package main
 
 import (
@@ -19,6 +20,10 @@ var version = "dev"
 func main() {
 	if len(os.Args) == 2 && os.Args[1] == "--version" {
 		fmt.Println("journal-hook " + version)
+		return
+	}
+	if len(os.Args) == 3 && os.Args[1] == "--status" {
+		KeepStatus(os.Stdin, os.Args[2])
 		return
 	}
 	requestTiming := timing.Started()

@@ -6,6 +6,7 @@ from typing import ClassVar
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
+from core.base.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
 from core.base.provider.hook_decoder import HookDecoder
@@ -75,3 +76,10 @@ class Provider(ABC):
 
     def line_sent(self, line: SessionLine) -> bool:
         return False
+
+    def context_percent(self, home: JournalHome, session: str) -> int | None:
+        return None
+
+    @classmethod
+    def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
+        return {}

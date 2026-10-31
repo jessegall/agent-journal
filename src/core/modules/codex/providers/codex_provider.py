@@ -4,6 +4,7 @@ from pathlib import Path
 
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
+from core.base.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
 from core.base.provider.hook_decoder import HookDecoder
@@ -19,6 +20,7 @@ from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
+from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
 
@@ -75,6 +77,12 @@ class CodexProvider(Provider):
     def transcript(self, project: Path, session: str) -> Path | None:
         sessions = self.folders.folder(HOME_VARIABLE, ".codex") / "sessions"
         return next(sessions.glob(f"**/rollout-*-{session}.jsonl"), None) if sessions.is_dir() else None
+
+    def context_percent(self, home: JournalHome, session: str) -> int | None:
+        path = self.transcript(home.folder.parent, session)
+        counts = [CodexTokenCount.parsed(line) for line in path.read_text().splitlines()] if path else []
+        latest = next((count for count in reversed(counts) if count is not None), None)
+        return latest.percent() if latest else None
 
     def transcript_rows(self, path: Path) -> Sequence[TranscriptRow]:
         rows: list[TranscriptRow] = []

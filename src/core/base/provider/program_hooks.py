@@ -13,18 +13,19 @@ HOOK_TIMEOUT_SECONDS = 60
 @dataclass(frozen=True)
 class ProgramHooks:
     """One agent program's hook settings file: the journal's hooks in it are replaced by one per event the
-    program sends, each running the hook program with the program's name and the project root; the rest stays
-    as it was."""
+    program sends, each running the hook program with the program's name and the project root, beside the settings its
+    provider adds; the rest stays as it was."""
 
     program: str
     path: Path
     events: Sequence[str]
     timeout_seconds: int
     entry_fields: Mapping[str, object] = field(default_factory=lambda: {})
+    provider: type[Provider] | None = None
 
     @classmethod
     def hooks(cls, provider: type[Provider], folder: Path) -> "ProgramHooks":
-        return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values)
+        return cls(provider.name, folder / provider.hook_file.path, list(provider.hook_events), HOOK_TIMEOUT_SECONDS, provider.hook_file.entry_values, provider)
 
     def write(self, runner: str, root: Path) -> None:
         settings = self.settings()
@@ -35,7 +36,7 @@ class ProgramHooks:
             hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.timeout_seconds,
                                                                      **self.entry_fields}]})
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps({**settings, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
+        self.path.write_text(json.dumps({**settings, **(self.provider.hook_settings(runner, root) if self.provider else {}), "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
 
     def is_complete(self) -> bool:
         stored_hooks = self.settings().get("hooks")

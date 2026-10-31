@@ -159,6 +159,10 @@ class Story:
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
         return int(next(row for row in outcome.output_text.splitlines() if row.startswith("id: ")).removeprefix("id: "))
 
+    def report_context_percent(self, session: str, percent: int) -> None:
+        self.home.status_folder.mkdir(parents=True, exist_ok=True)
+        (self.home.status_folder / f"{session}.json").write_text(json.dumps({"session_id": session, "context_window": {"used_percentage": percent}}))
+
     def error_log_text(self) -> str:
         return self.home.error_log.read_text() if self.home.error_log.exists() else ""
 

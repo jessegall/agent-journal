@@ -1,10 +1,11 @@
 import json
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
+from core.base.journal_home import JournalHome
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
 from core.base.provider.hook_file import HookFile
@@ -110,6 +111,17 @@ class ClaudeCodeProvider(Provider):
 
     def hook_trust(self, project: Path) -> HookTrust:
         return HookTrust.READY if ProgramHooks.hooks(type(self), project).is_complete() else HookTrust.UNWRITTEN
+
+    def context_percent(self, home: JournalHome, session: str) -> int | None:
+        path = home.status_folder / f"{session}.json"
+        fields: object = json.loads(path.read_text() or "{}") if path.is_file() else {}
+        window = fields.get("context_window") if is_mapping(fields) else None
+        used = window.get("used_percentage") if is_mapping(window) else None
+        return int(used) if isinstance(used, int | float) and not isinstance(used, bool) else None
+
+    @classmethod
+    def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
+        return {"statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
 
     def line_sent(self, line: SessionLine) -> bool:
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
