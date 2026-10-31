@@ -1,13 +1,13 @@
 from argparse import ArgumentParser, Namespace
 import dataclasses
-from dataclasses import fields
+from dataclasses import field, fields
 from typing import get_type_hints
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.base.command.make_command import MakeCommand
 from core.base.model.model import Model
 from core.base.model.table import Table
-from core.base.cli.subcommand_columns import generic_base, argument_columns, flag_columns, copied_default, parser_argument
+from core.base.cli.subcommand_columns import generic_base, argument_columns, flag_columns, switch_columns, copied_default, parser_argument
 
 
 class MakeSubcommand(Subcommand[MakeCommand[Model], Model]):
@@ -37,5 +37,6 @@ def creation_command(table: Table[Model]) -> type[MakeCommand[Model]]:
     hints = get_type_hints(table.model)
     model_fields = {model_field.name: model_field for model_field in fields(table.model)}
     command_fields = [(column, hints[column]) for column in argument_columns(table)]
-    command_fields += [(column, hints[column], copied_default(model_fields[column])) for column in flag_columns(table)]
+    command_fields += [(column, hints[column], field(default=False) if column in switch_columns(table) else copied_default(model_fields[column]))
+                       for column in flag_columns(table)]
     return dataclasses.make_dataclass(f"{table.model.__name__}Make", command_fields, bases=tuple([generic_base(MakeCommand[table.model])]), frozen=True)

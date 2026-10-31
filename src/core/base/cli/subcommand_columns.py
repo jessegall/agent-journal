@@ -27,11 +27,15 @@ def editable_columns(table: Table[Model]) -> tuple[str, ...]:
 
 
 def argument_columns(table: Table[Model]) -> tuple[str, ...]:
-    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS)
+    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS and table.types[column] is not bool)
+
+
+def switch_columns(table: Table[Model]) -> tuple[str, ...]:
+    return tuple(column for column in table.required_fields if column not in HANDLER_COLUMNS and table.types[column] is bool)
 
 
 def flag_columns(table: Table[Model]) -> tuple[str, ...]:
-    return tuple(column for column in table.optional_fields if column not in HANDLER_COLUMNS)
+    return (*(column for column in table.optional_fields if column not in HANDLER_COLUMNS), *switch_columns(table))
 
 
 def copied_default(model_field: Field[Any]) -> Field[Any]:
