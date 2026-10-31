@@ -22,6 +22,8 @@ from core.base.provider.provider import Provider
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.setting.setting_group import SettingGroup
+from core.base.setting.setting_value import SettingValue
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -56,6 +58,7 @@ class Module:
     marks: ClassVar[Sequence[MarkDeclaration]] = ()
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
+    settings: ClassVar[Sequence[SettingGroup | SettingValue]] = ()
 
     @classmethod
     def folder(cls) -> Path:

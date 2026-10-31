@@ -44,6 +44,7 @@ from core.base.module.module_order import ModuleOrder
 from core.base.module.sync_report import SyncReport
 from core.base.journal_home import JournalHome
 from core.base.provider.program_table import ProgramTable
+from core.base.setting.setting_tree import SettingTree
 
 
 DEFAULT_HANDLERS = {DottedPath.class_path(command).text: DottedPath.class_path(handler)
@@ -112,6 +113,7 @@ class ModuleSync:
             marks=self.marks(modules),
             docks=self.docks(modules),
             providers=self.providers.providers(modules),
+            settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
         )
 
     def windows(self, modules: tuple[type[Module], ...]) -> tuple[WindowEntry, ...]:

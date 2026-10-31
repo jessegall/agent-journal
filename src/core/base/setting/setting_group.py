@@ -1,0 +1,17 @@
+from collections.abc import Sequence
+from dataclasses import dataclass, field
+
+from core.base.setting.setting_value import SettingValue
+
+
+@dataclass(frozen=True)
+class SettingGroup:
+    """A group of settings a module declares, holding values and other groups; a toggleable group can be switched
+    off as a whole, which switches off every setting inside it, and is on or off by default as enabled says."""
+
+    key: str
+    title: str
+    description: str
+    children: Sequence["SettingGroup | SettingValue"] = field(default_factory=tuple)
+    toggleable: bool = False
+    enabled: bool = True

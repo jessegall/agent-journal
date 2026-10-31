@@ -20,6 +20,7 @@ from core.base.module.provider_check import ProviderCheck
 from core.base.module.suite_check import SuiteCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.setting_check import SettingCheck
 from tests.unit.core.base.model.test_lifecycle import ItemState
 from tests.unit.core.base.model.test_model import Item
 
@@ -121,5 +122,5 @@ def test_two_handlers_for_one_command_are_refused():
 
 
 def module_check() -> ModuleCheck:
-    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()))
+    return ModuleCheck(Tables(), SuiteCheck(), WindowCheck(), ProviderCheck(), MarkCheck(ButtonCheck()), DockCheck(ButtonCheck()), SettingCheck())
 

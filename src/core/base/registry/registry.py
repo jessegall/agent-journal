@@ -15,6 +15,7 @@ from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.mark_entry import MarkEntry
+from core.base.registry.setting_entry import SettingEntry
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
 from core.base.registry.provider_entry import ProviderEntry
@@ -47,6 +48,7 @@ class Registry:
     marks: tuple[MarkEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
+    settings: tuple[SettingEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
 
     @classmethod
@@ -85,6 +87,7 @@ class Registry:
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
+            settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
             module_fingerprints=dict(entries.get("module_fingerprints", {})),
         )
 
@@ -116,6 +119,7 @@ class Registry:
             "marks": [asdict(mark) for mark in self.marks],
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
+            "settings": [asdict(setting) for setting in self.settings],
             "module_fingerprints": self.module_fingerprints,
         }, sort_keys=True)
 

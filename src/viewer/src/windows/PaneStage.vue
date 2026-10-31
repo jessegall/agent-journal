@@ -124,6 +124,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
                     <template v-for="window in group.windows" :key="window.name">
                         <Btn
+                            kind="icon"
                             :data-reopen="window.name"
                             :class="{unavailable: window.unavailable_reason}"
                             :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
@@ -135,7 +136,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
                 </template>
                 <span class="agent-bar-space" />
-                <Btn data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
+                <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
                     <Icon name="wide" :size="13" />
                 </Btn>
                 <template v-if="presets">
@@ -154,7 +155,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         @pick="(key) => pick(id, key)"
                         @close="(key) => closeTab(id, key)"
                     >
-                        <Btn class="pane-menu-button" aria-label="Pane menu" @click="toggleMenu(id)">&hellip;</Btn>
+                        <Btn kind="icon" class="pane-menu-button" aria-label="Pane menu" @click="toggleMenu(id)">&hellip;</Btn>
                     </PaneTabs>
                     <template v-if="menu === id">
                         <div class="pane-menu" role="menu">
