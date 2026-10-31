@@ -3,7 +3,7 @@ from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
 
 def test_a_version_4_user_becomes_a_user_actor_named_as_in_version_4(new_story):
     story = upgraded_story(new_story)
-    story.expect_success("actor list --type user", "Jesse")
+    assert "user  Jesse" in story.run("actor list --type user").output_text
 
 
 def test_the_rows_a_user_made_name_the_new_actor_as_their_creator(new_story):

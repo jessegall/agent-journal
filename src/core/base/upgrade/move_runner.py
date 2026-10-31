@@ -6,6 +6,7 @@ from core.base.actor import CORE_ACTOR_ID
 from core.base.change.event_log import EventLog
 from core.base.clock import Clock
 from core.base.database.database import Database
+from core.base.journal_home import JournalHome
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.registry import Registry
 from core.base.upgrade.dry_run_end import DryRunEnd
@@ -23,12 +24,12 @@ class MoveRunner:
     finished row, skips a move already finished, and gathers what they did. A dry run rolls every move back,
     so the counts are real and nothing stays; a move that raises is rolled back and the moves before it stay."""
 
-    def __init__(self, registry: Registry, database: Database, clock: Clock, events: EventLog) -> None:
-        self.registry, self.database, self.clock, self.events = registry, database, clock, events
+    def __init__(self, registry: Registry, database: Database, clock: Clock, events: EventLog, home: JournalHome) -> None:
+        self.registry, self.database, self.clock, self.events, self.home = registry, database, clock, events, home
 
     def run(self, version_four: Path, dry_run: bool = False) -> UpgradeReport:
         report, moved = UpgradeReport(), MoveMap(self.database)
-        context = MoveContext(CORE_ACTOR_ID, self.clock.timestamp().text)
+        context = MoveContext(CORE_ACTOR_ID, self.clock.timestamp().text, str(self.home.project_folder))
         with VersionFourSource(version_four) as source:
             try:
                 if dry_run:
@@ -62,6 +63,8 @@ class MoveRunner:
         report.moved[entry.module], report.repeated[entry.module] = sum(outcome.moved.values()), sum(outcome.repeated.values())
         report.dropped[entry.module] = sum(outcome.dropped.values())
         self.add_dropped(report, outcome.dropped)
+        report.skipped.extend(outcome.skipped)
+        report.notes.extend(outcome.notes)
 
     def add_dropped(self, report: UpgradeReport, tables: dict[str, int]) -> None:
         for table, rows in tables.items():

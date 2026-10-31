@@ -6,6 +6,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.modules.environments.models.environment import Environment
 from core.modules.environments.queries.environment_query import EnvironmentQuery
 from core.modules.environments.seeders.environments_seeder import EnvironmentsSeeder
+from core.modules.environments.upgrade.environments_move import EnvironmentsMove
 
 
 class EnvironmentsModule(Module):
@@ -18,3 +19,4 @@ class EnvironmentsModule(Module):
     migrations = [EnvironmentsTableMigration]
     bindings = [(EnvironmentNames, EnvironmentTableNames)]
     seeders = [EnvironmentsSeeder]
+    moves = [EnvironmentsMove]
