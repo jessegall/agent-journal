@@ -173,13 +173,12 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
 
     def answer_pairing(self, viewer: ViewerServer, body: bytes) -> None:
         limit = viewer.login.phones.wrong_codes
-        if not limit.allows():
-            self.answer(429, {"error": "too many wrong codes: wait a minute and try again"})
+        if not limit.admits():
+            self.answer(429, {"error": "too many codes this minute: wait a minute and try again"})
             return
         try:
             token = viewer.login.phones.paired_token(PairRequest.parsed(body).code)
         except PhoneModuleError as error:
-            limit.counted()
             self.answer(400, {"error": str(error)})
             return
         except ViewerRequestError as error:

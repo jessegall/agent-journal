@@ -1,4 +1,3 @@
-import hashlib
 import io
 import secrets
 
@@ -14,6 +13,7 @@ from server.listener_wake import ListenerWake
 from server.viewer.paired_phone import PairedPhone
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.wrong_code_limit import WrongCodeLimit
+from core.modules.phone.support.text_digest import TextDigest
 
 TOKEN_BYTES = 24
 
@@ -54,4 +54,4 @@ class PhoneSessions:
 
     @staticmethod
     def digest(token: str) -> str:
-        return hashlib.sha256(token.encode()).hexdigest()
+        return TextDigest().of(token)
