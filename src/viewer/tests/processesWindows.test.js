@@ -1,6 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import {expect, test} from "vitest";
+import OutputBody from "../../core/modules/processes/web/src/OutputBody.vue";
 import Output from "../../core/modules/processes/web/src/Output.vue";
 import Outputs from "../../core/modules/processes/web/src/Outputs.vue";
 import {context, page} from "./support/windowContext.js";
@@ -100,4 +101,16 @@ test("a pruned output says so, and the output window has its stop and watch butt
     element.querySelector(".watch").click();
     await settle();
     expect(running.runs).toEqual(["output stop 5", "output watch 5"]);
+});
+
+test("the body of a command mark shows the progress and the last lines of its output", async () => {
+    const windowContext = recording({});
+    const element = document.createElement("div");
+    const app = createApp({render: () => h(OutputBody, {row: {figure: "40%", fraction: 0.4, lines: "step 3\nFAILED a"}})});
+    app.provide(WINDOW_CONTEXT, windowContext);
+    app.mount(element);
+    await settle();
+    expect(element.querySelector(".figure").textContent).toBe("40%");
+    expect(element.querySelector(".bar").style.width).toBe("40%");
+    expect(element.querySelector(".last-lines").textContent).toBe("step 3\nFAILED a");
 });

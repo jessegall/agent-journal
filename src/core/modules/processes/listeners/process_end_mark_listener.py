@@ -11,9 +11,11 @@ from core.modules.processes.models.enums.process_mark_type import ProcessMarkTyp
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
+from core.modules.processes.support.output_folder import OutputFolder
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
+LAST_LINES = 5
 OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: MarkOutcome.FAILED, ProcessState.STOPPED: MarkOutcome.WARNED, ProcessState.LOST: MarkOutcome.FAILED}
 WORDS = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.LOST: "Lost"}
@@ -27,8 +29,8 @@ class ProcessEndMarkListener(CommitListener):
     name = "processes.process-mark"
     event = "process.*"
 
-    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries) -> None:
-        self.bus, self.actors, self.queries = bus, actors, queries
+    def __init__(self, bus: Bus, actors: ModuleActors, queries: Queries, folder: OutputFolder) -> None:
+        self.bus, self.actors, self.queries, self.folder = bus, actors, queries, folder
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(event.row_id)
@@ -38,7 +40,11 @@ class ProcessEndMarkListener(CommitListener):
             return
         variant = ProcessMarkVariant(process.state.value)
         figure = f"{process.progress}%" if process.progress and process.state not in ENDED else ""
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{WORDS[process.state]} {process.line[:LINE_CHARACTERS]}", agent_id=process.agent_id,
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{WORDS[process.state]} {process.line[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
+
+    def last_lines(self, process: Process) -> str:
+        text = "".join(self.folder.output(process.id, position) for position in range(1, len(self.folder.part_texts(process.id)) + 1))
+        return "\n".join(text.splitlines()[-LAST_LINES:])

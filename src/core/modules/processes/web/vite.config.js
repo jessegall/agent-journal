@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         "outputs": here("./src/outputs.js"),
         "output": here("./src/output.js"),
+        "output-body": here("./src/output-body.js"),
         "output-dock": here("./src/output-dock.js"),
     },
     outDir: here("./dist"),
