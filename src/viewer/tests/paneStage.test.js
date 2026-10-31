@@ -375,8 +375,8 @@ test("Detach opens a float at the window's float size and takes the tab out of i
     await settled();
     element.querySelector(`[data-menu="detach"]`).click();
     await settled();
-    expect(store.layout.value.floats).toEqual([expect.objectContaining({view: "a.notes", w: 640, h: 420})]);
-    expect(holder(store, "a.notes")).toBeUndefined();
+    expect(store.layout.value.floats).toEqual([expect.objectContaining({view: "a.tasks", w: 640, h: 420})]);
+    expect(holder(store, "a.tasks")).toBeUndefined();
 });
 
 test("Dock returns a float to a pane", async () => {
@@ -388,11 +388,11 @@ test("Dock returns a float to a pane", async () => {
     element.querySelector(`.float-window [aria-label="Dock"]`).click();
     await settled();
     expect(store.layout.value.floats).toEqual([]);
-    expect(holder(store, "a.notes")).toBeDefined();
+    expect(holder(store, "a.tasks")).toBeDefined();
 });
 
 test("Send away opens the window in a view window, and the dock message brings it back as a float", async () => {
-    const opened = vi.fn();
+    const opened = vi.fn(() => ({}));
     vi.stubGlobal("open", opened);
     const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
     menuOf(element, holder(store, "a.notes")).click();
@@ -404,11 +404,59 @@ test("Send away opens the window in a view window, and the dock message brings i
     await settled();
     element.querySelector(`[data-float-away="${floatId}"]`).click();
     await settled();
-    expect(opened.mock.calls[0][0]).toContain("a.notes");
-    expect(store.layout.value.away.map((away) => away.view)).toEqual(["a.notes"]);
+    expect(opened.mock.calls[0][0]).toContain("a.tasks");
+    expect(store.layout.value.away.map((away) => away.view)).toEqual(["a.tasks"]);
     new BroadcastChannel("journal-views").postMessage({kind: "dock", id: floatId});
     await new Promise((resolve) => setTimeout(resolve, 20));
     await settled();
     expect(store.layout.value.away).toEqual([]);
-    expect(store.layout.value.floats.map((float) => float.view)).toEqual(["a.notes"]);
+    expect(store.layout.value.floats.map((float) => float.view)).toEqual(["a.tasks"]);
+});
+
+test("a window sent away returns to a pane when its browser window closes", async () => {
+    vi.stubGlobal("open", () => ({}));
+    const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
+    menuOf(element, holder(store, "a.notes")).click();
+    await settled();
+    element.querySelector(`[data-menu="detach"]`).click();
+    await settled();
+    const floatId = store.layout.value.floats[0].id;
+    element.querySelector(".float-menu-btn").click();
+    await settled();
+    element.querySelector(`[data-float-away="${floatId}"]`).click();
+    await settled();
+    new BroadcastChannel("journal-views").postMessage({kind: "closed", id: floatId});
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    await settled();
+    expect(store.layout.value.away).toEqual([]);
+    expect(store.layout.value.floats).toEqual([]);
+    expect(holder(store, "a.tasks")).toBeDefined();
+});
+
+test("a blocked browser window leaves the float docked where it was", async () => {
+    vi.stubGlobal("open", () => null);
+    const {store, element} = await stage(SHAPE, {extra: {float_width: 640, float_height: 420}});
+    menuOf(element, holder(store, "a.notes")).click();
+    await settled();
+    element.querySelector(`[data-menu="detach"]`).click();
+    await settled();
+    element.querySelector(".float-menu-btn").click();
+    await settled();
+    element.querySelector(`[data-float-away]`).click();
+    await settled();
+    expect(store.layout.value.away).toEqual([]);
+    expect(store.layout.value.floats.map((float) => float.view)).toEqual(["a.tasks"]);
+});
+
+test("a closed tab reopens from the reopen bar in the pane it was closed in, not the largest", async () => {
+    const wide = {...SHAPE, r: 0.7};
+    const {store, element} = await stage(wide);
+    const own = holder(store, "a.notes");
+    element.querySelector(`[data-tab="a.notes"] .pane-tab-x`).dispatchEvent(new MouseEvent("click", {bubbles: true}));
+    await settled();
+    expect(element.querySelector(`[data-reopen="a.notes"]`)).not.toBeNull();
+    element.querySelector(`[data-reopen="a.notes"]`).click();
+    await settled();
+    expect(holder(store, "a.notes")).toBe(own);
+    expect(tabsIn(store, own)).toEqual(["a.tasks", "a.notes"]);
 });

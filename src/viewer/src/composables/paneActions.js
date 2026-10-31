@@ -52,7 +52,11 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
 
     const grabTab = (event, id, view) => grab(event, {view, from: id, click: () => pick(id, view)});
     const pick = (id, view) => store.apply(activated(layout(), id, view));
-    const closeTab = (id, view) => store.apply(tabClosed(layout(), id, view));
+    const lastPane = new Map();
+    const closeTab = (id, view) => {
+        lastPane.set(view, id);
+        store.apply(tabClosed(layout(), id, view));
+    };
     const closePane = (id) => store.apply(paneClosed(layout(), id));
 
     const tabsOf = (id, pane) =>
@@ -109,10 +113,12 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
 
     const closedWindows = computed(() => !layout() ? [] : catalogue.windows.value.filter((window) => !store.open.value.has(window.name)));
 
-    // a window joins the pane holding it, else the largest pane
+    // a window joins the pane holding it, else the pane it was closed in, else the largest pane
     function openView(name) {
         const at = holding(layout(), name);
         if (at !== null) return pick(at, name);
+        const before = lastPane.get(name);
+        if (before !== undefined && leaves(layout().tree).includes(before)) return store.apply(placed(layout(), name, before, "center"));
         const {rects} = measure(layout().tree);
         const area = (id) => rects[id].w * rects[id].h;
         const largest = leaves(layout().tree).reduce((best, id) => (area(id) > area(best) ? id : best));

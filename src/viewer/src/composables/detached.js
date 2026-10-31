@@ -1,7 +1,7 @@
 import {computed} from "vue";
 import {listenViewTabs, openViewTab} from "./viewTabs.js";
 import {clamp} from "../format/number.js";
-import {broughtBack, floated, forgotten, fronted, landed, reshaped, sentAway, tabClosed, unfloated} from "../domain/panes.js";
+import {broughtBack, floated, fronted, landed, reshaped, sentAway, tabClosed, unfloated} from "../domain/panes.js";
 
 const MIN_W = 260;
 const MIN_H = 180;
@@ -18,7 +18,10 @@ export function useDetached(store, catalogue, environment) {
     const find = (id) => floats.value.find((f) => f.id === id);
     const tabs = listenViewTabs({
         dock: (id) => store.replace(broughtBack(layout(), id)),
-        closed: (id) => store.replace(forgotten(layout(), id)),
+        closed: (id) => {
+            store.replace(broughtBack(layout(), id));
+            dock(id);
+        },
     });
 
     function detach(pane) {
@@ -57,7 +60,7 @@ export function useDetached(store, catalogue, environment) {
     function sendAway(id) {
         const f = find(id);
         if (!f) return null;
-        openViewTab(f.view, id, environment);
+        if (!openViewTab(f.view, id, environment)) return null;
         store.replace(sentAway(layout(), id));
         return f;
     }
