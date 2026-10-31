@@ -15,6 +15,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from install.backup_mismatch import BackupMismatch
 from install.code_replacement import CodeReplacement
 from install.install_journal import InstallJournal
+from install.restore_version_four import RestoreVersionFour
 from install.server_wont_stop import ServerWontStop
 from install.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
@@ -141,7 +142,10 @@ class UpgradeJournal:
 
 
 if __name__ == "__main__":
-    flags = sys.argv[2:]
-    outcome = UpgradeJournal(JournalHome(Path(sys.argv[1]) / ".journal"), source=Path(__file__).resolve().parents[1]).run("--dry-run" in flags, "--yes" in flags)
+    flags, journal = sys.argv[2:], JournalHome(Path(sys.argv[1]) / ".journal")
+    if "--restore" in flags:
+        outcome = RestoreVersionFour(journal).run()
+    else:
+        outcome = UpgradeJournal(journal, source=Path(__file__).resolve().parents[1]).run("--dry-run" in flags, "--yes" in flags)
     print(outcome.text)
     sys.exit(outcome.code)

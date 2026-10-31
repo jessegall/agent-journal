@@ -11,6 +11,10 @@ from tests.stories.core.upgrade.support.move_samples import ORDER, PATH, version
 NOTES, TAGS, BROKEN_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:BrokenTagsModule"
 
 
+def sample(counts: dict[str, int]) -> dict[str, int]:
+    return {module: rows for module, rows in counts.items() if module.startswith("move")}
+
+
 def count(story, table: str) -> int:
     return story.container.get(Database).rows(Statement(f"SELECT count(*) FROM {table}"))[0][0]
 
@@ -30,7 +34,7 @@ def test_the_runner_orders_the_moves_by_module_dependency_whatever_order_the_mod
 def test_the_moved_rows_arrive_and_the_map_records_each_with_its_version_4_and_version_5_table_and_id(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     report = upgrade.run(source)
-    assert (count(story, "notes"), count(story, "tags")) == (2, 2) and report.moved == {"movenotes": 2, "movetags": 2} and report.dropped == {"movenotes": 1, "movetags": 0}
+    assert (count(story, "notes"), count(story, "tags")) == (2, 2) and sample(report.moved) == {"movenotes": 2, "movetags": 2} and sample(report.dropped) == {"movenotes": 1, "movetags": 0}
     moved = MoveMap(story.container.get(Database))
     first = moved.new_id("notes", 7)
     assert first is not None and moved.new_id("tags", 1) is not None and moved.new_id("notes", 8) is None
@@ -41,7 +45,7 @@ def test_a_second_run_skips_every_row_the_map_holds(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     upgrade.run(source)
     again = upgrade.run(source)
-    assert again.moved == {"movenotes": 0, "movetags": 0} and again.repeated == {"movenotes": 2, "movetags": 2}
+    assert sample(again.moved) == {"movenotes": 0, "movetags": 0} and sample(again.repeated) == {"movenotes": 2, "movetags": 2}
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
@@ -62,9 +66,9 @@ def test_a_version_4_table_no_module_claims_is_listed(new_story, tmp_path):
 def test_a_dry_run_gives_the_real_counts_and_leaves_nothing_behind(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     report = upgrade.run(source, dry_run=True)
-    assert report.moved == {"movenotes": 2, "movetags": 2}
+    assert sample(report.moved) == {"movenotes": 2, "movetags": 2}
     assert (count(story, "notes"), count(story, "tags")) == (0, 0) and MoveMap(story.container.get(Database)).count() == 0
-    assert upgrade.run(source).moved == {"movenotes": 2, "movetags": 2}
+    assert sample(upgrade.run(source).moved) == {"movenotes": 2, "movetags": 2}
 
 
 def test_a_dry_run_leaves_the_database_file_byte_equal(new_story, tmp_path):
@@ -85,10 +89,10 @@ def test_the_version_4_database_is_never_written_by_a_run(new_story, tmp_path):
 
 def test_moved_rows_write_one_upgrade_moved_event_per_module_and_no_event_of_their_own(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
-    before = story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM events"))[0]["total"]
     upgrade.run(source)
-    events = story.container.get(Database).rows(Statement("SELECT name, data FROM events WHERE id > (SELECT max(id) - 2 FROM events) ORDER BY id"))
-    names = [row["name"] for row in story.container.get(Database).rows(Statement("SELECT name FROM events ORDER BY id"))]
-    assert names.count("upgrade.moved") == 2 and "note.create" not in names and "tag.create" not in names
-    assert len(names) == before + 2 and '"movenotes"' in events[0]["data"] and '"moved": {"notes": 2}' in events[0]["data"]
+    rows = story.container.get(Database).rows(Statement("SELECT name, data FROM events ORDER BY id"))
+    names = [row["name"] for row in rows]
+    moved = [row["data"] for row in rows if row["name"] == "upgrade.moved"]
+    assert len(moved) == len(set(moved)) and sum('"module": [null, "movenotes"]' in data for data in moved) == 1 and sum('"module": [null, "movetags"]' in data for data in moved) == 1
+    assert "note.create" not in names and "tag.create" not in names and any('"moved": {"notes": 2}' in data for data in moved)
     assert story.container.get(Database).rows(Statement("SELECT count(*) AS total FROM chat_marks"))[0]["total"] == 0

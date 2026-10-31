@@ -53,6 +53,9 @@ class VersionFourBackup:
         return BackupResult(target, len(copy), False)
 
     def copy(self, original: Path, target: Path) -> None:
+        if not (original.parent / f"{DATABASE}-wal").exists():
+            shutil.copy2(original, target)
+            return
         source = sqlite3.connect(f"{original.resolve().as_uri()}?mode=ro", uri=True)
         destination = sqlite3.connect(target)
         try:
@@ -60,6 +63,10 @@ class VersionFourBackup:
         finally:
             destination.close()
             source.close()
+
+    def latest(self) -> Path | None:
+        backups = sorted((self.journal / BACKUP_FOLDER).glob(f"*/{DATABASE}"), key=lambda path: path.stat().st_mtime)
+        return backups[-1] if backups else None
 
     def counts(self, path: Path) -> dict[str, int]:
         connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
