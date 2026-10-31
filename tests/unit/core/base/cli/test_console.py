@@ -101,3 +101,10 @@ def test_a_read_runs_no_listeners_and_a_write_runs_them_before_and_after(tmp_pat
     assert runner.runs == 0
     run(container, "item", "make", "Dune")
     assert runner.runs == 2
+
+
+def test_an_abbreviated_flag_is_a_usage_error_and_the_full_flag_works(tmp_path):
+    container = console(tmp_path)
+    assert run(container, "item", "make", "Dune", "--env", "main")[0] == 2
+    assert run(container, "item", "make", "Dune", "--skip", "items.paused-guard")[0] == 2
+    assert run(container, "item", "make", "Dune", "--skip-guard", "items.paused-guard")[0] == 0

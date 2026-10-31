@@ -68,7 +68,7 @@ class Console:
 
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand = self.lookup.subcommand(argv[0], argv[1])
-        parser = ArgumentParser(prog=f"journal {argv[0]} {argv[1]}", description=subcommand.help)
+        parser = ArgumentParser(prog=f"journal {argv[0]} {argv[1]}", description=subcommand.help, allow_abbrev=False)
         parser.add_argument("--json", action="store_true")
         subcommand.arguments(parser)
         if isinstance(subcommand, Subcommand):
