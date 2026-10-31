@@ -28,15 +28,20 @@ const REPORT_FAMILY = {type: "report", icon: "report", title: "Report {row_id}: 
 
 let mounted = [];
 let lines;
+let runs;
 
 function windowContext(answers) {
     lines = [];
+    runs = [];
     return {
         read: async (line) => {
             lines.push(line);
             return {ok: true, value: {rows: answers[line] ?? []}};
         },
-        run: async () => ({ok: true}),
+        run: async (line) => {
+            runs.push(line);
+            return {ok: true};
+        },
         follow: () => {},
         option: () => ({value: true}),
         face: "person",
@@ -72,7 +77,7 @@ afterEach(() => {
 
 test("each difference of report 1147 has a screenshot pair of version 4 and version 5 and says what version 5 does better or the same", () => {
     expect(PAIRS.map((pair) => pair.report).sort()).toEqual(
-        ["The bars at the top", "The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pinned notices", "The chat: the composer", "The side panels", "The side panels"].sort(),
+        ["The bars at the top", "The bars at the top", "The chat: docked items", "The chat: marks", "The chat: messages", "The chat: pinned notices", "The chat: the composer", "The chat: the composer", "The side panels", "The side panels"].sort(),
     );
     for (const pair of PAIRS) {
         expect(existsSync(`${LOOK}${pair.version4}`), pair.version4).toBe(true);
@@ -137,6 +142,21 @@ test("composer: a tall box that says Message the agent, with an attach button an
     expect(element.querySelector("textarea")?.getAttribute("placeholder")).toBe("Message the agent");
     expect(element.querySelector("[data-attach]")).not.toBeNull();
     expect([...element.querySelectorAll("button")].map((button) => button.textContent.trim())).toContain("Dump files");
+});
+
+test("composer: Dump files opens a form where pasted paragraphs and dropped files become the parts of one dump made through dump make", async () => {
+    const element = await mountedChat();
+    element.querySelector("[data-dump-files]").click();
+    await settled();
+    const notes = element.querySelector("[data-dump-form] textarea");
+    expect(notes).not.toBeNull();
+    notes.value = "The cart rounds twice\n\nShip on Friday";
+    notes.dispatchEvent(new Event("input"));
+    await settled();
+    element.querySelector("[data-dump-make]").click();
+    await settled();
+    expect(runs).toEqual([["dump", "make", "The cart rounds twice", "--parts", "The cart rounds twice | Ship on Friday"]]);
+    expect(element.querySelector("[data-dump-form]")).toBeNull();
 });
 
 test("composer: the running tool shows under the last message, and a button scrolls the chat to its top", async () => {

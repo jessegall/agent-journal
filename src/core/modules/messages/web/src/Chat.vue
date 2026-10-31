@@ -1,5 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
+import DumpForm from "./DumpForm.vue";
 import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, context} = useRows("message list", ["message.*"]);
@@ -16,6 +17,7 @@ const text = ref("");
 const sendFailure = ref("");
 const scroller = ref(null);
 const atTop = ref(true);
+const dumping = ref(false);
 
 async function send() {
     const result = await context.run(["message", "send", text.value]);
@@ -63,13 +65,16 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <button type="button" data-scroll-top :class="['scroll-top', {hidden: atTop}]" aria-label="Scroll to the top" @click="scrollToTop">
             <Icon name="up" :size="14" />
         </button>
+        <template v-if="dumping">
+            <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
+        </template>
         <form class="composer" @submit.prevent="send">
             <textarea v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" />
             <div class="composer-row">
-                <button type="button" data-attach class="composer-attach" disabled title="Attaching files waits for the dumps module" aria-label="Attach a file">
+                <button type="button" data-attach class="composer-attach" disabled title="A message holds text only, so there is nothing to attach a file to; Dump files takes files" aria-label="Attach a file">
                     <Icon name="clip" :size="16" />
                 </button>
-                <Btn small disabled title="Dumping files waits for the dumps module">Dump files</Btn>
+                <Btn small data-dump-files @click="dumping = !dumping">Dump files</Btn>
                 <Btn kind="primary" small class="composer-send" :disabled="!text.trim()" @click="send">Send</Btn>
             </div>
         </form>

@@ -35,6 +35,13 @@
         "version5Does": "Same: a tall rounded box, placeholder Message the agent, an attach button, Dump files, the running tool under the last message and a button to scroll to the top. Better: the box grows with its text."
     },
     {
+        "name": "dump-files",
+        "report": "The chat: the composer",
+        "version4": "dump-files-v4.png",
+        "version5": "dump-files-v5.png",
+        "version5Does": "Same: Dump files starts a dump from what the person pastes or drops, a part to a paragraph or file. Better: the form opens in place above the composer, and the dump is made through the dumps module's own command."
+    },
+    {
         "name": "top-bars",
         "report": "The bars at the top",
         "version4": "top-bars-v4.png",
