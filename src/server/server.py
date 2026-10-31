@@ -17,6 +17,7 @@ from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
+from server.server_plugin_services import ServerPluginServices
 from server.server_tunnel import ServerTunnel
 from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
@@ -34,6 +35,7 @@ from server.server_files import ServerFiles
 SECOND_SERVER_CODE = 0
 
 TUNNEL_CHECK_SECONDS = 30.0
+SERVICES_CHECK_SECONDS = 30.0
 TICK_PERIOD_SECONDS = 60.0
 
 # How long a request may be answered on code that has changed since the last check of its files.
@@ -61,6 +63,9 @@ def main(argv: list[str]) -> int:
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     tunnel_thread = ListenerThread(lambda: tunnel.follow(viewer.port), lambda error: files.log_line(f"the tunnel could not be opened: {error}"), TUNNEL_CHECK_SECONDS, "tunnel")
+    plugin_services = ServerPluginServices(home)
+    services_thread = ListenerThread(plugin_services.follow, lambda error: files.log_line(f"the plugin services could not be kept: {error}"), SERVICES_CHECK_SECONDS,
+                                     "plugin services")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
     files.restrict_socket()
     files.write_pid()
@@ -72,10 +77,14 @@ def main(argv: list[str]) -> int:
     viewer.start()
     tunnel_thread.wake()
     tunnel_thread.start()
+    services_thread.wake()
+    services_thread.start()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
+        services_thread.stop()
+        plugin_services.close()
         tunnel_thread.stop()
         tunnel.close()
         viewer.stop()

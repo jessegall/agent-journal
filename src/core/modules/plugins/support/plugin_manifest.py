@@ -5,6 +5,7 @@ from pathlib import Path
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
+from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.event_window import EventWindow
 
@@ -16,7 +17,7 @@ REQUIRED_FIELDS = ("name", "title", "version")
 class PluginManifest:
     """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
     version, the program run for each event, the events it takes and the ones it answers inside a window, the
-    settings its settings file lists, the tone of each kind of card it shows, and the folder of its skills."""
+    settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, and the services it keeps running."""
 
     name: str
     title: str
@@ -28,6 +29,7 @@ class PluginManifest:
     files: tuple[str, ...]
     card_tones: Mapping[str, str]
     skills_folder: str
+    services: tuple[ManifestService, ...]
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -44,7 +46,15 @@ class PluginManifest:
         return cls(str(fields["name"]), str(fields["title"]), str(fields["version"]), program,
                    tuple(str(name) for name in names) if is_list(names) else (), tuple(cls.event_window(entry) for entry in windows) if is_list(windows) else (),
                    cls.read_settings(folder, settings_file), tuple(file for file in (MANIFEST_FILE, program, settings_file) if file),
-                   cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "")
+                   cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
+                   cls.read_services(fields["services"] if "services" in fields else None))
+
+    @staticmethod
+    def read_services(services: object) -> tuple[ManifestService, ...]:
+        entries = [entry for entry in services if is_mapping(entry) and "name" in entry and "command" in entry and is_list(entry["command"])] if is_list(services) else []
+        return tuple(ManifestService(str(entry["name"]), tuple(str(part) for part in command) if is_list(command := entry["command"]) else (),
+                                     str(entry["when"]) if "when" in entry else "", str(entry["restart"]) if "restart" in entry else "never",
+                                     entry["answers"] is True if "answers" in entry else False) for entry in entries)
 
     @staticmethod
     def read_card_tones(cards: object) -> dict[str, str]:

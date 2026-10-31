@@ -15,6 +15,9 @@ class ChildProcess:
     def running(self) -> bool:
         return self.process.poll() is None
 
+    def exit_code(self) -> int | None:
+        return self.process.poll()
+
     def wait(self, limit_seconds: float) -> int:
         return self.process.wait(limit_seconds)
 
