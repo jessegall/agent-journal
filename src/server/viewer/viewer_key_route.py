@@ -12,9 +12,9 @@ from server.viewer.viewer_login import ViewerLogin
 
 
 class ViewerKeyRoute:
-    """Answers POST /viewer/key on the journal's socket: a one-time login key for the person who asks, found the way
-    a command line's caller is found, with the environment of the folder they asked from; an agent or a caller who
-    is no person gets none."""
+    """Answers POST /viewer/key on the journal's socket: a one-time login key for the person who asks,
+    found the way a command line's caller is found, with the environment of the folder they asked from;
+    an agent or a caller who is no person gets none."""
 
     def __init__(self, home: JournalHome, login: ViewerLogin) -> None:
         self.home, self.login = home, login

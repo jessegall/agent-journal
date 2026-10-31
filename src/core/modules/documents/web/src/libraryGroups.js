@@ -9,13 +9,15 @@ const GROUPS = [
 // the rows a search keeps: its words found in the title or the abstract
 export function searched(rows, words) {
     const wanted = words.trim().toLowerCase();
-    return wanted ? rows.filter((row) => `${row.title} ${row.abstract}`.toLowerCase().includes(wanted)) : rows;
+    if (!wanted) return rows;
+    return rows.filter((row) => `${row.title} ${row.abstract}`.toLowerCase().includes(wanted));
 }
 
 // the rows in the chosen order: newest first by when each was last written, or by title
 export function sorted(rows, order) {
     const copy = [...rows];
-    return order === "title" ? copy.sort((a, b) => a.title.localeCompare(b.title)) : copy.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+    if (order === "title") return copy.sort((a, b) => a.title.localeCompare(b.title));
+    return copy.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
 }
 
 // the rows under the age heading each falls in, newest first; a title order keeps one group

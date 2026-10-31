@@ -23,10 +23,15 @@ const source = computed(() => (noun.value === "doc" ? docs : reports));
 const groups = computed(() => grouped(sorted(searched(source.value.rows.value, words.value), order.value), order.value));
 const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 
-async function open(row) {
-    chosen.value = row.id;
+async function readRow(row) {
     const answer = await source.value.context.read(`${noun.value} show ${row.id} --json`);
-    reading.value = answer.ok ? answer.value : null;
+    if (!answer.ok) return null;
+    return answer.value;
+}
+
+function open(row) {
+    chosen.value = row.id;
+    readRow(row).then((value) => (reading.value = value));
 }
 
 watch(noun, () => {

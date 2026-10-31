@@ -1,16 +1,8 @@
-import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import {settled} from "./settled.js";
 import SequenceCards from "../../core/modules/sequences/web/src/SequenceCards.vue";
 import TemplateCards from "../../core/modules/templates/web/src/TemplateCards.vue";
-import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
-
-function mounted(component, rows) {
-    const context = {read: async () => ({ok: true, value: {rows}}), run: async () => ({ok: true}), follow: () => {}, face: "person"};
-    const element = document.createElement("div");
-    createApp({setup: () => () => h(component), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
-    return element;
-}
+import {mounted} from "./mountedWindow.js";
 
 test("a sequence card shows its number, title and step count, and its steps once opened", async () => {
     const element = mounted(SequenceCards, [{id: 1, title: "Release steps", steps: ["Run the suite", "Tag it"]}]);

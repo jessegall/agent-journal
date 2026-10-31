@@ -2,6 +2,7 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
+import {settledByTimer} from "./settled.js";
 
 const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", line: "task list", loading: "document", reads: ["task list"], runs: [], unavailable_reason: ""};
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
@@ -10,20 +11,13 @@ const NARROW_WIDTH = 600;
 
 afterEach(() => vi.unstubAllGlobals());
 
-async function settled() {
-    for (let round = 0; round < 5; round++) {
-        await new Promise((resolve) => setTimeout(resolve));
-        await nextTick();
-    }
-}
-
 async function shell(session, width) {
     vi.stubGlobal("innerWidth", width);
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {rows: []}, error: ""})}));
     const catalogue = new WindowCatalogue(async () => ({windows: [summary, calendar]}));
     const element = document.createElement("div");
     createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary", "notes.calendar"], catalogue, events: () => () => {}, session: async () => session})).mount(element);
-    await settled();
+    await settledByTimer();
     return element;
 }
 

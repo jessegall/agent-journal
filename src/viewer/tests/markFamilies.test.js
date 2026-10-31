@@ -1,5 +1,6 @@
 import {expect, test} from "vitest";
-import {CHAT_WINDOW, familyKey, familyOptions, shownMarks, withFamilyOptions} from "../src/domain/markFamilies.js";
+import {familyKey, familyOptions, shownMarks} from "../src/domain/markFamilies.js";
+import {CHAT_WINDOW, withFamilyOptions} from "../src/windows/chatOptions.js";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
 const declarations = [

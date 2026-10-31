@@ -3,11 +3,11 @@ import shutil
 from pathlib import Path
 
 from core.base.type_guards import is_list, is_mapping
+from core.base.upgrade.version_four_hook import VersionFourHook
 from install.hook_writer import HookWriter
 from install.version_four_backup import BACKUP_FOLDER
 
 SETTINGS_FILES = (Path(".claude") / "settings.local.json", Path(".codex") / "hooks.json")
-VERSION_FOUR_HOOK = "src/journal/hooks/hook.sh"
 SAVED_FOLDER = "hooks"
 
 
@@ -57,7 +57,7 @@ class HookSwitch:
             if not is_list(entries):
                 kept.append(group)
                 continue
-            remaining = [entry for entry in entries if not (is_mapping(entry) and VERSION_FOUR_HOOK in str(entry.get("command", "")))]
+            remaining = [entry for entry in entries if not (is_mapping(entry) and VersionFourHook.FILE in str(entry.get("command", "")))]
             if remaining:
                 kept.append({**group, "hooks": remaining})
         return kept

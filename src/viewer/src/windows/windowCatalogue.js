@@ -1,5 +1,5 @@
 import {computed, shallowRef} from "vue";
-import {withFamilyOptions} from "../domain/markFamilies.js";
+import {withFamilyOptions} from "./chatOptions.js";
 
 // the windows the journal lists for this environment and the person they are listed for, asked again whenever the registry is synced: a window whose entry
 // URL changed is mounted again from its new file, a removed one turns into its placeholder, and a new one joins the menu

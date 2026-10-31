@@ -1,5 +1,5 @@
 import vue from "@vitejs/plugin-vue";
-import {copyFileSync, mkdirSync} from "node:fs";
+import {copyFileSync, mkdirSync, readFileSync, writeFileSync} from "node:fs";
 import {fileURLToPath} from "node:url";
 import {defineConfig} from "vite";
 
@@ -16,8 +16,19 @@ const vendorVue = () => ({
     },
 });
 
+// the phone's service worker, written in tools/phone-worker and put beside the shell as a built file
+const GENERATED_MARK = "/* @code-commandments-generated */";
+const phoneWorker = () => ({
+    name: "phone-worker",
+    apply: "build",
+    writeBundle() {
+        const source = readFileSync(fileURLToPath(new URL("../../tools/phone-worker/phone-sw.js", import.meta.url)), "utf8");
+        writeFileSync(`${OUT_DIR}/phone-sw.js`, `${GENERATED_MARK}\n${source}`);
+    },
+});
+
 export default defineConfig({
-    plugins: [vue(), vendorVue()],
+    plugins: [vue(), vendorVue(), phoneWorker()],
     base: "/viewer/",
     define: {__DEMO__: false, __DEMO_BUILD__: JSON.stringify("")},
     build: {outDir: OUT_DIR, emptyOutDir: true, rollupOptions: {external: ["vue", "@journal/window-kit"]}},

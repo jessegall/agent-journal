@@ -2,18 +2,12 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import WindowShell from "../src/windows/WindowShell.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
+import {settledByTimer} from "./settled.js";
 
 const summary = {name: "notes.summary", title: "Notes summary", entry_url: "", line: "task list", loading: "document", reads: ["task list"], runs: [], unavailable_reason: ""};
 const calendar = {...summary, name: "notes.calendar", title: "Notes calendar", line: "plan list"};
 
 afterEach(() => vi.unstubAllGlobals());
-
-async function settled() {
-    for (let round = 0; round < 5; round++) {
-        await new Promise((resolve) => setTimeout(resolve));
-        await nextTick();
-    }
-}
 
 test("a registry sync asks for the windows again: a removed window shows as not installed and a new one joins the menu", async () => {
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "the line was refused"})}));
@@ -26,12 +20,12 @@ test("a registry sync asks for the windows again: a removed window shows as not 
     };
     const element = document.createElement("div");
     createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], catalogue, events})).mount(element);
-    await settled();
+    await settledByTimer();
     expect(element.textContent).toContain("the line was refused");
     expect(element.querySelector(`[data-reopen="notes.calendar"]`)).toBeNull();
 
     await heard({event: "registry.sync"});
-    await settled();
+    await settledByTimer();
     expect(element.textContent).toContain("No installed module has this window.");
     expect(element.querySelector(`[data-reopen="notes.calendar"]`)).not.toBeNull();
     expect(element.querySelectorAll(".window")).toHaveLength(1);
@@ -59,7 +53,7 @@ test("a page window of a module the journal does not ship shows how to trust its
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: access, error: ""})}));
     const element = document.createElement("div");
     createApp(() => h(WindowShell, {environment: "main", layout: ["pages.board"], catalogue, events: () => () => {}})).mount(element);
-    await settled();
+    await settledByTimer();
     await new Promise((resolve) => setTimeout(resolve));
     expect(element.textContent).toContain("journal window trust pages");
 });

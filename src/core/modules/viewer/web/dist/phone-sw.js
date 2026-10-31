@@ -1,3 +1,4 @@
+/* @code-commandments-generated */
 // The phone's service worker: it keeps the shell page and the shell's own files for a start without a network, and
 // keeps no data; a push shows only how many things wait, never what they are; a tap opens the window that holds it.
 const TAG = "needs-you";

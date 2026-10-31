@@ -1,18 +1,8 @@
-import {shallowRef} from "vue";
+import {declarationRegistry} from "./declarationRegistry.js";
 
 // The dockable item types the modules declare, read from /api/docks and found by type
-const declarations = shallowRef(new Map());
+const docks = declarationRegistry("/api/docks", "docks");
 
-export function loadDockDeclarations(list) {
-    declarations.value = new Map(list.map((declaration) => [declaration.type, declaration]));
-}
-
-export async function fetchDockDeclarations() {
-    try {
-        loadDockDeclarations((await (await fetch("/api/docks")).json()).docks || []);
-    } catch (error) {
-        loadDockDeclarations([]);
-    }
-}
-
-export const dockDeclaration = (type) => declarations.value.get(type) || null;
+export const loadDockDeclarations = docks.load;
+export const fetchDockDeclarations = docks.fetchAll;
+export const dockDeclaration = docks.find;

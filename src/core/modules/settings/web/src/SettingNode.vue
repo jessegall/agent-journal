@@ -19,8 +19,10 @@ const refusal = ref("");
 const typed = ref("");
 
 async function saveValue(text) {
-    const result = await props.save(["setting", "set", props.row.key, String(text), ...scopeFlag.value]);
-    refusal.value = result.ok ? "" : result.error;
+    const line = ["setting", "set", props.row.key, String(text), ...scopeFlag.value];
+    const result = await props.save(line);
+    if (result.ok) refusal.value = "";
+    else refusal.value = result.error;
 }
 
 async function switchGroup() {

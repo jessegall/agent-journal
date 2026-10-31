@@ -1,16 +1,8 @@
-import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import {settled} from "./settled.js";
 import TriggerCards from "../../core/modules/triggers/web/src/TriggerCards.vue";
 import CheckCards from "../../suites/coding/modules/checks/web/src/CheckCards.vue";
-import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
-
-function mounted(component, rows) {
-    const context = {read: async () => ({ok: true, value: {rows}}), run: async () => ({ok: true}), follow: () => {}, face: "person"};
-    const element = document.createElement("div");
-    createApp({setup: () => () => h(component), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
-    return element;
-}
+import {mounted} from "./mountedWindow.js";
 
 test("a trigger card shows its number, action and text, and what sets it off once opened", async () => {
     const element = mounted(TriggerCards, [{id: 1, action: "nudge", text: "Run the release sequence", phrases: ["deploy", "release"], next_at: null}]);

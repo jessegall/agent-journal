@@ -86,7 +86,8 @@ class PluginRule(DriverRule):
             commands.append(AddPluginOutput(plugin.id, hook.environment_id, hook.agent_id, answer.output))
         answer_text = answer.reason if answer.is_refusal() else answer.line
         journal_line = hook.event.tool is not None and hook.event.tool.is_journal_line
-        if answer.is_refusal() and event.name in REFUSABLE_EVENTS and not journal_line:
+        refusing = answer.is_refusal() and event.name in REFUSABLE_EVENTS
+        if refusing and not journal_line:
             return f"[plugin {plugin.name}] {answer_text}"
         if answer_text:
             lines.append(f"[plugin {plugin.name}] {answer_text}")

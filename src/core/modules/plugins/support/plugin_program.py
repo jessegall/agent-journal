@@ -18,10 +18,11 @@ SETTINGS_FILE = ".journal-settings.json"
 
 
 class PluginProgram:
-    """Runs a plugin's program for one event, as version 4 did: in its folder and a process group of its own, the
-    line on its input, a clean environment naming its folders and settings, and a time limit past which it is
-    stopped; a late run, an error code or an answer that is not JSON is raised as the plugin's fault. A plugin
-    whose answering service has its socket open is asked there instead, and the program answers once it is gone."""
+    """Runs a plugin's program for one event, as version 4 did: in its folder and a process group of its
+    own, the line on its input, a clean environment naming its folders and settings, and a time limit
+    past which it is stopped; a late run, an error code or an answer that is not JSON is raised as the
+    plugin's fault. A plugin whose answering service has its socket open is asked there instead, and the
+    program answers once it is gone."""
 
     def __init__(self, home: JournalHome, folders: PluginFolders, sockets: PluginSocketPaths) -> None:
         self.home, self.folders, self.sockets = home, folders, sockets

@@ -19,11 +19,12 @@ WORKERS_ROLE = "workers"
 
 @dataclass(frozen=True)
 class PluginManifest:
-    """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name, title and
-    version, the program run for each event, the events it takes and the ones it answers inside a window, the
-    settings its settings file lists, the tone of each kind of card it shows, the folder of its skills, the services it keeps running, and what its
-    install requires, sets up and reads back, how its services answer a health check, and
-    which helpers besides the main agent each event reaches."""
+    """What a plugin folder says about itself in journal-plugin.json, as version 4 reads it: its name,
+    title and version, the program run for each event, the events it takes and the ones it answers
+    inside a window, the settings its settings file lists, the tone of each kind of card it shows, the
+    folder of its skills, the services it keeps running, and what its install requires, sets up and
+    reads back, how its services answer a health check, and which helpers besides the main agent each
+    event reaches."""
 
     name: str
     title: str

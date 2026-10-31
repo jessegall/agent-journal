@@ -28,7 +28,7 @@ async function worker({waiting = [], windows = []} = {}) {
     vi.stubGlobal("self", self);
     vi.stubGlobal("fetch", async () => ({ok: true, json: async () => ({waiting})}));
     vi.resetModules();
-    await import("../public/phone-sw.js");
+    await import("../../../tools/phone-worker/phone-sw.js");
 }
 
 async function fired(name, event) {

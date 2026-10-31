@@ -10,8 +10,9 @@ const modules = computed(() => [...new Set(tops.value.map((row) => row.module))]
 const readOnly = context.face === "phone";
 
 function heading(module) {
-    const name = module.split(".").at(-1).replace(/[-_]/g, " ");
-    return name.charAt(0).toUpperCase() + name.slice(1);
+    const parts = module.split(".");
+    const name = parts[parts.length - 1].replace(/[-_]/g, " ");
+    return name.slice(0, 1).toUpperCase() + name.slice(1);
 }
 
 async function saved(words) {

@@ -11,11 +11,12 @@ const loaded = ref(false);
 
 // the points of the worker's task brief, its lines that start with "- ", or the whole brief as one point when it has none
 function briefPoints(task) {
-    const lines = task.brief
-        .split("\n")
-        .filter((line) => line.startsWith(POINT_PREFIX))
-        .map((line) => line.slice(POINT_PREFIX.length));
-    return lines.length ? lines : [task.brief || task.title];
+    const lines = [];
+    for (const line of task.brief.split("\n")) {
+        if (line.startsWith(POINT_PREFIX)) lines.push(line.slice(POINT_PREFIX.length));
+    }
+    if (lines.length) return lines;
+    return [task.brief || task.title];
 }
 
 async function load() {
