@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal/socket"
 )
 
 func shortHome(t *testing.T) string {
@@ -43,18 +45,18 @@ func TestASocketPathTooLongBecomesAShortOneNamedByItsHashAsTheServerNamesIt(t *t
 	deep := "/" + strings.Repeat("deep-folder-", 10)
 	path := filepath.Join(deep, "server.sock")
 	sum := sha256.Sum256([]byte(path))
-	if got := SocketPath(deep); got != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
+	if got := socket.Path(deep); got != "/tmp/journal-"+hex.EncodeToString(sum[:])[:16]+".sock" {
 		t.Fatalf("socket path %s", got)
 	}
 	home := shortHome(t)
-	if got := SocketPath(home); got != filepath.Join(home, "server.sock") {
+	if got := socket.Path(home); got != filepath.Join(home, "server.sock") {
 		t.Fatalf("socket path %s", got)
 	}
 }
 
 func TestAHealthyServerIsUsedAndNothingIsStarted(t *testing.T) {
 	home := shortHome(t)
-	listening(t, SocketPath(home), healthHandler())
+	listening(t, socket.Path(home), healthHandler())
 	_, started, err := Connect(home, func(string) (*os.Process, error) {
 		t.Error("a server was started beside a healthy one")
 		return nil, nil
@@ -69,7 +71,7 @@ func TestWithNothingAnsweringAndTheLockFreeTheClientStartsTheServer(t *testing.T
 	starts := 0
 	_, _, err := Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, SocketPath(home), healthHandler())
+		listening(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {
@@ -90,7 +92,7 @@ func TestAHeldLockMeansWaitAndAServerLettingItGoIsReplacedAtOnce(t *testing.T) {
 	starts := 0
 	_, _, err = Connect(home, func(string) (*os.Process, error) {
 		starts++
-		listening(t, SocketPath(home), healthHandler())
+		listening(t, socket.Path(home), healthHandler())
 		return &os.Process{Pid: os.Getpid()}, nil
 	})
 	if err != nil || starts != 1 {

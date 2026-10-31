@@ -1,6 +1,7 @@
-"""Prints how long each step of the server's answered requests took, from its timing log: the last 1000 lines,
-grouped by route and command line, with the median, 90th percentile and maximum of each pair of neighbouring
-stamps and of the whole request. Run as python3 scripts/timing_report.py .journal/runtime/timing.log."""
+"""Prints how long each step of the server's answered requests took, from its timing log, and of the hooks that
+gave up, from bypass.log beside it: the last 1000 lines of each, grouped by route and command line, with the
+median, 90th percentile and maximum of each pair of neighbouring stamps and of the whole request. Run as
+python3 scripts/timing_report.py .journal/runtime/timing.log."""
 
 import json
 import statistics
@@ -21,12 +22,20 @@ def steps(timing: Timing) -> list[tuple[str, float]]:
             for (first, first_microseconds), (second, second_microseconds) in zip(timing.stamps, timing.stamps[1:])]
 
 
-def report(lines: list[str]) -> str:
+def logged_timings(lines: list[str]) -> list[tuple[str, Timing]]:
+    entries = [json.loads(line) for line in lines]
+    return [(f"{entry['route']} {entry['line']}".rstrip(), Timing.parsed(entry["timing"])) for entry in entries]
+
+
+def bypass_timings(lines: list[str]) -> list[tuple[str, Timing]]:
+    fields = [line.split() for line in lines]
+    return [(f"gave up: hook {parts[2]}", Timing.parsed(parts[4])) for parts in fields if len(parts) == 5]
+
+
+def report(timings: list[tuple[str, Timing]]) -> str:
     groups: dict[str, dict[str, list[float]]] = defaultdict(lambda: defaultdict(list))
-    for raw in lines:
-        line = json.loads(raw)
-        timing = Timing.parsed(line["timing"])
-        group = groups[f"{line['route']} {line['line']}".rstrip()]
+    for name, timing in timings:
+        group = groups[name]
         for step, milliseconds in steps(timing):
             group[step].append(milliseconds)
         if timing.stamps:
@@ -41,8 +50,17 @@ def report(lines: list[str]) -> str:
     return "\n".join(rows)
 
 
+def last_lines(path: Path) -> list[str]:
+    return path.read_text().splitlines()[-LINE_LIMIT:]
+
+
 def main(argv: list[str]) -> int:
-    print(report(Path(argv[0]).read_text().splitlines()[-LINE_LIMIT:]))
+    timing_log = Path(argv[0])
+    bypass_log = timing_log.with_name("bypass.log")
+    timings = logged_timings(last_lines(timing_log))
+    if bypass_log.exists():
+        timings += bypass_timings(last_lines(bypass_log))
+    print(report(timings))
     return 0
 
 

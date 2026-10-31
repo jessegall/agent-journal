@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/programs"
+	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 )
 
 func main() {
+	requestTiming := timing.Started()
 	started := time.Now()
 	if len(os.Args) < 3 {
 		os.Exit(0)
@@ -47,6 +49,7 @@ func main() {
 		firedAtMs:   context.FiredAtMs,
 		body:        object,
 		limit:       limit,
+		timing:      requestTiming,
 	}, nil, time.Now())
 	os.Exit(ExitCode(os.Stdout, os.Stderr, program, prepared.Event, status, answer, root, limit))
 }

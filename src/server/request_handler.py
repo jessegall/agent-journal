@@ -122,6 +122,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_json(400, {"error": str(error)})
             return
         data = answer.encode()
+        self.status = 200
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(data)))

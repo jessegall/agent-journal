@@ -24,7 +24,7 @@ from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer, ServerCont
 from server.listener_thread import ListenerRound, ListenerThread, ListenerWake
 from server.request_handler import EXIT_CODE_TRAILER, RequestHandler
 from server.server_files import ServerFiles
-from scripts.timing_report import report
+from scripts.timing_report import logged_timings, report
 
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
@@ -134,7 +134,7 @@ class ServerStory:
 
 
 def expect_timing_report_steps(home: JournalHome, route_line: str, steps: list[str]) -> None:
-    rows = report(TimingLog(home).path.read_text().splitlines()).splitlines()
+    rows = report(logged_timings(TimingLog(home).path.read_text().splitlines())).splitlines()
     assert rows[0] == f"{route_line}  (1 requests)" and [row.split("  ")[1].strip() for row in rows[2:]] == steps, rows
 
 

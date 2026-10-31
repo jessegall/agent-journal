@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
 )
 
 // fakeTransport stands in for the journal's server: it answers each request it is handed with what reply gives.
@@ -50,7 +52,8 @@ func project(t *testing.T, port string) string {
 
 func sample(root, eventName string) delivery {
 	return delivery{root: root, program: "claude", event: eventName, environment: "development", actor: "worker:12", actorToken: "token-1",
-		launch: "launch-3", firing: "7731-1793395000123", firedAtMs: 1793395000123, body: []byte(`{"version":1}`), limit: 200 * time.Millisecond}
+		launch: "launch-3", firing: "7731-1793395000123", firedAtMs: 1793395000123, body: []byte(`{"version":1}`), limit: 200 * time.Millisecond,
+		timing: timing.Started()}
 }
 
 func TestTheObjectIsPostedWithTheHeadersHookShSends(t *testing.T) {
@@ -144,4 +147,60 @@ func read(t *testing.T, path string) string {
 		t.Fatal(err)
 	}
 	return string(text)
+}
+
+func switchedProject(t *testing.T) string {
+	t.Helper()
+	root := project(t, "")
+	writeFile(t, filepath.Join(root, ".journal", socketSwitchName), "")
+	return root
+}
+
+func timingNames(text string) []string {
+	var stampNames []string
+	for _, pair := range strings.Split(text, ";") {
+		name, _, _ := strings.Cut(pair, "=")
+		stampNames = append(stampNames, name)
+	}
+	return stampNames
+}
+
+func TestAJournalSwitchedToVersion5TakesTheHookOnItsSocketWithItsTiming(t *testing.T) {
+	root := switchedProject(t)
+	var captured *http.Request
+	status, _ := post(sample(root, "pre_tool_use"), fakeTransport(func(request *http.Request) (*http.Response, error) {
+		captured = request
+		return answer(200, "{}")(request)
+	}), time.Unix(1793395000, 0))
+	if status != 200 || captured.URL.String() != "http://journal/hook?program=claude" || captured.Header.Get("X-Journal-Hook-Id") != "7731-1793395000123" {
+		t.Fatalf("status %d, posted to %s", status, captured.URL)
+	}
+	if actual := timingNames(captured.Header.Get(timing.Header)); strings.Join(actual, ";") != "go_start;go_sent" {
+		t.Errorf("timing names %v", actual)
+	}
+}
+
+func TestAVersion4JournalSendsNoTiming(t *testing.T) {
+	root := project(t, "8431")
+	var captured *http.Request
+	post(sample(root, "pre_tool_use"), fakeTransport(func(request *http.Request) (*http.Response, error) {
+		captured = request
+		return answer(200, "{}")(request)
+	}), time.Unix(1, 0))
+	if captured.Header.Get(timing.Header) != "" {
+		t.Errorf("version 4 was sent a timing")
+	}
+}
+
+func TestAGiveUpOnTheSocketAddsItsTimingToItsBypassLine(t *testing.T) {
+	root := switchedProject(t)
+	outgoing := sample(root, "pre_tool_use")
+	post(outgoing, unreachable, time.Unix(1793395000, 0))
+	fields := strings.Fields(read(t, filepath.Join(root, ".journal", "runtime", "bypass.log")))
+	if len(fields) != 5 || strings.Join(fields[:3], " ") != "1793395000 hook claude" || fields[3] != outgoing.timing.RequestID() {
+		t.Fatalf("bypass line %v", fields)
+	}
+	if actual := timingNames(fields[4]); strings.Join(actual, ";") != "go_start;go_sent;go_gave_up" {
+		t.Errorf("timing names %v", actual)
+	}
 }

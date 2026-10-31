@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/timing"
+	"github.com/jessegall/agent-journal/tools/journal/socket"
 )
 
 // Exit codes, as the journal's console gives them.
@@ -83,7 +84,7 @@ func Run(requestTiming *timing.Timing, argv []string, stdout, stderr io.Writer) 
 
 // StopServer asks a running server to stop and waits until it has let its lock go.
 func StopServer(home string, stdout, stderr io.Writer) int {
-	client := SocketClient(SocketPath(home))
+	client := socket.Client(socket.Path(home))
 	if !Healthy(client) {
 		fmt.Fprintln(stdout, "no server is running")
 		return SuccessCode

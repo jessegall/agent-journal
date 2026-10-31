@@ -2,53 +2,21 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"errors"
-	"net"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
-)
 
-// SocketPathLimit is the longest socket path the server binds in the journal's folder; past it both sides use a
-// short path under /tmp named by a hash of the long one, as the server's socket_path does.
-const SocketPathLimit = 100
+	"github.com/jessegall/agent-journal/tools/journal/socket"
+)
 
 // StartLimit is how long a client waits for a server it started, or one another client is starting.
 var StartLimit = 5 * time.Second
 
 // PollInterval is how often a waiting client checks for an answer and for the lock.
 var PollInterval = 50 * time.Millisecond
-
-// SocketPath is the server's socket for a journal's folder.
-func SocketPath(home string) string {
-	resolved, err := filepath.EvalSymlinks(home)
-	if err != nil {
-		resolved = home
-	}
-	absolute, err := filepath.Abs(resolved)
-	if err != nil {
-		absolute = resolved
-	}
-	path := filepath.Join(absolute, "server.sock")
-	if len(path) <= SocketPathLimit {
-		return path
-	}
-	sum := sha256.Sum256([]byte(path))
-	return filepath.Join("/tmp", "journal-"+hex.EncodeToString(sum[:])[:16]+".sock")
-}
-
-// SocketClient speaks HTTP over the server's Unix socket.
-func SocketClient(socket string) *http.Client {
-	dial := func(ctx context.Context, _, _ string) (net.Conn, error) {
-		var dialer net.Dialer
-		return dialer.DialContext(ctx, "unix", socket)
-	}
-	return &http.Client{Transport: &http.Transport{DialContext: dial}}
-}
 
 // Healthy says whether a server answers GET /health.
 func Healthy(client *http.Client) bool {
@@ -76,7 +44,7 @@ var ErrNoServer = errors.New("no server answered in time")
 // it waits it checks the lock again on every round, so a server that let the lock go is replaced at once. The
 // process it started is returned, so a caller can stop it when it never answered.
 func Connect(home string, start ServerStarter) (*http.Client, *os.Process, error) {
-	client := SocketClient(SocketPath(home))
+	client := socket.Client(socket.Path(home))
 	deadline := time.Now().Add(StartLimit)
 	var started *os.Process
 	for {
