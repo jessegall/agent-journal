@@ -12,7 +12,7 @@ from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
 from server.hook.raw_hook_body import RawHookBody, is_raw_body
 from server.hook.hook_headers import HookHeaders
-from server.hook_database_busy import HookDatabaseBusy
+from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.server_context import ServerContext
 
 PROGRAMS = ("claude", "codex")
@@ -38,7 +38,7 @@ class HookEndpoint:
         try:
             with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
                 return self.routed_answer(event, database)
-        except HookDatabaseBusy as error:
+        except HookDatabaseBusyError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
         finally:
             self.timing.stamp("hook_answered")

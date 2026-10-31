@@ -3,7 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.tool_type import ToolType
-from core.modules.settings.setting_values import SettingValues
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 SENDS_SUBAGENTS_SETTING = "coding.builder-sends-subagents"
 

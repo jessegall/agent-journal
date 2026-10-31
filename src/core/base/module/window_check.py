@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 
-from core.base.cli.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
-from core.base.cli.default_subcommands import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
+from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
+from core.base.subcommand.default_lines import COMMAND_SUBCOMMANDS, READ_SUBCOMMANDS
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.module.subcommand_line import subcommand_line

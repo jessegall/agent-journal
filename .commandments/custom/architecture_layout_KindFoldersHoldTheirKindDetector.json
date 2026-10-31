@@ -1,0 +1,186 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/models/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Model"
+                                        },
+                                        {
+                                            "extendsAny": "ViewModel"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/lifecycles/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Lifecycle"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/enums/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "StrEnum"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/commands/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Command"
+                                        },
+                                        {
+                                            "extendsAny": "Handler"
+                                        },
+                                        {
+                                            "extendsAny": "Subcommand"
+                                        },
+                                        {
+                                            "extendsAny": "ReadSubcommand"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/rules/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "DriverRule"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/guards/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Guard"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/listeners/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "SaveListener"
+                                        },
+                                        {
+                                            "extendsAny": "CommitListener"
+                                        },
+                                        {
+                                            "extendsAny": "DeletionListener"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/overlays/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Overlay"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/migrations/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "extendsAny": "Migration"
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "helper-in-a-kind-folder",
+        "description": "A class sits among the classes of a kind folder it is not (models, lifecycles, enums, commands, rules, guards, listeners, overlays or migrations) instead of its own folder or a support folder.",
+        "rule": "A kind folder holds only its kind: a helper goes into the support folder beneath the kind it serves, such as rules/support/.",
+        "skill": "plain-code-words"
+    }
+}

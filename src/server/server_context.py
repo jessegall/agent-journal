@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
 from server.code_version import CodeVersion
-from server.hook_database import HookDatabase
+from server.hook.hook_database import HookDatabase
 from server.listener_thread import ListenerThread
 from server.server_files import ServerFiles
 from server.viewer.viewer_listener import ViewerListener

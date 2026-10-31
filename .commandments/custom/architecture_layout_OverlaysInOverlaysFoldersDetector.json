@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "Overlay"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?overlays/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "overlay-outside-overlays",
+        "description": "A suite's or module's overlay sits outside an overlays folder.",
+        "rule": "Overlays live in the overlays folder of their suite or module.",
+        "skill": "plain-code-words"
+    }
+}

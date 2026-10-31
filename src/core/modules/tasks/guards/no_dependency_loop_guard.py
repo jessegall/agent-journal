@@ -2,9 +2,9 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.tasks.conditions.dependency_chain import DependencyChain
-from core.modules.tasks.task_dependency import TaskDependency
-from core.modules.tasks.task_query import TaskQuery
+from core.modules.tasks.guards.support.dependency_chain import DependencyChain
+from core.modules.tasks.models.task_dependency import TaskDependency
+from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class NoDependencyLoopGuard(Guard):

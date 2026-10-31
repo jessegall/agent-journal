@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 import dataclasses
 from dataclasses import field
 from typing import get_type_hints
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.base.command.edit_command import EditCommand
 from core.base.model.model import Model

@@ -9,10 +9,10 @@ from core.base.driver.hook_route import HookRoute
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
-from core.modules.agents.agent import Agent
-from core.modules.agents.agent_role import AgentRole
-from core.modules.drivers.prune_hook_calls import PruneHookCalls
-from core.modules.environments.environment import Environment
+from core.modules.agents.models.agent import Agent
+from core.modules.agents.models.enums.agent_role import AgentRole
+from core.modules.drivers.commands.prune_hook_calls import PruneHookCalls
+from core.modules.environments.models.environment import Environment
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)

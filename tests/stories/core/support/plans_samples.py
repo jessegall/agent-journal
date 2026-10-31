@@ -5,7 +5,7 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.model.model import Model
 from core.base.module.module import Module
 from core.base.refusal import Refusal
-from core.modules.tasks.task import Task
+from core.modules.tasks.models.task import Task
 
 
 class ProtectedTaskGuard(Guard):

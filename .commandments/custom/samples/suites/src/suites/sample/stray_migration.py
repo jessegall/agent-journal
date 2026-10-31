@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-# @sin architecture_suites_TopFolderHoldsModuleAndSuiteDetector
-# @sin architecture_suites_MigrationsInMigrationsFoldersDetector
+# @sin architecture_layout_TopFolderHoldsModuleAndSuiteDetector
+# @sin architecture_layout_MigrationsInMigrationsFoldersDetector
 class StrayMigration(Migration):
     pass

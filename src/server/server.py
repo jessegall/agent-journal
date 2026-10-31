@@ -17,7 +17,7 @@ from server.code_version import CodeVersion
 from server.code_folders import CodeFolders
 from server.journal_server import DRAIN_LIMIT_SECONDS, JournalServer
 from server.server_context import ServerContext
-from server.hook_database import HookDatabase
+from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import ListenerThread
 from server.listener_work import ListenerWork

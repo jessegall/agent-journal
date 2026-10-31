@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.caller.caller_request import CallerRequest
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 
 
 class CallerResolver:

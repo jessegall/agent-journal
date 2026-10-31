@@ -1,6 +1,6 @@
 from argparse import ArgumentParser, Namespace
 from typing import Generic, TypeIs, TypeVar
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.command.command import Command
 from core.base.subcommand.read_subcommand import ReadSubcommand

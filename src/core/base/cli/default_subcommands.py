@@ -17,8 +17,6 @@ from core.base.cli.move_subcommand import MoveSubcommand
 from core.base.cli.subcommand_columns import generic_base
 
 
-READ_SUBCOMMANDS = ("show", "list")
-COMMAND_SUBCOMMANDS = ("make", "edit", "delete")
 class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""
 

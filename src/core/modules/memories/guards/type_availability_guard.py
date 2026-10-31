@@ -2,8 +2,8 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.memories.memory import Memory
-from core.modules.memories.memory_type_choice import MemoryTypeChoice
+from core.modules.memories.models.memory import Memory
+from core.modules.memories.support.memory_type_choice import MemoryTypeChoice
 
 
 class TypeAvailabilityGuard(Guard):

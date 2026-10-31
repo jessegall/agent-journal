@@ -4,7 +4,7 @@ from core.base.guard.change_filter import ChangeFilter
 from core.base.guard.event_listeners import EventListeners
 from core.base.guard.guard import Guard
 from core.base.guard.guard_switches import GuardSwitches
-from core.base.guard_refusal import GuardRefusal
+from core.base.guard.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_timing import ListenerTiming

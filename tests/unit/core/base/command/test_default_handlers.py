@@ -11,7 +11,7 @@ from core.base.command.handlers.make_handler import MakeHandler
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.guard.lifecycle_guard import LifecycleGuard
-from core.base.guard_refusal import GuardRefusal
+from core.base.guard.guard_refusal import GuardRefusal
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.registry import Registry

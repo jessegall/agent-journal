@@ -7,9 +7,9 @@ from urllib.parse import parse_qs, urlsplit
 from server.server_instance import server_instance
 from server.viewer.event_stream import EventStream
 from server.viewer.events_request import EventsRequest
-from server.viewer.missing_module_file import MissingModuleFile
+from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
-from server.viewer.unknown_login_key import UnknownLoginKey
+from server.viewer.unknown_login_key_error import UnknownLoginKeyError
 from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
 
@@ -41,7 +41,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if route.path == "/" and key:
             try:
                 token = viewer.login.session_token(key)
-            except UnknownLoginKey as error:
+            except UnknownLoginKeyError as error:
                 self.answer(401, {"error": str(error)})
                 return
             self.answer_session(token)
@@ -100,7 +100,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
     def answer_module_file(self, viewer: ViewerServer, module_name: str, path: str) -> None:
         try:
             module_file = viewer.routes.module_files.file(module_name, path)
-        except MissingModuleFile as error:
+        except MissingModuleFileError as error:
             self.answer(404, {"error": str(error)})
             return
         self.send_response(200)

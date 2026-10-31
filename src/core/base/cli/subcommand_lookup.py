@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from core.base.cli.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
+from core.base.bookkeeping.bookkeeping_subcommands import BOOKKEEPING_SUBCOMMANDS
 from core.base.cli.default_subcommands import DefaultSubcommands
 from core.base.cli.move_subcommand import MoveSubcommand
 from core.base.subcommand.subcommand import Subcommand, is_subcommand_class

@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.tasks.task_query import TaskQuery
+from core.modules.tasks.queries.task_query import TaskQuery
 
 
 class OpenTaskStopRule(DriverRule):

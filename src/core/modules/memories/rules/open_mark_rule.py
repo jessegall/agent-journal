@@ -2,11 +2,11 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.memories.hook_memories import HookMemories
-from core.modules.memories.mark_tracker import DEFAULT_MARKS, MarkTracker
-from core.modules.memories.memory_lines import MemoryLines
-from core.modules.memories.open_memory_mark import OpenMemoryMark
-from core.modules.settings.setting_values import SettingValues
+from core.modules.memories.rules.support.hook_memories import HookMemories
+from core.modules.memories.support.mark_tracker import DEFAULT_MARKS, MarkTracker
+from core.modules.memories.rules.support.memory_lines import MemoryLines
+from core.modules.memories.commands.open_memory_mark import OpenMemoryMark
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 MARKS_SETTING = "memories.marks"
 

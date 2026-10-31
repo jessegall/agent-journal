@@ -1,4 +1,4 @@
-from core.modules.memories.memory_lines import MemoryLines
+from core.modules.memories.rules.support.memory_lines import MemoryLines
 
 
 def listing_lines(rows):

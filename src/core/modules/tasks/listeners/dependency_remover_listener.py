@@ -4,7 +4,7 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.query.conditions.equal import Equal
 from core.base.repository.repository import Repository
-from core.modules.tasks.task_dependency import TaskDependency
+from core.modules.tasks.models.task_dependency import TaskDependency
 
 
 class DependencyRemoverListener(DeletionListener):

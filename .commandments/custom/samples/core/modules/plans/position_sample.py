@@ -1,4 +1,4 @@
-from core.modules.plans.phase import Phase
+from core.modules.plans.models.phase import Phase
 
 
 def moved(phase: Phase) -> Phase:

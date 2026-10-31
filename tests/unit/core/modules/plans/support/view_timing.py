@@ -5,10 +5,10 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
-from core.modules.plans.plan_progress import PlanProgress
-from core.modules.plans.plan_task import PlanTask
+from core.modules.plans.models.plan_progress import PlanProgress
+from core.modules.plans.models.plan_task import PlanTask
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
-from core.modules.tasks.open_dependency import OpenDependency
+from core.modules.tasks.models.open_dependency import OpenDependency
 
 PLAN_COUNT = 2000
 PHASES_PER_PLAN = 5

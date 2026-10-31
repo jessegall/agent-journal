@@ -4,13 +4,13 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
-from core.modules.memories.delivery_cause import DeliveryCause
-from core.modules.memories.hook_keywords import hook_keywords
-from core.modules.memories.hook_memories import HookMemories
-from core.modules.memories.keyword_memory import KeywordMemory
-from core.modules.memories.give_memories import GiveMemories
-from core.modules.memories.memory_lines import MemoryLines
-from core.modules.settings.setting_values import SettingValues
+from core.modules.memories.models.enums.delivery_cause import DeliveryCause
+from core.modules.memories.rules.support.hook_keywords import hook_keywords
+from core.modules.memories.rules.support.hook_memories import HookMemories
+from core.modules.memories.models.keyword_memory import KeywordMemory
+from core.modules.memories.commands.give_memories import GiveMemories
+from core.modules.memories.rules.support.memory_lines import MemoryLines
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 KEYWORD_LIMIT = "memories.keyword-limit"
 KEYWORD_LIMIT_DEFAULT = 3

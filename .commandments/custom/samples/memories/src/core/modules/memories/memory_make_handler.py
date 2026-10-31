@@ -1,4 +1,4 @@
-from core.modules.memories.memory import Memory
+from core.modules.memories.models.memory import Memory
 
 
 def memory_row(text):

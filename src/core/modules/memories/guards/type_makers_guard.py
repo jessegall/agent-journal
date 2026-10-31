@@ -4,8 +4,8 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.memories.memory import Memory
-from core.modules.memories.memory_type import MemoryType
+from core.modules.memories.models.memory import Memory
+from core.modules.memories.models.memory_type import MemoryType
 
 
 class TypeMakersGuard(Guard):

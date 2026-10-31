@@ -11,7 +11,7 @@ from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.registry.stale_registry_error import StaleRegistryError
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.timing import Timing
 
 

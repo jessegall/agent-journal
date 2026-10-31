@@ -1,9 +1,9 @@
+import hashlib
 import json
-import os
 import shlex
+import sys
 from collections.abc import Iterator
 from contextlib import contextmanager
-from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -13,10 +13,11 @@ from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.module.module_removal import ModuleRemoval
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.modules.viewer.window_lines import WindowLines
+from core.modules.viewer.commands.support.window_lines import WindowLines
 from core.testing.story import Story
 
 ENVIRONMENT = "main"
+SAMPLES_MODULE = "tests.stories.core.modules.viewer.support.window_samples"
 
 
 class WindowStory:
@@ -56,14 +57,22 @@ class WindowStory:
 
     @contextmanager
     def module_code_changed(self) -> Iterator[None]:
-        source_file = Path(__file__).with_name("window_samples.py")
-        status = os.stat(source_file)
-        os.utime(source_file, ns=(status.st_atime_ns, status.st_mtime_ns + 1_000_000))
+        folder = self.story.home.folder.parent / "changed_code"
+        folder.mkdir(exist_ok=True)
+        module_name = "changed_" + hashlib.sha256(str(folder).encode()).hexdigest()[:12]
+        modules = json.loads(self.story.home.module_list.read_text())
+        changed = [path for path in modules if path.startswith(SAMPLES_MODULE)]
+        (folder / f"{module_name}.py").write_text("".join(f"from {SAMPLES_MODULE} import {path.split(':')[1]} as Sample{index}\n" for index, path in enumerate(changed))
+                                                  + "".join(f"\n\nclass Changed{index}(Sample{index}):\n    @classmethod\n    def web_folder(cls):\n        return Sample{index}.web_folder()\n"
+                                                          for index, _ in enumerate(changed)))
+        sys.path.insert(0, str(folder))
         try:
+            renamed = {path: f"{module_name}:Changed{index}" for index, path in enumerate(changed)}
+            self.story.home.module_list.write_text(json.dumps([renamed.get(path, path) for path in modules]))
             self.synced()
             yield
         finally:
-            os.utime(source_file, ns=(status.st_atime_ns, status.st_mtime_ns))
+            sys.path.remove(str(folder))
 
     def synced(self) -> None:
         code, output_text = self.story.synced()

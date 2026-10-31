@@ -2,7 +2,7 @@ from typing import TextIO
 
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser

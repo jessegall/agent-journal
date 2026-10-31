@@ -1,0 +1,26 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/[a-z_]+_(module|suite)\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-top-folder-file",
+        "description": "A class sits in a suite's or module's top folder outside its module and suite files, so the suite's parts are not where every suite keeps them.",
+        "rule": "A suite's or module's top folder holds only <suite>_module.py, <suite>_suite.py and __init__.py; every other class goes in its folder: models, commands, drivers, rules, guards, listeners, migrations or modules.",
+        "skill": "plain-code-words"
+    }
+}

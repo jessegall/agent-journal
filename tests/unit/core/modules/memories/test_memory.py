@@ -1,7 +1,7 @@
 import pytest
 
 from core.base.refusal import Refusal
-from core.modules.memories.memory import HIGHEST_WEIGHT, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS, Memory
+from core.modules.memories.models.memory import HIGHEST_WEIGHT, LOWEST_WEIGHT, TEXT_LIMIT_CHARACTERS, Memory
 
 
 def memory(**fields: object) -> Memory:

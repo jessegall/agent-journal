@@ -5,7 +5,7 @@ import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.base.cli.default_subcommands import DefaultSubcommands
 from core.base.subcommand.subcommand import Subcommand
 from core.base.subcommand.read_subcommand import ReadSubcommand

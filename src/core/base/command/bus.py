@@ -12,7 +12,7 @@ from core.base.registry.registry import Registry
 from core.base.timing import Timing
 from core.base.command.missing_handler_error import MissingHandlerError
 from core.base.command.transaction_error import TransactionError
-from core.base.command.explanation_rollback import ExplanationRollback
+from core.base.command.explanation_rollback_error import ExplanationRollbackError
 
 
 R = TypeVar("R")
@@ -45,8 +45,8 @@ class Bus:
         try:
             with self.database.transaction():
                 handler.handle(command, Context(actor, self.clock.timestamp(), command, skipped_guards, None, environment_id, explanation))
-                raise ExplanationRollback()
-        except ExplanationRollback:
+                raise ExplanationRollbackError()
+        except ExplanationRollbackError:
             return explanation
 
     def dispatch(self, command: Command[R], context: Context) -> R:

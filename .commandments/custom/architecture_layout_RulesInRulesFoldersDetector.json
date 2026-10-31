@@ -1,0 +1,33 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/"
+            },
+            {
+                "any": [
+                    {
+                        "extendsAny": "DriverRule"
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(drivers/[^/]+/|modules/[^/]+/)?rules/[^/]+\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "suite-rule-outside-rules",
+        "description": "A suite's or module's driver rule sits outside a rules folder.",
+        "rule": "A rule one driver uses lives in src/suites/<suite>/drivers/<driver>/rules/; a rule for every driver of the suite lives in src/suites/<suite>/rules/.",
+        "skill": "plain-code-words"
+    }
+}

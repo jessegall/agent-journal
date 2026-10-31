@@ -10,8 +10,8 @@ from core.base.container import Container
 from core.base.environment_names import EnvironmentNames
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
-from core.base.subcommand.caller import Caller
-from core.modules.viewer.window_lines import WindowLines
+from core.base.caller.caller import Caller
+from core.modules.viewer.commands.support.window_lines import WindowLines
 from server.endpoints.cli_endpoint import CLI_LIMIT_SECONDS
 from server.listener_thread import ListenerThread
 from server.listener_wake import ListenerWake

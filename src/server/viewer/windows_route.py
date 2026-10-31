@@ -4,7 +4,7 @@ from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.registry.registry import Registry
 from core.base.registry.suite_windows import SuiteWindows
-from core.modules.drivers.suite_choice import SuiteChoice
+from core.modules.drivers.support.suite_choice import SuiteChoice
 from server.viewer.viewer_window import ViewerWindow
 
 

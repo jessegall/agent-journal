@@ -4,8 +4,8 @@ from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.plans.plan_task import PlanTask
-from core.modules.tasks.cancel_task import CancelTask
+from core.modules.plans.models.plan_task import PlanTask
+from core.modules.tasks.commands.cancel_task import CancelTask
 
 
 class CancelOpenPlanTasksListener(SaveListener):

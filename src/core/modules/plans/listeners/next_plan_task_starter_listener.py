@@ -6,13 +6,13 @@ from core.base.listener.commit_listener import CommitListener
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
 from core.base.query.select import Select
-from core.modules.plans.conditions.checkpoint_limit import CheckpointLimit
-from core.modules.plans.plan import Plan
-from core.modules.plans.plan_state import PlanState
-from core.modules.plans.plan_task import PlanTask
-from core.modules.tasks.start_task import StartTask
-from core.modules.tasks.open_dependency import OpenDependency
-from core.modules.tasks.task_state import TaskState
+from core.modules.plans.listeners.support.checkpoint_limit import CheckpointLimit
+from core.modules.plans.models.plan import Plan
+from core.modules.plans.models.enums.plan_state import PlanState
+from core.modules.plans.models.plan_task import PlanTask
+from core.modules.tasks.commands.start_task import StartTask
+from core.modules.tasks.models.open_dependency import OpenDependency
+from core.modules.tasks.models.enums.task_state import TaskState
 
 
 class NextPlanTaskStarterListener(CommitListener):

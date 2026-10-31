@@ -1,0 +1,29 @@
+from core.modules.agents.commands.end_agent_handler import EndAgentHandler
+from core.modules.agents.commands.end_agent_subcommand import EndAgentSubcommand
+from core.modules.agents.commands.start_agent_handler import StartAgentHandler
+from core.modules.agents.commands.start_agent_subcommand import StartAgentSubcommand
+from core.modules.agents.migrations.m001_agents import AgentsTableMigration
+from core.modules.agents.models.agent import Agent
+from core.base.caller.caller_resolver import CallerResolver
+from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
+from core.modules.agents.bindings.agent_caller_resolver import AgentCallerResolver
+from core.base.module.model_declaration import ModelDeclaration
+
+
+class AgentsModule(Module):
+    """Adds agents, one per session of an agent program, each an actor with the same number."""
+
+    name = "journal.core.agents"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors", "journal.core.environments"]
+    models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
+    migrations = [AgentsTableMigration]
+    handlers = [StartAgentHandler, EndAgentHandler]
+    subcommands = [StartAgentSubcommand, EndAgentSubcommand]
+    bindings = [(CallerResolver, AgentCallerResolver)]
+    windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, reads=["agent list", "agent show"], events=["agent.*"]),
+               WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["agent list"],
+                                 events=["agent.*"])]

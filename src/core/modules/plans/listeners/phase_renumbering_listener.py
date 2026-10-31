@@ -1,8 +1,8 @@
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.modules.plans.phase import Phase
-from core.modules.plans.positions import Positions
+from core.modules.plans.models.phase import Phase
+from core.modules.plans.support.positions import Positions
 
 
 class PhaseRenumberingListener(SaveListener):

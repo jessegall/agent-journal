@@ -23,7 +23,7 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
-from core.modules.settings.setting_values import SettingValues
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 SAMPLES = "tests.stories.core.base.driver.support.samples:SamplesModule"
 LEAD = "samples.lead"

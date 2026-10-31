@@ -25,7 +25,7 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
 from core.base.recorded_refusal import RecordedRefusal
-from core.base.subcommand.caller import Caller
+from core.base.caller.caller import Caller
 from core.testing.hook_sample import HookSample
 from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock

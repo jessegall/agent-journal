@@ -13,7 +13,7 @@ from core.base.command.make_command import MakeCommand
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.guard.guard import Guard
-from core.base.guard_refusal import GuardRefusal
+from core.base.guard.guard_refusal import GuardRefusal
 from core.base.model.model import Model
 from core.base.registry.dotted_path import DottedPath
 from core.base.registry.guard_entry import GuardEntry

@@ -2,7 +2,7 @@ from core.base.actor import Actor
 from core.base.clock import Clock
 from core.base.database.bookkeeping_table import BookkeepingTable
 from core.base.database.database import Database
-from core.base.guard_refusal import GuardRefusal
+from core.base.guard.guard_refusal import GuardRefusal
 from core.base.page import Page
 from core.base.refusal import Refusal
 from core.base.recorded_refusal import RecordedRefusal
