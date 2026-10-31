@@ -10,7 +10,7 @@ def test_a_builder_quiet_with_its_task_in_hand_is_reminded_on_a_tick(new_story):
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(minutes=QUIET_MINUTES))
     story.tick("s-1")
-    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", f"nothing has happened for {QUIET_MINUTES} minutes")
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", f"nothing has happened for {QUIET_MINUTES} minutes", "tasks.quiet-task")
 
 
 def test_a_builder_quiet_for_less_is_not_reminded(new_story):

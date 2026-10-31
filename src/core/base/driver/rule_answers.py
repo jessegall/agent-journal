@@ -23,7 +23,11 @@ class RuleAnswers:
 
     @property
     def lines(self) -> list[str]:
-        return [line for rule in self.answered if rule.answer is not None for line in rule.answer.lines]
+        return [line for _, line in self.rule_lines]
+
+    @property
+    def rule_lines(self) -> list[tuple[str, str]]:
+        return [(rule.name, line) for rule in self.answered if rule.answer is not None for line in rule.answer.lines]
 
     @property
     def commands(self) -> list[tuple[str, Command[object]]]:
