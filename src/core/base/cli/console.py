@@ -55,7 +55,7 @@ class Console:
             output.refusal(refusal)
             return REFUSED_CODE
         except Exception as error:
-            output.error(self.errors.reported(argv, error))
+            output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
 
     def requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int:

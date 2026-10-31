@@ -50,6 +50,6 @@ class CommitListenerRunner:
             self.container.get(listener_class).handle(event)
         except Exception as error:
             failures = self.cursors.failure_count(entry.name, event.id)
-            self.errors.reported(["listener", entry.name, "event", str(event.id)], error)
+            self.errors.reported(["listener", entry.name, "event", str(event.id)], error, event.environment_id)
             return failures >= FAILURE_LIMIT_ATTEMPTS
         return True

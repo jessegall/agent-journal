@@ -62,7 +62,7 @@ class DriverRules:
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             answer = rule.answer(replace(hook, control_return=control_return))
         except Exception as error:
-            self.errors.reported(["driver rule", entry.name], error)
+            self.errors.reported(["driver rule", entry.name], error, hook.environment_id)
             return RuleOutcome.raised(f"the journal's rule {entry.name} failed and was passed by: {type(error).__name__}")
         if answer.is_final_allowance and not (entry.is_standing or self.allowances.allowed(entry.name)):
             return RuleOutcome.raised(f"{entry.name} allowed the hook at once and ended the walk, which only an essential rule or a permanent rule may")

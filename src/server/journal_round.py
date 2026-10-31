@@ -1,3 +1,4 @@
+from core.base.fault_sink import FaultSink
 from core.base.database.database import Database
 from core.base.error_log import ErrorLog
 from core.base.journal_container import synced_container
@@ -20,4 +21,4 @@ class JournalRound:
             container.get(Database).close()
 
     def report(self, error: Exception) -> None:
-        ErrorLog(self.home).reported([self.name], error)
+        ErrorLog(self.home, FaultSink()).reported([self.name], error)

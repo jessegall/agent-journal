@@ -1,9 +1,10 @@
+from core.base.fault_sink import FaultSink
 from core.base.error_log import ErrorLog
 from core.base.journal_home import JournalHome
 
 
 def test_a_fault_is_written_with_its_traceback_and_named_in_one_line(tmp_path):
-    log = ErrorLog(JournalHome(tmp_path))
+    log = ErrorLog(JournalHome(tmp_path), FaultSink())
     try:
         {}["missing"]
     except KeyError as error:

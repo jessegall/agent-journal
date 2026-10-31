@@ -1,7 +1,15 @@
+from argparse import ArgumentParser, Namespace
+from dataclasses import dataclass
 from enum import StrEnum
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.caller.caller import Caller
+from core.base.command.command import Command
+from core.base.command.context import Context
+from core.base.command.handler import Handler
+from core.base.subcommand.subcommand import Subcommand
+from core.modules.chat.models.chat_mark import ChatMark
 from core.base.chat.mark_button import MarkButton
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.chat.mark_family import MarkFamily
@@ -50,3 +58,43 @@ class StrangeVariant(StrEnum):
 
 def marks_text(story: Story) -> str:
     return story.run("chat-mark list --environment 1 --oldest").output_text
+
+
+FAULT_SAMPLE = "tests.stories.core.modules.chat.support.mark_samples:FaultSampleModule"
+
+
+@dataclass(frozen=True)
+class Boom(Command[ChatMark]):
+    """A sample command whose handler always fails."""
+
+
+class BoomHandler(Handler[Boom, ChatMark]):
+    """A sample handler that raises an error nobody expects."""
+
+    command = Boom
+
+    def handle(self, command: Boom, context: Context) -> ChatMark:
+        raise RuntimeError("the sample command broke")
+
+
+class BoomSubcommand(Subcommand[Boom, ChatMark]):
+    """`journal chat-mark boom`: runs the failing sample command."""
+
+    cli_name = "chat-mark"
+    name = "boom"
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        return
+
+    def command(self, arguments: Namespace, caller: Caller) -> Boom:
+        return Boom()
+
+
+class FaultSampleModule(Module):
+    """A sample module with one command that fails."""
+
+    name = "faultsample"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.chat"]
+    handlers = [BoomHandler]
+    subcommands = [BoomSubcommand]
