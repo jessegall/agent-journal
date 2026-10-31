@@ -30,3 +30,16 @@ def test_docking_a_task_changes_no_task_row(new_story):
     dock_id = story.new_row_id("dock make --environment main")
     story.new_row_id(f"dock-item make {dock_id} tasks.task task {task_id}")
     assert story.run(f"task show {task_id}").output_text == before
+
+
+def test_an_environment_made_gets_its_dock_from_the_listener(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run("environment make elsewhere /work/elsewhere")
+    story.run_listeners()
+    story.expect_text("dock list", "elsewhere" if False else "2  2")
+
+
+def test_the_environment_made_before_the_module_has_a_dock_when_the_listener_runs(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run_listeners()
+    story.expect_text("dock list --environment 1", "1  1")

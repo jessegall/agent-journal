@@ -1,5 +1,7 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.docking.commands.make_dock_handler import MakeDockHandler
+from core.modules.docking.listeners.environment_dock_listener import EnvironmentDockListener
 from core.modules.docking.migrations.m001_docks import DocksTableMigration
 from core.modules.docking.models.dock import Dock
 from core.modules.docking.models.dock_item import DockItem
@@ -13,3 +15,5 @@ class DockingModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem)]
     migrations = [DocksTableMigration]
+    handlers = [MakeDockHandler]
+    listeners = [EnvironmentDockListener]
