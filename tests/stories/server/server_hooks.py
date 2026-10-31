@@ -84,3 +84,8 @@ def test_a_claude_stop_sent_through_the_hook_program_is_refused_as_the_builder_d
         story.expect_program_answer(CLAUDE_STOP, "task 1 is yours now: Fix the cart")
         story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.builder", "answer: refused")
 
+
+def test_a_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(new_story):
+    with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
+        story.expect_hook_answer_while_another_hook_holds_the_journal(lead_stop("server-4"), "another hook held the journal")
+

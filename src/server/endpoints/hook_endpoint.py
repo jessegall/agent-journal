@@ -11,6 +11,7 @@ from core.base.journal_container import synced_database_container
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.timing import Timing
 from server.hook.raw_hook_body import HookHeaders, RawHookBody, is_raw_body
+from server.hook_database_busy import HookDatabaseBusy
 from server.journal_server import ServerContext
 
 HOOK_LIMIT_SECONDS = 3.0
@@ -34,12 +35,14 @@ class HookEndpoint:
     def answer(self, event: HookEvent) -> HookReply:
         if event.program not in PROGRAMS:
             raise HookEventError(f"no agent program is named {event.program!r}")
-        with self.context.hook_database.used() as database:
-            try:
+        try:
+            with self.context.hook_database.used(HOOK_LIMIT_SECONDS) as database:
                 return self.routed_answer(event, database)
-            finally:
-                self.timing.stamp("hook_answered")
-                self.context.listener_thread.wake()
+        except HookDatabaseBusy as error:
+            return HookReply.allowed(f"the journal let this through unchecked: {error}")
+        finally:
+            self.timing.stamp("hook_answered")
+            self.context.listener_thread.wake()
 
     def routed_answer(self, event: HookEvent, database: Database) -> HookReply:
         try:

@@ -57,8 +57,12 @@ class ServerAnswer:
 class ServerStory:
     """A story's journal with a server running on it, and the checks of what the server answers."""
 
-    def __init__(self, story: Story, socket_path: Path) -> None:
-        self.story, self.socket_path = story, socket_path
+    def __init__(self, story: Story, socket_path: Path, context: ServerContext) -> None:
+        self.story, self.socket_path, self.context = story, socket_path, context
+
+    def expect_hook_answer_while_another_hook_holds_the_journal(self, body: object, text: str) -> None:
+        with self.context.hook_database.lock:
+            self.expect_hook_answer("/hook", body, 200, text)
 
     def expect_program_answer(self, body: dict[str, object], text: str) -> None:
         run = self.program_run(body)
@@ -222,8 +226,8 @@ def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -
 
 @contextmanager
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
-    with started_server(story.home, code_folders, listener_thread_started) as socket_path:
-        yield ServerStory(story, socket_path)
+    with started_server(story.home, code_folders, listener_thread_started) as (socket_path, context):
+        yield ServerStory(story, socket_path, context)
 
 
 @contextmanager
@@ -243,7 +247,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     thread.start()
     context.viewer.start()
     try:
-        yield files.socket
+        yield files.socket, context
     finally:
         context.viewer.stop()
         listener_thread.stop()

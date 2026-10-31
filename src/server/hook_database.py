@@ -4,20 +4,26 @@ from contextlib import contextmanager
 
 from core.base.database.database import Database
 from core.base.journal_home import JournalHome
+from server.hook_database_busy import HookDatabaseBusy
 
 
 class HookDatabase:
     """The one database connection the server's hooks share, kept open so its page cache stays warm; one hook uses
-    it at a time, as hooks are write transactions SQLite runs one at a time anyway."""
+    it at a time, as hooks are write transactions SQLite runs one at a time anyway, and one that waits past its limit
+    for another is told so."""
 
     def __init__(self, home: JournalHome) -> None:
         self.database = Database.shared(home)
         self.lock = threading.Lock()
 
     @contextmanager
-    def used(self) -> Generator[Database]:
-        with self.lock:
+    def used(self, wait_seconds: float) -> Generator[Database]:
+        if not self.lock.acquire(timeout=wait_seconds):
+            raise HookDatabaseBusy(f"another hook held the journal for {wait_seconds:g} seconds")
+        try:
             yield self.database
+        finally:
+            self.lock.release()
 
     def close(self) -> None:
         with self.lock:
