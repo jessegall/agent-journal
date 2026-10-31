@@ -37,6 +37,10 @@ class RuleAnswer:
         return replace(self, commands=[*self.commands, command], ends_layer=True)
 
     @property
+    def is_let_through_now(self) -> bool:
+        return self.last and not self.refusal
+
+    @property
     def said(self) -> str:
         if self.refusal:
             return "refused"

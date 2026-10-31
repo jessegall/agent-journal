@@ -16,7 +16,4 @@ class Layers:
         return sorted(layers, key=lambda layer: (layer.row.opened_at, layer.overlay.position, layer.row.row_id), reverse=True)
 
     def overlay(self, entry: OverlayEntry) -> Overlay:
-        overlay = self.container.get(entry.path.loaded())
-        if not isinstance(overlay, Overlay):
-            raise TypeError(f"{entry.path.text} is no overlay")
-        return overlay
+        return self.container.get(entry.path.checked_class(Overlay))

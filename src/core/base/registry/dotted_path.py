@@ -2,10 +2,17 @@ from dataclasses import dataclass
 from importlib import import_module
 from importlib.util import find_spec
 from pathlib import Path
+from typing import TypeVar
+
+T = TypeVar("T")
 
 
 class DottedPathError(Exception):
     """Raised when a dotted path does not lead to a class."""
+
+
+class WrongBaseError(Exception):
+    """Raised when a registered class does not extend the base its registry list asks for."""
 
 
 @dataclass(frozen=True)
@@ -22,6 +29,12 @@ class DottedPath:
         target = self.value()
         if not isinstance(target, type):
             raise DottedPathError(f"{self.text} names no class")
+        return target
+
+    def checked_class(self, base: type[T]) -> type[T]:
+        target = self.loaded()
+        if not issubclass(target, base):
+            raise WrongBaseError(f"{self.text} is no {base.__name__}")
         return target
 
     def value(self) -> object:

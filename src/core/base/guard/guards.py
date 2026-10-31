@@ -14,10 +14,6 @@ from core.base.refusal import Refusal
 LIFECYCLE_GUARD = "core.lifecycle"
 
 
-class GuardClassError(Exception):
-    """Raised when a registered guard's path leads to a class that is not a guard."""
-
-
 class Guards:
     """Asks every guard registered for a change's event, in their fixed order, and stops at the first refusal;
     with --explain it collects every refusal instead."""
@@ -44,11 +40,8 @@ class Guards:
         return entry.name not in change.context.skipped_guards and self.switches.enabled(entry.name) and self.change_filter.applies(entry.name, change)
 
     def check(self, entry: GuardEntry, change: Change[Model]) -> None:
-        guard_class = entry.path.loaded()
-        if not issubclass(guard_class, Guard):
-            raise GuardClassError(f"{entry.path.text} is no guard")
         try:
-            self.container.get(guard_class).check(change)
+            self.container.get(entry.path.checked_class(Guard)).check(change)
         except Refusal as refusal:
             guard_refusal = GuardRefusal(entry.name, refusal, "" if entry.name == LIFECYCLE_GUARD else entry.skip_flag)
             if change.context.explanation is None:

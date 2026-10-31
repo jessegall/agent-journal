@@ -6,6 +6,7 @@ from core.base.database.database import Database
 from core.base.container import Container
 from core.base.database.registry_table import RegistryTable
 from core.base.registry.dotted_path import DottedPath
+from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.model_entry import ModelEntry
@@ -30,6 +31,7 @@ class Registry:
     listeners: tuple[ListenerEntry, ...]
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
     overlays: tuple[OverlayEntry, ...] = ()
+    rules: tuple[DriverRuleEntry, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -48,6 +50,8 @@ class Registry:
                                           listener["position"], listener["actor_id"]) for listener in entries["listeners"]),
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
+            rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
+                                        rule["limit"], rule["essential"]) for rule in entries.get("rules", [])),
         )
 
     def entries_text(self) -> str:
@@ -61,10 +65,27 @@ class Registry:
                            "position": listener.position, "actor_id": listener.actor_id} for listener in self.listeners],
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
+            "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
+                       "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential} for rule in self.rules],
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":
         return replace(self, overlays=overlays)
+
+    def with_rules(self, rules: tuple[DriverRuleEntry, ...]) -> "Registry":
+        return replace(self, rules=rules)
+
+    def essential_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
+        return [rule for rule in self.hook_rules(hook_name) if (rule.essential and not rule.limit) or (rule.limit and rule.owner == driver)]
+
+    def overlay_rules(self, overlay: str, hook_name: str) -> list[DriverRuleEntry]:
+        return [rule for rule in self.hook_rules(hook_name) if rule.owner == overlay and not rule.drivers]
+
+    def driver_rules(self, driver: str, role: str, hook_name: str) -> list[DriverRuleEntry]:
+        return [rule for rule in self.hook_rules(hook_name) if not rule.essential and not rule.limit and rule.covers_driver(driver, role)]
+
+    def hook_rules(self, hook_name: str) -> list[DriverRuleEntry]:
+        return sorted((rule for rule in self.rules if rule.covers_hook(hook_name)), key=lambda rule: rule.position)
 
     def driver_overlays(self, driver: str) -> list[OverlayEntry]:
         return [overlay for overlay in self.overlays if overlay.covers(driver)]

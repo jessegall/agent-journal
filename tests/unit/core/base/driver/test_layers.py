@@ -37,7 +37,7 @@ class SampleRuns(Overlay):
 
 
 def layers() -> Layers:
-    entries = (OverlayEntry("samples.wait", DottedPath.class_path(SampleWaits), 1, ("*",)), OverlayEntry("samples.run", DottedPath.class_path(SampleRuns), 2, ("coding.*",)))
+    entries = (OverlayEntry("samples.wait", DottedPath.class_path(SampleWaits), 1, ["*"]), OverlayEntry("samples.run", DottedPath.class_path(SampleRuns), 2, ["coding.*"]))
     return Layers(empty_registry().with_overlays(entries), Container())
 
 
