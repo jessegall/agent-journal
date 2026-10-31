@@ -1,5 +1,8 @@
 {
-    "include": ["src/core"],
+    "include": [
+        "src/core",
+        "src/server"
+    ],
     "pythonVersion": "3.14",
     "typeCheckingMode": "strict",
     "venvPath": ".",

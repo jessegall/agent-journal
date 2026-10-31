@@ -1,4 +1,5 @@
 import hashlib
+from collections.abc import Sequence
 import inspect
 from pathlib import Path
 
@@ -13,10 +14,15 @@ class CodeFingerprint:
     path, size and change time, so a run can tell that the registry was built from other code; a file that
     appears, changes or is gone is a change, never an error."""
 
-    def text(self, modules: tuple[type[Module], ...]) -> str:
+    def text(self, modules: Sequence[type[Module]]) -> str:
+        return self.folder_text([CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in modules)])
+
+    def folder_text(self, folders: Sequence[Path]) -> str:
         digest = hashlib.sha256(".".join(map(str, CORE_VERSION)).encode())
-        folders = {CORE_FOLDER, *(Path(inspect.getfile(module)).resolve().parent for module in modules)}
         for file in sorted({file for folder in folders for file in folder.rglob("*.py")}):
-            status = file.stat()
+            try:
+                status = file.stat()
+            except FileNotFoundError:
+                continue
             digest.update(f"{file}:{status.st_size}:{status.st_mtime_ns}".encode())
         return digest.hexdigest()

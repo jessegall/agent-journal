@@ -2,6 +2,7 @@
     "$schema": "./config.schema.json",
     "paths": [
         "src/core",
+        "src/server",
         "tests",
         "tools/journal-hook"
     ],
@@ -138,6 +139,14 @@
                     "core.journal",
                     [
                         "core.base"
+                    ]
+                ]
+            },
+            {
+                "layer": [
+                    "server",
+                    [
+                        "core"
                     ]
                 ]
             }
