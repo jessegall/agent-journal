@@ -44,5 +44,5 @@ export function useHomeLayout(environment, shellLine, catalogue) {
         if (event.event.startsWith("setting.") || event.event.startsWith("viewer_layout.")) load();
     }
 
-    return {layout: store.layout, refusal: store.refusal, load, heard, keep: store.replace};
+    return {store, load, heard};
 }

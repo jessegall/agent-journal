@@ -18,6 +18,7 @@ const emit = defineEmits(["pick", "close", "grab"]);
                         {
                             on: t.on,
                             lifting: t.lifting,
+                            gone: t.gone,
                             'insert-before': insertAt === i,
                             'insert-after': insertAt === tabs.length && i === tabs.length - 1,
                         },
@@ -102,6 +103,15 @@ const emit = defineEmits(["pick", "close", "grab"]);
 
 .pane-tab.lifting {
     opacity: 0.4;
+}
+
+.pane-tab.gone {
+    color: var(--text-4);
+}
+
+.pane-tab.gone .pane-tab-label,
+.pane-tab.gone :deep(.ico) {
+    text-decoration: line-through;
 }
 
 .pane-tab :deep(.ico) {

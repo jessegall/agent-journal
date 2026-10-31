@@ -25,12 +25,12 @@ test("a registry sync asks for the windows again: a removed window shows as not 
     createApp(() => h(WindowShell, {environment: "main", layout: ["notes.summary"], catalogue, events})).mount(element);
     await settled();
     expect(element.textContent).toContain("the line was refused");
-    expect(element.textContent).not.toContain("Open Notes calendar");
+    expect(element.querySelector(`[data-reopen="notes.calendar"]`)).toBeNull();
 
     await heard({event: "registry.sync"});
     await settled();
     expect(element.textContent).toContain("No installed module has this window.");
-    expect(element.textContent).toContain("Open Notes calendar");
+    expect(element.querySelector(`[data-reopen="notes.calendar"]`)).not.toBeNull();
     expect(element.querySelectorAll(".window")).toHaveLength(1);
 });
 
