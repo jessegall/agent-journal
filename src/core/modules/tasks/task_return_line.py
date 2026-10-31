@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.agents.agent import AgentRole
-from core.modules.tasks.task_query import TaskQuery
+from core.modules.tasks.current_tasks import CurrentTasks
 
 
 class TaskReturnLine(DriverRule):
@@ -14,11 +14,9 @@ class TaskReturnLine(DriverRule):
     roles = [AgentRole.MAIN, AgentRole.WORKER]
     history = True
 
-    def __init__(self, tasks: TaskQuery) -> None:
-        self.tasks = tasks
+    def __init__(self, current_tasks: CurrentTasks) -> None:
+        self.current_tasks = current_tasks
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if not hook.regained_control:
-            return RuleAnswer.allowed()
-        current = self.tasks.holder(hook.agent_id).started().newest().page(1, 1).rows
-        return RuleAnswer.with_lines(f"back to task {current[0].id}, {current[0].title}") if current else RuleAnswer.allowed()
+        current = self.current_tasks.current(hook.agent_id) if hook.regained_control else None
+        return RuleAnswer.with_lines(f"back to {current.name}") if current is not None else RuleAnswer.allowed()

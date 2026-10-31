@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlsplit
 from server.viewer.event_stream import EventStream
 from server.viewer.missing_module_file import MissingModuleFile
 from server.viewer.viewer_line_request import ViewerLineRequest
+from server.viewer.unknown_login_key import UnknownLoginKey
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_request_error import ViewerRequestError
 from server.viewer.viewer_server import ViewerServer
@@ -107,11 +108,13 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         return True
 
     def answer_login(self, login: ViewerLogin, key: str) -> None:
-        if not login.has_key(key):
-            self.answer(401, {"error": "this login key is spent or unknown: ask journal viewer for a new one"})
+        try:
+            token = login.session_token(key)
+        except UnknownLoginKey as error:
+            self.answer(401, {"error": str(error)})
             return
         self.send_response(303)
-        self.send_header("Set-Cookie", f"{COOKIE_NAME}={login.session_token(key)}; HttpOnly; SameSite=Strict; Path=/")
+        self.send_header("Set-Cookie", f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/")
         self.send_header("Location", VIEWER_ROOT)
         self.send_header("Content-Length", "0")
         self.end_headers()

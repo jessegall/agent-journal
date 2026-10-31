@@ -1,6 +1,8 @@
 import secrets
 import threading
 
+from server.viewer.unknown_login_key import UnknownLoginKey
+
 KEY_BYTES = 24
 
 
@@ -19,10 +21,6 @@ class ViewerLogin:
             self.keys[key] = person_id
         return key
 
-    def has_key(self, key: str) -> bool:
-        with self.lock:
-            return key in self.keys
-
     def has_session(self, token: str) -> bool:
         with self.lock:
             return token in self.sessions
@@ -30,6 +28,8 @@ class ViewerLogin:
     def session_token(self, key: str) -> str:
         token = secrets.token_urlsafe(KEY_BYTES)
         with self.lock:
+            if key not in self.keys:
+                raise UnknownLoginKey("this login key is spent or unknown: ask journal viewer for a new one")
             self.sessions[token] = self.keys.pop(key)
         return token
 
