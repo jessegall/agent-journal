@@ -4,6 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.skills.support.skill_files import SkillFiles
 
 
@@ -26,5 +27,5 @@ class SkillWriteSubcommand(ReadSubcommand[tuple[str, ...]]):
         return (*results, *(f"removed: {folder}" for folder in self.files.clear(self.registry.skills)))
 
     def write_output(self, value: object, output: Output) -> None:
-        for line in value if isinstance(value, tuple) else ():
+        for line in value if is_tuple(value) else ():
             output.line(str(line))

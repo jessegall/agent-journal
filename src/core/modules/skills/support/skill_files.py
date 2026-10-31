@@ -37,7 +37,7 @@ class SkillFiles:
         return changed
 
     def clear(self, declared: Sequence[SkillEntry]) -> list[str]:
-        names, cleared = {skill.folder for skill in declared}, []
+        names, cleared = {skill.folder for skill in declared}, list[str]()
         for program_folder in PROGRAM_FOLDERS:
             root = self.home.project_folder / program_folder
             stale = [folder for folder in root.glob(f"{FOLDER_PREFIX}*") if folder.is_dir() and folder.name not in names]
