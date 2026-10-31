@@ -10,7 +10,9 @@ from core.base.model.model import Model
 from core.base.model.move import Move
 from core.base.model.tables import Tables
 from core.base.module.module import Module
+from core.base.module.driver_entries import DriverEntries
 from core.base.module.module_check import ModuleCheck
+from core.base.module.suite_check import SuiteCheck
 from core.base.module.module_error import ModuleError
 from core.base.module.model_declaration import ModelDeclaration
 from tests.unit.core.base.model.test_lifecycle import ItemState
@@ -71,17 +73,17 @@ def module(name: str, models: tuple[ModelDeclaration, ...] = (), guards: tuple[t
 
 def problems(*modules: type[Module]) -> str:
     with pytest.raises(ModuleError) as raised:
-        ModuleCheck(Tables()).check(modules)
+        ModuleCheck(Tables(), SuiteCheck(DriverEntries())).check(modules)
     return str(raised.value)
 
 
 def test_every_event_of_every_model_is_known():
-    events = ModuleCheck(Tables()).known_events([module("items", [ModelDeclaration(Item)])])
+    events = ModuleCheck(Tables(), SuiteCheck(DriverEntries())).known_events([module("items", [ModelDeclaration(Item)])])
     assert events == ("item.create", "item.update", "item.delete", "item.metadata", "item.pause", "item.close")
 
 
 def test_modules_without_problems_pass():
-    ModuleCheck(Tables()).check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])])
+    ModuleCheck(Tables(), SuiteCheck(DriverEntries())).check([module("items", [ModelDeclaration(Item)], [PausedItemGuard])])
 
 
 def test_a_guard_on_an_event_no_model_raises_is_refused():
@@ -94,7 +96,7 @@ def test_two_modules_with_one_model_name_and_table_are_refused():
 
 
 def test_two_guards_with_one_name_are_refused():
-    assert "two guards named items.paused-only" in problems(module("items", [ModelDeclaration(Item)], [PausedItemGuard]), module("support", (), [PausedItemGuard]))
+    assert "two guards, listeners or driver rules named items.paused-only" in problems(module("items", [ModelDeclaration(Item)], [PausedItemGuard]), module("support", (), [PausedItemGuard]))
 
 
 def test_a_move_named_like_a_standard_change_is_refused():

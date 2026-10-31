@@ -28,6 +28,7 @@ from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.registry import Registry
 from core.base.module.module import ListenerClass, Module
+from core.base.module.driver_entries import DriverEntries
 from core.base.module.module_check import ModuleCheck, subcommand_line
 from core.base.module.module_finder import ModuleFinder
 from core.base.module.module_order import ModuleOrder
@@ -59,10 +60,11 @@ class ModuleSync:
     registry."""
 
     def __init__(self, database: Database, clock: Clock, finder: ModuleFinder, order: ModuleOrder, check: ModuleCheck, schema: Schema,
-                 triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint) -> None:
+                 triggers: Triggers, cursors: ListenerCursorTable, actors: ActorTable, registry_table: RegistryTable, fingerprint: CodeFingerprint,
+                 entries: DriverEntries) -> None:
         self.database, self.clock, self.finder, self.order, self.check = database, clock, finder, order, check
         self.schema, self.triggers, self.cursors, self.fingerprint = schema, triggers, cursors, fingerprint
-        self.actors, self.registry_table = actors, registry_table
+        self.actors, self.registry_table, self.entries = actors, registry_table, entries
 
     def run(self) -> SyncReport:
         modules = self.order.ordered(self.finder.modules())
@@ -102,6 +104,10 @@ class ModuleSync:
             listeners=tuple(ListenerEntry(listener.name, EventPattern(listener.event), self.timing(listener), DottedPath.class_path(listener), position,
                                           actor_ids[module.name]) for position, (module, listener) in enumerate(listeners, 1)),
             bindings={DottedPath.class_path(interface).text: DottedPath.class_path(implementation) for module in modules for interface, implementation in module.bindings},
+            overlays=self.entries.overlays(modules),
+            rules=self.entries.rules(modules),
+            suites=self.entries.suites(modules),
+            drivers=self.entries.drivers(modules),
         )
 
     def timing(self, listener: ListenerClass) -> ListenerTiming:

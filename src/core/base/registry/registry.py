@@ -6,11 +6,13 @@ from core.base.database.database import Database
 from core.base.container import Container
 from core.base.database.registry_table import RegistryTable
 from core.base.registry.dotted_path import DottedPath
+from core.base.registry.driver_entry import DriverEntry
 from core.base.registry.driver_rule_entry import DriverRuleEntry
 from core.base.registry.guard_entry import GuardEntry
 from core.base.registry.listener_entry import ListenerEntry, ListenerTiming
 from core.base.registry.model_entry import ModelEntry
 from core.base.registry.overlay_entry import OverlayEntry
+from core.base.registry.suite_entry import SuiteEntry
 
 
 
@@ -32,6 +34,8 @@ class Registry:
     bindings: dict[str, DottedPath] = field(default_factory=lambda: {})
     overlays: tuple[OverlayEntry, ...] = ()
     rules: tuple[DriverRuleEntry, ...] = ()
+    suites: tuple[SuiteEntry, ...] = ()
+    drivers: tuple[DriverEntry, ...] = ()
 
     @classmethod
     def read(cls, database: Database) -> "Registry":
@@ -52,6 +56,10 @@ class Registry:
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
                                         rule["limit"], rule["essential"]) for rule in entries.get("rules", [])),
+            suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]))
+                         for suite in entries.get("suites", [])),
+            drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]))
+                          for driver in entries.get("drivers", [])),
         )
 
     def entries_text(self) -> str:
@@ -67,6 +75,10 @@ class Registry:
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
                        "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential} for rule in self.rules],
+            "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
+                        "included_overlays": list(suite.included_overlays)} for suite in self.suites],
+            "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
+                         "opening_lines": list(driver.opening_lines)} for driver in self.drivers],
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":

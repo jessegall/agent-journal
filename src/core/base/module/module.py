@@ -5,6 +5,10 @@ from core.base.command.command import Command
 from core.base.command.handler import Handler
 from core.base.database.migration import Migration
 from core.base.database.view import View
+from core.base.driver.driver import Driver
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.overlay import Overlay
+from core.base.driver.suite import Suite
 from core.base.guard.guard import Guard
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
@@ -20,7 +24,8 @@ HandlerClass = type[Handler[Never, object]]
 class Module:
     """What a module adds to the journal, named by the classes themselves: its models, the modules it builds on,
     the core version it needs, its migrations and views, its handlers, subcommands, guards and listeners, the
-    classes it binds in place of the core's interfaces, and the migration that removes its tables."""
+    classes it binds in place of the core's interfaces, the migration that removes its tables, and the suites,
+    drivers, overlays and driver rules it adds."""
 
     name: ClassVar[str]
     requires_core: ClassVar[str]
@@ -34,3 +39,7 @@ class Module:
     listeners: ClassVar[Sequence[ListenerClass]] = ()
     removal: ClassVar[type[Migration] | None] = None
     bindings: ClassVar[Sequence[tuple[type, type]]] = ()
+    suites: ClassVar[Sequence[type[Suite]]] = ()
+    drivers: ClassVar[Sequence[type[Driver]]] = ()
+    overlays: ClassVar[Sequence[type[Overlay]]] = ()
+    driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
