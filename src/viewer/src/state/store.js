@@ -25,7 +25,6 @@ export const store = reactive({
     summary: null,
     people: NOBODY,
     offline: false,
-    tunnel: null,
     agentWrites: {},
     bar: null,
     streamOpen: false,

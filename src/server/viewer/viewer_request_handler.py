@@ -27,6 +27,7 @@ VIEWER_ROOT = "/viewer/"
 VIEWER_MODULE = "journal.core.viewer"
 KIT_ROUTE = "/viewer/kit/"
 SHELL_ASSETS_ROUTE = "/viewer/assets/"
+VENDOR_ROUTE = "/viewer/vendor/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
 EVENTS_ROUTE = "/api/events"
@@ -71,7 +72,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
             self.answer_module_file(viewer, module_name, path)
             return
-        if route.path.startswith(KIT_ROUTE) or route.path.startswith(SHELL_ASSETS_ROUTE):
+        if route.path.startswith((KIT_ROUTE, SHELL_ASSETS_ROUTE, VENDOR_ROUTE)):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT))
             return
         if route.path.startswith(SHARE_ROUTE):

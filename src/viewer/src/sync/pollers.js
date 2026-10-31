@@ -3,11 +3,8 @@ import {store} from "../state/store.js";
 import {followServer, updating} from "../state/updating.js";
 import {isActive} from "../domain/journals.js";
 import {api} from "../api/client.js";
-import {sharedData} from "../api/shared.js";
 import {PAGE, takeEntries} from "./rows.js";
 import {barOn} from "../composables/settings.js";
-import {loadPhones} from "../composables/phones.js";
-import {checkTunnel} from "../composables/shares.js";
 import {RECENT, pageOf} from "./paging.js";
 import {reviewSteps} from "../domain/reviewer.js";
 import {updatedAt} from "../domain/row.js";
@@ -15,7 +12,6 @@ import {updatedAt} from "../domain/row.js";
 const LIVE = 5;
 const BUSY_EVERY = 500;
 const CALM_EVERY = 3000;
-const ASK_EVERY = 1500;
 const newest = () => (store.entries.length ? store.entries[store.entries.length - 1].id : 0);
 const polledTo = {env: "", id: 0};
 const busy = () => Boolean(store.bar && store.bar.length) || isActive(agent.value && agent.value.status);
@@ -110,16 +106,10 @@ export const POLLERS = Object.freeze({
     "journals.index": {read: () => api.journals(), every: 10000, take: (got) => (store.journals = got)},
     "people.index": {read: () => api.people(), every: 30000, take: (got) => got && got.people && (store.people = got)},
     "entries.recent": {read: pollEntries, every: 1000, take: takePolled},
-    "phones.index": {read: () => loadPhones(), every: 30000},
-    "phones.pairing": {read: () => loadPhones(), every: ASK_EVERY},
-    "phone.tunnel": {read: () => api.tunnelAnswering(), every: ASK_EVERY},
-    "phone.tunnel.problems": {read: () => checkTunnel(), every: ASK_EVERY * 2},
-    "shares.services": {read: () => api.services(), every: 5000},
     "outputs.running": {read: () => api.runningOutputs(), every: 3000},
     "messages.docked": {read: readDockedCards, every: 1000, by: ({session}) => session || "main"},
     "mcp.servers": {read: () => api.mcp(), every: 30000},
     "developer.readers": {read: () => api.developerReaders(), every: 5000},
-    "share.page": {read: () => sharedData(), every: 20000},
     "outbox.retry": {read: ({retry}) => retry(), every: 5000},
     "tour.start": {read: ({clear}) => clear(), every: 800},
     "workers.index": {read: () => workerChanges("workers.index", pageOf("workers")), every: 5000},

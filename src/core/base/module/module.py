@@ -25,6 +25,7 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.subcommand.subcommand import Subcommand
 from core.base.seed.seeder import Seeder
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.query.shared_rows import SharedRows
 from core.base.setting.setting_declaration import SettingNode
 from core.base.tunnel.tunnel import Tunnel
 
@@ -64,6 +65,7 @@ class Module:
     providers: ClassVar[Sequence[type[Provider]]] = ()
     settings: ClassVar[Sequence[SettingNode]] = ()
     tunnels: ClassVar[Sequence[type[Tunnel]]] = ()
+    shared_rows: ClassVar[Sequence[type[SharedRows]]] = ()
     skills: ClassVar[Sequence[SkillDeclaration]] = ()
     seeders: ClassVar[Sequence[type[Seeder]]] = ()
     moves: ClassVar[Sequence[type[VersionFourMove]]] = ()

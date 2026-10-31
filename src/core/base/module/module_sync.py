@@ -120,6 +120,7 @@ class ModuleSync:
             docks=self.docks(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
+            shared_rows={shared.row.model_name: DottedPath.class_path(shared) for module in modules for shared in module.shared_rows},
             tunnels=tuple(TunnelEntry(tunnel.name, DottedPath.class_path(tunnel), module.name, tunnel.title) for module in modules for tunnel in module.tunnels),
             skills=self.skills(modules),
             moves=tuple(MoveEntry(module.name, DottedPath.class_path(move), tuple(move.reads), tuple(move.drops), tuple(move.id_modules))

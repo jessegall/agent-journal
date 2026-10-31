@@ -1,4 +1,5 @@
 import json
+import re
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
@@ -19,6 +20,7 @@ class PlanAndPersonFixture(StoryFixture):
 
     def steps(self, story: Story) -> None:
         story.run(lines.NEW_PLAN)
+        story.run('phase make --plan 2 "Elsewhere" --goal "not shared"')
         UserJoined().steps(story)
 
     def expect(self, story: Story) -> None:
@@ -78,6 +80,18 @@ def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_
         story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "environment": "main"')
 
 
+def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        _, _, page = viewer_answer(story.viewer_port(), share.path, visitor, "")
+        names = re.findall(r'(?:src|href)="(/viewer/[^"]+)"|"(?:vue|@journal/window-kit)": "([^"]+)"', page)
+        paths = {first or second for first, second in names}
+        assert any("vendor/vue" in path for path in paths) and any("/assets/" in path for path in paths) and any("window-kit" in path for path in paths), page
+        for path in paths:
+            story.expect_viewer_status(path, 200, visitor)
+
+
 def test_a_revoked_link_is_gone_and_a_made_up_one_is_unknown(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         cookie, share = shared_link(story)
@@ -102,6 +116,14 @@ def test_a_share_session_reads_the_shared_plan_and_its_phases_as_the_person_who_
         story.expect_viewer_line(visitor, phases("1"), 200, '"code": 0')
         story.expect_viewer_line(visitor, read("2"), 403, "not shared by the link")
         story.expect_viewer_line(visitor, phases("2"), 403, "not shared by the link")
+
+
+def test_a_share_session_reads_the_phases_the_plan_holds_and_no_phase_of_another_plan(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["phase", "show", "1"], "environment": "main"}, 200, '"code": 0')
+        story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": ["phase", "show", "4"], "environment": "main"}, 403, "not shared by the link")
 
 
 def test_a_share_session_reads_only_the_lines_its_window_declares(new_story):

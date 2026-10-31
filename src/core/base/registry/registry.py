@@ -53,6 +53,7 @@ class Registry:
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
     tunnels: tuple[TunnelEntry, ...] = ()
+    shared_rows: dict[str, DottedPath] = field(default_factory=dict[str, DottedPath])
     skills: tuple[SkillEntry, ...] = ()
     moves: tuple[MoveEntry, ...] = ()
     module_fingerprints: dict[str, str] = field(default_factory=lambda: {})
@@ -94,6 +95,7 @@ class Registry:
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
+            shared_rows={model: DottedPath(path) for model, path in entries.get("shared_rows", {}).items()},
             tunnels=tuple(TunnelEntry(tunnel["name"], DottedPath(tunnel["path"]), tunnel["module"], tunnel["title"]) for tunnel in entries.get("tunnels", [])),
             skills=tuple(SkillEntry.restored(skill) for skill in entries.get("skills", [])),
             moves=tuple(MoveEntry.restored(move) for move in entries.get("moves", [])),
@@ -129,6 +131,7 @@ class Registry:
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],
+            "shared_rows": {model: path.text for model, path in self.shared_rows.items()},
             "tunnels": [{"name": tunnel.name, "path": tunnel.path.text, "module": tunnel.module, "title": tunnel.title} for tunnel in self.tunnels],
             "skills": [asdict(skill) for skill in self.skills],
             "moves": [dict(move.stored()) for move in self.moves],

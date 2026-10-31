@@ -1,5 +1,7 @@
 from core.base.cli.usage_error import UsageError
 from core.base.environment_names import EnvironmentNames
+from core.base.container import Container
+from core.base.query.shared_rows import SharedRows
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
@@ -16,10 +18,11 @@ UNSHARED_LINE_REFUSAL = "this line is not shared by the link"
 class ShareScope:
     """Whether a share session may send a line: it parses, it reads (a write never does, with a guard skipped
     or not), it stays in the link's environment, and the shared window lists the line in shared_reads with
-    the argument that names the shared row's id. It checks the parsed line, never its raw words."""
+    the argument that names an id of the shared row or of a row it includes. It checks the parsed line, never
+    its raw words."""
 
-    def __init__(self, registry: Registry, lines: WindowLines, environment_names: EnvironmentNames) -> None:
-        self.registry, self.lines, self.environment_names = registry, lines, environment_names
+    def __init__(self, registry: Registry, lines: WindowLines, environment_names: EnvironmentNames, container: Container) -> None:
+        self.registry, self.lines, self.environment_names, self.container = registry, lines, environment_names, container
 
     def check(self, shared: SharedRow, window_name: str, argv: list[str], environment: str) -> None:
         if not self.registry.has_window(window_name):
@@ -35,8 +38,18 @@ class ShareScope:
         names = [entry.rsplit(" ", 1)[1] for entry in self.registry.window(window_name).shared_reads if entry.rsplit(" ", 1)[0] == parsed.line]
         if not names:
             raise ShareRefusal(f"{UNSHARED_LINE_REFUSAL}: {parsed.line}")
-        if getattr(parsed.arguments, names[0], None) != shared.id:
-            raise ShareRefusal(f"{ROW_REFUSAL}: {getattr(parsed.arguments, names[0], None)!r} is not {shared.id}")
+        requested_id = getattr(parsed.arguments, names[0], None)
+        model = parsed.line.split(" ", 1)[0].replace("-", "_") if names[0] == "id" else names[0].removesuffix("_id")
+        if requested_id not in self.shared_ids(shared, model):
+            raise ShareRefusal(f"{ROW_REFUSAL}: {requested_id!r} is not part of what is shared")
+
+    def shared_ids(self, shared: SharedRow, model: str) -> list[int]:
+        if model == shared.model:
+            return [shared.id]
+        if shared.model not in self.registry.shared_rows:
+            return []
+        shared_rows = self.container.get(self.registry.shared_rows[shared.model].checked_class(SharedRows))
+        return [row_id for group in shared_rows.rows(shared.id) if group.model == model for row_id in group.ids]
 
     def environment_id(self, environment: str) -> int | None:
         try:

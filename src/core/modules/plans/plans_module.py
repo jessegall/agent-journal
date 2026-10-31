@@ -18,6 +18,7 @@ from core.modules.plans.models.plan_progress import PlanProgress
 from core.modules.plans.commands.plan_progress_subcommand import PlanProgressSubcommand
 from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.queries.plan_query import PlanQuery
+from core.modules.plans.queries.plan_shared_rows import PlanSharedRows
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -53,6 +54,7 @@ class PlansModule(Module):
                  NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     docks = PLAN_DOCKS
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list"],
-                                 events=["plan.*", "phase.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan"])]
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list", "phase show"],
+                                 events=["plan.*", "phase.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
+    shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]
