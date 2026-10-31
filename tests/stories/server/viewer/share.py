@@ -1,3 +1,4 @@
+import http.client
 import json
 import re
 from dataclasses import dataclass
@@ -77,7 +78,7 @@ def test_the_session_route_tells_the_shell_which_row_the_link_shows_and_when_it_
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "environment": "main"')
+        story.expect_viewer_status("/api/session", 200, visitor, text='"share": {"row_model": "plan", "row_id": 1, "window": {')
 
 
 def test_the_share_page_loads_every_file_it_names_with_only_the_share_cookie(new_story):
@@ -150,23 +151,46 @@ def test_a_share_session_runs_no_command_with_or_without_waive(new_story):
             story.expect_viewer_line(visitor, {"window": PLAN_WINDOW, "line": line, "environment": "main"}, 403, "a share link only reads")
 
 
-def test_a_share_session_sees_its_window_alone_and_no_marks_docks_layouts_settings_or_waiting(new_story):
+def test_a_share_session_reads_no_data_route_but_its_own_session_and_stream(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        story.expect_viewer_status("/api/windows?environment=main", 200, visitor, text=PLAN_WINDOW)
-        _, _, windows = viewer_answer(story.viewer_port(), "/api/windows?environment=main", visitor, "")
-        assert "tasks.tasks" not in windows and "messages.chat" not in windows, windows
-        for route in ("/api/marks", "/api/docks", "/api/waiting", "/api/skills"):
-            story.expect_viewer_status(f"{route}?environment=main", 403, visitor)
+        for route in ("/api/windows", "/api/waiting", "/api/marks", "/api/docks", "/api/skills", "/api/anything"):
+            story.expect_viewer_status(f"{route}?environment=main", 403, visitor, text="opens only the row it shares")
+        story.expect_viewer_status("/api/session", 200, visitor, text='"type": "share"')
 
 
-def test_a_share_session_follows_only_the_events_of_the_rows_it_shows(new_story):
+def test_the_server_picks_the_window_that_shows_the_shared_row_and_ignores_the_name_a_client_sends(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         _, share = shared_link(story)
         visitor = opened(story, share)
-        story.expect_viewer_status("/api/events?cursor=0&environment=main", 403, visitor)
-        story.expect_viewer_status("/api/events?cursor=0&environment=main&plan=1", 200, visitor)
+        story.expect_viewer_status("/api/session", 200, visitor, text='"window": {"name": "plans.plans"')
+        story.expect_viewer_line(visitor, {"window": "settings.settings", "line": ["plan", "show", "1"], "environment": "main"}, 200, '"code": 0')
+
+
+def share_events(story: ServerStory, cookie: str, count: int, environment: str) -> list[dict[str, object]]:
+    port = story.viewer_port()
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    try:
+        connection.request("GET", f"/api/events?cursor=0&environment={environment}", headers={"Host": f"127.0.0.1:{port}", "Cookie": cookie})
+        response = connection.getresponse()
+        assert response.status == 200, response.status
+        events: list[dict[str, object]] = []
+        while len(events) < count:
+            line = response.readline().decode()
+            if line.startswith("data: "):
+                events.append(json.loads(line[6:]))
+        return events
+    finally:
+        connection.close()
+
+
+def test_a_share_session_follows_only_the_events_of_the_rows_it_shows_in_its_own_environment(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        followed = share_events(story, visitor, 4, "other")
+        assert all((event["row_table"], event["row_id"]) in {("plans", 1), ("phases", 1), ("phases", 2), ("phases", 3)} for event in followed), followed
 
 
 def test_a_share_session_cannot_ask_for_a_login_key(new_story):

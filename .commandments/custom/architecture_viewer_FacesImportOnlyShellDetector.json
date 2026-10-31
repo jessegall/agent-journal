@@ -1,0 +1,35 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "core/modules|/modules/|web/src"
+                        }
+                    ]
+                }
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/(windows/(Share|Phone)[A-Za-z]*\\.vue|pages/(Share|Pair)Page\\.vue|phone/)"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "face-imports-window-code",
+        "description": "A face imports a module's window code, so the face is built to one window instead of hosting what the catalogue gives.",
+        "rule": "The phone and share faces import the shell and the window kit only; a module's window loads from its entry url.",
+        "skill": "plain-code-words"
+    }
+}

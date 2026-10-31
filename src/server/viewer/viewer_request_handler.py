@@ -12,6 +12,9 @@ from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
+from server.viewer.session_type import SessionType
+from server.viewer.share_sessions import ShareSessions
+from server.viewer.shared_row import SharedRow
 from server.viewer.share_refusal import ShareRefusal
 from server.viewer.share_route import OPEN
 from server.viewer.phone_module_error import PhoneModuleError
@@ -89,6 +92,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if not viewer.login.has_session(token):
             self.answer(401, {"error": "open the address journal viewer prints to log in"})
             return
+        session = viewer.login.session(token)
+        if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE):
+            self.answer(403, {"error": "a share link opens only the row it shares"})
+            return
         if route.path == WINDOWS_ROUTE:
             try:
                 windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
@@ -113,7 +120,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, {"skills": viewer.routes.skills_route.skills()})
             return
         if route.path == EVENTS_ROUTE:
-            self.answer_events(viewer.routes.event_stream, parse_qs(route.query))
+            self.answer_events(viewer.routes.event_stream, parse_qs(route.query), session.shared, viewer.login.shares)
             return
         if route.path == "/" or route.path.startswith(VIEWER_ROOT):
             self.answer_module_file(viewer, VIEWER_MODULE, route.path.removeprefix(VIEWER_ROOT).strip("/") or SHELL_PAGE)
@@ -149,13 +156,14 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         self.answer(200, asdict(answered))
 
-    def answer_events(self, event_stream: EventStream, query: dict[str, list[str]]) -> None:
+    def answer_events(self, event_stream: EventStream, query: dict[str, list[str]], shared: SharedRow | None, shares: ShareSessions) -> None:
         request = EventsRequest.parsed(query, self.headers.get("Last-Event-ID"))
+        environment = request.environment if shared is None else shares.environment_name(shared.environment_id)
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
-        event_stream.follow(request.environment, request.cursor_id, self.stream_message)
+        event_stream.follow(environment, request.cursor_id, self.stream_message, shared)
 
     def answer_share(self, viewer: ViewerServer, token: str) -> None:
         status = viewer.routes.share_route.status(token)

@@ -4,7 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.phone.commands.pair_phone import PairPhone
-from core.modules.phone.commands.phone_invitation import PhoneInvitation
+from core.modules.phone.commands.support.phone_invitation import PhoneInvitation
 
 
 class PairPhoneSubcommand(Subcommand[PairPhone, PhoneInvitation]):

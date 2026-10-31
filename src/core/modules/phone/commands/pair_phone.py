@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.modules.phone.commands.phone_invitation import PhoneInvitation
+from core.modules.phone.commands.support.phone_invitation import PhoneInvitation
 
 
 @dataclass(frozen=True)

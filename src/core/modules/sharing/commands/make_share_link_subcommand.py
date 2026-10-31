@@ -4,7 +4,7 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.sharing.commands.make_share_link import MakeShareLink
-from core.modules.sharing.commands.share_invitation import ShareInvitation
+from core.modules.sharing.commands.support.share_invitation import ShareInvitation
 
 
 class MakeShareLinkSubcommand(Subcommand[MakeShareLink, ShareInvitation]):

@@ -5,7 +5,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.phone.commands.phone_code_maker import PhoneCodeMaker
+from core.modules.phone.commands.support.phone_code_maker import PhoneCodeMaker
 from core.modules.phone.commands.redeem_phone_code import RedeemPhoneCode
 from core.modules.phone.models.enums.phone_code_state import PhoneCodeState
 from core.modules.phone.models.lifecycles.phone_code_lifecycle import PhoneCodeLifecycle

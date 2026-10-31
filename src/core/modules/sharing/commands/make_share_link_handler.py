@@ -10,8 +10,8 @@ from core.base.repository.repository import Repository
 from core.base.text_digest import TextDigest
 from core.base.timestamp import Timestamp
 from core.modules.sharing.commands.make_share_link import MakeShareLink
-from core.modules.sharing.commands.share_invitation import ShareInvitation
-from core.modules.sharing.commands.share_targets import ShareTargets
+from core.modules.sharing.commands.support.share_invitation import ShareInvitation
+from core.modules.sharing.commands.support.share_targets import ShareTargets
 from core.modules.sharing.models.share_link import ShareLink
 
 TOKEN_BYTES = 24

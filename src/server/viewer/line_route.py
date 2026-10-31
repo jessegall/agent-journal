@@ -38,7 +38,7 @@ class LineRoute:
             if shared is None:
                 container.get(WindowLines).check(window, argv, person, environment)
             else:
-                container.get(ShareScope).check(shared, window, argv, environment)
+                container.get(ShareScope).check(shared, argv, environment)
             return Caller(person, container.get(EnvironmentNames).environment_id(environment))
 
         try:

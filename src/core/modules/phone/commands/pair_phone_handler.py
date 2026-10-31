@@ -8,8 +8,8 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.base.timestamp import Timestamp
 from core.modules.phone.commands.pair_phone import PairPhone
-from core.modules.phone.commands.phone_code_maker import PhoneCodeMaker
-from core.modules.phone.commands.phone_invitation import PhoneInvitation
+from core.modules.phone.commands.support.phone_code_maker import PhoneCodeMaker
+from core.modules.phone.commands.support.phone_invitation import PhoneInvitation
 from core.modules.phone.models.phone_code import PhoneCode
 
 CODE_LIFETIME_MINUTES = 10

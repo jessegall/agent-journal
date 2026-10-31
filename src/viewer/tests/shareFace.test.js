@@ -8,9 +8,9 @@ import plans from "../../core/modules/plans/web/src/plans.js";
 
 const PHONE_WIDTH = 400;
 const WIDE_WIDTH = 1400;
-const SESSION = {type: "share", person_id: 2, share: {row_model: "plan", row_id: 1, window: "plans.plans", environment: "main", ends_at: "2026-11-07T09:00:00.000000+00:00"}};
-const PLANS_WINDOW = {render: () => h("div", {class: "plans-body"}, "Plan page")};
 const ENTRY = {name: "plans.plans", entry_url: "/modules/journal.core.plans/plans.js", unavailable_reason: ""};
+const SESSION = {type: "share", person_id: 2, share: {row_model: "plan", row_id: 1, window: ENTRY, environment: "main", ends_at: "2026-11-07T09:00:00.000000+00:00"}};
+const PLANS_WINDOW = {render: () => h("div", {class: "plans-body"}, "Plan page")};
 const PHASES = {rows: [{id: 1, position: 1, title: "Values"}, {id: 2, position: 2, title: "Models"}, {id: 3, position: 3, title: "Queries"}], total: 3};
 
 let mounted = [];

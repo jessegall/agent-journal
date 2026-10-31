@@ -5,6 +5,7 @@ from core.base.query.shared_rows import SharedRows
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
 from core.modules.viewer.commands.support.window_lines import WindowLines
+from server.viewer.shared_windows import SharedWindows
 from server.viewer.share_refusal import ShareRefusal
 from server.viewer.shared_row import SharedRow
 
@@ -17,16 +18,15 @@ UNSHARED_LINE_REFUSAL = "this line is not shared by the link"
 
 class ShareScope:
     """Whether a share session may send a line: it parses, it reads (a write never does, with a guard skipped
-    or not), it stays in the link's environment, and the shared window lists the line in shared_reads with
-    the argument that names an id of the shared row or of a row it includes. It checks the parsed line, never
-    its raw words."""
+    or not), it stays in the link's environment, and the window the row's model picks lists the line in
+    shared_reads with the argument that names an id of the shared row or of a row it includes. It checks the
+    parsed line, never its raw words."""
 
     def __init__(self, registry: Registry, lines: WindowLines, environment_names: EnvironmentNames, container: Container) -> None:
         self.registry, self.lines, self.environment_names, self.container = registry, lines, environment_names, container
 
-    def check(self, shared: SharedRow, window_name: str, argv: list[str], environment: str) -> None:
-        if not self.registry.has_window(window_name):
-            raise ShareRefusal(UNSHARED_REFUSAL)
+    def check(self, shared: SharedRow, argv: list[str], environment: str) -> None:
+        window_name = SharedWindows(self.registry).window(shared.model).name
         try:
             parsed = self.lines.parsed(window_name, argv)
         except UsageError as error:

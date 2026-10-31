@@ -34,8 +34,8 @@ const counted = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
 async function fetchFacts() {
     const id = String(share.value.row_id);
     const [progress, listed] = await Promise.all([
-        props.read(share.value.window, ["plan", "progress", id], share.value.environment),
-        props.read(share.value.window, ["phase", "list", "--plan", id, "--oldest"], share.value.environment),
+        props.read(share.value.window.name, ["plan", "progress", id], share.value.environment),
+        props.read(share.value.window.name, ["phase", "list", "--plan", id, "--oldest"], share.value.environment),
     ]);
     if (!progress.ok || !listed.ok) {
         const unreachable = [progress, listed].some((answer) => answer.failure === "unreachable");
@@ -74,7 +74,7 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
             <ShareStrip :icon="look.icon" :noun="look.noun" :facts="facts" :ends="ends" :read="readProgress" />
             <div class="share-body" data-share-body :data-arrangement="arrangement">
                 <div class="share-part" data-share-part="plan">
-                    <WindowHost :name="share.window" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" read-only />
+                    <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" read-only />
                 </div>
                 <ShareTimeline :phases="phases" />
             </div>

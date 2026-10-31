@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from server.viewer.session_type import SessionType
+from server.viewer.viewer_window import ViewerWindow
 
 
 @dataclass(frozen=True)
@@ -10,7 +11,7 @@ class ShareAnswer:
 
     row_model: str
     row_id: int
-    window: str
+    window: ViewerWindow
     environment: str
     ends_at: str
 

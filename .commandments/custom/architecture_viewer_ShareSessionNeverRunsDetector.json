@@ -1,0 +1,54 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "any": [
+                    {
+                        "all": [
+                            {
+                                "nameIn": [
+                                    "run",
+                                    "run_as",
+                                    "save",
+                                    "delete",
+                                    "execute",
+                                    "dispatch"
+                                ]
+                            },
+                            {
+                                "fileMatches": "(^|/)src/server/viewer/share_[a-z_]+\\.py$"
+                            }
+                        ]
+                    },
+                    {
+                        "all": [
+                            {
+                                "name": "ShareRefusal"
+                            },
+                            {
+                                "fileMatches": "(^|/)src/server/viewer/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/server/viewer/share_scope\\.py$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "share-session-writes-or-decides",
+        "description": "Code a share session reaches runs a command, writes a row, or refuses a line outside the share scope, so what a share may read is decided in two places.",
+        "rule": "A share session only reads; share_scope.py alone decides what a share reads, and no share_* file in src/server/viewer runs a command or saves a row.",
+        "skill": "plain-code-words"
+    }
+}
