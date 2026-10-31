@@ -15,7 +15,6 @@ from server.hook.hook_headers import HookHeaders
 from server.hook_database_busy import HookDatabaseBusy
 from server.server_context import ServerContext
 
-HOOK_LIMIT_SECONDS = 3.0
 PROGRAMS = ("claude", "codex")
 
 
@@ -37,7 +36,7 @@ class HookEndpoint:
         if event.program not in PROGRAMS:
             raise HookEventError(f"no agent program is named {event.program!r}")
         try:
-            with self.context.hook_database.used(HOOK_LIMIT_SECONDS) as database:
+            with self.context.hook_database.used(self.context.hook_limit_seconds) as database:
                 return self.routed_answer(event, database)
         except HookDatabaseBusy as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
@@ -50,7 +49,7 @@ class HookEndpoint:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
             return HookReply.allowed(f"the journal let this through unchecked: {error}")
-        database.set_busy_timeout(HOOK_LIMIT_SECONDS)
+        database.set_busy_timeout(self.context.hook_limit_seconds)
         try:
             return container.get(HookRoute).answer(event)
         except sqlite3.OperationalError as error:

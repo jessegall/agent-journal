@@ -36,10 +36,10 @@ from server.viewer.viewer_listener import ViewerListener
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from scripts.timing_report import logged_timings, report
-from tests.stories.server.support.hook_program import HookProgram
 
 TIMEOUT_SECONDS = 10
 POLL_SECONDS = 0.05
+STORY_HOOK_LIMIT_SECONDS = 0.5
 
 
 @dataclass(frozen=True)
@@ -56,7 +56,6 @@ class ServerAnswer:
         return json.loads(self.text)
 
 
-
 class ServerStory:
     """A story's journal with a server running on it, and the checks of what the server answers."""
 
@@ -67,22 +66,10 @@ class ServerStory:
         with self.context.hook_database.lock:
             self.expect_hook_answer("/hook", body, 200, text)
 
-    def expect_program_answer(self, body: dict[str, object], text: str) -> None:
-        run = self.program_run(body)
-        assert text in run.stdout + run.stderr, f"the hook program printed {run.stdout!r} and {run.stderr!r}, code {run.returncode}"
-
-    def program_decision(self, body: dict[str, object]) -> tuple[object, object]:
-        run = self.program_run(body)
-        reply = json.loads(run.stdout)
-        return reply["refusal"], reply["lines"]
-
-    def raw_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
+    def hook_decision(self, body: dict[str, object], headers: dict[str, str]) -> tuple[object, object]:
         reply = request_answer(self.socket_path, "POST", "/hook?program=claude", body, headers).json()
         assert isinstance(reply, dict), reply
         return reply["refusal"], reply["lines"]
-
-    def program_run(self, body: dict[str, object]) -> subprocess.CompletedProcess[str]:
-        return HookProgram(self.story.home.folder).sent(body)
 
     def viewer_key(self, login_name: str) -> str:
         answer = request_answer(self.socket_path, "POST", "/viewer/key", {"variables": {"USER": login_name}, "folder": "/"}).json()
@@ -241,7 +228,7 @@ def started_server(home: JournalHome, code_folders: CodeFolders | None = None, l
     listener_round = JournalRound(home, "listener thread", ListenerWork())
     listener_thread = ListenerThread(listener_round.run, listener_round.report)
     context = ServerContext(home, CodeVersion(CodeFingerprint(), code_folders or CodeFolders(ModuleFinder(home))), files, Timestamp(datetime.now(timezone.utc)), listener_thread,
-                            HookDatabase(home), ViewerListener(ViewerLogin(), ViewerRoutes(home, listener_thread)))
+                            HookDatabase(home), ViewerListener(ViewerLogin(), ViewerRoutes(home, listener_thread)), STORY_HOOK_LIMIT_SECONDS)
     server = JournalServer(str(files.socket), RequestHandler, context)
     if listener_thread_started:
         listener_thread.start()
