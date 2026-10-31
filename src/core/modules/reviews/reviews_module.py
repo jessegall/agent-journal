@@ -6,6 +6,8 @@ from core.modules.reviews.listeners.review_queued_listener import ReviewQueuedLi
 from core.modules.reviews.listeners.reviewer_idle_listener import ReviewerIdleListener
 from core.modules.reviews.commands.abandon_review import AbandonReview
 from core.modules.reviews.commands.end_reviewer import EndReviewer
+from core.modules.reviews.listeners.review_reported_step_listener import ReviewReportedStepListener
+from core.modules.reviews.listeners.review_started_step_listener import ReviewStartedStepListener
 from core.modules.reviews.listeners.reviewer_ended_listener import ReviewerEndedListener
 from core.modules.reviews.commands.reviewer_list_subcommand import ReviewerListSubcommand
 from core.modules.reviews.commands.add_reviewer_handler import AddReviewerHandler
@@ -42,4 +44,4 @@ class ReviewsModule(Module):
     subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, RecordedByItsReviewerGuard, ReviewerIsOnGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
-    listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener]
+    listeners = [ReviewQueuedListener, ReviewerIdleListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener]
