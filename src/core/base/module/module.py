@@ -4,7 +4,6 @@ from typing import ClassVar, Never
 from core.base.command.command import Command
 from core.base.command.handler import Handler
 from core.base.database.migration import Migration
-from core.base.database.view import View
 from core.base.driver.driver import Driver
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.overlay import Overlay
@@ -13,6 +12,7 @@ from core.base.guard.guard import Guard
 from core.base.listener.commit_listener import CommitListener
 from core.base.listener.deletion_listener import DeletionListener
 from core.base.listener.save_listener import SaveListener
+from core.base.model.view_model import ViewModel
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.subcommand.subcommand import ReadSubcommand, Subcommand
 
@@ -32,7 +32,7 @@ class Module:
     dependencies: ClassVar[Sequence[str]] = ()
     models: ClassVar[Sequence[ModelDeclaration]] = ()
     migrations: ClassVar[Sequence[type[Migration]]] = ()
-    views: ClassVar[Sequence[View]] = ()
+    views: ClassVar[Sequence[type[ViewModel]]] = ()
     handlers: ClassVar[Sequence[HandlerClass]] = ()
     subcommands: ClassVar[Sequence[SubcommandClass]] = ()
     guards: ClassVar[Sequence[type[Guard]]] = ()

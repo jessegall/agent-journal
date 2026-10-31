@@ -74,9 +74,10 @@ class ModuleSync:
         self.check.check(modules, rules)
         models = self.check.models(modules)
         migrations = self.schema.migrate((CORE_MIGRATIONS, *(ModuleMigrations(module.name, self.migrations(module)) for module in modules)))
-        self.schema.rebuild_views(tuple(view for module in modules for view in module.views))
+        views = tuple(view for module in modules for view in module.views)
+        self.schema.rebuild_views(views)
         self.triggers.rebuild(models)
-        self.schema.check_tables(models)
+        self.schema.check_tables(models, views)
         with self.database.transaction():
             timestamp = self.clock.timestamp().text
             self.actors.core_actor(timestamp)

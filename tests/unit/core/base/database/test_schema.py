@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import sqlite3
 
 import pytest
@@ -8,7 +9,7 @@ from core.base.database.rebuild_migration import RebuildMigration
 from core.base.database.schema import ModuleMigrations, Schema
 from core.base.database.statement import Statement
 from core.base.database.schema_mismatch_error import SchemaMismatchError
-from core.base.database.view import View
+from core.base.model.view_model import ViewModel
 from core.base.journal_home import JournalHome
 from core.base.model.tables import Tables
 from tests.unit.core.base.database.test_table_statements import Shelf
@@ -35,6 +36,27 @@ class ShelvesLevelColumn(RebuildMigration):
                   "INSERT INTO shelves_new (id, label) SELECT id, label FROM shelves",
                   "DROP TABLE shelves",
                   "ALTER TABLE shelves_new RENAME TO shelves")
+
+
+@dataclass(frozen=True, kw_only=True)
+class ShelfLabel(ViewModel):
+    cli_name = "shelf-label"
+    view = "shelf_labels"
+    key = "label"
+    select = "SELECT label FROM shelves"
+
+    label: str
+
+
+@dataclass(frozen=True, kw_only=True)
+class NumberedShelfLabel(ViewModel):
+    cli_name = "shelf-label"
+    view = "shelf_labels"
+    key = "id"
+    select = "SELECT id, label FROM shelves"
+
+    id: int
+    label: str
 
 
 @pytest.fixture
@@ -77,13 +99,13 @@ def test_a_rebuild_keeps_every_row_that_points_at_the_table(database):
 def test_a_view_is_made_again_from_its_declaration(database):
     schema = Schema(database, Tables())
     schema.migrate([ModuleMigrations("shelves", [ShelvesTable()])])
-    schema.rebuild_views([View("shelf_labels", "SELECT label FROM shelves")])
-    schema.rebuild_views([View("shelf_labels", "SELECT id, label FROM shelves")])
+    schema.rebuild_views([ShelfLabel])
+    schema.rebuild_views([NumberedShelfLabel])
     assert [row["name"] for row in database.rows(Statement("PRAGMA table_info(shelf_labels)"))] == ["id", "label"]
 
 
 def test_a_model_and_its_table_that_disagree_are_named_by_model_and_column(database):
     database.update(Statement("CREATE TABLE shelves (id INTEGER PRIMARY KEY, label TEXT, version INTEGER, metadata TEXT, created_at TEXT, updated_at TEXT, colour TEXT) STRICT"))
     with pytest.raises(SchemaMismatchError) as raised:
-        Schema(database, Tables()).check_tables([Shelf])
+        Schema(database, Tables()).check_tables([Shelf], [])
     assert raised.value.differences == ("Shelf.level has no column in shelves", "shelves.colour has no field in Shelf")

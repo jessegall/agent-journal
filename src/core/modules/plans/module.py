@@ -6,9 +6,8 @@ from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansB
 from core.modules.plans.migrations.m001_plans import PlansTables
 from core.modules.plans.phase_handlers import PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler
 from core.modules.plans.phase_subcommands import PhaseMakeSubcommand, PhaseMoveSubcommand, PhasePlaceSubcommand
-from core.modules.plans.plan_progress import PlanProgressSubcommand
+from core.modules.plans.plan_progress import PlanProgress, PlanProgressSubcommand
 from core.modules.plans.plan_query import PlanQuery
-from core.modules.plans.views import PLAN_PROGRESS
 from core.base.module.module import Module
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.plans.phase import Phase
@@ -29,6 +28,6 @@ class PlansModule(Module):
     handlers = (PhaseMakeHandler, PhaseMoveHandler, PhasePlaceHandler)
     subcommands = (PhaseMakeSubcommand, PhaseMoveSubcommand,
                    PhasePlaceSubcommand, PlanProgressSubcommand)
-    views = [PLAN_PROGRESS]
+    views = [PlanProgress]
     listeners = (ForgetPlace, CancelOpenPlanTasks,
                  NextPlanTaskStarter)

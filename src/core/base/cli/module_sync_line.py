@@ -3,6 +3,7 @@ from typing import TextIO
 from core.base.cli.console import REFUSED_CODE, SUCCESS_CODE
 from core.base.subcommand.output import Output
 from core.base.model.tables import Tables
+from core.base.database.schema_mismatch_error import SchemaMismatchError
 from core.base.module.module_error import ModuleError
 from core.base.module.module_sync import ModuleSync
 
@@ -20,7 +21,7 @@ class ModuleSyncLine:
         output = Output(self.tables, "--json" in argv, stream)
         try:
             report = self.sync.run()
-        except ModuleError as error:
+        except (ModuleError, SchemaMismatchError) as error:
             output.error(str(error))
             return REFUSED_CODE
         output.line(report.text)

@@ -1,13 +1,13 @@
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from datetime import datetime, timezone
 
 from core.base.database.database import Database
 from core.base.database.migration import Migration
 from core.base.database.rebuild_migration import RebuildMigration
 from core.base.database.schema_mismatch_error import SchemaMismatchError
+from core.base.model.view_model import ViewModel
 from core.base.database.statement import Statement
-from core.base.database.view import View
 from core.base.model.model import Model
 from core.base.model.tables import Tables
 
@@ -59,16 +59,24 @@ class Schema:
         for row in self.database.rows(VIEWS):
             self.database.update(Statement(f"DROP VIEW {row['name']}"))
 
-    def rebuild_views(self, views: tuple[View, ...]) -> None:
+    def rebuild_views(self, views: Sequence[type[ViewModel]]) -> None:
         with self.database.transaction():
             self.drop_views()
             for view in views:
-                self.database.update(Statement(f"CREATE VIEW {view.name} AS {view.select}"))
+                self.database.update(Statement(f"CREATE VIEW {view.view} AS {view.select}"))
 
-    def check_tables(self, models: tuple[type[Model], ...]) -> None:
-        differences = tuple(difference for model in models for difference in self.differences(model))
+    def check_tables(self, models: Sequence[type[Model]], views: Sequence[type[ViewModel]]) -> None:
+        differences = (*(difference for model in models for difference in self.differences(model)),
+                       *(difference for view in views for difference in self.view_differences(view)))
         if differences:
             raise SchemaMismatchError(differences)
+
+    def view_differences(self, view: type[ViewModel]) -> Sequence[str]:
+        stored = [row["name"] for row in self.database.rows(Statement(f"PRAGMA table_info({view.view})"))]
+        declared = [field.name for field in fields(view)]
+        missing = tuple(f"{view.__name__}.{column} has no column in {view.view}" for column in declared if column not in stored)
+        extra = tuple(f"{view.view}.{column} has no field in {view.__name__}" for column in stored if column not in declared)
+        return missing + extra
 
     def differences(self, model: type[Model]) -> Sequence[str]:
         table = self.tables.table(model)

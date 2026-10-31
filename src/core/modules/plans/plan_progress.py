@@ -5,6 +5,7 @@ from core.base.model.view_model import ViewModel
 from core.base.query.queries import Queries
 from core.base.subcommand.caller import Caller
 from core.base.subcommand.subcommand import ReadSubcommand
+from core.modules.plans.views import PLAN_PROGRESS_SELECT
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -15,6 +16,7 @@ class PlanProgress(ViewModel):
     cli_name = "plan"
     view = "plan_progress"
     key = "plan_id"
+    select = PLAN_PROGRESS_SELECT
 
     plan_id: int
     task_count: int

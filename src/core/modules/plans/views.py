@@ -1,7 +1,4 @@
-from core.base.database.view import View
-
-PLAN_PROGRESS = View(
-    "plan_progress",
+PLAN_PROGRESS_SELECT = (
     "SELECT plans.id AS plan_id,"
     " count(tasks.id) FILTER (WHERE tasks.state != 'cancelled') AS task_count,"
     " count(tasks.id) FILTER (WHERE tasks.state = 'completed') AS completed_count,"
@@ -10,5 +7,5 @@ PLAN_PROGRESS = View(
     " LEFT JOIN phases ON phases.plan_id = plans.id"
     " LEFT JOIN phase_tasks ON phase_tasks.phase_id = phases.id"
     " LEFT JOIN tasks ON tasks.id = phase_tasks.task_id"
-    " GROUP BY plans.id",
+    " GROUP BY plans.id"
 )
