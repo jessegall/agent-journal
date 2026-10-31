@@ -17,6 +17,6 @@ class OwnQuestionToolRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.category is not ToolType.ASK_USER:
+        if tool is None or tool.category is not ToolType.QUESTION:
             return RuleAnswer.allowed()
         return RuleAnswer.refused('ask with journal question ask "<one line>" --options "a" "b", not your own question tool')

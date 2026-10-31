@@ -29,9 +29,9 @@ const rows = computed(() => waits.value.filter((wait) => wait.state === "open" &
         <RowList :rows="rows" :failure="failure" empty="Nothing is waiting">
             <template #default="{row}">
                 <span class="label">{{ row.label }}</span>
-                <span class="status">{{ row.status }}</span>
-                <span class="where">{{ row.where }}</span>
-                <span class="waited">{{ row.waited }}</span>
+                <template v-for="(detail, position) in [row.status, row.where, row.waited]" :key="position">
+                    <span class="detail">{{ detail }}</span>
+                </template>
             </template>
         </RowList>
     </div>
@@ -49,9 +49,7 @@ const rows = computed(() => waits.value.filter((wait) => wait.state === "open" &
     flex: 1;
 }
 
-.status,
-.where,
-.waited {
+.detail {
     color: var(--text-3);
     font-size: 12px;
 }

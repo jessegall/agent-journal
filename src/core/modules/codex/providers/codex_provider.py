@@ -45,7 +45,7 @@ class CodexProvider(Provider):
     refusals = {HookEventName.STOP: RefusalStyle.BLOCK}
     tool_categories = {"Bash": ToolType.SHELL, "apply_patch": ToolType.EDIT, "write_file": ToolType.NEW_FILE,
                        "read_file": ToolType.READ, "collaborationspawn_agent": ToolType.AGENT,
-                       "request_user_input": ToolType.ASK_USER}
+                       "request_user_input": ToolType.QUESTION}
     decoder = HookDecoder.CODEX
     hook_file = HookFile(Path(".codex/hooks.json"), {"additionalContextLimit": 0})
     session_variable = "CODEX_THREAD_ID"
