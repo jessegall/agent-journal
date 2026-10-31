@@ -48,8 +48,10 @@ class RequestHandler(BaseHTTPRequestHandler):
         super().setup()
         self.timing = Timing.started("server_accepted")
         self.sender_pid = peer_pid(self.connection)
+        self.journal_server().connection_idle(self.connection)
 
     def parse_request(self) -> bool:
+        self.journal_server().connection_busy()
         if not self.timing.stamps:
             self.timing = Timing.started("server_accepted")
         parsed = super().parse_request()
@@ -65,6 +67,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.timing.stamp("answered")
             self.write_timing_line()
         self.route, self.line, self.status, self.exit_code, self.timing = None, "", 0, None, Timing()
+        self.journal_server().connection_idle(self.connection)
 
     def write_timing_line(self) -> None:
         context = self.journal_server().context
@@ -109,8 +112,8 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.answer_viewer_key(body)
             return
         if self.path == "/stop":
-            self.answer_json(200, {"status": "stopping"}, closing=True)
             self.journal_server().request_stop()
+            self.answer_json(200, {"status": "stopping"}, closing=True)
             return
         route, _, query = self.path.partition("?")
         if route == "/hook":

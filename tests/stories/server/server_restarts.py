@@ -34,3 +34,4 @@ def test_a_stop_ends_the_server_at_once_while_a_client_still_holds_its_connectio
     with ServerProcess(new_story(fixture=ThreeTasks).home) as server:
         server.expect_health()
         server.expect_stop_with_an_idle_connection()
+

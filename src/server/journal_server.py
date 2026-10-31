@@ -8,6 +8,7 @@ from server.server_context import ServerContext
 
 
 DRAIN_LIMIT_SECONDS = 10
+DRAIN_POLL_SECONDS = 0.05
 class JournalServer(ThreadingMixIn, UnixStreamServer):
     """The server on the journal's socket: one daemon thread per request, kept so a stop waits for them up to its
     limit, and a loop that sleeps on its socket and a wake socket, so a stop returns at once."""
@@ -19,6 +20,7 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
         self.wake_sender, self.wake_receiver = socket.socketpair()
         self.stopping, self.stopped = threading.Event(), threading.Event()
         self.request_threads: set[threading.Thread] = set()
+        self.idle_connections: dict[threading.Thread, socket.socket] = {}
         self.thread_lock = threading.Lock()
         super().__init__(path, handler)
 
@@ -45,6 +47,15 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
         finally:
             with self.thread_lock:
                 self.request_threads.discard(threading.current_thread())
+                self.idle_connections.pop(threading.current_thread(), None)
+
+    def connection_idle(self, connection: socket.socket) -> None:
+        with self.thread_lock:
+            self.idle_connections[threading.current_thread()] = connection
+
+    def connection_busy(self) -> None:
+        with self.thread_lock:
+            self.idle_connections.pop(threading.current_thread(), None)
 
     def request_stop(self) -> None:
         self.stopping.set()
@@ -56,11 +67,21 @@ class JournalServer(ThreadingMixIn, UnixStreamServer):
         self.request_stop()
 
     def drain(self, limit_seconds: float) -> None:
+        """Waits for the requests that run, up to the limit; a connection kept open with no request on it is closed
+        from this side at once, as it would otherwise hold the stop until its client let go."""
         deadline = time.monotonic() + limit_seconds
-        with self.thread_lock:
-            threads = [thread for thread in self.request_threads if thread is not threading.current_thread()]
-        for thread in threads:
-            thread.join(max(0.0, deadline - time.monotonic()))
+        while time.monotonic() < deadline:
+            with self.thread_lock:
+                threads = [thread for thread in self.request_threads if thread is not threading.current_thread()]
+                idle = list(self.idle_connections.values())
+            if not threads:
+                return
+            for connection in idle:
+                try:
+                    connection.shutdown(socket.SHUT_RD)
+                except OSError:
+                    continue
+            threads[0].join(DRAIN_POLL_SECONDS)
 
     def server_close(self) -> None:
         super().server_close()

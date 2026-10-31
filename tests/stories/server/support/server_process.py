@@ -57,17 +57,16 @@ class ServerProcess:
 
     def expect_stop_with_an_idle_connection(self) -> None:
         assert self.process is not None
-        connection = UnixConnection(str(self.socket))
+        idle = UnixConnection(str(self.socket))
         try:
-            connection.request("GET", "/health")
-            connection.getresponse().read()
-            connection.request("POST", "/stop", body=b"{}", headers={"Content-Length": "2"})
-            connection.getresponse().read()
+            idle.request("GET", "/health")
+            idle.getresponse().read()
+            assert request_answer(self.socket, "POST", "/stop", None).status == 200
             started = time.monotonic()
             assert self.process.wait(TIMEOUT_SECONDS) == 0
             assert time.monotonic() - started < STOP_SECONDS, "an idle connection held the stop"
         finally:
-            connection.close()
+            idle.close()
 
     def expect_second_server_exits(self) -> None:
         second = self.started()
