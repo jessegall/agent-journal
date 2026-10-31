@@ -13,4 +13,4 @@ class MemoryWeighedMarkListener(MemoryMarkListener):
 
     def handle(self, event: LoggedEvent) -> None:
         if "weight" in event.data and event.command != FadeMemories.label():
-            self.show(event, MemoryMarkVariant.WEIGHED, f"Memory {event.row_id}: weight set to {event.data['weight'][1]}")
+            self.show(event, MemoryMarkVariant.WEIGHED, f"Memory {event.row_id}: weight set to {event.data["weight"][1]}", row_id=event.row_id)
