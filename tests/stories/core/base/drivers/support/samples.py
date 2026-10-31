@@ -57,6 +57,11 @@ class EditLockEnd(MoveCommand[EditLock]):
     move = EditLockLifecycle.ended
 
 
+@dataclass(frozen=True)
+class EditLockReopening(MoveCommand[EditLock]):
+    move = EditLockLifecycle.reopening
+
+
 class EditLocksTable(Migration):
     number = 1
     statements = (
@@ -104,7 +109,7 @@ class ReturnLine(DriverRule):
     """Once an edit lock above it ends, the lead is told it is back at its own work, once."""
 
     name = "samples.return-line"
-    hook = "prompt"
+    hook = "*"
     drivers = ["samples.*"]
     history = True
 
@@ -155,13 +160,23 @@ class SecondLockRelease(DriverRule):
         return RuleAnswer.allowed().running(EditLockEnd(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
 
 
+class ReopeningClaim(DriverRule):
+    """On a compaction, asks to reopen the edit lock it is asked for, which is open, so the lifecycle refuses it."""
+
+    name = "samples.reopening-claim"
+    hook = "compact"
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer.allowed().running(EditLockReopening(hook.layer.row_id)) if hook.layer is not None else RuleAnswer.allowed()
+
+
 class EditLockOverlay(Overlay):
     """An open edit lock of the agent, which silences the lead's own rules."""
 
     name = "samples.edit-lock"
     exclusive = True
     delays_lines = True
-    rules = [LockedEditRefusal, LockRelease, SecondLockRelease]
+    rules = [LockedEditRefusal, LockRelease, SecondLockRelease, ReopeningClaim]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -221,7 +236,7 @@ class SamplesModule(Module):
     name = "samples"
     requires_core = ">=5.0,<6"
     dependencies = ["journal.core.agents", "journal.core.drivers"]
-    models = [ModelDeclaration(EditLock, commands=[EditLockEnd])]
+    models = [ModelDeclaration(EditLock, commands=[EditLockEnd, EditLockReopening])]
     migrations = [EditLocksTable]
     guards = [LeadLockGuard]
     suites = [SampleSuite, ControlSuite]

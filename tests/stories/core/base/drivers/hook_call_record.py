@@ -10,21 +10,21 @@ REMOVAL = HookSamples.shell("rm -rf build", ShellPart("rm", "edit", ["-rf", "bui
 def test_an_exclusive_edit_lock_refuses_an_edit_and_its_hook_call_names_the_layer_and_each_outcome(new_story):
     story = new_story(SAMPLES, fixture=LeadLocked)
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "edit_lock:1 refuses every edit")
-    story.expect_success(lines.SECOND_HOOK_CALL, "layers: edit_lock:1", "samples.removal-limit: allowed", "samples.locked-edit-refusal: refused")
+    story.expect_text(lines.SECOND_HOOK_CALL, "layers: edit_lock:1", "samples.removal-limit: allowed", "samples.locked-edit-refusal: refused")
 
 
 def test_under_an_exclusive_edit_lock_the_drivers_own_rules_are_passed_over_and_its_limit_still_asked(new_story):
     story = new_story(SAMPLES, fixture=LeadLocked)
     story.expect_hook_refusal("s-1", REMOVAL, "the lead removes no folder")
     story.hook("s-1", HookSamples.stop())
-    story.expect_success("hook-call show 3", "samples.stop-line: silenced")
+    story.expect_text("hook-call show 3", "samples.stop-line: silenced")
 
 
 def test_a_hook_sent_twice_under_one_firing_gets_its_stored_answer_and_asks_no_rule(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    stop = {**HookSamples.stop(), "firing": "f-9"}
+    stop = HookSamples.stop().with_fields(firing="f-9")
     first = story.hook("s-1", stop)
     second = story.hook("s-1", stop)
     story.expect_rows(first == second)
-    story.expect_success(lines.AGENT_HOOK_CALLS, "2  stop")
-    story.expect_absent(lines.AGENT_HOOK_CALLS, "3  stop")
+    story.expect_text(f"hook-call list --agent {story.agent.id}", f"2  {story.agent.id}  stop")
+    story.expect_absent(f"hook-call list --agent {story.agent.id}", f"3  {story.agent.id}  stop")

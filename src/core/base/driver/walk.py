@@ -20,12 +20,12 @@ class Walk:
         self.delays_lines = False
 
     def record(self, entry: DriverRuleEntry, layer: str, outcome: RuleOutcome) -> bool:
-        self.rules.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer))
+        self.rules.append(RuleRecord(entry.name, layer, outcome.outcome, outcome.answer, entry.history))
         self.has_ended_layer = self.has_ended_layer or (outcome.answer is not None and outcome.answer.ends_layer)
         return outcome.answer is not None and outcome.answer.last and outcome.outcome != RAISED
 
     def record_silenced(self, entry: DriverRuleEntry, layer: str) -> None:
-        self.rules.append(RuleRecord(entry.name, layer, SILENCED))
+        self.rules.append(RuleRecord(entry.name, layer, SILENCED, history=entry.history))
 
     def leave_layer(self, layer: Layer, overlay: type[Overlay]) -> None:
         if not self.layers or self.layers[0] == layer.row.ref:

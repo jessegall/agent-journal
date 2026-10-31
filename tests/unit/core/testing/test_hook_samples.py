@@ -25,10 +25,10 @@ SAMPLES = {
 def test_each_sample_is_kept_beside_the_go_examples_so_the_schema_test_there_checks_it(name):
     path = SCHEMA_EXAMPLES / f"story_{name}.json"
     if os.environ.get(FREEZE_VARIABLE):
-        path.write_text(json.dumps(SAMPLES[name], indent=2) + "\n")
-    assert json.loads(path.read_text()) == SAMPLES[name], f"rewrite the kept samples with {FREEZE_VARIABLE}=1, then run go test ./tools/journal-hook/event"
+        path.write_text(json.dumps(dict(SAMPLES[name].body), indent=2) + "\n")
+    assert json.loads(path.read_text()) == SAMPLES[name].body, f"rewrite the kept samples with {FREEZE_VARIABLE}=1, then run go test ./tools/journal-hook/event"
 
 
 @pytest.mark.parametrize("name", sorted(SAMPLES))
 def test_each_sample_reads_as_a_hook_event(name):
-    assert HookEvent.parsed(SAMPLES[name]).event == SAMPLES[name]["event"]
+    assert HookEvent.parsed(SAMPLES[name].body).event == SAMPLES[name].body["event"]

@@ -34,4 +34,4 @@ def test_choosing_a_driver_of_no_installed_module_or_of_another_suite_is_refused
 def test_a_suite_change_sends_each_open_agent_its_new_drivers_opening_lines(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.run("suite choose control --environment main")
-    story.expect_success("agent-line list --agent 1", "You are the control lead")
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "You are the control lead")

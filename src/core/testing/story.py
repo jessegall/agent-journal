@@ -1,5 +1,6 @@
 import io
 import shlex
+from uuid import uuid4
 from dataclasses import dataclass, field
 from typing import TypeVar
 from datetime import timedelta
@@ -20,7 +21,8 @@ from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.refusal_log import RecordedRefusal, RefusalLog
 from core.base.subcommand.caller import Caller
-from core.testing.hook_samples import HookSamples
+from core.testing.hook_sample import HookSample
+from core.testing.hook_samples import SAMPLE_FIRING, HookSamples
 from core.testing.manual_clock import ManualClock
 
 M = TypeVar("M", bound=Model)
@@ -65,7 +67,6 @@ class Story:
         self.home, self.container, self.clock, self.process_table = home, container, clock, process_table
         self.results: list[LineOutcome] = []
         self.agent, self.user = state.agent, state.user
-        self.hook_count = 0
 
     @classmethod
     def opened(cls, home: JournalHome, state: StoryState) -> "Story":
@@ -106,30 +107,30 @@ class Story:
     def advance(self, duration: timedelta) -> None:
         self.clock.advance(duration)
 
-    def hook(self, session: str, sample: dict[str, object]) -> HookReply:
-        self.hook_count += 1
+    def hook(self, session: str, sample: HookSample) -> HookReply:
         milliseconds = int(self.clock.timestamp().value.timestamp() * 1000)
-        event = HookEvent.parsed({**sample, "session": session, "firing": f"story-{self.hook_count}", "fired_at_ms": milliseconds})
+        firing = f"story-{uuid4().hex}" if sample.firing == SAMPLE_FIRING else sample.firing
+        event = HookEvent.parsed(sample.with_fields(session=session, firing=firing, fired_at_ms=milliseconds).body)
         return self.container.get(HookRoute).answer(event)
 
     def tick(self, session: str) -> HookReply:
         return self.hook(session, HookSamples.tick())
 
-    def expect_hook_allowed(self, session: str, sample: dict[str, object], *expected_lines: str) -> None:
+    def expect_hook_allowed(self, session: str, sample: HookSample, *expected_lines: str) -> None:
         reply = self.hook(session, sample)
         assert reply.refusal == "", f"the hook was refused: {reply.refusal}"
         missing = [line for line in expected_lines if not any(line in reply_line for reply_line in reply.lines)]
         assert not missing, f"the hook's lines {list(reply.lines)} hold none of {missing}"
 
-    def expect_hook_silent(self, session: str, sample: dict[str, object]) -> None:
+    def expect_hook_silent(self, session: str, sample: HookSample) -> None:
         reply = self.hook(session, sample)
         assert reply.refusal == "" and not reply.lines, f"the hook was answered: {reply}"
 
-    def expect_absent_hook_line(self, session: str, sample: dict[str, object], line: str) -> None:
+    def expect_absent_hook_line(self, session: str, sample: HookSample, line: str) -> None:
         reply = self.hook(session, sample)
         assert not any(line in reply_line for reply_line in reply.lines), f"the hook's lines {list(reply.lines)} hold {line!r}"
 
-    def expect_hook_refusal(self, session: str, sample: dict[str, object], reason: str) -> None:
+    def expect_hook_refusal(self, session: str, sample: HookSample, reason: str) -> None:
         reply = self.hook(session, sample)
         assert reason in reply.refusal, f"the hook's refusal {reply.refusal!r} does not say {reason!r}"
 
@@ -138,6 +139,12 @@ class Story:
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
         for expected_line in expected_lines:
             assert expected_line in outcome.output_text.splitlines(), f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+
+    def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
+        outcome = self.run(line, actor)
+        assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        missing = [text for text in texts if text not in outcome.output_text]
+        assert not missing, f"{line} printed none of {missing}:\n{outcome.output_text}"
 
     def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)

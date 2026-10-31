@@ -1,11 +1,20 @@
 from core.base.driver.hook_history import HookHistory
+from core.base.guard.change_filter import ChangeFilter
+from core.base.driver.hook_route import HookRoute
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
+from core.modules.drivers.agent_hook_route import AgentHookRoute
 from core.modules.drivers.agent_line import AgentLine
+from core.modules.drivers.agent_line_give import AgentLineGive
+from core.modules.drivers.driver_change_filter import DriverChangeFilter
 from core.modules.drivers.driver_choose_handler import DriverChooseHandler
 from core.modules.drivers.driver_choose_subcommand import DriverChooseSubcommand
 from core.modules.drivers.hook_call import HookCall
+from core.modules.drivers.hook_call_prune_handler import HookCallPruneHandler
+from core.modules.drivers.hook_call_prune_subcommand import HookCallPruneSubcommand
 from core.modules.drivers.hook_call_query import HookCallQuery
+from core.modules.drivers.hook_call_record_handler import HookCallRecordHandler
+from core.modules.drivers.hook_call_show_subcommand import HookCallShowSubcommand
 from core.modules.drivers.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTables
 from core.modules.drivers.new_driver_lines import NewDriverLines
@@ -24,10 +33,10 @@ class DriversModule(Module):
     name = "journal.core.drivers"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentLine), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[AgentLineGive]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     migrations = [DriversTables]
-    handlers = [SuiteChooseHandler, DriverChooseHandler]
-    subcommands = [SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand]
+    handlers = [HookCallRecordHandler, HookCallPruneHandler, SuiteChooseHandler, DriverChooseHandler]
+    subcommands = [HookCallShowSubcommand, HookCallPruneSubcommand, SuiteChooseSubcommand, SuiteCurrentSubcommand, SuiteShowSubcommand, DriverChooseSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLines]
-    bindings = [(HookHistory, TableHookHistory)]
+    bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter)]

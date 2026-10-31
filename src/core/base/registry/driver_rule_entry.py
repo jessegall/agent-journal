@@ -22,6 +22,7 @@ class DriverRuleEntry:
     roles: Sequence[str] = ()
     limit: bool = False
     essential: bool = False
+    history: bool = False
 
     @property
     def is_standing(self) -> bool:

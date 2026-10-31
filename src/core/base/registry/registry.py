@@ -52,10 +52,11 @@ class Registry:
             bindings={interface: DottedPath(path) for interface, path in entries["bindings"].items()},
             overlays=tuple(OverlayEntry(overlay["name"], DottedPath(overlay["path"]), overlay["position"], tuple(overlay["drivers"])) for overlay in entries.get("overlays", [])),
             rules=tuple(DriverRuleEntry(rule["name"], DottedPath(rule["path"]), rule["hook"], rule["position"], rule["owner"], tuple(rule["drivers"]), tuple(rule["roles"]),
-                                        rule["limit"], rule["essential"]) for rule in entries.get("rules", [])),
+                                        rule["limit"], rule["essential"], rule.get("history", False)) for rule in entries.get("rules", [])),
             suites=tuple(SuiteEntry(suite["name"], suite["module"], tuple(suite["requires"]), suite["defaults"], suite["complete_control"], tuple(suite["included_overlays"]))
                          for suite in entries.get("suites", [])),
-            drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]))
+            drivers=tuple(DriverEntry(driver["name"], DottedPath(driver["path"]), driver["module"], driver["suite"], driver["role"], tuple(driver["opening_lines"]),
+                                      tuple(driver.get("guards", [])))
                           for driver in entries.get("drivers", [])),
         )
 
@@ -71,11 +72,11 @@ class Registry:
             "bindings": {interface: path.text for interface, path in self.bindings.items()},
             "overlays": [{"name": overlay.name, "path": overlay.path.text, "position": overlay.position, "drivers": list(overlay.drivers)} for overlay in self.overlays],
             "rules": [{"name": rule.name, "path": rule.path.text, "hook": rule.hook, "position": rule.position, "owner": rule.owner, "drivers": list(rule.drivers),
-                       "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential} for rule in self.rules],
+                       "roles": list(rule.roles), "limit": rule.limit, "essential": rule.essential, "history": rule.history} for rule in self.rules],
             "suites": [{"name": suite.name, "module": suite.module, "requires": list(suite.requires), "defaults": dict(suite.defaults), "complete_control": suite.complete_control,
                         "included_overlays": list(suite.included_overlays)} for suite in self.suites],
             "drivers": [{"name": driver.name, "path": driver.path.text, "module": driver.module, "suite": driver.suite, "role": driver.role,
-                         "opening_lines": list(driver.opening_lines)} for driver in self.drivers],
+                         "opening_lines": list(driver.opening_lines), "guards": list(driver.guards)} for driver in self.drivers],
         }, sort_keys=True)
 
     def with_overlays(self, overlays: tuple[OverlayEntry, ...]) -> "Registry":

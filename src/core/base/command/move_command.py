@@ -16,5 +16,8 @@ class MoveCommand(Command[M]):
     move: ClassVar[Move]
     row_id: int
 
+    def moved_row(self) -> tuple[type[Model], int]:
+        return type(self).model(), self.row_id
+
     def move_fields(self) -> dict[str, object]:
         return self.field_values([ROW_ID])

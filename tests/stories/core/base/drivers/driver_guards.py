@@ -6,5 +6,5 @@ from tests.stories.core.base.drivers.support.samples import SAMPLES
 
 def test_a_guard_a_driver_lists_applies_to_its_own_agents_and_to_no_person(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
-    story.expect_refusal(lines.EDIT_LOCK, "the lead makes no edit lock itself", actor=Actor(1, ActorType.AGENT))
-    story.expect_success(lines.EDIT_LOCK, "state: open", actor=story.user)
+    story.expect_refusal(f"edit-lock make {story.agent.id}", "the lead makes no edit lock itself", actor=story.agent)
+    story.expect_success(f"edit-lock make {story.agent.id}", "state: open", actor=story.user)

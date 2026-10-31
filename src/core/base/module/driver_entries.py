@@ -21,7 +21,8 @@ class DriverEntries:
                      for module in modules for suite in module.suites)
 
     def drivers(self, modules: Sequence[type[Module]]) -> tuple[DriverEntry, ...]:
-        return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite, driver.role, tuple(driver.opening_lines))
+        return tuple(DriverEntry(driver.name, DottedPath.class_path(driver), module.name, driver.suite, driver.role, tuple(driver.opening_lines),
+                                 tuple(guard.name for guard in driver.guards))
                      for module in modules for driver in module.drivers)
 
     def overlays(self, modules: Sequence[type[Module]]) -> tuple[OverlayEntry, ...]:
@@ -40,4 +41,4 @@ class DriverEntries:
         return tuple(replace(entry, position=position) for position, entry in enumerate(declared, 1))
 
     def entry(self, rule: type[DriverRule], owner: str, limit: bool = False, essential: bool = False) -> DriverRuleEntry:
-        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), limit, essential)
+        return DriverRuleEntry(rule.name, DottedPath.class_path(rule), rule.hook, 0, owner, tuple(rule.drivers), tuple(rule.roles), limit, essential, rule.history)

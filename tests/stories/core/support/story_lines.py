@@ -12,6 +12,4 @@ FIRST_TASK_PLACE = "phase place 1 --phase 1"
 USER_MESSAGE = 'message send "Fix the cart first" --environment main'
 NEW_PLAN = 'plan make "Version 5 core" --environment main'
 PLAN_CANCEL = 'plan cancel 1 --reason "replaced"'
-AGENT_HOOK_CALLS = "hook-call list --agent 1"
 SECOND_HOOK_CALL = "hook-call show 2"
-EDIT_LOCK = "edit-lock make 1"

@@ -2,6 +2,7 @@ from tests.stories.core.support import story_lines as lines
 from core.testing.hook_samples import HookSamples
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
+from tests.stories.core.base.drivers.support.hook_agents import hook_agent
 from tests.stories.core.support.fixtures import MainEnvironment
 
 
@@ -23,10 +24,10 @@ class LeadStarted(StoryFixture):
     parent = SamplesChosen
 
     def steps(self, story: Story) -> None:
-        story.hook("s-1", HookSamples.session_start())
+        story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
 
     def expect(self, story: Story) -> None:
-        story.expect_success("agent show 1", "session: s-1")
+        story.expect_success(f"agent show {story.agent.id}", "session: s-1")
 
 
 class LeadLocked(StoryFixture):
@@ -35,7 +36,7 @@ class LeadLocked(StoryFixture):
     parent = LeadStarted
 
     def steps(self, story: Story) -> None:
-        story.run(lines.EDIT_LOCK)
+        story.run(f"edit-lock make {story.agent.id}")
 
     def expect(self, story: Story) -> None:
-        story.expect_success("edit-lock show 1", "agent_id: 1", "state: open")
+        story.expect_success("edit-lock show 1", f"agent_id: {story.agent.id}", "state: open")

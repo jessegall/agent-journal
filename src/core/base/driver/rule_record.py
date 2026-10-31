@@ -12,3 +12,4 @@ class RuleRecord:
     layer: str
     outcome: str
     answer: RuleAnswer | None = None
+    history: bool = False
