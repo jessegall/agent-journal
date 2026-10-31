@@ -14,9 +14,9 @@ export function mainDriver(drivers) {
     return main ? main.slice("main: ".length) : "";
 }
 
-// the home page's layout for the environment's suite and main driver, read through the shell's own window line and
+// a page's layout (the home page's by default) for the environment's suite and a driver, the main one by default, read through the shell's own window line and
 // loaded again whenever a setting changes, so switching the suite or the driver brings that layout
-export function useHomeLayout(environment, shellLine, catalogue) {
+export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, driver = null} = {}) {
     const store = paneLayout({
         saved: async ({suite, page, driver}) => {
             const answer = await shellLine(["viewer-layout", "current", "--suite", suite, "--page", page, "--driver", driver]);
@@ -37,7 +37,7 @@ export function useHomeLayout(environment, shellLine, catalogue) {
     async function load() {
         const run = await shellLine(["suite", "current", environment]);
         if (!run.ok) return;
-        await store.load({environment, person: catalogue.person, suite: run.value.suite, page: HOME, driver: mainDriver(run.value.drivers)});
+        await store.load({environment, person: catalogue.person, suite: run.value.suite, page, driver: driver ?? mainDriver(run.value.drivers)});
     }
 
     function heard(event) {

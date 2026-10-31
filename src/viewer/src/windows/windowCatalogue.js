@@ -1,4 +1,4 @@
-import {shallowRef} from "vue";
+import {computed, shallowRef} from "vue";
 
 // the windows the journal lists for this environment and the person they are listed for, asked again whenever the registry is synced: a window whose entry
 // URL changed is mounted again from its new file, a removed one turns into its placeholder, and a new one joins the menu
@@ -26,6 +26,13 @@ export class WindowCatalogue {
     placed(page) {
         const place = page === "agent" ? "agent" : "environment";
         return this.windows.value.filter((window) => window.place === place);
+    }
+
+    // the windows an agent of this role is offered: agent windows whose roles name it or name none
+    forAgent(role) {
+        const view = Object.create(this);
+        view.windows = computed(() => this.windows.value.filter((window) => window.place === "agent" && (!window.roles?.length || window.roles.includes(role))));
+        return view;
     }
 
     group(windows = this.windows.value) {

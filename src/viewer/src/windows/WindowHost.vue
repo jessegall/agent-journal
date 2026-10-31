@@ -54,7 +54,7 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
 </script>
 
 <template>
-    <section class="window" :data-window="name">
+    <section class="window" :data-window="name" :data-agent="agent ?? undefined">
         <template v-if="prompt()">
             <AllowancePrompt :request="prompt()" @answer="prompts.answer($event)" />
         </template>
