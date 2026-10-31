@@ -72,13 +72,6 @@ class NoVariantModule(Module):
     marks = [mark(Plain.NOTE, variants=NoVariant)]
 
 
-class SharedVariantModule(Module):
-    name = "twice"
-    requires_core = ">=5,<6"
-    dependencies = DEPENDENCIES
-    marks = [mark(Twice.FIRST), mark(Twice.SECOND)]
-
-
 class UnknownIconModule(Module):
     name = "good"
     requires_core = ">=5,<6"

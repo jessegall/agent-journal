@@ -14,7 +14,7 @@ class ShowMark(Command[ChatMark]):
     type: StrEnum
     variant: StrEnum
     key: str
-    label: str
+    text: str
     agent_id: int | None = None
     detail: str = ""
     row_model: str = ""

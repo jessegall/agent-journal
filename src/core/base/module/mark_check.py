@@ -11,7 +11,7 @@ from core.base.viewer.window_icon import WindowIcon
 
 class MarkCheck:
     """Checks the chat marks the modules declare before a sync writes anything: each type starts with its
-    module's name and is used once, each has variants no other type of its module shares, a family belongs
+    module's name and is used once, each has variants, a family belongs
     to one module and is declared the same way each time, its icons are in the shell's icon set, its
     buttons run commands, its body is in the module's web/dist and a click that opens a row has a row to
     open."""
@@ -31,8 +31,6 @@ class MarkCheck:
         short_name = module.name.rsplit(".", 1)[-1]
         icons = tuple(WindowIcon)
         problems: list[str] = []
-        variant_sets = [mark.variants for mark in module.marks]
-        problems += [f"{variants.__name__} is the variants of two mark types of {module.name}" for variants in dict.fromkeys(variant_sets) if variant_sets.count(variants) > 1]
         for mark in module.marks:
             name = mark.type.value
             if not name.startswith(f"{short_name}."):

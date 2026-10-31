@@ -22,10 +22,6 @@ def test_a_variants_enum_with_no_members_is_refused_at_sync(new_story):
     refused(new_story, "NoVariantModule", "the mark good.note has a variants enum, NoVariant, with no members")
 
 
-def test_a_variants_enum_shared_by_two_types_is_refused_at_sync(new_story):
-    refused(new_story, "SharedVariantModule", "Variant is the variants of two mark types of twice")
-
-
 def test_a_mark_with_an_icon_outside_the_shells_set_is_refused_at_sync(new_story):
     refused(new_story, "UnknownIconModule", "the mark good.note shows the icon rocket, which is not in the shell's icon set")
 
