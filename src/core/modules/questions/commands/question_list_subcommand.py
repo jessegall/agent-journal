@@ -28,8 +28,9 @@ class QuestionListSubcommand(ReadSubcommand[tuple[Question, ...]]):
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, tuple):
             return
-        for question in value:
+        questions = [row for row in value if isinstance(row, Question)]
+        for question in questions:
             choices = f"  [{' / '.join(question.options)}]" if question.options else ""
             output.line(f"{question.id}  {question.text}{choices}")
-        if not value:
+        if not questions:
             output.line("no open questions")
