@@ -7,14 +7,13 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.type_guards import is_tuple
-from core.modules.documents.models.doc import Doc
-from core.modules.documents.models.report import Report
+from core.modules.documents.models.text_row import TextRow
 
 
-class TextListSubcommand(ReadSubcommand[Sequence[Doc | Report]]):
+class TextListSubcommand(ReadSubcommand[Sequence[TextRow]]):
     """`journal <doc or report> list`: every one, its number and title, oldest first."""
 
-    model: ClassVar[type[Doc] | type[Report]]
+    model: ClassVar[type[TextRow]]
     name = "list"
 
     def __init__(self, queries: Queries) -> None:
@@ -23,9 +22,9 @@ class TextListSubcommand(ReadSubcommand[Sequence[Doc | Report]]):
     def arguments(self, parser: ArgumentParser) -> None:
         return
 
-    def read(self, arguments: Namespace, caller: Caller) -> Sequence[Doc | Report]:
+    def read(self, arguments: Namespace, caller: Caller) -> Sequence[TextRow]:
         return tuple(self.queries.query(self.model).oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
-        listed = [row for row in value if isinstance(row, Doc | Report)] if is_tuple(value) else []
+        listed = [row for row in value if isinstance(row, TextRow)] if is_tuple(value) else []
         output.write("\n".join(f"{row.id:>4}  {row.title}" for row in listed), {"rows": [output.values(row) for row in listed]})

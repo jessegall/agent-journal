@@ -59,7 +59,7 @@ class PlansMove(VersionFourMove):
     def phases(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
         phases = {row["id"]: row for row in source.rows("phases")}
         positions: dict[int, int] = {}
-        for link in [row for row in source.rows("links") if row["link_type"] == PHASE_LINK]:
+        for link in source.links(PHASE_LINK):
             phase, plan = VersionFourRef.parsed(link["source"]), VersionFourRef.parsed(link["target"])
             plan_id = map.linked_id(plan, TABLE)
             row = phases.get(phase.number) if phase.table == "phases" and phase.number is not None else None
@@ -78,7 +78,7 @@ class PlansMove(VersionFourMove):
 
     def tasks(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
         positions: dict[int, int] = {}
-        phase_links = [row for row in source.rows("links") if row["link_type"] == "in_phase"]
+        phase_links = source.links("in_phase")
         latest = {link["source"]: link["id"] for link in phase_links}
         report.drop("in_phase links older than the task's last phase", sum(1 for link in phase_links if latest[link["source"]] != link["id"]))
         for link in [row for row in phase_links if latest[row["source"]] == row["id"]]:

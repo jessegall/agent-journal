@@ -1,15 +1,13 @@
 from core.base.command.context import Context
 from core.base.command.handler import Handler
-from core.base.model.model import Model
-from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 from core.base.repository.repository import Repository
 from core.modules.documents.commands.record_mentions import RecordMentions
+from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.mention_refs import MentionRefs
-
-MENTION_LINK_TYPE = "mentions"
+from core.modules.documents.support.row_refs import RowRefs
 
 
 class RecordMentionsHandler(Handler[RecordMentions, int]):
@@ -18,19 +16,15 @@ class RecordMentionsHandler(Handler[RecordMentions, int]):
 
     command = RecordMentions
 
-    def __init__(self, registry: Registry, queries: Queries, tables: Tables, repository: Repository) -> None:
-        self.registry, self.queries, self.tables, self.repository = registry, queries, tables, repository
+    def __init__(self, registry: Registry, row_refs: RowRefs, queries: Queries, repository: Repository) -> None:
+        self.registry, self.row_refs, self.queries, self.repository = registry, row_refs, queries, repository
 
     def handle(self, command: RecordMentions, context: Context) -> int:
-        targets = [target for cli_name, number in MentionRefs.found(command.text) if (target := self.target(cli_name, number)) and target != command.source]
-        new_targets = [target for target in targets if not self.queries.query(Link).filter(source=command.source, target=target, link_type=MENTION_LINK_TYPE).exists()]
-        for target in new_targets:
-            self.repository.save(Link(creator_id=context.actor.id, source=command.source, target=target, link_type=MENTION_LINK_TYPE), context)
+        existing_refs = [self.row_refs.existing(name, number) for name, number in MentionRefs.found(command.text, self.registry.models)]
+        targets = [ref for ref in existing_refs if ref is not None and ref != command.source]
+        new_targets = [ref for ref in targets if not self.queries.query(Link).filter(source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,
+                                                                                    target_id=ref.row_id, link_type=LinkType.MENTION).exists()]
+        for ref in new_targets:
+            self.repository.save(Link(creator_id=context.actor.id, source_model=command.source.model, source_id=command.source.row_id, target_model=ref.model,
+                                      target_id=ref.row_id, link_type=LinkType.MENTION), context)
         return len(new_targets)
-
-    def target(self, cli_name: str, number: int) -> str:
-        entry = self.registry.models.get(cli_name)
-        if entry is None:
-            return ""
-        model = entry.model.checked_class(Model)
-        return f"{self.tables.table(model).name}:{number}" if self.queries.query(model).filter(id=number).exists() else ""

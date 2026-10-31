@@ -5,14 +5,13 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.documents.commands.edit_text import EditText
 from core.modules.documents.commands.support.text_body import TextBody
-from core.modules.documents.models.doc import Doc
-from core.modules.documents.models.report import Report
+from core.modules.documents.models.text_row import TextRow
 
 
-class TextEditSubcommand(Subcommand[EditText, Doc | Report]):
+class TextEditSubcommand(Subcommand[EditText, TextRow]):
     """`journal <doc or report> edit <n> [--abstract "<one line>"] [--body "<text>" | --file <path>]`."""
 
-    model: ClassVar[type[Doc] | type[Report]]
+    model: ClassVar[type[TextRow]]
     name = "edit"
 
     def arguments(self, parser: ArgumentParser) -> None:

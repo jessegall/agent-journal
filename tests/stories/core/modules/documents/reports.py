@@ -4,9 +4,9 @@ from tests.stories.core.support.fixtures import UserJoined
 def test_a_report_about_rows_names_them_and_links_to_each(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
-    story.expect_success('report make "Cart review" --abstract "What the review found" --body "## Found\\nnothing" --about tasks:1', "report 1: Cart review, about tasks:1",
+    story.expect_success('report make "Cart review" --abstract "What the review found" --body "## Found\\nnothing" --about tasks:1', "report 1: Cart review, about task:1",
                          actor=story.user)
-    story.expect_text("link list --source reports:1", "tasks:1", "about", actor=story.user)
+    story.expect_text("link list --source report:1", "about  task:1", actor=story.user)
 
 
 def test_an_about_that_is_not_a_row_is_refused_with_how_to_write_one(new_story):

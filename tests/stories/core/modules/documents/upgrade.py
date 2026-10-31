@@ -20,8 +20,8 @@ def test_a_documents_revisions_move_with_their_numbers_through_their_revision_of
 def test_a_report_moves_with_the_rows_it_is_about_and_a_document_keeps_its_mentions_and_comments(new_story):
     story = upgraded_story(new_story)
     story.expect_text("report show 1", "report 1: Cart review")
-    story.expect_text("link list --source reports:1", "about  tasks:1")
-    story.expect_text("link list --source docs:1", "mentions  tasks:1")
+    story.expect_text("link list --source report:1", "about  task:1")
+    story.expect_text("link list --source doc:1", "mentions  task:1")
     story.expect_text("doc comments 1", "message 1:")
 
 

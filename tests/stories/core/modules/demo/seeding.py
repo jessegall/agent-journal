@@ -23,7 +23,7 @@ SHOWN = {
     "skills": ("agent-skill list", "journal-notes"),
     "documents": ("doc list", "Cart rules", "Release steps"),
     "document revisions": ("doc revisions 1", "added Returns"),
-    "reports": ("link list --source reports:1", "about  tasks:1"),
+    "reports": ("link list --source report:1", "about  task:1"),
 }
 
 

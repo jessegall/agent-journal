@@ -59,7 +59,7 @@ class TasksMove(VersionFourMove):
 
     def holders(self, source: VersionFourSource, map: MoveMap) -> dict[int, int]:
         holders: dict[int, int] = {}
-        for link in [row for row in source.rows("links") if row["link_type"] == "holds"]:
+        for link in source.links("holds"):
             agent, task = VersionFourRef.parsed(link["source"]), VersionFourRef.parsed(link["target"])
             new_agent = map.linked_id(agent, "agents")
             if new_agent is not None and task.table == TABLE and task.number is not None:
@@ -92,7 +92,7 @@ class TasksMove(VersionFourMove):
 
     def dependencies(self, source: VersionFourSource, rows: RowInsert, creators: CreatorResolver, map: MoveMap, report: MoveReport, context: MoveContext) -> None:
         edges: dict[int, set[int]] = {}
-        for link in [row for row in source.rows("links") if row["link_type"] == "depends"]:
+        for link in source.links("depends"):
             task_id, dependency_id = self.task_id(link["source"], map), self.task_id(link["target"], map)
             if task_id is None or dependency_id is None or task_id == dependency_id:
                 report.skip("links", link["id"], "a task of the link did not move or it depends on itself")

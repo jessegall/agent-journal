@@ -6,8 +6,17 @@ def test_a_document_naming_a_task_by_its_number_links_to_it_once(new_story):
     story.run('task make "Fix the cart" --environment main', actor=story.user)
     story.run('doc make "Plan notes" --abstract "Notes" --body "See task 1, and task 1 again, and task 99"', actor=story.user)
     story.run_listeners()
-    story.expect_text("link list --source docs:1", "tasks:1", "mentions", actor=story.user)
-    story.expect_absent("link list --source docs:1", "tasks:99", actor=story.user)
+    story.expect_text("link list --source doc:1", "mentions  task:1", actor=story.user)
+    story.expect_absent("link list --source doc:1", "task:99", actor=story.user)
+
+
+
+def test_a_document_naming_a_row_of_any_installed_module_links_to_it(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('sequence make "Release" --steps "Run the suite"', actor=story.user)
+    story.run('doc make "Release notes" --abstract "Notes" --body "Follow sequence 1"', actor=story.user)
+    story.run_listeners()
+    story.expect_text("link list --source doc:1", "mentions  sequence:1", actor=story.user)
 
 
 def test_a_document_with_no_comments_says_so(new_story):

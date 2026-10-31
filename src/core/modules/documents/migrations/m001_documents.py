@@ -16,7 +16,8 @@ class DocumentsTablesMigration(Migration):
         "CREATE TABLE doc_revisions (id INTEGER PRIMARY KEY, doc_id INTEGER NOT NULL REFERENCES docs(id) ON DELETE CASCADE,"
         " creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, number INTEGER NOT NULL, title TEXT NOT NULL, abstract TEXT NOT NULL,"
         f" body TEXT NOT NULL, change TEXT NOT NULL, closes_at TEXT NOT NULL, {ROW_COLUMNS}, UNIQUE (doc_id, number)) STRICT",
-        "CREATE TABLE links (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, source TEXT NOT NULL, target TEXT NOT NULL,"
-        f" link_type TEXT NOT NULL, {ROW_COLUMNS}, UNIQUE (source, target, link_type)) STRICT",
-        "CREATE INDEX links_target ON links (target, link_type)",
+        "CREATE TABLE links (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id) ON DELETE RESTRICT, source_model TEXT NOT NULL,"
+        " source_id INTEGER NOT NULL, target_model TEXT NOT NULL, target_id INTEGER NOT NULL, link_type TEXT NOT NULL,"
+        f" {ROW_COLUMNS}, UNIQUE (source_model, source_id, target_model, target_id, link_type)) STRICT",
+        "CREATE INDEX links_target ON links (target_model, target_id, link_type)",
     )

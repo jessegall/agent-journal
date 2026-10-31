@@ -28,3 +28,6 @@ class VersionFourSource:
 
     def count(self, table: str) -> int:
         return self.version_four.count(table)
+
+    def links(self, *link_types: str) -> list[sqlite3.Row]:
+        return self.version_four.links(link_types)

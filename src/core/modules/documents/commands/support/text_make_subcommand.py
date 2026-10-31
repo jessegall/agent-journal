@@ -8,14 +8,13 @@ from core.base.subcommand.subcommand import Subcommand
 from core.modules.documents.commands.make_text import MakeText
 from core.modules.documents.commands.support.new_text import NewText
 from core.modules.documents.commands.support.text_body import TextBody
-from core.modules.documents.models.doc import Doc
-from core.modules.documents.models.report import Report
+from core.modules.documents.models.text_row import TextRow
 
 
 class TextMakeSubcommand(Subcommand[MakeText, NewText]):
     """`journal <doc or report> make <title> --abstract "<one line>" --body "<text>" | --file <path>`."""
 
-    model: ClassVar[type[Doc] | type[Report]]
+    model: ClassVar[type[TextRow]]
     name = "make"
 
     def arguments(self, parser: ArgumentParser) -> None:

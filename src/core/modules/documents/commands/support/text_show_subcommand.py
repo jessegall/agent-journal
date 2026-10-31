@@ -6,15 +6,14 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.documents.commands.support.text_reading import TextReading
-from core.modules.documents.models.doc import Doc
-from core.modules.documents.models.report import Report
+from core.modules.documents.models.text_row import TextRow
 from core.modules.documents.support.text_lines import TextLines
 
 
 class TextShowSubcommand(ReadSubcommand[TextReading]):
     """`journal <doc or report> show <n>`: its outline, or one section, its bullets, a search or the whole text."""
 
-    model: ClassVar[type[Doc] | type[Report]]
+    model: ClassVar[type[TextRow]]
     name = "show"
 
     def __init__(self, queries: Queries) -> None:
