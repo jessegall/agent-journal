@@ -19,7 +19,7 @@ class HookEvent:
 
     version: int
     program: str
-    event: str
+    event: HookEventName
     session: str
     firing: str
     hook_timestamp_ms: int
@@ -48,9 +48,11 @@ class HookEvent:
         version = fields.get("version")
         if version != HOOK_EVENT_VERSION:
             raise HookEventVersionError(f"the hook sent version {version!r} of the prepared object, and this server reads version {HOOK_EVENT_VERSION}")
-        tool, prompt = fields.get("tool"), fields.get("prompt")
+        tool, prompt, event = fields.get("tool"), fields.get("prompt"), text(fields, "event")
+        if event not in HookEventName:
+            raise HookEventError(f"{event!r} names no hook event: {', '.join(HookEventName)}")
         if prompt is not None and not isinstance(prompt, str):
             raise HookEventError(f"prompt is a text, not {prompt!r}")
-        return cls(HOOK_EVENT_VERSION, text(fields, "program"), text(fields, "event"), text(fields, "session"), text(fields, "firing"),
+        return cls(HOOK_EVENT_VERSION, text(fields, "program"), HookEventName(event), text(fields, "session"), text(fields, "firing"),
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"))

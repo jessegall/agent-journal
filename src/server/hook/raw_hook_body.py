@@ -12,7 +12,7 @@ RAW_BODY_VERSION = 0
 EVENT_NAMES = {"PreToolUse": HookEventName.PRE_TOOL_USE, "PostToolUse": HookEventName.POST_TOOL_USE, "PostToolUseFailure": HookEventName.POST_TOOL_USE_FAILURE,
                "UserPromptSubmit": HookEventName.PROMPT, "Stop": HookEventName.STOP, "StopFailure": HookEventName.STOP_FAILURE,
                "SessionStart": HookEventName.SESSION_START, "SessionEnd": HookEventName.SESSION_END, "PreCompact": HookEventName.COMPACT,
-               "SubagentStart": HookEventName.SUBAGENT_START, "SubagentStop": HookEventName.SUBAGENT_STOP, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
+               "SubagentStart": HookEventName.SESSION_START, "SubagentStop": HookEventName.STOP, "MessageDisplay": HookEventName.MESSAGE_DISPLAY}
 TOOL_EVENTS = (HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE)
 
 
