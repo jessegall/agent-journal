@@ -1,7 +1,7 @@
 import sqlite3
 
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 from tests.stories.fixtures.version_four import version_four_fixture
 
 

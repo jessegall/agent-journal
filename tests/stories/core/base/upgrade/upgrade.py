@@ -5,9 +5,9 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from install.upgrade_journal import UpgradeJournal
 from install.upgrade_outcome import UpgradeOutcome
-from tests.stories.core.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
+from tests.stories.core.base.upgrade.support.move_samples import FAILURES, ORDER, PATH, version_four_database
 
-NOTES, TAGS, FAILS_ONCE = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:FailsOnceTagsModule"
+NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
 
 def count(story, table: str) -> int:
@@ -52,13 +52,13 @@ def line_value(text: str, label: str) -> str:
 
 def test_the_upgrade_copies_the_version_4_database_into_the_backup_folder_first_and_checks_the_copy(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
-    before = content(version_four)
+    starting_content = content(version_four)
     outcome = expect_upgrade(story)
-    assert content(Path(line_value(outcome.text, "backup: "))) == before and "backup checked" in outcome.text
+    assert content(Path(line_value(outcome.text, "backup: "))) == starting_content and "backup checked" in outcome.text
 
 
 def test_a_failed_run_still_leaves_the_backup(new_story):
-    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     outcome = upgrade(story)
     assert outcome.code != 0 and "the move of movetags failed: the tags table could not be read" in outcome.text
     assert any(path.name == "journal.db" and path != version_four and content(path) == content(version_four) for path in story.home.folder.rglob("*"))
@@ -74,10 +74,10 @@ def test_the_version_4_database_is_opened_read_only_and_its_bytes_are_equal_afte
 def test_a_dry_run_prints_the_counts_per_module_and_per_dropped_table_and_leaves_the_version_5_database_as_it_was(new_story):
     story, version_four = upgrading(new_story, NOTES, TAGS)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    before = story.home.database.read_bytes()
+    starting_bytes = story.home.database.read_bytes()
     expect_upgrade(story, "dry run: nothing was changed", "movenotes: moved 2, already moved 0", "movetags: moved 2, already moved 0", "dropped note_drafts: 1 rows", dry_run=True)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    assert story.home.database.read_bytes() == before and count(story, "notes") == 0
+    assert story.home.database.read_bytes() == starting_bytes and count(story, "notes") == 0
 
 
 def test_a_run_moves_every_declared_module_in_order(new_story):
@@ -94,7 +94,7 @@ def test_a_second_run_says_nothing_is_left_to_move_and_moves_nothing(new_story):
 
 
 def test_a_run_that_fails_in_the_tags_move_leaves_notes_moved_rolls_tags_back_and_a_rerun_finishes_from_tags(new_story):
-    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     assert upgrade(story).code == 1
     assert (count(story, "notes"), count(story, "tags")) == (2, 0)
     expect_upgrade(story, "movetags: moved 2, already moved 0")
@@ -118,7 +118,7 @@ def test_the_upgrade_of_a_project_with_no_version_4_journal_is_refused_with_what
 
 
 def test_a_resume_after_a_failure_keeps_the_first_backup_and_ignores_rows_added_to_version_4_since(new_story):
-    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     first = upgrade(story)
     assert first.code == 1
     backups = [path for path in story.home.folder.rglob("journal.db") if path != version_four]

@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_plan_keeps_its_number_title_and_state(new_story):

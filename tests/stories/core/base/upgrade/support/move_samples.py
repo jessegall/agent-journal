@@ -16,7 +16,7 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
 
-PATH = "tests.stories.core.upgrade.support.move_samples"
+PATH = "tests.stories.core.base.upgrade.support.move_samples"
 STANDARD = " version INTEGER NOT NULL DEFAULT 1, metadata TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL, updated_at TEXT NOT NULL) STRICT"
 ORDER: list[str] = []
 FAILURES = {"tags": 0}
@@ -43,7 +43,7 @@ class Tag(Model):
 
 class NotesMigration(Migration):
     number = 1
-    statements = ("CREATE TABLE notes (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id), text TEXT NOT NULL," + STANDARD,)
+    statements = ["CREATE TABLE notes (id INTEGER PRIMARY KEY, creator_id INTEGER NOT NULL REFERENCES actors(id), text TEXT NOT NULL," + STANDARD]
 
 
 class TagsMigration(Migration):
@@ -83,7 +83,7 @@ class TagsMove(VersionFourMove):
         return report
 
 
-class FailsOnceTagsMove(TagsMove):
+class RetryableTagsMove(TagsMove):
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         if FAILURES["tags"] == 0:
             FAILURES["tags"] = 1
@@ -118,6 +118,15 @@ class TagsModule(Module):
     moves = [TagsMove]
 
 
+class RetryableTagsModule(Module):
+    name = "movetags"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors", "movenotes"]
+    models = [ModelDeclaration(Tag)]
+    migrations = [TagsMigration]
+    moves = [RetryableTagsMove]
+
+
 class BrokenTagsModule(Module):
     name = "movetags"
     requires_core = ">=5,<6"
@@ -125,15 +134,6 @@ class BrokenTagsModule(Module):
     models = [ModelDeclaration(Tag)]
     migrations = [TagsMigration]
     moves = [BrokenTagsMove]
-
-
-class FailsOnceTagsModule(Module):
-    name = "movetags"
-    requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "movenotes"]
-    models = [ModelDeclaration(Tag)]
-    migrations = [TagsMigration]
-    moves = [FailsOnceTagsMove]
 
 
 class GhostMove(NotesMove):

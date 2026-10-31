@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_setting_a_module_declares_moves_under_its_full_name_with_its_value(new_story):
@@ -15,7 +15,7 @@ def test_a_declared_key_moves_once_per_scope_with_its_value_and_a_second_one_for
     import sqlite3
 
     from install.upgrade_journal import UpgradeJournal
-    from tests.stories.core.upgrade.support.move_samples import PATH
+    from tests.stories.core.base.upgrade.support.move_samples import PATH
     from tests.stories.fixtures.version_four import version_four_fixture
 
     story = new_story(f"{PATH}:PrefsModule")

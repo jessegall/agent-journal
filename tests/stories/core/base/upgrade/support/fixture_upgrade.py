@@ -13,5 +13,5 @@ def upgraded_story(new_story):
     return story
 
 
-def upgrade_again(story) -> UpgradeOutcome:
+def repeated_upgrade(story) -> UpgradeOutcome:
     return UpgradeJournal(story.home).run(confirmed=True)

@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_an_answered_question_moves_with_its_options_answer_and_asking_agent_from_version_4_questions(new_story):

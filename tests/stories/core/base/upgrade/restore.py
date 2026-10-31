@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from install.restore_version_four import RestoreVersionFour
-from tests.stories.core.upgrade.upgrade import expect_upgrade, upgrading
-from tests.stories.core.upgrade.support.move_samples import PATH
+from tests.stories.core.base.upgrade.upgrade import expect_upgrade, upgrading
+from tests.stories.core.base.upgrade.support.move_samples import PATH
 
 NOTES, TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule"
 

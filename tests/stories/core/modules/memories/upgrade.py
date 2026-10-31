@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_memory_moves_as_a_fact_with_its_text_weight_and_environment(new_story):

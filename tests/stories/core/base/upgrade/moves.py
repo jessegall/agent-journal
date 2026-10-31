@@ -6,7 +6,7 @@ from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.upgrade_failed import UpgradeFailed
 from core.base.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
-from tests.stories.core.upgrade.support.move_samples import ORDER, PATH, version_four_database
+from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, version_four_database
 
 NOTES, TAGS, BROKEN_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:BrokenTagsModule"
 
@@ -44,8 +44,8 @@ def test_the_moved_rows_arrive_and_the_map_records_each_with_its_version_4_and_v
 def test_a_second_run_skips_every_row_the_map_holds(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     upgrade.run(source)
-    again = upgrade.run(source)
-    assert sample(again.moved) == {"movenotes": 0, "movetags": 0} and sample(again.repeated) == {"movenotes": 2, "movetags": 2}
+    second_run = upgrade.run(source)
+    assert sample(second_run.moved) == {"movenotes": 0, "movetags": 0} and sample(second_run.repeated) == {"movenotes": 2, "movetags": 2}
     assert (count(story, "notes"), count(story, "tags")) == (2, 2)
 
 
@@ -74,17 +74,17 @@ def test_a_dry_run_gives_the_real_counts_and_leaves_nothing_behind(new_story, tm
 def test_a_dry_run_leaves_the_database_file_byte_equal(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    before = story.home.database.read_bytes()
+    starting_bytes = story.home.database.read_bytes()
     upgrade.run(source, dry_run=True)
     story.container.get(Database).connection.execute("PRAGMA wal_checkpoint(TRUNCATE)")
-    assert story.home.database.read_bytes() == before
+    assert story.home.database.read_bytes() == starting_bytes
 
 
 def test_the_version_4_database_is_never_written_by_a_run(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, TAGS)
-    before = source.read_bytes()
+    starting_bytes = source.read_bytes()
     upgrade.run(source)
-    assert source.read_bytes() == before
+    assert source.read_bytes() == starting_bytes
 
 
 def test_moved_rows_write_one_upgrade_moved_event_per_module_and_no_event_of_their_own(new_story, tmp_path):

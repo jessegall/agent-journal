@@ -1,4 +1,4 @@
-from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
 def test_a_version_4_document_keeps_its_number_title_abstract_and_text_and_a_project_one_has_no_environment(new_story):

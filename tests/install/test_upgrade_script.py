@@ -27,30 +27,30 @@ def content(path) -> list[str]:
 
 def test_the_upgrade_of_a_version_4_project_makes_version_5_live_and_moves_version_4s_database_with_its_backup_unchanged(tmp_path):
     scratch = version_four_project(tmp_path)
-    before = content(scratch.journal / "journal.db")
+    version_four_bytes = content(scratch.journal / "journal.db")
     run = upgrade(scratch, "--yes")
     assert run.returncode == 0, run.stdout + run.stderr
-    assert "upgraded" in run.stdout and "not claimed: workers (1 rows)" in run.stdout
+    assert "upgraded" in run.stdout and "not claimed: sequences (1 rows)" in run.stdout
     assert (scratch.journal / "version-5.db").is_file() and (scratch.journal / "src" / "core" / "journal.py").is_file()
-    assert not (scratch.journal / "journal.db").exists() and content(scratch.journal / "version-4" / "journal.db") == before
-    assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == before
+    assert not (scratch.journal / "journal.db").exists() and content(scratch.journal / "version-4" / "journal.db") == version_four_bytes
+    assert content(next((scratch.journal / "version-4").rglob("journal.db"))) == version_four_bytes
 
 
 def test_a_dry_run_prints_the_counts_and_changes_nothing(tmp_path):
     scratch = version_four_project(tmp_path)
-    before = scratch.snapshot()
+    starting_files = scratch.snapshot()
     run = upgrade(scratch, "--dry-run")
     assert run.returncode == 0, run.stdout + run.stderr
-    assert "dry run: nothing was changed" in run.stdout and "not claimed: workers (1 rows)" in run.stdout
-    assert scratch.snapshot() == before
+    assert "dry run: nothing was changed" in run.stdout and "not claimed: sequences (1 rows)" in run.stdout
+    assert scratch.snapshot() == starting_files
 
 
 def test_without_yes_it_prints_the_counts_asks_once_and_a_no_changes_nothing(tmp_path):
     scratch = version_four_project(tmp_path)
-    before = scratch.snapshot()
+    starting_files = scratch.snapshot()
     run = upgrade(scratch, answer="n\n")
     assert run.returncode == 0 and "move these rows into version 5?" in run.stdout and "dry run: nothing was changed" in run.stdout
-    assert scratch.snapshot() == before
+    assert scratch.snapshot() == starting_files
 
 
 def test_a_project_without_a_version_4_journal_is_told_so(tmp_path):

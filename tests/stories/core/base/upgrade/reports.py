@@ -1,8 +1,8 @@
 from install.upgrade_journal import UpgradeJournal
-from tests.stories.core.upgrade.upgrade import upgrade, upgrading
-from tests.stories.core.upgrade.support.move_samples import PATH
+from tests.stories.core.base.upgrade.upgrade import upgrade, upgrading
+from tests.stories.core.base.upgrade.support.move_samples import PATH
 
-NOTES, TAGS, FAILS_ONCE = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:FailsOnceTagsModule"
+NOTES, TAGS, RETRYABLE_TAGS = f"{PATH}:NotesModule", f"{PATH}:TagsModule", f"{PATH}:RetryableTagsModule"
 
 
 def test_the_dry_run_prints_what_would_move_as_a_plain_table_and_says_nothing_was_written(new_story):
@@ -25,7 +25,7 @@ def test_the_upgrade_prints_the_same_as_what_moved_and_the_path_of_the_backup(ne
 
 
 def test_a_failed_upgrade_says_which_module_failed_what_rolled_back_what_stayed_moved_and_how_to_finish(new_story):
-    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     outcome = upgrade(story)
     lines = outcome.text.splitlines()
     assert outcome.code == 1
@@ -35,7 +35,7 @@ def test_a_failed_upgrade_says_which_module_failed_what_rolled_back_what_stayed_
 
 
 def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(new_story):
-    story, version_four = upgrading(new_story, NOTES, FAILS_ONCE)
+    story, version_four = upgrading(new_story, NOTES, RETRYABLE_TAGS)
     first = upgrade(story)
     saved = story.home.folder / "upgrade-report.txt"
     assert saved.read_text().strip() == first.text.strip()
@@ -46,16 +46,16 @@ def test_the_report_is_saved_and_a_rerun_replaces_it_keeping_the_earlier_one(new
 
 def test_the_first_start_after_an_upgrade_shows_one_chat_mark_with_the_counts_and_a_second_start_shows_none(new_story):
     from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text
-    from tests.stories.core.upgrade.support.fixture_upgrade import upgraded_story
+    from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
     story = upgraded_story(new_story)
     story.run_listeners()
     assert mark_count(story) >= 1
     text = marks_text(story)
     assert "Upgraded from version 4: 3 tasks, 3 plans, 2 messages, 4 memories moved" in text, text
-    before = mark_count(story)
+    starting_count = mark_count(story)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
     UpgradeJournal(story.home).run(confirmed=True)
     story.run_listeners()
-    assert mark_count(story) == before
+    assert mark_count(story) == starting_count
