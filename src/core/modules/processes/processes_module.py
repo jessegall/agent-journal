@@ -2,6 +2,10 @@ from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.processes.commands.end_process_handler import EndProcessHandler
 from core.modules.processes.commands.end_process_part_handler import EndProcessPartHandler
+from core.modules.processes.commands.end_process_part_subcommand import EndProcessPartSubcommand
+from core.modules.processes.commands.end_process_subcommand import EndProcessSubcommand
+from core.modules.processes.guards.part_reported_by_its_agent_guard import PartReportedByItsAgentGuard
+from core.modules.processes.guards.reported_by_its_agent_guard import ReportedByItsAgentGuard
 from core.modules.processes.commands.lose_process import LoseProcess
 from core.modules.processes.commands.move_process import MoveProcess
 from core.modules.processes.commands.start_process_handler import StartProcessHandler
@@ -26,4 +30,5 @@ class ProcessesModule(Module):
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, LoseProcess), excluded_subcommands=["make", "finish", "fail"]), ModelDeclaration(ProcessPart, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery))
     migrations = [ProcessesTablesMigration]
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler]
-    subcommands = [StopProcessSubcommand]
+    subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand]
+    guards = [ReportedByItsAgentGuard, PartReportedByItsAgentGuard]
