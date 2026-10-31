@@ -1,5 +1,6 @@
-import {createApp, h, nextTick, shallowRef} from "vue";
+import {createApp, h, shallowRef} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
+import {settled} from "./settled.js";
 import PaneStage from "../src/windows/PaneStage.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {paneLayout} from "../src/windows/paneLayout.js";
@@ -38,10 +39,6 @@ function measured() {
         }
         return box(left, top, width, height);
     });
-}
-
-async function settled() {
-    for (let round = 0; round < 5; round++) await nextTick();
 }
 
 async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null, extra = {}, subscriptions = new WindowSubscriptions()} = {}) {

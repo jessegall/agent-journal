@@ -1,0 +1,25 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "kind:Attribute",
+        "where": [
+            {
+                "nameIn": [
+                    "PAGE"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-loading-page",
+        "description": "A window declares it loads as a page, a loading the shell does not have, so it can never be drawn.",
+        "rule": "Declare a window with WindowLoading.COMPONENT, FRAME or DOCUMENT.",
+        "skill": "plain-code-words"
+    }
+}

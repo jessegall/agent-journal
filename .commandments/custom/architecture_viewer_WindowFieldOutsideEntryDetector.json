@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "literal",
+        "where": [
+            {
+                "textMatches": "^(float_width|float_height|unavailable_reason|window_options)$"
+            },
+            {
+                "fileMatches": "(^|/)src/(core|suites)/"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/core/base/registry/"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "window-field-outside-entry",
+        "description": "Code outside the registry reads a window's stored fields by name, so it depends on how the registry keeps them.",
+        "rule": "Read a window's size, options and availability from its WindowEntry (registry.windows), never from the stored dict.",
+        "skill": "plain-code-words"
+    }
+}

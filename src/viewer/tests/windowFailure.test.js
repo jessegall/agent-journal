@@ -1,11 +1,8 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h} from "vue";
+import {settled} from "./settled.js";
 import {expect, test} from "vitest";
 import WindowHost from "../src/windows/WindowHost.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
-
-async function settled() {
-    for (let round = 0; round < 5; round++) await nextTick();
-}
 
 test("a window that throws shows its error in its own pane, Retry mounts it again, and the other pane keeps working", async () => {
     let failing = true;

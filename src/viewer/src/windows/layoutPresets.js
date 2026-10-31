@@ -3,7 +3,11 @@ import {arrangedShape} from "./homeLayout.js";
 import {arranged, matches, shapeViews, snapshot, thumbnail} from "../domain/panes.js";
 
 const NOT_A_LAYOUT = "That isn't a saved layout. Share one with a layout's share button.";
+const CHAT_WINDOW = "messages.chat";
 const SAVED_TEXT = "Saved layout";
+
+// a shape's cells for the thumbnail, one per pane: its box, the module of its active window, and whether it is the chat
+export const cellsOf = (shape) => thumbnail(shape).map((cell) => ({box: cell.box, view: cell.view, module: cell.view.split(".")[0], accent: cell.view === CHAT_WINDOW}));
 
 // the layouts a person can switch a page to: the suite's presets whose windows are all offered and available, then the
 // person's own saved layouts, which keep any window; applying one arranges the live layout so panes holding the same
@@ -32,7 +36,7 @@ export function useLayoutPresets({environment, page, shellLine, catalogue, store
     const presets = computed(() =>
         [...suite.value.filter((preset) => shapeViews(preset.shape).every(usable)), ...person.value].map((preset) => ({
             ...preset,
-            cells: thumbnail(preset.shape),
+            cells: cellsOf(preset.shape),
             current: store.layout.value ? matches(store.layout.value, preset.shape) : false,
         })),
     );

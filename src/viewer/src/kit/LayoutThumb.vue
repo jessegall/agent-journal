@@ -2,13 +2,12 @@
 import {percentBox} from "../format/number.js";
 
 defineProps({cells: {type: Array, required: true}});
-const CHAT = "messages.chat";
 </script>
 
 <template>
     <span class="layout-thumb" aria-hidden="true">
         <template v-for="(c, at) in cells" :key="at">
-            <span :class="['layout-cell', c.view === CHAT ? 'chat' : `module-${c.view.split('.')[0]}`]" :style="percentBox(c.box)">
+            <span :class="['layout-cell', c.accent ? 'chat' : `module-${c.module}`]" :style="percentBox(c.box)">
                 <i />
             </span>
         </template>

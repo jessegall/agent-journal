@@ -1,0 +1,56 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "typescript",
+    "find": {
+        "select": "import",
+        "where": [
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "domain/panes\\.js$"
+                        }
+                    ]
+                }
+            },
+            {
+                "file": "src/viewer/src/**"
+            }
+        ],
+        "reject": [
+            {
+                "file": "src/viewer/src/pages/**"
+            },
+            {
+                "file": "src/viewer/src/composables/paneActions.js"
+            },
+            {
+                "file": "src/viewer/src/composables/detached.js"
+            },
+            {
+                "file": "src/viewer/src/windows/**"
+            },
+            {
+                "file": "src/viewer/src/domain/**"
+            },
+            {
+                "file": "src/viewer/src/kit/**"
+            },
+            {
+                "file": "src/viewer/src/agents/LayoutPicker.vue"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "pane-logic-outside-pane-actions",
+        "description": "A component imports the pane layout functions itself, so splitting, moving and closing panes is written in more than one place.",
+        "rule": "Pane logic lives in composables/paneActions.js (and the store behind it); a component asks usePaneActions for the action.",
+        "skill": "plain-code-words"
+    }
+}

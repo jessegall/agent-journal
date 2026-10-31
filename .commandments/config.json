@@ -18,6 +18,10 @@
         ]
     },
     "detectors": [
+        "architecture_viewer_WindowFieldOutsideEntryDetector",
+        "architecture_viewer_WindowLoadingPageDetector",
+        "architecture_viewer_PaneLogicOutsidePaneActionsDetector",
+        "architecture_viewer_WindowNameMapDetector",
         "architecture_viewer_WindowDrawnOutsideStageDetector",
         "architecture_viewer_SwitchCaseOnWindowDetector",
         "architecture_viewer_LayoutWriteOutsideStoreDetector",

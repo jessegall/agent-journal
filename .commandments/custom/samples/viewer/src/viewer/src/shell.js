@@ -1,5 +1,5 @@
 // @righteous architecture_viewer_ShellImportsNoWindowCodeDetector
-import {leaves} from "./domain/panes.js";
+import {leaves} from "./domain/arrangement.js";
 // @sin architecture_viewer_ShellImportsNoWindowCodeDetector
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 
