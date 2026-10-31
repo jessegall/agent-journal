@@ -17,6 +17,7 @@ from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
 from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.commands.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.upgrade.tasks_move import TasksMove
 from core.modules.tasks.commands.remove_task_dependency_handler import RemoveTaskDependencyHandler
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -46,6 +47,7 @@ class TasksModule(Module):
     subcommands = (MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler]
+    moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency]
     listeners = [DependencyRemoverListener, TaskMoveMarkListener]
