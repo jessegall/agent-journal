@@ -34,12 +34,13 @@ def test_adding_a_reader_again_keeps_each_field_the_flags_leave_out(new_story):
 
 def test_a_reader_made_the_default_of_its_commands_takes_the_place_of_the_one_that_was(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.run(TESTS_READER, actor=story.agent)
-    story.run('reader add quick --commands "pytest*" --lines "FAILED"', actor=story.agent)
-    story.run("reader default tests", actor=story.agent)
-    story.run("reader default quick", actor=story.agent)
-    story.expect_text("reader show 2", "is_default: True")
-    story.expect_absent("reader show 1", "is_default: True")
+    first = story.new_row_id('reader add first --commands "tox*" --lines "FAILED"', actor=story.agent)
+    second = story.new_row_id('reader add second --commands "tox*" --lines "error"', actor=story.agent)
+    story.run("reader default first", actor=story.agent)
+    story.run("reader default second", actor=story.agent)
+    story.expect_text(f"reader show {first}", "name: first")
+    story.expect_absent(f"reader show {first}", "is_default: True")
+    story.expect_text(f"reader show {second}", "is_default: True")
 
 
 def test_a_reader_another_modules_actor_made_is_not_removed_by_an_agent(new_story):
@@ -58,3 +59,11 @@ def test_a_journal_commands_own_output_is_never_read_by_a_reader(new_story):
     story.expect_absent(f"output read {process.id} --summary", "1: state: open", actor=story.agent)
     other = ended_run(story, "cat notes", "state: kept\n")
     story.expect_text(f"output read {other.id} --summary", "1: state: kept", actor=story.agent)
+
+
+def test_the_shipped_pytest_reader_reads_a_pytest_output(new_story):
+    story = new_story(fixture=BuilderStarted)
+    report = "collected 3 items\n.F. [100%]\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
+    process = ended_run(story, "pytest -q tests", report, exit_code=1)
+    story.expect_text(f"output read {process.id} --summary", f"output {process.id} failed with exit code 1", "3: FAILED tests/test_cart.py::test_total - assert 1 == 2", "summary: 2 failed 1 passed", actor=story.agent)
+    story.expect_refusal("reader remove pytest", "was made by", actor=story.agent)

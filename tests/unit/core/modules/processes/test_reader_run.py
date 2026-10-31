@@ -23,10 +23,12 @@ def script(tmp_path, body: str) -> str:
     return str(path)
 
 
-def test_the_default_reader_of_the_matching_ones_reads_a_line_and_else_the_oldest():
+def test_the_default_reader_of_the_matching_ones_reads_a_line_and_else_the_newest():
     readers = [reader(1), reader(2, is_default=True), reader(3, commands="make*", is_default=True)]
     assert ReaderSelection.of(readers, process()).id == 2
     assert ReaderSelection.of(readers[:1] + readers[2:], process()).id == 1
+    assert ReaderSelection.of([reader(1), reader(4)], process()).id == 4
+    assert ReaderSelection.of([reader(1, commands="make*,pytest*")], process()).id == 1
     assert ReaderSelection.of(readers, process("ls")) is None
 
 

@@ -9,7 +9,7 @@ from core.modules.processes.models.reader import Reader
 
 
 class ReaderOwnerGuard(Guard):
-    """Refuses the removal of a reader another module made; only that module removes it."""
+    """Refuses the removal of a reader the core or another module made; only the one that made it removes it."""
 
     name = "processes.reader-owner"
     event = "reader.delete"
@@ -22,5 +22,5 @@ class ReaderOwnerGuard(Guard):
         if not isinstance(reader, Reader) or reader.creator_id == change.actor.id:
             return
         owner = self.queries.query(ActorRecord).find(reader.creator_id)
-        if owner.type is ActorType.MODULE:
+        if owner.type in (ActorType.MODULE, ActorType.CORE):
             raise Refusal(f"reader {reader.name} was made by {owner.name}, and only that module removes it", "a reader of your own is removed with journal reader remove")
