@@ -7,7 +7,9 @@ from core.modules.memories.guards.type_makers import TypeMakers
 from core.modules.memories.guards.type_on import TypeOn
 from core.modules.memories.guards.types_by_user import TypesByUser
 from core.modules.memories.guards.weight_only_rises import WeightOnlyRises
+from core.modules.memories.fade_at_compaction import FadeAtCompaction
 from core.modules.memories.memory import Memory
+from core.modules.memories.memory_fade_handler import MemoryFadeHandler
 from core.modules.memories.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.memory_make_handler import MemoryMakeHandler
 from core.modules.memories.memory_make_subcommand import MemoryMakeSubcommand
@@ -39,5 +41,6 @@ class MemoriesModule(Module):
     migrations = [MemoriesTables]
     views = [StandingMemory, MemoryInContext, MemoryWord]
     guards = [TypeMakers, TypeOn, AgentScopeGuard, WeightOnlyRises, TypesByUser, SwitchesByUser, KeywordScope]
-    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler]
+    handlers = [MemoryMakeHandler, MemoryWeighHandler, MemoryReadHandler, MemoryFadeHandler]
+    listeners = [FadeAtCompaction]
     subcommands = [MemoryMakeSubcommand, MemoryWeighSubcommand, MemoryReadSubcommand, MemoryContextSubcommand]

@@ -3,6 +3,7 @@ from typing import Self
 from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.conditions.equal import Equal
+from core.base.query.conditions.is_null import IsNull
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.query import Query
 from core.base.query.select import Select
@@ -24,6 +25,9 @@ class StandingMemoryQuery(Query[StandingMemory]):
 
     def agent_memories(self, agent_id: int) -> Self:
         return self.filter(agent_id=agent_id)
+
+    def environment_memories(self, environment_id: int) -> Self:
+        return self.filter(environment_id=environment_id).matching(IsNull("agent_id"))
 
     def fading(self) -> Self:
         return self.filter(fades=True)
