@@ -1,5 +1,5 @@
 import json
-from collections.abc import Callable, Generator
+from collections.abc import Callable, Sequence, Generator
 from contextlib import contextmanager
 from typing import TypeVar
 
@@ -39,7 +39,7 @@ class SettingValues:
         setting = self.found((key, None), lambda: self.queries.query(Setting).filter(key=key).matching(IsNull("environment_id")).page(1, 1).rows)
         return json.loads(setting.value) if setting is not None else default
 
-    def found(self, address: tuple[str, int | None], read: Callable[[], list[Setting]]) -> Setting | None:
+    def found(self, address: tuple[str, int | None], read: Callable[[], Sequence[Setting]]) -> Setting | None:
         if self.rows is not None and address in self.rows:
             return self.rows[address]
         rows = read()

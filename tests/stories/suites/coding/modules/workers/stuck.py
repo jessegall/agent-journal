@@ -62,7 +62,7 @@ def test_two_environments_of_one_checkout_dispatch_side_by_side_on_branches_of_t
     story.expect_success(f"environment make side {repository.folder} --branch {ENVIRONMENT_BRANCH}", "name: side")
     story.expect_success('task make "Fix the till" --environment side', "environment_id: 2")
     main_worker = dispatched_worker(story)
-    side_worker_id = story.new_row_id("worker dispatch 2")
+    side_worker_id = story.new_row_id("worker dispatch 2 --program claude")
     story.expect_success("worker-worktree show 1", f"branch: {repository.worker_branch(main_worker.id)}", f"folder: {repository.worktree_folder(main_worker.id)}")
     story.expect_success("worker-worktree show 2", f"branch: {repository.worker_branch(side_worker_id, 'side')}", f"folder: {repository.worktree_folder(side_worker_id, 'side')}")
     repository.expect_branch_tip(repository.worker_branch(main_worker.id), repository.tip(ENVIRONMENT_BRANCH))

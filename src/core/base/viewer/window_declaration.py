@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from core.base.declaration_names import DeclarationNames
 from core.base.viewer.choice_option import ChoiceOption
 from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.toggle_option import ToggleOption
@@ -36,8 +37,7 @@ class WindowDeclaration:
     count: str = ""
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
-        short_name = module_name.rsplit(".", 1)[-1]
-        problems = [f"the window {self.name} does not start with its module's name, {short_name}"] if not self.name.startswith(f"{short_name}.") else []
+        problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
         if self.loading is not WindowLoading.DOCUMENT and not (web_folder / self.entry).exists():
             problems.append(f"{self.name} loads {self.entry}, which is not in its module's web/dist")
         problems += [f"{self.name} reads {line}, which is no read subcommand" for line in self.reads if line not in provided.reads]
@@ -45,8 +45,7 @@ class WindowDeclaration:
         problems += [f"{self.name} follows {pattern}, which no model's events match" for pattern in self.events if not provided.matches(pattern)]
         keys = [option.key for option in self.options]
         problems += [f"{self.name} names the option {key} twice" for key in dict.fromkeys(keys) if keys.count(key) > 1]
-        if self.icon not in tuple(WindowIcon):
-            problems.append(f"{self.name} shows the icon {self.icon}, which is not in the shell's icon set")
+        problems += DeclarationNames.icon_problems(f"the window {self.name}", self.icon)
         problems += [f"{self.name} starts its option {option.key} at {option.default}, which is none of its choices" for option in self.options
                      if isinstance(option, ChoiceOption) and option.default not in (value for value, _ in option.choices)]
         if self.float_size.width <= 0 or self.float_size.height <= 0:

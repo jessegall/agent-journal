@@ -1,6 +1,6 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
-from core.modules.chat.chat_marks import CHAT_MARKS
+from core.modules.chat.support.chat_marks import CHAT_MARKS
 from core.modules.chat.commands.show_mark_handler import ShowMarkHandler
 from core.modules.chat.guards.agent_chat_guard import AgentChatGuard
 from core.modules.chat.guards.mark_type_guard import MarkTypeGuard

@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 from string import Formatter
 
+from core.base.declaration_names import DeclarationNames
 from core.base.chat.mark_button import MarkButton
-from core.base.viewer.window_icon import WindowIcon
 
 ROW_PLACEHOLDER = "row_id"
 
@@ -16,8 +16,7 @@ class ButtonCheck:
         for button in buttons:
             fields = {field for _, field, _, _ in Formatter().parse(button.runs) if field is not None}
             line = " ".join(button.runs.replace(f"{{{ROW_PLACEHOLDER}}}", "").split()[:2])
-            if button.icon not in tuple(WindowIcon):
-                problems.append(f"{owner} has the button {button.label} with the icon {button.icon}, which is not in the shell's icon set")
+            problems += DeclarationNames.icon_problems(f"{owner}'s button {button.label}", button.icon)
             problems += [f"{owner} has the button {button.label} filling {{{field}}}, and only {{{ROW_PLACEHOLDER}}} is filled" for field in sorted(fields - {ROW_PLACEHOLDER})]
             if line not in runs:
                 problems.append(f"{owner} has the button {button.label} running {button.runs}, which names no command")

@@ -2,7 +2,7 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
-from core.modules.docking.guards.docking_arrival import DockingArrival
+from core.modules.docking.guards.support.docking_arrival import DockingArrival
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 
 

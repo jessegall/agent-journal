@@ -24,9 +24,10 @@ class DispatchWorkerSubcommand(Subcommand[DispatchWorker, WorkerLaunch]):
         parser.add_argument("task_id", type=int)
         parser.add_argument("--library-link", action="append", default=[], help="a folder of the environment to link into the worktree")
         parser.add_argument("--library-copy", action="append", default=[], help="a folder of the environment to copy into the worktree")
+        parser.add_argument("--program", default="", help="the agent program the worker runs; the dispatching agent's own when not named")
 
     def command(self, arguments: Namespace, caller: Caller) -> DispatchWorker:
-        return DispatchWorker(arguments.task_id, tuple(arguments.library_link), tuple(arguments.library_copy))
+        return DispatchWorker(arguments.task_id, tuple(arguments.library_link), tuple(arguments.library_copy), arguments.program)
 
     def write_output(self, value: object, output: Output) -> None:
         if not isinstance(value, WorkerLaunch):

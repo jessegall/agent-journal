@@ -54,7 +54,8 @@ class ClaudeCodeProvider(Provider):
     models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST)]
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        arguments = [self.executable, "--model", launch.model, "--dangerously-skip-permissions", *launch.session.arguments(self)]
+        skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
+        arguments = [self.executable, "--model", launch.model, *skip, *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, launch.variables, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:

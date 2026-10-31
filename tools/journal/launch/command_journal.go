@@ -143,25 +143,25 @@ func SaveAnswers(home string, answers map[string]string) error {
 	return os.WriteFile(AnswersFile(home), content, 0o600)
 }
 
-// ProgramArguments are the arguments that start the program on the choice: its conversation and its prompts.
-func ProgramArguments(program string, choice Choice) []string {
-	arguments := []string{}
-	if program == "codex" {
-		if choice.Session != "" {
-			arguments = append(arguments, "resume", choice.Session)
-		}
-		if choice.SkipPrompts {
-			arguments = append(arguments, "--dangerously-bypass-approvals-and-sandbox")
-		}
-		return arguments
-	}
+// ProgramCommand is the command line that starts the program on the choice, as the program's provider in the
+// journal builds it: its conversation, its prompts and its launch name.
+func (journal CommandJournal) ProgramCommand(program string, choice Choice, launchName string) ([]string, error) {
+	argv := []string{"program", "command", program, choice.Folder, "--launch", launchName}
 	if choice.Session != "" {
-		arguments = append(arguments, "--resume", choice.Session)
+		argv = append(argv, "--resume", choice.Session)
 	}
-	if choice.SkipPrompts {
-		arguments = append(arguments, "--dangerously-skip-permissions")
+	if !choice.SkipPrompts {
+		argv = append(argv, "--ask-prompts")
 	}
-	return arguments
+	output, err := journal.Run(argv...)
+	if err != nil {
+		return nil, err
+	}
+	arguments := strings.Fields(strings.TrimSpace(output))
+	if len(arguments) == 0 {
+		return nil, fmt.Errorf("the journal gave no command line for %s", program)
+	}
+	return arguments, nil
 }
 
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.

@@ -35,11 +35,9 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	_ = launch.SaveAnswers(home, choice.Answers)
-	if request.Program == "codex" {
-		if trust, err := journal.Run("codex", "hook-trust", choice.Folder); err == nil {
-			if line := launch.HookTrustLine(strings.TrimSpace(trust)); line != "" {
-				fmt.Fprintln(stderr, line)
-			}
+	if trust, err := journal.Run("program", "trust", request.Program, choice.Folder); err == nil {
+		if line := launch.HookTrustLine(strings.TrimSpace(trust)); line != "" {
+			fmt.Fprintln(stderr, line)
 		}
 	}
 	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home}); err == nil {
@@ -57,7 +55,12 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	defer log.Close()
-	command := exec.Command(request.Program, launch.ProgramArguments(request.Program, choice)...)
+	arguments, err := journal.ProgramCommand(request.Program, choice, launchName)
+	if err != nil {
+		fmt.Fprintln(stderr, err)
+		return ErrorCode
+	}
+	command := exec.Command(arguments[0], arguments[1:]...)
 	command.Dir = choice.Folder
 	command.Env = append(os.Environ(), "JOURNAL_LAUNCH="+launchName)
 	for name, value := range choice.Variables {

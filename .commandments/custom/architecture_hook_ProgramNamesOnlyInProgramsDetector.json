@@ -5,8 +5,16 @@
         "select": "literal",
         "where": [
             {
-                "of": "parent",
-                "kind": "CaseClause"
+                "any": [
+                    {
+                        "of": "parent",
+                        "kind": "CaseClause"
+                    },
+                    {
+                        "of": "parent",
+                        "is": "comparison"
+                    }
+                ]
             },
             {
                 "textMatches": "^(claude|codex)$"
@@ -23,7 +31,7 @@
     },
     "sin": {
         "name": "go-program-switch-outside-programs",
-        "description": "Go code outside the programs package switches on an agent program's name, so a third program means editing every switch.",
+        "description": "Go code outside the programs package switches on or compares an agent program's name, so a third program means editing every place.",
         "rule": "Ask the program's row in the program table, or its decoder in tools/journal-hook/programs, for what differs between programs.",
         "skill": "plain-code-words"
     }

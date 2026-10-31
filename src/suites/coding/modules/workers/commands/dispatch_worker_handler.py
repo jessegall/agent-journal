@@ -26,7 +26,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.commands.support.worktree_commands import WorktreeCommands
 from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
-WORKER_PROGRAM = "claude"
 LIBRARY_LINKS = "workers.library-links"
 LIBRARY_COPIES = "workers.library-copies"
 WORKTREE_COMMANDS = "workers.worktree-commands"
@@ -53,7 +52,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
         self.libraries.check(environment.folder, (*links, *copies))
         worker_context = replace(context, environment_id=environment.id)
         callers = self.queries.query(Agent).filter(id=context.actor.id).page(1, 1).rows
-        program, parent_id = (callers[0].program, callers[0].id) if callers else (WORKER_PROGRAM, None)
+        program = command.program or (callers[0].program if callers else "")
+        if not program:
+            raise Refusal("a person's dispatch needs the program the worker runs", "add --program, such as the program of the environment's main agent")
+        parent_id = callers[0].id if callers else None
         start = StartAgent(str(uuid4()), program, AgentRole.WORKER, parent_id)
         worker = self.bus.dispatch(start, worker_context)
         name = f"worker-{worker.id}"
@@ -67,7 +69,7 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.commands.run(worktree, self.settings.texts(WORKTREE_COMMANDS, environment.id, ()), (*links, *copies))
             worktree = self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
             self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
-        except Refusal:
+        except Exception:
             self.git.remove(environment.folder, worktree)
             raise
         return WorkerLaunch(worker, worktree, self.worker_command.command(worker, worktree, environment, task))

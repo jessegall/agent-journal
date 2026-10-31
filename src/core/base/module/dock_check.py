@@ -1,10 +1,10 @@
 from collections.abc import Sequence
 
+from core.base.declaration_names import DeclarationNames
 from core.base.module.button_check import ButtonCheck
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.module.window_check import WindowCheck
-from core.base.viewer.window_icon import WindowIcon
 
 
 class DockCheck:
@@ -19,15 +19,12 @@ class DockCheck:
         reads, runs = WindowCheck.lines(modules)
         problems = list(NameGroups.duplicates([("dock types", [dock.type.value for module in modules for dock in module.docks])]))
         for module in modules:
-            short_name = module.name.rsplit(".", 1)[-1]
             for dock in module.docks:
                 name = f"the dock {dock.type.value}"
-                if not dock.type.value.startswith(f"{short_name}."):
-                    problems.append(f"{name} does not start with its module's name, {short_name}")
+                problems += DeclarationNames.prefix_problems(name, dock.type.value, module.name)
                 if dock.most < 1:
                     problems.append(f"{name} allows at most {dock.most} items, and it holds at least 1")
-                if dock.icon not in tuple(WindowIcon):
-                    problems.append(f"{name} shows the icon {dock.icon}, which is not in the shell's icon set")
+                problems += DeclarationNames.icon_problems(name, dock.icon)
                 if not (module.web_folder() / dock.body).exists():
                     problems.append(f"{name} loads {dock.body}, which is not in its module's web/dist")
                 problems += [f"{name} reads {line}, which is no read subcommand" for line in dock.reads if line not in reads]

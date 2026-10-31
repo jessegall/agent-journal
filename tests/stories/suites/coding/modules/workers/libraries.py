@@ -31,3 +31,15 @@ def test_a_library_name_that_is_no_folder_inside_the_environments_folder_is_refu
     story.expect_refusal(f"{DISPATCH} --library-link node_modules", f"node_modules is no folder in {repository.folder}", actor=story.agent)
     story.expect_refusal(f"{DISPATCH} --library-copy ..", f".. is no folder in {repository.folder}", actor=story.agent)
     expect_clean_environment(story, repository)
+
+
+def test_a_library_copy_that_fails_leaves_no_worktree_and_no_branch(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.library("vendor", LIBRARY_FILE, LIBRARY_TEXT)
+    (repository.folder / "vendor" / LIBRARY_FILE).chmod(0)
+    story.expect_success("""setting make workers.library-copies '["vendor"]' --environment main""", "key: workers.library-copies")
+    outcome = story.run(DISPATCH, actor=story.agent)
+    (repository.folder / "vendor" / LIBRARY_FILE).chmod(0o644)
+    story.expect_rows(outcome.code != 0)
+    expect_clean_environment(story, repository)

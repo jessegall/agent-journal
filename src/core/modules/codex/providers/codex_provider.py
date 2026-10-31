@@ -53,7 +53,8 @@ class CodexProvider(Provider):
     models = [ProgramModel("gpt-5.6-luna", ModelTier.FAST), ProgramModel("gpt-5.6-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST)]
 
     def session_command(self, launch: Launch) -> LaunchCommand:
-        arguments = [self.executable, "--no-daemon", "-m", launch.model, "--dangerously-bypass-approvals-and-sandbox", *launch.session.arguments(self)]
+        skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
+        arguments = [self.executable, "--no-daemon", "-m", launch.model, *skip, *launch.session.arguments(self)]
         return LaunchCommand(arguments, launch.folder, launch.variables)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:

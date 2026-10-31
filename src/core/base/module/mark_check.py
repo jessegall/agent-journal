@@ -1,12 +1,12 @@
 from collections.abc import Sequence
 
+from core.base.declaration_names import DeclarationNames
 from core.base.chat.mark_click import MarkClick
 from core.base.chat.mark_family import MarkFamily
 from core.base.module.button_check import ButtonCheck
 from core.base.module.module import Module
 from core.base.module.name_groups import NameGroups
 from core.base.module.window_check import WindowCheck
-from core.base.viewer.window_icon import WindowIcon
 
 
 class MarkCheck:
@@ -28,17 +28,14 @@ class MarkCheck:
         return tuple(problems)
 
     def module_problems(self, module: type[Module], runs: frozenset[str]) -> list[str]:
-        short_name = module.name.rsplit(".", 1)[-1]
-        icons = tuple(WindowIcon)
         problems: list[str] = []
         for mark in module.marks:
             name = mark.type.value
-            if not name.startswith(f"{short_name}."):
-                problems.append(f"the mark {name} does not start with its module's name, {short_name}")
+            problems += DeclarationNames.prefix_problems(f"the mark {name}", name, module.name)
             if not tuple(mark.variants):
                 problems.append(f"the mark {name} has a variants enum, {mark.variants.__name__}, with no members")
             problems += mark.problems()
-            problems += [f"the mark {name} shows the icon {icon}, which is not in the shell's icon set" for icon in (mark.mark_icon, mark.family.icon) if icon not in icons]
+            problems += DeclarationNames.icon_problems(f"the mark {name}", mark.mark_icon, mark.family.icon)
             problems += self.buttons.problems(f"the mark {name}", (*mark.buttons, *mark.group_buttons), runs)
             if mark.body and not (module.web_folder() / mark.body).exists():
                 problems.append(f"the mark {name} loads {mark.body}, which is not in its module's web/dist")

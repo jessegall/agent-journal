@@ -3,7 +3,7 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.modules.docking.guards.docking_arrival import DockingArrival
+from core.modules.docking.guards.support.docking_arrival import DockingArrival
 
 
 class DockTypeGuard(Guard):

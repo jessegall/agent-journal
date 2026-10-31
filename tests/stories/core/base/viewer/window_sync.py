@@ -39,7 +39,7 @@ def test_a_window_counting_with_a_line_it_does_not_read_is_refused_at_sync(new_s
 
 
 def test_a_window_showing_an_icon_outside_the_shells_set_is_refused_at_sync(new_story):
-    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UnknownIconModule", "icons.board shows the icon rocket, which is not in the shell's icon set")
+    new_story(fixture=MainEnvironment).expect_sync_refusal(f"{PATH}:UnknownIconModule", "the window icons.board shows the icon rocket, which is not in the shell's icon set")
 
 
 def test_a_choice_option_starting_outside_its_choices_is_refused_at_sync(new_story):

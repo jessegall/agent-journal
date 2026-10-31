@@ -1,0 +1,29 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "assignment",
+        "where": [
+            {
+                "topLevel": true
+            },
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/([a-z_]+_(module|suite)|__init__)\\.py$"
+            },
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "value-at-a-module-top",
+        "description": "A module or suite's top folder holds a file of values beside its module file, so the values belong to no kind folder.",
+        "rule": "Put a module's declared values in support/ (or models/ for what is a model), so the top folder holds only the module and suite files.",
+        "skill": "plain-code-words"
+    }
+}

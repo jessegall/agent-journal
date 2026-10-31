@@ -20,3 +20,8 @@ func Routed(program, event string) string {
 	// @sin architecture_hook_AnswerShapeOnlyInAnswerDetector
 	return fmt.Sprintf(`{"hookSpecificOutput": {"hookEventName": %q}}`, event)
 }
+
+func IsCodex(program string) bool {
+	// @sin architecture_hook_ProgramNamesOnlyInProgramsDetector
+	return program == "codex"
+}
