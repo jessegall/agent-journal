@@ -1,5 +1,5 @@
 <script setup>
-import {h, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
+import {computed, h, onErrorCaptured, onUnmounted, provide, ref, watch} from "vue";
 import {WINDOW_CONTEXT, windowContext} from "./windowContext.js";
 import AllowancePrompt from "./AllowancePrompt.vue";
 import WindowPlaceholder from "./WindowPlaceholder.vue";
@@ -15,6 +15,8 @@ const props = defineProps({
     prompts: {type: Object, default: null},
     events: {type: Array, default: () => []},
     unavailableReason: {type: String, default: ""},
+    options: {type: Object, default: () => ({})},
+    declared: {type: Array, default: () => []},
 });
 const emit = defineEmits(["open", "remove"]);
 const failure = ref("");
@@ -33,6 +35,8 @@ provide(WINDOW_CONTEXT, windowContext({
     permissions: props.permissions,
     events: props.events,
     subscriptions: props.subscriptions,
+    options: computed(() => props.options),
+    declared: props.declared,
     open: (window, agent) => emit("open", window, agent),
 }));
 

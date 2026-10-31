@@ -7,6 +7,7 @@ import DragGhost from "../panes/DragGhost.vue";
 import DropCompass from "../panes/DropCompass.vue";
 import PaneGrid from "../panes/PaneGrid.vue";
 import SplitOffer from "../panes/SplitOffer.vue";
+import PaneMenuOptions from "../panes/PaneMenuOptions.vue";
 import PaneTabs from "../panes/PaneTabs.vue";
 import WindowPane from "./WindowPane.vue";
 
@@ -34,15 +35,15 @@ const {counts} = useTabCounts({
     environment: props.environment,
     names: () => (props.store.layout.value ? [...props.store.open.value] : []),
 });
-const {full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
+const {detach, dock, sendAway, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
     counts,
 });
 
-const modules = () => [...new Set(closedWindows.value.map((window) => window.module))];
-const ofModule = (module) => closedWindows.value.filter((window) => window.module === module);
+const groups = () => props.catalogue.group(closedWindows.value);
+const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </script>
 
 <template>
@@ -65,6 +66,14 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
                             <template v-if="pane.tabs.length > 1">
                                 <Btn data-menu="split-right" @click="split(id, 'right')">Split right</Btn>
                                 <Btn data-menu="split-below" @click="split(id, 'bottom')">Split below</Btn>
+                            </template>
+                            <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
+                            <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
+                            <template v-for="group in catalogue.group()" :key="group.module">
+                                <span class="reopen-module" :data-open-module="group.module">{{ group.module }}</span>
+                                <template v-for="window in group.windows" :key="window.name">
+                                    <Btn :data-open="window.name" :disabled="Boolean(window.unavailable_reason)" @click="openView(window.name)">{{ window.title }}</Btn>
+                                </template>
                             </template>
                             <template v-for="other in others(id)" :key="other.id">
                                 <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
@@ -101,13 +110,33 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
         </template>
         <template v-if="closedWindows.length">
             <nav class="reopen-bar" aria-label="Closed windows">
-                <template v-for="module in modules()" :key="module">
-                    <span class="reopen-module">{{ module }}</span>
-                    <template v-for="window in ofModule(module)" :key="window.name">
-                        <Btn :data-reopen="window.name" @pointerdown="grabWindow($event, window.name)" @click="openView(window.name)">{{ window.title }}</Btn>
+                <template v-for="group in groups()" :key="group.module">
+                    <span class="reopen-module">{{ group.module }}</span>
+                    <template v-for="window in group.windows" :key="window.name">
+                        <Btn
+                            :data-reopen="window.name"
+                            :class="{unavailable: window.unavailable_reason}"
+                            :title="window.unavailable_reason"
+                            @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
+                            @click="!window.unavailable_reason && openView(window.name)"
+                        >
+                            {{ window.title }}<template v-if="window.unavailable_reason"> ({{ window.unavailable_reason }})</template>
+                        </Btn>
                     </template>
                 </template>
             </nav>
+        </template>
+        <template v-for="float in store.layout.value?.floats || []" :key="float.id">
+            <section class="pane-float" :style="{left: `${float.x}px`, top: `${float.y}px`, width: `${float.w}px`, height: `${float.h}px`}">
+                <header class="pane-float-bar">
+                    <span>{{ catalogue.window(float.view)?.title || float.view }}</span>
+                    <Btn :data-float-dock="float.id" @click="dock(float.id)">Dock</Btn>
+                    <Btn :data-float-away="float.id" @click="sendAway(float.id)">Send away</Btn>
+                </header>
+                <div class="pane-body">
+                    <WindowPane :name="float.view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agent" :prompts="prompts" :shell-read="shellRead" />
+                </div>
+            </section>
         </template>
         <template v-if="ghost">
             <DragGhost v-bind="ghost" />
@@ -146,6 +175,32 @@ const ofModule = (module) => closedWindows.value.filter((window) => window.modul
     border: 1px solid var(--line);
     border-radius: 6px;
     background: var(--bg);
+}
+
+.pane-float {
+    position: fixed;
+    z-index: 60;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+}
+
+.pane-float-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+}
+
+.pane-float-bar > span {
+    flex: 1;
+}
+
+.reopen-bar .unavailable {
+    opacity: 0.45;
 }
 
 .pane-empty {

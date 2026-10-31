@@ -16,6 +16,7 @@ const props = defineProps({
     visible: {type: Boolean, default: true},
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
+    options: {type: Object, default: () => ({})},
 });
 
 const entry = computed(() => props.catalogue.window(props.name));
@@ -88,10 +89,12 @@ watch(
             :permissions="permissions"
             :prompts="prompts"
             :events="entry.events"
+            :options="options"
+            :declared="entry.options"
             :unavailable-reason="entry.unavailable_reason"
         />
     </template>
     <template v-else>
-        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" @remove="emit('remove')" />
+        <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" :options="options" @remove="emit('remove')" />
     </template>
 </template>

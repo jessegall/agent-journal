@@ -1,5 +1,6 @@
 import {computed, ref} from "vue";
-import {activated, aimAt, holding, leaves, measure, ordered, paneClosed, placed, tabClosed} from "../domain/panes.js";
+import {activated, aimAt, broughtBack, floated, holding, landed, leaves, measure, ordered, paneClosed, placed, sentAway, tabClosed, tuned, unfloated} from "../domain/panes.js";
+import {listenViewTabs, openViewTab} from "./viewTabs.js";
 import {usePaneDrag} from "./paneDrag.js";
 
 const HINTS = {
@@ -128,7 +129,34 @@ export function usePaneActions({store, area, catalogue, counts}) {
         if (zone) store.apply(placed(layout(), view, id, zone, null));
     }
 
+    const floatBox = (name) => ({x: 80, y: 80, w: catalogue.window(name)?.float_width || 480, h: catalogue.window(name)?.float_height || 360});
+
+    function detach(id) {
+        const view = layout().panes[id].active;
+        const change = tabClosed(layout(), id, view);
+        store.apply({...change, layout: floated(change.layout, view, floatBox(view))});
+        menu.value = null;
+    }
+
+    function dock(id) {
+        const change = landed(layout(), id);
+        if (!change) return;
+        store.apply(change);
+        store.replace(unfloated(layout(), id));
+    }
+
+    function sendAway(id) {
+        const float = (layout().floats || []).find((one) => one.id === id);
+        if (!float) return;
+        openViewTab(float.view, id);
+        store.replace(sentAway(layout(), id));
+    }
+
+    const setOption = (id, key, value) => store.replace(tuned(layout(), id, {options: {...(layout().panes[id].options || {}), [key]: value}}));
+
+    listenViewTabs({dock: (id) => store.replace(broughtBack(layout(), id))});
+
     const grabWindow = (event, view) => grab(event, {view, from: null});
 
-    return {full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer};
+    return {detach, dock, sendAway, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer};
 }

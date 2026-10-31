@@ -19,6 +19,20 @@ export class WindowCatalogue {
         return event.event === "registry.sync" ? this.load() : Promise.resolve();
     }
 
+    get offered() {
+        return this.windows.value;
+    }
+
+    placed(page) {
+        const place = page === "agent" ? "agent" : "environment";
+        return this.windows.value.filter((window) => window.place === place);
+    }
+
+    group(windows = this.windows.value) {
+        const modules = [...new Set(windows.map((window) => window.module))];
+        return modules.map((module) => ({module, windows: windows.filter((window) => window.module === module)}));
+    }
+
     window(name) {
         return this.windows.value.find((window) => window.name === name) || null;
     }

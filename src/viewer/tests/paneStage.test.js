@@ -1,6 +1,7 @@
 import {createApp, h, nextTick, shallowRef} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import PaneStage from "../src/windows/PaneStage.vue";
+import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {leaves} from "../src/domain/panes.js";
@@ -53,8 +54,8 @@ async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "
     });
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
     if (titles) store.replace({...store.layout.value, panes: Object.fromEntries(Object.entries(store.layout.value.panes).map(([id, pane]) => [id, {...pane, titles}]))});
-    const windows = shallowRef(offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)})));
-    const catalogue = {window: (name) => windows.value.find((window) => window.name === name) || null, windows, person: 1};
+    const catalogue = new WindowCatalogue(async () => ({windows: []}));
+    catalogue.windows.value = offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)}));
     const element = document.createElement("div");
     document.body.append(element);
     createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main"})).mount(element);
