@@ -52,3 +52,8 @@ def test_a_write_sent_with_a_trail_leaves_one_log_line_with_every_stamp_in_order
         server.send_with_trail('task make "Fourth" --environment main', "go_start=1;go_sent=2")
     expect_trail_names(story.home, [["go_start", "go_sent", "server_accepted", "server_received", "command_started", "write_started", "committed",
                                      "command_done", "answered"]])
+
+
+def test_a_trail_line_that_cannot_be_written_is_noted_and_the_request_still_answered(new_story):
+    with server_story(new_story(fixture=ThreeTasks)) as story:
+        story.expect_answer_with_unwritable_trail_log('task make "Fourth" --environment main')

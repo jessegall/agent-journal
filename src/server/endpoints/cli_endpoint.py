@@ -1,6 +1,6 @@
 import io
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TextIO
 
 from core.base.caller.caller_request import CallerRequest
@@ -27,10 +27,10 @@ class CliRequest:
     argv: list[str]
     caller: CallerRequest
     deadline: Deadline | None = None
-    trail: Trail | None = None
+    trail: Trail = field(default_factory=Trail)
 
     @classmethod
-    def parsed(cls, data: object, pid: int) -> "CliRequest":
+    def parsed(cls, data: object, pid: int, trail: Trail) -> "CliRequest":
         if not is_mapping(data):
             raise CliRequestError("a /cli request is an object with argv, variables and folder")
         argv = data.get("argv")
@@ -40,7 +40,7 @@ class CliRequest:
         if deadline_seconds is not None and not isinstance(deadline_seconds, (int, float)):
             raise CliRequestError("deadline_seconds is a number of seconds")
         caller = CallerRequest.parsed({"variables": data.get("variables", {}), "folder": data.get("folder", ""), "pid": pid})
-        return cls(argv, caller, Deadline.timeout(deadline_seconds) if deadline_seconds is not None else None)
+        return cls(argv, caller, Deadline.timeout(deadline_seconds) if deadline_seconds is not None else None, trail)
 
 
 class ChunkStream(io.StringIO):

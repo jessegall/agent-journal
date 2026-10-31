@@ -118,6 +118,11 @@ class ServerStory:
         answer = request_answer(self.socket_path, method, route, body)
         assert answer.status == status, answer
 
+    def expect_answer_with_unwritable_trail_log(self, line: str) -> None:
+        TrailLog(self.story.home).path.mkdir(parents=True)
+        self.send_with_trail(line, "go_start=1")
+        assert "trail line not written" in ServerFiles(self.story.home).log.read_text()
+
     def send_with_trail(self, line: str, trail_text: str) -> None:
         answer = request_answer(self.socket_path, "POST", "/cli", {"argv": shlex.split(line), "folder": "/"}, {TRAIL_HEADER: trail_text})
         assert answer.exit_code == 0, answer
@@ -125,7 +130,7 @@ class ServerStory:
 
 def expect_trail_names(home: JournalHome, names: list[list[str]]) -> None:
     lines = [json.loads(line) for line in TrailLog(home).path.read_text().splitlines()]
-    assert [[name for name, _ in Trail.parsed(line["trail"]).stamps or []] for line in lines] == names, lines
+    assert [[name for name, _ in Trail.parsed(line["trail"]).stamps] for line in lines] == names, lines
 
 
 @contextmanager

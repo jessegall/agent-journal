@@ -10,6 +10,7 @@ if __name__ == "__main__":
 
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
+from core.base.trail_log import TrailLog
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeFolders, CodeVersion
@@ -30,6 +31,7 @@ def main(argv: list[str]) -> int:
     if not files.acquire_lock():
         files.log_line("another server holds the lock; this one exits")
         return SECOND_SERVER_CODE
+    TrailLog(home).rotate()
     files.clear_leftover_socket()
     listener_round = ListenerRound(home)
     listener_thread = ListenerThread(listener_round.run, listener_round.report)

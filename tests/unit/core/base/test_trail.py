@@ -19,13 +19,19 @@ from tests.unit.core.base.sample_container import sample_container
 
 
 def names(trail: Trail) -> list[str]:
-    return [name for name, _ in trail.stamps or []]
+    return [name for name, _ in trail.stamps]
 
 
 def test_a_stamp_with_no_trail_set_does_nothing():
     trail = Trail()
     trail.stamp("command_started")
     assert trail.text() == ""
+
+
+def test_a_started_trail_keeps_its_first_name_and_the_names_after_it():
+    trail = Trail.started("server_accepted")
+    trail.stamp("server_received")
+    assert names(Trail.parsed("go_start=1;go_sent=2").joined(trail)) == ["go_start", "go_sent", "server_accepted", "server_received"]
 
 
 def test_a_stamp_with_a_trail_set_adds_one_name_after_the_others():
@@ -45,23 +51,23 @@ def container(tmp_path):
 
 
 def test_a_write_with_a_trail_set_stamps_the_lock_then_the_commit(container):
-    trail = Trail.parsed("")
+    trail = Trail.started("server_received")
     container.bind(Trail, trail)
     container.get(Bus).run(ItemMake(title="Dune"), Actor(7, ActorType.AGENT))
-    assert names(trail) == ["write_started", "committed"]
+    assert names(trail) == ["server_received", "write_started", "committed"]
 
 
 def test_an_explained_write_stamps_nothing(container):
-    trail = Trail.parsed("")
+    trail = Trail.started("server_received")
     container.bind(Trail, trail)
     container.get(Bus).explain(ItemMake(title="Dune"), Actor(7, ActorType.AGENT))
-    assert names(trail) == []
+    assert names(trail) == ["server_received"]
 
 
 def test_a_line_run_stamps_the_command_start_before_its_write(tmp_path):
     home = JournalHome(tmp_path)
     home.module_list.write_text(json.dumps([ITEMS]))
     assert LineRun(home).run(["module", "sync"], CallerRequest(), io.StringIO()) == 0
-    trail = Trail.parsed("")
+    trail = Trail.started("server_received")
     assert LineRun(home).run(["item", "make", "Dune"], CallerRequest(), io.StringIO(), trail=trail) == 0
-    assert names(trail) == ["command_started", "write_started", "committed"]
+    assert names(trail) == ["server_received", "command_started", "write_started", "committed"]
