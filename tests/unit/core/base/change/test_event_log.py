@@ -12,7 +12,7 @@ from core.base.database.core_tables_migration import CORE_MIGRATIONS
 from core.base.database.database import Database
 from core.base.database.schema import Schema
 from core.base.journal_home import JournalHome
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from tests.unit.core.base.command.test_commands import MakeItem
@@ -55,5 +55,5 @@ def test_events_are_read_past_an_id_in_id_order(log):
 
 
 def test_an_event_that_is_not_there_is_refused_by_id(log):
-    with pytest.raises(MissingRows, match="no event 99"):
+    with pytest.raises(MissingRowsError, match="no event 99"):
         log.event(99)

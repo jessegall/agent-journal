@@ -1,4 +1,4 @@
-class UpgradeFailed(Exception):
+class UpgradeFailedError(Exception):
     """Raised when a module's move from version 4 failed; its rows were rolled back and the moves before it stay.
     It names the module, the reason and the modules whose moves stand."""
 

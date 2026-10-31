@@ -15,7 +15,7 @@ from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
-from core.base.repository.stale_row import StaleRow
+from core.base.repository.stale_row_error import StaleRowError
 
 M = TypeVar("M", bound=Model)
 
@@ -62,7 +62,7 @@ class Repository:
             return None
         stored = self.queries.query(type(model)).find(model.id)
         if stored.version != model.version:
-            raise StaleRow(model.cli_name, model.id)
+            raise StaleRowError(model.cli_name, model.id)
         return stored
 
     def persist(self, model: M, change: Change[M]) -> M:
@@ -75,7 +75,7 @@ class Repository:
         changed = table.row(model, change.fields)
         updated_count = self.guarded(lambda: self.database.update(statements.update(model.id, model.version, changed, timestamp)), table, False)
         if updated_count == 0:
-            raise StaleRow(model.cli_name, model.id)
+            raise StaleRowError(model.cli_name, model.id)
         return model.saved(model.id, model.version + 1, timestamp)
 
     def guarded(self, statement_run: Callable[[], int], table: Table[Model], deletion: bool) -> int:

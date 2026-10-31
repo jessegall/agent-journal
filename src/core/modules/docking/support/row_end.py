@@ -1,6 +1,6 @@
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.registry.registry import Registry
 from core.modules.docking.models.dock_item import DockItem
 
@@ -19,7 +19,7 @@ class RowEnd:
         model = entry.model.checked_class(Model)
         try:
             row = self.queries.query(model).find(item.target_id)
-        except MissingRows:
+        except MissingRowsError:
             return True
         lifecycle = row.lifecycle
         if lifecycle is None:

@@ -3,7 +3,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.upgrade_failed import UpgradeFailed
+from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.upgrade.move_runner import MoveRunner
 from tests.stories.core.support.fixtures import MainEnvironment
 from tests.stories.core.base.upgrade.support.move_samples import ORDER, PATH, version_four_database
@@ -51,7 +51,7 @@ def test_a_second_run_skips_every_row_the_map_holds(new_story, tmp_path):
 
 def test_a_move_that_raises_rolls_back_its_modules_rows_and_leaves_the_earlier_modules_in_place(new_story, tmp_path):
     story, upgrade, source = runner(new_story, tmp_path, NOTES, BROKEN_TAGS)
-    with pytest.raises(UpgradeFailed, match="the move of movetags failed: the second tag could not be read"):
+    with pytest.raises(UpgradeFailedError, match="the move of movetags failed: the second tag could not be read"):
         upgrade.run(source)
     assert (count(story, "notes"), count(story, "tags")) == (2, 0)
     moved = MoveMap(story.container.get(Database))

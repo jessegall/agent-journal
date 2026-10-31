@@ -5,7 +5,7 @@ import pytest
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.model.view_model import ViewModel
 from core.base.query.queries import Queries
@@ -40,7 +40,7 @@ def test_a_views_row_is_found_by_its_key(queries: Queries):
 
 
 def test_a_key_with_no_row_is_refused(queries: Queries):
-    with pytest.raises(MissingRows, match="no shelf 9"):
+    with pytest.raises(MissingRowsError, match="no shelf 9"):
         queries.query(ShelfCount).find(9)
 
 

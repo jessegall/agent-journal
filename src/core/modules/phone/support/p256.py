@@ -1,6 +1,6 @@
 import hashlib
 
-from core.modules.phone.support.infinite_point import InfinitePoint
+from core.modules.phone.support.infinite_point_error import InfinitePointError
 
 Point = tuple[int, int]
 P = 0xFFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF
@@ -46,7 +46,7 @@ class P256:
     def finite_product(scalar: int, point: Point) -> Point:
         product = P256.scalar_product(scalar, point)
         if product is None:
-            raise InfinitePoint()
+            raise InfinitePointError()
         return product
 
     @staticmethod

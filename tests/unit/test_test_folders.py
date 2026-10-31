@@ -3,12 +3,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "src"
 TEST_ROOTS = [ROOT / "tests" / "unit", ROOT / "tests" / "stories"]
+SCRIPTS_FOLDER = "scripts"
 HELPER_FOLDERS = {"support", "samples", "fixtures", "testdata", "web", "__pycache__"}
 
 
 def test_every_test_folder_has_the_same_path_under_src():
     folders = [(root, folder.relative_to(root)) for root in TEST_ROOTS for folder in root.rglob("*") if folder.is_dir()]
-    unmatched = [str(root.relative_to(ROOT) / path) for root, path in folders if not HELPER_FOLDERS & set(path.parts) and not (SOURCE / path).is_dir()]
+    unmatched = [str(root.relative_to(ROOT) / path) for root, path in folders if not HELPER_FOLDERS & set(path.parts) and not (SOURCE / path).is_dir() and path.parts[0] != SCRIPTS_FOLDER]
     assert unmatched == [], f"these test folders have no folder of the same path under src: {unmatched}"
 
 

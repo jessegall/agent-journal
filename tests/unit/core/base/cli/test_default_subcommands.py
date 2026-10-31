@@ -14,7 +14,7 @@ from core.base.container import Container
 from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.command.move_command import MoveCommand
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.model.model import Model
@@ -76,7 +76,7 @@ def test_show_reads_one_row_and_a_missing_id_is_refused_by_noun(container):
     single_row_subcommand = container.get(DefaultSubcommands).show(Item)
     item = read(single_row_subcommand, "2")
     assert isinstance(item, Item) and item.title == "Emma"
-    with pytest.raises(MissingRows, match="item 9"):
+    with pytest.raises(MissingRowsError, match="item 9"):
         read(single_row_subcommand, "9")
 
 

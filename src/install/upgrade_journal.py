@@ -15,14 +15,14 @@ from core.base.module.module_sync import ModuleSync
 from core.base.registry.registry import Registry
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_runner import MoveRunner
-from core.base.upgrade.upgrade_failed import UpgradeFailed
+from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.upgrade.upgrade_report import UpgradeReport
 from core.base.upgrade.version_four_move import VersionFourMove
-from install.backup_mismatch import BackupMismatch
+from install.backup_mismatch_error import BackupMismatchError
 from install.code_replacement import CodeReplacement
 from install.install_journal import InstallJournal
 from install.restore_version_four import RestoreVersionFour
-from install.server_wont_stop import ServerWontStop
+from install.server_wont_stop_error import ServerWontStopError
 from install.unix_connection import UnixConnection
 from install.upgrade_outcome import UpgradeOutcome
 from install.upgrade_report_file import UpgradeReportFile
@@ -65,13 +65,13 @@ class UpgradeJournal:
             if not dry_run and (confirmed or self.agreed()):
                 self.ran = True
                 CodeReplacement(self.home).run([self.copy_code, lambda: self.upgrade(version_four, lines)])
-        except UpgradeFailed as error:
+        except UpgradeFailedError as error:
             return self.kept(UpgradeOutcome(1, "\n".join([*lines, str(error), *self.failure(error)])))
-        except (BackupMismatch, ServerWontStop) as error:
+        except (BackupMismatchError, ServerWontStopError) as error:
             return UpgradeOutcome(1, "\n".join([*lines, str(error)]))
         return self.kept(UpgradeOutcome(0, "\n".join(lines)), dry_run)
 
-    def failure(self, error: UpgradeFailed) -> list[str]:
+    def failure(self, error: UpgradeFailedError) -> list[str]:
         standing = ", ".join(error.finished) or "nothing"
         return [f"failed: {error.module} ({error.reason})", f"rolled back: {error.module}", f"stayed moved: {standing}", FINISH_LINE]
 

@@ -2,7 +2,7 @@ from collections.abc import Sequence
 from core.base.refusal import Refusal
 
 
-class MissingRows(Refusal):
+class MissingRowsError(Refusal):
     """Raised when rows asked for by id do not exist."""
 
     def __init__(self, cli_name: str, ids: Sequence[int]) -> None:

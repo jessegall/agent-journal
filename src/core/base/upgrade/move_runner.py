@@ -10,11 +10,11 @@ from core.base.journal_home import JournalHome
 from core.base.registry.move_entry import MoveEntry
 from core.base.registry.setting_entry import GROUP_TYPE
 from core.base.registry.registry import Registry
-from core.base.upgrade.dry_run_end import DryRunEnd
+from core.base.upgrade.dry_run_end_error import DryRunEndError
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
 from core.base.upgrade.move_report import MoveReport
-from core.base.upgrade.upgrade_failed import UpgradeFailed
+from core.base.upgrade.upgrade_failed_error import UpgradeFailedError
 from core.base.upgrade.upgrade_report import UpgradeReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
@@ -39,7 +39,7 @@ class MoveRunner:
                     self.run_dry(source, moved, context, report)
                 else:
                     self.run_each(source, moved, context, report, lambda module: self.database.transaction())
-            except DryRunEnd:
+            except DryRunEndError:
                 pass
             report.unclaimed = {table: source.count(table) for table in source.tables() if table not in self.claimed()}
         return report
@@ -47,7 +47,7 @@ class MoveRunner:
     def run_dry(self, source: VersionFourSource, moved: MoveMap, context: MoveContext, report: UpgradeReport) -> None:
         with self.database.transaction():
             self.run_each(source, moved, context, report, self.database.savepoint)
-            raise DryRunEnd()
+            raise DryRunEndError()
 
     def run_each(self, source: VersionFourSource, moved: MoveMap, context: MoveContext, report: UpgradeReport, scope: Callable[[str], AbstractContextManager[None]]) -> None:
         for entry in self.registry.moves:
@@ -86,7 +86,7 @@ class MoveRunner:
                 moved.finish(entry.module, move.name, counts)
                 self.events.write_upgrade_moved(CORE_ACTOR_ID, entry.module, counts, context.timestamp)
         except Exception as error:
-            raise UpgradeFailed(f"the move of {entry.module} failed: {error}", entry.module, str(error), tuple(self.finished_modules())) from error
+            raise UpgradeFailedError(f"the move of {entry.module} failed: {error}", entry.module, str(error), tuple(self.finished_modules())) from error
         return outcome
 
     def finished_modules(self) -> list[str]:

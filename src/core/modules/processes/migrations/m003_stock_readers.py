@@ -1,6 +1,6 @@
 from core.base.database.migration import Migration
 from core.base.database.timestamp_sql import TIMESTAMP_SQL
-from core.modules.processes.support.stock_readers import STOCK_READERS, StockReader
+from core.modules.processes.support.stock_reader import STOCK_READERS, StockReader
 
 CORE_ACTOR_ID = 1
 

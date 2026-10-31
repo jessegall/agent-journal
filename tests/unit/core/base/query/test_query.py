@@ -7,7 +7,7 @@ from core.base.database.database import Database
 from core.base.database.statement import Statement
 from core.base.database.table_statements import TableStatements
 from core.base.journal_home import JournalHome
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.model.tables import Tables
 from core.base.timestamp import Timestamp
 from core.base.query.conditions.greater import Greater
@@ -44,7 +44,7 @@ def test_many_rows_come_back_in_the_order_asked(entries: Query[LogEntry]):
 
 
 def test_missing_ids_are_named_by_the_noun_a_person_types(entries: Query[LogEntry]):
-    with pytest.raises(MissingRows, match="no entry 9, 12"):
+    with pytest.raises(MissingRowsError, match="no entry 9, 12"):
         entries.find_many((3, 9, 12))
 
 

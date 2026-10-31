@@ -4,7 +4,7 @@ from typing import TypeVar
 
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.page import Page
 
 T = TypeVar("T")
@@ -20,7 +20,7 @@ class BookkeepingTable:
     def row(self, row_id: int) -> sqlite3.Row:
         rows = self.database.rows(Statement(f"SELECT * FROM {self.table} WHERE id = ?", [row_id]))
         if not rows:
-            raise MissingRows(self.cli_name, [row_id])
+            raise MissingRowsError(self.cli_name, [row_id])
         return rows[0]
 
     def newest_page(self, number: int, size: int, parsed: Callable[[sqlite3.Row], T]) -> Page[T]:

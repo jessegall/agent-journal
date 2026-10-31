@@ -16,7 +16,7 @@ from core.base.registry.listener_timing import ListenerTiming
 from core.base.registry.registry import Registry
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.base.repository.stale_row import StaleRow
+from core.base.repository.stale_row_error import StaleRowError
 from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.listener.save_listener import SaveListener
@@ -79,7 +79,7 @@ def test_only_the_changed_fields_are_written_and_the_version_rises(container: Co
 def test_a_copy_read_before_another_change_is_refused(container: Container):
     saved = save(container, Item(title="Dune"))
     save(container, saved.moved(ItemLifecycle.pause))
-    with pytest.raises(StaleRow, match="item 1 changed since it was read"):
+    with pytest.raises(StaleRowError, match="item 1 changed since it was read"):
         save(container, saved.moved(ItemLifecycle.close))
 
 
@@ -110,7 +110,7 @@ def test_a_constraint_failure_becomes_a_refusal(container: Container):
 def test_a_deleted_row_is_gone_and_logged(tmp_path):
     container = sample_container(tmp_path, empty_registry())
     saved = container.get(Repository).save(Item(title="Dune"), context(MakeItem(title="Dune")))
-    with pytest.raises(StaleRow):
+    with pytest.raises(StaleRowError):
         container.get(Repository).delete(replace(saved, version=5), context(MakeItem(title="Dune")))
     container.get(Repository).delete(saved, context(MakeItem(title="Dune")))
     assert container.get(Database).rows(Statement("SELECT count(*) FROM items"))[0][0] == 0

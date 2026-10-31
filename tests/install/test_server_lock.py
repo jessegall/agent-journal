@@ -5,7 +5,7 @@ import time
 
 import pytest
 
-from install.server_lock import ServerLock, ServerWontStop
+from install.server_lock import ServerLock, ServerWontStopError
 from tests.install.support import SERVER_SOURCE, TIMEOUT_SECONDS
 
 STUBBORN_SERVER = """
@@ -67,7 +67,7 @@ def test_a_server_that_will_not_stop_in_the_limit_makes_the_helper_refuse_and_ch
     stubborn = subprocess.Popen([sys.executable, "-c", STUBBORN_SERVER, str(journal.home.folder), str(journal.home.socket("server"))])
     journal.processes.append(stubborn)
     journal.wait_healthy()
-    with pytest.raises(ServerWontStop, match="did not stop in 1 seconds"):
+    with pytest.raises(ServerWontStopError, match="did not stop in 1 seconds"):
         with ServerLock(journal.home, stop_limit_seconds=1):
             pytest.fail("the lock was taken from a server that did not stop")
     assert stubborn.poll() is None and not journal.lock_is_free()

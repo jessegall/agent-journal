@@ -1,7 +1,7 @@
 from core.base.refusal import Refusal
 
 
-class StaleRow(Refusal):
+class StaleRowError(Refusal):
     """Raised when a row is saved from a copy read before someone else changed it."""
 
     def __init__(self, cli_name: str, row_id: int) -> None:

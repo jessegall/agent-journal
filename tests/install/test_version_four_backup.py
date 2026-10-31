@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from install.backup_mismatch import BackupMismatch
+from install.backup_mismatch_error import BackupMismatchError
 from install.version_four_backup import VersionFourBackup
 from tests.stories.fixtures.version_four import version_four_fixture
 
@@ -76,6 +76,6 @@ def test_a_copy_that_differs_from_the_original_is_refused_and_removed(tmp_path, 
         connection.close()
 
     monkeypatch.setattr(VersionFourBackup, "copy", damaged)
-    with pytest.raises(BackupMismatch, match="does not hold the rows the original does"):
+    with pytest.raises(BackupMismatchError, match="does not hold the rows the original does"):
         VersionFourBackup(journal).make()
     assert not (journal / "version-4" / "4.28.0" / "journal.db").exists()

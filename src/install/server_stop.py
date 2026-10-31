@@ -1,7 +1,7 @@
 import time
 
 from core.base.journal_home import JournalHome
-from install.server_wont_stop import ServerWontStop
+from install.server_wont_stop_error import ServerWontStopError
 from install.unix_connection import UnixConnection
 from server.journal_server import DRAIN_LIMIT_SECONDS
 from server.server_files import ServerFiles
@@ -25,7 +25,7 @@ class ServerStop:
         deadline = time.monotonic() + limit_seconds
         while not self.is_stopped():
             if time.monotonic() >= deadline:
-                raise ServerWontStop(f"the server did not stop in {limit_seconds:g} seconds")
+                raise ServerWontStopError(f"the server did not stop in {limit_seconds:g} seconds")
             time.sleep(POLL_SECONDS)
         return STOPPED
 

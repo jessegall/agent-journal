@@ -1,5 +1,5 @@
 from core.base.guard.guard_refusal import GuardRefusal
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.refusal import Refusal
 
 
@@ -9,7 +9,7 @@ def test_a_refusal_says_its_reason_and_the_line_that_works():
 
 
 def test_not_found_names_the_noun_and_every_missing_id():
-    assert MissingRows("task", (12, 14)).text == "no task 12, 14: journal task list shows what there is"
+    assert MissingRowsError("task", (12, 14)).text == "no task 12, 14: journal task list shows what there is"
 
 
 def test_a_guard_refusal_names_its_guard_and_its_skip_flag_only_when_it_has_one():

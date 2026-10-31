@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from core.base.database.version_four_tables import VersionFourTables
-from install.backup_mismatch import BackupMismatch
+from install.backup_mismatch_error import BackupMismatchError
 
 BACKUP_FOLDER = "version-4"
 DATABASE = "journal.db"
@@ -49,7 +49,7 @@ class VersionFourBackup:
         original, copy = self.counts(self.journal / DATABASE), self.counts(target)
         if original != copy:
             target.unlink()
-            raise BackupMismatch(f"the copy of {self.journal / DATABASE} does not hold the rows the original does: {original} against {copy}")
+            raise BackupMismatchError(f"the copy of {self.journal / DATABASE} does not hold the rows the original does: {original} against {copy}")
         return BackupResult(target, len(copy), False)
 
     def copy(self, original: Path, target: Path) -> None:

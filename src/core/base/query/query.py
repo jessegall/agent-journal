@@ -2,7 +2,7 @@ from collections.abc import Iterator, Sequence
 from copy import copy
 from typing import Generic, Self, TypeVar
 from core.base.database.database import Database
-from core.base.missing_rows import MissingRows
+from core.base.missing_rows_error import MissingRowsError
 from core.base.model.model import Model
 from core.base.model.view_model import ViewModel
 from core.base.model.table import stored
@@ -31,7 +31,7 @@ class Query(Generic[M]):
         row_index = {getattr(row, self.table.key): row for row in self.rows(self.select.matching(Among(self.table.key, row_ids)))}
         missing = tuple(row_id for row_id in row_ids if row_id not in row_index)
         if missing:
-            raise MissingRows(self.model.cli_name, missing)
+            raise MissingRowsError(self.model.cli_name, missing)
         return [row_index[row_id] for row_id in row_ids]
 
     def filter(self, **values: object) -> Self:
