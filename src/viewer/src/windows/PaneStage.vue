@@ -21,6 +21,7 @@ const props = defineProps({
     environment: {type: String, required: true},
     agent: {type: Number, default: null},
     page: {type: String, default: "home"},
+    floats: {type: Boolean, default: true},
     prompts: {type: Object, default: null},
     shellRead: {type: Function, default: null},
 });
@@ -79,7 +80,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 <Btn data-menu="split-right" @click="split(id, 'right')">Split right</Btn>
                                 <Btn data-menu="split-below" @click="split(id, 'bottom')">Split below</Btn>
                             </template>
-                            <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
+                            <Btn v-if="floats" data-menu="detach" @click="detach(id)">Detach</Btn>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
                             <template v-for="group in catalogue.group()" :key="group.module">
                                 <span class="reopen-module" :data-open-module="group.module">{{ group.module }}</span>
@@ -139,6 +140,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             </nav>
         </template>
         <DetachedWindows
+            v-if="floats"
             :detached="detached"
             :catalogue="catalogue"
             :subscriptions="subscriptions"

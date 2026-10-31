@@ -1,3 +1,4 @@
+import {moveLegacyLayouts} from "./legacyLayouts.js";
 import {paneLayout} from "./paneLayout.js";
 
 const HOME = "home";
@@ -35,6 +36,7 @@ export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, d
     });
 
     async function load() {
+        await moveLegacyLayouts(shellLine, environment);
         const run = await shellLine(["suite", "current", environment]);
         if (!run.ok) return;
         await store.load({environment, person: catalogue.person, suite: run.value.suite, page, driver: driver ?? mainDriver(run.value.drivers)});
