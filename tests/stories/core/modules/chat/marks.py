@@ -67,3 +67,18 @@ def test_a_process_mark_is_never_edited_once_it_ended(new_story):
     with pytest.raises(Refusal, match="chat mark run:1 has ended"):
         bus.run(show(SampleMarkType.PROCESS, "run:1", "Again"), actor)
     story.expect_success("chat-mark list --environment main", "Done")
+
+
+def test_a_mark_shown_again_under_its_key_takes_the_new_words_and_keeps_its_id(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    bus, actor = story.container.get(Bus), module_actor(story, "chatsample")
+    first = bus.run(show(SampleMarkType.PROCESS, "run:2", "Running"), actor)
+    second = bus.run(show(SampleMarkType.PROCESS, "run:2", "Passed", ended=True), actor)
+    assert (second.id, second.label, second.state.value) == (first.id, "Passed", "ended")
+
+
+def test_the_detail_is_cut_to_80_characters_and_the_lines_keep_all_of_it(new_story):
+    story = new_story(SAMPLE, fixture=UserJoined)
+    text = "first line " + "x" * 100 + "\nsecond line"
+    mark = story.container.get(Bus).run(ShowMark(1, SampleMarkType.MOMENT, SampleMarkVariant.PLAIN, "moment:9", "A mark", detail=text), module_actor(story, "chatsample"))
+    assert (len(mark.detail), mark.lines) == (80, text)
