@@ -84,7 +84,7 @@ class CodexProvider(Provider):
             if role in TRANSCRIPT_AUTHORS and is_list(content):
                 text = "\n".join(str(block.get("text", "")) for block in content if is_mapping(block))
                 if text.strip():
-                    rows.append(TranscriptRow(str(role), str(role), text))
+                    rows.append(TranscriptRow(len(rows) + 1, str(role), str(role), text))
         return rows
 
     def folder_prepared(self, root: Path, folder: Path, runner: str) -> None:

@@ -23,3 +23,9 @@ def test_the_subagents_window_is_a_page_window_of_one_agent(new_story):
 def test_the_subagents_window_reads_its_lines_with_no_allowance(new_story):
     window = window_story(new_story)
     window.expect_window_allowed("agents.subagents", "agent list")
+
+
+def test_the_transcript_window_is_a_page_window_of_one_agent_that_reads_with_no_allowance(new_story):
+    window = window_story(new_story)
+    window.expect_declared_window("agents.transcript", "component", "agent")
+    window.expect_window_allowed("agents.transcript", "agent transcript 1")

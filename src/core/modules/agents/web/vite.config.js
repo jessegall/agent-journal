@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         "agents": here("./src/agents.js"),
         "subagents": here("./src/subagents.js"),
+        "transcript": here("./src/transcript.js"),
     },
     outDir: here("./dist"),
 });

@@ -87,7 +87,7 @@ class ClaudeCodeProvider(Provider):
                 continue
             text = "\n".join(self.message_texts(message.get("content")))
             if text.strip():
-                rows.append(TranscriptRow(str(author), str(author), text))
+                rows.append(TranscriptRow(len(rows) + 1, str(author), str(author), text))
         return rows
 
     @staticmethod

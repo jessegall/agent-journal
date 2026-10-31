@@ -6,6 +6,7 @@ import TaskList from "../../core/modules/tasks/web/src/tasks.js";
 import PlanList from "../../core/modules/plans/web/src/plans.js";
 import AgentList from "../../core/modules/agents/web/src/agents.js";
 import SubagentList from "../../core/modules/agents/web/src/subagents.js";
+import Transcript from "../../core/modules/agents/web/src/transcript.js";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
 import FileEdits from "../../suites/coding/web/src/FileEdits.vue";
@@ -98,4 +99,13 @@ test("a window shows the reason a read was refused", async () => {
 
 test("the terminal window says it is not available yet", async () => {
     expect(await drawn(Terminal, context({}, 2))).toContain("The terminal is not available in version 5 yet");
+});
+
+test("the transcript window shows one agent's conversation, each turn under its author", async () => {
+    const windowContext = context({"agent transcript 7": page([{id: 1, author: "user", row_type: "user", text: "Fix the cart total"},
+                                                              {id: 2, author: "assistant", row_type: "assistant", text: "The total is in cents now"}])}, 7);
+    const text = await drawn(Transcript, windowContext);
+    expect(text).toContain("Fix the cart total");
+    expect(text).toContain("The total is in cents now");
+    expect(windowContext.reads).toContain("agent transcript 7");
 });

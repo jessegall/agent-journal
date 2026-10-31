@@ -1,3 +1,4 @@
+from core.modules.agents.commands.agent_transcript_subcommand import AgentTranscriptSubcommand
 from core.modules.agents.commands.end_agent_handler import EndAgentHandler
 from core.modules.agents.commands.end_agent_subcommand import EndAgentSubcommand
 from core.modules.agents.commands.start_agent_handler import StartAgentHandler
@@ -22,8 +23,10 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     migrations = [AgentsTableMigration]
     handlers = [StartAgentHandler, EndAgentHandler]
-    subcommands = [StartAgentSubcommand, EndAgentSubcommand]
+    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, reads=["agent list"],
-                                 events=["agent.*"])]
+                                 events=["agent.*"]),
+               WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT,
+                                 reads=["agent transcript", "hook-call list"], events=["hook_call.create"])]
