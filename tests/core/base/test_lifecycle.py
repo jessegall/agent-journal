@@ -39,9 +39,9 @@ def test_a_move_named_unlike_its_attribute_is_found():
 
 
 def test_the_way_out_names_every_move_from_the_state_a_row_is_in():
-    assert LoanLifecycle.remedy("loan", 4, LoanState.LATE) == "from late it can only go on with journal loan bring_back 4"
-    assert LoanLifecycle.remedy("loan", 4, LoanState.LENT) == "from lent it can only go on with journal loan overdue 4, journal loan bring_back 4"
+    assert LoanLifecycle.suggestion("loan", 4, LoanState.LATE) == "from late it can only go on with journal loan bring_back 4"
+    assert LoanLifecycle.suggestion("loan", 4, LoanState.LENT) == "from lent it can only go on with journal loan overdue 4, journal loan bring_back 4"
 
 
 def test_a_state_no_move_leaves_is_final():
-    assert LoanLifecycle.remedy("loan", 4, LoanState.RETURNED) == "returned is final"
+    assert LoanLifecycle.suggestion("loan", 4, LoanState.RETURNED) == "returned is final"

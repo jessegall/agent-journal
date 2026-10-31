@@ -25,6 +25,6 @@ class Lifecycle:
         return tuple(move for move in cls.moves() if state in move.sources)
 
     @classmethod
-    def remedy(cls, cli_noun: str, row_id: int, state: StrEnum) -> str:
+    def suggestion(cls, cli_noun: str, row_id: int, state: StrEnum) -> str:
         lines = [f"journal {cli_noun} {move.name} {row_id}" for move in cls.outgoing_moves(state)]
         return f"from {state.value} it can only go on with {', '.join(lines)}" if lines else f"{state.value} is final"

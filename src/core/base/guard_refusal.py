@@ -5,7 +5,7 @@ class GuardRefusal(Refusal):
     """A refusal from a guard, naming the guard and the flag that lets a person pass it."""
 
     def __init__(self, guard: str, refusal: Refusal, skip_flag: str) -> None:
-        super().__init__(refusal.reason, refusal.remedy)
+        super().__init__(refusal.reason, refusal.suggestion)
         self.guard, self.skip_flag = guard, skip_flag
 
     @property
