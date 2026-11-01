@@ -21,6 +21,12 @@ const figureVoice = computed(() => {
 });
 const runningTool = ref("");
 const heardAt = ref(Date.now() / 1000);
+// the faces the user has put on messages; a new one is answered by the figure
+const userFaces = computed(() => messages.value.reduce((total, row) => total + JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").length, 0));
+const facedAt = ref(0);
+watch(userFaces, (now, before) => {
+    if (now > before) facedAt.value = Date.now() / 1000;
+});
 async function readTool() {
     heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
@@ -295,7 +301,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         </template>
         <form data-figure-home :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
             <template v-if="figureVoice">
-                <VoiceFigure :voice="figureVoice" :running="runningTool" :heard-at="heardAt" />
+                <VoiceFigure :voice="figureVoice" :running="runningTool" :heard-at="heardAt" :faced-at="facedAt" />
             </template>
             <template v-if="attached.length">
                 <ul class="attached" data-attached>

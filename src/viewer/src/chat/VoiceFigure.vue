@@ -16,7 +16,7 @@ import {useFigureBody} from "../composables/figureBody.js";
 // the figure of a voice at home on the compose box, playing the clip for the tool in hand and blinking now and then; with nothing to do it
 // strolls along the edge it stands on to the other corner and back, its legs striding as far as it goes; three.js and the figure load only
 // when a voice is chosen
-const props = defineProps({voice: {type: String, required: true}, running: {type: String, default: ""}, heardAt: {type: Number, default: 0}});
+const props = defineProps({voice: {type: String, required: true}, running: {type: String, default: ""}, heardAt: {type: Number, default: 0}, facedAt: {type: Number, default: 0}});
 const SIZE = 112;
 const canvas = ref(null);
 const failure = ref("");
@@ -29,6 +29,7 @@ let strollAt = 0;
 let frames = 0;
 const figure = {size: SIZE, below: GROUND};
 const STROLL_SECONDS = [8, 20];
+const ANSWER_SECONDS = 3;
 const PERCH_SECONDS = [6, 12];
 const CLIMB_SHARE = 0.4;
 let perch = null;
@@ -151,9 +152,12 @@ function frame() {
     draw(now);
 }
 
+// a face the user just put on a message is answered with joy, for a moment, where it stands
+const answering = () => Date.now() / 1000 - props.facedAt < ANSWER_SECONDS;
+
 function draw(now) {
     const walking = Boolean(body.trip) && !body.airborne;
-    const clip = clipNamed(body.airborne ? "fall" : walking ? (body.leg.clip ?? "walk") : heldClip(props.running, props.heardAt, Date.now() / 1000));
+    const clip = clipNamed(body.airborne ? "fall" : walking ? (body.leg.clip ?? "walk") : answering() ? "joy" : heldClip(props.running, props.heardAt, Date.now() / 1000));
     if (clip.name !== shownClip) {
         shownClip = clip.name;
         began = now;
