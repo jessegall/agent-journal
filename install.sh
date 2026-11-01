@@ -7,7 +7,8 @@
 # agent-journal.tar.gz, is copied into .journal/src, its own database .journal/version-5.db
 # synced from the core modules, by src/install/install_journal.py; a project that holds a version 4 journal is left as it
 # is and told to run journal upgrade (sh install.sh upgrade, with --dry-run to see the counts and --yes to go on without
-# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing. Nothing is started.
+# asking; sh install.sh restore [--yes] puts version 4 back from .journal/version-4), and an install already made says so and changes nothing. An upgrade
+# goes on to place the programs and write the hooks as an install does. Nothing is started.
 #
 # The hook program built for this machine is downloaded from the release into .journal/bin/journal-hook, its
 # checksum is checked against the release's checksums.txt, and it is run once to see that it starts. The hooks of
@@ -87,9 +88,13 @@ if [ ! -f "$SOURCE/core/journal.py" ]; then
 fi
 
 python=$(find_python) || fail "journal needs Python 3.14 or newer, and none is on the PATH: get it from https://www.python.org/downloads/ (or brew install python@3.14, or your system's package for python 3.14)"
+upgraded=0
 if [ "${1:-}" = "upgrade" ]; then
   shift
-  exec env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" "$@"
+  env PYTHONPATH="$SOURCE" "$python" -m install.upgrade_journal "$ROOT" "$@" || exit $?
+  case " $* " in *" --dry-run "*) exit 0 ;; esac
+  [ -f "$ROOT/.journal/version-5.db" ] || exit 0
+  upgraded=1
 fi
 if [ "${1:-}" = "restore" ]; then
   shift
@@ -99,9 +104,22 @@ status=0
 PYTHONPATH="$SOURCE" "$python" -m install.install_journal "$ROOT" "$SOURCE" || status=$?
 case "$status" in
   0) ;;
-  3) exit 0 ;;
+  3) [ "$upgraded" = 1 ] || exit 0 ;;
   *) exit "$status" ;;
 esac
+
+# a checkout of agent-journal, with its tools beside this script and go on the PATH, builds the programs itself unless
+# JOURNAL_RELEASE_URL names a release to download them from; the journal command replaces version 4's script
+if [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command -v go >/dev/null 2>&1; then
+  mkdir -p "$BIN"
+  for program in journal journal-hook journal-run; do
+    rm -f "$BIN/$program"
+    go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
+  done
+  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
+  echo "built journal, journal-hook and journal-run from $HERE/tools into $BIN; the hooks of Claude Code and Codex call $BIN/journal-hook"
+  exit 0
+fi
 
 target=$(platform)
 case "$target" in
