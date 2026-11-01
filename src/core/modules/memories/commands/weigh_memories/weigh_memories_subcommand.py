@@ -2,6 +2,7 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.cli.number_list import number_list
 from core.base.caller.caller import Caller
+from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.commands.weigh_memories.weigh_memories import WeighMemories
@@ -20,3 +21,7 @@ class WeighMemoriesSubcommand(Subcommand[WeighMemories, list[Memory]]):
 
     def command(self, arguments: Namespace, caller: Caller) -> WeighMemories:
         return WeighMemories(arguments.memory_ids, arguments.weights)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, list):
+            output.write(", ".join(f"memory {memory.id} at {memory.weight}" for memory in value), {"rows": [{"id": memory.id, "weight": memory.weight} for memory in value]})

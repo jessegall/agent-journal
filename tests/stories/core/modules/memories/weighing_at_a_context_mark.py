@@ -34,7 +34,7 @@ def test_weighing_a_memory_closes_the_mark(new_story):
 def test_weighing_a_memory_at_the_weight_it_has_closes_the_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     fact_id = fact_mark(story)
-    story.expect_success(f"memory weigh {fact_id} 5", actor=story.agent)
+    story.expect_text(f"memory weigh {fact_id} 5", f"memory {fact_id} at 5", actor=story.agent)
     story.expect_hook_allowed("s-1", EDIT)
 
 
