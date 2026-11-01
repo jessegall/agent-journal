@@ -28,6 +28,18 @@ test("a created row is read alone after the newest one held, and any other chang
     expect([...reads]).toEqual(["message list", "message list --after-id 2", "message list"]);
 });
 
+test("a held row that changed is read alone, also one past the first page, and leaves if it no longer lists", async () => {
+    const reads = [];
+    reads.answers = [[{id: 5, text: "old"}, {id: 4}], [{id: 5, text: "new"}], []];
+    const {rows, heard} = rowsOf(reads);
+    await new Promise((resolve) => setTimeout(resolve));
+    await heard[0]({event: "message.update", row_id: 5});
+    expect(rows.rows.value[0].text).toBe("new");
+    await heard[0]({event: "message.read", row_id: 4});
+    expect(rows.rows.value.map((row) => row.id)).toEqual([5]);
+    expect([...reads].slice(1)).toEqual(["message list --before-id 6 --limit 1", "message list --before-id 5 --limit 1"]);
+});
+
 test("older rows are read before the oldest held and added behind them", async () => {
     const reads = [];
     reads.answers = [[{id: 5}, {id: 4}], [{id: 3}, {id: 2}], []];

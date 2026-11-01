@@ -11,9 +11,18 @@ export function useRows(line, patterns, {incremental = false} = {}) {
     const actionFailure = ref("");
     const answer = ref(null);
 
-    // a created row is asked for alone, after the newest one held; any other change reads the page again
+    // a changed row is read alone, so one on an older page is kept up to date too; one that no longer lists leaves
+    async function changed(id) {
+        const result = await context.read(`${line} --before-id ${id + 1} --limit 1`);
+        if (!result.ok) return load();
+        const row = result.value.rows.find((listed) => listed.id === id);
+        rows.value = row ? rows.value.map((held) => (held.id === id ? row : held)) : rows.value.filter((held) => held.id !== id);
+    }
+
+    // a created row is asked for alone, after the newest one held; a held row that changed is read alone; anything else reads the page again
     async function heard(event) {
         if (incremental && String(event?.event ?? "").endsWith(".delete")) return void (rows.value = rows.value.filter((row) => row.id !== event.row_id));
+        if (incremental && event?.row_id && !String(event.event ?? "").endsWith(".create") && rows.value.some((row) => row.id === event.row_id)) return changed(event.row_id);
         const created = incremental && rows.value.length && String(event?.event ?? "").endsWith(".create");
         if (!created) return load();
         const newest = Math.max(...rows.value.map((row) => row.id));

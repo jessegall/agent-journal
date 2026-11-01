@@ -1,9 +1,9 @@
 <script setup>
-import {ref} from "vue";
+import {computed, ref, TransitionGroup} from "vue";
 import EmptyState from "../src/kit/EmptyState.vue";
 import Skeleton from "../src/kit/Skeleton.vue";
 
-defineProps({
+const props = defineProps({
     rows: {type: Array, required: true},
     failure: {type: String, default: ""},
     empty: {type: String, required: true},
@@ -12,7 +12,10 @@ defineProps({
     shape: {type: String, default: "rows"},
     // reads the next page behind the rows and says whether it found any; with none given the list has no pages
     older: {type: Function, default: null},
+    // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
+    arrival: {type: Object, default: null},
 });
+const list = computed(() => (props.arrival ? {is: TransitionGroup, tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : {is: "ul"}));
 const finished = ref(false);
 async function showMore(older) {
     finished.value = !(await older());
@@ -30,13 +33,13 @@ async function showMore(older) {
         <EmptyState :title="empty" />
     </template>
     <template v-else>
-        <ul class="row-list">
+        <component v-bind="list" class="row-list">
             <template v-for="row in rows" :key="row.id">
-                <li class="row-list-row">
+                <li class="row-list-row" :data-row="row.id">
                     <slot :row="row" />
                 </li>
             </template>
-        </ul>
+        </component>
         <template v-if="older && !finished && rows.length">
             <button type="button" class="row-list-more" data-row-list-more @click="showMore(older)">Show more</button>
         </template>

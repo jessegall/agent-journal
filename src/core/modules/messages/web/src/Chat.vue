@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {Btn, DockStack, RunningCommand, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, PinsToggle, RunningCommand, Icon, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message list", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark list", ["chat_mark.*"], {incremental: true});
@@ -11,7 +11,8 @@ const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) =
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo is dropped when a message of the user with the same words has landed since
 const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
-const rows = computed(() => interleaved([...messages.value, ...echoes.value], marks.value));
+const rows = computed(() => withDayLines(interleaved([...messages.value, ...echoes.value], marks.value)));
+const {visible: pinned} = usePins(() => notices.value);
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 const runningTool = ref("");
 async function readTool() {
@@ -165,18 +166,18 @@ function keepDraft(words) {
 text.value = readDraft();
 watch(text, (words) => !editing.value && keepDraft(words));
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
-let paging = false;
+const paging = ref(false);
 // scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
 async function pageOlder() {
-    if (paging || !loaded.value) return;
-    paging = true;
+    if (paging.value || !loaded.value) return;
+    paging.value = true;
     const before = scroller.value.scrollHeight;
     const [more, moreMarks] = await Promise.all([older(), olderMarks()]);
     if (more || moreMarks) {
         await nextTick();
         scroller.value.scrollTop += scroller.value.scrollHeight - before;
     }
-    paging = false;
+    paging.value = false;
 }
 function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
@@ -201,6 +202,21 @@ watch([rows, loaded], async () => {
     await nextTick();
     if (atFoot && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
 });
+// a row that lands while the reader follows the foot comes in as version 4's did: the chat glides up, then the row fades in; the first rows and a page of older ones just appear
+const SETTLE_MS = 1500;
+let settled = false;
+watch(loaded, () => setTimeout(() => (settled = true), SETTLE_MS));
+const comeIn = arrivalQueue();
+const arrivalPane = () => ({pane: scroller.value, follows: () => settled && atFoot});
+const rowOf = (element) => rows.value.find((row) => row.id === element.dataset.row)?.row;
+const isEcho = (row) => Boolean(row?.local);
+const arrival = {
+    enter: (element, done) => {
+        const row = rowOf(element);
+        return isEcho(row) ? arriveAtOnce(element, arrivalPane(), done) : row?.type === "user" ? done() : comeIn(element, arrivalPane(), done);
+    },
+    leave: (element, done) => (!atFoot || !element.querySelector("[data-message]") ? done() : depart(element, done)),
+};
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
 </script>
@@ -208,7 +224,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 <template>
     <div ref="chat" class="chat">
         <div data-notices class="notices">
-            <template v-for="notice in notices" :key="notice.id">
+            <template v-for="notice in pinned" :key="notice.id">
                 <div class="notice">
                     <span class="notice-dot" />
                     <span class="notice-text">{{ notice.title }}</span>
@@ -218,11 +234,18 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </button>
                 </div>
             </template>
+            <PinsToggle :notices="notices" />
         </div>
         <div ref="scroller" class="history" @scroll="followScroll">
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" shape="messages" empty="No messages yet">
+            <template v-if="paging">
+                <Skeleton shape="older" label="Loading older messages" />
+            </template>
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" :arrival="arrival" shape="messages" empty="No messages yet">
                 <template #default="{row}">
-                    <template v-if="row.kind === 'mark'">
+                    <template v-if="row.kind === 'day'">
+                        <p class="chat-day" data-day-line>{{ row.title }}</p>
+                    </template>
+                    <template v-else-if="row.kind === 'mark'">
                         <MarkHost :mark="row.row" />
                     </template>
                     <template v-else>
@@ -382,6 +405,14 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 
 .running-dot.idle {
     background: var(--text-4);
+}
+
+.chat-day {
+    margin: 0;
+    padding: 4px 0;
+    color: var(--text-4);
+    font-size: 10.5px;
+    text-align: center;
 }
 
 .jump-holder {

@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {context, drawn, page} from "./support/windowContext.js";
+import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
 import PlanList from "../../core/modules/plans/web/src/plans.js";
@@ -13,6 +13,25 @@ import Terminal from "../../suites/coding/web/src/Terminal.vue";
 
 test("the chat window shows the environment's messages", async () => {
     expect(await drawn(Chat, context({"message list": page([{id: 1, type: "user", text: "Ship the cart today"}])}))).toContain("Ship the cart today");
+});
+
+test("the chat names each day above its first row", async () => {
+    const element = await mounted(Chat, context({"message list": page([{id: 2, type: "user", text: "today", created_at: new Date().toISOString()}, {id: 1, type: "user", text: "long ago", created_at: "2020-03-02T10:00:00Z"}])}));
+    const lines = [...element.querySelectorAll("[data-day-line]")].map((line) => line.textContent);
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toContain("March 2020");
+    expect(lines[1]).toContain("Today");
+});
+
+test("the chat's pinned links shrink to a corner and come back", async () => {
+    const element = await mounted(Chat, context({"message list": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
+    expect(element.textContent).toContain("Ready to review");
+    element.querySelector(".pins-toggle").click();
+    await settle();
+    expect(element.textContent).not.toContain("Ready to review");
+    element.querySelector(".pins-toggle").click();
+    await settle();
+    expect(element.textContent).toContain("Ready to review");
 });
 
 test("the tasks window shows each task's title and state", async () => {

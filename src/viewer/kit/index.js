@@ -30,3 +30,7 @@ export {WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";
 // the kit's own version: a breaking change to the window context, or a new Vue minor version, is a new major version
 export const KIT_VERSION = "1.0.0";
 export const KIT_VUE = "3.5";
+export {withDayLines} from "../src/domain/dayLines.js";
+export {arrivalQueue, arriveAtOnce, depart} from "../src/chat/arrival.js";
+export {usePins} from "../src/chat/pins.js";
+export {default as PinsToggle} from "../src/chat/PinsToggle.vue";
