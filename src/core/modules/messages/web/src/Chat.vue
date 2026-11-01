@@ -9,7 +9,8 @@ const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const {rows: latestCalls} = useRows("hook-call list --limit 1", ["hook_call.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
-const rows = computed(() => interleaved(messages.value, marks.value));
+const outgoing = ref([]);
+const rows = computed(() => interleaved([...messages.value, ...outgoing.value], marks.value));
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
 const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? latestCalls.value[0].tool : ""));
 const FOLD_AFTER_MS = 180;
@@ -71,12 +72,19 @@ const removeAttached = (entry) => (attached.value = attached.value.filter((other
 const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
 
 async function send() {
-    const files = attached.value.flatMap((entry) => ["--file", entry.pending]);
-    const result = await context.run(["message", "send", text.value || attached.value.map((entry) => entry.name).join(", "), ...files]);
-    sendFailure.value = result.ok ? "" : result.error;
-    if (result.ok) (text.value = "", attached.value = []);
-    load();
+    const sent = {text: text.value, attached: attached.value};
+    const files = sent.attached.flatMap((entry) => ["--file", entry.pending]);
+    const line = sent.text || sent.attached.map((entry) => entry.name).join(", ");
+    const echo = {id: `sending-${Date.now()}`, type: "user", text: line, created_at: Date.now(), files: [], local: true};
+    outgoing.value = [...outgoing.value, echo];
+    text.value = "";
+    attached.value = [];
+    sendFailure.value = "";
     focusComposer();
+    const result = await context.run(["message", "send", line, ...files]);
+    if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached);
+    await load();
+    outgoing.value = outgoing.value.filter((other) => other !== echo);
 }
 
 const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), sendable.value && send());
