@@ -1,3 +1,5 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from datetime import timedelta
 
 from core.testing.hook_samples import HookSamples
@@ -225,3 +227,19 @@ def test_two_jobs_close_together_start_the_worker_once(new_story):
     story.run_listeners()
     assert len(launcher.requests) == 1
     story.expect_text(f"agent-line list --agent {worker.id}", "Second job", "waiting")
+
+
+def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.expect_success(f"agent end {worker.id}", actor=user)
+    story.run_listeners()
+    story.expect_rows(launcher.requests == [])
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
+    launcher.server.close()
+

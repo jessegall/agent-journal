@@ -8,7 +8,7 @@ from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.support.person_check import PersonCheck
 from core.modules.drivers.commands.resume_agent.resume_agent import ResumeAgent
-from core.modules.drivers.listeners.resume_line_listener import RESUME_SOURCE
+from core.modules.drivers.listeners.typed_line_listener import RESUME_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 
 RESUMED_LINE = "the user resumed you: carry on where you stopped"

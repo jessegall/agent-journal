@@ -1,3 +1,4 @@
+from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -126,6 +127,25 @@ def test_deleting_the_task_it_waits_on_opens_a_task(new_story):
     story.run("task block 1 --on task:2")
     story.expect_success("task delete 2")
     story.expect_success("task show 1", "state: open")
+
+
+def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(new_story):
+    story = new_story(fixture=TwoTasks)
+    typed: list[tuple[int, str]] = []
+
+    class KeptTyping(TerminalTyping):
+        def __init__(self) -> None:
+            pass
+
+        def type_line(self, agent_id: int, line: str) -> None:
+            typed.append((agent_id, line))
+
+    story.container.bind(TerminalTyping, KeptTyping())
+    story.run("task block 1 --on task:2")
+    story.run('task cancel 2 --reason "no"')
+    story.run_listeners()
+    story.expect_rows(typed == [(story.agent.id, "[journal] task 1, Cart, is open again: what it waited on has ended")])
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task 1, Cart, is open again")
 
 
 def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):

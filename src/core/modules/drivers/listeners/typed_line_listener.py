@@ -11,12 +11,13 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.agent_line import AgentLine
 
 RESUME_SOURCE = "drivers.resume"
+TYPED_SOURCES = (RESUME_SOURCE, "tasks.wait-ended")
 
 
-class ResumeLineListener(CommitListener):
-    """Types the line that a resumed agent may carry on, since a paused agent sends no hook that could carry it; with no terminal to type in, the line waits for its next hook."""
+class TypedLineListener(CommitListener):
+    """Types a line for an agent that may be sitting idle and so sends no hook that could carry it: that it was resumed, or that a task it waited on opened. With no terminal to type in, the line waits for its next hook."""
 
-    name = "drivers.resume-line"
+    name = "drivers.typed-line"
     event = "agent_line.create"
 
     def __init__(self, queries: Queries, typing: TerminalTyping, bus: Bus) -> None:
@@ -24,7 +25,7 @@ class ResumeLineListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         line = self.queries.query(AgentLine).find(event.row_id)
-        if line.source != RESUME_SOURCE:
+        if line.source not in TYPED_SOURCES:
             return
         try:
             self.typing.type_line(self.queries.query(Agent).find(line.agent_id).terminal_id, line.text)

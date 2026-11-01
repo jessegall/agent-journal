@@ -1,3 +1,7 @@
+from pathlib import Path
+
+import pytest
+
 import os
 import sqlite3
 import time
@@ -31,6 +35,25 @@ def test_the_first_check_writes_a_copy_that_opens_with_the_journals_rows(new_sto
 def test_a_copy_younger_than_the_setting_is_not_written_again(new_story):
     story, backup = journal(new_story)
     backup.follow()
+    backup.follow()
+    assert len(backup.copies()) == 1
+
+
+def test_a_copy_that_fails_midway_leaves_nothing_counted_as_a_copy(new_story, monkeypatch):
+    story, backup = journal(new_story)
+
+    def interrupted(path, target):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Path, "replace", interrupted)
+    with pytest.raises(OSError):
+        backup.follow()
+    assert backup.copies() == [] and list(backup.folder().iterdir()) == []
+
+
+def test_keeping_no_copies_still_keeps_the_one_just_written(new_story):
+    story, backup = journal(new_story)
+    story.expect_success("setting set journal.core.settings.backup-count 0 --project", actor=story.user)
     backup.follow()
     assert len(backup.copies()) == 1
 
