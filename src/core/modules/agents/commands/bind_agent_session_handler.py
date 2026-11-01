@@ -10,7 +10,8 @@ from core.modules.agents.models.agent import Agent
 
 
 class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
-    """Saves the real session on an open agent row, refusing one that has ended."""
+    """Saves the real session on an open agent row, refusing one that has ended; a session that an ended agent
+    holds already is that agent resumed, so it is reopened on the launch's process and the launch row ends."""
 
     command = BindAgentSession
 
@@ -21,4 +22,8 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
         agent = self.queries.query(Agent).find(command.row_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
+        held = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
+        if held and held[0].id != agent.id:
+            self.repository.save(replace(agent, ended_at=context.timestamp), context)
+            return self.repository.save(replace(held[0], ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at), context)
         return self.repository.save(replace(agent, session=command.session), context)

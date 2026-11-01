@@ -27,3 +27,14 @@ def test_a_claude_helper_is_found_by_the_session_it_was_given(new_story):
     helper_id = story.new_row_id(f"agent start s-2 claude worker --parent {main.id} --environment main")
     helper = hook_agent(story, story.hook("s-2", HookSamples.stop().with_fields(launch="worker-8")))
     story.expect_rows(helper.id == helper_id)
+
+
+def test_a_launch_that_resumes_an_ended_session_reopens_that_agent_and_ends_the_launch_row(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    old = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story.run(f"agent end {old.id}")
+    placeholder_id = story.new_row_id("agent start main-3 claude main --environment main")
+    resumed = hook_agent(story, story.hook("s-1", HookSamples.session_start().with_fields(launch="main-3")))
+    story.expect_rows(resumed.id == old.id)
+    story.expect_text(f"agent show {old.id}", "session: s-1")
+    story.expect_text(f"agent show {placeholder_id}", "ended_at")
