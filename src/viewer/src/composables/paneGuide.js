@@ -10,7 +10,7 @@ export const TOUR = [
     {
         title: "Pick a preset",
         text: "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.",
-        target: "[data-agent-bar] [data-presets]",
+        target: "[data-presets]",
     },
     {
         title: "Split a pane",
@@ -29,7 +29,7 @@ export const TOUR = [
     {
         title: "Full screen",
         text: `This button, or the full screen keys (${FULLSCREEN_KEYS}), hides the sidebar and the top bar so the panes fill the screen. Esc brings them back.`,
-        target: "[data-agent-bar] [data-fullscreen]",
+        target: "[data-fullscreen]",
     },
 ];
 const key = (environment, part) => `journal.${part}.${environment}`;

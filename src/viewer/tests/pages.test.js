@@ -143,10 +143,10 @@ test("the plus bar of the home page shows an icon for each closed window", async
 
 const STEPS = [
     ["Add a window", "The plus in a window's header lists the windows that are closed. Pick one to open it there, or drag one onto a pane.", "[data-add-window]"],
-    ["Pick a preset", "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.", "[data-agent-bar] [data-presets]"],
+    ["Pick a preset", "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.", "[data-presets]"],
     ["Split a pane", "Each window has this menu. Split right or Split below opens a second window beside this one.", `[data-menu="split-right"]`],
     ["Detach a window", "Detach opens this window in a window of its own that stays on screen on every page. Dock it back from its menu.", `[data-menu="detach"]`],
-    ["Full screen", expect.stringMatching(/^This button, or the full screen keys \(.+\), hides the sidebar and the top bar so the panes fill the screen\. Esc brings them back\.$/), "[data-agent-bar] [data-fullscreen]"],
+    ["Full screen", expect.stringMatching(/^This button, or the full screen keys \(.+\), hides the sidebar and the top bar so the panes fill the screen\. Esc brings them back\.$/), "[data-fullscreen]"],
 ];
 
 test("the tour shows its five steps in order, pointing at each target, with the pane menu open for the split and detach steps and closed after", async () => {

@@ -18,3 +18,22 @@ test("a view window builds its own catalogue and event stream, draws its one win
     expect(element.querySelectorAll(".window")).toHaveLength(1);
     vi.unstubAllGlobals();
 });
+
+test("a window on a page of its own opens a row in the panel, as Home does", async () => {
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "refused"})}));
+    window.location.hash = "#?open=plans:7";
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    const catalogue = new WindowCatalogue(async () => ({windows: [board]}));
+    const element = document.createElement("div");
+    document.body.append(element);
+    const app = createApp(() => h(ViewWindow, {environment: "main", view: "notes.board", float: 0, standalone: true, catalogue, events: () => () => {}}));
+    app.mount(element);
+    for (let round = 0; round < 8; round++) await new Promise((resolve) => setTimeout(resolve));
+    await nextTick();
+    expect(document.querySelector("[data-resource-close]")).not.toBeNull();
+    app.unmount();
+    window.location.hash = "";
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
+    element.remove();
+    vi.unstubAllGlobals();
+});

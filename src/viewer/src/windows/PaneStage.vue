@@ -61,7 +61,7 @@ const measure = () => {
     narrow.value = window.innerWidth < PHONE_WIDTH;
     width.value = window.innerWidth;
 };
-const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,[data-pane-tour]";
+const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,.pane-tour";
 const adding = ref(null);
 const agentRow = ref(null);
 const agentKnown = ref(false);

@@ -9,6 +9,7 @@ import {useViewTab} from "../composables/viewTabs.js";
 import {followEvents} from "../windows/windowCatalogue.js";
 import {startWindows} from "../windows/startup.js";
 import WindowPane from "../windows/WindowPane.vue";
+import ResourcePanel from "../resource/ResourcePanel.vue";
 
 const props = defineProps({
     environment: {type: String, required: true},
@@ -59,6 +60,7 @@ watchEffect(() => {
                 </template>
                 <WindowPane :name="view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
             </div>
+            <ResourcePanel :read="shellLine" />
         </template>
     </div>
 </template>
