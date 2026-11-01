@@ -1,3 +1,5 @@
+from core.modules.notices.rules.link_pin_rule import LinkPinRule
+from core.modules.notices.support.notice_nudges import NOTICE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.notices.commands.close_notice.close_notice_handler import CloseNoticeHandler
@@ -18,6 +20,8 @@ class NoticesModule(Module):
     name = "journal.core.notices"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
+    nudges = NOTICE_NUDGES
+    driver_rules = [LinkPinRule]
     seeders = [NoticesSeeder]
     models = [ModelDeclaration(Notice, query=NoticeQuery, excluded_subcommands=["make", "edit", "list", "delete"])]
     migrations = [NoticesTableMigration]
