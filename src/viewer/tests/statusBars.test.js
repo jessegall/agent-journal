@@ -46,3 +46,9 @@ test("the bars read the journal again every few seconds, so they follow the stat
     const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
     expect(stage).toMatch(/setInterval\(\(\) => \(readAgent\(\), readFacts\(\)\), FACT_SECONDS \* 1000\)/);
 });
+
+test("the agent bar names the task the agent is working in, and nothing when it has none", () => {
+    const working = mounted(AgentBar, {agent: MAIN, task: {id: 5383, title: "Port the file pages"}});
+    expect(working.querySelector("[data-agent-task]").textContent).toBe("Task 5383: Port the file pages");
+    expect(mounted(AgentBar, {agent: MAIN, task: null}).querySelector("[data-agent-task]")).toBeNull();
+});

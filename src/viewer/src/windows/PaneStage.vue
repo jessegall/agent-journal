@@ -88,13 +88,17 @@ async function readEnvironments() {
     environments.value = rowsOf(answer);
 }
 const facts = ref(NO_FACTS);
+const taskRows = ref([]);
+// the task the agent is working in: the one it holds that is started
+const currentTask = computed(() => taskRows.value.find((row) => row.state === "started" && agentRow.value && row.holder_id === agentRow.value.id) ?? null);
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents"};
 const openCount = (key) => openView(COUNT_WINDOWS[key]);
 async function readFacts() {
     if (!props.shellRead) return;
     const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list"]), props.shellRead(["task", "list"]), props.shellRead(["question", "list"])]);
-    facts.value = barFacts({agents: rowsOf(agents), tasks: rowsOf(tasks), questions: rowsOf(questions)});
+    taskRows.value = rowsOf(tasks);
+    facts.value = barFacts({agents: rowsOf(agents), tasks: taskRows.value, questions: rowsOf(questions)});
 }
 async function readAgent() {
     const answer = props.shellRead ? await props.shellRead(["agent", "list"]) : null;
@@ -191,7 +195,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
-                <AgentBar :agent="agentRow" :helpers="facts.helpers" @open="openCount" />
+                <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
                 <InformationBar :agent="agentRow" :facts="facts" @open="openCount" />
             </template>
             <nav class="pane-stage-bar agent-bar">
