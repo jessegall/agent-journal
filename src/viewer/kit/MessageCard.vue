@@ -4,6 +4,7 @@ import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
 import {peekChip, peekRef} from "../src/route.js";
+import "../src/text/all.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card
