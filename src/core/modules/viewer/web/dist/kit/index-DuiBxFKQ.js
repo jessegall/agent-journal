@@ -7537,7 +7537,7 @@ const Og = /* @__PURE__ */ Sg(Ag), Cg = ["width", "height", "viewBox"], Tg = ["w
       }, null, 8, Bg)
     ], 8, Cg));
   }
-}, jm = /* @__PURE__ */ J(Rg, [["__scopeId", "data-v-489f0852"]]), Nm = Fo(() => import("./VoiceFigure-CmbtYDAX.js").then((e) => e.V)), Pm = "1.0.0", qm = "3.5";
+}, jm = /* @__PURE__ */ J(Rg, [["__scopeId", "data-v-489f0852"]]), Nm = Fo(() => import("./VoiceFigure-DZLcQy4q.js").then((e) => e.V)), Pm = "1.0.0", qm = "3.5";
 export {
   Ng as $,
   om as A,

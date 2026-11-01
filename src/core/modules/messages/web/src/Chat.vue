@@ -25,7 +25,10 @@ const heardAt = ref(Date.now() / 1000);
 const userFaceKeys = (row) => JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").map((face) => face.emoji);
 const facedAt = ref(0);
 let seenFaces = new Map();
-watch(messages, (rows) => {
+// watched by the faces themselves, so a row changed in place is seen too
+const faceSignature = computed(() => messages.value.map((row) => `${row.id}:${userFaceKeys(row).join("")}`).join("|"));
+watch(faceSignature, () => {
+    const rows = messages.value;
     const next = new Map(rows.map((row) => [row.id, userFaceKeys(row)]));
     if (rows.some((row) => seenFaces.has(row.id) && userFaceKeys(row).some((emoji) => !seenFaces.get(row.id).includes(emoji)))) facedAt.value = Date.now() / 1000;
     seenFaces = next;

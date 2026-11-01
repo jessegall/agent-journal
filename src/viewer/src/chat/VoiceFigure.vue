@@ -192,7 +192,7 @@ async function start() {
         rest();
         startBody();
     } catch (error) {
-        failure.value = String(error.message ?? error);
+        if (mine === started) failure.value = String(error.message ?? error);
     }
 }
 
