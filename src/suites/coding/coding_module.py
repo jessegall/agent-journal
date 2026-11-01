@@ -60,4 +60,4 @@ class CodingModule(Module):
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, place=WindowPlace.AGENT,
-                                 reads=["agent terminal"], runs=["agent type"])]
+                                 reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.create"])]

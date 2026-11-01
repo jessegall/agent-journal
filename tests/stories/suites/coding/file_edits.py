@@ -46,3 +46,13 @@ def test_an_edit_that_made_the_file_says_so(new_story):
     story.run_listeners()
     assert json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["edit_type"] == "new"
 
+
+def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_story):
+    story = new_story(fixture=BuilderStarted)
+    folder = json.loads(story.run("environment show 1 --json", actor=story.agent).output_text)["folder"]
+    story.hook("s-1", HookSamples.edit(f"{folder}/src/cart.py", 1, 0).with_fields(event="post_tool_use"))
+    story.hook("s-1", HookSamples.edit("/elsewhere/cart.py", 1, 0).with_fields(event="post_tool_use"))
+    story.run_listeners()
+    assert json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["path"] == "src/cart.py"
+    assert json.loads(story.run("file-edit show 2 --json", actor=story.agent).output_text)["path"] == "/elsewhere/cart.py"
+

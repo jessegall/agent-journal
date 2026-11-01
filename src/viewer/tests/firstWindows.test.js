@@ -104,17 +104,29 @@ test("a window shows the reason a read was refused", async () => {
     expect(await drawn(TaskList, context({}))).toContain("no answer for task board");
 });
 
-test("the terminal window draws its agent's terminal lines and reads the newer ones after the last", async () => {
-    const windowContext = context({"agent terminal": page([{number: 1, text: "ready"}, {number: 2, text: "The total is in cents now"}])}, 2);
-    const text = await drawn(Terminal, windowContext);
-    expect(text).toContain("ready");
-    expect(text).toContain("The total is in cents now");
-    expect(windowContext.reads[0]).toBe("agent terminal 2 --after 0");
+test("the terminal window lists its agent's commands in order, marks journal lines and refusals, and opens a long line", async () => {
+    const windowContext = context({"hook-call feed": page([
+        {id: 3, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "rm -rf build", refusal: "not this"},
+        {id: 2, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "journal task list", refusal: ""},
+        {id: 1, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
+        {id: 9, agent_id: 2, hook: "post_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
+        {id: 8, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
+    ])}, 2);
+    const element = await mounted(Terminal, windowContext);
+    expect(windowContext.reads[0]).toBe("hook-call feed --agent-id 2");
+    const rows = [...element.querySelectorAll("[data-terminal-command]")];
+    expect(rows.map((row) => row.querySelector(".terminal-text").textContent)).toEqual(["pytest -q", "journal task list", "rm -rf build"]);
+    expect(rows.map((row) => row.querySelector(".terminal-mark").textContent)).toEqual(["$", "#", "$"]);
+    expect(rows[2].querySelector("[data-terminal-refused]")).not.toBeNull();
+    rows[0].querySelector(".terminal-text").click();
+    await settle();
+    expect(rows[0].querySelector(".terminal-text").classList.contains("open")).toBe(true);
 });
 
-test("the terminal window of an agent with no terminal lines says so", async () => {
-    expect(await drawn(Terminal, context({"agent terminal": page([])}, 2))).toContain("No terminal output from this agent yet");
+test("the terminal window of an agent with no commands says so", async () => {
+    expect(await drawn(Terminal, context({"hook-call feed": page([])}, 2))).toContain("No commands from this agent yet");
 });
+
 
 test("the transcript window shows one agent's conversation, each turn under its author", async () => {
     const windowContext = context({"agent transcript 7": page([{id: 1, author: "user", row_type: "user", text: "Fix the cart total"},
@@ -126,7 +138,7 @@ test("the transcript window shows one agent's conversation, each turn under its 
 });
 
 test("a line typed in the terminal goes to the agent, and a refusal gives it back with the reason", async () => {
-    const window = {...context({"agent terminal": page([])}, 7), lines: []};
+    const window = {...context({"hook-call feed": page([])}, 7), lines: []};
     window.run = async (line) => (window.lines.push(line), {ok: false, error: "no launcher is running here"});
     const element = await mounted(Terminal, window);
     const form = element.querySelector("[data-terminal-run]");

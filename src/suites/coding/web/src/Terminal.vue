@@ -1,18 +1,33 @@
 <script setup>
-import {nextTick, onUnmounted, ref} from "vue";
-import {EmptyState, useWindow} from "@journal/window-kit";
+import {computed, nextTick, ref, watch} from "vue";
+import {EmptyState, useRows, useWindow} from "@journal/window-kit";
 
-const LINE_LIMIT = 2000;
-const FOLLOW_MILLISECONDS = 1000;
+// the commands an agent ran, as version 4's terminal listed them, oldest above, each opening to its whole line, and a line typed here goes to its terminal
+const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
+const JOURNAL_LINE = /^(\S+=\S+\s+)*(\S*\/)?journal(\s|$)/;
 
 const context = useWindow();
-const lines = ref([]);
-const failure = ref("");
-const body = ref(null);
+const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${context.agent}`, ["hook_call.create"], {incremental: true});
 const typed = ref("");
 const refusal = ref("");
 const input = ref(null);
-let lastNumber = 0;
+const body = ref(null);
+const opened = ref(new Set());
+
+const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && COMMAND_TOOLS.has(row.tool)).sort((one, two) => one.id - two.id));
+const markOf = (row) => (JOURNAL_LINE.test(row.summary) ? "#" : "$");
+
+function toggle(row) {
+    const next = new Set(opened.value);
+    if (!next.delete(row.id)) next.add(row.id);
+    opened.value = next;
+}
+
+watch(() => commands.value.length, async () => {
+    const atEnd = !body.value || body.value.scrollTop + body.value.clientHeight >= body.value.scrollHeight - 4;
+    await nextTick();
+    if (atEnd && body.value) body.value.scrollTop = body.value.scrollHeight;
+});
 
 async function send() {
     const line = typed.value;
@@ -21,35 +36,12 @@ async function send() {
     const result = await context.run(["agent", "type", String(context.agent), line]);
     refusal.value = result.ok ? "" : result.error;
     if (!result.ok) typed.value = line;
-    else load();
 }
 
 function focusInput(event) {
-    if (String(window.getSelection()) || event.target.closest("button, a, input, textarea")) return;
+    if (String(window.getSelection()) || event.target.closest("button, a, input, textarea, .terminal-text")) return;
     input.value?.focus();
 }
-
-// the lines after the last one drawn, kept to the last LINE_LIMIT, the view held at the end while it was there
-async function load() {
-    const result = await context.read(`agent terminal ${context.agent} --after ${lastNumber}`);
-    if (!result.ok) {
-        failure.value = result.error;
-        return;
-    }
-    failure.value = "";
-    if (!result.value.rows.length) return;
-    const atEnd = !body.value || body.value.scrollTop + body.value.clientHeight >= body.value.scrollHeight - 4;
-    lines.value = [...lines.value, ...result.value.rows].slice(-LINE_LIMIT);
-    lastNumber = lines.value[lines.value.length - 1].number;
-    await nextTick();
-    if (atEnd && body.value) body.value.scrollTop = body.value.scrollHeight;
-}
-
-const follow = setInterval(() => {
-    if (context.visible.value) load();
-}, FOLLOW_MILLISECONDS);
-onUnmounted(() => clearInterval(follow));
-load();
 </script>
 
 <template>
@@ -57,21 +49,28 @@ load();
         <template v-if="failure">
             <p class="terminal-failure">{{ failure }}</p>
         </template>
-        <template v-else-if="!lines.length">
-            <EmptyState title="No terminal output from this agent yet" />
+        <template v-else-if="loaded && !commands.length">
+            <EmptyState title="No commands from this agent yet" />
         </template>
         <template v-else>
-            <pre ref="body" class="terminal-body"><template v-for="line in lines" :key="line.number"><span class="terminal-line">{{ line.text }}</span>
-</template></pre>
+            <div ref="body" class="terminal-body" data-terminal-log>
+                <template v-for="row in commands" :key="row.id">
+                    <div :class="['terminal-row', {refused: row.refusal}]" data-terminal-command :title="row.refusal ? `The journal refused this before it ran: ${row.refusal}` : null">
+                        <span class="terminal-mark">{{ markOf(row) }}</span>
+                        <span :class="['terminal-text', {open: opened.has(row.id)}]" @click="toggle(row)">{{ row.summary }}</span>
+                        <template v-if="row.refusal">
+                            <span class="terminal-state" data-terminal-refused>refused</span>
+                        </template>
+                    </div>
+                </template>
+            </div>
         </template>
-        <template v-if="context.agent">
-            <form class="terminal-run" data-terminal-run @submit.prevent="send">
-                <span class="terminal-prompt">$</span>
-                <input ref="input" v-model="typed" class="terminal-input" aria-label="A command to run in the agent's terminal" autocomplete="off" @keydown.enter.ctrl.prevent="send" @keydown.enter.meta.prevent="send">
-            </form>
-            <template v-if="refusal">
-                <p class="terminal-failure" role="alert" data-terminal-refusal>{{ refusal }}</p>
-            </template>
+        <form class="terminal-run" data-terminal-run @submit.prevent="send">
+            <span class="terminal-prompt">$</span>
+            <input ref="input" v-model="typed" class="terminal-input" aria-label="A command to run in the agent's terminal" autocomplete="off" @keydown.enter.ctrl.prevent="send" @keydown.enter.meta.prevent="send">
+        </form>
+        <template v-if="refusal">
+            <p class="terminal-failure" role="alert" data-terminal-refusal>{{ refusal }}</p>
         </template>
     </section>
 </template>
@@ -95,8 +94,36 @@ load();
     font-family: var(--font-mono, ui-monospace, monospace);
     font-size: 12px;
     line-height: 1.45;
+}
+
+.terminal-row {
+    display: flex;
+    gap: 7px;
+    align-items: baseline;
+}
+
+.terminal-mark,
+.terminal-state {
+    flex: none;
+    color: var(--text-3);
+}
+
+.terminal-row.refused .terminal-text,
+.terminal-row.refused .terminal-state {
+    color: var(--danger);
+}
+
+.terminal-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.terminal-text.open {
+    overflow-wrap: anywhere;
     white-space: pre-wrap;
-    word-break: break-word;
 }
 
 .terminal-run {

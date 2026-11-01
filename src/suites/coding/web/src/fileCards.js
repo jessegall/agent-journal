@@ -28,5 +28,5 @@ function land(cards, edit) {
     return [...before, ...kept, {...card, half: fits, alone: fits && !waiting}];
 }
 
-// the edits, oldest first, as version 4's feed drew them: edits of one file one after the other join one card, and two small cards in a row share a line
+// the edits, oldest first, as version 4's feed drew them: edits of one file one after the other join one card, and two small cards in a row share a line of the feed
 export const cardsOf = (edits) => edits.map((edit) => ({...edit, rows: JSON.parse(edit.rows || "[]")})).reduce(land, []);
