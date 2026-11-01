@@ -75,5 +75,19 @@
         "version4": "bottom-v4.png",
         "version5": "bottom-v5.png",
         "version5Does": "Same: docked items sit under the chat history above the composer, and buttons draw no border except Open and Dump files. Better: nothing yet; version 5's sidebar still lacks version 4's grouped sections and count badges."
+    },
+    {
+        "name": "sidebar",
+        "report": "The sidebar and the breadcrumb",
+        "version4": "sidebar-v4.png",
+        "version5": "sidebar-v5.png",
+        "version5Does": "Same: a header with the project mark, foldable sections with a caret, counts beside windows, the version at the foot, and a breadcrumb of project, environment and page. Better: the windows sit in one section per module."
+    },
+    {
+        "name": "settings",
+        "report": "The settings page",
+        "version4": "settings-v4.png",
+        "version5": "settings-v5.png",
+        "version5Does": "Same: a search field, a list of sections beside the settings, labels above their values, calm spacing and no native selects. Better: one section per module, and a flag draws as a pill that fills when on."
     }
 ]

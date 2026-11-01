@@ -26,3 +26,21 @@ test("the dock's action buttons and Dump files are the bordered ones", () => {
     expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small bordered :data-dock-action="button\.action"/);
     expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered data-dump-files/);
 });
+
+// task 5476: the sidebar and the breadcrumb as version 4 drew them
+test("the sidebar has a header, a fold per module, counts and a foot, and the page a breadcrumb", () => {
+    const sidebar = read("../src/shell/SidebarPages.vue");
+    expect(sidebar).toContain("sidebar-head");
+    expect(sidebar).toContain("fold-head");
+    expect(sidebar).toContain("item-count");
+    expect(sidebar).toContain("sidebar-foot");
+    expect(read("../src/windows/PaneStage.vue")).toMatch(/<Breadcrumb :environment="environment" \/>/);
+    expect(read("../src/shell/Breadcrumb.vue")).toContain("data-breadcrumb");
+});
+
+test("the settings page has a search, a list of sections and a filled switch", () => {
+    const tree = read("../../core/modules/settings/web/src/SettingsTree.vue");
+    expect(tree).toContain("settings-search-field");
+    expect(tree).toContain("settings-nav");
+    expect(read("../../core/modules/settings/web/src/SettingNode.vue")).toMatch(/\.setting-switch\[aria-checked="true"\] \{[^}]*background: var\(--accent\)/);
+});

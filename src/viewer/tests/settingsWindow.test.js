@@ -83,7 +83,8 @@ test("a refusal shows beside the field that was changed", async () => {
 test("on a phone every field is read-only and nothing runs", async () => {
     const {element, runs} = mounted({face: "phone"});
     await settled();
-    expect([...element.querySelectorAll("input")].every((input) => input.disabled)).toBe(true);
+    // the search field only filters what is shown, so it stays usable; every setting's own field is read-only
+    expect([...element.querySelectorAll(".setting-field")].every((input) => input.disabled)).toBe(true);
     expect(element.querySelector("[data-group-switch]")).toBeNull();
     expect(runs).toEqual([]);
 });

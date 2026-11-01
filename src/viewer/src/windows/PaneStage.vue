@@ -24,6 +24,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
 
@@ -124,7 +125,7 @@ const {counts} = useTabCounts({
     catalogue: props.catalogue,
     subscriptions: props.subscriptions,
     environment: props.environment,
-    names: () => (props.store.layout.value ? [...props.store.open.value] : []),
+    names: () => [...new Set([...(props.store.layout.value ? props.store.open.value : []), ...props.catalogue.windows.value.map((window) => window.name)])],
 });
 const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
@@ -148,7 +149,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :windows="catalogue.windows.value" :environments="environments" :current="environment" @open="openView" />
+            <SidebarPages :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" @open="openView" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">
@@ -174,6 +175,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         </template>
         <template v-else>
             <template v-if="shellRead">
+                <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" />
                 <InformationBar :agent="agentRow" />
             </template>

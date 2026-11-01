@@ -160,16 +160,17 @@ function savedSecret() {
 .setting-switch {
     align-self: flex-start;
     padding: 2px 10px;
-    border: 1px solid var(--line);
+    border: 0;
     border-radius: 10px;
     color: var(--text-2);
-    background: transparent;
+    background: var(--raised);
     font-size: 11px;
+    cursor: pointer;
 }
 
 .setting-switch[aria-checked="true"] {
-    color: var(--text);
-    border-color: var(--accent);
+    color: #fff;
+    background: var(--accent);
 }
 
 .setting-choices {
