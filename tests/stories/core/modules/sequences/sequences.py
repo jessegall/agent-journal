@@ -46,3 +46,27 @@ def test_abandoning_names_the_steps_left_undone_and_goes_through_with_sure(new_s
     story.expect_refusal('sequence abandon --why "not today"', "leaves undone: Run the suite, Tag the release", actor=story.agent)
     story.expect_text('sequence abandon --why "not today" --sure', "sequence 1 abandoned", actor=story.agent)
     story.expect_refusal("sequence next", "no sequence is running", actor=story.agent)
+
+
+def test_a_sequence_has_its_title_and_steps_changed(new_story):
+    story = sequence_story(new_story)
+    story.run('sequence edit 1 --title "Shipping" --steps "Run it" "Tag it" "Tell them"', actor=story.user)
+    story.expect_ordered_lines("sequence show 1", "sequence 1: Shipping, starts by hand only", "1. Run it", "2. Tag it", "3. Tell them", actor=story.user)
+
+
+def test_a_sequence_is_deleted(new_story):
+    story = sequence_story(new_story)
+    story.run("sequence delete 1", actor=story.user)
+    story.expect_absent("sequence list", "Release", actor=story.user)
+
+
+def test_sequence_runs_lists_the_runs_still_going_with_their_step(new_story):
+    story = sequence_story(new_story)
+    story.expect_text("sequence-run list", "nothing found", actor=story.user)
+    story.run("sequence run 1", actor=story.agent)
+    story.expect_text("sequence-run list", "Release", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
+    story.run("sequence next", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
+    story.run("sequence next", actor=story.agent)
+    story.expect_text("sequence-run list", "nothing found", actor=story.agent)

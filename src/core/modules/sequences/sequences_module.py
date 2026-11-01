@@ -12,16 +12,19 @@ from core.modules.sequences.commands.move_sequence_run.move_sequence_run_handler
 from core.modules.sequences.commands.next_step.next_step_subcommand import NextStepSubcommand
 from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import RunSequenceSubcommand
 from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
+from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
 from core.modules.sequences.commands.sequence_show.sequence_show_subcommand import SequenceShowSubcommand
 from core.modules.sequences.migrations.m001_sequences import SequencesTablesMigration
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.models.sequence_run import SequenceRun
+from core.modules.sequences.models.sequence_run_row import SequenceRunRow
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.rules.untaken_step_rule import UntakenStepRule
 from core.modules.sequences.seeders.sequences_seeder import SequencesSeeder
 from core.modules.sequences.upgrade.sequences_move import SequencesMove
 
-BUILT = ["make", "edit", "show", "list", "delete"]
+BUILT = ["make", "show", "list"]
+RUN_BUILT = [*BUILT, "edit", "delete"]
 
 
 class SequencesModule(Module):
@@ -31,13 +34,14 @@ class SequencesModule(Module):
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
-    models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=BUILT)]
+    models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequencesTablesMigration]
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler]
-    subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, RunSequenceSubcommand, FollowStepSubcommand, NextStepSubcommand,
-                   AbandonSequenceSubcommand)
+    subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
+                   NextStepSubcommand, AbandonSequenceSubcommand)
+    views = [SequenceRunRow]
     driver_rules = [UntakenStepRule]
     seeders = [SequencesSeeder]
     windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, icon=WindowIcon.SEQUENCE,
-                                 reads=["sequence list", "sequence show"], events=["sequence.*"])]
+                                 reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

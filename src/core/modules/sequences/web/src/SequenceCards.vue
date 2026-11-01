@@ -1,40 +1,106 @@
 <script setup>
-import {Icon, ago, Skeleton, useOpenRow, useRows} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, Dialog, Icon, ago, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import NewSequence from "./NewSequence.vue";
+import SequenceRuns from "./SequenceRuns.vue";
+import SequenceSteps from "./SequenceSteps.vue";
 
+const context = useWindow();
 const {rows, failure, loaded} = useRows("sequence list", ["sequence.*"]);
-const {opened, toggle} = useOpenRow();
+const {rows: runs} = useRows("sequence-run list", ["sequence_run.*", "sequence.*"]);
+const drafting = ref(false);
+const openedId = ref(null);
+const deleting = ref(false);
+const refusal = ref("");
+const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
+const openedRuns = computed(() => runs.value.filter((run) => run.sequence_id === openedId.value));
+const runningCount = (row) => runs.value.filter((run) => run.sequence_id === row.id).length;
+
+function open(row) {
+    refusal.value = "";
+    deleting.value = false;
+    openedId.value = row.id;
+}
+
+async function remove() {
+    if (!deleting.value) return void (deleting.value = true);
+    const answer = await context.run(["sequence", "delete", String(openedId.value)]);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (answer.ok) openedId.value = null;
+}
 </script>
 
 <template>
-    <div class="cards">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
+    <div class="cards-page">
+        <div class="cards-bar">
+            <span class="cards-count">{{ rows.length }} {{ rows.length === 1 ? "sequence" : "sequences" }}</span>
+            <Btn small bordered data-sequence-new @click="drafting = true"><Icon name="plus" :size="12" /> New sequence</Btn>
+        </div>
+        <div class="cards">
+            <template v-if="!loaded">
+                <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+                <p class="cards-note">{{ failure }}</p>
+            </template>
+            <template v-else-if="loaded && !rows.length">
+                <p class="cards-note">No sequences yet</p>
+            </template>
+            <template v-for="row in rows" :key="row.id">
+                <button type="button" class="card" :data-row="row.id" @click="open(row)">
+                    <span class="card-head"><Icon name="list" class="card-icon" /> Sequence {{ row.id }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
+                    <span class="card-title">{{ row.title }}</span>
+                    <span class="card-foot">{{ row.steps.length }} steps · {{ runningCount(row) ? `${runningCount(row)} running now` : "Only when you or the agent start it" }}</span>
+                </button>
+            </template>
+        </div>
+        <template v-if="drafting">
+            <NewSequence @close="drafting = false" />
         </template>
-        <template v-else-if="failure">
-            <p class="cards-note">{{ failure }}</p>
-        </template>
-        <template v-else-if="loaded && !rows.length">
-            <p class="cards-note">No sequences yet</p>
-        </template>
-        <template v-for="row in rows" :key="row.id">
-            <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
-                <span class="card-head"><Icon name="list" class="card-icon" /> Sequence {{ row.id }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
-                <span class="card-title">{{ row.title }}</span>
-                <template v-if="opened === row.id">
-                    <ol class="card-steps">
-                        <template v-for="step in row.steps" :key="step">
-                            <li>{{ step }}</li>
-                        </template>
-                    </ol>
+        <template v-if="opened">
+            <Dialog :title="opened.title" tall @close="openedId = null">
+                <SequenceSteps :sequence="opened" :runs="openedRuns" />
+                <SequenceRuns :runs="openedRuns" />
+                <template #foot>
+                    <span class="note" role="status">{{ refusal }}</span>
+                    <Btn kind="danger" data-sequence-delete @click="remove">{{ deleting ? "Delete it for good" : "Delete" }}</Btn>
+                    <Btn data-sequence-done @click="openedId = null">Done</Btn>
                 </template>
-                <span class="card-foot">{{ row.steps.length }} steps · Only when you or the agent start it</span>
-            </button>
+            </Dialog>
         </template>
     </div>
 </template>
 
 <style scoped>
+.cards-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.cards-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cards-count,
+.note {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.note {
+    flex: 1;
+}
+
 .cards {
+    flex: 1;
+    overflow-y: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
@@ -56,8 +122,7 @@ const {opened, toggle} = useOpenRow();
     cursor: pointer;
 }
 
-.card:hover,
-.card.open {
+.card:hover {
     border-color: var(--border-strong, var(--border));
 }
 
@@ -76,14 +141,6 @@ const {opened, toggle} = useOpenRow();
 
 .card-title {
     font-weight: 600;
-}
-
-.card-steps {
-    margin: 0;
-    padding-left: 18px;
-    color: var(--text-2);
-    font-size: 13px;
-    line-height: 1.6;
 }
 
 .card-foot {

@@ -34,3 +34,10 @@ def test_strike_ends_a_trigger(new_story):
     story.run('trigger make "deploy" "Run the release sequence"', actor=story.user)
     story.expect_text("trigger strike 1", "trigger 1 struck", actor=story.user)
     story.expect_absent("trigger list", "deploy", actor=story.user)
+
+
+def test_a_trigger_has_its_phrases_action_and_text_changed(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('trigger make "deploy" "Run the release sequence"', actor=story.user)
+    story.run('trigger edit 1 --phrases "ship it" "go live" --action deny --text "Not on a Friday"', actor=story.user)
+    story.expect_hook_refusal("s-1", HookSamples.prompt("go live now"), "a trigger denies this: Not on a Friday")

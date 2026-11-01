@@ -1,36 +1,110 @@
 <script setup>
-import {Icon, ago, Skeleton, useOpenRow, useRows} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, Dialog, Icon, ago, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import NewTrigger from "./NewTrigger.vue";
+import TriggerEditor from "./TriggerEditor.vue";
 
+const context = useWindow();
 const {rows, failure, loaded} = useRows("trigger list", ["trigger.*"]);
-const {opened, toggle} = useOpenRow();
+const drafting = ref(false);
+const openedId = ref(null);
+const refusal = ref("");
+const opened = computed(() => rows.value.find((row) => row.id === openedId.value) || null);
+
+const PATCH_LINES = {
+    phrases: (phrases) => ["--phrases", ...phrases],
+    action: (action) => ["--action", action],
+    text: (text) => ["--text", text],
+};
+
+async function change(patch) {
+    const [[field, value]] = Object.entries(patch);
+    const answer = await context.run(["trigger", "edit", String(openedId.value), ...PATCH_LINES[field](value)]);
+    refusal.value = answer.ok ? "" : answer.error;
+}
+
+async function strike() {
+    const answer = await context.run(["trigger", "strike", String(openedId.value)]);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (answer.ok) openedId.value = null;
+}
+
+function open(row) {
+    refusal.value = "";
+    openedId.value = row.id;
+}
 </script>
 
 <template>
-    <div class="cards">
-        <template v-if="!loaded">
-            <Skeleton shape="cards" />
+    <div class="cards-page">
+        <div class="cards-bar">
+            <span class="cards-count">{{ rows.length }} {{ rows.length === 1 ? "trigger" : "triggers" }}</span>
+            <Btn small bordered data-trigger-new @click="drafting = true"><Icon name="plus" :size="12" /> New trigger</Btn>
+        </div>
+        <div class="cards">
+            <template v-if="!loaded">
+                <Skeleton shape="cards" />
+            </template>
+            <template v-else-if="failure">
+                <p class="cards-note">{{ failure }}</p>
+            </template>
+            <template v-else-if="loaded && !rows.length">
+                <p class="cards-note">No triggers yet</p>
+            </template>
+            <template v-for="row in rows" :key="row.id">
+                <button type="button" class="card" :data-row="row.id" @click="open(row)">
+                    <span class="card-head"><Icon name="bolt" class="card-icon" /> Trigger {{ row.id }} · {{ row.action }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
+                    <span class="card-title">{{ row.text }}</span>
+                    <span class="card-foot">{{ row.next_at ? `Next at ${new Date(row.next_at).toLocaleString()}` : `When these come up: ${row.phrases.join(", ")}` }}</span>
+                </button>
+            </template>
+        </div>
+        <template v-if="drafting">
+            <NewTrigger @close="drafting = false" />
         </template>
-        <template v-else-if="failure">
-            <p class="cards-note">{{ failure }}</p>
-        </template>
-        <template v-else-if="loaded && !rows.length">
-            <p class="cards-note">No triggers yet</p>
-        </template>
-        <template v-for="row in rows" :key="row.id">
-            <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
-                <span class="card-head"><Icon name="bolt" class="card-icon" /> Trigger {{ row.id }} · {{ row.action }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
-                <span class="card-title">{{ row.text }}</span>
-                <template v-if="opened === row.id">
-                    <span class="card-detail">{{ row.next_at ? `Next at ${row.next_at}` : `When these come up: ${row.phrases.join(", ")}` }}</span>
+        <template v-if="opened">
+            <Dialog :title="`Trigger ${opened.id}`" @close="openedId = null">
+                <TriggerEditor :trigger="opened" @change="change" />
+                <template #foot>
+                    <span class="note" role="status">{{ refusal }}</span>
+                    <Btn kind="danger" data-trigger-strike @click="strike">End this trigger</Btn>
+                    <Btn data-trigger-done @click="openedId = null">Done</Btn>
                 </template>
-                <span class="card-foot">{{ row.next_at ? "On a schedule" : `${row.phrases.length} phrases` }}</span>
-            </button>
+            </Dialog>
         </template>
     </div>
 </template>
 
 <style scoped>
+.cards-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.cards-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.cards-count,
+.note {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.note {
+    flex: 1;
+}
+
 .cards {
+    flex: 1;
+    overflow-y: auto;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 12px;
@@ -52,8 +126,7 @@ const {opened, toggle} = useOpenRow();
     cursor: pointer;
 }
 
-.card:hover,
-.card.open {
+.card:hover {
     border-color: var(--border-strong, var(--border));
 }
 
@@ -72,11 +145,6 @@ const {opened, toggle} = useOpenRow();
 
 .card-title {
     font-weight: 600;
-}
-
-.card-detail {
-    color: var(--text-2);
-    font-size: 13px;
 }
 
 .card-foot {

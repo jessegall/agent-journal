@@ -20,7 +20,7 @@ from core.modules.triggers.seeders.triggers_seeder import TriggersSeeder
 from core.modules.triggers.rules.phrase_trigger_rule import PhraseTriggerRule
 from core.modules.triggers.rules.scheduled_trigger_rule import ScheduledTriggerRule
 
-BUILT = ["make", "edit", "show", "list", "delete"]
+BUILT = ["make", "show", "list", "delete"]
 
 
 class TriggersModule(Module):
@@ -36,6 +36,6 @@ class TriggersModule(Module):
     subcommands = (MakeTriggerSubcommand, ScheduleTriggerSubcommand, StrikeTriggerSubcommand, TriggerListSubcommand)
     driver_rules = [PhraseTriggerRule, ScheduledTriggerRule]
     windows = [WindowDeclaration("triggers.triggers", "Triggers", "triggers.js", WindowLoading.COMPONENT, icon=WindowIcon.TRIGGER,
-                                 reads=["trigger list"], events=["trigger.*"])]
+                                 reads=["trigger list"], runs=["trigger make", "trigger schedule", "trigger edit", "trigger strike"], events=["trigger.*"])]
     seeders = [TriggersSeeder]
     moves = [TriggersMove]
