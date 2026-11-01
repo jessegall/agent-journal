@@ -13,10 +13,12 @@ const RUN_MODEL = "process";
 const POLL_MILLISECONDS = 2000;
 const outputLines = ref([]);
 const outputLoaded = ref(false);
+const outputFailure = ref("");
 const hasOutput = computed(() => props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
 async function readOutput() {
     const answer = await lineResult("messages.chat", ["output", "peek", String(props.mark.target_id), "--all"], api.env());
     outputLoaded.value = true;
+    outputFailure.value = answer.ok ? "" : answer.error;
     if (answer.ok) outputLines.value = answer.value.lines;
 }
 let poll = null;
@@ -38,7 +40,10 @@ onUnmounted(stopPoll);
                 <ModuleBody :declaration="declaration" :row="mark" :head="head" />
             </template>
             <template v-else>
-                <template v-if="hasOutput && outputLoaded">
+                <template v-if="hasOutput && outputFailure">
+                    <p class="mark-lines" role="alert">{{ outputFailure }}</p>
+                </template>
+                <template v-else-if="hasOutput && outputLoaded">
                     <p class="mark-label">Output</p>
                     <OutputLines class="mark-terminal" :lines="outputLines" />
                 </template>
