@@ -20,13 +20,13 @@ HELPERS = "sent_agents"
 
 
 class AgentsMove(VersionFourMove):
-    """Carries each version 4 agent with its session, program (version 4's provider), role and
-    environment, as an agent whose number is its new actor's; a session that ended stays an ended
-    agent so the rows it made keep their owner. An early session that has no role was a main session
-    and moves as one. A session that made rows but has no agent row moves ended, as the helper version 4
-    sent it as with that helper's program, or as a main session, since version 4 handed a main row on to the
-    next session, with its subagents' program or the one most version 4 agents ran. An agent with no session is dropped and counted, one
-    with a role version 5 does not know is skipped and told."""
+    """Carries each version 4 agent with its session, program (version 4's provider), role and environment,
+    as an agent whose number is its new actor's; a session that ended stays an ended agent so the rows
+    it made keep their owner. An early session that has no role was a main session and moves as one. A
+    session that made rows but has no agent row moves ended, as the helper version 4 sent it as with
+    that helper's program, or as a main session, since version 4 handed a main row on to the next
+    session, with its subagents' program or the one most version 4 agents ran. An agent with no session
+    is dropped and counted, one with a role version 5 does not know is skipped and told."""
 
     name = "agents"
     reads = ["agents"]
