@@ -44,7 +44,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             </span>
             <CloseButton :title="undock.label" data-dock-action="undock" @click="press(undock)" />
         </template>
-        <template v-if="item.text">
+        <template v-if="item.text && !declaration?.body_url">
             <p class="dock-text">{{ item.text }}</p>
         </template>
         <template v-if="declaration?.body_url">
