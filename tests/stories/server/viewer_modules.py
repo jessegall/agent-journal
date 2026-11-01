@@ -14,7 +14,7 @@ def test_a_module_file_outside_its_web_dist_is_refused(new_story):
 def test_a_frame_windows_file_is_served_with_its_type_nosniff_and_the_sandbox_policy(new_story):
     with server_story(new_story(NOTES, fixture=UserJoined)) as story:
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-        story.expect_viewer_headers("/modules/notes/board.html", cookie, {"Content-Type": "text/html", "X-Content-Type-Options": "nosniff",
+        story.expect_viewer_headers("/modules/notes/board.html", cookie, {"Content-Type": "text/html", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-cache",
                                                                          "Content-Security-Policy": SANDBOX_POLICY})
 
 

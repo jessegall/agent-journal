@@ -2,6 +2,7 @@
 import {ref, shallowRef, watch} from "vue";
 import Skeleton from "../kit/Skeleton.vue";
 import WindowHost from "./WindowHost.vue";
+import {forgetBuildReload, isStaleBuild, reloadForNewBuild} from "./staleBuild.js";
 
 const props = defineProps({
     entry: {type: Object, required: true},
@@ -24,7 +25,9 @@ watch(
         if (props.entry.unavailable_reason) return;
         try {
             component.value = (await import(/* @vite-ignore */ url)).default;
+            forgetBuildReload();
         } catch (error) {
+            if (isStaleBuild(error) && reloadForNewBuild(error)) return;
             loadFailure.value = `This window's file could not be loaded: ${error.message}`;
         }
     },
