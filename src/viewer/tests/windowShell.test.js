@@ -27,6 +27,8 @@ test("a registry sync asks for the windows again: a removed window shows as not 
     await heard({event: "registry.sync"});
     await settledByTimer();
     expect(element.textContent).toContain("No installed module has this window.");
+    element.querySelector("[data-add-window]").click();
+    await settledByTimer();
     expect(element.querySelector(`[data-reopen="notes.calendar"]`)).not.toBeNull();
     expect(element.querySelectorAll(".window")).toHaveLength(1);
 });

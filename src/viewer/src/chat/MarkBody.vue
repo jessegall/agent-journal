@@ -6,7 +6,7 @@ import {api} from "../api/client.js";
 import {useOutputPages} from "../composables/outputPages.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
-const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean});
+const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}});
 
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
 const OUTPUT_MODEL = "output";
@@ -19,7 +19,7 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
     <div :class="['mark-more', {open: shown}]" @click.stop>
         <div class="mark-more-inner">
             <template v-if="declaration.body_url">
-                <ModuleBody :declaration="declaration" :row="mark" />
+                <ModuleBody :declaration="declaration" :row="mark" :head="head" />
             </template>
             <template v-else>
                 <template v-if="hasOutput && pages.loaded.value">

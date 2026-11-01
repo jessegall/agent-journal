@@ -166,12 +166,19 @@ test("closing the last tab of a pane removes the pane and gives its space to the
     expect(tabsIn(store, ids[0])).toEqual(["a.tasks", "a.notes"]);
 });
 
-test("a closed window comes back from the reopen bar", async () => {
+const openAddBar = async (element, id = null) => {
+    element.querySelector(id === null ? "[data-add-window]" : `[data-tabs-of="${id}"] [data-add-window]`).click();
+    await settled();
+};
+
+test("a closed window comes back from the plus bar", async () => {
     const {store, element} = await stage();
+    await openAddBar(element);
     expect(element.querySelector(`[data-reopen="a.chat"]`)).toBeNull();
     expect(element.querySelector(`[data-reopen="a.spare"]`)).not.toBeNull();
     element.querySelector(`[data-tab="a.chat"] .pane-tab-x`).dispatchEvent(new MouseEvent("click", {bubbles: true}));
     await settled();
+    await openAddBar(element, holder(store, "a.tasks"));
     element.querySelector(`[data-reopen="a.chat"]`).dispatchEvent(new MouseEvent("click", {bubbles: true}));
     await settled();
     expect(holder(store, "a.chat")).toBeDefined();
@@ -187,6 +194,7 @@ test("a window that is gone keeps a muted tab with its last title and a placehol
     expect(gone.classList.contains("gone")).toBe(true);
     expect(gone.textContent).toContain("Old board");
     expect(element.textContent).toContain("No installed module has this window.");
+    await openAddBar(element);
     expect(element.querySelector(`[data-reopen="a.old"]`)).toBeNull();
 });
 
@@ -264,8 +272,9 @@ test("at phone width the panes stack one to a screen, the chat first, and no res
     expect(order.find(([name]) => name === "messages.chat")[1]).toBeLessThan(order.find(([name]) => name === "a.tasks")[1]);
 });
 
-test("opening a window that is not in the layout puts it in the largest pane, and one that is in the layout shows its tab", async () => {
+test("the plus of a pane opens a window that is not in the layout in that pane", async () => {
     const {store, element} = await stage({dir: "row", r: 0.3, a: {tabs: ["a.chat"], active: "a.chat"}, b: {tabs: ["a.tasks", "a.notes"], active: "a.tasks"}});
+    await openAddBar(element, holder(store, "a.tasks"));
     element.querySelector(`[data-reopen="a.spare"]`).click();
     await settled();
     expect(holder(store, "a.spare")).toBe(holder(store, "a.tasks"));
@@ -274,6 +283,7 @@ test("opening a window that is not in the layout puts it in the largest pane, an
 
 async function offered() {
     const made = await stage();
+    await openAddBar(made.element);
     const button = made.element.querySelector(`[data-reopen="a.spare"]`);
     button.dispatchEvent(pointer("pointerdown", 5, 5));
     window.dispatchEvent(pointer("pointermove", 250, 300));
@@ -328,20 +338,12 @@ const menuOf = (element, id) => element.querySelector(`[data-tabs-of="${id}"] .p
 test("the reopen bar lists every offered window with its own label, a third party's too, and shows an unavailable window greyed with its reason", async () => {
     const extra = (name) => ({module: name === "a.spare" ? "thirdparty" : "mine", unavailable_reason: name === "a.spare" ? "Needs window kit 2." : ""});
     const {element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra});
+    await openAddBar(element);
     expect(element.querySelector(`[data-reopen="a.spare"]`).textContent).toContain("Spare");
     const unavailable = element.querySelector(`[data-reopen="a.spare"]`);
     expect(unavailable.classList.contains("unavailable")).toBe(true);
     expect(unavailable.textContent + unavailable.title).toContain("Needs window kit 2.");
     expect(element.querySelector(`[data-reopen="a.tasks"]`).classList.contains("unavailable")).toBe(false);
-});
-
-test("the pane menu lists every offered window by module too", async () => {
-    const extra = (name) => ({module: name === "a.spare" ? "thirdparty" : "mine"});
-    const {store, element} = await stage({tabs: ["a.chat"], active: "a.chat"}, {extra});
-    menuOf(element, holder(store, "a.chat")).click();
-    await settled();
-    expect(element.querySelector(`.pane-menu [data-open="a.spare"]`)).not.toBeNull();
-    expect(element.querySelector(`.pane-menu [data-open-module="thirdparty"]`)).not.toBeNull();
 });
 
 test("a declared toggle and choice appear in the pane menu, and a changed value is stored on the pane", async () => {
@@ -445,12 +447,13 @@ test("a blocked browser window leaves the float docked where it was", async () =
     expect(store.layout.value.floats.map((float) => float.view)).toEqual(["a.tasks"]);
 });
 
-test("a closed tab reopens from the reopen bar in the pane it was closed in, not the largest", async () => {
+test("a closed tab comes back through the plus of the pane it was closed in", async () => {
     const wide = {...SHAPE, r: 0.7};
     const {store, element} = await stage(wide);
     const own = holder(store, "a.notes");
     element.querySelector(`[data-tab="a.notes"] .pane-tab-x`).dispatchEvent(new MouseEvent("click", {bubbles: true}));
     await settled();
+    await openAddBar(element, own);
     expect(element.querySelector(`[data-reopen="a.notes"]`)).not.toBeNull();
     element.querySelector(`[data-reopen="a.notes"]`).click();
     await settled();

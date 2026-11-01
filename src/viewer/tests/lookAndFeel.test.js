@@ -229,6 +229,8 @@ test("bars: each window button carries its own icon before its own label", async
     mounted.push(element);
     await nextTick();
     await settled();
+    element.querySelector("[data-add-window]").click();
+    await settled();
     const buttons = [...element.querySelectorAll("[data-reopen]")];
     expect(buttons.length).toBeGreaterThan(0);
     for (const button of buttons) {

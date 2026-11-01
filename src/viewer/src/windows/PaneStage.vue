@@ -57,16 +57,7 @@ const measure = () => {
     narrow.value = window.innerWidth < PHONE_WIDTH;
     width.value = window.innerWidth;
 };
-// the bar shows as many window buttons as fit beside its fixed buttons; the rest fold into a menu, so Presets never leaves the screen
-const BUTTON_WIDTH = 124;
-const FIXED_WIDTH = 330;
-const SIDEBAR_WIDTH = 220;
-const ACTIVITY_WIDTH = 280;
-const room = computed(() => {
-    const taken = (sidebarShown.value ? SIDEBAR_WIDTH : 0) + (activityOpen.value ? ACTIVITY_WIDTH : 0);
-    return Math.max(2, Math.floor((width.value - taken - FIXED_WIDTH) / BUTTON_WIDTH));
-});
-const folded = ref(false);
+const adding = ref(null);
 const agentRow = ref(null);
 // the rows a list read gave, none when it failed or answered something else
 const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
@@ -96,20 +87,9 @@ async function readEnvironments() {
 }
 const facts = ref(NO_FACTS);
 const now = ref(Date.now());
-const AUTO_MODE = "journal.suites.coding.auto-mode";
-const auto = ref(true);
-async function readAuto() {
-    if (!props.shellRead) return;
-    const answer = await props.shellRead(["setting", "show", AUTO_MODE, "--environment", props.environment]);
-    auto.value = !(answer.ok && answer.value && answer.value.value === false);
-}
-async function toggleAuto() {
-    const answer = await props.shellRead(["setting", "set", AUTO_MODE, String(!auto.value), "--environment", props.environment]);
-    if (answer.ok) auto.value = !auto.value;
-}
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", usage: "usage.usage"};
+const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", usage: "usage.usage", context: "usage.context"};
 const usage = ref({agents: [], windows: []});
 async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
@@ -158,7 +138,6 @@ onMounted(() => {
     readAgent();
     readEnvironments();
     readFacts();
-    readAuto();
     factsTimer = setInterval(() => (readAgent(), readFacts()), FACT_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
@@ -175,7 +154,7 @@ const {counts} = useTabCounts({
     environment: props.environment,
     names: () => [...new Set([...(props.store.layout.value ? props.store.open.value : []), ...props.catalogue.windows.value.map((window) => window.name)])],
 });
-const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer} = usePaneActions({
+const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, openIn, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
@@ -190,6 +169,10 @@ const guide = usePaneGuide(props.environment, {
 });
 followFullscreen();
 const groups = () => props.catalogue.group(closedWindows.value);
+const addWindow = (id, name) => {
+    openIn(id, name);
+    adding.value = null;
+};
 const barWindows = () => groups().flatMap((group) => group.windows);
 const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 </script>
@@ -225,35 +208,13 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
-                <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :auto="auto" :now="now" @open="openCount" @toggle-auto="toggleAuto" />
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
-            </template>
-            <nav class="pane-stage-bar agent-bar">
-                <template v-for="window in barWindows().slice(0, room)" :key="window.name">
-                    <Btn
-                        small
-                        :data-reopen="window.name"
-                        :class="{unavailable: window.unavailable_reason}"
-                        :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
-                        @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
-                        @click="!window.unavailable_reason && openView(window.name)"
-                    >
-                        <MarkIcon :name="window.icon || 'window'" />{{ window.title }}
-                    </Btn>
+            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :now="now" @open="openCount">
+                <template v-for="window in catalogue.bars.value" :key="window.name">
+                    <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                 </template>
-                <template v-if="barWindows().length > room">
-                    <Btn small data-bar-more aria-label="More windows" @click="folded = !folded">More</Btn>
-                    <template v-if="folded">
-                        <div class="bar-more" role="menu">
-                            <template v-for="window in barWindows().slice(room)" :key="window.name">
-                                <Btn small :data-reopen="window.name" :title="window.title" @click="openView(window.name)"><MarkIcon :name="window.icon || 'window'" />{{ window.title }}</Btn>
-                            </template>
-                        </div>
-                    </template>
-                </template>
-                <span class="agent-bar-space" />
                 <template v-if="shellRead">
                     <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
                 </template>
@@ -263,7 +224,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <template v-if="presets">
                     <LayoutPicker :list="presets" />
                 </template>
-            </nav>
+            </InformationBar>
+            </template>
         </template>
         <template v-if="store.layout.value && !phone">
             <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
@@ -276,8 +238,28 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         @pick="(key) => pick(id, key)"
                         @close="(key) => closeTab(id, key)"
                     >
-                        <Btn kind="icon" class="pane-menu-button" aria-label="Pane menu" @click="toggleMenu(id)">&hellip;</Btn>
+                        <Btn kind="icon" class="pane-add-button" data-add-window aria-label="Add a window" title="Add a window" @click="adding = adding === id ? null : id"><Icon name="plus" :size="13" /></Btn>
+                        <Btn kind="icon" class="pane-menu-button" aria-label="Window settings" title="Window settings" @click="toggleMenu(id)"><Icon name="dots-vertical" :size="13" /></Btn>
                     </PaneTabs>
+                    <template v-if="adding === id">
+                        <div class="pane-add" role="menu" data-add-bar>
+                            <template v-for="window in barWindows()" :key="window.name">
+                                <Btn
+                                    small
+                                    :data-reopen="window.name"
+                                    :class="{unavailable: window.unavailable_reason}"
+                                    :title="window.unavailable_reason ? `${window.title}: ${window.unavailable_reason}` : window.title"
+                                    @pointerdown="!window.unavailable_reason && grabWindow($event, window.name)"
+                                    @click="!window.unavailable_reason && addWindow(id, window.name)"
+                                >
+                                    <MarkIcon :name="window.icon || 'window'" />{{ window.title }}
+                                </Btn>
+                            </template>
+                            <template v-if="!barWindows().length">
+                                <span class="pane-add-none">Every window is open</span>
+                            </template>
+                        </div>
+                    </template>
                     <template v-if="menu === id">
                         <div class="pane-menu" role="menu">
                             <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="split(id, 'right')">Split right</Btn>
@@ -286,12 +268,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
                             </template>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
-                            <template v-for="group in catalogue.group()" :key="group.module">
-                                <span class="reopen-module" :data-open-module="group.module">{{ group.title }}</span>
-                                <template v-for="window in group.windows" :key="window.name">
-                                    <Btn :data-open="window.name" :disabled="Boolean(window.unavailable_reason)" @click="openView(window.name)">{{ window.title }}</Btn>
-                                </template>
-                            </template>
                             <template v-for="other in others(id)" :key="other.id">
                                 <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
                             </template>
@@ -369,37 +345,26 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     min-height: 0;
 }
 
-.agent-bar :deep(button) {
-    flex: none;
-}
-
-.bar-more {
+.pane-add {
     position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 20;
+    top: 34px;
+    right: 5px;
+    left: 5px;
+    z-index: 6;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 4px;
     padding: 6px;
     border: 1px solid var(--border-2);
     border-radius: 8px;
-    background: var(--bg);
+    background: var(--raised);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.agent-bar-space {
-    flex: 1;
-}
-
-.pane-stage-bar {
-    position: relative;
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 6px;
-    min-width: 0;
-    overflow-x: auto;
-    padding: 4px 12px;
-    border-bottom: 1px solid var(--line);
+.pane-add-none {
+    padding: 4px 6px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .pane-body {
@@ -436,7 +401,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     background: var(--bg);
 }
 
-.agent-bar .unavailable {
+.pane-add .unavailable {
     opacity: 0.45;
 }
 

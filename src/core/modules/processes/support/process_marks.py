@@ -17,5 +17,5 @@ UNWATCH = MarkButton("close", "Stop watching", "output unwatch {row_id}")
 PROCESS_MARKS = [MarkDeclaration(ProcessMarkType.COMMAND, ProcessMarkVariant, COMMANDS_FAMILY, "Commands run", "terminal", click=MarkClick.OPEN_ROW, buttons=[STOP, DOCK],
                                  body="output-body.js", process=True)]
 
-PROCESS_DOCKS = [DockDeclaration(ProcessDockType.OUTPUT, "terminal", "Output {row_id}", "output-dock.js", buttons=[STOP, UNWATCH], most=6, leaves_after_seconds=10,
+PROCESS_DOCKS = [DockDeclaration(ProcessDockType.OUTPUT, "terminal", "Output {row_id}", "output-dock.js", buttons=[STOP], most=6, leaves_after_seconds=10, draws_head=True,
                                  reads=["process show"])]

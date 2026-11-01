@@ -71,3 +71,10 @@ def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
     story.expect_text("usage tool --environment main", "Bash ls build", actor=story.user)
     story.hook("s-1", HookSamples.stop())
     story.expect_absent("usage tool --environment main", "Bash", actor=story.user)
+
+
+def test_a_session_says_when_it_was_last_compacted(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_text("usage show --environment main --json", '"last_compacted_at": null', actor=story.user)
+    story.hook("s-1", HookSamples.sample("compact"))
+    story.expect_text("usage show --environment main --json", '"last_compacted_at": "2026', actor=story.user)

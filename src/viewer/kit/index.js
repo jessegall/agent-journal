@@ -10,6 +10,7 @@ export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
 export {default as Skeleton} from "../src/kit/Skeleton.vue";
 export {default as Icon} from "../src/kit/Icon.vue";
+export {default as FoldSign} from "../src/kit/FoldSign.vue";
 export {default as Segmented} from "../src/kit/Segmented.vue";
 export {default as TextInput} from "../src/kit/TextInput.vue";
 export {default as StateRows} from "./StateRows.vue";

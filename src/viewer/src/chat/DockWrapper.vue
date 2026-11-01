@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
@@ -17,6 +17,7 @@ import {peekRef} from "../route.js";
 const emit = defineEmits(["fold"]);
 const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean});
 const declaration = computed(() => dockDeclaration(props.item.type));
+const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
 const press = (button) => (button.action === "open" ? peekRef(`${props.item.target_model}:${props.item.target_id}`) : pressButton(button, props.item, api.env()));
 const buttons = computed(() => look.value.buttons.filter((button) => button.action !== "undock"));
@@ -31,12 +32,19 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             </template>
         </template>
         <template #head>
-            <Icon :name="look.icon" class="dock-icon" />
-            <span class="dock-title">{{ look.title }}</span>
+            <template v-if="declaration?.draws_head">
+                <span ref="head" class="dock-head" data-dock-head />
+            </template>
+            <template v-else>
+                <Icon :name="look.icon" class="dock-icon" />
+                <span class="dock-title">{{ look.title }}</span>
+            </template>
             <template v-if="declaration?.badge">
                 <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
             </template>
-            <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
+            <template v-if="!declaration?.draws_head">
+                <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
+            </template>
             <span class="chat-dock-acts dock-acts">
                 <template v-for="button in buttons" :key="button.action + button.runs">
                     <Btn small bordered :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
@@ -48,12 +56,20 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
             <p class="dock-text">{{ item.text }}</p>
         </template>
         <template v-if="declaration?.body_url">
-            <MarkBody :declaration="declaration" :mark="item" shown />
+            <MarkBody :declaration="declaration" :mark="item" shown :head="head" />
         </template>
     </ChatDock>
 </template>
 
 <style scoped>
+.dock-head {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
 .dock-icon {
     flex: none;
     color: var(--text-3);

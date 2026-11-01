@@ -3,19 +3,18 @@ import {FULLSCREEN_KEYS} from "../platform/fullscreen.js";
 
 export const TOUR = [
     {
-        title: "Drag a window onto a pane",
-        text: "Every window has an icon here. Drag one onto a pane to open it there. The icon comes back when you close that window.",
-        target: ".agent-bar [data-reopen]",
-        fallback: ".agent-bar",
+        title: "Add a window",
+        text: "The plus in a window's header lists the windows that are closed. Pick one to open it there, or drag one onto a pane.",
+        target: "[data-add-window]",
     },
     {
         title: "Pick a preset",
         text: "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.",
-        target: ".agent-bar [data-presets]",
+        target: "[data-information-bar] [data-presets]",
     },
     {
         title: "Split a pane",
-        text: "Each pane has this menu. Split right or Split below opens a second window beside this one.",
+        text: "Each window has this menu. Split right or Split below opens a second window beside this one.",
         target: "[data-menu=\"split-right\"]",
         fallback: ".pane-menu-button",
         menu: true,
@@ -30,7 +29,7 @@ export const TOUR = [
     {
         title: "Full screen",
         text: `This button, or the full screen keys (${FULLSCREEN_KEYS}), hides the sidebar and the top bar so the panes fill the screen. Esc brings them back.`,
-        target: ".agent-bar [data-fullscreen]",
+        target: "[data-information-bar] [data-fullscreen]",
     },
 ];
 const key = (environment, part) => `journal.${part}.${environment}`;

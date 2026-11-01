@@ -43,17 +43,8 @@ test("the agent bar names the task the agent is working in, and nothing when it 
     expect(mounted(AgentBar, {agent: MAIN, task: null}).querySelector("[data-agent-task]")).toBeNull();
 });
 
-test("the information bar shows the auto switch, on or off, and asks to toggle it", () => {
-    const toggled = [];
-    const on = mounted(InformationBar, {agent: MAIN, auto: true, onToggleAuto: () => toggled.push("toggle")});
-    expect(on.querySelector("[data-auto-toggle]").getAttribute("aria-checked")).toBe("true");
-    on.querySelector("[data-auto-toggle]").click();
-    expect(toggled).toEqual(["toggle"]);
-    expect(mounted(InformationBar, {agent: MAIN, auto: false}).querySelector("[data-auto-toggle]").getAttribute("aria-checked")).toBe("false");
-});
 
-
-test("the information bar shows the allowance used, the context, the model and the cost, and opens usage", () => {
+test("the information bar shows the allowance used, the context, the model and the cost, and opens context", () => {
     const opened = [];
     const usage = {agents: [{id: 1, context_percent: 89, model: "Opus 5.5", cost_dollars: 40.86}], windows: [{title: "7 days", used_percent: 12.4}]};
     const element = mounted(InformationBar, {agent: MAIN, usage, onOpen: (name) => opened.push(name)});
@@ -62,5 +53,5 @@ test("the information bar shows the allowance used, the context, the model and t
     expect(element.querySelector("[data-fact='model']").textContent).toContain("Opus 5.5");
     expect(element.querySelector("[data-fact='cost']").textContent).toContain("$40.86");
     element.querySelector("[data-fact='context']").click();
-    expect(opened).toEqual(["usage"]);
+    expect(opened).toEqual(["context"]);
 });

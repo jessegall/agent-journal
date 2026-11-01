@@ -15,7 +15,7 @@ from core.modules.questions.models.question import Question
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.usage.support.bar_facts import BarFacts
 
-COUNT_ONLY_ROWS = 1
+PAGE_ROWS = 1
 
 
 class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
@@ -35,12 +35,12 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         if environment_id is None:
             raise Refusal("the bars are shown for one environment", "name it with --environment")
         agents = self.queries.query(Agent).filter(environment_id=environment_id).matching(IsNull("ended_at"))
-        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, COUNT_ONLY_ROWS).total
-        tasks = self.tasks.environment(environment_id).unclosed().page(1, COUNT_ONLY_ROWS).total
-        waiting = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).page(1, COUNT_ONLY_ROWS).total
-        mains = agents.filter(role=AgentRole.MAIN).newest().page(1, COUNT_ONLY_ROWS).rows
-        held = self.tasks.holder(mains[0].id).started().newest().page(1, COUNT_ONLY_ROWS).rows if mains else []
-        return BarFacts(helpers, tasks, waiting, held[0].id if held else None, held[0].title if held else "")
+        helpers = agents.matching(Equal("role", AgentRole.MAIN, negated=True)).page(1, PAGE_ROWS).total
+        tasks = self.tasks.environment(environment_id).unclosed().page(1, PAGE_ROWS).total
+        waiting = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).page(1, PAGE_ROWS).total
+        mains = agents.filter(role=AgentRole.MAIN).newest().page(1, PAGE_ROWS).rows
+        started_tasks = self.tasks.holder(mains[0].id).started().newest().page(1, PAGE_ROWS).rows if mains else ()
+        return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "")
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, BarFacts):

@@ -1,11 +1,13 @@
 <script setup>
-import {onUnmounted, ref} from "vue";
-import {RowList, useRows, useWindow} from "@journal/window-kit";
+import {computed, onUnmounted, ref} from "vue";
+import {useWindow} from "@journal/window-kit";
 
+// the plan allowance as version 4's usage menu drew it: a meter for each window of the plan, with when it starts again, and what the open sessions cost
+const REFRESH_MILLISECONDS = 30000;
 const context = useWindow();
 const usage = ref(null);
 const failure = ref("");
-const counts = useRows("statistic list", []);
+const windows = computed(() => usage.value?.windows ?? []);
 
 async function load() {
     const result = await context.read("usage show");
@@ -13,84 +15,79 @@ async function load() {
     failure.value = result.ok ? "" : result.error;
 }
 
-const dollars = (amount) => `$${Number(amount || 0).toFixed(2)}`;
-const reset = (seconds) => new Date(seconds * 1000).toLocaleString();
-
-const REFRESH_MILLISECONDS = 30000;
+const reset = (seconds) => `Starts again ${new Date(seconds * 1000).toLocaleString()}`;
 const timer = setInterval(load, REFRESH_MILLISECONDS);
 onUnmounted(() => clearInterval(timer));
 load();
 </script>
 
 <template>
+    <p class="current">Plan allowance used</p>
     <template v-if="failure">
-        <p class="failure">{{ failure }}</p>
+        <p class="none">{{ failure }}</p>
+    </template>
+    <template v-for="window in windows" :key="window.title">
+        <div class="meter" data-usage-meter>
+            <span>{{ window.title }}</span>
+            <strong>{{ Math.round(window.used_percent) }}%</strong>
+            <span class="track"><span :style="{width: `${window.used_percent}%`}" /></span>
+            <small>{{ reset(window.reset_epoch_seconds) }}</small>
+        </div>
+    </template>
+    <template v-if="usage && !windows.length">
+        <p class="none">No current plan window has been reported here.</p>
     </template>
     <template v-if="usage">
-        <h3 class="heading">Sessions</h3>
-        <RowList :rows="usage.agents" :failure="''" :loaded="true" empty="No open sessions">
-            <template #default="{row}">
-                <div class="line">
-                    <span class="title">{{ row.session }}</span>
-                    <span class="detail">{{ row.model || "Nothing reported yet" }}</span>
-                    <template v-if="row.context_percent !== null">
-                        <span class="detail">Context {{ row.context_percent }}%</span>
-                    </template>
-                    <span class="detail">{{ dollars(row.cost_dollars) }}</span>
-                </div>
-            </template>
-        </RowList>
-        <p class="total">Cost of the open sessions: {{ dollars(usage.cost_dollars) }}</p>
-        <h3 class="heading">Plan</h3>
-        <RowList :rows="usage.windows" :failure="''" :loaded="true" empty="No limits reported yet">
-            <template #default="{row}">
-                <div class="line">
-                    <span class="title">{{ row.title }}</span>
-                    <span class="detail">{{ Math.round(row.used_percent) }}% used</span>
-                    <span class="detail">Starts again {{ reset(row.reset_epoch_seconds) }}</span>
-                </div>
-            </template>
-        </RowList>
+        <p class="none">Cost of the open sessions: ${{ Number(usage.cost_dollars || 0).toFixed(2) }}</p>
     </template>
-    <h3 class="heading">Counts</h3>
-    <RowList :rows="counts.rows.value" :failure="counts.failure.value" :loaded="counts.loaded.value" empty="No counts yet">
-        <template #default="{row}">
-            <div class="line">
-                <span class="title">{{ row.key }}</span>
-                <span class="detail">{{ row.value }}</span>
-            </div>
-        </template>
-    </RowList>
 </template>
 
 <style scoped>
-.failure {
-    margin: 0 0 8px;
-    color: var(--bad, var(--text-2));
+.current {
+    margin: 0;
+    padding: 2px 0 6px;
+    color: var(--text);
     font-size: 12px;
 }
 
-.heading {
-    margin: 12px 0 6px;
-    color: var(--text-3);
-    font-size: 12px;
+.meter {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 8px;
+    padding: 6px 0;
+    color: var(--text-2);
+    font-size: 11.5px;
+}
+
+.meter strong {
+    color: var(--text);
     font-weight: 600;
+    font-variant-numeric: tabular-nums;
 }
 
-.line {
-    display: flex;
-    flex: 1;
-    align-items: baseline;
-    gap: 10px;
-    font-size: 13px;
+.track {
+    grid-column: 1 / -1;
+    height: 4px;
+    overflow: hidden;
+    border-radius: 2px;
+    background: var(--line);
 }
 
-.title {
-    flex: 1;
+.track > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--accent-text);
 }
 
-.detail,
-.total {
+.meter small {
+    grid-column: 1 / -1;
+    color: var(--text-3);
+    font-size: 10.5px;
+}
+
+.none {
+    margin: 0;
     color: var(--text-3);
     font-size: 12px;
 }

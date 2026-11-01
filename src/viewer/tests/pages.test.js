@@ -91,8 +91,14 @@ test("switching the suite loads that suite's layout, and switching back restores
     expect(tabs(element)).toEqual(["messages.chat"]);
 });
 
+const openAddBar = async (element) => {
+    element.querySelector("[data-add-window]").click();
+    await settle();
+};
+
 test("the agent roles of a window filter which agent windows an agent page offers", async () => {
     const {element} = await mount(AgentPage, {agent: 12});
+    await openAddBar(element);
     const offered = [...element.querySelectorAll("[data-reopen]")].map((button) => button.dataset.reopen);
     expect(offered).not.toContain("agents.briefing");
 });
@@ -124,10 +130,10 @@ test("an agent window opened on the home page is given the main agent's id and a
     SHAPES["coding:home:coding.builder"] = {windows: ["messages.chat"], active: "messages.chat"};
 });
 
-// the bar is one row of window buttons, each with its icon; the grouping by module moved to the pane menu (task 5391)
-test("the agent bar of the home page shows an icon for each closed window", async () => {
+test("the plus bar of the home page shows an icon for each closed window", async () => {
     const {element} = await mount(HomePage);
-    const bar = element.querySelector(".agent-bar");
+    await openAddBar(element);
+    const bar = element.querySelector("[data-add-bar]");
     const reopen = (name) => bar.querySelector(`[data-reopen="${name}"]`);
     expect(reopen("tasks.tasks").querySelector("svg")).not.toBeNull();
     expect(reopen("messages.chat")).toBeNull();
@@ -136,11 +142,11 @@ test("the agent bar of the home page shows an icon for each closed window", asyn
 });
 
 const STEPS = [
-    ["Drag a window onto a pane", "Every window has an icon here. Drag one onto a pane to open it there. The icon comes back when you close that window.", ".agent-bar [data-reopen]"],
-    ["Pick a preset", "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.", ".agent-bar [data-presets]"],
-    ["Split a pane", "Each pane has this menu. Split right or Split below opens a second window beside this one.", `[data-menu="split-right"]`],
+    ["Add a window", "The plus in a window's header lists the windows that are closed. Pick one to open it there, or drag one onto a pane.", "[data-add-window]"],
+    ["Pick a preset", "Presets opens a list of ready layouts, such as Default, Chat only and Terminal, and arranges every pane in one step.", "[data-information-bar] [data-presets]"],
+    ["Split a pane", "Each window has this menu. Split right or Split below opens a second window beside this one.", `[data-menu="split-right"]`],
     ["Detach a window", "Detach opens this window in a window of its own that stays on screen on every page. Dock it back from its menu.", `[data-menu="detach"]`],
-    ["Full screen", expect.stringMatching(/^This button, or the full screen keys \(.+\), hides the sidebar and the top bar so the panes fill the screen\. Esc brings them back\.$/), ".agent-bar [data-fullscreen]"],
+    ["Full screen", expect.stringMatching(/^This button, or the full screen keys \(.+\), hides the sidebar and the top bar so the panes fill the screen\. Esc brings them back\.$/), "[data-information-bar] [data-fullscreen]"],
 ];
 
 test("the tour shows its five steps in order, pointing at each target, with the pane menu open for the split and detach steps and closed after", async () => {
@@ -179,17 +185,15 @@ test("an agent page that cannot read its agent says so in plain words instead of
     expect(element.querySelector(".agent-page-failure").textContent).toBe("Agent 99 could not be read: no agent 99");
 });
 
-test("the agent bar names a group by its windows, never by the module's dotted name, and draws each window's icon with the mark icons", async () => {
+test("the plus bar draws each window's icon with the mark icons", async () => {
     const {element} = await mount(HomePage);
-    const labels = [...element.querySelectorAll(".agent-bar .reopen-module")].map((label) => label.textContent);
-    expect(labels.every((label) => !label.includes("journal.core"))).toBe(true);
-    expect(element.querySelectorAll(".agent-bar [data-reopen] svg.mark-icon").length).toBeGreaterThan(0);
+    await openAddBar(element);
+    expect(element.querySelectorAll("[data-add-bar] [data-reopen] svg.mark-icon").length).toBeGreaterThan(0);
     expect(element.querySelector("[data-tab] svg.mark-icon")).not.toBeNull();
 });
 
-test("the agent bar scrolls inside itself so the page never scrolls sideways at phone width", () => {
+test("the page never scrolls sideways at phone width", () => {
     const source = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(source).toMatch(/\.pane-stage-bar \{[^}]*overflow-x: auto;/);
     expect(source).toMatch(/\.pane-stage \{[^}]*max-width: 100vw;/);
 });
 
@@ -221,6 +225,7 @@ test("an address with no environment, and several or none to choose from, says s
 
 test("the agent page offers the environment windows too, with no agent id, and filters only the agent windows by role", async () => {
     const {element} = await mount(AgentPage, {agent: 12});
+    await openAddBar(element);
     const offered = [...element.querySelectorAll("[data-reopen]")].map((button) => button.dataset.reopen);
     expect(offered).toContain("tasks.tasks");
     expect(offered).not.toContain("agents.briefing");
@@ -233,13 +238,13 @@ test("a refusal is shown by its words alone", async () => {
 });
 
 // task 5394: the button draws the expand icon; the bar keeps each window's icon beside its title at every width
-test("the full screen button draws the expand icon, not the plain dot, and the bar keeps icons beside titles at phone width", async () => {
+test("the full screen button draws the expand icon, not the plain dot, and the plus bar keeps icons beside titles at phone width", async () => {
     const wide = await mount(HomePage);
     expect(wide.element.querySelector("[data-fullscreen] svg").innerHTML).toContain("M6.2 2.6H2.6");
     vi.stubGlobal("innerWidth", 400);
     const narrow = await mount(HomePage);
-    expect(narrow.element.querySelector(".agent-bar .reopen-module")).toBeNull();
-    expect(narrow.element.querySelectorAll(".agent-bar [data-reopen] svg").length).toBeGreaterThan(0);
+    await openAddBar(narrow.element);
+    expect(narrow.element.querySelectorAll("[data-add-bar] [data-reopen] svg").length).toBeGreaterThan(0);
 });
 
 test("a journal that cannot run the shell's lines says why above the page", async () => {
@@ -278,7 +283,8 @@ test("on the home page a plain click on a sidebar window opens it in a pane and 
 test("on a fresh page with no suite chosen, a click on a closed window's button opens it instead of throwing", async () => {
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 2, value: null, error: "no suite is chosen"})}));
     const {element} = await mount(HomePage);
-    const button = element.querySelector(`.agent-bar [data-reopen="tasks.tasks"]`);
+    await openAddBar(element);
+    const button = element.querySelector(`[data-add-bar] [data-reopen="tasks.tasks"]`);
     expect(button).not.toBeNull();
     button.dispatchEvent(new MouseEvent("click", {bubbles: true}));
     await settle();

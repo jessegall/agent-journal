@@ -39,9 +39,11 @@ test("a docked process's card shows the run live: its state and the last lines o
         "process show 3": {ok: true, value: {id: 3, state: "running", line: "make build"}},
         "output peek 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"]}},
     });
-    window.option = () => ref({id: 7, target_id: 3});
+    const head = document.createElement("span");
+    document.body.append(head);
+    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
     const element = await mounted(OutputDock, window);
-    expect(element.querySelector(".output-dock-state").textContent).toBe("running");
-    expect(element.querySelector(".output-dock-line").textContent).toBe("make build");
-    expect(element.querySelector(".output-dock-lines").textContent).toBe("compiling the cart\n[ 40%]");
+    expect(head.querySelector(".output-dock-state").dataset.state).toBe("running");
+    expect(head.querySelector(".output-dock-title").textContent).toBe("make build");
+    expect([...element.querySelectorAll(".output-dock-lines li")].map((line) => line.textContent)).toEqual(["compiling the cart", "[ 40%]"]);
 });

@@ -1,7 +1,7 @@
 <script setup>
 import {computed} from "vue";
 
-// the agent the page is about, as version 4's agent bar drew it: whether it runs, the task it is working in, which program, its role and its session
+// the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
 const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, helpers: {type: Number, default: 0}});
 const emit = defineEmits(["open"]);
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
@@ -13,7 +13,6 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
         <template v-if="agent">
             <strong>{{ running ? "Working" : "Ended" }}</strong>
             <span v-if="task" class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
-            <span class="detail">{{ agent.program }} · {{ agent.role }} · {{ agent.session }}</span>
             <span class="agent-space" />
             <button type="button" class="agent-helpers" data-helpers title="Helpers running" @click="emit('open', 'helpers')">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}

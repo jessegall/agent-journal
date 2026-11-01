@@ -1,83 +1,51 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-77325080c4ba")) { const style = document.createElement("style"); style.id = "window-styles-77325080c4ba"; style.textContent = ".failure[data-v-fea58b80]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.heading[data-v-fea58b80]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.line[data-v-fea58b80]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-fea58b80]{flex:1}.detail[data-v-fea58b80],.total[data-v-fea58b80]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as y, onUnmounted as N, openBlock as d, createElementBlock as r, Fragment as k, toDisplayString as t, createCommentVNode as p, createElementVNode as e, createVNode as f, unref as l, withCtx as h } from "vue";
-import { useWindow as S, useRows as C, RowList as v } from "@journal/window-kit";
-const E = (u, _) => {
-  const a = u.__vccOpts || u;
-  for (const [i, c] of _)
-    a[i] = c;
-  return a;
-}, I = {
+if (!document.getElementById("window-styles-c9c39a1070f8")) { const style = document.createElement("style"); style.id = "window-styles-c9c39a1070f8"; style.textContent = ".current[data-v-78349099]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-78349099]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-78349099]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-78349099]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-78349099]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-78349099]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-78349099]{margin:0;color:var(--text-3);font-size:12px}.current[data-v-21b9065f]{margin:0;padding:2px 0 6px;color:var(--text);font-size:12px}.meter[data-v-21b9065f]{display:grid;grid-template-columns:1fr auto;gap:4px 8px;padding:6px 0;color:var(--text-2);font-size:11.5px}.meter strong[data-v-21b9065f]{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}.track[data-v-21b9065f]{grid-column:1 / -1;height:4px;overflow:hidden;border-radius:2px;background:var(--line)}.track>span[data-v-21b9065f]{display:block;height:100%;border-radius:inherit;background:var(--accent-text)}.meter small[data-v-21b9065f]{grid-column:1 / -1;color:var(--text-3);font-size:10.5px}.none[data-v-21b9065f]{margin:0;color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as _, computed as g, onUnmounted as h, openBlock as t, createElementBlock as s, Fragment as i, createElementVNode as n, toDisplayString as l, createCommentVNode as u, renderList as k, normalizeStyle as y } from "vue";
+import { useWindow as S } from "@journal/window-kit";
+import { _ as x } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const E = {
   key: 0,
-  class: "failure"
-}, L = { class: "line" }, R = { class: "title" }, D = { class: "detail" }, F = {
-  key: 0,
-  class: "detail"
-}, P = { class: "detail" }, U = { class: "total" }, V = { class: "line" }, b = { class: "title" }, B = { class: "detail" }, M = { class: "detail" }, O = { class: "line" }, $ = { class: "title" }, H = { class: "detail" }, W = 3e4, j = {
+  class: "none"
+}, I = { class: "track" }, N = {
+  key: 1,
+  class: "none"
+}, w = {
+  key: 2,
+  class: "none"
+}, L = 3e4, b = {
   __name: "UsagePanel",
-  setup(u) {
-    const _ = S(), a = y(null), i = y(""), c = C("statistic list", []);
-    async function m() {
-      const o = await _.read("usage show");
-      a.value = o.ok ? o.value : null, i.value = o.ok ? "" : o.error;
+  setup(C) {
+    const m = S(), o = _(null), r = _(""), c = g(() => {
+      var e;
+      return ((e = o.value) == null ? void 0 : e.windows) ?? [];
+    });
+    async function d() {
+      const e = await m.read("usage show");
+      o.value = e.ok ? e.value : null, r.value = e.ok ? "" : e.error;
     }
-    const g = (o) => `$${Number(o || 0).toFixed(2)}`, w = (o) => new Date(o * 1e3).toLocaleString(), x = setInterval(m, W);
-    return N(() => clearInterval(x)), m(), (o, n) => (d(), r(k, null, [
-      i.value ? (d(), r("p", I, t(i.value), 1)) : p("", !0),
-      a.value ? (d(), r(k, { key: 1 }, [
-        n[0] || (n[0] = e("h3", { class: "heading" }, "Sessions", -1)),
-        f(l(v), {
-          rows: a.value.agents,
-          failure: "",
-          loaded: !0,
-          empty: "No open sessions"
-        }, {
-          default: h(({ row: s }) => [
-            e("div", L, [
-              e("span", R, t(s.session), 1),
-              e("span", D, t(s.model || "Nothing reported yet"), 1),
-              s.context_percent !== null ? (d(), r("span", F, "Context " + t(s.context_percent) + "%", 1)) : p("", !0),
-              e("span", P, t(g(s.cost_dollars)), 1)
-            ])
-          ]),
-          _: 1
-        }, 8, ["rows"]),
-        e("p", U, "Cost of the open sessions: " + t(g(a.value.cost_dollars)), 1),
-        n[1] || (n[1] = e("h3", { class: "heading" }, "Plan", -1)),
-        f(l(v), {
-          rows: a.value.windows,
-          failure: "",
-          loaded: !0,
-          empty: "No limits reported yet"
-        }, {
-          default: h(({ row: s }) => [
-            e("div", V, [
-              e("span", b, t(s.title), 1),
-              e("span", B, t(Math.round(s.used_percent)) + "% used", 1),
-              e("span", M, "Starts again " + t(w(s.reset_epoch_seconds)), 1)
-            ])
-          ]),
-          _: 1
-        }, 8, ["rows"])
-      ], 64)) : p("", !0),
-      n[2] || (n[2] = e("h3", { class: "heading" }, "Counts", -1)),
-      f(l(v), {
-        rows: l(c).rows.value,
-        failure: l(c).failure.value,
-        loaded: l(c).loaded.value,
-        empty: "No counts yet"
-      }, {
-        default: h(({ row: s }) => [
-          e("div", O, [
-            e("span", $, t(s.key), 1),
-            e("span", H, t(s.value), 1)
-          ])
+    const v = (e) => `Starts again ${new Date(e * 1e3).toLocaleString()}`, f = setInterval(d, L);
+    return h(() => clearInterval(f)), d(), (e, p) => (t(), s(i, null, [
+      p[0] || (p[0] = n("p", { class: "current" }, "Plan allowance used", -1)),
+      r.value ? (t(), s("p", E, l(r.value), 1)) : u("", !0),
+      (t(!0), s(i, null, k(c.value, (a) => (t(), s("div", {
+        key: a.title,
+        class: "meter",
+        "data-usage-meter": ""
+      }, [
+        n("span", null, l(a.title), 1),
+        n("strong", null, l(Math.round(a.used_percent)) + "%", 1),
+        n("span", I, [
+          n("span", {
+            style: y({ width: `${a.used_percent}%` })
+          }, null, 4)
         ]),
-        _: 1
-      }, 8, ["rows", "failure", "loaded"])
+        n("small", null, l(v(a.reset_epoch_seconds)), 1)
+      ]))), 128)),
+      o.value && !c.value.length ? (t(), s("p", N, "No current plan window has been reported here.")) : u("", !0),
+      o.value ? (t(), s("p", w, "Cost of the open sessions: $" + l(Number(o.value.cost_dollars || 0).toFixed(2)), 1)) : u("", !0)
     ], 64));
   }
-}, A = /* @__PURE__ */ E(j, [["__scopeId", "data-v-fea58b80"]]);
+}, U = /* @__PURE__ */ x(b, [["__scopeId", "data-v-21b9065f"]]);
 export {
-  A as default
+  U as default
 };

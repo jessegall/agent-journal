@@ -125,6 +125,8 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
         store.apply(placed(layout(), name, largest, "center"));
     }
 
+    const openIn = (id, name) => store.apply(placed(layout(), name, id, "center"));
+
     const offerText = computed(() => {
         const entry = offer.value && catalogue.window(offer.value.view);
         return `${entry?.title || offer.value?.view} can sit beside this pane or join its tabs.`;
@@ -145,5 +147,5 @@ export function usePaneActions({store, area, catalogue, counts, environment}) {
 
     const grabWindow = (event, view) => grab(event, {view, from: null});
 
-    return {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, grabWindow, offer, offerText, answer};
+    return {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, drag, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, openIn, grabWindow, offer, offerText, answer};
 }

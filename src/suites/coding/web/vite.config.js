@@ -8,6 +8,7 @@ export default windowBuild({
         "file-feed": here("./src/file-feed.js"),
         "file-edits": here("./src/file-edits.js"),
         terminal: here("./src/terminal.js"),
+        "work-mode": here("./src/work-mode.js"),
     },
     outDir: here("./dist"),
 });

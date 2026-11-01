@@ -1,7 +1,6 @@
 <script setup>
 import {computed} from "vue";
 import Icon from "../kit/Icon.vue";
-import Switch from "../../kit/Switch.vue";
 import {providerName} from "../domain/agents.js";
 
 // the one line under the agent bar, as version 4's agent facts drew it: who the agent is, its state, the plan's allowance used, how full its
@@ -11,9 +10,8 @@ const props = defineProps({
     facts: {type: Object, default: () => ({helpers: 0, tasks: 0, waiting: 0})},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     now: {type: Number, default: () => Date.now()},
-    auto: {type: Boolean, default: true},
 });
-const emit = defineEmits(["open", "toggle-auto"]);
+const emit = defineEmits(["open"]);
 const COUNTS = [
     {key: "helpers", title: "Subagents and workers running", icon: "agents"},
     {key: "tasks", title: "Open tasks", icon: "task"},
@@ -44,7 +42,7 @@ const uptime = computed(() => {
                 </button>
             </template>
             <template v-if="context !== null">
-                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full`" @click="emit('open', 'usage')">
+                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full`" @click="emit('open', 'context')">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
@@ -60,9 +58,9 @@ const uptime = computed(() => {
             <template v-for="count in COUNTS" :key="count.key">
                 <button type="button" :class="['fact', {none: !facts[count.key]}]" :data-count="count.key" :title="count.title" @click="emit('open', count.key)"><Icon :name="count.icon" :size="12" /> {{ facts[count.key] }}</button>
             </template>
-            <span class="space" />
-            <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="emit('toggle-auto')" />
-        </template>
+                    </template>
+        <span class="space" />
+        <slot />
     </div>
 </template>
 
