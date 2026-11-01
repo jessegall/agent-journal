@@ -66,7 +66,7 @@ test("slash focuses the search and escape clears it", async () => {
 });
 
 async function environments(ran) {
-    const window = context({"setting tree": page(ROWS), "environment list": page([{id: 1, name: "main", folder: "/shop", branch: "main"}, {id: 2, name: "staging", folder: "/shop-staging", branch: "next"}])});
+    const window = context({"setting tree": page(ROWS), "environment cards": page([{id: 1, name: "main", folder: "/shop", branch: "main", running_agent_count: 1, unfinished_task_count: 3}, {id: 2, name: "staging", folder: "/shop-staging", branch: "next"}])});
     window.run = async (line) => (ran.push(line), line[2] === "2" ? {ok: false, error: "it has tasks"} : {ok: true, value: {}});
     const element = await mounted(SettingsTree, window);
     [...element.querySelectorAll("[data-settings-tabs] button")].find((button) => button.textContent.includes("Environments")).click();
@@ -126,4 +126,9 @@ test("the nav marks the first module, and the one scrolled to the top", async ()
     sections.dispatchEvent(new Event("scroll"));
     await settle();
     expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("till");
+});
+
+test("an environment says whether its agent runs and how many tasks are not done", async () => {
+    const element = await environments([]);
+    expect(element.querySelector("[data-environment-state]").textContent).toContain("Agent running · 3 tasks not done");
 });

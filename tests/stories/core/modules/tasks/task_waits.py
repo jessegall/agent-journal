@@ -133,3 +133,9 @@ def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):
     story.run("task block 1 --on task:2")
     story.run('task cancel 2 --reason "no"')
     story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1, Cart, is open again")
+
+
+def test_environment_cards_count_running_agents_and_unfinished_tasks(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.run('task cancel 2 --reason "no"')
+    story.expect_text("environment cards --json", '"running_agent_count": 1', '"unfinished_task_count": 1', actor=story.agent)

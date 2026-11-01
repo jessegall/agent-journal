@@ -2,7 +2,9 @@ from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 from core.modules.tasks.commands.block_task.block_task import BlockTask
+from core.modules.tasks.commands.environment_cards.environment_cards_subcommand import EnvironmentCardsSubcommand
 from core.modules.tasks.commands.task_graph.task_graph_subcommand import TaskGraphSubcommand
+from core.modules.tasks.models.environment_card import EnvironmentCard
 from core.modules.tasks.commands.wait_task.wait_task_handler import WaitTaskHandler
 from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
@@ -61,12 +63,12 @@ class TasksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration]
-    subcommands = (TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
+    subcommands = (EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
-    views = [OpenDependency, TaskCard, TaskEdge]
+    views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
     listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS

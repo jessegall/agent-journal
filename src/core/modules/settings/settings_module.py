@@ -34,7 +34,7 @@ class SettingsModule(Module):
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, SwitchSettingGroupHandler]
     windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.MENU,
-                                 reads=["setting tree", "environment list"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"])]
+                                 reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"])]
     subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]
     moves = [SettingsMove]

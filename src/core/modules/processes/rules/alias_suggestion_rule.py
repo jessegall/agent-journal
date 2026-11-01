@@ -11,7 +11,7 @@ from core.modules.processes.support.process_nudges import ALIAS_SUGGESTION
 RECENT_RUN_COUNT = 50
 OFTEN_RUN_COUNT = 8
 SHAPE_WORDS = 3
-SKIPPED_WORDS = ("journal", "git", "ls", "cat", "grep", "sed", "for")
+SKIPPED_WORDS = ("journal", "git", "ls", "cat", "grep", "sed", "for", "set", "cd", "python3")
 
 
 class AliasSuggestionRule(DriverRule):
