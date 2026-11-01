@@ -1,4 +1,5 @@
 <script setup>
+import {shareAddress} from "../route.js";
 import PlanReviews from "./PlanReviews.vue";
 import PlanTimeline from "./PlanTimeline.vue";
 import Segmented from "../kit/Segmented.vue";
@@ -58,6 +59,7 @@ watch(() => props.id, () => {
                 </span>
             </template>
             <span class="grow" />
+            <a class="share-link" data-resource-share :href="shareAddress(`plans:${id}`)">Share</a>
             <CloseButton title="Close the plan" data-resource-close @click="emit('close')" />
         </header>
         <div class="scroll">
@@ -128,6 +130,12 @@ watch(() => props.id, () => {
 </template>
 
 <style scoped>
+.share-link {
+    color: var(--text-2);
+    font-size: 12px;
+    text-decoration: none;
+}
+
 .plan-views {
     display: flex;
     margin: 16px 0 0;

@@ -27,12 +27,12 @@ from core.modules.sharing.models.share_link import ShareLink
 
 
 class SharingModule(Module):
-    """Lets a person share a plan as a read-only link, kept by the digest of its token until it expires or is
+    """Lets a person share a document, a report or a plan as a read-only link, kept by the digest of its token until it expires or is
     revoked; an agent may ask for one, and visitors may comment if the link lets them."""
 
     name = "journal.core.sharing"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.messages", "journal.core.plans", "journal.core.tunnel"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.documents", "journal.core.messages", "journal.core.plans", "journal.core.tunnel"]
     models = [ModelDeclaration(ShareLink, commands=[RevokeShareLink, DenyShareLink], excluded_subcommands=["make", "edit", "accept"]),
               ModelDeclaration(ShareComment, excluded_subcommands=["make", "edit", "delete"])]
     guards = [ShareLinkRowGuard]

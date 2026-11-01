@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {opening, peek, route, unpeek} from "../route.js";
+import {opening, peek, route, shareAddress, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
@@ -74,6 +74,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                 <p class="abstract">{{ row.abstract }}</p>
                             </template>
                         </div>
+                        <template v-if="kind === 'doc' || kind === 'report'">
+                            <a class="head-button head-share" data-resource-share :href="shareAddress(`${opened.table}:${opened.id}`)">Share</a>
+                        </template>
                         <button type="button" class="head-button" data-resource-close aria-label="Close the panel" @click="close">×</button>
                     </header>
                     <div class="body">
@@ -116,6 +119,14 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </template>
 
 <style scoped>
+.head-share {
+    width: auto;
+    padding: 0 8px;
+    color: var(--text-2);
+    font-size: 12px;
+    text-decoration: none;
+}
+
 .veil {
     position: fixed;
     z-index: 40;

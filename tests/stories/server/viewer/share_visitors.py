@@ -87,3 +87,25 @@ def test_a_link_without_comments_gives_no_way_in(new_story):
         cookie = f"journal_share={made['token']}"
         assert viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "")[0] == 403
         assert viewer_answer(story.viewer_port(), "/api/share/comments", cookie, "", {"name": "Bo", "text": "x"})[0] == 403
+
+
+def test_a_shared_document_reads_to_its_visitor_and_no_other_does(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        story.expect_viewer_login(story.viewer_key("Ada"))
+        user = story.story.user
+        story.story.expect_text('doc make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', "doc 1: The cart rules", actor=user)
+        shared = 1
+        story.story.expect_text('doc make "Secret plans" --abstract "Not for visitors" --body "Hidden" --environment main', "doc 2: Secret plans", actor=user)
+        other = 2
+        made = json.loads(story.story.run(f"share make docs:{shared} --json", actor=user).output_text)
+        cookie = f"journal_share={made['token']}"
+        assert viewer_answer(story.viewer_port(), made["link"], "", "")[0] == 200
+        session = json.loads(viewer_answer(story.viewer_port(), "/api/session", cookie, "")[2])
+        window = session["share"]["window"]["name"]
+        assert session["share"]["row_model"] == "doc" and window == "documents.documents", session
+        line = {"window": window, "line": ["doc", "show", str(shared)], "environment": session["share"]["environment"]}
+        status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", line)
+        assert status == 200 and "Totals are in cents" in body, (status, body)
+        status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", {**line, "line": ["doc", "show", str(other)]})
+        assert "Hidden" not in body, (status, body)
+

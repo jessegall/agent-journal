@@ -7,6 +7,8 @@ from core.base.subcommand.row_list import RowList
 from core.modules.plans.queries.plan_shared_rows import PlanSharedRows
 from core.modules.sharing.commands.support.share_targets import ShareTargets
 
+PLAN_MODEL = "plan"
+
 
 class ShareOpensSubcommand(ReadSubcommand[RowList]):
     """`journal share opens plans:2`: what whoever has a link to this row can view."""
@@ -21,8 +23,9 @@ class ShareOpensSubcommand(ReadSubcommand[RowList]):
         parser.add_argument("target")
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
-        plan = self.targets.plan(arguments.target)
-        lines = [f"Plan {plan.id}, {plan.title}", *(f"{len(group.ids)} {group.model}{'' if len(group.ids) == 1 else 's'}" for group in self.included.rows(plan.id))]
+        shared = self.targets.row(arguments.target)
+        included = self.included.rows(shared.id) if shared.model_name == PLAN_MODEL else []
+        lines = [f"{shared.model_name.capitalize()} {shared.id}, {shared.title}", *(f"{len(group.ids)} {group.model}{'' if len(group.ids) == 1 else 's'}" for group in included)]
         return RowList([{"id": index, "line": line} for index, line in enumerate(lines)])
 
     def write_output(self, value: object, output: Output) -> None:

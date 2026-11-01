@@ -2,13 +2,14 @@
 import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import Notice from "../kit/Notice.vue";
+import {render} from "../text/index.js";
 import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
 import ShareTimeline from "./ShareTimeline.vue";
 import WindowHost from "./WindowHost.vue";
 
 const WIDE_SCREEN = 760;
-const LOOKS = {plan: {noun: "plan", icon: "plan"}};
+const LOOKS = {plan: {noun: "plan", icon: "plan"}, doc: {noun: "document", icon: "file"}, report: {noun: "report", icon: "file"}};
 
 const props = defineProps({
     session: {type: Object, default: null},
@@ -32,11 +33,22 @@ onUnmounted(() => window.removeEventListener("resize", measure));
 const ends = computed(() => (share.value?.ends_at ? new Date(share.value.ends_at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : ""));
 const gone = computed(() => failed.value || !share.value || !look.value);
 const options = computed(() => ({open: `${share.value.row_model}:${share.value.row_id}`}));
+const isText = computed(() => share.value?.row_model !== "plan");
+const text = ref(null);
 const readProgress = ref(-1);
+const renderedText = computed(() => (text.value ? render(text.value.body, {env: "", rowNames: false}) : ""));
 
 const counted = (count, word) => `${count} ${word}${count === 1 ? "" : "s"}`;
 
+async function fetchText() {
+    const answer = await props.read(share.value.window.name, [share.value.row_model, "show", String(share.value.row_id)], share.value.environment);
+    failed.value = !answer.ok && answer.failure !== "unreachable";
+    reconnecting.value = !answer.ok && answer.failure === "unreachable";
+    text.value = answer.ok ? answer.value : null;
+}
+
 async function fetchFacts() {
+    if (isText.value) return fetchText();
     const id = String(share.value.row_id);
     const [progress, listed] = await Promise.all([
         props.read(share.value.window.name, ["plan", "progress", id], share.value.environment),
@@ -56,7 +68,7 @@ async function fetchFacts() {
 watch(
     () => props.entry?.entry_url,
     async (url) => {
-        if (url && !props.entry.unavailable_reason) component.value = (await props.load(url)).default;
+        if (url && !isText.value && !props.entry.unavailable_reason) component.value = (await props.load(url)).default;
     },
     {immediate: true},
 );
@@ -77,7 +89,16 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
                 <Notice role="status">Reconnecting…</Notice>
             </template>
             <ShareStrip :icon="look.icon" :noun="look.noun" :facts="facts" :ends="ends" :read="readProgress" />
-            <div class="share-body" data-share-body :data-arrangement="arrangement">
+            <template v-if="isText">
+                <main class="share-text" data-share-text>
+                    <template v-if="text">
+                        <h1>{{ text.title }}</h1>
+                        <p class="share-abstract">{{ text.abstract }}</p>
+                        <div class="md" v-html="renderedText" />
+                    </template>
+                </main>
+            </template>
+            <div v-else class="share-body" data-share-body :data-arrangement="arrangement">
                 <div class="share-part" data-share-part="plan">
                     <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" :shared="{model: share.row_model, id: share.row_id}" read-only />
                 </div>
@@ -92,6 +113,22 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
 </template>
 
 <style scoped>
+.share-text {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 24px 16px;
+}
+
+.share-text h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+}
+
+.share-abstract {
+    margin: 0 0 16px;
+    color: var(--text-2);
+}
+
 .share-face {
     --kind: var(--progress);
     display: flex;

@@ -146,10 +146,16 @@ def test_a_link_names_a_document_a_report_or_a_plan_that_exists(new_story):
     story.expect_refusal("share make plans:9", "plan 9 does not exist", actor=story.user)
 
 
-def test_a_document_or_a_report_is_named_but_the_journal_has_none_to_share_yet(new_story):
+def test_a_document_and_a_report_can_be_shared_and_one_that_does_not_exist_is_refused(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
-    story.expect_refusal("share make docs:12", "the journal has no documents to share", actor=story.user)
-    story.expect_refusal("share make reports:4", "the journal has no reports to share", actor=story.user)
+    story.expect_refusal("share make docs:12", "document 12 does not exist", actor=story.user)
+    story.expect_refusal("share make reports:4", "report 4 does not exist", actor=story.user)
+    for noun, table, model in (("doc", "docs", "doc"), ("report", "reports", "report")):
+        story.expect_text(f'{noun} make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', f"{noun} 1: The cart rules", actor=story.user)
+        row = 1
+        story.expect_text(f"share opens {table}:{row}", f"{model.capitalize()} {row}, The cart rules", actor=story.user)
+        made = json.loads(story.run(f"share make {table}:{row} --json", actor=story.user).output_text)
+        story.expect_success(f"share show {made['id']}", f"row_model: {model}", f"row_id: {row}", actor=story.user)
 
 
 def test_the_person_who_made_a_link_revokes_it(new_story):

@@ -76,6 +76,15 @@ export function goIn(env, page = "", n = 0, q = "") {
     go(page, n, q);
 }
 
+// the address of the Shares window with a row filled in, ready to share
+export function shareAddress(ref, from = window.location.href) {
+    const address = new URL(from);
+    address.searchParams.set("page", "sharing.shares");
+    address.searchParams.set("share", ref);
+    address.hash = "";
+    return address.href;
+}
+
 export function showFile(path, line = 0, env = "") {
     if (env) choose(env);
     location.hash = href.file(path, line);

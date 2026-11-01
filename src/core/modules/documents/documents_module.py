@@ -65,7 +65,7 @@ class DocumentsModule(Module):
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
-                                 reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"])]
+                                 reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [CommentOnTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
     listeners = [DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]

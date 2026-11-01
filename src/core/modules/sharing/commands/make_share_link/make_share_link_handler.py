@@ -27,7 +27,7 @@ SPANS = {"h": timedelta(hours=1), "d": timedelta(days=1)}
 
 
 class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
-    """Makes a link to a plan for the calling person, keeping the digest of its token and giving the token this
+    """Makes a link to a row for the calling person, keeping the digest of its token and giving the token this
     once; an agent's link only asks: nothing opens until a person accepts it, and only then is there a token."""
 
     command = MakeShareLink
@@ -36,16 +36,16 @@ class MakeShareLinkHandler(Handler[MakeShareLink, ShareInvitation]):
         self.repository, self.clock, self.targets, self.bus = repository, clock, targets, bus
 
     def handle(self, command: MakeShareLink, context: Context) -> ShareInvitation:
-        plan = self.targets.plan(command.target)
+        shared = self.targets.row(command.target)
         token = secrets.token_urlsafe(TOKEN_BYTES)
         is_person = context.actor.type is ActorType.USER
-        link = self.repository.save(ShareLink(environment_id=plan.environment_id, creator_id=context.actor.id, token_digest=TextDigest().hex_digest(token),
-                                              row_model=plan.model_name, row_id=plan.id, expires_at=self.end_time(command.ends), comments=command.comments,
+        link = self.repository.save(ShareLink(environment_id=shared.environment_id, creator_id=context.actor.id, token_digest=TextDigest().hex_digest(token),
+                                              row_model=shared.model_name, row_id=shared.id, expires_at=self.end_time(command.ends), comments=command.comments,
                                               password_digest=SharePassword.digest(command.password) if command.password else None, locked=bool(command.password),
                                               state=ShareLinkState.ACTIVE if is_person else ShareLinkState.WAITING), context)
         if is_person:
             return ShareInvitation(link.id, link.state.value, token, f"{LINK_PATH}{token}", link.expires_at)
-        asking = SendMessage(f"I ask to share plan {plan.id}, {plan.title}. Nothing opens until you accept it on the Shares window.\n\nshare {link.id}")
+        asking = SendMessage(f"I ask to share {shared.model_name} {shared.id}, {shared.title}. Nothing opens until you accept it on the Shares window.\n\nshare {link.id}")
         self.bus.dispatch(asking, context.nested(asking))
         return ShareInvitation(link.id, link.state.value, None, None, link.expires_at)
 

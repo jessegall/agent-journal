@@ -19,7 +19,7 @@ onUnmounted(() => clearInterval(timer));
 const waiting = computed(() => rows.value.filter((row) => row.state === "waiting"));
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
 const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});
-const target = ref("");
+const target = ref(new URLSearchParams(window.location.search).get("share") ?? "");
 const ends = ref("7d");
 const password = ref("");
 const comments = ref(false);
@@ -49,6 +49,8 @@ async function previewOpens() {
     refusal.value = answer.ok ? "" : answer.error;
     opens.value = answer.ok ? answer.value.rows : null;
 }
+
+if (target.value) previewOpens();
 
 async function make() {
     const answer = await run(["share", "make", target.value.trim(), "--ends", ends.value, ...(password.value ? [`--password=${password.value}`] : []), ...(comments.value ? ["--comments"] : [])]);
@@ -82,7 +84,7 @@ async function toggleComments(row) {
 <template>
     <div class="shares">
         <form class="shares-make" data-share-form @submit.prevent="make">
-            <input v-model="target" class="shares-target" placeholder="plans:2" aria-label="What to share" @change="previewOpens" />
+            <input v-model="target" class="shares-target" placeholder="plans:2, docs:12 or reports:4" aria-label="What to share" @change="previewOpens" />
             <div class="shares-option">
                 <span class="shares-label">Ends after</span>
                 <Segmented :options="ENDS" :value="ends" data-share-ends @pick="ends = $event" />
