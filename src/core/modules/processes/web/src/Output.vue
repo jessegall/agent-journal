@@ -1,14 +1,12 @@
 <script setup>
-import {onBeforeUnmount, onMounted, ref} from "vue";
-import {EmptyState, useWindow} from "@journal/window-kit";
+import {ref} from "vue";
+import {EmptyState, usePoll, useWindow} from "@journal/window-kit";
 
-const POLL_MILLISECONDS = 2000;
 const context = useWindow();
 const outputId = ref(0);
 const run = ref(null);
 const lines = ref([]);
 const isWhole = ref(false);
-let timer = null;
 
 const isRunning = () => run.value !== null && (run.value.state === "running" || run.value.state === "background");
 
@@ -25,24 +23,13 @@ async function load() {
     lines.value = text.ok ? text.value.lines : [text.error];
 }
 
-function poll() {
-    timer = setTimeout(async () => {
-        if (isRunning()) await load();
-        poll();
-    }, POLL_MILLISECONDS);
-}
-
 async function toggle() {
     isWhole.value = !isWhole.value;
     await load();
 }
 
 context.follow(["process.*", "output.*"], load);
-onMounted(async () => {
-    await load();
-    poll();
-});
-onBeforeUnmount(() => clearTimeout(timer));
+usePoll(load, isRunning);
 </script>
 
 <template>

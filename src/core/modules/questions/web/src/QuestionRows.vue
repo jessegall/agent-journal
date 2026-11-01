@@ -35,18 +35,20 @@ function choiceLabel(row, option) {
                     <template v-if="row.state !== 'open'">
                         <p class="question-closed">{{ row.state === "answered" ? `Answered: ${row.answer}` : "Closed" }}</p>
                     </template>
-                    <div v-if="row.state === 'open'" class="question-choices">
-                        <template v-for="option in row.options" :key="option">
-                            <button type="button" :class="['question-choice', {recommended: option === row.recommended}]" @click="answer(row, option)">
-                                {{ choiceLabel(row, option) }}
-                            </button>
-                        </template>
-                    </div>
-                    <form v-if="row.state === 'open'" class="question-form" @submit.prevent="sendTyped(row)">
-                        <input v-model="typed[row.id]" class="question-answer" placeholder="Answer in your own words" />
-                        <button type="button" class="question-send" @click="sendTyped(row)">Answer</button>
-                        <button type="button" class="question-close" @click="run(['question', 'close', String(row.id)])">Close</button>
-                    </form>
+                    <template v-if="row.state === 'open'">
+                        <div class="question-choices">
+                            <template v-for="option in row.options" :key="option">
+                                <button type="button" :class="['question-choice', {recommended: option === row.recommended}]" @click="answer(row, option)">
+                                    {{ choiceLabel(row, option) }}
+                                </button>
+                            </template>
+                        </div>
+                        <form class="question-form" @submit.prevent="sendTyped(row)">
+                            <input v-model="typed[row.id]" class="question-answer" placeholder="Answer in your own words" />
+                            <button type="button" class="question-send" @click="sendTyped(row)">Answer</button>
+                            <button type="button" class="question-close" @click="run(['question', 'close', String(row.id)])">Close</button>
+                        </form>
+                    </template>
                 </div>
             </template>
         </RowList>

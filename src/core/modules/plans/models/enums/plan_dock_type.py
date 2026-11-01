@@ -7,5 +7,5 @@ class PlanDockType(StrEnum):
     STARTED = "plans.started"
     WAITING = "plans.waiting"
     PAUSED = "plans.paused"
-    DONE = "plans.done"
+    COMPLETED = "plans.completed"
     CANCELLED = "plans.cancelled"

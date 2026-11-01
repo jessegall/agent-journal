@@ -13,7 +13,8 @@ LONG_BYTES = 5000
 
 
 class ProcessesSeeder(Seeder):
-    """Runs a finished command with output and a command that is still running, and docks the running one above the chat."""
+    """Runs a finished command with output and a command that is still running, and docks the
+    running one above the chat."""
 
     def __init__(self, folder: OutputFolder) -> None:
         self.folder = folder

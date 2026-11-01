@@ -4,12 +4,12 @@ from core.base.seed.seeder import Seeder
 
 
 REASONED = ("block", "cancel")
-ENDED_DOCKS = {"close": "plans.done", "cancel": "plans.cancelled"}
+ENDED_DOCKS = {"close": "plans.completed", "cancel": "plans.cancelled"}
 
 
 class PlansSeeder(Seeder):
-    """Makes a plan with phases, one of them a checkpoint, and tasks in them, and one plan for each way a plan card in
-    the chat can stand: started, paused, cancelled, done and waiting for the user, each docked above the chat."""
+    """Makes a plan with phases, one of them a checkpoint, and tasks in them, and one plan for each way a
+    plan card in the chat can stand: started, paused, cancelled, done and waiting for the user."""
 
     def seed(self, demo: Demo) -> None:
         user = demo.people["user"]
@@ -26,11 +26,11 @@ class PlansSeeder(Seeder):
         # the dock holds six items, which the five plan cards and the task and the fact above them would pass
         demo.run(f"setting set journal.core.docking.most-items 12 {demo.environment_flag}", user)
         moves = {
-            "Checkout rewrite": ("ready", "approve", "start"),
-            "Shipping rates": ("ready", "approve", "start", "block"),
-            "Gift wrap": ("cancel",),
-            "Cart totals": ("ready", "approve", "start", "close"),
-            "Tax rules": ("ready",),
+            "Checkout rewrite": ["ready", "approve", "start"],
+            "Shipping rates": ["ready", "approve", "start", "block"],
+            "Gift wrap": ["cancel"],
+            "Cart totals": ["ready", "approve", "start", "close"],
+            "Tax rules": ["ready"],
         }
         for title, steps in moves.items():
             plan = demo.new_id(f'plan make "{title}" {demo.environment_flag}', user)

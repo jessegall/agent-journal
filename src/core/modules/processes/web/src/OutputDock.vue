@@ -1,15 +1,13 @@
 <script setup>
-import {onBeforeUnmount, onMounted, ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {ref} from "vue";
+import {usePoll, useWindow} from "@journal/window-kit";
 
 // the card of a docked process, as version 4 drew it: where the run stands and the last lines its reader summarises, read again
 // every two seconds while the run is going
-const POLL_MILLISECONDS = 2000;
 const context = useWindow();
 const item = context.option("row");
 const run = ref(null);
 const lines = ref([]);
-let timer = null;
 
 const isRunning = () => run.value === null || run.value.state === "running" || run.value.state === "background";
 
@@ -22,18 +20,7 @@ async function load() {
     lines.value = text.ok ? text.value.lines : [];
 }
 
-function poll() {
-    timer = setTimeout(async () => {
-        if (isRunning()) await load();
-        poll();
-    }, POLL_MILLISECONDS);
-}
-
-onMounted(() => {
-    load();
-    poll();
-});
-onBeforeUnmount(() => clearTimeout(timer));
+usePoll(load, isRunning);
 </script>
 
 <template>

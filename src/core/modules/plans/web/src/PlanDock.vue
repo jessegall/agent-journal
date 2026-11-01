@@ -4,7 +4,7 @@ import {useWindow} from "@journal/window-kit";
 
 // the dock item this card draws is the pane option "row"
 const row = useWindow().option("row");
-const STANDING = {"plans.waiting": "Waiting for you", "plans.started": "Started", "plans.paused": "Paused", "plans.done": "Done", "plans.cancelled": "Cancelled"};
+const STANDING = {"plans.waiting": "Waiting for you", "plans.started": "Started", "plans.paused": "Paused", "plans.completed": "Done", "plans.cancelled": "Cancelled"};
 </script>
 
 <template>
