@@ -8,7 +8,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line, user_waits, with_parse_error
 from tests.stories.core.support.coding_fixtures import BuilderStarted, SubagentStarted
 
-LISTING = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"]))
+SERVER = HookSamples.shell("node serve.js", ShellPart("node", CommandCategory.PROCESS, ["serve.js"]))
 JOURNAL = HookSamples.shell("journal task show 1", ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task"))
 TESTS = HookSamples.shell("pytest -q", ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], effects=[CommandEffect.READS_FILES]))
 BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD, ["build"]))
@@ -16,9 +16,9 @@ BUILD = HookSamples.shell("make build", ShellPart("make", CommandCategory.BUILD,
 
 def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_process_row(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    reply = story.hook("s-1", LISTING)
-    assert dict(reply.updated_input) == {"command": runner_line(story, 1, "ls build")}
-    story.expect_success("process show 1", "line: ls build", "state: running", "limit_seconds: 15", f"agent_id: {story.agent.id}")
+    reply = story.hook("s-1", SERVER)
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, "node serve.js")}
+    story.expect_success("process show 1", "line: node serve.js", "state: running", "limit_seconds: 15", f"agent_id: {story.agent.id}")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
 
 
@@ -35,49 +35,49 @@ def test_a_test_run_and_a_build_go_to_the_background_at_once(new_story):
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.hook("s-1", LISTING)
+    story.hook("s-1", SERVER)
     story.run("process background 1", actor=story.agent)
-    assert dict(story.hook("s-1", LISTING).updated_input) == {"command": runner_line(story, 2, "ls build", background=True)}
+    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 2, "node serve.js", background=True)}
 
 
 def test_the_limit_drops_to_10_seconds_while_a_message_waits_for_the_user(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     user_waits(story)
-    assert dict(story.hook("s-1", LISTING).updated_input) == {"command": runner_line(story, 1, "ls build", limit=10)}
+    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 1, "node serve.js", limit=10)}
 
 
 def test_a_subagent_s_line_is_not_rewritten_and_makes_no_process(new_story):
     story = install_runner(new_story(fixture=SubagentStarted))
-    story.hook("s-1", LISTING)
-    assert dict(story.hook("s-1", LISTING.with_fields(subagent="sub-1")).updated_input) == {}
+    story.hook("s-1", SERVER)
+    assert dict(story.hook("s-1", SERVER.with_fields(subagent="sub-1")).updated_input) == {}
     story.expect_refusal("process show 2", "no process 2")
 
 
 def test_a_line_with_a_parse_error_is_let_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.hook("s-1", LISTING)
-    assert dict(story.hook("s-1", with_parse_error(LISTING)).updated_input) == {}
+    story.hook("s-1", SERVER)
+    assert dict(story.hook("s-1", with_parse_error(SERVER)).updated_input) == {}
     story.expect_refusal("process show 2", "no process 2")
 
 
 def test_a_second_rule_that_rewrites_the_hook_is_refused_and_no_process_is_kept(new_story):
     story = install_runner(new_story(SAMPLES, fixture=BuilderStarted))
     story.run("setting make samples.rewrite-coding true")
-    story.expect_hook_refusal("s-1", LISTING, "processes.runner-rewrite")
+    story.expect_hook_refusal("s-1", SERVER, "processes.runner-rewrite")
     story.expect_refusal("process show 1", "no process 1")
 
 
 def test_a_background_bash_call_of_claude_runs_in_the_foreground_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    background = LISTING.with_fields(raw={"tool_input": {"command": "ls build", "run_in_background": True, "description": "list"}})
-    assert dict(story.hook("s-1", background).updated_input) == {"command": runner_line(story, 1, "ls build"), "description": "list"}
+    background = SERVER.with_fields(raw={"tool_input": {"command": "node serve.js", "run_in_background": True, "description": "list"}})
+    assert dict(story.hook("s-1", background).updated_input) == {"command": runner_line(story, 1, "node serve.js"), "description": "list"}
 
 
 def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_is_told_once(new_story):
     story = new_story(fixture=BuilderStarted)
-    first = story.hook("s-1", LISTING)
+    first = story.hook("s-1", SERVER)
     assert dict(first.updated_input) == {} and any("journal-run is not installed" in line for line in first.lines)
-    second = story.hook("s-1", LISTING)
+    second = story.hook("s-1", SERVER)
     assert dict(second.updated_input) == {} and not any("journal-run is not installed" in line for line in second.lines)
     story.expect_refusal("process show 1", "no process 1")
 
@@ -85,4 +85,22 @@ def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_i
 def test_an_open_memory_mark_silences_other_rules_but_a_line_still_goes_through_the_runner(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.container.get(Bus).run(OpenMemoryMark(story.agent.id, 50), story.agent, environment_id=1)
-    assert dict(story.hook("s-1", LISTING).updated_input) == {"command": runner_line(story, 1, "ls build")}
+    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 1, "node serve.js")}
+
+
+def test_a_line_that_only_reads_and_writes_files_runs_as_written_pipes_and_all_and_is_kept_as_no_output(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    line = "cat src/cart.py | grep total"
+    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
+    assert not reply.updated_input
+    reply = story.hook("s-1", HookSamples.shell("sed -n 1,5p src/cart.py && cat > notes.txt", ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], write_paths=["notes.txt"])))
+    assert not reply.updated_input
+    assert not reply.refusal
+    story.expect_success("process list", "nothing found")
+
+
+def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    line = "cat src/cart.py && pytest -q"
+    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, background=True)}

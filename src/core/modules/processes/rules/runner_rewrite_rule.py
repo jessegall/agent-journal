@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -15,11 +16,13 @@ from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
 
 BACKGROUND_FLAG = "run_in_background"
+READ_AND_WRITE_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
 
 
 class RunnerRewriteRule(DriverRule):
-    """Every shell line of a main agent or a worker runs through the journal's runner: the run is made a
-    process, and the agent's command is rewritten to hand the runner its process, its limit and its line."""
+    """A shell line of a main agent or a worker runs through the journal's runner: the run is made a process,
+    and the agent's command is rewritten to hand the runner its process, its limit and its line. A line that
+    only reads, searches or edits files runs as it was written, pipes and all, and is kept as no output."""
 
     name = "processes.runner-rewrite"
     hook = HookEventName.PRE_TOOL_USE
@@ -33,12 +36,15 @@ class RunnerRewriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error:
+        if shell is None or shell.parse_error or self.only_reads_and_writes(shell):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
         run = self.limits.decide(hook.environment_id, shell)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
+
+    def only_reads_and_writes(self, shell: ShellLine) -> bool:
+        return bool(shell.parts) and all(part.classification.category in READ_AND_WRITE_CATEGORIES for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)
