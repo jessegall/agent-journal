@@ -6,6 +6,7 @@ import {heldClip} from "../figure/heldClip.js";
 import {GROUND} from "../figure/figure.js";
 import {readFloors} from "../figure/floors.js";
 import {strideAtDistance} from "../figure/gait.js";
+import {GLANCE, glanceAfter, glancePoint} from "../figure/looks.js";
 import {between, perchOn, perchSpot} from "../figure/perches.js";
 import {boxAt, cornerAt, freeEdge, freeSpot, restOf, tripTo} from "../figure/places.js";
 import {airborneFrame, fallingFrom, legAt, legEnded} from "../domain/figureMotion.js";
@@ -30,6 +31,8 @@ const STROLL_SECONDS = [8, 20];
 const PERCH_SECONDS = [6, 12];
 const CLIMB_SHARE = 0.4;
 let perch = null;
+let glance = null;
+const HEAD_HEIGHT = 0.3;
 
 const {body, start: startBody, stop: stopBody} = useFigureBody(frame);
 
@@ -142,7 +145,10 @@ function draw(now) {
     if (now - blinkAt > BLINK.close + BLINK.open) blinkAt = now + nextBlinkMs(Math.random);
     const facing = walking ? (body.trip.way > 0 ? 90 : 270) : (body.place.face ?? 0);
     const stride = walking && !body.leg.hopping ? strideAtDistance(Math.abs(body.at.x - body.walk.from.x), SIZE) : null;
-    player.show(clip, index, facing, {posture: walking && !body.leg.hopping ? "walk" : "stand", open: blinking, stride});
+    const seconds = now / 1000;
+    glance = glanceAfter(glance, seconds, Math.random, GLANCE);
+    const at = walking || body.airborne ? null : glancePoint(glance, seconds, {x: body.at.x + SIZE / 2, y: body.at.y + SIZE * HEAD_HEIGHT}, SIZE);
+    player.show(clip, index, facing, {posture: walking && !body.leg.hopping ? "walk" : "stand", open: blinking, stride, at});
 }
 
 const style = computed(() => ({transform: `translate(${body.at.x}px, ${body.at.y}px)`, width: `${SIZE}px`, height: `${SIZE}px`}));
