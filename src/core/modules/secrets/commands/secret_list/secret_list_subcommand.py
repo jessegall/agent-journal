@@ -20,10 +20,10 @@ class SecretListSubcommand(ReadSubcommand[Sequence[Secret]]):
         self.secrets = secrets
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        parser.add_argument("--deleted", action="store_true")
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[Secret]:
-        return tuple(self.secrets.active().oldest().all_rows())
+        return tuple((self.secrets.deleted() if arguments.deleted else self.secrets.active()).oldest().all_rows())
 
     def write_output(self, value: object, output: Output) -> None:
         listed = [row for row in value if isinstance(row, Secret)] if is_tuple(value) else []

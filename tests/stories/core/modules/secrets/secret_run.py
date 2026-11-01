@@ -1,3 +1,4 @@
+from tests.stories.core.support.fixtures import UserJoined
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
@@ -86,3 +87,16 @@ def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_sto
 def test_a_program_that_fails_gives_its_output_and_its_exit_code(new_story):
     story = filled_story(new_story)
     story.expect_text("secret run 1 -- head -c 8 /no/such/file", "head ended with exit code 1", actor=story.agent)
+
+
+def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('secret make "Own" --kind custom --field base', actor=story.user)
+    story.run("secret update 1 --add-field region --add-field token", actor=story.user)
+    story.expect_text("secret list --json", '"region"', '"token"', actor=story.user)
+    story.run("secret update 1 --remove-field region", actor=story.user)
+    text = story.run("secret list --json", actor=story.user).output_text
+    assert '"region"' not in text and '"token"' in text
+    story.run("secret delete 1", actor=story.user)
+    story.expect_text("secret list --deleted", "Own", actor=story.user)
+    story.expect_absent("secret list", "Own", actor=story.user)

@@ -9,20 +9,23 @@ const KINDS = [
 ];
 
 const {rows, failure, loaded, act, actionFailure} = useRows("secret list", ["secret.*"]);
+const {rows: deleted, load: loadDeleted} = useRows("secret list --deleted", ["secret.*"]);
+const newFields = reactive({});
+const newPrograms = reactive({});
 const typed = reactive({});
 const drafting = ref(false);
-const draft = reactive({kind: KINDS[0].key, title: "", brief: ""});
+const draft = reactive({kind: KINDS[0].key, title: "", brief: "", field: ""});
 const editing = ref(0);
 const edited = reactive({title: "", brief: ""});
 const asking = ref(0);
-const removed = ref([]);
 
 async function create() {
     if (!draft.title.trim()) return;
-    const result = await act(["secret", "make", draft.title.trim(), "--kind", draft.kind, ...(draft.brief.trim() ? ["--brief", draft.brief.trim()] : [])]);
+    const field = draft.kind === "custom" && draft.field.trim() ? ["--field", draft.field.trim()] : [];
+    const result = await act(["secret", "make", draft.title.trim(), "--kind", draft.kind, ...field, ...(draft.brief.trim() ? ["--brief", draft.brief.trim()] : [])]);
     if (!result.ok) return;
     drafting.value = false;
-    Object.assign(draft, {kind: KINDS[0].key, title: "", brief: ""});
+    Object.assign(draft, {kind: KINDS[0].key, title: "", brief: "", field: ""});
 }
 
 function edit(row) {
@@ -38,13 +41,29 @@ async function saveEdit(row) {
 async function remove(row) {
     if (asking.value !== row.id) return void (asking.value = row.id);
     asking.value = 0;
-    const result = await act(["secret", "delete", String(row.id)]);
-    if (result.ok) removed.value = [...removed.value, row];
+    await act(["secret", "delete", String(row.id)]);
+    loadDeleted();
 }
 
 async function restore(row) {
-    const result = await act(["secret", "restore", String(row.id)]);
-    if (result.ok) removed.value = removed.value.filter((other) => other.id !== row.id);
+    await act(["secret", "restore", String(row.id)]);
+    loadDeleted();
+}
+
+async function addField(row) {
+    const name = (newFields[row.id] || "").trim();
+    if (!name) return;
+    const result = await act(["secret", "update", String(row.id), "--add-field", name]);
+    if (result.ok) newFields[row.id] = "";
+}
+
+const removeField = (row, field) => act(["secret", "update", String(row.id), "--remove-field", field.name]);
+
+async function allowProgram(row) {
+    const name = (newPrograms[row.id] || "").trim();
+    if (!name) return;
+    const result = await act(["secret", "allow", String(row.id), name]);
+    if (result.ok) newPrograms[row.id] = "";
 }
 
 const key = (row, field) => `${row.id}:${field.name}`;
@@ -70,13 +89,16 @@ async function fill(row, field) {
             <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
             <input v-model="draft.title" placeholder="What it is for" aria-label="Title">
             <input v-model="draft.brief" placeholder="A note on where it is used; you can leave this empty" aria-label="Note">
+            <template v-if="draft.kind === 'custom'">
+                <input v-model="draft.field" placeholder="The name of its first field" aria-label="First field" data-secret-first-field>
+            </template>
             <div class="draft-foot">
                 <Btn small @click="drafting = false">Cancel</Btn>
-                <Btn small kind="primary" type="submit" :disabled="!draft.title.trim()" data-secret-create>Make the secret</Btn>
+                <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || (draft.kind === 'custom' && !draft.field.trim())" data-secret-create>Make the secret</Btn>
             </div>
         </form>
     </template>
-    <template v-for="row in removed" :key="row.id">
+    <template v-for="row in deleted" :key="row.id">
         <p class="removed" data-secret-removed>{{ row.title }} was deleted. <button type="button" data-secret-restore @click="restore(row)">Restore</button></p>
     </template>
     <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet">
@@ -116,6 +138,15 @@ async function fill(row, field) {
                         <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
                                :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
                         <button type="submit">Save</button>
+                        <template v-if="row.secret_type === 'custom'">
+                            <button type="button" :data-secret-field-remove="field.name" @click="removeField(row, field)">Remove</button>
+                        </template>
+                    </form>
+                </template>
+                <template v-if="row.secret_type === 'custom'">
+                    <form class="field" data-secret-field-add @submit.prevent="addField(row)">
+                        <input v-model="newFields[row.id]" placeholder="Add a field" aria-label="Add a field" autocomplete="off">
+                        <button type="submit">Add</button>
                     </form>
                 </template>
                 <div class="programs">
@@ -127,6 +158,10 @@ async function fill(row, field) {
                     <template v-if="!row.helpers">
                         <button type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
                     </template>
+                    <form class="program-add" data-secret-program-add @submit.prevent="allowProgram(row)">
+                        <input v-model="newPrograms[row.id]" placeholder="Allow a program" aria-label="Allow a program" autocomplete="off">
+                        <button type="submit">Allow</button>
+                    </form>
                 </div>
             </div>
         </template>
@@ -134,6 +169,11 @@ async function fill(row, field) {
 </template>
 
 <style scoped>
+.program-add {
+    display: inline-flex;
+    gap: 4px;
+}
+
 .failure {
     margin: 0 0 8px;
     color: var(--bad, var(--text-2));

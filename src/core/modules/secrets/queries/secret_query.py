@@ -1,3 +1,4 @@
+from core.base.query.conditions.greater import Greater
 from typing import Self
 
 from core.base.database.database import Database
@@ -16,6 +17,9 @@ class SecretQuery(Query[Secret]):
 
     def active(self) -> Self:
         return self.matching(IsNull("deleted_at"))
+
+    def deleted(self) -> Self:
+        return self.matching(Greater("deleted_at", ""))
 
     def find_title(self, text: str) -> Secret:
         secret = next((row for row in self.active().oldest().all_rows() if str(row.id) == text or row.title.lower() == text.lower()), None)

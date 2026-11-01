@@ -6,8 +6,10 @@ from core.modules.secrets.models.secret import Secret
 
 @dataclass(frozen=True)
 class EditSecret(Command[Secret]):
-    """Changes a secret's title or how it is used; an empty one keeps what it was."""
+    """Changes a secret's title, how it is used or its fields; an empty title or use keeps what it was."""
 
     secret_id: int
     title: str
     brief: str
+    added_fields: tuple[str, ...] = ()
+    removed_fields: tuple[str, ...] = ()

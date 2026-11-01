@@ -17,9 +17,11 @@ class SecretUpdateSubcommand(Subcommand[EditSecret, Secret]):
         parser.add_argument("n", type=int)
         parser.add_argument("--title", default="")
         parser.add_argument("--brief", default="")
+        parser.add_argument("--add-field", action="append", default=[], dest="added_fields")
+        parser.add_argument("--remove-field", action="append", default=[], dest="removed_fields")
 
     def command(self, arguments: Namespace, caller: Caller) -> EditSecret:
-        return EditSecret(arguments.n, arguments.title, arguments.brief)
+        return EditSecret(arguments.n, arguments.title, arguments.brief, tuple(arguments.added_fields), tuple(arguments.removed_fields))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Secret):
