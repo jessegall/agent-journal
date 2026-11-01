@@ -19,24 +19,19 @@ const props = defineProps({
     run: {type: Function, default: null},
     mini: Boolean,
 });
-const emit = defineEmits(["open"]);
 const drafting = ref(false);
 const openEnvironment = (name) => (window.location.search = `?environment=${encodeURIComponent(name)}`);
 const foldedNames = rememberedRef("sidebar-folded", []);
 const folded = computed(() => new Set(foldedNames.value));
 // the windows in their groups, each in the order the suite lists them
-const GROUPS = [{module: "windows", title: "Windows", group: ""}, {module: "project", title: "Project", group: "project"}];
-const sections = computed(() => GROUPS.map(({group, ...section}) => ({...section, windows: props.windows.filter((window) => (window.group || "") === group)})).filter((section) => section.windows.length));
+const inGroup = (group) => props.windows.filter((window) => (window.group || "") === group);
+const sections = computed(() => [{key: "environment", title: "Environment", windows: inGroup("")}, {key: "project", title: "Project", windows: inGroup("project")}]);
 
-// each window has its own address; a plain click on the home page opens it in a pane, any other click follows the address
+// each page has its own address, which a click follows
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;
 
-function go(event, window) {
-    if (window.unavailable_reason) return event.preventDefault();
-    if (!props.open && !event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0) {
-        event.preventDefault();
-        emit("open", window.name);
-    }
+function go(event, page) {
+    if (page.unavailable_reason) event.preventDefault();
 }
 
 function fold(key) {
@@ -54,20 +49,17 @@ function fold(key) {
             <span class="sidebar-name">{{ project }}</span>
         </div>
         <div class="sidebar-scroll">
-            <button type="button" class="fold-head" data-fold="environment" @click="fold('environment')">
-                Environment<Icon :name="folded.has('environment') ? 'right' : 'down'" :size="12" />
-            </button>
-            <template v-if="!folded.has('environment')">
-                <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
-            </template>
             <template v-if="!windows.length">
                 <Skeleton shape="rows" />
             </template>
-            <template v-for="section in sections" :key="section.module">
-                <button type="button" class="fold-head" :data-fold="section.module" @click="fold(section.module)">
-                    {{ section.title }}<Icon :name="folded.has(section.module) ? 'right' : 'down'" :size="12" />
+            <template v-for="section in sections" :key="section.key">
+                <button type="button" class="fold-head" :data-fold="section.key" @click="fold(section.key)">
+                    {{ section.title }}<Icon :name="folded.has(section.key) ? 'right' : 'down'" :size="12" />
                 </button>
-                <template v-if="!folded.has(section.module)">
+                <template v-if="!folded.has(section.key)">
+                    <template v-if="section.key === 'environment'">
+                        <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
+                    </template>
                     <template v-for="window in section.windows" :key="window.name">
                         <a :class="['item', {active: window.name === open}]" :title="window.title" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
                             <MarkIcon :name="window.icon || 'window'" /><span class="item-title">{{ window.title }}</span>

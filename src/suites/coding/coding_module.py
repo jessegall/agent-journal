@@ -52,8 +52,8 @@ class CodingModule(Module):
     driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
     listeners = [AutoNextTaskListener]
     subcommands = [GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
-    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
-               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
+    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,

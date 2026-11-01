@@ -4,6 +4,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.sequences.commands.abandon_sequence.abandon_sequence_subcommand import AbandonSequenceSubcommand
 from core.modules.sequences.commands.follow_step.follow_step_subcommand import FollowStepSubcommand
 from core.modules.sequences.commands.make_sequence.make_sequence_handler import MakeSequenceHandler
@@ -48,5 +49,5 @@ class SequencesModule(Module):
     listeners = [SequenceRowTriggerListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]
     seeders = [SequencesSeeder]
-    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, icon=WindowIcon.SEQUENCE,
+    windows = [WindowDeclaration("sequences.sequences", "Sequences", "sequences.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.SEQUENCE,
                                  reads=["sequence list", "sequence show", "sequence-run list"], runs=["sequence make", "sequence edit", "sequence delete"], events=["sequence.*", "sequence_run.*"])]

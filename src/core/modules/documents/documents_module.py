@@ -6,6 +6,7 @@ from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
 from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
@@ -65,7 +66,7 @@ class DocumentsModule(Module):
     migrations = [DocumentsTablesMigration, LinkSourceIndexMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
-    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
+    windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
     handlers = [CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]

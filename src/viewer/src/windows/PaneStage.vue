@@ -126,6 +126,9 @@ async function readUsage() {
     }
     agentKnown.value = true;
 }
+// a page opens at its own address and a window in a pane
+const pageAddress = (name) => `?environment=${encodeURIComponent(props.environment)}&page=${encodeURIComponent(name)}`;
+const goTo = (name) => (props.catalogue.window(name)?.place === "page" ? location.assign(pageAddress(name)) : openView(name));
 const openDropdown = ref(null);
 const openCount = (key) => {
     const name = COUNT_WINDOWS[key];
@@ -212,18 +215,18 @@ function messageTheAgent(words = "") {
 }
 const quickCommands = computed(() => [
     {label: "Message the agent", keys: "write send", icon: "arrow", run: () => messageTheAgent()},
-    ...props.catalogue.windows.value.map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => openView(window.name)})),
+    ...[...props.catalogue.windows.value, ...props.catalogue.pages.value].map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => goTo(window.name)})),
     ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
     {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
-    ...(props.catalogue.window(FILES_WINDOW) ? [{label: "Open project file", keys: "file files open find", icon: "file", run: () => openView(FILES_WINDOW)}] : []),
-    {label: "Search", keys: "search find everything", icon: "search", run: () => openView("search.search")},
+    ...(props.catalogue.window(FILES_WINDOW) ? [{label: "Open project file", keys: "file files open find", icon: "file", run: () => goTo(FILES_WINDOW)}] : []),
+    {label: "Search", keys: "search find everything", icon: "search", run: () => goTo("search.search")},
     {label: "Show what happened while you were away", keys: "away digest recap activity", icon: "activity", run: () => (activityOpen.value = true)},
     {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
     {label: `Color scheme: ${schemeLabel.value}`, keys: "theme dark light color", icon: "wide", run: nextColorScheme},
     {label: activityOpen.value ? "Hide the activity" : "Show the activity", keys: "activity column", icon: "activity", run: toggleActivity},
 ]);
 const SHELL_KEYS = {
-    "open-file": () => props.catalogue.window(FILES_WINDOW) && openView(FILES_WINDOW),
+    "open-file": () => props.catalogue.window(FILES_WINDOW) && goTo(FILES_WINDOW),
     fullscreen: () => (shell.wide = !shell.wide),
     "leave-fullscreen": () => (shell.wide = false),
     "quick-menu": () => (quickOpen.value = true),
@@ -255,7 +258,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" @open="openView" />
+            <SidebarPages :project="project" :windows="catalogue.pages.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">

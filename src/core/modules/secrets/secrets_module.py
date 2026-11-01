@@ -4,6 +4,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.secrets.commands.allow_program.allow_program_handler import AllowProgramHandler
 from core.modules.secrets.commands.change_secret_deletion.change_secret_deletion_handler import ChangeSecretDeletionHandler
 from core.modules.secrets.commands.edit_secret.edit_secret_handler import EditSecretHandler
@@ -50,5 +51,5 @@ class SecretsModule(Module):
                    SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand)
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
-    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.HASH,
+    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.HASH,
                                  reads=["secret list", "secret show"], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]

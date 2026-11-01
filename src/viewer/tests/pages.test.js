@@ -19,6 +19,7 @@ const WINDOWS = [
     entry("agents.terminal", {place: "agent", roles: ["worker"]}),
     entry("agents.notes", {place: "agent", roles: ["worker"]}),
     entry("agents.briefing", {place: "agent", roles: ["main"]}),
+    entry("docs.library", {place: "page"}),
 ];
 
 let current;
@@ -262,21 +263,24 @@ test("a page whose suite is simply not chosen shows no problem", async () => {
 test("a window page draws the sidebar with a link to each window's own address and the window itself", async () => {
     const {element} = await mount(ViewWindow, {view: "tasks.tasks", float: 0, standalone: true});
     expect(element.querySelector(`[data-page="tasks.tasks"]`)).not.toBeNull();
-    expect(element.querySelector(`[data-sidebar-window="agents.notes"]`).getAttribute("href")).toBe("?environment=main&page=agents.notes");
+    expect(element.querySelector(`[data-sidebar-window="docs.library"]`).getAttribute("href")).toBe("?environment=main&page=docs.library");
+    expect(element.querySelector(`[data-sidebar-window="agents.notes"]`)).toBeNull();
     expect(element.querySelector("[data-breadcrumb]").textContent).toContain("tasks.tasks");
     expect(element.querySelector(`section.window[data-window="tasks.tasks"]`)).not.toBeNull();
 });
 
-test("on the home page a plain click on a sidebar window opens it in a pane and the link keeps its address", async () => {
+test("a plain click on a sidebar page follows its address and opens no pane", async () => {
     const {default: SidebarPages} = await import("../src/shell/SidebarPages.vue");
     const opened = [];
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(SidebarPages, {windows: [entry("agents.briefing")], current: "main", onOpen: (name) => opened.push(name)})).mount(element);
-    const link = element.querySelector(`[data-sidebar-window="agents.briefing"]`);
-    expect(link.getAttribute("href")).toBe("?environment=main&page=agents.briefing");
-    link.dispatchEvent(new MouseEvent("click", {bubbles: true, cancelable: true, button: 0}));
-    expect(opened).toEqual(["agents.briefing"]);
+    createApp(() => h(SidebarPages, {windows: [entry("docs.library", {place: "page"})], current: "main", onOpen: (name) => opened.push(name)})).mount(element);
+    const link = element.querySelector(`[data-sidebar-window="docs.library"]`);
+    expect(link.getAttribute("href")).toBe("?environment=main&page=docs.library");
+    const click = new MouseEvent("click", {bubbles: true, cancelable: true, button: 0});
+    link.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(false);
+    expect(opened).toEqual([]);
 });
 
 // a fresh journal has no suite chosen, so no layout is ever loaded; the page still has one, and a click on a window works

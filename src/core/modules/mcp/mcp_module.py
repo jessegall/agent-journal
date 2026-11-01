@@ -3,6 +3,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.mcp.commands.give_server_key.give_server_key_handler import GiveServerKeyHandler
 from core.modules.mcp.commands.install_server.install_server_handler import InstallServerHandler
 from core.modules.mcp.commands.mcp_check.mcp_check_subcommand import McpCheckSubcommand
@@ -34,5 +35,5 @@ class McpModule(Module):
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
     subcommands = (AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand)
-    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN,
+    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.PLUGIN,
                                  reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

@@ -11,6 +11,7 @@ export class WindowCatalogue {
         this.windows = shallowRef([]);
         this.dropdowns = shallowRef([]);
         this.bars = shallowRef([]);
+        this.pages = shallowRef([]);
         this.person = null;
     }
 
@@ -18,7 +19,8 @@ export class WindowCatalogue {
         const offers = await this.fetchOffers();
         this.person = offers.person_id ?? null;
         const offered = withFamilyOptions(offers.windows, await this.fetchMarks());
-        this.windows.value = offered.filter((window) => window.place !== "dropdown" && window.place !== "bar");
+        this.windows.value = offered.filter((window) => !["dropdown", "bar", "page"].includes(window.place));
+        this.pages.value = offered.filter((window) => window.place === "page");
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
     }
@@ -28,7 +30,7 @@ export class WindowCatalogue {
     }
 
     get offered() {
-        return this.windows.value;
+        return [...this.windows.value, ...this.pages.value];
     }
 
     placed(page) {
@@ -52,7 +54,7 @@ export class WindowCatalogue {
     }
 
     window(name) {
-        return this.windows.value.find((window) => window.name === name) || null;
+        return this.windows.value.find((window) => window.name === name) || this.pages.value.find((window) => window.name === name) || null;
     }
 
     dropdown(name) {

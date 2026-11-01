@@ -43,9 +43,9 @@ watchEffect(() => {
 
 <template>
     <div :class="['view-window', {standalone}]" :data-face="face" :data-page="standalone ? view : undefined">
-        <template v-if="catalogue.windows.value.length">
+        <template v-if="catalogue.offered.length">
             <template v-if="standalone">
-                <SidebarPages :windows="catalogue.windows.value" :environments="environments" :current="environment" :open="view" />
+                <SidebarPages :windows="catalogue.pages.value" :environments="environments" :current="environment" :open="view" />
             </template>
             <div class="view-window-main">
                 <template v-if="standalone">

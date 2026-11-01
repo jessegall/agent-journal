@@ -1,6 +1,7 @@
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.base.guard.guard_switches import GuardSwitches
 from core.modules.settings.migrations.m001_settings import SettingsTableMigration
 from core.modules.settings.bindings.setting_guard_switches import SettingGuardSwitches
@@ -33,7 +34,7 @@ class SettingsModule(Module):
     models = [ModelDeclaration(Setting, excluded_subcommands=["show"]), ModelDeclaration(SecretSetting, excluded_subcommands=["make", "list", "show"])]
     migrations = [SettingsTableMigration, SecretSettingsTableMigration]
     handlers = [SetSettingHandler, SwitchSettingGroupHandler]
-    windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.MENU,
+    windows = [WindowDeclaration("settings.settings", "Settings", "settings.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.MENU,
                                  reads=["setting tree", "environment list", "environment cards"], runs=["setting set", "setting switch", "environment delete"], events=["setting.*", "environment.*"])]
     subcommands = (SetSettingSubcommand, SwitchSettingGroupSubcommand, SettingShowSubcommand, SettingTreeSubcommand)
     bindings = [(GuardSwitches, SettingGuardSwitches), (SyncNotes, UndeclaredSettingNotes)]

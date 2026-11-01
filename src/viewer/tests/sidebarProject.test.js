@@ -19,14 +19,15 @@ function drawn(component, props) {
 test("the sidebar keeps project windows in their own group", () => {
     const element = drawn(SidebarPages, {windows, environments: [], current: "main"});
     expect(element.querySelector('[data-fold="project"]').textContent).toContain("Project");
-    expect(element.querySelector('[data-fold="windows"]').textContent).toContain("Windows");
+    expect(element.querySelector('[data-fold="environment"]').textContent).toContain("Environment");
     const heads = [...element.querySelectorAll("[data-fold]")].map((head) => head.dataset.fold);
-    expect(heads.indexOf("windows")).toBeLessThan(heads.indexOf("project"));
+    expect(heads.indexOf("environment")).toBeLessThan(heads.indexOf("project"));
 });
 
 test("a sidebar with no project windows has no project group", () => {
     const element = drawn(SidebarPages, {windows: [windows[0]], environments: [], current: "main"});
-    expect(element.querySelector('[data-fold="project"]')).toBeNull();
+    expect(element.querySelectorAll('[data-sidebar-window]').length).toBe(1);
+    expect(element.querySelector('[data-fold="project"]').nextElementSibling?.matches("[data-sidebar-window]")).toBeFalsy();
 });
 
 test("a new environment needs its name and folder, and is made with its branch", async () => {
