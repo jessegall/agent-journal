@@ -70,6 +70,37 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 	return status, answer
 }
 
+// StopWindow is how long a stop the journal does not answer is asked again before the hook gives up, and RetryPause is
+// how long it rests between two asks.
+var (
+	StopWindow = time.Minute
+	RetryPause = time.Second
+)
+
+// holdsStop says whether the event is a stop, which is never let through unchecked while the journal may be only slow.
+func holdsStop(eventName string) bool {
+	return eventName == "stop" || eventName == "subagent_stop"
+}
+
+// postedUntilAnswered asks as post does; a stop the journal does not answer is asked again, resting between asks, until
+// the window has passed, so a journal that stalls for seconds still holds the stop instead of letting it through.
+func postedUntilAnswered(outgoing delivery, transport http.RoundTripper, firedTime time.Time, window, pause time.Duration) (int, []byte) {
+	began := time.Now()
+	status, answer := post(outgoing, transport, firedTime)
+	for status == 0 && holdsStop(outgoing.event) && time.Since(began) < window {
+		time.Sleep(pause)
+		status, answer = post(outgoing, transport, firedTime)
+	}
+	return status, answer
+}
+
+// heldStop is the answer to a stop the journal never answered: the stop is held with the way to see why.
+func heldStop(root string) string {
+	port, _ := os.ReadFile(filepath.Join(root, ".journal", "port"))
+	reason := fmt.Sprintf("[journal] The journal did not answer this stop within a minute, so the stop is held. Check it: curl -s http://127.0.0.1:%s/journal/health should answer 200, and runtime/server.log in .journal says why it does not; restart it with journal setup restart, then stop again.", strings.TrimSpace(string(port)))
+	return jsonText(map[string]any{"decision": "block", "reason": reason})
+}
+
 func posted(outgoing delivery, transport http.RoundTripper) (int, []byte) {
 	address, ownTransport, hasAddress := destination(outgoing)
 	if !hasAddress {

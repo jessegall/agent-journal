@@ -53,7 +53,7 @@ func main() {
 		os.Exit(0)
 	}
 	limit := LimitFor(prepared.Event)
-	status, answer := post(delivery{
+	status, answer := postedUntilAnswered(delivery{
 		root:        root,
 		program:     program,
 		event:       prepared.Event,
@@ -66,7 +66,11 @@ func main() {
 		body:        object,
 		limit:       limit,
 		timing:      requestTiming,
-	}, nil, time.Now())
+	}, nil, time.Now(), StopWindow, RetryPause)
+	if status == 0 && holdsStop(prepared.Event) {
+		fmt.Fprint(os.Stdout, heldStop(root))
+		os.Exit(0)
+	}
 	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))
 }
 
