@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -14,6 +16,7 @@ from core.modules.agents.commands.bind_agent_session import BindAgentSession
 from core.modules.agents.commands.start_agent import StartAgent
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall
+from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
 
 
@@ -23,8 +26,8 @@ class AgentHookRoute(HookRoute):
     agent at its session's first hook and a subagent at its first, gives back the stored answer of a hook
     sent twice, and lets through, without a record, a hook from an agent it does not know."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog) -> None:
-        self.bus, self.queries, self.errors = bus, queries, errors
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations) -> None:
+        self.bus, self.queries, self.errors, self.durations = bus, queries, errors, durations
 
     def answer(self, event: HookEvent) -> HookReply:
         stored_calls = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
@@ -33,7 +36,8 @@ class AgentHookRoute(HookRoute):
         agent = self.agent(event)
         if agent is None:
             return HookReply.allowed()
-        return self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
+        reply = self.bus.run(RecordHookCall(event, agent.id), Actor(agent.id, ActorType.AGENT), environment_id=agent.environment_id)
+        return replace(reply, terminal=self.durations.line(event, agent.environment_id))
 
     def agent(self, event: HookEvent) -> Agent | None:
         main = self.open_agent(event.session) or self.launch_name_agent(event)

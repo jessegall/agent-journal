@@ -106,3 +106,15 @@ func TestAReplyWithNoRewriteStaysAsItWas(t *testing.T) {
 		t.Fatalf("printed %q", stdout)
 	}
 }
+
+func TestALineForTheTerminalGoesWithTheAnswerAndAloneWhenThereIsNoOther(t *testing.T) {
+	claude := programs.LoadTable("").Programs["claude"]
+	with, _, _ := ProgramAnswer(claude, "PreToolUse", "pre_tool_use", Reply{Lines: []string{"a line"}, Terminal: "hook pre_tool_use 12 ms"})
+	alone, _, _ := ProgramAnswer(claude, "Stop", "stop", Reply{Terminal: "hook stop 9 ms"})
+	if !strings.Contains(with, `"additionalContext":"a line"`) || !strings.Contains(with, `"systemMessage":"hook pre_tool_use 12 ms"`) {
+		t.Errorf("printed %q", with)
+	}
+	if alone != "{\"systemMessage\":\"hook stop 9 ms\"}\n" {
+		t.Errorf("printed %q", alone)
+	}
+}

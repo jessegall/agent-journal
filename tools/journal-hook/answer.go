@@ -18,6 +18,7 @@ type Reply struct {
 	Refusal      string         `json:"refusal"`
 	Lines        []string       `json:"lines"`
 	UpdatedInput map[string]any `json:"updated_input"`
+	Terminal     string         `json:"terminal"`
 }
 
 // Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
@@ -36,6 +37,24 @@ func Answered(stdout, stderr io.Writer, program programs.Program, hookName, even
 // ProgramAnswer is the reply in the program's own answer: what goes to stdout and to stderr, and the exit code. hookName is the
 // name the program gave the hook, which its answer repeats.
 func ProgramAnswer(program programs.Program, hookName, event string, reply Reply) (string, string, int) {
+	stdout, stderr, code := answered(program, hookName, event, reply)
+	if reply.Terminal == "" || stderr != "" {
+		return stdout, stderr, code
+	}
+	return withTerminal(stdout, reply.Terminal), stderr, code
+}
+
+// withTerminal adds the line the terminal shows to the program's answer, or makes it the whole answer when there is none.
+func withTerminal(stdout, terminal string) string {
+	answer := map[string]any{}
+	if stdout != "" {
+		json.Unmarshal([]byte(stdout), &answer)
+	}
+	answer["systemMessage"] = terminal
+	return jsonText(answer)
+}
+
+func answered(program programs.Program, hookName, event string, reply Reply) (string, string, int) {
 	lines := strings.Join(reply.Lines, "\n")
 	if len(reply.UpdatedInput) > 0 {
 		return rewritten(program.Rewrites[event], hookName, reply.UpdatedInput, lines), "", 0

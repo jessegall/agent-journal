@@ -6,8 +6,7 @@ from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
 from core.base.registry.registry import Registry
-from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS
-from core.modules.drivers.support.driver_settings import MODULE_KEY, SUITE_SETTING
+from core.modules.drivers.support.driver_settings import ALLOWANCE_SETTINGS, DRIVER_SETTINGS, MODULE_KEY, SUITE_SETTING
 from core.modules.drivers.support.suite_choice import SuiteChoice
 from core.modules.settings.models.setting import Setting
 
@@ -36,7 +35,8 @@ class DriverSettingGuard(Guard):
             if self.registry.suite(value) is None:
                 raise Refusal(f"no installed module ships suite {value}: {self.choice.suite_names()}", "journal suite show <name> describes one")
             return
-        self.check_driver(value, setting.environment_id)
+        if setting.key.startswith(DRIVER_SETTINGS):
+            self.check_driver(value, setting.environment_id)
 
     def check_driver(self, value: str, environment_id: int | None) -> None:
         driver = self.registry.driver(value)
