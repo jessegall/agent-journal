@@ -33,7 +33,7 @@ class DumpsModule(Module):
     migrations = [DumpsTablesMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
-    subcommands = (MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand)
+    subcommands = [MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand]
     listeners = [DumpDockListener]
     docks = DUMP_DOCKS
     windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED, reads=["dump list", "dump-item list"],

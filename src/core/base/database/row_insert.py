@@ -5,8 +5,8 @@ from core.base.database.statement import Statement
 
 
 class RowInsert:
-    """Writes a row straight into a version 5 table for the upgrade, with the id it names or a new one, and sets
-    a row's state; the table's triggers still judge every write."""
+    """Writes a row straight into a version 5 table for the upgrade, with the id it names or a new one, sets a
+    row's state, and finds a moved row's id by its name; the table's triggers still judge every write."""
 
     def __init__(self, database: Database) -> None:
         self.database = database
@@ -17,3 +17,7 @@ class RowInsert:
 
     def set_state(self, table: str, row_id: int, state: str) -> None:
         self.database.update(Statement(f"UPDATE {table} SET state = ? WHERE id = ?", (state, row_id)))
+
+    def name_row_id(self, table: str, name: str) -> int | None:
+        rows = self.database.rows(Statement(f"SELECT id FROM {table} WHERE name = ?", [name]))
+        return int(rows[0]["id"]) if rows else None

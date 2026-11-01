@@ -6,6 +6,8 @@ from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
+from core.base.cli.shell_aliases import ShellAliases
+from core.base.cli.shell_handoff import ShellHandoff
 from core.base.cli.usage_error import UsageError
 from core.base.cli.write_flags import WriteFlags
 from core.base.command.bus import Bus
@@ -25,22 +27,25 @@ SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
 
 
 class Console:
-    """Runs one `journal <model> <subcommand>`: checks the registry is current, chooses the subcommand,
-    reads or runs its command, and converts a refusal, a usage error or an unexpected error into its line
-    and exit code. A write runs the commit listeners before and after it; an error after the commit is
-    logged and never changes the exit code of a write that was saved."""
+    """Runs one `journal <model> <subcommand>`, or the shell line an alias names: checks the registry is
+    current, chooses the subcommand, reads or runs its command, and converts a refusal, a usage error or
+    an unexpected error into its line and exit code. A write runs the commit listeners before and after
+    it; an error after the commit is logged and never changes the exit code of a write that was saved."""
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff) -> None:
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
-        self.environment_names, self.resolver = environment_names, resolver
+        self.environment_names, self.resolver, self.aliases, self.handoff = environment_names, resolver, aliases, handoff
 
-    def run(self, argv: list[str], caller: Caller, stream: TextIO) -> int:
+    def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
         output = Output(self.tables, "--json" in argv, stream)
         try:
             self.registry.require_current(self.fingerprint.text(self.finder.modules()))
+            shell_run = self.aliases.shell_run(argv, caller, request)
+            if shell_run is not None:
+                return self.handoff.run(shell_run, stream)
             if len(argv) < 2:
                 raise UsageError("write journal <model> <subcommand>; journal --help lists them")
             return self.chosen_run(argv, caller, output)
@@ -64,7 +69,7 @@ class Console:
         except UsageError as error:
             Output(self.tables, "--json" in argv, stream).error(str(error))
             return USAGE_CODE
-        return self.run(argv, caller, stream)
+        return self.run(argv, caller, stream, request)
 
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand, parser = self.line_parser.parser(argv)
