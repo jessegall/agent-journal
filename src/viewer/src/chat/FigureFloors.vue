@@ -1,6 +1,6 @@
 <script setup>
 import {onMounted, onUnmounted, shallowRef} from "vue";
-import {latestFloors, onFloors} from "../figure/floors.js";
+import {latestFloors, onFloors, startFloors, stopFloors} from "../figure/floors.js";
 import FigureFloorLine from "./FigureFloorLine.vue";
 
 // the floors as the floors loop reads them, handed over in the frame they are read in so the lines never trail what they stand on, and
@@ -8,8 +8,14 @@ import FigureFloorLine from "./FigureFloorLine.vue";
 const floors = shallowRef(latestFloors().floors);
 let stop = () => {};
 
-onMounted(() => (stop = onFloors((read) => (floors.value = read.floors))));
-onUnmounted(() => stop());
+onMounted(() => {
+    stop = onFloors((read) => (floors.value = read.floors));
+    startFloors();
+});
+onUnmounted(() => {
+    stop();
+    stopFloors();
+});
 </script>
 
 <template>

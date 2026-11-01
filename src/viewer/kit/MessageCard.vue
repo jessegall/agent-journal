@@ -49,7 +49,7 @@ function pick(face) {
 </script>
 
 <template>
-    <article class="message" data-message :data-from="message.type" :data-ref="`message:${message.id}`">
+    <article class="message" data-message data-figure-bubble :data-from="message.type" :data-ref="`message:${message.id}`">
         <div class="message-body">
             <div ref="bubble" class="message-card md" @click="peekChip">
                 <template v-if="message.parent_id">

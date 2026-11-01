@@ -30,7 +30,7 @@ export const RESTS = new Set(["asleep", "compacting", "paused", "stopped"]);
 export const WORKING = new Set(["thinking", "quiet", "searching", "reading", "writing", "testing", "building", "running"]);
 
 // A tool in flight says what the agent is doing with it; the providers report their own tools under these names.
-const TOOL_STATES = {
+export const TOOL_STATES = {
     Read: "reading",
     Grep: "searching",
     Glob: "searching",

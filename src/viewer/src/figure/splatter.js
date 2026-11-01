@@ -5,7 +5,7 @@ const SURFACES = "[data-figure-bubble], [data-figure-mark], [data-figure-home], 
 const intersect = (a, b) => ({left: Math.max(a.left, b.left), right: Math.min(a.right, b.right), top: Math.max(a.top, b.top), bottom: Math.min(a.bottom, b.bottom)});
 const hasArea = (box) => box.right > box.left && box.bottom > box.top;
 
-export function slushSurfaces(thread = document.querySelector("[data-figure-home]")?.closest(".thread")) {
+export function slushSurfaces(thread = document.querySelector("[data-figure-home]")?.closest("[data-figure-world]")) {
     if (!thread) return [];
     const world = thread.getBoundingClientRect();
     const foot = thread.querySelector("[data-figure-chat-foot]")?.getBoundingClientRect();
@@ -13,7 +13,7 @@ export function slushSurfaces(thread = document.querySelector("[data-figure-home
         if (element.checkVisibility && !element.checkVisibility({opacityProperty: true, visibilityProperty: true})) return [];
         const box = element.getBoundingClientRect();
         let clip = intersect(box, world);
-        const scroll = element.closest(".thread-scroll");
+        const scroll = element.closest("[data-figure-scroll]");
         if (scroll && !element.closest("[data-figure-chat-foot]")) {
             clip = intersect(clip, scroll.getBoundingClientRect());
             if (foot) clip.bottom = Math.min(clip.bottom, foot.top);

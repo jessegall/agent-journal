@@ -38,6 +38,8 @@ from core.modules.messages.commands.reply_message.reply_message_subcommand impor
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
 from core.base.skill.skill_declaration import SkillDeclaration
+from core.base.viewer.choice_option import ChoiceOption
+from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -65,7 +67,9 @@ class MessagesModule(Module):
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
-                                 events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
+                                 events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"],
+                                 options=[ChoiceOption("figure", "Figure", [("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "none"),
+                                          ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS
     skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
                                keywords=("flowchart", "flow chart", "diagram"), commands=tuple(["message"]))]

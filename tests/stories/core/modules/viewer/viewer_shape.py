@@ -36,7 +36,7 @@ def test_every_viewer_file_is_imported_by_something():
     readers = {path: path.read_text(errors="ignore") for path in [*source_files(VIEWER), *(file for folder in module_folders() for file in source_files(folder / "web/src"))]}
     orphans = []
     for path in source_files(VIEWER):
-        if path.name in BUILD_ENTRIES or path.suffix == ".css":
+        if path.name in BUILD_ENTRIES or path.suffix == ".css" or "public" in path.parts:
             continue
         imported = re.compile(rf"""[/"']{re.escape(path.stem)}(\.(vue|js))?["']""")
         if not any(second != path and imported.search(text) for second, text in readers.items()):

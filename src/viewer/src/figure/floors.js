@@ -25,7 +25,7 @@ export function floorOf(element) {
 const inView = (box, view) => box.top >= view.top && box.top <= view.bottom && box.right > view.left && box.left < view.right;
 
 // the thread the main chat shows, whose bubbles are floors
-const threadOf = () => homeElement()?.closest(".thread")?.querySelector(".thread-scroll") ?? null;
+const threadOf = () => homeElement()?.closest("[data-figure-world]")?.querySelector("[data-figure-scroll]") ?? null;
 
 // What the chat shows of its bubbles: the thread's view down to the top of its foot, which stays over the bubbles that scroll behind it, so
 // a bubble's top hidden behind the docks is no floor and a figure is never stood inside them

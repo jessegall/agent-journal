@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, PinsToggle, RunningCommand, Icon, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
+import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceFigure, PinsToggle, RunningCommand, Icon, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
@@ -15,8 +15,14 @@ const rows = computed(() => withDayLines(interleaved([...messages.value, ...echo
 const {visible: pinned} = usePins(() => notices.value);
 const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
+const figureVoice = computed(() => {
+    const chosen = context.option("figure").value;
+    return chosen && chosen !== "none" ? chosen : "";
+});
 const runningTool = ref("");
+const heardAt = ref(Date.now() / 1000);
 async function readTool() {
+    heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
     runningTool.value = answer.ok ? answer.value.tool : "";
 }
@@ -231,7 +237,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 </script>
 
 <template>
-    <div ref="chat" class="chat">
+    <div ref="chat" class="chat" data-figure-world>
         <div data-notices class="notices">
             <template v-for="notice in pinned" :key="notice.id">
                 <div class="notice">
@@ -245,7 +251,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
             </template>
             <PinsToggle :notices="notices" />
         </div>
-        <div ref="scroller" class="history" @scroll="followScroll">
+        <div ref="scroller" class="history" data-figure-scroll @scroll="followScroll">
             <template v-if="paging">
                 <Skeleton shape="older" label="Loading older messages" />
             </template>
@@ -265,14 +271,19 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         </div>
         <div class="jump-holder">
             <Transition name="rise">
-                <button v-show="awayFromFoot" type="button" data-scroll-foot class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Back to the newest'" @click="scrollToFoot">
+                <button v-show="awayFromFoot" type="button" data-scroll-foot data-figure-newest class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Back to the newest'" @click="scrollToFoot">
                     <Icon name="down" />
                     {{ arrived ? `${arrived} new` : "Newest" }}
                 </button>
             </Transition>
         </div>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
-        <DockStack :items="docked" :folded="short || !docksOpen" />
+        <template v-if="context.option('floors').value">
+            <FigureFloors />
+        </template>
+        <div data-figure-chat-foot>
+            <DockStack :items="docked" :folded="short || !docksOpen" />
+        </div>
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
@@ -282,7 +293,10 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), leaveEdit()">×</button>
             </p>
         </template>
-        <form :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
+        <form data-figure-home :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
+            <template v-if="figureVoice">
+                <VoiceFigure :voice="figureVoice" :running="runningTool" :heard-at="heardAt" />
+            </template>
             <template v-if="attached.length">
                 <ul class="attached" data-attached>
                     <template v-for="entry in attached" :key="entry.name + entry.pending">
@@ -503,6 +517,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 }
 
 .composer {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 6px;

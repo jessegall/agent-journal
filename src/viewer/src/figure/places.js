@@ -48,9 +48,9 @@ export const NEWEST = "[data-figure-newest]";
 
 // The visible Newest button in the main chat, measured where the page put it; hidden controls and message contents do not count.
 export function newestButton() {
-    const thread = homeElement()?.closest(".thread");
+    const thread = homeElement()?.closest("[data-figure-world]");
     if (!thread) return null;
-    const marked = thread.querySelector(NEWEST) ?? thread.querySelector("button.thread-down");
+    const marked = thread.querySelector(NEWEST);
     const candidates = marked ? [marked] : [...(thread.querySelectorAll?.("button, [role=button]") ?? [])].filter((element) =>
         !element.closest?.("[data-figure-bubble]") && /\bnewest\b/i.test(element.getAttribute?.("aria-label") || element.textContent || "")
     );
@@ -215,7 +215,7 @@ const visible = (element) => element.checkVisibility?.({opacityProperty: true, v
 
 // The box the figure lives in, which no part of it is ever drawn outside: the main chat's window, else the window
 export function worldBox() {
-    const world = homeElement()?.closest(".thread");
+    const world = homeElement()?.closest("[data-figure-world]");
     return world ? world.getBoundingClientRect() : {left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight};
 }
 
@@ -548,7 +548,7 @@ export function clearOf(box, figure, near, resting) {
 // compose box, else the foot of the window
 export function groundEdge() {
     const home = homeElement();
-    const bars = home?.closest(".thread")?.querySelector(DOCKED_BARS);
+    const bars = home?.closest("[data-figure-world]")?.querySelector(DOCKED_BARS);
     if (!bars) return {...composeEdge(), docked: false};
     const box = bars.getBoundingClientRect();
     return {element: bars, docked: true, edge: {left: box.left, width: box.width, top: box.top}};
