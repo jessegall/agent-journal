@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-de22c864e3be")) { const style = document.createElement("style"); style.id = "window-styles-de22c864e3be"; style.textContent = ".dump[data-v-d2c5a833]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-d2c5a833]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-d2c5a833],.dump-failure[data-v-d2c5a833]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-d2c5a833]{display:flex;gap:8px}.chat[data-v-3c3d5404]{position:relative;display:flex;flex-direction:column;gap:8px;height:100%;min-height:0}.history[data-v-3c3d5404]{flex:1;min-height:0;overflow-y:auto}.history[data-v-3c3d5404] .row-list-row{padding:1px 8px}.history[data-v-3c3d5404] .mark.w-event{color:var(--text-3)}.notices[data-v-3c3d5404]{display:flex;flex-direction:column;margin:-16px -16px 0}.notice[data-v-3c3d5404]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.notice-dot[data-v-3c3d5404]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.notice-text[data-v-3c3d5404]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.notice-link[data-v-3c3d5404]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.notice-close[data-v-3c3d5404]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-3c3d5404]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-3c3d5404]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-3c3d5404]{background:var(--text-4)}.scroll-top[data-v-3c3d5404]{position:absolute;right:14px;top:120px;display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);cursor:pointer}.scroll-top.hidden[data-v-3c3d5404]{visibility:hidden}.composer[data-v-3c3d5404]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-3c3d5404]{min-height:54px;padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.composer-row[data-v-3c3d5404]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-3c3d5404]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-3c3d5404]{border-color:var(--accent)}.attached[data-v-3c3d5404]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-3c3d5404]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-3c3d5404]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-3c3d5404]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-3c3d5404]{color:var(--text-3)}.composer-send[data-v-3c3d5404]{margin-left:auto}.composer-failure[data-v-3c3d5404]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-f788e6647ad0")) { const style = document.createElement("style"); style.id = "window-styles-f788e6647ad0"; style.textContent = ".dump[data-v-d2c5a833]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px dashed var(--border-2);border-radius:12px}.dump-notes[data-v-d2c5a833]{padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.dump-files[data-v-d2c5a833],.dump-failure[data-v-d2c5a833]{margin:0;color:var(--text-2);font-size:12px}.dump-row[data-v-d2c5a833]{display:flex;gap:8px}.chat[data-v-902453c8]{position:relative;display:flex;flex-direction:column;gap:8px;height:100%;min-height:0}.history[data-v-902453c8]{flex:1;min-height:0;overflow-y:auto}.history[data-v-902453c8] .row-list-row{padding:1px 8px}.history[data-v-902453c8] .mark.w-event{color:var(--text-3)}.notices[data-v-902453c8]{display:flex;flex-direction:column;margin:-16px -16px 0}.notice[data-v-902453c8]{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--accent) 10%,var(--bg));font-size:13px}.notice-dot[data-v-902453c8]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.notice-text[data-v-902453c8]{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.notice-link[data-v-902453c8]{flex:none;padding:2px 10px;border:1px solid var(--border-2);border-radius:6px;color:var(--text);font-size:12px}.notice-close[data-v-902453c8]{flex:none;border:0;background:none;color:var(--text-3);cursor:pointer}.running-strip[data-v-902453c8]{display:flex;flex:none;gap:8px;align-items:center;margin:0;padding:4px 14px;color:var(--text-3);font-family:ui-monospace,SF Mono,Menlo,monospace;font-size:12px}.running-dot[data-v-902453c8]{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent)}.running-dot.idle[data-v-902453c8]{background:var(--text-4)}.scroll-top[data-v-902453c8]{position:absolute;right:14px;top:120px;display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--border-2);border-radius:50%;background:var(--bg);color:var(--text-2);cursor:pointer}.scroll-top.hidden[data-v-902453c8]{visibility:hidden}.composer[data-v-902453c8]{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border:1px solid var(--border-2);border-radius:14px}.composer-input[data-v-902453c8]{min-height:54px;padding:0;border:0;outline:0;color:var(--text);background:transparent;font:inherit;resize:none}.composer-row[data-v-902453c8]{display:flex;gap:8px;align-items:center}.composer-attach[data-v-902453c8]{border:0;background:none;color:var(--text-3);cursor:pointer}.composer.dragging[data-v-902453c8]{border-color:var(--accent)}.attached[data-v-902453c8]{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}.attached-file[data-v-902453c8]{display:inline-flex;gap:6px;align-items:center;padding:2px 8px;border:1px solid var(--border-2);border-radius:999px;font-size:12px}.attached-file.failed[data-v-902453c8]{border-color:var(--text-3);text-decoration:line-through}.attached-file button[data-v-902453c8]{border:0;background:none;color:var(--text-3);cursor:pointer}.attached-wait[data-v-902453c8]{color:var(--text-3)}.composer-send[data-v-902453c8]{margin-left:auto}.composer-failure[data-v-902453c8]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
 import { ref as s, openBlock as n, createElementBlock as v, withModifiers as x, withDirectives as ce, createElementVNode as o, vModelText as de, toDisplayString as b, createCommentVNode as C, createVNode as m, unref as l, withCtx as H, createTextVNode as V, computed as O, onMounted as be, onUnmounted as Ce, nextTick as Y, watch as xe, Fragment as ie, renderList as ue, createBlock as R, normalizeClass as z, withKeys as Te } from "vue";
 import { Btn as L, useRows as F, shownMarks as De, markDeclaration as $e, interleaved as Se, fetchMarkDeclarations as Me, fetchDockDeclarations as Oe, SHORT_CHAT as Re, Icon as N, RowList as Fe, MarkHost as He, MessageCard as Ae, RunningCommand as Ee, DockStack as Be, dockOpening as Ie } from "@journal/window-kit";
 const pe = (T, y) => {
@@ -18,26 +18,26 @@ const pe = (T, y) => {
   props: { run: { type: Function, required: !0 } },
   emits: ["made", "close"],
   setup(T, { emit: y }) {
-    const h = y, _ = T, f = s(""), k = s([]), g = s(""), D = () => [...f.value.split(/\n\s*\n/).map((r) => r.trim()).filter(Boolean), ...k.value.map((r) => `${r.name}: ${r.text.trim()}`)], P = () => (D()[0] ?? "").replace(/\s+/g, " ").slice(0, Le);
-    async function j(r) {
+    const h = y, _ = T, f = s(""), k = s([]), g = s(""), D = () => [...f.value.split(/\n\s*\n/).map((i) => i.trim()).filter(Boolean), ...k.value.map((i) => `${i.name}: ${i.text.trim()}`)], P = () => (D()[0] ?? "").replace(/\s+/g, " ").slice(0, Le);
+    async function j(i) {
       var u;
-      const i = [...((u = r.dataTransfer) == null ? void 0 : u.files) ?? []];
-      k.value = [...k.value, ...await Promise.all(i.map(async (E) => ({ name: E.name, text: await E.text() })))];
+      const r = [...((u = i.dataTransfer) == null ? void 0 : u.files) ?? []];
+      k.value = [...k.value, ...await Promise.all(r.map(async (E) => ({ name: E.name, text: await E.text() })))];
     }
     async function A() {
-      const r = await _.run(["dump", "make", P(), "--parts", D().join(" | ")]);
-      g.value = r.ok ? "" : r.error, r.ok && (f.value = "", k.value = [], h("made"));
+      const i = await _.run(["dump", "make", P(), "--parts", D().join(" | ")]);
+      g.value = i.ok ? "" : i.error, i.ok && (f.value = "", k.value = [], h("made"));
     }
-    return (r, i) => (n(), v("form", {
+    return (i, r) => (n(), v("form", {
       class: "dump",
       "data-dump-form": "",
       onSubmit: x(A, ["prevent"]),
-      onDragover: i[2] || (i[2] = x(() => {
+      onDragover: r[2] || (r[2] = x(() => {
       }, ["prevent"])),
       onDrop: x(j, ["prevent"])
     }, [
       ce(o("textarea", {
-        "onUpdate:modelValue": i[0] || (i[0] = (u) => f.value = u),
+        "onUpdate:modelValue": r[0] || (r[0] = (u) => f.value = u),
         class: "dump-notes",
         rows: "4",
         placeholder: "Paste or drop what you have: a paragraph or a file is one part"
@@ -53,16 +53,16 @@ const pe = (T, y) => {
           "data-dump-make": "",
           onClick: A
         }, {
-          default: H(() => [...i[3] || (i[3] = [
+          default: H(() => [...r[3] || (r[3] = [
             V("Make the dump", -1)
           ])]),
           _: 1
         }, 8, ["disabled"]),
         m(l(L), {
           small: "",
-          onClick: i[1] || (i[1] = (u) => h("close"))
+          onClick: r[1] || (r[1] = (u) => h("close"))
         }, {
-          default: H(() => [...i[4] || (i[4] = [
+          default: H(() => [...r[4] || (r[4] = [
             V("Cancel", -1)
           ])]),
           _: 1
@@ -87,9 +87,9 @@ const pe = (T, y) => {
 }, tt = 180, at = 2e3, lt = 40, ot = {
   __name: "Chat",
   setup(T) {
-    const { rows: y, failure: h, loaded: _, load: f, older: k, context: g } = F("message list", ["message.*"], { incremental: !0 }), { rows: D } = F("chat-mark list", ["chat_mark.*"]), { rows: P } = F("dock-item list", ["dock_item.*"]), { rows: j, act: A } = F("notice list", ["notice.*"]), { rows: r } = F("hook-call list --limit 1", ["hook_call.*"]), i = O(() => De(D.value, $e, (e) => g.option(e).value)), u = s([]), E = O(() => u.value.filter((e) => !y.value.some((t) => t.type === "user" && t.text === e.text && Date.parse(t.created_at) >= e.created_at - at))), Z = O(() => Se([...y.value, ...E.value], i.value)), ee = O(() => {
-      var e;
-      return ((e = r.value[0]) == null ? void 0 : e.hook) === "pre_tool_use" ? [r.value[0].tool, r.value[0].summary].filter(Boolean).join(" ") : "";
+    const { rows: y, failure: h, loaded: _, load: f, older: k, context: g } = F("message list", ["message.*"], { incremental: !0 }), { rows: D } = F("chat-mark list", ["chat_mark.*"]), { rows: P } = F("dock-item list", ["dock_item.*"]), { rows: j, act: A } = F("notice list", ["notice.*"]), { rows: i } = F("hook-call list --limit 10", ["hook_call.*"]), r = O(() => De(D.value, $e, (e) => g.option(e).value)), u = s([]), E = O(() => u.value.filter((e) => !y.value.some((t) => t.type === "user" && t.text === e.text && Date.parse(t.created_at) >= e.created_at - at))), Z = O(() => Se([...y.value, ...E.value], r.value)), ee = O(() => {
+      const e = i.value.find((t) => ["pre_tool_use", "stop", "prompt", "session_start"].includes(t.hook));
+      return (e == null ? void 0 : e.hook) === "pre_tool_use" ? [e.tool, e.summary].filter(Boolean).join(" ") : "";
     }), K = s(null), U = s(!0), te = s(!1);
     let ae = 0, le = !0, q = 0, $ = null;
     be(() => {
@@ -327,7 +327,7 @@ const pe = (T, y) => {
       B.value ? (n(), v("p", et, b(B.value), 1)) : C("", !0)
     ], 512));
   }
-}, rt = /* @__PURE__ */ pe(ot, [["__scopeId", "data-v-3c3d5404"]]);
+}, rt = /* @__PURE__ */ pe(ot, [["__scopeId", "data-v-902453c8"]]);
 export {
   rt as default
 };
