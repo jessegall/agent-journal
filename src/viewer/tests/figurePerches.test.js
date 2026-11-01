@@ -14,7 +14,7 @@ const ROAMS = PILE.filter((entry) => entry.when.moment === "roam" && entry.when.
 const [HANG, STAND] = PILE.filter((entry) => entry.when.moment === "perch");
 const HANG_SHARE = HANG.weight / (HANG.weight + STAND.weight);
 const {FEET_INBOARD, SEAT_INBOARD, boxAt, overlaps, tripTo} = await import("../src/figure/places.js");
-const {write} = await import("./figurePage.js");
+const {write} = await import("./support/figurePage.js");
 
 // a page with nothing on it a perch could hide, until a test writes words onto it, and no chat, so the figure's world is the window
 beforeEach(() => {
