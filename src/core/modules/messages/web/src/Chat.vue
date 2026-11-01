@@ -134,7 +134,36 @@ async function send() {
     await load();
 }
 
-const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), sendable.value && send());
+// enter sends, with or without the command key; shift enter is a new line, and an open input method keeps its enter
+const sendOnEnter = (event) => !event.shiftKey && !event.isComposing && (event.preventDefault(), sendable.value && send());
+// the slash key goes to the box from anywhere in the page that is not itself being typed in
+const TYPING_TAGS = new Set(["INPUT", "TEXTAREA", "SELECT"]);
+function slashFocus(event) {
+    if (event.key !== "/" || event.metaKey || event.ctrlKey || TYPING_TAGS.has(event.target?.tagName) || event.target?.isContentEditable) return;
+    event.preventDefault();
+    focusComposer();
+}
+window.addEventListener("keydown", slashFocus);
+onUnmounted(() => window.removeEventListener("keydown", slashFocus));
+// the words typed survive the window being closed or the page reloaded, one draft for each environment
+const draftKey = `journal.draft.${context.environment}`;
+function readDraft() {
+    try {
+        return localStorage.getItem(draftKey) ?? "";
+    } catch {
+        return "";
+    }
+}
+function keepDraft(words) {
+    try {
+        if (words) localStorage.setItem(draftKey, words);
+        else localStorage.removeItem(draftKey);
+    } catch {
+        return;
+    }
+}
+text.value = readDraft();
+watch(text, (words) => !editing.value && keepDraft(words));
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
 let paging = false;
 // scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
@@ -244,6 +273,9 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 </template>
                 <template v-else>
                     <Btn small bordered class="composer-send" data-dump-files @click="dumping = !dumping">Dump files</Btn>
+                </template>
+                <template v-if="sendable && attached.length > 1">
+                    <Btn small bordered class="composer-send" data-dump-offer @click="dumping = true">Dump {{ attached.length }} files</Btn>
                 </template>
             </div>
         </form>

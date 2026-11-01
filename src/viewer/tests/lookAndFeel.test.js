@@ -266,3 +266,23 @@ test("composer: a reply names what it answers and goes as a reply, and the arrow
     await settled();
     expect(runs).toContainEqual(["message", "edit", "4", "--text", "Fix the cart now"]);
 });
+
+test("composer: a draft survives a remount, enter sends, shift enter does not, and the slash key focuses the box", async () => {
+    localStorage.clear();
+    const first = await mountedChat();
+    const box = first.querySelector(".composer-input");
+    box.value = "half a thought";
+    box.dispatchEvent(new Event("input"));
+    await settled();
+    expect(localStorage.getItem("journal.draft.undefined") ?? localStorage.getItem("journal.draft.main")).toBe("half a thought");
+    const second = await mountedChat();
+    expect(second.querySelector(".composer-input").value).toBe("half a thought");
+    const shifted = new KeyboardEvent("keydown", {key: "Enter", shiftKey: true, bubbles: true, cancelable: true});
+    second.querySelector(".composer-input").dispatchEvent(shifted);
+    expect(shifted.defaultPrevented).toBe(false);
+    second.querySelector(".composer-input").blur();
+    window.dispatchEvent(new KeyboardEvent("keydown", {key: "/", bubbles: true, cancelable: true}));
+    await settled();
+    expect(document.activeElement).toBe(second.querySelector(".composer-input"));
+    localStorage.clear();
+});
