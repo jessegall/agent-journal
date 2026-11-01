@@ -4,6 +4,7 @@ import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
 import {peekChip, peekRef} from "../src/route.js";
+import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import "../src/text/all.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
@@ -11,6 +12,7 @@ import "../src/text/all.js";
 const props = defineProps({message: {type: Object, required: true}, quote: {type: String, default: ""}});
 const emit = defineEmits(["reply", "delete"]);
 const copied = ref(false);
+const bubble = ref(null);
 const deletable = computed(() => props.message.type === "user" && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
@@ -24,6 +26,7 @@ function goToQuoted() {
     if (shown) shown.scrollIntoView({block: "center", behavior: "smooth"});
     else peekRef(`messages:${props.message.parent_id}`);
 }
+useFittedBubble(bubble, () => `${props.message.text} ${props.quote}`);
 const COPIED_MS = 1500;
 const EARLIER = "An earlier message";
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
@@ -35,7 +38,7 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 <template>
     <article class="message" data-message :data-from="message.type" :data-ref="`message:${message.id}`">
         <div class="message-body">
-            <div class="message-card md" @click="peekChip">
+            <div ref="bubble" class="message-card md" @click="peekChip">
                 <template v-if="message.parent_id">
                     <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                 </template>
@@ -150,6 +153,11 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 .message-quote:hover {
     color: var(--text-2);
+}
+
+.message-card :deep(p),
+.message-card :deep(li) {
+    text-wrap: balance;
 }
 
 .message-card {
