@@ -30,7 +30,7 @@ test("a mark of a type no module declares is drawn as a plain line with its word
 
 test("a body that fails to load shows its error in place of the body", async () => {
     const element = drawn(ModuleBody, {declaration: {module: "third", type: "x", body_url: "/modules/third/missing-body.js?v=1", shipped: true}});
-    await later();
+    for (let round = 0; round < 100 && !element.textContent.includes("could not be loaded"); round++) await later();
     expect(element.textContent).toContain("could not be loaded");
 });
 

@@ -9,8 +9,8 @@ const STANDING = {"plans.waiting": "Waiting for you", "plans.started": "Started"
 
 <template>
     <div class="plan-dock">
-        <template v-if="row.value">
-            <span :class="['plan-dock-state', row.value.type.split('.')[1]]">{{ STANDING[row.value.type] }}</span>
+        <template v-if="row">
+            <span :class="['plan-dock-state', row.type.split('.')[1]]">{{ STANDING[row.type] }}</span>
         </template>
     </div>
 </template>
@@ -18,6 +18,7 @@ const STANDING = {"plans.waiting": "Waiting for you", "plans.started": "Started"
 <style scoped>
 .plan-dock {
     display: flex;
+    margin: 0 14px 10px 36px;
     gap: 8px;
     align-items: baseline;
     font-size: 12px;
@@ -27,6 +28,7 @@ const STANDING = {"plans.waiting": "Waiting for you", "plans.started": "Started"
 .plan-dock-state {
     flex: none;
     padding: 1px 8px;
+    margin-left: -8px;
     border-radius: 9px;
     background: var(--raised);
     color: var(--text-2);

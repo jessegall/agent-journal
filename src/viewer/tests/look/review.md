@@ -88,3 +88,11 @@ Open after this pass: the New plan, New document, New check, New sequence and Ne
 | P2 | Card follows the scroll | Cards fold when the chat is scrolled up away from its foot and open again at the foot, and fold when the chat is short, as version 4 | fixed |
 | P3 | Fold by hand | A fold sign on each card folds or unfolds it, and the card keeps that against the scroll | fixed |
 | P4 | Version 4 plan card buttons (Approve, Ask for a critique, Open plan) | Only Open is drawn on a docked plan | open |
+
+## Docked process (task 5499) and docked card text (task 5489), pair procdock-v4.png, procdock-v5.png
+
+| # | Item | Difference | State |
+|---|------|------------|-------|
+| R1 | Process dock | A process mark's Dock button adds the process above the composer; its card shows the state and the last lines of its reader, read again every two seconds while it runs, with Stop and Stop watching; the demo docks its running process | fixed |
+| R2 | Docked card text | The description sat 44 pixels in, past the title; now it lines up with the title text, the gap below it unchanged | fixed |
+| R3 | Dock bodies | A body read as a window no module declared, in no environment, so none could read; it now reads as its type's window in the environment of the chat | fixed |

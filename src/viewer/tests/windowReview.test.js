@@ -1,3 +1,4 @@
+import {ref} from "vue";
 import {expect, test} from "vitest";
 import PlanCards from "../../core/modules/plans/web/src/PlanCards.vue";
 import TaskGroups from "../../core/modules/tasks/web/src/TaskGroups.vue";
@@ -53,7 +54,7 @@ test("a docked plan's card names where the plan stands from its dock type", asyn
     const stands = {"plans.waiting": "Waiting for you", "plans.started": "Started", "plans.paused": "Paused", "plans.done": "Done", "plans.cancelled": "Cancelled"};
     for (const [type, words] of Object.entries(stands)) {
         const window = context({});
-        window.option = () => ({value: {id: 1, type, title: "Checkout"}});
+        window.option = () => ref({id: 1, type, title: "Checkout"});
         const element = await mounted(PlanDock, window);
         expect(element.textContent.trim()).toBe(words);
     }

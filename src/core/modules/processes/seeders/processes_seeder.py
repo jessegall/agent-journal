@@ -13,7 +13,7 @@ LONG_BYTES = 5000
 
 
 class ProcessesSeeder(Seeder):
-    """Runs a finished command with output and a command that is still running."""
+    """Runs a finished command with output and a command that is still running, and docks the running one above the chat."""
 
     def __init__(self, folder: OutputFolder) -> None:
         self.folder = folder
@@ -26,6 +26,7 @@ class ProcessesSeeder(Seeder):
         demo.bus.run(EndProcess(finished, 0, LONG_BYTES, REPORT.count("\n")), main, environment_id=None)
         running = self.started(demo, "make build", "make")
         self.folder.write_output(running, 1, BUILD)
+        demo.run(f"dock add processes.output process {running} {demo.environment_flag}", demo.people["user"])
 
     def started(self, demo: Demo, line: str, program: str) -> int:
         command = StartProcess(demo.people["main"].id, None, line, "/work/demo", "sh", CommandCategory.UNKNOWN, 30, [PartSpec(line, program)])
