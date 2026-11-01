@@ -8,7 +8,6 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 from core.base.registry.registry import Registry
-from core.modules.messages.support.message_nudges import ACT_ON_MESSAGES
 from core.modules.processes.support.process_nudges import UNREAD_OUTPUT
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -50,24 +49,6 @@ def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
     window.expect_window_allowed("drivers.nudges", "nudge list")
     rows = json.loads(story.run("nudge list --json", actor=story.user).output_text)["rows"]
     assert {"id": UNREAD_OUTPUT.key, "key": UNREAD_OUTPUT.key, "module": "journal.core.processes", "type": "instruction", "text": UNREAD_OUTPUT.text, "repeat_seconds": 0, "said_count": 0, "last_said_at": ""} in rows
-
-
-def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
-    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
-    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    hook_agent(story, story.hook("s-1", HookSamples.session_start()))
-    for words in ("Fix the cart", "Fix the totals", "Fix the tax"):
-        story.run(f'message send "{words}" --environment main', actor=story.user)
-    read = lambda number: HookSamples.shell(f"journal message read {number}", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", str(number)], subcommand="message")).with_fields(event="post_tool_use")
-    story.hook("s-1", HookSamples.prompt("go on"))
-    story.advance(timedelta(seconds=1))
-    assert ACT_ON_MESSAGES.text in story.hook("s-1", read(1)).lines
-    story.advance(timedelta(seconds=1))
-    assert ACT_ON_MESSAGES.text not in story.hook("s-1", read(2)).lines
-    story.advance(timedelta(seconds=1))
-    story.hook("s-1", HookSamples.prompt("and again"))
-    story.advance(timedelta(seconds=1))
-    assert ACT_ON_MESSAGES.text in story.hook("s-1", read(3)).lines
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():

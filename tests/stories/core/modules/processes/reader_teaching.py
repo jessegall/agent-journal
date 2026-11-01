@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -69,6 +71,23 @@ def test_two_running_outputs_with_one_title_are_named(new_story):
     for process in (first, second):
         story.run(f'output title {process.id} "Building it"', actor=story.agent)
     assert any(f"outputs {first.id}, {second.id} share the title Building it" in line for line in story.hook("s-1", LOOK).lines)
+
+
+def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
+    story = runner_story(new_story)
+    first, second = moved_run(story, "make one"), moved_run(story, "make two")
+    for process in (first, second):
+        story.run(f'output title {process.id} "Building it"', actor=story.agent)
+    shared = f"outputs {first.id}, {second.id} share the title Building it"
+    story.hook("s-1", HookSamples.prompt("go on"))
+    story.advance(timedelta(seconds=1))
+    assert any(shared in line for line in story.hook("s-1", LOOK).lines)
+    story.advance(timedelta(minutes=11))
+    story.expect_absent_hook_line("s-1", LOOK, shared)
+    story.advance(timedelta(seconds=1))
+    story.hook("s-1", HookSamples.prompt("and again"))
+    story.advance(timedelta(seconds=1))
+    assert any(shared in line for line in story.hook("s-1", LOOK).lines)
 
 
 def test_a_title_in_words_says_nothing(new_story):
