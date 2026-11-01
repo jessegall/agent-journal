@@ -30,18 +30,19 @@ class AgentsMove(VersionFourMove):
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
         roles = [role.value for role in AgentRole]
         for row in source.rows(TABLE):
+            role = row["role"] or AgentRole.MAIN.value
             if not row["session"]:
                 report.drop("agents without a session", 1)
-            elif (row["role"] or AgentRole.MAIN.value) not in roles:
+            elif role not in roles:
                 report.skip(TABLE, row["id"], f"role {row['role']} is none of {', '.join(roles)}")
             else:
                 created = row["created_at"] or context.timestamp
-                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, creators.actor_id(row["creator"]), created)))
+                report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, role, creators.actor_id(row["creator"]), created)))
         return report
 
-    def insert(self, rows: RowInsert, values: sqlite3.Row, creator_id: int, created: str) -> int:
+    def insert(self, rows: RowInsert, values: sqlite3.Row, role: str, creator_id: int, created: str) -> int:
         actor_id = rows.insert("actors", {"creator_id": creator_id, "type": ActorType.AGENT.value, "name": values["session"], "created_at": created, "updated_at": created})
         ended = (values["updated_at"] or created) if values["state"] == ENDED else None
         return rows.insert(TABLE, {"id": actor_id, "environment_id": values["environment_id"], "creator_id": creator_id, "session": values["session"],
-                                   "program": values["provider"] or "", "role": values["role"] or AgentRole.MAIN.value, "ended_at": ended, "created_at": created,
+                                   "program": values["provider"] or "", "role": role, "ended_at": ended, "created_at": created,
                                    "updated_at": values["updated_at"] or created})
