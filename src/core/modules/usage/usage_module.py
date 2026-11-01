@@ -7,6 +7,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_bars.usage_bars_subcommand import UsageBarsSubcommand
 from core.modules.usage.commands.usage_show.usage_show_subcommand import UsageShowSubcommand
+from core.modules.usage.commands.usage_fitness.usage_fitness_subcommand import UsageFitnessSubcommand
 from core.modules.usage.commands.usage_tool.usage_tool_subcommand import UsageToolSubcommand
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
 from core.modules.usage.models.statistic import Statistic
@@ -20,10 +21,11 @@ class UsageModule(Module):
     name = "journal.core.usage"
     seed_reason = "usage is what the agent programs report, which a demo has none of"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers"]
+    dependencies = ["journal.core.agents", "journal.core.environments", "journal.core.tasks", "journal.core.questions", "journal.core.drivers", "journal.core.messages", "journal.core.waits"]
     models = [ModelDeclaration(Statistic, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [StatisticsTableMigration]
     moves = [StatisticsMove]
-    subcommands = (UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
+    subcommands = (UsageFitnessSubcommand, UsageShowSubcommand, UsageBarsSubcommand, UsageToolSubcommand, StatisticListSubcommand)
     windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"]),
+               WindowDeclaration("usage.fitness", "Fitness", "fitness.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage fitness"]),
                WindowDeclaration("usage.context", "Context", "context.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show"])]

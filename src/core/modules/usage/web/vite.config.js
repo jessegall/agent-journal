@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         usage: here("./src/usage.js"),
         context: here("./src/context.js"),
+        fitness: here("./src/fitness.js"),
     },
     outDir: here("./dist"),
 });

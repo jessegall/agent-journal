@@ -10,8 +10,10 @@ const props = defineProps({
     facts: {type: Object, default: () => ({helpers: 0, tasks: 0, waiting: 0})},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     now: {type: Number, default: () => Date.now()},
+    fitness: {type: Object, default: null},
 });
 const emit = defineEmits(["open"]);
+const LOW_FITNESS = 75;
 const COUNTS = [
     {key: "helpers", title: "Subagents and workers running", icon: "agents"},
     {key: "tasks", title: "Open tasks", icon: "task"},
@@ -46,6 +48,12 @@ const uptime = computed(() => {
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
+            <template v-if="fitness">
+                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="How the agent is working: opens its measures" @click="emit('open', 'fitness')">
+                    Fitness {{ fitness.is_measured ? fitness.score : "–" }}
+                </button>
+                <button type="button" :class="['fact', 'load-fact', fitness.load_level]" data-fact="load" title="Messages arriving against those answered" @click="emit('open', 'fitness')">Load {{ fitness.load }}</button>
+            </template>
             <template v-if="status?.model">
                 <span class="fact" data-fact="model"><Icon name="model" :size="12" /> {{ status.model }}</span>
             </template>
@@ -65,6 +73,15 @@ const uptime = computed(() => {
 </template>
 
 <style scoped>
+.fitness-fact.low,
+.load-fact.warn {
+    color: var(--warn, var(--text-2));
+}
+
+.load-fact.critical {
+    color: var(--danger);
+}
+
 .information {
     display: flex;
     gap: 16px;
