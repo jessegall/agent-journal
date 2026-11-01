@@ -59,15 +59,3 @@ watch(
         />
     </template>
 </template>
-
-<style scoped>
-.window-loading {
-    animation: window-in 0.2s ease both;
-}
-
-@keyframes window-in {
-    from {
-        opacity: 0;
-    }
-}
-</style>

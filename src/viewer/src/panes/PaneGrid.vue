@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import ResizeHandle from "./ResizeHandle.vue";
 import {percent, percentBox} from "../format/number.js";
 
@@ -14,6 +14,11 @@ const props = defineProps({
 const emit = defineEmits(["resize"]);
 const area = ref(null);
 const live = ref(false);
+// the layout of a fresh page arrives within its first moments: panes take their places without easing, so the page never opens
+// as one wide pane that narrows
+const STILL_MS = 1500;
+const still = ref(true);
+onMounted(() => setTimeout(() => (still.value = false), STILL_MS));
 const SNAP = 14;
 const NUDGE = 0.05;
 const KEYS = {row: {ArrowLeft: -1, ArrowRight: 1}, col: {ArrowUp: -1, ArrowDown: 1}};
@@ -55,7 +60,7 @@ defineExpose({element: area});
 </script>
 
 <template>
-    <div ref="area" :class="['pane-grid', {live, stacked}]">
+    <div ref="area" :class="['pane-grid', {live, stacked, still}]">
         <template v-for="p in panes" :key="p.id">
             <section
                 :class="['pane', p.state, {after: p.rect.x > EDGE, below: p.rect.y > EDGE, full: p.id === full}]"
@@ -166,6 +171,8 @@ defineExpose({element: area});
         height 0.26s var(--ease);
 }
 
+.pane-grid.still .pane,
+.pane-grid.still .pane-split,
 .pane-grid.live .pane,
 .pane-grid.live .pane-split {
     transition: none;

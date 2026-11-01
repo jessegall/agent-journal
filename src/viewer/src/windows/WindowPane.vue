@@ -2,6 +2,7 @@
 import {computed, h, ref, watch} from "vue";
 import {windowPermissions} from "./allowancePrompts.js";
 import EmptyState from "../kit/EmptyState.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import DocumentWindow from "./DocumentWindow.vue";
 import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
@@ -56,7 +57,10 @@ watch(
 </script>
 
 <template>
-    <template v-if="entry?.place === 'agent' && agent === null">
+    <template v-if="!entry && catalogue.loaded?.value === false">
+        <Skeleton shape="cards" />
+    </template>
+    <template v-else-if="entry?.place === 'agent' && agent === null">
         <EmptyState title="No agent is running here" data-window-no-agent />
     </template>
     <template v-else-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">

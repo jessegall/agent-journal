@@ -91,6 +91,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         key = null;
         loading = at;
         const own = tab.read(tabKey(at));
+        if (own && wellShaped(own)) layout.value = tidied(own, entry);
         const found = await store.layout(at);
         if (loading !== at) return;
         key = at;

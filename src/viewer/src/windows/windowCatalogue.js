@@ -12,6 +12,7 @@ export class WindowCatalogue {
         this.dropdowns = shallowRef([]);
         this.bars = shallowRef([]);
         this.pages = shallowRef([]);
+        this.loaded = shallowRef(false);
         this.person = null;
     }
 
@@ -23,6 +24,7 @@ export class WindowCatalogue {
         this.pages.value = offered.filter((window) => window.place === "page");
         this.bars.value = offered.filter((window) => window.place === "bar");
         this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
+        this.loaded.value = true;
     }
 
     heard(event) {

@@ -9,11 +9,32 @@ import {WindowSubscriptions} from "./windowSubscriptions.js";
 const SHELL_WINDOW = "viewer.shell";
 const PHONE_WORKER = "/viewer/phone-sw.js";
 
-// a page's reads and runs through the shell's own window
-export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
+// reads that several parts of a page ask for at its start are asked once: the second asker takes the answer of the first, which is
+// kept only while it is on its way
+const SHARED_READS = new Set(["suite current"]);
 
-// who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the person
-export const readSession = async () => (await transport.raw("/api/session")).json();
+// a page's reads and runs through the shell's own window
+export const shellReader = (environment) => {
+    const asking = new Map();
+    return (line) => {
+        const key = Array.isArray(line) ? line.slice(0, 2).join(" ") : "";
+        if (!SHARED_READS.has(key)) return lineResult(SHELL_WINDOW, line, environment);
+        const sent = JSON.stringify(line);
+        if (!asking.has(sent)) asking.set(sent, lineResult(SHELL_WINDOW, line, environment).finally(() => asking.delete(sent)));
+        return asking.get(sent);
+    };
+};
+
+// who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the person; the page start and the
+// windows both ask, so the answer is kept for the length of the page
+let sessionAnswer = null;
+export const readSession = () => {
+    sessionAnswer ??= transport.raw("/api/session").then((response) => response.json()).catch((failure) => {
+        sessionAnswer = null;
+        throw failure;
+    });
+    return sessionAnswer;
+};
 
 // what a page of windows needs to run: the catalogue, the shared subscriptions, the shell's own line and allowance
 // prompts, the face its session asks for once `opened` answers, the reason the journal cannot run the shell's lines when it

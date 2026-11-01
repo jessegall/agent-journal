@@ -22,6 +22,7 @@ async function phone({offers = Object.keys(TITLES)} = {}) {
     const store = paneLayout({saved: async () => null, defaults: async () => PHONE_LAYOUT, save: async () => ({ok: true, version: 1}), tab: {read: () => null, write: () => {}}, entry: (name) => (offers.includes(name) ? fake(name) : null)});
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
     const catalogue = new WindowCatalogue(async () => ({windows: []}));
+    catalogue.loaded.value = true;
     catalogue.windows.value = offers.map(fake);
     const element = document.createElement("div");
     document.body.append(element);

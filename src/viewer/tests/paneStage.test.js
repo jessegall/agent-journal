@@ -52,6 +52,7 @@ async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "
     await store.load({environment: "main", person: 1, suite: "coding", page: "home", driver: "coding.builder"});
     if (titles) store.replace({...store.layout.value, panes: Object.fromEntries(Object.entries(store.layout.value.panes).map(([id, pane]) => [id, {...pane, titles}]))});
     const catalogue = new WindowCatalogue(async () => ({windows: []}));
+    catalogue.loaded.value = true;
     catalogue.windows.value = offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)}));
     const element = document.createElement("div");
     document.body.append(element);
