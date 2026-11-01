@@ -1,10 +1,11 @@
 <script setup>
 import {ref} from "vue";
-import {Dialog, Btn, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {Dialog, Btn, Skeleton, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
 
 // the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
 const context = useWindow();
 const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
+const tools = useListTools(rows, {title: (row) => row.title || row.name, isOpen: (row) => row.enabled});
 const refusal = ref("");
 const open = ref(null);
 const source = ref("");
@@ -94,7 +95,8 @@ async function showRecord(row) {
         <template v-else-if="failure">
             <p class="plugin-note">{{ failure }}</p>
         </template>
-        <template v-for="row in rows" :key="row.id">
+        <ListTools :tools="tools" placeholder="Search the plugins" />
+        <template v-for="row in tools.shown.value" :key="row.id">
             <div class="plugin" :data-row="row.id">
                 <span class="plugin-head">
                     <span class="name">{{ row.title }}</span>

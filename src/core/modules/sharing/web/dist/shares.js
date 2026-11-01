@@ -1,61 +1,65 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-b684d6d8472e")) { const style = document.createElement("style"); style.id = "window-styles-b684d6d8472e"; style.textContent = ".shares[data-v-e1ce7233]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-e1ce7233]{display:flex;gap:8px}.shares-target[data-v-e1ce7233]{flex:1;min-width:0}.shares-link[data-v-e1ce7233]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-e1ce7233],.shares-failure[data-v-e1ce7233]{margin:0;color:var(--text-2)}.shares-name[data-v-e1ce7233]{flex:1}\n"; document.head.appendChild(style); }
-import { computed as g, ref as N, openBlock as p, createElementBlock as m, createElementVNode as o, withModifiers as R, unref as e, withDirectives as S, vModelText as V, createVNode as _, withCtx as h, createTextVNode as v, Fragment as C, toDisplayString as a, createCommentVNode as w } from "vue";
-import { useRows as b, Btn as x, RowList as B } from "@journal/window-kit";
-const M = (i, l) => {
-  const r = i.__vccOpts || i;
-  for (const [d, n] of l)
-    r[d] = n;
-  return r;
-}, T = { class: "shares" }, D = { class: "shares-link" }, E = { class: "shares-hint" }, F = {
+if (!document.getElementById("window-styles-676f47d9f109")) { const style = document.createElement("style"); style.id = "window-styles-676f47d9f109"; style.textContent = ".shares[data-v-974d094c]{display:flex;flex-direction:column;gap:12px}.shares-make[data-v-974d094c]{display:flex;gap:8px}.shares-target[data-v-974d094c]{flex:1;min-width:0}.shares-link[data-v-974d094c]{margin:0;overflow-wrap:anywhere}.shares-hint[data-v-974d094c],.shares-failure[data-v-974d094c]{margin:0;color:var(--text-2)}.shares-name[data-v-974d094c]{flex:1}\n"; document.head.appendChild(style); }
+import { computed as S, ref as N, openBlock as m, createElementBlock as _, createElementVNode as r, withModifiers as R, unref as e, withDirectives as T, vModelText as V, createVNode as i, withCtx as k, createTextVNode as w, Fragment as C, toDisplayString as o, createCommentVNode as x } from "vue";
+import { useRows as $, useListTools as b, Btn as y, ListTools as B, RowList as L } from "@journal/window-kit";
+const M = (d, c) => {
+  const l = d.__vccOpts || d;
+  for (const [u, n] of c)
+    l[u] = n;
+  return l;
+}, D = { class: "shares" }, E = { class: "shares-link" }, F = { class: "shares-hint" }, A = {
   key: 1,
   class: "shares-failure"
-}, $ = { class: "shares-name" }, A = {
+}, I = { class: "shares-name" }, O = {
   __name: "ShareRows",
-  setup(i) {
-    const { rows: l, failure: r, loaded: d, act: n, actionFailure: f, answer: c } = b("share list", []), y = g(() => l.value.filter((k) => k.state === "active")), u = N("");
-    return (k, t) => (p(), m("div", T, [
-      o("form", {
+  setup(d) {
+    const { rows: c, failure: l, loaded: u, act: n, actionFailure: f, answer: p } = $("share list", []), g = S(() => c.value.filter((a) => a.state === "active")), h = N(""), v = b(g, { title: (a) => `${a.row_model} ${a.row_id}` });
+    return (a, t) => (m(), _("div", D, [
+      r("form", {
         class: "shares-make",
-        onSubmit: t[1] || (t[1] = R((s) => e(n)(["share", "make", u.value.trim()]), ["prevent"]))
+        onSubmit: t[1] || (t[1] = R((s) => e(n)(["share", "make", h.value.trim()]), ["prevent"]))
       }, [
-        S(o("input", {
-          "onUpdate:modelValue": t[0] || (t[0] = (s) => u.value = s),
+        T(r("input", {
+          "onUpdate:modelValue": t[0] || (t[0] = (s) => h.value = s),
           class: "shares-target",
           placeholder: "plans:2",
           "aria-label": "What to share"
         }, null, 512), [
-          [V, u.value]
+          [V, h.value]
         ]),
-        _(e(x), {
+        i(e(y), {
           kind: "primary",
           type: "submit"
         }, {
-          default: h(() => [...t[2] || (t[2] = [
-            v("Make a link", -1)
+          default: k(() => [...t[2] || (t[2] = [
+            w("Make a link", -1)
           ])]),
           _: 1
         })
       ], 32),
-      e(c) ? (p(), m(C, { key: 0 }, [
-        o("p", D, a(e(c).link), 1),
-        o("p", E, "This link is shown once. Anyone who has it can read the plan until " + a(e(c).expires_at) + ".", 1)
-      ], 64)) : w("", !0),
-      e(f) ? (p(), m("p", F, a(e(f)), 1)) : w("", !0),
-      _(e(B), {
-        rows: y.value,
-        failure: e(r),
-        loaded: e(d),
+      e(p) ? (m(), _(C, { key: 0 }, [
+        r("p", E, o(e(p).link), 1),
+        r("p", F, "This link is shown once. Anyone who has it can read the plan until " + o(e(p).expires_at) + ".", 1)
+      ], 64)) : x("", !0),
+      e(f) ? (m(), _("p", A, o(e(f)), 1)) : x("", !0),
+      i(e(B), {
+        tools: e(v),
+        placeholder: "Search the links"
+      }, null, 8, ["tools"]),
+      i(e(L), {
+        rows: e(v).shown.value,
+        failure: e(l),
+        loaded: e(u),
         empty: "No link is open"
       }, {
-        default: h(({ row: s }) => [
-          o("span", $, a(s.row_model) + " " + a(s.row_id) + ", ends " + a(s.expires_at), 1),
-          _(e(x), {
+        default: k(({ row: s }) => [
+          r("span", I, o(s.row_model) + " " + o(s.row_id) + ", ends " + o(s.expires_at), 1),
+          i(e(y), {
             small: "",
-            onClick: (I) => e(n)(["share", "revoke", String(s.id)])
+            onClick: (U) => e(n)(["share", "revoke", String(s.id)])
           }, {
-            default: h(() => [...t[3] || (t[3] = [
-              v("Revoke", -1)
+            default: k(() => [...t[3] || (t[3] = [
+              w("Revoke", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])
@@ -64,7 +68,7 @@ const M = (i, l) => {
       }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, U = /* @__PURE__ */ M(A, [["__scopeId", "data-v-e1ce7233"]]);
+}, q = /* @__PURE__ */ M(O, [["__scopeId", "data-v-974d094c"]]);
 export {
-  U as default
+  q as default
 };

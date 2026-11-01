@@ -1,8 +1,9 @@
 <script setup>
-import {RowList, useRows, useWindow} from "@journal/window-kit";
+import {RowList, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
 
 const context = useWindow();
 const {rows, failure, loaded} = useRows("process feed", ["process.*", "output.*"]);
+const tools = useListTools(rows, {title: (row) => row.line, isOpen: (row) => row.state === "running"});
 
 const isRunning = (row) => row.state === "running" || row.state === "background";
 const stop = (row) => context.run(`output stop ${row.id}`);
@@ -10,7 +11,8 @@ const watch = (row) => context.run(`output watch ${row.id}`);
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No commands yet">
+    <ListTools :tools="tools" placeholder="Search the commands" />
+    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No commands yet">
         <template #default="{row}">
             <div class="run">
                 <span :class="['state', row.state]">{{ row.state }}</span>

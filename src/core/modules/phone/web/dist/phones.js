@@ -1,75 +1,79 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d4d058742620")) { const style = document.createElement("style"); style.id = "window-styles-d4d058742620"; style.textContent = ".phones[data-v-0fdd9934]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-0fdd9934]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-0fdd9934]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-0fdd9934],.phones-failure[data-v-0fdd9934]{margin:0;color:var(--text-2)}.phones-abilities[data-v-0fdd9934]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-0fdd9934]{flex:1}\n"; document.head.appendChild(style); }
-import { computed as B, ref as I, openBlock as o, createElementBlock as s, toDisplayString as a, createCommentVNode as p, createElementVNode as r, createVNode as c, unref as e, withCtx as m, createTextVNode as g, Fragment as x, renderList as S } from "vue";
-import { useRows as T, Btn as C, QrCode as V, RowList as E } from "@journal/window-kit";
-const L = (u, h) => {
-  const d = u.__vccOpts || u;
+if (!document.getElementById("window-styles-aaa467cc9b8f")) { const style = document.createElement("style"); style.id = "window-styles-aaa467cc9b8f"; style.textContent = ".phones[data-v-61ad171c]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-61ad171c]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-61ad171c]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-61ad171c],.phones-failure[data-v-61ad171c]{margin:0;color:var(--text-2)}.phones-abilities[data-v-61ad171c]{margin:0;padding-left:18px;color:var(--text-3);font-size:12.5px}.phones-name[data-v-61ad171c]{flex:1}\n"; document.head.appendChild(style); }
+import { computed as S, ref as A, openBlock as s, createElementBlock as a, toDisplayString as r, createCommentVNode as c, createElementVNode as l, createVNode as d, unref as e, withCtx as k, createTextVNode as x, Fragment as C, renderList as B } from "vue";
+import { useRows as I, useListTools as V, Btn as R, QrCode as E, ListTools as P, RowList as q } from "@journal/window-kit";
+const F = (u, h) => {
+  const p = u.__vccOpts || u;
   for (const [_, f] of h)
-    d[_] = f;
-  return d;
-}, P = { class: "phones" }, q = {
+    p[_] = f;
+  return p;
+}, O = { class: "phones" }, $ = {
   key: 0,
   class: "phones-failure",
   "data-phone-tunnel": ""
-}, F = { class: "phones-pair" }, O = { class: "phones-code" }, $ = {
+}, b = { class: "phones-pair" }, j = { class: "phones-code" }, D = {
   key: 0,
   "data-phone-qr": ""
-}, b = { class: "phones-hint" }, j = {
+}, Q = { class: "phones-hint" }, U = {
   key: 1,
   class: "phones-failure"
-}, D = {
+}, z = {
   class: "phones-abilities",
   "data-phone-abilities": ""
-}, Q = { class: "phones-name" }, U = {
+}, G = { class: "phones-name" }, H = {
   __name: "PhoneRows",
   setup(u) {
-    const h = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], { rows: d, failure: _, loaded: f, act: v, actionFailure: w, answer: i, context: R } = T("phone list", ["phone.*"]), N = B(() => d.value.filter((l) => l.state === "paired")), k = I(null);
-    async function A() {
-      const l = await R.read("tunnel status");
-      k.value = l.ok ? l.value : null;
+    const h = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"], { rows: p, failure: _, loaded: f, act: v, actionFailure: w, answer: i, context: T } = I("phone list", ["phone.*"]), L = S(() => p.value.filter((t) => t.state === "paired")), y = V(L, { title: (t) => t.name }), m = A(null);
+    async function N() {
+      const t = await T.read("tunnel status");
+      m.value = t.ok ? t.value : null;
     }
-    return A(), (l, t) => {
-      var y;
-      return o(), s("div", P, [
-        ((y = k.value) == null ? void 0 : y.state) === "disconnected" ? (o(), s("p", q, "A phone can't reach this journal yet: " + a(k.value.reason), 1)) : p("", !0),
-        r("div", F, [
-          c(e(C), {
+    return N(), (t, o) => {
+      var g;
+      return s(), a("div", O, [
+        ((g = m.value) == null ? void 0 : g.state) === "disconnected" ? (s(), a("p", $, "A phone can't reach this journal yet: " + r(m.value.reason), 1)) : c("", !0),
+        l("div", b, [
+          d(e(R), {
             kind: "primary",
-            onClick: t[0] || (t[0] = (n) => e(v)(["phone", "pair"]))
+            onClick: o[0] || (o[0] = (n) => e(v)(["phone", "pair"]))
           }, {
-            default: m(() => [...t[1] || (t[1] = [
-              g("Pair a phone", -1)
+            default: k(() => [...o[1] || (o[1] = [
+              x("Pair a phone", -1)
             ])]),
             _: 1
           }),
-          e(i) ? (o(), s(x, { key: 0 }, [
-            r("p", O, "Code: " + a(e(i).code), 1),
-            e(i).link ? (o(), s("div", $, [
-              c(e(V), {
+          e(i) ? (s(), a(C, { key: 0 }, [
+            l("p", j, "Code: " + r(e(i).code), 1),
+            e(i).link ? (s(), a("div", D, [
+              d(e(E), {
                 text: e(i).link
               }, null, 8, ["text"])
-            ])) : p("", !0),
-            r("p", b, "Open " + a(e(i).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
-          ], 64)) : p("", !0),
-          e(w) ? (o(), s("p", j, a(e(w)), 1)) : p("", !0),
-          r("ul", D, [
-            (o(), s(x, null, S(h, (n) => r("li", { key: n }, a(n), 1)), 64))
+            ])) : c("", !0),
+            l("p", Q, "Open " + r(e(i).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
+          ], 64)) : c("", !0),
+          e(w) ? (s(), a("p", U, r(e(w)), 1)) : c("", !0),
+          l("ul", z, [
+            (s(), a(C, null, B(h, (n) => l("li", { key: n }, r(n), 1)), 64))
           ])
         ]),
-        c(e(E), {
-          rows: N.value,
+        d(e(P), {
+          tools: e(y),
+          placeholder: "Search the phones"
+        }, null, 8, ["tools"]),
+        d(e(q), {
+          rows: e(y).shown.value,
           failure: e(_),
           loaded: e(f),
           empty: "No phone is paired"
         }, {
-          default: m(({ row: n }) => [
-            r("span", Q, a(n.name), 1),
-            c(e(C), {
+          default: k(({ row: n }) => [
+            l("span", G, r(n.name), 1),
+            d(e(R), {
               small: "",
-              onClick: (z) => e(v)(["phone", "unpair", String(n.id)])
+              onClick: (J) => e(v)(["phone", "unpair", String(n.id)])
             }, {
-              default: m(() => [...t[2] || (t[2] = [
-                g("Unpair", -1)
+              default: k(() => [...o[2] || (o[2] = [
+                x("Unpair", -1)
               ])]),
               _: 1
             }, 8, ["onClick"])
@@ -79,7 +83,7 @@ const L = (u, h) => {
       ]);
     };
   }
-}, J = /* @__PURE__ */ L(U, [["__scopeId", "data-v-0fdd9934"]]);
+}, W = /* @__PURE__ */ F(H, [["__scopeId", "data-v-61ad171c"]]);
 export {
-  J as default
+  W as default
 };

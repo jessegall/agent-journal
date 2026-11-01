@@ -1,11 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, QrCode, RowList, useRows} from "@journal/window-kit";
+import {Btn, QrCode, RowList, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const ABILITIES = ["Read the chat and see what needs you", "Answer questions", "Read reports, documents, plans and tasks", "Approve a plan or ask for changes", "Send the agent instructions"];
 
 const {rows, failure, loaded, act, actionFailure, answer, context} = useRows("phone list", ["phone.*"]);
 const paired = computed(() => rows.value.filter((row) => row.state === "paired"));
+const tools = useListTools(paired, {title: (row) => row.name});
 const tunnel = ref(null);
 
 async function readTunnel() {
@@ -39,7 +40,8 @@ readTunnel();
                 </template>
             </ul>
         </div>
-        <RowList :rows="paired" :failure="failure" :loaded="loaded" empty="No phone is paired">
+        <ListTools :tools="tools" placeholder="Search the phones" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No phone is paired">
             <template #default="{row}">
                 <span class="phones-name">{{ row.name }}</span>
                 <Btn small @click="act(['phone', 'unpair', String(row.id)])">Unpair</Btn>

@@ -1,42 +1,48 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-8419283443a8")) { const style = document.createElement("style"); style.id = "window-styles-8419283443a8"; style.textContent = ".output-dock-more[data-v-a1003215]{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--move),opacity var(--fade)}.output-dock-more.open[data-v-a1003215]{grid-template-rows:1fr;opacity:1}.output-dock-inner[data-v-a1003215]{min-height:0;overflow:hidden}.output-dock-state[data-v-a1003215]{display:flex;flex:none;justify-content:center;width:16px;color:var(--tone)}.output-dock-label[data-v-a1003215]{display:flex;flex:1 1 auto;align-items:center;gap:9px;min-width:0;padding:0;border:none;background:none;color:var(--text);font:inherit;font-size:12px;font-weight:500;text-align:left;cursor:pointer}.output-dock-title[data-v-a1003215]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-a1003215]{flex:none;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.output-dock-lines[data-v-a1003215]{margin:0;padding:0 12px 10px 35px;color:var(--text-3);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;list-style:none;overflow-wrap:anywhere}.output-dock-bar[data-v-a1003215]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-a1003215]{height:100%;transition:width .4s ease}.output[data-v-7e18ff9e]{display:flex;flex-direction:column;height:100%}.bar[data-v-7e18ff9e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-7e18ff9e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-7e18ff9e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-7e18ff9e]{flex:1;margin:0;padding:0 12px 12px;overflow:auto;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-0ce2dce2]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-0ce2dce2]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-0ce2dce2],.state.lost[data-v-0ce2dce2]{color:var(--red, #d4574b)}.line[data-v-0ce2dce2]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-0ce2dce2]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { openBlock as c, createBlock as m, unref as o, withCtx as f, createElementVNode as s, normalizeClass as h, toDisplayString as a, createElementBlock as k, Fragment as C, createCommentVNode as y } from "vue";
-import { useWindow as b, useRows as g, RowList as x } from "@journal/window-kit";
-import { _ as v } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const w = { class: "run" }, $ = { class: "line" }, B = ["onClick"], N = ["onClick"], R = {
+if (!document.getElementById("window-styles-de2648ad85dd")) { const style = document.createElement("style"); style.id = "window-styles-de2648ad85dd"; style.textContent = ".output-dock-more[data-v-a1003215]{display:grid;grid-template-rows:0fr;opacity:0;transition:grid-template-rows var(--move),opacity var(--fade)}.output-dock-more.open[data-v-a1003215]{grid-template-rows:1fr;opacity:1}.output-dock-inner[data-v-a1003215]{min-height:0;overflow:hidden}.output-dock-state[data-v-a1003215]{display:flex;flex:none;justify-content:center;width:16px;color:var(--tone)}.output-dock-label[data-v-a1003215]{display:flex;flex:1 1 auto;align-items:center;gap:9px;min-width:0;padding:0;border:none;background:none;color:var(--text);font:inherit;font-size:12px;font-weight:500;text-align:left;cursor:pointer}.output-dock-title[data-v-a1003215]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.output-dock-figure[data-v-a1003215]{flex:none;color:var(--text-3);font-size:11px;font-variant-numeric:tabular-nums}.output-dock-lines[data-v-a1003215]{margin:0;padding:0 12px 10px 35px;color:var(--text-3);font-family:var(--mono, monospace);font-size:11px;line-height:1.5;list-style:none;overflow-wrap:anywhere}.output-dock-bar[data-v-a1003215]{position:absolute;right:0;bottom:0;left:0;height:2px;border-radius:1px;background:var(--border);overflow:hidden}.output-dock-fill[data-v-a1003215]{height:100%;transition:width .4s ease}.output[data-v-7e18ff9e]{display:flex;flex-direction:column;height:100%}.bar[data-v-7e18ff9e]{display:flex;align-items:baseline;gap:8px;padding:8px 12px;font-size:12px}.line[data-v-7e18ff9e]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-7e18ff9e]{border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}.text[data-v-7e18ff9e]{flex:1;margin:0;padding:0 12px 12px;overflow:auto;font-size:12px;line-height:1.5;white-space:pre-wrap}.run[data-v-454d324c]{display:flex;flex:1;align-items:baseline;gap:8px;font-size:12px}.state[data-v-454d324c]{flex:none;min-width:64px;color:var(--text-3)}.state.failed[data-v-454d324c],.state.lost[data-v-454d324c]{color:var(--red, #d4574b)}.line[data-v-454d324c]{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}button[data-v-454d324c]{flex:none;border:0;background:none;color:var(--text-3);font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { openBlock as c, createElementBlock as l, Fragment as u, createVNode as i, unref as s, withCtx as C, createElementVNode as o, normalizeClass as g, toDisplayString as r, createCommentVNode as y } from "vue";
+import { useWindow as b, useRows as v, useListTools as w, ListTools as x, RowList as N } from "@journal/window-kit";
+import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const L = { class: "run" }, O = { class: "line" }, R = ["onClick"], S = ["onClick"], V = {
   __name: "Outputs",
-  setup(E) {
-    const n = b(), { rows: u, failure: i, loaded: r } = g("process feed", ["process.*", "output.*"]), l = (t) => t.state === "running" || t.state === "background", p = (t) => n.run(`output stop ${t.id}`), d = (t) => n.run(`output watch ${t.id}`);
-    return (t, O) => (c(), m(o(x), {
-      rows: o(u),
-      failure: o(i),
-      loaded: o(r),
-      empty: "No commands yet"
-    }, {
-      default: f(({ row: e }) => [
-        s("div", w, [
-          s("span", {
-            class: h(["state", e.state])
-          }, a(e.state), 3),
-          s("span", $, a(e.line), 1),
-          l(e) ? (c(), k(C, { key: 0 }, [
-            s("button", {
-              class: "stop",
-              type: "button",
-              onClick: (_) => p(e)
-            }, "Stop", 8, B),
-            s("button", {
-              class: "watch",
-              type: "button",
-              onClick: (_) => d(e)
-            }, "Watch", 8, N)
-          ], 64)) : y("", !0)
-        ])
-      ]),
-      _: 1
-    }, 8, ["rows", "failure", "loaded"]));
+  setup(B) {
+    const n = b(), { rows: p, failure: d, loaded: _ } = v("process feed", ["process.*", "output.*"]), a = w(p, { title: (t) => t.line, isOpen: (t) => t.state === "running" }), m = (t) => t.state === "running" || t.state === "background", h = (t) => n.run(`output stop ${t.id}`), f = (t) => n.run(`output watch ${t.id}`);
+    return (t, E) => (c(), l(u, null, [
+      i(s(x), {
+        tools: s(a),
+        placeholder: "Search the commands"
+      }, null, 8, ["tools"]),
+      i(s(N), {
+        rows: s(a).shown.value,
+        failure: s(d),
+        loaded: s(_),
+        empty: "No commands yet"
+      }, {
+        default: C(({ row: e }) => [
+          o("div", L, [
+            o("span", {
+              class: g(["state", e.state])
+            }, r(e.state), 3),
+            o("span", O, r(e.line), 1),
+            m(e) ? (c(), l(u, { key: 0 }, [
+              o("button", {
+                class: "stop",
+                type: "button",
+                onClick: (k) => h(e)
+              }, "Stop", 8, R),
+              o("button", {
+                class: "watch",
+                type: "button",
+                onClick: (k) => f(e)
+              }, "Watch", 8, S)
+            ], 64)) : y("", !0)
+          ])
+        ]),
+        _: 1
+      }, 8, ["rows", "failure", "loaded"])
+    ], 64));
   }
-}, z = /* @__PURE__ */ v(R, [["__scopeId", "data-v-0ce2dce2"]]);
+}, D = /* @__PURE__ */ $(V, [["__scopeId", "data-v-454d324c"]]);
 export {
-  z as default
+  D as default
 };

@@ -1,10 +1,11 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {Btn, RowList, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const {rows, failure, loaded, act, actionFailure, answer} = useRows("share list", []);
 const active = computed(() => rows.value.filter((row) => row.state === "active"));
 const target = ref("");
+const tools = useListTools(active, {title: (row) => `${row.row_model} ${row.row_id}`});
 </script>
 
 <template>
@@ -20,7 +21,8 @@ const target = ref("");
         <template v-if="actionFailure">
             <p class="shares-failure">{{ actionFailure }}</p>
         </template>
-        <RowList :rows="active" :failure="failure" :loaded="loaded" empty="No link is open">
+        <ListTools :tools="tools" placeholder="Search the links" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No link is open">
             <template #default="{row}">
                 <span class="shares-name">{{ row.row_model }} {{ row.row_id }}, ends {{ row.expires_at }}</span>
                 <Btn small @click="act(['share', 'revoke', String(row.id)])">Revoke</Btn>

@@ -1,9 +1,10 @@
 <script setup>
 import {computed, reactive, ref} from "vue";
-import {ago, Btn, RowList, useRows} from "@journal/window-kit";
+import {ago, Btn, RowList, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const installed = useRows("mcp list", []);
 const suggested = useRows("mcp suggested", []);
+const tools = useListTools(installed.rows, {title: (row) => row.title});
 const typed = reactive({});
 
 const installedNames = computed(() => new Set(installed.rows.value.map((row) => row.name)));
@@ -67,7 +68,8 @@ async function giveKey(row) {
         </template>
         <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
     </div>
-    <RowList :rows="installed.rows.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
+    <ListTools :tools="tools" placeholder="Search the servers" />
+    <RowList :rows="tools.shown.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
         <template #default="{row}">
             <div class="server" :data-row="row.id">
                 <div class="head">

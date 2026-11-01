@@ -1,7 +1,8 @@
 <script setup>
-import {Icon, ago, Skeleton, useOpenRow, useRows} from "@journal/window-kit";
+import {Icon, ago, Skeleton, useOpenRow, useRows, ListTools, useListTools} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("template list", ["template.*"]);
+const tools = useListTools(rows, {title: (row) => row.title});
 const {opened, toggle} = useOpenRow();
 </script>
 
@@ -16,7 +17,8 @@ const {opened, toggle} = useOpenRow();
         <template v-else-if="loaded && !rows.length">
             <p class="cards-note">No templates yet</p>
         </template>
-        <template v-for="row in rows" :key="row.id">
+        <ListTools :tools="tools" placeholder="Search the templates" />
+        <template v-for="row in tools.shown.value" :key="row.id">
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
                 <span class="card-head"><Icon name="board" class="card-icon" /> Template {{ row.id }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
                 <span class="card-title">{{ row.title }}</span>
