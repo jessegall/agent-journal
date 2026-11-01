@@ -14,8 +14,16 @@ const input = ref(null);
 const body = ref(null);
 const opened = ref(new Set());
 
-const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && COMMAND_TOOLS.has(row.tool) && row.summary).sort((one, two) => one.id - two.id));
-const markOf = (row) => (JOURNAL_LINE.test(row.summary) ? "#" : "$");
+// the pane menu's detail level: commands alone, with the journal's lines too, or every tool the agent used
+const isShown = {
+    commands: (row) => COMMAND_TOOLS.has(row.tool) && !isJournalLine(row),
+    journal: (row) => COMMAND_TOOLS.has(row.tool),
+    everything: () => true,
+};
+const isJournalLine = (row) => JOURNAL_LINE.test(row.summary);
+const level = computed(() => context.options?.value?.verbosity ?? "journal");
+const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && row.summary && isShown[level.value](row)).sort((one, two) => one.id - two.id));
+const markOf = (row) => (isJournalLine(row) ? "#" : COMMAND_TOOLS.has(row.tool) ? "$" : ">");
 
 function toggle(row) {
     const next = new Set(opened.value);

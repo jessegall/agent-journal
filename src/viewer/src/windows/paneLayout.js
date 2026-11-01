@@ -25,7 +25,7 @@ export const sessionTab = {
     },
 };
 
-const PANE_OWN_OPTIONS = ["width"];
+const PANE_OWN_OPTIONS = ["width", "agent"];
 
 // each pane's tabs with the titles the catalogue gives them, a gone window keeping the title it had, and its options
 // only those its windows declare and those every pane has

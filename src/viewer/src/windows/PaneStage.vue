@@ -54,7 +54,10 @@ const props = defineProps({
 });
 
 const presets = props.shellRead ? useLayoutPresets({environment: props.environment, page: props.page, shellLine: props.shellRead, catalogue: props.catalogue, store: props.store}) : null;
-const agentOf = (name) => (props.catalogue.window(name)?.place === "agent" ? props.agent : null);
+const isAgentWindow = (name) => props.catalogue.window(name)?.place === "agent";
+// an agent window follows the page's main agent unless its pane was set to another
+const agentOf = (name, pane = null) => (isAgentWindow(name) ? (pane?.options?.agent ?? props.agent) : null);
+const followable = computed(() => usage.value.agents.filter((row) => row.id !== props.agent && !row.ended_at));
 const PHONE_WIDTH = 700;
 const CHAT_WINDOW = "messages.chat";
 const grid = ref(null);
@@ -358,6 +361,15 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                                 <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
                             </template>
                             <Btn data-menu="width" @click="setOption(id, 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</Btn>
+                            <template v-if="isAgentWindow(pane.active)">
+                                <div class="pane-menu-choice" data-option="agent">
+                                    <span>Agent</span>
+                                    <Btn data-choice="main" :aria-pressed="!pane.options?.agent" @click="setOption(id, 'agent', null)">Main agent</Btn>
+                                    <template v-for="row in followable" :key="row.id">
+                                        <Btn :data-choice="row.id" :aria-pressed="pane.options?.agent === row.id" @click="setOption(id, 'agent', row.id)">{{ row.role }} {{ row.id }}</Btn>
+                                    </template>
+                                </div>
+                            </template>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
                             <template v-for="other in others(id)" :key="other.id">
                                 <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
@@ -371,12 +383,12 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
                         <template v-if="pane.active">
                             <WindowPane
-                                :key="pane.active"
+                                :key="`${pane.active}:${agentOf(pane.active, pane)}`"
                                 :name="pane.active"
                                 :catalogue="catalogue"
                                 :subscriptions="subscriptions"
                                 :environment="environment"
-                                :agent="agentOf(pane.active)"
+                                :agent="agentOf(pane.active, pane)"
                                 :visible="state === 'live'"
                                 :prompts="prompts"
                                 :shell-read="shellRead"

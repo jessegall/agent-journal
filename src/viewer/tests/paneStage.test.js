@@ -41,7 +41,7 @@ function measured() {
     });
 }
 
-async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null, extra = {}, subscriptions = new WindowSubscriptions()} = {}) {
+async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "a.spare"], titles = null, extra = {}, subscriptions = new WindowSubscriptions(), stageProps = {}} = {}) {
     const store = paneLayout({
         saved: async () => null,
         defaults: async () => shape,
@@ -55,7 +55,7 @@ async function stage(shape = SHAPE, {offers = ["a.chat", "a.tasks", "a.notes", "
     catalogue.windows.value = offers.map((name) => ({...fake(name), ...(typeof extra === "function" ? extra(name) : extra)}));
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main"})).mount(element);
+    createApp(() => h(PaneStage, {store, catalogue, subscriptions, environment: "main", ...stageProps})).mount(element);
     mounted.push(element);
     await settled();
     return {store, element};
@@ -249,6 +249,28 @@ test("the pane menu splits a pane with several tabs and moves its tab to another
     element.querySelector(`[data-menu="move-${holder(store, "a.chat")}"]`).click();
     await settled();
     expect(tabsIn(store, holder(store, "a.chat"))).toEqual(["a.chat", "a.notes"]);
+});
+
+test("an agent window's pane menu picks which agent it follows, and any other window has no such choice", async () => {
+    const shellRead = async (line) => (line[0] === "usage" && line[1] === "show" ? {ok: true, value: {agents: [{id: 7, role: "main"}, {id: 9, role: "worker"}, {id: 11, role: "worker", ended_at: "2026-11-01"}], windows: []}} : {ok: false, error: "no"});
+    const {store, element} = await stage(SHAPE, {extra: (name) => (name === "a.tasks" ? {place: "agent"} : {}), stageProps: {agent: 7, shellRead}});
+    const own = holder(store, "a.tasks");
+    element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
+    await settled();
+    const choices = element.querySelector('[data-option="agent"]');
+    expect(choices.querySelector('[data-choice="main"]').getAttribute("aria-pressed")).toBe("true");
+    expect(choices.querySelector('[data-choice="11"]')).toBeNull();
+    choices.querySelector('[data-choice="9"]').click();
+    await settled();
+    expect(store.layout.value.panes[own].options.agent).toBe(9);
+    expect(element.querySelector('[data-option="agent"] [data-choice="9"]').getAttribute("aria-pressed")).toBe("true");
+    element.querySelector('[data-option="agent"] [data-choice="main"]').click();
+    await settled();
+    expect(store.layout.value.panes[own].options.agent).toBeNull();
+    const other = holder(store, "a.chat");
+    element.querySelector(`[data-tabs-of="${other}"] .pane-menu-button`).click();
+    await settled();
+    expect(element.querySelector('[data-option="agent"]')).toBeNull();
 });
 
 test("the pane menu fills or contains a pane and closes it, keeping the last pane", async () => {

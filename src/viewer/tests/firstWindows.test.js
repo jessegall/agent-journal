@@ -1,4 +1,5 @@
 import {expect, test, vi} from "vitest";
+import {ref} from "vue";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -122,6 +123,22 @@ test("the terminal window lists its agent's commands in order, marks journal lin
     rows[0].querySelector(".terminal-text").click();
     await settle();
     expect(rows[0].querySelector(".terminal-text").classList.contains("open")).toBe(true);
+});
+
+test("the terminal's detail level shows commands alone, the journal's lines too, or every tool", async () => {
+    const answers = {"hook-call feed": page([
+        {id: 1, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
+        {id: 2, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "journal task list", refusal: ""},
+        {id: 3, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
+    ])};
+    const shown = async (verbosity) => {
+        const windowContext = {...context(answers, 2), options: ref({verbosity})};
+        const element = await mounted(Terminal, windowContext);
+        return [...element.querySelectorAll("[data-terminal-command] .terminal-text")].map((row) => row.textContent);
+    };
+    expect(await shown("commands")).toEqual(["pytest -q"]);
+    expect(await shown("journal")).toEqual(["pytest -q", "journal task list"]);
+    expect(await shown("everything")).toEqual(["pytest -q", "journal task list", "a.py"]);
 });
 
 test("the terminal window of an agent with no commands says so", async () => {
