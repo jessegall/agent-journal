@@ -131,6 +131,39 @@ def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_s
     story.expect_text(f"agent-line list --agent {worker.id}", "entered")
 
 
+def test_a_job_the_launcher_could_not_start_stays_waiting(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"failed\n")
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    launcher.thread.join(10)
+    story.expect_rows(len(launcher.requests) == 1)
+    story.expect_text(f"agent-line list --agent {worker.id}", "waiting")
+
+
+def test_a_resume_that_never_came_back_is_started_again_by_the_next_job_after_two_minutes(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    story.advance(timedelta(seconds=5))
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=2)
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    story.run(f'worker send {worker.id} "And the receipt"', actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(len(launcher.requests) == 1)
+    story.advance(timedelta(minutes=3))
+    story.run(f'worker send {worker.id} "And the total"', actor=story.agent)
+    story.run_listeners()
+    launcher.thread.join(10)
+    story.expect_rows(len(launcher.requests) == 2)
+    assert any("And the receipt" in word for word in launcher.requests[1]["command"]), launcher.requests[1]
+
+
 def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_one_reads_it_at_its_next_hook(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

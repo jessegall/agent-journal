@@ -10,8 +10,13 @@ import (
 	"strings"
 )
 
-// TypedAnswer is what the launcher answers once it has typed a line into an agent's terminal.
-const TypedAnswer = "typed"
+// TypedAnswer is what the launcher answers once it has typed a line into an agent's terminal, and StartedAnswer and
+// FailedAnswer whether it could start a worker's program.
+const (
+	TypedAnswer   = "typed"
+	StartedAnswer = "started"
+	FailedAnswer  = "failed"
+)
 
 // WorkerRequest is what a dispatch hands the launcher: the worker's agent row and session, its environment, the
 // worktree it starts in and the command line that starts its program. A request naming a typed line instead types it
@@ -106,5 +111,9 @@ func answered(connection net.Conn, starter Starter, inputs *TerminalInputs) {
 	for name, value := range request.Variables {
 		variables[name] = value
 	}
-	_ = starter.Start(ProgramStart{AgentID: request.AgentID, Folder: request.Folder, Command: request.Command, Variables: variables})
+	answer := StartedAnswer
+	if err := starter.Start(ProgramStart{AgentID: request.AgentID, Folder: request.Folder, Command: request.Command, Variables: variables}); err != nil {
+		answer = FailedAnswer
+	}
+	_, _ = io.WriteString(connection, answer+"\n")
 }

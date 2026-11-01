@@ -7,10 +7,10 @@ ACCEPT_TIMEOUT_SECONDS = 10
 
 
 class FakeLauncher:
-    """A launcher socket in a story's journal folder that takes one worker request and keeps it, under a time limit."""
+    """A launcher socket in a story's journal folder that takes worker requests and keeps them, under a time limit, answering each as told or, as an older launcher does, not at all."""
 
-    def __init__(self, path: Path) -> None:
-        self.path, self.requests = path, list[dict[str, object]]()
+    def __init__(self, path: Path, answer: bytes = b"", request_count: int = 1) -> None:
+        self.path, self.requests, self.answer, self.request_count = path, list[dict[str, object]](), answer, request_count
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server.bind(str(path))
         self.server.listen(1)
@@ -19,9 +19,11 @@ class FakeLauncher:
         self.thread.start()
 
     def accepted(self) -> None:
-        connection, _ = self.server.accept()
-        with connection, connection.makefile("r") as stream:
-            self.requests.append(json.loads(stream.readline()))
+        for _ in range(self.request_count):
+            connection, _ = self.server.accept()
+            with connection, connection.makefile("r") as stream:
+                self.requests.append(json.loads(stream.readline()))
+                connection.sendall(self.answer)
 
     def expect_worker(self, worker_id: int, session: str, folder: Path) -> None:
         self.thread.join(ACCEPT_TIMEOUT_SECONDS)

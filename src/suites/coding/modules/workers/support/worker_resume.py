@@ -1,8 +1,12 @@
+from datetime import timedelta
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.clock import Clock
 from core.base.command.bus import Bus
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
@@ -13,13 +17,15 @@ from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
 
+ON_ITS_WAY_SECONDS = 120
+
 
 class WorkerResume:
-    """Resumes an ended worker's session with its waiting job as the brief. A session already on its way takes the
-    line at its first hook, and with no launcher the line stays waiting."""
+    """Resumes an ended worker's session with its waiting job as the brief. A session handed its job in the last two
+    minutes is on its way and takes the line at its first hook; one that has not come back by then failed to start, and the next job starts it again. With no launcher the line stays waiting."""
 
-    def __init__(self, launcher: WorkerLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus) -> None:
-        self.launcher, self.queries, self.worktrees, self.worker_command, self.bus = launcher, queries, worktrees, worker_command, bus
+    def __init__(self, launcher: WorkerLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock) -> None:
+        self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
 
     def resume(self, worker: Agent, actor_id: int) -> None:
         worktree = self.worktrees.worker_worktree(worker.id)
@@ -32,4 +38,5 @@ class WorkerResume:
             self.bus.run(EnterAgentLine(job.id), Actor(actor_id, ActorType.AGENT), environment_id=worktree.environment_id)
 
     def on_its_way(self, worker: Agent) -> bool:
-        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", worker.ended_at.text)).exists()
+        since = max(worker.ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=ON_ITS_WAY_SECONDS)).text)
+        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", since)).exists()

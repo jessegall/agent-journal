@@ -2,9 +2,12 @@ package launch
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -50,3 +53,40 @@ func TestAWorkerRequestOnTheLaunchersSocketStartsItsProgramInTheWorktreeWithTheW
 		t.Fatal("no program was started for the worker")
 	}
 }
+
+// refusingStarter cannot start anything.
+type refusingStarter struct{}
+
+func (refusingStarter) Start(start ProgramStart) error {
+	return errors.New("no such folder")
+}
+
+func TestTheLauncherAnswersWhetherItStartedTheProgram(t *testing.T) {
+	folder, err := os.MkdirTemp("/tmp", "launch")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(folder)
+	for want, starter := range map[string]Starter{StartedAnswer: fakeStarter{started: make(chan ProgramStart, 1)}, FailedAnswer: refusingStarter{}} {
+		socket := filepath.Join(folder, want+".sock")
+		listener, err := Listen(socket, starter, NewTerminalInputs())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer listener.Close()
+		connection, err := net.Dial("unix", socket)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer connection.Close()
+		if err := json.NewEncoder(connection).Encode(WorkerRequest{AgentID: 16, Folder: folder, Command: []string{"claude"}}); err != nil {
+			t.Fatal(err)
+		}
+		_ = connection.SetReadDeadline(time.Now().Add(5 * time.Second))
+		answer, err := io.ReadAll(connection)
+		if err != nil || strings.TrimSpace(string(answer)) != want {
+			t.Fatalf("the launcher answered %q, %v, not %q", answer, err, want)
+		}
+	}
+}
+
