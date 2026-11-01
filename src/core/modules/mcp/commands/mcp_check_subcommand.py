@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.support.claude_server_file import FILE as CLAUDE_FILE, ClaudeServerFile
 from core.modules.mcp.support.codex_server_file import FILE as CODEX_FILE, CodexServerFile
@@ -37,5 +38,5 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
         return tuple(lines)
 
     def write_output(self, value: object, output: Output) -> None:
-        lines = [line for line in value if isinstance(line, str)] if isinstance(value, tuple) else []
+        lines = [line for line in value if isinstance(line, str)] if is_tuple(value) else []
         output.write("\n".join(lines) or "no servers installed", {"lines": lines})

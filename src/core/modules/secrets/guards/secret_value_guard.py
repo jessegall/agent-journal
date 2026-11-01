@@ -2,6 +2,7 @@ from core.base.change.change import Change
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.refusal import Refusal
+from core.base.type_guards import is_tuple
 from core.modules.secrets.support.secret_values import SecretValues
 from core.modules.secrets.support.server_keys import ServerKeys
 
@@ -25,7 +26,8 @@ class SecretValueGuard(Guard):
         guarded = {value: variable for value, variable in guarded.items() if len(value) >= SHORTEST_GUARDED_CHARACTERS}
         if not guarded:
             return
-        texts = [str(value) for value in vars(change.new_row).values() if isinstance(value, str | tuple)]
+        fields = list(vars(change.new_row).values())
+        texts = [value for value in fields if isinstance(value, str)] + [str(item) for value in fields if is_tuple(value) for item in value]
         variable = next((variable for value, variable in guarded.items() if any(value in text for text in texts)), None)
         if variable is not None:
             raise Refusal(f"a row may not hold the value of {variable}", "name the secret, never its value")

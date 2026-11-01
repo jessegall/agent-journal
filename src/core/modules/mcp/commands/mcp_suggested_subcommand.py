@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.mcp.support.server_catalogue import ServerCatalogue
 from core.modules.mcp.support.server_suggestion import ServerSuggestion
 
@@ -24,5 +25,5 @@ class McpSuggestedSubcommand(ReadSubcommand[Sequence[ServerSuggestion]]):
         return self.catalogue.all()
 
     def write_output(self, value: object, output: Output) -> None:
-        listed = [row for row in value if isinstance(row, ServerSuggestion)] if isinstance(value, tuple) else []
+        listed = [row for row in value if isinstance(row, ServerSuggestion)] if is_tuple(value) else []
         output.write("\n".join(f"{row.name}  {row.title}: {row.subject}{row.admission}" for row in listed), {"rows": [output.values(row) for row in listed]})
