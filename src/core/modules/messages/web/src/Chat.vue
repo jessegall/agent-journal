@@ -74,8 +74,12 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 <button type="button" data-attach class="composer-attach" disabled title="A message holds text only, so there is nothing to attach a file to; Dump files takes files" aria-label="Attach a file">
                     <Icon name="clip" :size="16" />
                 </button>
-                <Btn small bordered data-dump-files @click="dumping = !dumping">Dump files</Btn>
-                <Btn kind="primary" small class="composer-send" :disabled="!text.trim()" @click="send">Send</Btn>
+                <template v-if="text.trim()">
+                    <Btn kind="primary" small class="composer-send" data-send @click="send">Send</Btn>
+                </template>
+                <template v-else>
+                    <Btn small bordered class="composer-send" data-dump-files @click="dumping = !dumping">Dump files</Btn>
+                </template>
             </div>
         </form>
         <template v-if="sendFailure">

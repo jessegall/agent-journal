@@ -1,4 +1,3 @@
-import {h} from "vue";
-import {StateRows} from "@journal/window-kit";
+import TaskGroups from "./TaskGroups.vue";
 
-export default {render: () => h(StateRows, {line: "task list", events: ["task.*"], empty: "No tasks yet"})};
+export default TaskGroups;

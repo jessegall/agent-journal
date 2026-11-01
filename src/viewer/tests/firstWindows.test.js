@@ -18,7 +18,7 @@ test("the chat window shows the environment's messages", async () => {
 test("the tasks window shows each task's title and state", async () => {
     const text = await drawn(TaskList, context({"task list": page([{id: 7, title: "Fix the cart", state: "started"}])}));
     expect(text).toContain("Fix the cart");
-    expect(text).toContain("started");
+    expect(text).toContain("Started");
 });
 
 test("the plans window shows each plan's title and state", async () => {

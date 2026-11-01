@@ -1,4 +1,3 @@
-import {h} from "vue";
-import {StateRows} from "@journal/window-kit";
+import PlanCards from "./PlanCards.vue";
 
-export default {render: () => h(StateRows, {line: "plan list", events: ["plan.*", "phase.*"], empty: "No plans yet"})};
+export default PlanCards;

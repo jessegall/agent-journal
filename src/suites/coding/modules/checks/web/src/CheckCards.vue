@@ -18,10 +18,10 @@ const {opened, toggle} = useOpenRow();
         </template>
         <template v-for="row in rows" :key="row.id">
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
-                <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}</span>
+                <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
                 <span class="card-title">{{ row.title }}</span>
+                <code class="card-detail">{{ row.command }}</code>
                 <template v-if="opened === row.id">
-                    <code class="card-detail">{{ row.command }}</code>
                     <template v-if="row.last_output">
                         <pre class="card-output">{{ row.last_output }}</pre>
                     </template>
@@ -94,5 +94,17 @@ const {opened, toggle} = useOpenRow();
 .cards-note {
     margin: 0;
     color: var(--text-2);
+}
+.card-state {
+    margin-left: auto;
+    color: var(--text-3);
+}
+
+.card-state.passing {
+    color: var(--accent-text);
+}
+
+.card-state.failing {
+    color: var(--danger);
 }
 </style>

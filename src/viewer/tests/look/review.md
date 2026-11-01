@@ -24,19 +24,19 @@ Not compared one by one: the module windows other than chat, tasks and settings.
 
 | # | Window | Difference | Pair | State |
 |---|--------|------------|------|-------|
-| 14 | Plans | Window lists a plan per row; version 4 draws plan cards with a progress bar, phase line and a New plan button and Open/Closed tabs | windows/plans-v4.png, windows/plans-v5.png | open: content and toolbar |
-| 15 | Documents | Search, tabs and list match; version 4 adds a date-grouped list with abstracts and a New document button | windows/documents-v4.png, windows/documents-v5.png | open: New document button |
-| 16 | Tasks | Window lists tasks flat; version 4 groups by plan and phase with status circles, search, filter and display menu | windows/tasks-v4.png, windows/tasks-v5.png | open: grouping and toolbar |
-| 17 | Agents | Rows present; version 4 shows id, session, state and time per row | windows/agents-v4.png, windows/agents-v5.png | open: row detail |
-| 18 | Checks | Cards present; version 4 adds state, command, run button and a New check button | windows/checks-v4.png, windows/checks-v5.png | open: card detail and button |
+| 14 | Plans | Cards with the plan's id, state, task count bar and phase, and Open and Closed tabs (PlanCards) | windows/plans-v4.png, windows/plans-v5.png | fixed, except the New plan button |
+| 15 | Documents | Search, tabs and date-grouped list drawn already; the New document button is not drawn | windows/documents-v4.png, windows/documents-v5.png | open: New document button needs a create form |
+| 16 | Tasks | Search box and a group for each state with its mark, number and priority (TaskGroups); grouping by plan and phase waits on a task-to-plan row | windows/tasks-v4.png, windows/tasks-v5.png | fixed, except grouping by plan |
+| 17 | Agents | Rows now show number, session, program and role, and Running or Closed with the time | windows/agents-v4.png, windows/agents-v5.png | fixed |
+| 18 | Checks | Cards show Passing, Failing or Not run and the command; the Run and New check buttons are not drawn | windows/checks-v4.png, windows/checks-v5.png | fixed, except Run and New check buttons |
 | 19 | File edits | Empty state in the demo; version 4's Files page is a file browser, a different feature | windows/fileedits-v4.png, windows/fileedits-v5.png | open: different feature |
 | 20 | Phone pairing | Version 5 has Pair a phone and its row; version 4 has no page of its own for it | windows/phone-v4.png, windows/phone-v5.png | same |
-| 21 | Plugins | Empty state in the demo; version 4 draws plugin cards with a switch and an install field | windows/plugins-v4.png, windows/plugins-v5.png | open: plugin cards |
-| 22 | Questions | Version 5 answers in place; version 4 lists closed questions with their text | windows/questions-v4.png, windows/questions-v5.png | open: closed list |
-| 23 | Sequences | Cards present; version 4 adds age, step list and a New sequence button | windows/sequences-v4.png, windows/sequences-v5.png | open: card detail and button |
+| 21 | Plugins | Cards with a switch, release, source and the last fault (PluginRows) | windows/plugins-v4.png, windows/plugins-v5.png | fixed, except the install field |
+| 22 | Questions | Answered and closed questions show their answer or Closed; open ones keep the answer form | windows/questions-v4.png, windows/questions-v5.png | fixed |
+| 23 | Sequences | Card shows its age beside the number | windows/sequences-v4.png, windows/sequences-v5.png | fixed, except the New sequence button |
 | 24 | Suggestions | Empty state in the demo; version 4 shows suggestions in a notification panel | windows/suggestions-v4.png, windows/suggestions-v5.png | open: different place |
-| 25 | Templates | Cards present; version 4 shows the text of each template and its age | windows/templates-v4.png, windows/templates-v5.png | open: card detail |
-| 26 | Triggers | Cards present; version 4 has a New trigger button and an empty note | windows/triggers-v4.png, windows/triggers-v5.png | open: button |
+| 25 | Templates | Card shows its age beside the number | windows/templates-v4.png, windows/templates-v5.png | fixed |
+| 26 | Triggers | Card shows its age beside the number | windows/triggers-v4.png, windows/triggers-v5.png | fixed, except the New trigger button |
 | 27 | Tasks (agent) | Version 5 names the window Tasks now; on a page of its own it needs an agent and says so | windows/workers-v4.png, windows/workers-v5.png | open: needs an agent |
 | 28 | Every window as a page | A window page had no gutter around its content | windows/*-v5.png | fixed |
 | 29 | Chat notices | The strip had padding around it; version 4 runs it flush with the chat's sides and top | bottom-v5.png | fixed |
@@ -72,3 +72,10 @@ Lines marked open differ from version 4 in content or toolbar that these windows
 | W1 | Search page | Version 4 has a search box, a model chip row, hit cards with their passage and a switch for agents' conversations; version 5's Search window (search.search) has a box, chips of the models in the last answer, hit rows opening the window of the row they name, the total and the no-hit line | built, tested in searchWindow.test.js |
 | W2 | Version 5 screenshot | The journal search find command and its base pieces (Model.search_fields, ContainsEvery) land in this branch only at the next rebase, so the demo cannot run the window yet; search-v5.png follows then | open until the rebase |
 | W3 | Also search the agents' conversations | Version 5's search reads rows only | no data; no task gives it yet |
+
+| D | Dumps | The window listed a title and a brief; now a card for each dump with its items, each with New, Noted, Filed or Failed, the note or summary the agent left and what it was filed into (DumpRows). Dropping text and files stays in the chat's Dump files form | windows/dumps-v4.png, windows/dumps-v5.png | fixed |
+
+
+| C | Composer | The corner button was Dump files and a disabled Send side by side; now one button, Dump files while the box holds no text and Send as soon as something is typed, as in version 4 | composer-empty-v4.png, composer-empty-v5.png, composer-typed-v4.png, composer-typed-v5.png | fixed |
+
+Open after this pass: the New plan, New document, New check, New sequence and New trigger buttons (each needs a create form), the Run button on a check, the plugin install field, and grouping tasks by plan and phase (a task row names no plan yet).

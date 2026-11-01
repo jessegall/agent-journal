@@ -30,16 +30,19 @@ function choiceLabel(row, option) {
     <div class="questions">
         <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
-                <div class="question">
+                <div class="question" :data-state="row.state">
                     <p class="question-text">{{ row.text }}</p>
-                    <div class="question-choices">
+                    <template v-if="row.state !== 'open'">
+                        <p class="question-closed">{{ row.state === "answered" ? `Answered: ${row.answer}` : "Closed" }}</p>
+                    </template>
+                    <div v-if="row.state === 'open'" class="question-choices">
                         <template v-for="option in row.options" :key="option">
                             <button type="button" :class="['question-choice', {recommended: option === row.recommended}]" @click="answer(row, option)">
                                 {{ choiceLabel(row, option) }}
                             </button>
                         </template>
                     </div>
-                    <form class="question-form" @submit.prevent="sendTyped(row)">
+                    <form v-if="row.state === 'open'" class="question-form" @submit.prevent="sendTyped(row)">
                         <input v-model="typed[row.id]" class="question-answer" placeholder="Answer in your own words" />
                         <button type="button" class="question-send" @click="sendTyped(row)">Answer</button>
                         <button type="button" class="question-close" @click="run(['question', 'close', String(row.id)])">Close</button>
@@ -84,5 +87,10 @@ function choiceLabel(row, option) {
 .question-failure {
     margin: 6px 8px 0;
     color: var(--text-2);
+}
+.question-closed {
+    margin: 2px 0 0;
+    color: var(--text-3);
+    font-size: 12px;
 }
 </style>

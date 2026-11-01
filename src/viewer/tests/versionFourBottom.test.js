@@ -24,7 +24,7 @@ test("a button has no visible border unless it is asked to be bordered", () => {
 
 test("the dock's action buttons and Dump files are the bordered ones", () => {
     expect(read("../src/chat/DockWrapper.vue")).toMatch(/<Btn small bordered :data-dock-action="button\.action"/);
-    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered data-dump-files/);
+    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/<Btn small bordered class="composer-send" data-dump-files/);
 });
 
 // task 5476: the sidebar and the breadcrumb as version 4 drew them

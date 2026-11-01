@@ -144,6 +144,22 @@ test("composer: a tall box that says Message the agent, with an attach button an
     expect([...element.querySelectorAll("button")].map((button) => button.textContent.trim())).toContain("Dump files");
 });
 
+// version 4: one button in the composer's corner, Dump files while the box holds no text and Send once something is typed
+test("composer: the corner button is Dump files while the box is empty and Send as soon as something is typed", async () => {
+    const element = await mountedChat();
+    const corner = () => [...element.querySelectorAll(".composer-send")].map((button) => button.textContent.trim());
+    expect(corner()).toEqual(["Dump files"]);
+    const box = element.querySelector("textarea");
+    box.value = "Hello";
+    box.dispatchEvent(new Event("input"));
+    await settled();
+    expect(corner()).toEqual(["Send"]);
+    box.value = "   ";
+    box.dispatchEvent(new Event("input"));
+    await settled();
+    expect(corner()).toEqual(["Dump files"]);
+});
+
 test("composer: Dump files opens a form where pasted paragraphs and dropped files become the parts of one dump made through dump make", async () => {
     const element = await mountedChat();
     element.querySelector("[data-dump-files]").click();

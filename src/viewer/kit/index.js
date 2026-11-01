@@ -16,6 +16,7 @@ export {default as DockStack} from "../src/chat/DockStack.vue";
 export {fetchDockDeclarations} from "../src/domain/dockRegistry.js";
 export {shownMarks} from "../src/domain/markFamilies.js";
 export {interleaved} from "../src/domain/chatTimeline.js";
+export {ago} from "../src/format/time.js";
 export {useRows} from "./useRows.js";
 export {useOpenRow} from "./useOpenRow.js";
 export {WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";

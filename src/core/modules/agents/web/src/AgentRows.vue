@@ -8,14 +8,32 @@ const {rows, failure, loaded} = useRows(props.line, ["agent.*"]);
 <template>
     <RowList :rows="rows" :failure="failure" :loaded="loaded" :empty="empty">
         <template #default="{row}">
-            <span class="main">{{ row.role }}</span>
-            <span class="note">{{ row.session }}</span>
-            <span class="note">{{ row.program }}</span>
+            <span class="id">#{{ row.id }}</span>
+            <span class="main">{{ row.session }}</span>
+            <span class="note">{{ row.program }} · {{ row.role }}</span>
+            <span :class="['state', {running: !row.ended_at}]">{{ row.ended_at ? `Closed ${new Date(row.ended_at).toLocaleString()}` : "Running" }}</span>
         </template>
     </RowList>
 </template>
 
 <style scoped>
+.id {
+    flex: none;
+    width: 44px;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.state {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.state.running {
+    color: var(--accent-text);
+}
+
 .main {
     flex: 1;
 }

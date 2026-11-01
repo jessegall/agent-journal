@@ -19,8 +19,8 @@ test("a plugin row shows its title, release and switch, and its button switches 
     const row = element.querySelector('[data-row="1"]');
     expect(row.textContent).toContain("Code Commandments");
     expect(row.textContent).toContain("v6.26.0");
-    expect(row.textContent).toContain("On");
-    row.querySelector(".switch").click();
+    expect(row.querySelector("[role=switch]").getAttribute("aria-checked")).toBe("true");
+    row.querySelector("[role=switch]").click();
     expect(ran).toEqual(["plugin disable code-commandments"]);
 });
 

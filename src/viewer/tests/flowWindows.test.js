@@ -32,11 +32,11 @@ test("a check card shows its title, verdict and how often it runs, and its comma
     const card = element.querySelector('[data-row="1"]');
     expect(card.textContent).toContain("Check 1");
     expect(card.textContent).toContain("failed · Every 15 minutes");
-    expect(card.textContent).not.toContain("two problems");
+    expect(card.textContent).toContain("echo two problems; false");
+    expect(card.querySelector("pre")).toBeNull();
     card.click();
     await settled();
-    expect(card.textContent).toContain("echo two problems; false");
-    expect(card.textContent).toContain("two problems");
+    expect(card.querySelector("pre").textContent).toBe("two problems");
 });
 
 test("a window with no rows says so", async () => {
