@@ -1,3 +1,4 @@
+from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
 
@@ -35,3 +36,14 @@ def test_an_item_the_dump_does_not_have_is_refused_with_its_items(new_story):
 def test_a_filing_with_no_word_of_what_was_done_is_refused(new_story):
     story = dump_story(new_story)
     story.expect_refusal('dump filed 1 1 ""', "say what was done with it", actor=story.agent)
+
+
+def test_a_new_dump_tells_the_main_agent_to_file_it(new_story):
+    story = dump_story(new_story)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "file dump 1: journal dump items 1", actor=story.agent)
+
+
+def test_a_stop_with_a_dump_open_says_what_is_left(new_story):
+    story = dump_story(new_story)
+    assert any("dump 1 is not filed" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+

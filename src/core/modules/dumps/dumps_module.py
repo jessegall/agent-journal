@@ -15,6 +15,9 @@ from core.modules.dumps.commands.move_dump_item.move_dump_item_handler import Mo
 from core.modules.dumps.commands.name_dump.name_dump_handler import NameDumpHandler
 from core.modules.dumps.commands.name_dump.name_dump_subcommand import NameDumpSubcommand
 from core.modules.dumps.commands.note_item.note_item_subcommand import NoteItemSubcommand
+from core.modules.dumps.listeners.dump_arrival_listener import DumpArrivalListener
+from core.modules.dumps.rules.open_dump_rule import OpenDumpRule
+from core.modules.dumps.support.dump_nudges import DUMP_NUDGES
 from core.modules.dumps.listeners.dump_dock_listener import DumpDockListener
 from core.modules.dumps.migrations.m001_dumps import DumpsTablesMigration
 from core.modules.dumps.models.dump import Dump
@@ -38,7 +41,9 @@ class DumpsModule(Module):
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     views = [DumpRow]
     subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand]
-    listeners = [DumpDockListener]
+    nudges = DUMP_NUDGES
+    driver_rules = [OpenDumpRule]
+    listeners = [DumpArrivalListener, DumpDockListener]
     docks = DUMP_DOCKS
     windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  events=["dump.*", "dump_item.*"])]
