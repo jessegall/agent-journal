@@ -37,15 +37,44 @@ const sendFailure = ref("");
 const scroller = ref(null);
 const atTop = ref(true);
 const dumping = ref(false);
+const attached = ref([]);
+const picker = ref(null);
+const dragging = ref(false);
+
+async function attach(files) {
+    for (const file of files) {
+        const entry = {name: file.name, pending: "", failure: ""};
+        attached.value = [...attached.value, entry];
+        const result = await context.upload(file);
+        entry.pending = result.ok ? result.value : "";
+        entry.failure = result.ok ? "" : result.error;
+        attached.value = [...attached.value];
+    }
+}
+const picked = (event) => {
+    attach([...event.target.files]);
+    event.target.value = "";
+};
+const pasted = (event) => {
+    const files = [...(event.clipboardData?.files ?? [])];
+    if (files.length) (event.preventDefault(), attach(files));
+};
+const dropped = (event) => {
+    dragging.value = false;
+    attach([...(event.dataTransfer?.files ?? [])]);
+};
+const removeAttached = (entry) => (attached.value = attached.value.filter((other) => other !== entry));
+const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
 
 async function send() {
-    const result = await context.run(["message", "send", text.value]);
+    const files = attached.value.flatMap((entry) => ["--file", entry.pending]);
+    const result = await context.run(["message", "send", text.value || attached.value.map((entry) => entry.name).join(", "), ...files]);
     sendFailure.value = result.ok ? "" : result.error;
-    if (result.ok) text.value = "";
+    if (result.ok) (text.value = "", attached.value = []);
     load();
 }
 
-const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), text.value.trim() && send());
+const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), sendable.value && send());
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
 function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
@@ -104,13 +133,25 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
-        <form class="composer" @submit.prevent="send">
-            <textarea v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" />
+        <form :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
+            <template v-if="attached.length">
+                <ul class="attached" data-attached>
+                    <template v-for="entry in attached" :key="entry.name + entry.pending">
+                        <li :class="['attached-file', {failed: entry.failure}]" :title="entry.failure">
+                            <span>{{ entry.name }}</span>
+                            <template v-if="!entry.pending && !entry.failure"><span class="attached-wait">sending</span></template>
+                            <button type="button" aria-label="Remove" @click="removeAttached(entry)"><Icon name="close" :size="10" /></button>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <textarea v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @paste="pasted" />
             <div class="composer-row">
-                <button type="button" data-attach class="composer-attach" disabled title="A message holds text only, so there is nothing to attach a file to; Dump files takes files" aria-label="Attach a file">
+                <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
+                <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">
                     <Icon name="clip" :size="16" />
                 </button>
-                <template v-if="text.trim()">
+                <template v-if="sendable">
                     <Btn kind="primary" small class="composer-send" data-send @click="send">Send</Btn>
                 </template>
                 <template v-else>
@@ -264,6 +305,46 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 .composer-attach {
     border: 0;
     background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.composer.dragging {
+    border-color: var(--accent);
+}
+
+.attached {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.attached-file {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 999px;
+    font-size: 12px;
+}
+
+.attached-file.failed {
+    border-color: var(--text-3);
+    text-decoration: line-through;
+}
+
+.attached-file button {
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
+}
+
+.attached-wait {
     color: var(--text-3);
 }
 

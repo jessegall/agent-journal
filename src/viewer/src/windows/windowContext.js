@@ -29,6 +29,7 @@ export function windowContext({window, environment, agent, visible, permissions,
         shared,
         read,
         run: (line) => lineResult(window, line, environment, requests.signal),
+        upload: (file) => uploaded(file, requests.signal),
         cancel: () => requests.abort(),
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),
         open,
@@ -62,6 +63,19 @@ export async function lineResult(window, line, environment, signal = undefined) 
         const answer = await response.json();
         if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
+    } catch (error) {
+        if (signal?.aborted) return CANCELLED;
+        return {ok: false, failure: "unreachable", error: String(error)};
+    }
+}
+
+// a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
+export async function uploaded(file, signal = undefined) {
+    try {
+        const response = await fetch(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
+        const answer = await response.json();
+        if (signal?.aborted) return CANCELLED;
+        return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};
     } catch (error) {
         if (signal?.aborted) return CANCELLED;
         return {ok: false, failure: "unreachable", error: String(error)};

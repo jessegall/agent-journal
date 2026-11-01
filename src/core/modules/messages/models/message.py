@@ -19,3 +19,4 @@ class Message(Model):
     type: MessageType
     text: str
     read_at: Timestamp | None = None
+    files: tuple[str, ...] = ()

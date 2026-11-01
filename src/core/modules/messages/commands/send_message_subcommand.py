@@ -13,6 +13,7 @@ class SendMessageSubcommand(Subcommand[SendMessage, Message]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("text")
+        parser.add_argument("--file", action="append", default=[], dest="files")
 
     def command(self, arguments: Namespace, caller: Caller) -> SendMessage:
-        return SendMessage(arguments.text)
+        return SendMessage(arguments.text, files=tuple(arguments.files))

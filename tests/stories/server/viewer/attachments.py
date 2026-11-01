@@ -1,0 +1,46 @@
+import json
+
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.server.support.server_client import server_story
+
+PICTURE = b"\x89PNG\r\n\x1a\nthe cart picture"
+
+
+def uploaded(story, cookie: str, name: str = "cart.png", data: bytes = PICTURE) -> str:
+    status, body = story.viewer_upload(f"/api/files?name={name}", cookie, data)
+    assert status == 200, (status, body)
+    return json.loads(body)["file"]
+
+
+def test_a_file_is_uploaded_sent_with_a_message_and_read_back_as_the_same_bytes(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        pending = uploaded(story, cookie)
+        story.story.expect_success(f'message send "see this" --file {pending} --environment main', "text: see this", actor=story.story.user)
+        story.story.expect_text("message show 1", "files:", "cart.png", actor=story.story.user)
+        status, data, kind = story.viewer_download("/api/files/message/1/cart.png", cookie)
+        assert status == 200 and data == PICTURE and kind == "image/png", (status, kind)
+
+
+def test_a_file_is_taken_only_with_the_login_cookie(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        assert story.viewer_upload("/api/files?name=cart.png", "", PICTURE)[0] == 401
+        assert story.viewer_download("/api/files/message/1/cart.png", "")[0] == 401
+
+
+def test_a_name_with_a_path_in_it_is_cut_to_its_last_part(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        pending = uploaded(story, cookie, name="..%2F..%2Fsecret.txt")
+        assert pending.endswith("/secret.txt") and ".." not in pending
+
+
+def test_a_message_names_a_file_that_was_never_uploaded_and_is_refused(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        story.story.expect_refusal('message send "see this" --file ffffffffffffffff/ghost.png --environment main', "no uploaded file ffffffffffffffff/ghost.png", actor=story.story.user)
+
+
+def test_a_message_without_files_has_none(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        story.story.run('message send "plain" --environment main', actor=story.story.user)
+        story.story.expect_absent("message show 1", "cart.png", actor=story.story.user)

@@ -4,7 +4,7 @@ import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
-// foldable section per module, each opening where a click on it says, a count beside a window that has one, then the environments
+// foldable group, each opening where a click on it says, a count beside a window that has one, then the environments
 // with the current one marked and the version at the foot
 const props = defineProps({
     windows: {type: Array, default: () => []},
@@ -15,14 +15,8 @@ const props = defineProps({
 });
 const emit = defineEmits(["open"]);
 const folded = ref(new Set());
-const sections = computed(() => {
-    const modules = [...new Set(props.windows.map((window) => window.module))];
-    return modules.map((module) => {
-        const own = props.windows.filter((window) => window.module === module);
-        const name = own[0].module_title || String(module).split(".").pop().replace(/[-_]/g, " ");
-        return {module, title: name.slice(0, 1).toUpperCase() + name.slice(1), windows: own};
-    });
-});
+// every window stands in one group for now, in the order the suite lists them
+const sections = computed(() => (props.windows.length ? [{module: "windows", title: "Windows", windows: props.windows}] : []));
 
 // each window has its own address; a plain click on the home page opens it in a pane, any other click follows the address
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;

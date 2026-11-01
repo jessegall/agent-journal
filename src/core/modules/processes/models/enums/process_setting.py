@@ -10,7 +10,7 @@ class ProcessSetting(Enum):
     """A setting of the processes module, declared once: its full key and its default come from its declaration."""
 
     FOREGROUND_SECONDS = SettingValue("foreground-seconds", "Seconds in the foreground", "How long a command runs in front before it moves to the background.",
-                                      SettingType.NUMBER, default=30)
+                                      SettingType.NUMBER, default=15)
     WAITING_FOREGROUND_SECONDS = SettingValue("foreground-while-waiting", "Seconds while a message waits",
                                               "How long a command runs in front while a message of the user waits.", SettingType.NUMBER, default=10)
     UNREAD_OUTPUT_TOOL_USES = SettingValue("unread-output-every", "Unread output reminder", "Every how many tool uses an unread finished output is named again.",

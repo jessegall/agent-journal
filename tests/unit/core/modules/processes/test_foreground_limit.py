@@ -76,18 +76,18 @@ def test_a_journal_only_line_has_no_limit_to_move_at():
 
 
 def test_a_journal_command_its_module_marks_goes_to_the_background_at_once():
-    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(30, True)
+    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(15, True)
 
 
 def test_a_test_run_and_a_build_go_to_the_background_at_once():
-    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(30, True)
-    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(30, True)
+    assert limit().decide(1, line(part("pytest", CommandCategory.TEST_RUN))) == ForegroundRun(15, True)
+    assert limit().decide(1, line(part("make", CommandCategory.BUILD))) == ForegroundRun(15, True)
 
 
 def test_a_command_whose_last_run_went_past_the_limit_goes_to_the_background_at_once():
-    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, True)
+    assert limit(over_limit=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, True)
 
 
 def test_any_other_line_gets_the_foreground_seconds_and_fewer_while_a_message_waits():
-    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(30, False)
+    assert limit().decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(15, False)
     assert limit(waiting=True).decide(1, line(part("ls", CommandCategory.SEARCH))) == ForegroundRun(10, False)

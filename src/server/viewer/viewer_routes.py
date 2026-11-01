@@ -2,6 +2,7 @@ from core.base.journal_home import JournalHome
 from server.listener_thread import ListenerThread
 from server.viewer.chat_declarations_route import ChatDeclarationsRoute
 from server.viewer.event_stream import EventStream
+from server.viewer.file_route import FileRoute
 from server.viewer.line_route import LineRoute
 from server.viewer.module_files import ModuleFiles
 from server.viewer.share_route import ShareRoute
@@ -15,7 +16,7 @@ from server.viewer.windows_route import WindowsRoute
 
 class ViewerRoutes:
     """The routes of the viewer's listener behind its login: command lines, the event stream, module files,
-    the windows on offer, the chat marks and docked items modules declare, the skills, the session the
+    the windows on offer, the chat marks and docked items modules declare, the skills, the files the chat carries, the session the
     cookie opened, a share link's opening, and what waits on the person."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin) -> None:
@@ -26,3 +27,4 @@ class ViewerRoutes:
         self.skills_route = SkillsRoute(home)
         self.share_route = ShareRoute(login.shares)
         self.notices_route = PushRoute(login, login.phones)
+        self.file_route = FileRoute(home)

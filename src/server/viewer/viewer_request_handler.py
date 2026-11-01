@@ -8,6 +8,7 @@ from urllib.parse import parse_qsl, parse_qs, urlencode, urlsplit
 
 from server.server_instance import server_instance
 from server.viewer.event_stream import EventStream
+from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
@@ -40,6 +41,8 @@ MARKS_ROUTE = "/api/marks"
 DOCKS_ROUTE = "/api/docks"
 SESSION_ROUTE = "/api/session"
 NOTICES_ROUTE = "/api/push"
+FILES_ROUTE = "/api/files"
+MESSAGE_FILES = "/api/files/message/"
 WAITING_ROUTE = "/api/waiting"
 PAIRING_PAGE = "/pair"
 PAIRING_ROUTE = "/viewer/pair"
@@ -102,6 +105,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if session.type is SessionType.SHARE and route.path.startswith("/api/") and route.path not in (SESSION_ROUTE, EVENTS_ROUTE):
             self.answer(403, {"error": "a share link opens only the row it shares"})
             return
+        if route.path.startswith(MESSAGE_FILES):
+            self.answer_message_file(viewer, route.path.removeprefix(MESSAGE_FILES))
+            return
         if route.path == WINDOWS_ROUTE:
             try:
                 windows = viewer.routes.windows_route.windows(parse_qs(route.query).get("environment", [""])[0])
@@ -151,6 +157,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return
         if urlsplit(self.path).path == NOTICES_ROUTE:
             self.answer_notices(viewer, token, body)
+            return
+        if urlsplit(self.path).path == FILES_ROUTE:
+            self.answer_upload(viewer, token, body)
             return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
@@ -225,6 +234,29 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             return False
         return True
+
+    def answer_upload(self, viewer: ViewerServer, token: str, body: bytes) -> None:
+        if viewer.login.session(token).type is SessionType.SHARE:
+            self.answer(403, {"error": "a share link opens only the row it shares"})
+            return
+        if len(body) > LIMIT_BYTES:
+            self.answer(413, {"error": f"a file is at most {LIMIT_BYTES // (1024 * 1024)} megabytes"})
+            return
+        name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
+        self.answer(200, {"file": viewer.routes.file_route.upload(name, body)})
+
+    def answer_message_file(self, viewer: ViewerServer, rest: str) -> None:
+        number, _, name = rest.partition("/")
+        found = viewer.routes.file_route.download(int(number), name) if number.isdigit() and name else None
+        if found is None:
+            self.answer(404, {"error": f"no file {rest}"})
+            return
+        self.send_response(200)
+        self.send_header("Content-Type", found.content_type)
+        self.send_header("Content-Length", str(len(found.data)))
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.end_headers()
+        self.wfile.write(found.data)
 
     def answer_redirect(self, kept_query: list[tuple[str, str]], headers: dict[str, str]) -> None:
         self.send_response(303)

@@ -30,7 +30,7 @@ def test_a_reply_names_the_message_it_answers(new_story):
 def test_an_environments_chat_is_listed_in_the_order_written(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
-    story.expect_success("message list --environment 1 --oldest", "1  user  Fix the cart first", f"2  {story.agent.id}  1  agent  On it")
+    story.expect_success("message list --environment 1 --oldest", "1  user  Fix the cart first  []", f"2  {story.agent.id}  1  agent  On it  []")
 
 
 def test_a_message_has_no_make_and_needs_an_environment(new_story):

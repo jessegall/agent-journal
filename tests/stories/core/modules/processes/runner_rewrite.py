@@ -16,7 +16,7 @@ def test_a_shell_hook_of_the_builder_is_answered_with_the_runner_line_and_a_proc
     story = install_runner(new_story(fixture=BuilderStarted))
     reply = story.hook("s-1", LISTING)
     assert dict(reply.updated_input) == {"command": runner_line(story, 1, "ls build")}
-    story.expect_success("process show 1", "line: ls build", "state: running", "limit_seconds: 30", f"agent_id: {story.agent.id}")
+    story.expect_success("process show 1", "line: ls build", "state: running", "limit_seconds: 15", f"agent_id: {story.agent.id}")
     story.expect_text(f"hook-call show {reply.hook_call_id}", "processes.runner-rewrite: rewritten")
 
 

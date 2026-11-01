@@ -3,7 +3,9 @@ from core.modules.messages.commands.read_message_handler import ReadMessageHandl
 from core.modules.messages.commands.send_message_handler import SendMessageHandler
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
+from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
 from core.modules.messages.commands.read_message_subcommand import ReadMessageSubcommand
+from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
 from core.modules.messages.commands.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
@@ -27,9 +29,10 @@ class MessagesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
-    migrations = [MessagesTableMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler)
+    driver_rules = [MessageDeliveryRule]
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]

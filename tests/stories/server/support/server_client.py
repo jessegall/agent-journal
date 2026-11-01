@@ -101,6 +101,24 @@ class ServerStory:
         status, headers, _ = viewer_answer(self.viewer_port(), path, cookie, "")
         assert status == 303 and headers.get("Location") == location, (status, headers)
 
+    def viewer_upload(self, path: str, cookie: str, data: bytes) -> tuple[int, str]:
+        connection = http.client.HTTPConnection("127.0.0.1", self.viewer_port(), timeout=TIMEOUT_SECONDS)
+        try:
+            connection.request("POST", path, body=data, headers={"Host": f"127.0.0.1:{self.viewer_port()}", "Cookie": cookie, "Content-Type": "application/octet-stream"})
+            response = connection.getresponse()
+            return response.status, response.read().decode(errors="replace")
+        finally:
+            connection.close()
+
+    def viewer_download(self, path: str, cookie: str) -> tuple[int, bytes, str]:
+        connection = http.client.HTTPConnection("127.0.0.1", self.viewer_port(), timeout=TIMEOUT_SECONDS)
+        try:
+            connection.request("GET", path, headers={"Host": f"127.0.0.1:{self.viewer_port()}", **({"Cookie": cookie} if cookie else {})})
+            response = connection.getresponse()
+            return response.status, response.read(), response.getheader("Content-Type") or ""
+        finally:
+            connection.close()
+
     def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
         answered, headers, body = viewer_answer(self.viewer_port(), path, cookie, host)
         assert answered == status and text in body, (answered, headers, body)

@@ -29,7 +29,7 @@ def start_process(story: Story, line: str = "make test && echo done", piped: boo
     return story.container.get(Bus).run(command, story.agent, environment_id=1)
 
 
-def runner_line(story: Story, process_id: int, line: str, limit: int = 30, background: bool = False) -> str:
+def runner_line(story: Story, process_id: int, line: str, limit: int = 15, background: bool = False) -> str:
     """The line the rule gives the agent's tool to run in place of its own."""
     flag = " --background" if background else ""
     return f"{shlex.quote(str(story.home.folder.resolve() / 'bin' / 'journal-run'))} --process {process_id} --limit {limit}{flag} -- {shlex.quote(line)}"

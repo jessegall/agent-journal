@@ -35,6 +35,13 @@ class JournalHome:
         return self.folder / "viewer-port"
 
     @property
+    def pending_files(self) -> Path:
+        return self.folder / "files" / "pending"
+
+    def message_files(self, message_id: int) -> Path:
+        return self.folder / "files" / "message" / str(message_id)
+
+    @property
     def module_list(self) -> Path:
         return self.folder / "modules.json"
 
