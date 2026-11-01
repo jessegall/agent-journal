@@ -10,4 +10,5 @@ WORKER_HOLDS_TASK = NudgeDeclaration("workers.worker_holds_task", NudgeType.REMA
 WORKER_FILE = NudgeDeclaration("workers.file_is_the_workers", NudgeType.REFUSAL, "that file is in worker {worker}'s worktree: journal worker send {worker} \"<job>\", or wait for its delivery", once_per_turn=False)
 WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTION, 'you logged nothing for {minutes} min: log where you stand with journal proof make <point> "<proof>"', repeat_seconds=1800)
 
-WORKER_NUDGES = [WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, CHECK_THE_PROOF, MERGE_WAITS, WORKER_HOLDS_TASK]
+WORKER_TEST_TURN = NudgeDeclaration("workers.test_turn", NudgeType.REFUSAL, "only one test run goes at a time, and process {process} of agent {agent} is running tests: wait for .journal/processes/{process}/end with a Monitor, then run yours")
+WORKER_NUDGES = [WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, CHECK_THE_PROOF, MERGE_WAITS, WORKER_HOLDS_TASK]

@@ -58,6 +58,7 @@ from suites.coding.modules.workers.upgrade.workers_move import WorkersMove
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
 from suites.coding.modules.workers.commands.worker_models.worker_models_subcommand import WorkerModelsSubcommand
+from suites.coding.modules.workers.rules.worker_test_turn_rule import WorkerTestTurnRule
 from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
 from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
@@ -71,7 +72,7 @@ class WorkersModule(Module):
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
-    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins"]
+    dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes"]
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
@@ -81,7 +82,7 @@ class WorkersModule(Module):
     handlers = [SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler]
     subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
-    driver_rules = [WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
+    driver_rules = [WorkerTestTurnRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
     listeners = [EndedWorkerListener, EndedWorkerJobListener, WorkerEndedWithJobListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
