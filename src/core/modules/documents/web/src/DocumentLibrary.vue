@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, Segmented, Skeleton, TextDisplay, TextInput, useRows} from "@journal/window-kit";
+import {Icon, Segmented, Skeleton, TextDisplay, TextInput, useWindow} from "@journal/window-kit";
 import {age, grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -17,14 +17,34 @@ const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
 const reading = ref(null);
-const docs = useRows("doc list", ["doc.*"]);
-const reports = useRows("report list", ["report.*"]);
-const source = computed(() => (noun.value === "doc" ? docs : reports));
-const groups = computed(() => grouped(sorted(searched(source.value.rows.value, words.value), order.value), order.value));
+const context = useWindow();
+const rows = ref([]);
+const total = ref(0);
+const failure = ref("");
+const loaded = ref(false);
+const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
 const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 
+// the first page of the kind chosen, in one read; a page more is asked for after the last number held
+async function load() {
+    const kind = noun.value;
+    const answer = await context.read(`document library --kind ${kind}`);
+    if (kind !== noun.value) return;
+    failure.value = answer.ok ? "" : answer.error;
+    rows.value = answer.ok ? answer.value.rows : [];
+    total.value = answer.ok ? answer.value.total : 0;
+    loaded.value = true;
+}
+
+async function more() {
+    const kind = noun.value;
+    const answer = await context.read(`document library --kind ${kind} --after ${Math.max(...rows.value.map((row) => row.id))}`);
+    if (!answer.ok) return void (failure.value = answer.error);
+    if (kind === noun.value) rows.value = [...rows.value, ...answer.value.rows];
+}
+
 async function readRow(row) {
-    const answer = await source.value.context.read(`${noun.value} show ${row.id} --json`);
+    const answer = await context.read(`${noun.value} show ${row.id} --json`);
     if (!answer.ok) return null;
     return answer.value;
 }
@@ -37,7 +57,12 @@ function open(row) {
 watch(noun, () => {
     chosen.value = null;
     reading.value = null;
+    rows.value = [];
+    loaded.value = false;
+    load();
 });
+context.follow(["doc.*", "report.*"], load);
+load();
 </script>
 
 <template>
@@ -49,13 +74,13 @@ watch(noun, () => {
         </div>
         <div class="library-body">
             <div class="library-list">
-                <template v-if="!source.loaded.value">
+                <template v-if="!loaded">
                     <Skeleton shape="cards" />
                 </template>
-                <template v-else-if="source.failure.value">
-                    <p class="library-note">{{ source.failure.value }}</p>
+                <template v-else-if="failure">
+                    <p class="library-note">{{ failure }}</p>
                 </template>
-                <template v-else-if="source.loaded.value && !groups.length">
+                <template v-else-if="loaded && !groups.length">
                     <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((kind) => kind.key === noun).label.toLowerCase()} yet` }}</p>
                 </template>
                 <template v-for="group in groups" :key="group.key">
@@ -73,6 +98,9 @@ watch(noun, () => {
                             <span class="library-age">{{ age(row.updated_at) }}</span>
                         </button>
                     </template>
+                </template>
+                <template v-if="rows.length < total && !words">
+                    <button type="button" class="library-more" @click="more">Show more</button>
                 </template>
             </div>
             <div class="library-reader">
@@ -212,6 +240,14 @@ watch(noun, () => {
 }
 
 .reader-empty-text,
+.library-more {
+    margin: 8px 12px;
+    color: var(--muted);
+    background: none;
+    border: 0;
+    cursor: pointer;
+}
+
 .library-note {
     margin: 0;
     color: var(--text-2);

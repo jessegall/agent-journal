@@ -2,45 +2,16 @@
 import {ref} from "vue";
 import {RowList, useWindow} from "@journal/window-kit";
 
-const POINT_PREFIX = "- ";
-
 const context = useWindow();
 const points = ref([]);
 const failure = ref("");
 const loaded = ref(false);
 
-// the points of the worker's task brief, its lines that start with "- ", or the whole brief as one point when it has none
-function briefPoints(task) {
-    const lines = [];
-    for (const line of task.brief.split("\n")) {
-        if (line.startsWith(POINT_PREFIX)) lines.push(line.slice(POINT_PREFIX.length));
-    }
-    if (lines.length) return lines;
-    return [task.brief || task.title];
-}
-
 async function load() {
-    const worktrees = await context.read(`worker-worktree list --agent ${context.agent}`);
-    const worktree = worktrees.ok ? worktrees.value.rows[0] : null;
-    if (!worktree) {
-        failure.value = worktrees.ok ? "" : worktrees.error;
-        points.value = [];
-        loaded.value = true;
-        return;
-    }
-    const [task, proofs] = await Promise.all([context.read(`task show ${worktree.task_id}`), context.read(`proof list --worktree ${worktree.id}`)]);
-    if (!task.ok || !proofs.ok) {
-        failure.value = task.ok ? proofs.error : task.error;
-        loaded.value = true;
-        return;
-    }
-    failure.value = "";
+    const answer = await context.read(`worker-worktree points --agent ${context.agent}`);
+    failure.value = answer.ok ? "" : answer.error;
+    points.value = answer.ok ? answer.value.points : [];
     loaded.value = true;
-    points.value = briefPoints(task.value).map((text, index) => ({
-        id: index + 1,
-        text,
-        proof: proofs.value.rows.find((proof) => proof.point === index + 1),
-    }));
 }
 
 context.follow(["proof.*", "worker_worktree.*"], load);

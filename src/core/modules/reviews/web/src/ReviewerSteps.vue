@@ -1,22 +1,43 @@
 <script setup>
-import {EmptyState, useRows} from "@journal/window-kit";
-import ReviewSteps from "./ReviewSteps.vue";
+import {ref} from "vue";
+import {EmptyState, useWindow} from "@journal/window-kit";
+import {ago} from "./ago.js";
 
-const EVENTS = ["review.*", "reviewer.*"];
-const {rows: reviewing} = useRows("review list --state reviewing --oldest", EVENTS);
-const {rows: queued} = useRows("review list --state queued --oldest", EVENTS);
+const context = useWindow();
+const reviews = ref([]);
+const queued = ref(0);
+
+async function load() {
+    const answer = await context.read("review board");
+    reviews.value = answer.ok ? answer.value.reviews : [];
+    queued.value = answer.ok ? answer.value.queued : 0;
+}
+
+context.follow(["review.*", "review_step.*", "reviewer.*"], load);
+load();
 </script>
 
 <template>
     <div class="reviewer">
-        <template v-if="!reviewing.length">
+        <template v-if="!reviews.length">
             <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
         </template>
-        <template v-for="review in reviewing" :key="review.id">
-            <ReviewSteps :review="review" />
+        <template v-for="review in reviews" :key="review.id">
+            <section class="review">
+                <h3 class="review-title">{{ review.title }}</h3>
+                <ol class="steps">
+                    <template v-for="step in review.steps" :key="step.id">
+                        <li class="step">
+                            <span class="dot" :data-outcome="step.outcome"></span>
+                            <span class="text">{{ step.text }}</span>
+                            <time>{{ ago(step.created_at) }}</time>
+                        </li>
+                    </template>
+                </ol>
+            </section>
         </template>
-        <template v-if="queued.length">
-            <p class="queue">{{ queued.length }} {{ queued.length === 1 ? "review" : "reviews" }} waiting</p>
+        <template v-if="queued">
+            <p class="queue">{{ queued }} {{ queued === 1 ? "review" : "reviews" }} waiting</p>
         </template>
     </div>
 </template>
@@ -32,5 +53,61 @@ const {rows: queued} = useRows("review list --state queued --oldest", EVENTS);
     padding: 8px 14px;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.review {
+    padding: 12px 14px;
+}
+
+.review-title {
+    margin: 0 0 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.step {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    color: var(--text-2);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-3);
+}
+
+.dot[data-outcome="passed"] {
+    background: var(--green, #3aa676);
+}
+
+.dot[data-outcome="failed"] {
+    background: var(--red, #d4574b);
+}
+
+.text {
+    flex: 1;
+    white-space: pre-wrap;
+}
+
+time {
+    flex: none;
+    color: var(--text-3);
+    font-size: 11px;
 }
 </style>

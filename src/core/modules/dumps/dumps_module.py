@@ -3,7 +3,10 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoardSubcommand
+from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
 from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand
+from core.modules.dumps.models.dump_row import DumpRow
 from core.modules.dumps.commands.failed_item.failed_item_subcommand import FailedItemSubcommand
 from core.modules.dumps.commands.filed_item.filed_item_subcommand import FiledItemSubcommand
 from core.modules.dumps.commands.make_dump.make_dump_handler import MakeDumpHandler
@@ -33,9 +36,10 @@ class DumpsModule(Module):
     migrations = [DumpsTablesMigration]
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
-    subcommands = [MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand]
+    views = [DumpRow]
+    subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand]
     listeners = [DumpDockListener]
     docks = DUMP_DOCKS
-    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED, reads=["dump list", "dump-item list"],
+    windows = [WindowDeclaration("dumps.dumps", "Dumps", "dumps.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED, reads=["dump board", "dump-item board"],
                                  events=["dump.*", "dump_item.*"])]
     seeders = [DumpsSeeder]
