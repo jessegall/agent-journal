@@ -15,6 +15,11 @@ test("a chosen scheme forces the light rules on or off and leaves other media al
     expect(styles[0].cssRules[0].media.mediaText).toBe("not all");
 });
 
+test("a stylesheet of another origin that refuses to show its rules is passed over", () => {
+    const foreign = {get cssRules() { throw new DOMException("Cannot access rules", "SecurityError"); }};
+    expect(() => applyColorScheme("light", [foreign, sheet()], root())).not.toThrow();
+});
+
 test("following the system gives the rules back what they asked", () => {
     const styles = [sheet()];
     const page = root();

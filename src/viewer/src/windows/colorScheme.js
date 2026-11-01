@@ -20,7 +20,16 @@ export function nextColorScheme() {
     remember(KEY, colorScheme.value);
 }
 
-const lightRules = (sheets) => [...sheets].flatMap((sheet) => [...sheet.cssRules].filter((rule) => rule.media && (original.has(rule) || FOLLOWS_SYSTEM.test(rule.media.mediaText))));
+// a stylesheet of another origin, such as a web font's, refuses to show its rules, and holds none of the theme's
+function rulesOf(sheet) {
+    try {
+        return [...sheet.cssRules];
+    } catch {
+        return [];
+    }
+}
+
+const lightRules = (sheets) => [...sheets].flatMap((sheet) => rulesOf(sheet).filter((rule) => rule.media && (original.has(rule) || FOLLOWS_SYSTEM.test(rule.media.mediaText))));
 
 // a chosen scheme forces the stylesheet's light rules on or off, by rewriting what they ask of the browser; following the system gives them back their own
 export function applyColorScheme(key, sheets = document.styleSheets, root = document.documentElement) {
