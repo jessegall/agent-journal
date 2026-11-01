@@ -12,7 +12,8 @@ class SettingLines:
     where the value came from."""
 
     def write(self, setting: CurrentSetting, output: Output) -> None:
-        output.line(f"key: {setting.entry.key}\nvalue: {self.shown(setting)}\nfrom: {setting.source}")
+        value = None if setting.entry.secret else setting.value
+        output.write(f"key: {setting.entry.key}\nvalue: {self.shown(setting)}\nfrom: {setting.source}", {"key": setting.entry.key, "value": value, "source": setting.source})
 
     @staticmethod
     def shown(setting: CurrentSetting) -> str:

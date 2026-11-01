@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"errors"
 	"fmt"
 	"os"
@@ -18,6 +19,7 @@ type Flags struct {
 	Follow     bool
 	Folder     string
 	Parts      int
+	Aliases    []string
 }
 
 // Home is the journal's folder: the one a tracker was handed, else JOURNAL_HOME, else .journal here.
@@ -53,6 +55,12 @@ func ParseFlags(arguments []string) (Flags, error) {
 			flags.Background = true
 		case "--follow":
 			flags.Follow = true
+		case "--aliases":
+			if index+1 >= len(arguments) {
+				return flags, fmt.Errorf("%s needs a value", argument)
+			}
+			index++
+			flags.Aliases = strings.Split(arguments[index], ",")
 		case "--process", "--limit", "--parts", "--folder":
 			if index+1 >= len(arguments) {
 				return flags, fmt.Errorf("%s needs a value", argument)

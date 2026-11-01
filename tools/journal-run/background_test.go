@@ -65,6 +65,13 @@ func TestAJournalCommandInALineFinishesBeforeTheRunMoves(t *testing.T) {
 	}
 }
 
+func TestAnAliasIsNoJournalCommandToTheRunner(t *testing.T) {
+	parts := []Part{{Text: "journal task show 1"}, {Text: "journal tests --all"}}
+	if got := LastJournal(parts, []string{"tests"}); got != 1 {
+		t.Fatalf("the last journal part is %d", got)
+	}
+}
+
 func TestAFollowerEndsWhenItsFolderIsGone(t *testing.T) {
 	setup := options(t, "sleep 5")
 	tracker := Tracker{Options: setup, Client: newClient(), Folder: NewFolder(setup.Home, setup.Process), Parts: 1, Reported: map[int]bool{}}

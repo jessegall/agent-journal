@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/jessegall/agent-journal/tools/journal-hook/shell"
@@ -42,11 +43,13 @@ func Parts(line string) []Part {
 	return parts
 }
 
-// LastJournal is the position of the last part of a line that is a journal command, 0 when none is.
-func LastJournal(parts []Part) int {
+// LastJournal is the position of the last part of a line that is a journal command, 0 when none is; an alias runs a
+// shell line of its own, so it counts as none.
+func LastJournal(parts []Part, aliases []string) int {
 	last := 0
 	for index, part := range parts {
-		if words := strings.Fields(part.Text); len(words) > 0 && words[0] == "journal" {
+		words := strings.Fields(part.Text)
+		if len(words) > 0 && words[0] == "journal" && !(len(words) > 1 && slices.Contains(aliases, words[1])) {
 			last = index + 1
 		}
 	}

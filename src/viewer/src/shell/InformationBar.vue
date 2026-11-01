@@ -59,8 +59,6 @@ const uptime = computed(() => {
                 <button type="button" :class="['fact', {none: !facts[count.key]}]" :data-count="count.key" :title="count.title" @click="emit('open', count.key)"><Icon :name="count.icon" :size="12" /> {{ facts[count.key] }}</button>
             </template>
                     </template>
-        <span class="space" />
-        <slot />
     </div>
 </template>
 

@@ -1,3 +1,5 @@
+import os
+import signal
 import subprocess
 
 from core.base.journal_home import JournalHome
@@ -14,8 +16,11 @@ class CheckRunner:
         self.home, self.limit_seconds = home, limit_seconds
 
     def run(self, command: str) -> CheckResult:
+        running = subprocess.Popen(["sh", "-c", command], cwd=self.home.project_folder, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace", start_new_session=True)
         try:
-            finished = subprocess.run(["sh", "-c", command], cwd=self.home.project_folder, capture_output=True, text=True, timeout=self.limit_seconds, check=False)
+            output, _ = running.communicate(timeout=self.limit_seconds)
         except subprocess.TimeoutExpired:
+            os.killpg(running.pid, signal.SIGKILL)
+            running.communicate()
             return CheckResult(False, f"it did not end within {int(self.limit_seconds)} seconds")
-        return CheckResult(finished.returncode == 0, (finished.stdout + finished.stderr).strip())
+        return CheckResult(running.returncode == 0, output.strip())

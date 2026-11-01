@@ -56,7 +56,7 @@ class PlansModule(Module):
                  NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     docks = PLAN_DOCKS
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "plan list", "plan show", "plan progress", "plan outline", "phase list", "phase show"],
-                                 events=["plan.*", "phase.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "phase list", "phase show"],
+                                 events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

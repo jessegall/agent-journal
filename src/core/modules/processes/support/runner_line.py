@@ -14,4 +14,5 @@ class RunnerLine:
     @staticmethod
     def build(runner: str, process_id: int, run: ForegroundRun, line: str, session: str) -> str:
         background = " --background" if run.background else ""
+        background += f" --aliases {shlex.quote(','.join(run.aliases))}" if run.aliases else ""
         return f"{SESSION_VARIABLE}={shlex.quote(session)} {shlex.quote(runner)} --process {process_id} --limit {run.seconds}{background} -- {shlex.quote(line)}"

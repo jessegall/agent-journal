@@ -16,7 +16,7 @@ const entry = computed(() => ({
     // a body reads as the window its type names, which the module declares with the reads the body needs
     name: props.declaration.type,
     entry_url: props.declaration.body_url,
-    events: [],
+    events: props.declaration.events ?? [],
     options: [],
 }));
 const asComponent = computed(() => Boolean(props.declaration.shipped || props.declaration.trusted));

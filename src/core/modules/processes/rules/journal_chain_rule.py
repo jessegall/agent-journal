@@ -11,7 +11,7 @@ from core.base.driver.rule_answer import RuleAnswer
 JOURNAL = "journal"
 LOOPS = ("until", "while", "for")
 SHORT_CATEGORIES = (CommandCategory.JOURNAL, CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
-JOURNAL_COMMAND = re.compile(rf"(^|[\s;(|&]){JOURNAL}\s+[a-z]")
+JOURNAL_COMMAND = re.compile(rf"(^|[;(|&]\s*|\bdo\s+|\buntil\s+|\bwhile\s+|\bthen\s+){JOURNAL}\s+[a-z]")
 REFUSAL = "a journal command may not follow a long command or run in a loop: run it on its own line"
 
 

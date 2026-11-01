@@ -15,13 +15,13 @@ ALIAS_LINE = HookSamples.shell("journal sins --changes", ShellPart("journal", Co
 def test_an_agent_line_that_runs_an_alias_runs_as_a_shell_line_with_the_normal_limit(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('alias add sins "echo judged"', actor=story.agent)
-    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes")}
+    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes").replace(" -- ", " --aliases sins -- ", 1)}
 
 
 def test_a_background_alias_moves_to_the_background_at_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run('alias add sins "echo judged" --background', actor=story.agent)
-    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes", background=True)}
+    assert dict(story.hook("s-1", ALIAS_LINE).updated_input) == {"command": runner_line(story, 1, "journal sins --changes", background=True).replace(" -- ", " --aliases sins -- ", 1)}
 
 
 def test_the_alias_reader_reads_the_output_of_its_line(new_story):

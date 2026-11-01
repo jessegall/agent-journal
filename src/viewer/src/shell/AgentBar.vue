@@ -22,7 +22,9 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
         </template>
         <template v-else>
             <strong>No agent</strong>
+            <span class="agent-space" />
         </template>
+        <slot />
     </div>
 </template>
 

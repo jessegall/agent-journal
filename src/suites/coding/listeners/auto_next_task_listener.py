@@ -33,7 +33,10 @@ class AutoNextTaskListener(CommitListener):
             return
         closed_task = self.queries.query(Task).find(event.row_id)
         holder_id = event.data[HOLDER_FIELD][0] if HOLDER_FIELD in event.data else closed_task.holder_id
-        if not isinstance(holder_id, int) or self.queries.query(Agent).find(holder_id).role is not AgentRole.MAIN:
+        if not isinstance(holder_id, int):
+            return
+        holder = self.queries.query(Agent).find(holder_id)
+        if holder.role is not AgentRole.MAIN or holder.ended_at is not None:
             return
         if self.tasks.holder(holder_id).started().exists():
             return

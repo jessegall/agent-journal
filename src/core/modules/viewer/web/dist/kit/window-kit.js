@@ -3307,7 +3307,7 @@ const zl = ["data-window"], Fl = {
       // a body reads as the window its type names, which the module declares with the reads the body needs
       name: t.declaration.type,
       entry_url: t.declaration.body_url,
-      events: [],
+      events: t.declaration.events ?? [],
       options: []
     })), o = m(() => !!(t.declaration.shipped || t.declaration.trusted));
     return (h, c) => o.value ? (l(), M(Ul, {

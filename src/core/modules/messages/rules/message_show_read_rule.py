@@ -4,24 +4,32 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.part import Part
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
 from core.modules.messages.commands.read_message.read_message import ReadMessage
+from core.modules.messages.models.message import Message
 
 JOURNAL = "journal"
 MESSAGE_READ_WORDS = ["message", "show"]
 
 
 class MessageShowReadRule(DriverRule):
-    """A message the main agent shows with journal message show is marked read."""
+    """A message the main agent has shown with journal message show is marked read."""
 
     name = "messages.shown-is-read"
-    hook = HookEventName.PRE_TOOL_USE
+    hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         shown = [part.arguments[2] for part in shell.parts if self.is_message_show(part)] if shell is not None else []
-        return RuleAnswer.allowed().running(*(ReadMessage(int(number)) for number in shown)) if shown else RuleAnswer.allowed()
+        unread = self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", tuple(int(number) for number in shown))).all_rows() if shown else ()
+        return RuleAnswer.allowed().running(*(ReadMessage(message.id) for message in unread))
 
     def is_message_show(self, part: Part) -> bool:
         return part.program == JOURNAL and list(part.arguments[:2]) == MESSAGE_READ_WORDS and len(part.arguments) > 2 and part.arguments[2].isdigit()

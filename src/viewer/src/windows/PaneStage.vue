@@ -203,11 +203,10 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
-                <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
-            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :now="now" @open="openCount">
+            <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount">
                 <template v-for="window in catalogue.bars.value" :key="window.name">
                     <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                 </template>
@@ -220,7 +219,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <template v-if="presets">
                     <LayoutPicker :list="presets" />
                 </template>
-            </InformationBar>
+            </AgentBar>
+            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :now="now" @open="openCount" />
             </template>
         </template>
         <template v-if="store.layout.value && !phone">

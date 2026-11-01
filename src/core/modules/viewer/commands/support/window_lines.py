@@ -24,6 +24,12 @@ class WindowLines:
         self.allowances, self.environment_names = allowances, environment_names
 
     def check(self, window_name: str, argv: list[str], person: Actor, environment: str) -> None:
+        dock = next((entry for entry in self.registry.docks if entry.type == window_name), None)
+        if dock is not None and not self.registry.has_window(window_name):
+            if " ".join(argv[:2]) not in dock.reads:
+                raise WindowRefusal(f"the dock {window_name} does not declare {' '.join(argv[:2])}")
+            self.parsed(window_name, argv)
+            return
         if not self.registry.has_window(window_name):
             raise WindowRefusal(f"no installed module declares the window {window_name}")
         window = self.registry.window(window_name)
