@@ -64,3 +64,30 @@ test("slash focuses the search and escape clears it", async () => {
     await settle();
     expect(search.value).toBe("");
 });
+
+async function environments(ran) {
+    const window = context({"setting tree": page(ROWS), "environment list": page([{id: 1, name: "main", folder: "/shop", branch: "main"}, {id: 2, name: "staging", folder: "/shop-staging", branch: "next"}])});
+    window.run = async (line) => (ran.push(line), line[2] === "2" ? {ok: false, error: "it has tasks"} : {ok: true, value: {}});
+    const element = await mounted(SettingsTree, window);
+    [...element.querySelectorAll("[data-settings-tabs] button")].find((button) => button.textContent.includes("Environments")).click();
+    await settle();
+    return element;
+}
+
+test("the environments tab lists them with the current one first, which cannot be removed", async () => {
+    const element = await environments([]);
+    expect([...element.querySelectorAll("[data-environment]")].map((row) => row.dataset.environment)).toEqual(["main", "staging"]);
+    expect(element.querySelector("[data-environment='main'] [data-environment-remove]").disabled).toBe(true);
+});
+
+test("removing an environment asks first, and a refusal says why", async () => {
+    const ran = [];
+    const element = await environments(ran);
+    element.querySelector("[data-environment='staging'] [data-environment-remove]").click();
+    await settle();
+    expect(ran).toEqual([]);
+    element.querySelector("[data-environment='staging'] [data-environment-confirm]").click();
+    await settle();
+    expect(ran).toContainEqual(["environment", "delete", "2"]);
+    expect(element.querySelector("[data-environment='staging'] [data-environment-refusal]").textContent).toBe("it has tasks");
+});

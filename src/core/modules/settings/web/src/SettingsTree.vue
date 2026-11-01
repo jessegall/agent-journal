@@ -2,10 +2,16 @@
 import {computed, onMounted, onUnmounted, ref} from "vue";
 import {Segmented, Skeleton, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
+import SettingsEnvironments from "./SettingsEnvironments.vue";
 
 const CHANGED_SOURCES = new Set(["environment", "project"]);
 const TYPING = "input,textarea,select,[contenteditable]";
 const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
+const TABS = [
+    {key: "settings", label: "Settings"},
+    {key: "environments", label: "Environments"},
+];
+const tab = ref("settings");
 const query = ref("");
 const filter = ref("all");
 const field = ref(null);
@@ -60,6 +66,11 @@ async function saved(words) {
 
 <template>
     <div class="settings">
+        <Segmented :options="TABS" :value="tab" data-settings-tabs @pick="tab = $event" />
+        <template v-if="tab === 'environments'">
+            <SettingsEnvironments />
+        </template>
+        <template v-else>
         <div class="settings-bar">
             <label class="settings-search">
                 <input ref="field" v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" @keydown.esc="query = ''" />
@@ -93,6 +104,7 @@ async function saved(words) {
                 </template>
             </div>
         </div>
+        </template>
     </div>
 </template>
 
