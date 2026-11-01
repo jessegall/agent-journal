@@ -30,4 +30,4 @@ class PluginSettingsSubcommand(ReadSubcommand[PluginSettingLines]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginSettingLines):
-            output.line("\n".join(value.lines()))
+            output.write("\n".join(value.lines()), value.json())

@@ -14,3 +14,7 @@ class PluginSettingLines:
     def lines(self) -> list[str]:
         return [f"{setting.key} {setting.value_type} {self.values[setting.key] if setting.key in self.values else json.dumps(setting.default)}  {setting.title}"
                 for setting in self.manifest.settings]
+
+    def json(self) -> dict[str, object]:
+        return {"settings": [{"key": setting.key, "type": setting.value_type, "title": setting.title, "value": self.values[setting.key] if setting.key in self.values else setting.default}
+                             for setting in self.manifest.settings]}

@@ -1,13 +1,71 @@
 <script setup>
-import {Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {ref} from "vue";
+import {Btn, Skeleton, useRows, useWindow} from "@journal/window-kit";
 
+// the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
 const context = useWindow();
-const {rows, failure, loaded} = useRows("plugin list", ["plugin.*"]);
+const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
+const refusal = ref("");
+const open = ref(null);
+const source = ref("");
+const wish = ref("");
+const removing = ref("");
+const settings = ref({});
 
-const switchOver = (row) => context.run(`plugin ${row.enabled ? "disable" : "enable"} ${row.name}`);
+const switchOver = (row) => run(`plugin ${row.enabled ? "disable" : "enable"} ${row.name}`);
+
+async function run(line) {
+    const answer = await context.run(line);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (answer.ok) load();
+    return answer.ok;
+}
+
+async function install() {
+    if (source.value.trim() && (await run(["plugin", "install", source.value.trim(), "--yes"]))) (source.value = ""), (open.value = null);
+}
+
+async function askTheAgent() {
+    if (wish.value.trim() && (await run(["message", "send", `Please make a plugin: ${wish.value.trim()}`]))) (wish.value = ""), (open.value = null);
+}
+
+async function remove(row, purge) {
+    if (await run(["plugin", "remove", row.name, ...(purge ? ["--purge"] : [])])) removing.value = "";
+}
+
+async function toggleSettings(row) {
+    if (settings.value[row.name]) {
+        const {[row.name]: _, ...others} = settings.value;
+        return void (settings.value = others);
+    }
+    const answer = await context.read(["plugin", "settings", row.name]);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (answer.ok) settings.value = {...settings.value, [row.name]: answer.value.settings};
+}
+
+const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
 </script>
 
 <template>
+    <div class="plugin-tools">
+        <Btn small bordered data-plugin-install @click="open = open === 'install' ? null : 'install'">Install a plugin</Btn>
+        <Btn small bordered data-plugin-make @click="open = open === 'make' ? null : 'make'">Ask the agent to make one</Btn>
+    </div>
+    <template v-if="open === 'install'">
+        <form class="plugin-form" data-plugin-install-form @submit.prevent="install">
+            <input v-model="source" placeholder="owner/repo, a link or a folder" aria-label="Where the plugin is">
+            <Btn small kind="primary" type="submit" :disabled="!source.trim()">Install</Btn>
+        </form>
+    </template>
+    <template v-if="open === 'make'">
+        <form class="plugin-form" data-plugin-make-form @submit.prevent="askTheAgent">
+            <input v-model="wish" placeholder="What should the plugin do?" aria-label="What should the plugin do?">
+            <Btn small kind="primary" type="submit" :disabled="!wish.trim()">Ask</Btn>
+        </form>
+    </template>
+    <template v-if="refusal">
+        <p class="plugin-fault" role="alert" data-plugin-refusal>{{ refusal }}</p>
+    </template>
     <div class="plugins">
         <template v-if="!loaded">
             <Skeleton shape="cards" />
@@ -29,12 +87,78 @@ const switchOver = (row) => context.run(`plugin ${row.enabled ? "disable" : "ena
                 <template v-if="row.failing">
                     <span class="plugin-fault">{{ row.last_fault || "Failing" }}</span>
                 </template>
+                <span class="plugin-moves">
+                    <Btn small data-plugin-settings @click="toggleSettings(row)">Settings</Btn>
+                    <template v-if="removing === row.name">
+                        <Btn small @click="removing = ''">Keep it</Btn>
+                        <Btn small kind="danger" data-plugin-remove-keep @click="remove(row, false)">Remove, keep its data</Btn>
+                        <Btn small kind="danger" data-plugin-remove-purge @click="remove(row, true)">Remove with its data</Btn>
+                    </template>
+                    <template v-else>
+                        <Btn small data-plugin-remove @click="removing = row.name">Remove</Btn>
+                    </template>
+                </span>
+                <template v-if="settings[row.name]">
+                    <div class="plugin-settings" data-plugin-setting-list>
+                        <template v-if="!settings[row.name].length">
+                            <p class="plugin-note">This plugin has no settings</p>
+                        </template>
+                        <template v-for="setting in settings[row.name]" :key="setting.key">
+                            <label class="plugin-setting">
+                                <span class="plugin-setting-title">{{ setting.title || setting.key }}</span>
+                                <input :value="setting.value" :data-plugin-setting="setting.key" @change="configure(row, setting, $event.target.value)">
+                            </label>
+                        </template>
+                    </div>
+                </template>
             </div>
         </template>
     </div>
 </template>
 
 <style scoped>
+.plugin-tools {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.plugin-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.plugin-form input {
+    flex: 1;
+    min-width: 0;
+}
+
+.plugin-moves {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.plugin-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.plugin-setting {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.plugin-setting-title {
+    color: var(--text-3);
+    font-size: 12px;
+}
+
 .plugins {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

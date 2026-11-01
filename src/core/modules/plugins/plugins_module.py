@@ -57,8 +57,8 @@ class PluginsModule(Module):
               ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=BUILT)]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, icon=WindowIcon.PLUGIN, reads=["plugin list"],
-                                 runs=["plugin enable", "plugin disable"], events=["plugin.*"])]
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, icon=WindowIcon.PLUGIN, reads=["plugin list", "plugin settings"],
+                                 runs=["plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginsTablesMigration]
     handlers = [InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
                 RecordPluginFaultHandler, ClearPluginFaultsHandler, AddPluginOutputHandler,
