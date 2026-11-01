@@ -5,6 +5,7 @@ from pathlib import Path
 
 from core.base.refusal import Refusal
 from core.base.type_guards import is_list, is_mapping
+from core.modules.plugins.support.manifest_alias import ManifestAlias
 from core.modules.plugins.support.manifest_service import ManifestService
 from core.modules.plugins.support.manifest_setting import ManifestSetting
 from core.modules.plugins.support.plugin_health import PluginHealth
@@ -24,8 +25,8 @@ class PluginManifest:
     title and version, the program run for each event, the events it takes and the ones it answers
     inside a window, the settings its settings file lists, the tone of each kind of card it shows, the
     folder of its skills, the services it keeps running, and what its install requires, sets up and
-    reads back, how its services answer a health check, and which helpers besides the main agent each
-    event reaches."""
+    reads back, how its services answer a health check, which helpers besides the main agent each
+    event reaches, and the aliases it ships."""
 
     name: str
     title: str
@@ -43,6 +44,7 @@ class PluginManifest:
     installed_command: str
     health: PluginHealth | None
     reaches: Mapping[str, tuple[str, ...]]
+    aliases: tuple[ManifestAlias, ...]
 
     @classmethod
     def read(cls, folder: Path) -> "PluginManifest":
@@ -62,7 +64,13 @@ class PluginManifest:
                    cls.read_card_tones(fields["cards"] if "cards" in fields else None), str(fields["skills"]) if "skills" in fields else "",
                    cls.read_services(fields["services"] if "services" in fields else None), cls.read_requirements(fields["requires"] if "requires" in fields else None),
                    cls.read_setup_steps(fields["setup"] if "setup" in fields else None), str(fields["installed"]) if "installed" in fields else "",
-                   cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None))
+                   cls.read_health(fields["health"] if "health" in fields else None), cls.read_reaches(fields["reaches"] if "reaches" in fields else None),
+                   cls.read_aliases(fields["aliases"] if "aliases" in fields else None))
+
+    @staticmethod
+    def read_aliases(aliases: object) -> tuple[ManifestAlias, ...]:
+        parsed = [ManifestAlias.parsed(entry) for entry in aliases] if is_list(aliases) else []
+        return tuple(alias for alias in parsed if alias is not None)
 
     @staticmethod
     def read_reaches(reaches: object) -> dict[str, tuple[str, ...]]:

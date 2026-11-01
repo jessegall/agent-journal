@@ -7,6 +7,7 @@ from core.modules.aliases.commands.edit_alias_handler import EditAliasHandler
 from core.modules.aliases.commands.edit_alias_subcommand import EditAliasSubcommand
 from core.modules.aliases.commands.remove_alias_handler import RemoveAliasHandler
 from core.modules.aliases.commands.remove_alias_subcommand import RemoveAliasSubcommand
+from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliasesListener
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
@@ -28,3 +29,4 @@ class AliasesModule(Module):
     subcommands = (AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand)
     bindings = [(ShellAliases, AliasShellAliases)]
     seeders = [AliasesSeeder]
+    listeners = [PluginAliasesListener]

@@ -17,6 +17,9 @@ class AliasNames:
         command_lines = [*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS]
         return frozenset({*self.registry.models, *(line.split(" ", 1)[0] for line in command_lines), *PROGRAM_COMMANDS})
 
+    def is_free(self, name: str) -> bool:
+        return name not in self.command_names() and not self.aliases.with_name(name).exists()
+
     def check_free(self, name: str) -> None:
         if name in self.command_names():
             raise Refusal(f"{name} is a journal command: pick another name")
