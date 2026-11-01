@@ -18,7 +18,7 @@ class ModuleFileCaching:
     etag: str
 
     @classmethod
-    def of(cls, address: str, content: bytes) -> "ModuleFileCaching":
+    def for_file(cls, address: str, content: bytes) -> "ModuleFileCaching":
         parts = urlsplit(address)
         is_fixed = bool(HASHED_NAME.search(parts.path)) or VERSION_PARAMETER in parse_qs(parts.query)
         return cls(IMMUTABLE if is_fixed else REVALIDATE, f'"{hashlib.sha1(content).hexdigest()}"')
