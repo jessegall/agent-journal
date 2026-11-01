@@ -104,7 +104,7 @@ class ServerScratch:
             assert time.monotonic() < deadline, "the server did not answer"
             time.sleep(0.1)
 
-    def stop_through(self, client: Path, limit_seconds: float = 60) -> None:
+    def stop_with(self, client: Path, limit_seconds: float = 60) -> None:
         """Stops the server a client started with the client's own stop, again while the server says it is still
         finishing its requests, until it lets the lock go."""
         deadline = time.monotonic() + limit_seconds

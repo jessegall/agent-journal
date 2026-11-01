@@ -10,11 +10,7 @@ POLL_SECONDS = 0.05
 
 
 class LeftoverProcess:
-    """A process a journal that was killed left running, found by the pid it kept on disk: stopped only when
-    that
-    pid still runs the program named, its process group with it when it leads one; a ps that does not answer
-    in
-    time, or a process gone meanwhile, leaves it alone."""
+    """A process a killed journal left running, found by its saved pid and stopped with its group."""
 
     @classmethod
     def stop(cls, pid: int, program: str) -> None:

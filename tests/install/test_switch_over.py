@@ -199,5 +199,5 @@ def test_a_restore_strips_the_journals_blocks_from_a_hooks_file_that_has_no_kept
     stray.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command", "command": f'sh "{scratch.journal}/hooks/hook.sh" codex "{scratch.project}"'},
                                                             {"type": "command", "command": "echo mine"}]}]}, "kept": 1}))
     assert restore(scratch, "--yes").returncode == 0
-    left = json.loads(stray.read_text())
-    assert left["kept"] == 1 and "hook.sh" not in json.dumps(left)
+    after = json.loads(stray.read_text())
+    assert after["kept"] == 1 and "hook.sh" not in json.dumps(after)

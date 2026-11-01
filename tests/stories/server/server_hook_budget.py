@@ -13,9 +13,9 @@ EXAMPLES = ("prompt", "edit", "stop")
 
 def test_a_hook_to_the_server_answers_within_the_budget_that_the_measuring_scripts_set(new_story):
     with server_story(new_story(fixture=ThreeTasks)) as story:
-        times = []
+        durations_ms = []
         for position in range(HOOKS):
             started = time.perf_counter()
             story.expect_hook_answer("/hook", example(EXAMPLES[position % len(EXAMPLES)]), 200, '"refusal": ""')
-            times.append((time.perf_counter() - started) * 1000)
-        assert statistics.median(times) < MEDIAN_BUDGET_MS and max(times) < WORST_BUDGET_MS, (statistics.median(times), max(times))
+            durations_ms.append((time.perf_counter() - started) * 1000)
+        assert statistics.median(durations_ms) < MEDIAN_BUDGET_MS and max(durations_ms) < WORST_BUDGET_MS, (statistics.median(durations_ms), max(durations_ms))

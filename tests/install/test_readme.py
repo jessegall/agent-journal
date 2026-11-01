@@ -8,30 +8,30 @@ from tests.install.test_upgrade_script import version_four_project
 ROOT = INSTALL.parent
 DOCUMENTS = (ROOT / "README.md", ROOT / "docs" / "upgrade-from-version-4.md")
 COMMAND_LINE = re.compile(r"^    (sh install\.sh.*|journal .*)$", re.MULTILINE)
-GO_COMMANDS = {"launch", "worktree", "viewer", "server"}
+CLI_ENTRY_COMMANDS = {"launch", "worktree", "viewer", "server"}
 
 
 def commands(document: Path) -> list[str]:
     return COMMAND_LINE.findall(document.read_text())
 
 
-def known_things() -> set[str]:
+def documented_commands() -> set[str]:
     import sys
 
     sys.path.insert(0, str(ROOT / "src"))
     from core.modules import DEFAULT_MODULES
     from suites import DEFAULT_SUITES
 
-    things = set(GO_COMMANDS)
+    documented = set(CLI_ENTRY_COMMANDS)
     for module in (*DEFAULT_MODULES, *DEFAULT_SUITES):
-        things |= {subcommand.cli_name for subcommand in module.subcommands} | {declaration.model.cli_name for declaration in module.models}
-    return things
+        documented |= {subcommand.cli_name for subcommand in module.subcommands} | {declaration.model.cli_name for declaration in module.models}
+    return documented
 
 
 def test_every_journal_command_the_documents_name_exists():
-    things = known_things()
-    named = [line.split()[1] for document in DOCUMENTS for line in commands(document) if line.startswith("journal ")]
-    assert named and [thing for thing in named if thing not in things] == []
+    documented = documented_commands()
+    used = [line.split()[1] for document in DOCUMENTS for line in commands(document) if line.startswith("journal ")]
+    assert used and [word for word in used if word not in documented] == []
 
 
 def test_the_install_line_of_the_readme_runs_as_written_in_an_empty_project(tmp_path):

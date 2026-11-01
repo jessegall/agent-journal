@@ -21,10 +21,7 @@ TABLE = "questions"
 
 
 class QuestionsMove(VersionFourMove):
-    """Carries version 4's questions with their numbers, text, options, recommended choice and answer,
-    asked by the agent whose session wrote them; an answered one is answered and the rest open. A
-    question whose agent did not move is skipped and told; a text longer than version 5 holds moves
-    whole into a document, the question keeping its start."""
+    """Carries version 4's questions, with their answers, to the agents whose sessions wrote them."""
 
     name = "questions"
     reads = [TABLE]

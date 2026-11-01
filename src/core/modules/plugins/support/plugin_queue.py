@@ -15,10 +15,7 @@ FIRING_UNSAFE = r"[^A-Za-z0-9-]"
 
 
 class PluginQueue:
-    """A plugin's queue, the folder queue in its data folder: each file holds one answer for an environment, and
-    for one agent when the journal wrote it. A hook reserves a file by renaming it, so no later hook reads it again,
-    and it is deleted once the hook has committed; a reserved_file file left a minute, by a hook that never committed, is
-    offered again, and a file that is not JSON is set aside."""
+    """A plugin's queue folder: a hook renames a file to reserve it and deletes it once committed."""
 
     def __init__(self, data_folder: Path) -> None:
         self.folder = data_folder / "queue"

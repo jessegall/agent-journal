@@ -14,7 +14,7 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
     arrived, released = threading.Event(), threading.Event()
     answer_get = RequestHandler.answer_get
 
-    def held_get(self: RequestHandler) -> None:
+    def slow_get(self: RequestHandler) -> None:
         if self.path != "/held":
             answer_get(self)
             return
@@ -22,7 +22,7 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
         released.wait(WAIT_SECONDS)
         self.answer_json(200, {"held": "done"})
 
-    monkeypatch.setattr(RequestHandler, "answer_get", held_get)
+    monkeypatch.setattr(RequestHandler, "answer_get", slow_get)
     with running_server(new_story(fixture=ThreeTasks).home) as (server, socket_path, _):
         idle = UnixConnection(str(socket_path))
         idle.request("GET", "/health")

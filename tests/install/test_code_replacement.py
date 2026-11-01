@@ -39,4 +39,4 @@ def test_a_client_started_during_the_steps_waits_and_is_served_by_a_server_start
     client_thread.join(timeout=TIMEOUT_SECONDS)
     assert len(client_runs) == 1 and client_runs[0].returncode == 0, client_runs
     journal.wait_healthy()
-    journal.stop_through(client)
+    journal.stop_with(client)
