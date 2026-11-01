@@ -92,3 +92,12 @@ func TestTheRequestCarriesItsTimingAndAResendAfterNewerCodeAddsGoResent(t *testi
 		t.Fatalf("timing names %v, want %v", actual, expected)
 	}
 }
+
+func TestAHomeIsFoundFromTheBinarysOwnFolder(t *testing.T) {
+	if home := HomeOfBinary("/work/shop/.journal/bin/journal"); home != "/work/shop/.journal" {
+		t.Errorf("a binary in .journal/bin gave %q", home)
+	}
+	if home := HomeOfBinary("/usr/local/bin/journal"); home != "" {
+		t.Errorf("a binary elsewhere gave %q", home)
+	}
+}

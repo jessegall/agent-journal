@@ -187,9 +187,35 @@ func DirectRun(home string, argv []string, stdout, stderr io.Writer) int {
 	return SuccessCode
 }
 
-// JournalHome is the journal's folder: JOURNAL_HOME when set, else .journal in the working folder, made absolute.
+// HomeOfBinary is the .journal folder a binary at this path sits in, empty when it sits elsewhere.
+func HomeOfBinary(path string) string {
+	bin := filepath.Dir(path)
+	home := filepath.Dir(bin)
+	if filepath.Base(bin) == "bin" && filepath.Base(home) == ".journal" {
+		return home
+	}
+	return ""
+}
+
+// RunningBinaryHome is the .journal folder this binary sits in, so a run from a worktree or a subfolder reaches the project's journal.
+func RunningBinaryHome() string {
+	path, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	resolved, err := filepath.EvalSymlinks(path)
+	if err != nil {
+		return ""
+	}
+	return HomeOfBinary(resolved)
+}
+
+// JournalHome is the journal's folder: JOURNAL_HOME when set, else the .journal the binary sits in, else .journal in the working folder, made absolute.
 func JournalHome() string {
 	home := os.Getenv("JOURNAL_HOME")
+	if home == "" {
+		home = RunningBinaryHome()
+	}
 	if home == "" {
 		home = ".journal"
 	}
