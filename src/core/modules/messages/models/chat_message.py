@@ -24,4 +24,5 @@ class ChatMessage(ViewModel):
     files: tuple[str, ...]
     captions: str
     reactions: str
+    flowchart_edges: str
     created_at: Timestamp

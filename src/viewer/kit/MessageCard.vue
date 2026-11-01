@@ -1,4 +1,5 @@
 <script setup>
+import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
 import {computed, ref} from "vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
@@ -21,6 +22,8 @@ async function copy() {
     setTimeout(() => (copied.value = false), COPIED_MS);
 }
 const html = computed(() => render(props.message.text ?? "", {env: ""}));
+const edges = computed(() => JSON.parse(props.message.flowchart_edges || "[]"));
+const chartOpen = ref(false);
 const quoteHtml = computed(() => render(props.quote || EARLIER, {env: ""}));
 function goToQuoted() {
     const shown = document.querySelector(`[data-ref="message:${props.message.parent_id}"]`);
@@ -53,6 +56,12 @@ function pick(face) {
                     <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                 </template>
                 <div v-html="html" />
+                <template v-if="edges.length">
+                    <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
+                    <template v-if="chartOpen">
+                        <FlowchartDialog :title="message.text" :edges="edges" @close="chartOpen = false" />
+                    </template>
+                </template>
             </div>
             <div class="message-tools" data-message-tools>
                 <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = !picking">React</button>
@@ -345,5 +354,16 @@ function pick(face) {
 .message-time {
     color: var(--text-4);
     font-size: 11px;
+}
+
+.message-flowchart {
+    margin-top: 6px;
+    padding: 3px 10px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: var(--surface);
+    color: inherit;
+    font-size: 12.5px;
+    cursor: pointer;
 }
 </style>

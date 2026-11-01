@@ -23,3 +23,4 @@ class Message(Model):
     files: tuple[str, ...] = ()
     captions: str = "{}"
     reactions: str = "[]"
+    flowchart_edges: str = "[]"

@@ -3,6 +3,7 @@ from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPer
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
 from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.migrations.m006_message_reactions import MessageReactionsMigration
+from core.modules.messages.migrations.m007_message_flowchart import MessageFlowchartMigration
 from core.modules.messages.migrations.m005_message_captions import MessageCaptionsMigration
 from core.modules.messages.commands.main_chat_marks.main_chat_marks_subcommand import MainChatMarksSubcommand
 from core.modules.messages.commands.chat_messages.chat_messages_subcommand import ChatMessagesSubcommand
@@ -12,6 +13,8 @@ from core.modules.messages.commands.tag_message.tag_message_handler import TagMe
 from core.modules.messages.commands.tag_message.tag_message_subcommand import TagMessageSubcommand
 from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
+from core.modules.messages.commands.draw_flowchart.draw_flowchart_handler import DrawFlowchartHandler
+from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand import DrawFlowchartSubcommand
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
 from core.modules.messages.commands.react_message.react_message_subcommand import ReactMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
@@ -32,6 +35,7 @@ from core.modules.messages.rules.unread_message_write_rule import UnreadMessageW
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
@@ -52,13 +56,15 @@ class MessagesModule(Module):
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
     views = [ChatMessage, MainChatMark]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration, MessageReactionsMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
+    handlers = (DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
-    subcommands = (ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
+    subcommands = (DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
+    skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
+                               keywords=("flowchart", "flow chart", "diagram"), commands=("message",))]
     listeners = []
     seeders = [MessagesSeeder]
