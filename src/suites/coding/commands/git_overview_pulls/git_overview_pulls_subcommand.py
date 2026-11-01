@@ -2,7 +2,6 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
-from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from suites.coding.support.git_pull_rows import GitPullRows
 from suites.coding.support.project_git import ProjectGit
@@ -10,6 +9,9 @@ from suites.coding.support.project_git import ProjectGit
 
 class GitOverviewPullsSubcommand(ReadSubcommand[GitPullRows]):
     """`journal git-overview pulls`: the open pull requests, read through the gh program."""
+
+    row_line = "{title}"
+    empty_line = "no open pull requests"
 
     cli_name = "git-overview"
     name = "pulls"
@@ -24,7 +26,3 @@ class GitOverviewPullsSubcommand(ReadSubcommand[GitPullRows]):
     def read(self, arguments: Namespace, caller: Caller) -> GitPullRows:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         return self.git.pulls(environment_id)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, GitPullRows):
-            output.write("\n".join(str(row["title"]) for row in value.rows) or "no open pull requests", value.json())

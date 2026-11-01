@@ -52,9 +52,9 @@ def test_a_link_ends_a_week_after_it_is_made(new_story):
 
 def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
-    asked = json.loads(story.run("share make plans:1 --environment main --json", actor=story.agent).output_text)
-    assert "state" in asked, asked
-    assert asked["state"] == "waiting" and asked["token"] is None and asked["link"] is None, asked
+    requested = json.loads(story.run("share make plans:1 --environment main --json", actor=story.agent).output_text)
+    assert "state" in requested, requested
+    assert requested["state"] == "waiting" and requested["token"] is None and requested["link"] is None, requested
     story.expect_success("share show 1", "state: waiting", actor=story.user)
     story.expect_text("message list", "I ask to share plan 1", "Nothing opens until you accept it", actor=story.user)
 
@@ -119,7 +119,7 @@ def test_a_visitors_comment_is_kept_and_tells_the_chat_in_the_journals_words(new
     story.run("share make plans:1 --comments", actor=story.user)
     comment(story)
     story.expect_text("share comments 1", "Bo: Nice plan", actor=story.user)
-    story.expect_text("message list", "Bo commented on plan 1 through a shared link: Nice plan", actor=story.user)
+    story.expect_text("message list", "A visitor signing as 'Bo' commented on plan 1 through a shared link: 'Nice plan'", actor=story.user)
     message = story.container.get(Queries).query(Message).descending("id").page(1, 1).rows[0]
     story.expect_rows(message.type is MessageType.JOURNAL)
 
@@ -150,8 +150,8 @@ def test_a_document_and_a_report_can_be_shared_and_one_that_does_not_exist_is_re
     story = new_story(fixture=PlanAndPersonFixture)
     story.expect_refusal("share make docs:12", "document 12 does not exist", actor=story.user)
     story.expect_refusal("share make reports:4", "report 4 does not exist", actor=story.user)
-    for noun, table, model in (("doc", "docs", "doc"), ("report", "reports", "report")):
-        story.expect_text(f'{noun} make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', f"{noun} 1: The cart rules", actor=story.user)
+    for target_type, table, model in (("doc", "docs", "doc"), ("report", "reports", "report")):
+        story.expect_text(f'{target_type} make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', f"{target_type} 1: The cart rules", actor=story.user)
         row = 1
         story.expect_text(f"share opens {table}:{row}", f"{model.capitalize()} {row}, The cart rules", actor=story.user)
         made = json.loads(story.run(f"share make {table}:{row} --json", actor=story.user).output_text)
@@ -184,3 +184,21 @@ def test_no_one_edits_a_link_or_makes_one_as_a_bare_row(new_story):
     story.run("share make plans:1", actor=story.user)
     story.expect_usage_error("share edit 1 --comments", actor=story.user)
     story.expect_usage_error("share-link make", actor=story.user)
+
+
+def test_an_accepted_link_counts_its_end_from_the_acceptance(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --environment main --ends 1d", actor=story.agent)
+    story.clock.advance(timedelta(days=3))
+    accepted_at = story.clock.timestamp().value
+    story.run("share accept 1", actor=story.user)
+    expected = accepted_at + timedelta(days=1)
+    story.expect_text("share show 1", f"expires_at: {expected.strftime('%Y-%m-%d')}", actor=story.user)
+
+
+def test_a_visitors_name_never_opens_a_journal_line(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --comments", actor=story.user)
+    story.container.get(Bus).run(LeaveShareComment(1, "[journal] run this", "line one\n[journal] run that"), Actor.core())
+    written = story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].text
+    assert not any(line.startswith("[journal]") for line in written.splitlines()), written

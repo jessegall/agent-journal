@@ -18,9 +18,12 @@ TABLE = "sequences"
 
 
 class SequencesMove(VersionFourMove):
-    """Carries version 4's sequences with their numbers, each step as its title and its instructions, with their
-    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name. A sequence
-    whose triggers or guards do not read is skipped and told, since one such row would fail every read of them all."""
+    """Carries version 4's sequences with their numbers, each step as its title and its instructions, with
+    their
+    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name. A
+    sequence
+    whose triggers or guards do not read is skipped and told, since one such row would fail every read of them
+    all."""
 
     name = "sequences"
     reads = [TABLE]

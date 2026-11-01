@@ -25,8 +25,10 @@ PROGRAM_NAME = "tunler"
 
 
 class TunlerClient:
-    """Runs the tunler program on this machine: whether it is installed and logged in, started for a port under a
-    subdomain with its lines in a log, its address from its own "tunnel up" line, stopped, and its login, domains
+    """Runs the tunler program on this machine: whether it is installed and logged in, started for a port
+    under a
+    subdomain with its lines in a log, its address from its own "tunnel up" line, stopped, and its login,
+    domains
     and version. Whether it runs comes from the pid it left, so a read in another process sees it too."""
 
     def __init__(self, home: JournalHome) -> None:

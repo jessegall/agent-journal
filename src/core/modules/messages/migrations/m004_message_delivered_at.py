@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class MessageDeliveredAtMigration(Migration):
+class MessageDeliveredColumnMigration(Migration):
     """The time a message reached the agent is named delivered_at."""
 
     number = 4

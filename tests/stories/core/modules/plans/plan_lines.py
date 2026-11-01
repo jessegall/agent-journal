@@ -13,7 +13,7 @@ def task_end(task_id):
     return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="task")).with_fields(event="post_tool_use")
 
 
-LOOK = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
+VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
 
 def plan_story(new_story, checkpoint=False):
@@ -79,15 +79,15 @@ def test_a_plan_approved_or_cancelled_since_the_last_hook_is_named(new_story):
     story.run('task make "Cart" --environment main')
     story.run("phase place 1 --phase 1")
     story.run("plan ready 1")
-    story.hook("s-1", LOOK)
+    story.hook("s-1", VIEW_LINE)
     story.advance(timedelta(seconds=1))
     story.run("plan approve 1")
-    assert "plan 1 approved" in story.hook("s-1", LOOK).lines
+    assert "plan 1 approved" in story.hook("s-1", VIEW_LINE).lines
     story.advance(timedelta(seconds=1))
-    story.expect_absent_hook_line("s-1", LOOK, "plan 1 approved")
+    story.expect_absent_hook_line("s-1", VIEW_LINE, "plan 1 approved")
     story.advance(timedelta(seconds=1))
     story.run('plan cancel 1 --reason "not needed"')
-    assert "plan 1 cancelled: not needed" in story.hook("s-1", LOOK).lines
+    assert "plan 1 cancelled: not needed" in story.hook("s-1", VIEW_LINE).lines
 
 
 def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_story):
@@ -95,7 +95,7 @@ def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_
     first = story.hook("s-1", HookSamples.session_start())
     assert not any("you took over" in line for line in first.lines)
     assert any("you took over from agent" in line for line in story.hook("s-2", HookSamples.session_start()).lines)
-    story.hook("s-2", LOOK)
+    story.hook("s-2", VIEW_LINE)
     story.expect_absent_hook_line("s-2", HookSamples.session_start(), "you took over")
 
 
@@ -133,9 +133,9 @@ def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_stor
     story.run('task make "Cart" --environment main')
     story.run("phase place 1 --phase 1")
     story.run("plan ready 1")
-    story.hook("s-1", LOOK)
+    story.hook("s-1", VIEW_LINE)
     story.advance(timedelta(seconds=30))
     story.run("plan approve 1")
     story.advance(timedelta(seconds=30))
     story.hook("s-1", HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])))
-    assert "plan 1 approved" in story.hook("s-1", LOOK).lines
+    assert "plan 1 approved" in story.hook("s-1", VIEW_LINE).lines

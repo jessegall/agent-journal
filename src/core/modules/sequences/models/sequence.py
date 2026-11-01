@@ -10,7 +10,8 @@ STEP_LIMIT_CHARACTERS = 600
 
 @dataclass(frozen=True, kw_only=True)
 class Sequence(Model):
-    """Steps an agent works through in order, each a line of what to do, what starts it on its own, and what each step holds back."""
+    """Steps an agent works through in order, each a line of what to do, what starts it on its own, and what
+    each step holds back."""
 
     model_name = "sequence"
     cli_name = "sequence"

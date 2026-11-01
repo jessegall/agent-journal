@@ -13,7 +13,7 @@
         ],
         "reject": [
             {
-                "file": "src/core/modules/memories/*_handler.py"
+                "file": "src/core/modules/memories/**/*_handler.py"
             },
             {
                 "file": "src/core/modules/memories/memory.py"

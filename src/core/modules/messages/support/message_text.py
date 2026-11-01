@@ -13,7 +13,7 @@ class MessageText:
     links: tuple[str, ...]
 
     @classmethod
-    def of(cls, message: Message, links: RowLinks) -> "MessageText":
+    def built(cls, message: Message, links: RowLinks) -> "MessageText":
         return cls(message.id, message.text, tuple(links.lines(Message.model_name, message.id)))
 
     def lines(self) -> tuple[str, ...]:

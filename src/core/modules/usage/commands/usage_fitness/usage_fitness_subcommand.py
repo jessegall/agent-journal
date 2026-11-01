@@ -28,4 +28,4 @@ class UsageFitnessSubcommand(ReadSubcommand[AgentFitness]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentFitness):
             head = f"fitness {value.score} of 100" if value.is_measured else "fitness not measured yet"
-            output.write("\n".join([f"{head}, load {value.load}", *(f"{measure.label}: {measure.value}" for measure in value.measures)]), value.json())
+            output.write("\n".join([f"{head}, load {value.workload}", *(f"{measure.label}: {measure.value}" for measure in value.measures)]), value.json())

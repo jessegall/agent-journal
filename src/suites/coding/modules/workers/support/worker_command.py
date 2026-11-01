@@ -16,7 +16,8 @@ ACTIVE_VARIABLE = "AGENT_JOURNAL_ACTIVE"
 
 
 class WorkerCommand:
-    """The command line that starts a worker's program on its task, or resumes it on a new job, as its provider writes it."""
+    """The command line that starts a worker's program on its task, or resumes it on a new job, as its
+    provider writes it."""
 
     def __init__(self, providers: Providers, models: AllowedModels) -> None:
         self.providers, self.models = providers, models

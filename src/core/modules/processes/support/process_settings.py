@@ -1,4 +1,4 @@
-from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 

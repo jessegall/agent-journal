@@ -9,7 +9,8 @@ from core.modules.reviews.support.reviewer_board import ReviewerBoard
 
 
 class ReviewBoardSubcommand(ReadSubcommand[ReviewerBoard]):
-    """`journal review board`: the reviews being done with their steps so far, and how many reviews wait, in the caller's environment."""
+    """`journal review board`: the reviews being done with their steps so far, and how many reviews wait, in
+    the caller's environment."""
 
     cli_name = "review"
     name = "board"

@@ -2,7 +2,8 @@ from core.base.database.database import Database
 from core.base.journal_container import synced_container
 from core.base.journal_home import JournalHome
 from core.base.registry.registry import Registry
-from server.viewer.session_answer import SessionAnswer, ShareAnswer
+from server.viewer.session_answer import SessionAnswer
+from server.viewer.share_answer import ShareAnswer
 from server.viewer.shared_row import SharedRow
 from server.viewer.shared_windows import SharedWindows
 from server.viewer.viewer_login import ViewerLogin

@@ -1,4 +1,4 @@
-from core.testing.sample_nudge import sample_nudge
+from tests.unit.core.base.driver.nudge_sample import sample_nudge
 from core.base.fault_sink import FaultSink
 from collections.abc import Sequence
 from dataclasses import dataclass

@@ -6,14 +6,14 @@ from core.base.viewer.window_loading import WindowLoading
 from core.modules.mcp.commands.give_server_key.give_server_key_handler import GiveServerKeyHandler
 from core.modules.mcp.commands.install_server.install_server_handler import InstallServerHandler
 from core.modules.mcp.commands.mcp_check.mcp_check_subcommand import McpCheckSubcommand
-from core.modules.mcp.commands.mcp_install.mcp_install_subcommand import McpInstallSubcommand
-from core.modules.mcp.commands.mcp_key.mcp_key_subcommand import McpKeySubcommand
+from core.modules.mcp.commands.install_server.install_server_subcommand import InstallServerSubcommand
+from core.modules.mcp.commands.give_server_key.give_server_key_subcommand import GiveServerKeySubcommand
 from core.modules.mcp.commands.mcp_list.mcp_list_subcommand import McpListSubcommand
-from core.modules.mcp.commands.mcp_remove.mcp_remove_subcommand import McpRemoveSubcommand
+from core.modules.mcp.commands.remove_server.remove_server_subcommand import RemoveServerSubcommand
 from core.modules.mcp.commands.mcp_suggested.mcp_suggested_subcommand import McpSuggestedSubcommand
 from core.modules.mcp.commands.remove_server.remove_server_handler import RemoveServerHandler
 from core.modules.mcp.commands.add_server.add_server_handler import AddServerHandler
-from core.modules.mcp.commands.mcp_add.mcp_add_subcommand import McpAddSubcommand
+from core.modules.mcp.commands.add_server.add_server_subcommand import AddServerSubcommand
 from core.modules.mcp.migrations.m001_mcp_servers import McpServersTableMigration
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
@@ -33,6 +33,6 @@ class McpModule(Module):
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]
     handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
-    subcommands = (McpAddSubcommand, McpListSubcommand, McpSuggestedSubcommand, McpInstallSubcommand, McpKeySubcommand, McpRemoveSubcommand, McpCheckSubcommand)
+    subcommands = (AddServerSubcommand, McpListSubcommand, McpSuggestedSubcommand, InstallServerSubcommand, GiveServerKeySubcommand, RemoveServerSubcommand, McpCheckSubcommand)
     windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN,
                                  reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

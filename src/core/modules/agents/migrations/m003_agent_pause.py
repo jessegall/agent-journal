@@ -5,4 +5,4 @@ class AgentPauseMigration(Migration):
     """An agent keeps when a person paused it, until they resume it."""
 
     number = 3
-    statements = ("ALTER TABLE agents ADD COLUMN paused_at TEXT",)
+    statements = ["ALTER TABLE agents ADD COLUMN paused_at TEXT"]

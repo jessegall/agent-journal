@@ -2,13 +2,10 @@ import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import TextDetails from "../src/resource/TextDetails.vue";
 import {movesOf} from "../src/domain/resourceKinds.js";
+import {settle, typeInto as typeIn} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const settle = async () => {
-    for (let round = 0; round < 4; round++) await new Promise((resolve) => setTimeout(resolve));
-    await nextTick();
-};
 
 const ROW = {id: 4, title: "Cart", abstract: "How the cart counts", body: "# One\ntext\n## Two\nmore", close_reason: ""};
 
@@ -30,10 +27,6 @@ function details(kind = "doc") {
     return {element, ran};
 }
 
-function typeIn(input, text) {
-    input.value = text;
-    input.dispatchEvent(new Event("input"));
-}
 
 test("chapters, comments, links and revisions of a document are listed", async () => {
     const {element} = details();

@@ -1,6 +1,7 @@
+import {CHAT_WINDOW} from "../windows/chatOptions.js";
 import {lineResult} from "../windows/windowContext.js";
 
-export const CHAT_WINDOW = "messages.chat";
+export {CHAT_WINDOW};
 
 // the line a button sends: its declared line with {row_id} filled from the mark's row
 export const buttonLine = (button, mark) => button.runs.replaceAll("{row_id}", String(mark.target_id ?? ""));

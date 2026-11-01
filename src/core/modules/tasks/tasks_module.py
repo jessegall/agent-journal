@@ -11,9 +11,9 @@ from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskS
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
 from core.modules.tasks.models.task_wait import TaskWait
-from core.modules.tasks.rules.named_task_rule import NamedTaskRule
+from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
-from core.modules.tasks.rules.wait_in_words_rule import WaitInWordsRule
+from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
@@ -72,7 +72,7 @@ class TasksModule(Module):
     listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [WaitInWordsRule, NamedTaskRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]

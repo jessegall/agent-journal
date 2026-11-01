@@ -1,8 +1,8 @@
-from core.modules.documents.commands.support.text_comment_subcommand import TextCommentSubcommand
+from core.modules.documents.commands.support.comment_text_subcommand import CommentTextSubcommand
 from core.modules.documents.models.report import Report
 
 
-class ReportCommentSubcommand(TextCommentSubcommand):
+class ReportCommentSubcommand(CommentTextSubcommand):
     """`journal report comment`."""
 
     model = Report

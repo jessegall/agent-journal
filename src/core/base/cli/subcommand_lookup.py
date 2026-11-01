@@ -52,12 +52,12 @@ class SubcommandLookup:
         return sorted({*self.registry.models, *(line.split(" ", 1)[0] for line in (*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS))})
 
     def names(self, cli_name: str) -> list[str]:
-        words = {line.split(" ", 1)[1] for line in (*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS) if line.startswith(f"{cli_name} ")}
+        terms = {line.split(" ", 1)[1] for line in (*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS) if line.startswith(f"{cli_name} ")}
         entry = self.registry.models.get(cli_name)
         model = entry.model.loaded() if entry is not None else None
         if entry is not None and isinstance(model, type) and issubclass(model, Model):
-            words |= {*STANDARD_SUBCOMMANDS, *(move.name for move in self.defaults.moves(model, entry.commands))} - set(entry.excluded_subcommands)
-        return sorted(words)
+            terms |= {*STANDARD_SUBCOMMANDS, *(move.name for move in self.defaults.moves(model, entry.commands))} - set(entry.excluded_subcommands)
+        return sorted(terms)
 
     def built(self, model: type[Model], command_paths: Sequence[str], name: str) -> AnySubcommand | None:
         standard = {"make": self.defaults.make, "show": self.defaults.show, "list": self.defaults.list, "edit": self.defaults.edit, "delete": self.defaults.delete}

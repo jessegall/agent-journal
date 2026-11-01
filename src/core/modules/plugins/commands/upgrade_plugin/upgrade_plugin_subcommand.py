@@ -8,7 +8,8 @@ from core.modules.plugins.support.plugin_upgrade import PluginUpgrade
 
 
 class UpgradePluginSubcommand(Subcommand[UpgradePlugin, PluginUpgrade]):
-    """`journal plugin upgrade <name> [--yes]`: shows what changes in what the plugin runs, and applies it with --yes."""
+    """`journal plugin upgrade <name> [--yes]`: shows what changes in what the plugin runs, and applies it
+    with --yes."""
 
     cli_name = "plugin"
     name = "upgrade"

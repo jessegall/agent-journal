@@ -7,7 +7,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.query import Query
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.unread_output import UnreadOutput
+from core.modules.processes.queries.support.unread_output import UnreadOutput
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 

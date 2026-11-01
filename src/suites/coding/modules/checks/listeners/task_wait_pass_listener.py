@@ -8,7 +8,8 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class TaskWaitPassListener(SaveListener):
-    """A check a task waits on that passes, or is stopped or removed, ends the wait, which opens the task when nothing else holds it."""
+    """A check a task waits on that passes, or is stopped or removed, ends the wait, which opens the task when
+    nothing else holds it."""
 
     name = "checks.task-wait-pass"
     event = "check.update"

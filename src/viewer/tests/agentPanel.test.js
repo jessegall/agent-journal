@@ -3,13 +3,10 @@ import {afterEach, expect, test} from "vitest";
 import AgentFacts from "../src/resource/AgentFacts.vue";
 import RowMoves from "../src/resource/RowMoves.vue";
 import {movesOf} from "../src/domain/resourceKinds.js";
+import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const settle = async () => {
-    for (let round = 0; round < 4; round++) await new Promise((resolve) => setTimeout(resolve));
-    await nextTick();
-};
 
 function mounted(component, props) {
     const element = document.createElement("div");

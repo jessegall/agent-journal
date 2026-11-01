@@ -18,11 +18,12 @@ from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
-from core.modules.plugins.support.plugin_staging import LEFT_OUT, PluginStaging
+from core.modules.plugins.support.plugin_staging import EXCLUDED_NAMES, PluginStaging
 
 
 class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
-    """Copies a plugin's folder, or a repository at its newest release, into the journal once the programs it requires are found and runs its setup
+    """Copies a plugin's folder, or a repository at its newest release, into the journal once the programs it
+    requires are found and runs its setup
     steps there, before the install's transaction opens so a step may write to the journal itself, a
     failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
     it switched on with the settings its installed command answers. Only the person installs, and a name
@@ -43,7 +44,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         folder = self.folders.code(manifest.name)
         source = self.staging.folder(command.source)
         self.steps.check_requirements(manifest, source)
-        shutil.copytree(source, folder, dirs_exist_ok=True, ignore=LEFT_OUT)
+        shutil.copytree(source, folder, dirs_exist_ok=True, ignore=EXCLUDED_NAMES)
         try:
             self.steps.run_setup(manifest, folder)
         except Refusal:

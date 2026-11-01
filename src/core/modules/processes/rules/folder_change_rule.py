@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import DO_NOT_MOVE
+from core.modules.processes.support.process_nudges import MOVE_BAN
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -24,5 +24,5 @@ class FolderChangeRule(DriverRule):
         folder = str(hook.event.raw.get("cwd", "")).rstrip("/")
         for part in shell.parts:
             if part.program == CHANGE_WORD and [argument.rstrip("/") for argument in part.arguments] != [folder]:
-                return RuleAnswer.refused(DO_NOT_MOVE.nudge(folder=folder or "the project"))
+                return RuleAnswer.refused(MOVE_BAN.nudge(folder=folder or "the project"))
         return RuleAnswer.allowed()

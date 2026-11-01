@@ -5,16 +5,17 @@ WINDOW_SECONDS = 15 * 60
 
 
 class SharePasswordTries:
-    """Wrong passwords sent to links, counted per address they come from, so a link's password cannot be guessed without limit."""
+    """Wrong passwords sent to a link, counted per link, since a tunnel gives every visitor the same address,
+    so a link's password cannot be guessed without limit."""
 
     def __init__(self) -> None:
         self.wrong_times: dict[str, list[float]] = {}
 
-    def is_locked_out(self, address: str) -> bool:
-        return len(self.recent(address)) >= TRY_COUNT
+    def is_blocked(self, token: str) -> bool:
+        return len(self.recent(token)) >= TRY_COUNT
 
-    def count(self, address: str) -> None:
-        self.wrong_times[address] = [*self.recent(address), time.monotonic()]
+    def count(self, token: str) -> None:
+        self.wrong_times[token] = [*self.recent(token), time.monotonic()]
 
-    def recent(self, address: str) -> list[float]:
-        return [moment for moment in self.wrong_times.get(address, []) if time.monotonic() - moment < WINDOW_SECONDS]
+    def recent(self, token: str) -> list[float]:
+        return [event for event in self.wrong_times.get(token, []) if time.monotonic() - event < WINDOW_SECONDS]

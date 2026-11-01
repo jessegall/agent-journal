@@ -119,7 +119,7 @@ def test_the_guide_example_is_a_manifest_the_journal_reads(new_story):
     (folder / "journal-plugin.json").write_text(example.group(1))
     (folder / "settings.json").write_text("[]")
     manifest = PluginManifest.read(folder)
-    story.expect_rows(manifest.name == "standup", manifest.event_names == ("task.close",), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
+    story.expect_rows(manifest.name == "standup", manifest.event_names == tuple(["task.close"]), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
 
 
 def tagged_repository(story, name: str = "repository", version: str = "1.0.0", tag: str = "v1.0.0") -> Path:

@@ -7,7 +7,7 @@ class TunnelStatus:
     """What the tunnel window draws: whether the tunnel is connected, its address, and why not when it is not."""
 
     state: str
-    address: str
+    address: str | None
     reason: str
 
     def json(self) -> Mapping[str, object]:

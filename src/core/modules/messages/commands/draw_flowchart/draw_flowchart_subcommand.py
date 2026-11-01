@@ -8,7 +8,8 @@ from core.modules.messages.models.message import Message
 
 
 class DrawFlowchartSubcommand(Subcommand[DrawFlowchart, Message]):
-    """`journal message flowchart "<title>" --edge "From -> To: label"`: draws a flowchart in the chat, which opens large in a dialog."""
+    """`journal message flowchart "<title>" --edge "From -> To: label"`: draws a flowchart in the chat, which
+    opens large in a dialog."""
 
     cli_name = "message"
     name = "flowchart"

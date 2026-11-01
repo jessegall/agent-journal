@@ -10,7 +10,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_settings import ProcessSettings

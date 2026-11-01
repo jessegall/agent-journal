@@ -1,4 +1,4 @@
-from core.testing.sample_nudge import sample_nudge
+from tests.unit.core.base.driver.nudge_sample import sample_nudge
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers

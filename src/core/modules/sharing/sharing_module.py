@@ -27,7 +27,8 @@ from core.modules.sharing.models.share_link import ShareLink
 
 
 class SharingModule(Module):
-    """Lets a person share a document, a report or a plan as a read-only link, kept by the digest of its token until it expires or is
+    """Lets a person share a document, a report or a plan as a read-only link, kept by the digest of its token
+    until it expires or is
     revoked; an agent may ask for one, and visitors may comment if the link lets them."""
 
     name = "journal.core.sharing"

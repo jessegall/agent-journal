@@ -7,7 +7,7 @@ from core.base.refusal import Refusal
 from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.tasks.commands.task_graph.task_graph import TaskGraph
+from core.modules.tasks.commands.support.task_graph import TaskGraph
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.models.task_edge import TaskEdge

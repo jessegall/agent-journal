@@ -2,13 +2,10 @@ import {afterEach, expect, test} from "vitest";
 import {createApp, h, nextTick} from "vue";
 import {WINDOW_CONTEXT} from "@journal/window-kit";
 import WorkMode from "../../suites/coding/web/src/WorkMode.vue";
+import {settle as settled} from "./support/windowContext.js";
 
 const mounted = [];
 afterEach(() => mounted.splice(0).forEach((element) => element.remove()));
-const settled = async () => {
-    for (let turn = 0; turn < 5; turn++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve));
-};
 
 async function mount({driver = "coding.builder", values = {}} = {}) {
     const runs = [];

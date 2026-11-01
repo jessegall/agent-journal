@@ -11,7 +11,8 @@ from core.modules.agents.models.agent import Agent
 
 class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
     """Saves the real session on an open agent row, refusing one that has ended; a session that an ended agent
-    holds already is that agent resumed, so it is reopened on the launch's process and terminal, and the launch row ends."""
+    holds already is that agent resumed, so it is reopened on the launch's process and terminal, and the
+    launch row ends."""
 
     command = BindAgentSession
 

@@ -52,7 +52,7 @@ const uptime = computed(() => {
                 <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="How the agent is working: opens its measures" @click="emit('open', 'fitness')">
                     Fitness {{ fitness.is_measured ? fitness.score : "–" }}
                 </button>
-                <button type="button" :class="['fact', 'load-fact', fitness.load_level]" data-fact="load" title="Messages arriving against those answered" @click="emit('open', 'fitness')">Load {{ fitness.load }}</button>
+                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Messages arriving against those answered" @click="emit('open', 'fitness')">Load {{ fitness.workload }}</button>
             </template>
             <template v-if="status?.model">
                 <span class="fact" data-fact="model"><Icon name="model" :size="12" /> {{ status.model }}</span>

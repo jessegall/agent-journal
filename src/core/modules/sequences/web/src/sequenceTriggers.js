@@ -1,7 +1,7 @@
 // what starts a sequence on its own, each kind with the fields it is written with and a plain sentence for it
 export const TRIGGER_KINDS = [
-    {value: "row", label: "A record is made", fields: [{name: "moment", label: "Record and moment", placeholder: "plan.create"}]},
-    {value: "phrase", label: "You ask for it", fields: [{name: "text", label: "Words you write", placeholder: "give me an update"}]},
+    {value: "row", label: "A record is made", fields: [{name: "moment", label: "Record and event", placeholder: "plan.create"}]},
+    {value: "phrase", label: "You ask for it", fields: [{name: "text", label: "Words you write", placeholder: "an update please"}]},
     {value: "command", label: "A command runs", fields: [{name: "pattern", label: "Pattern on the command line", placeholder: "^git push"}]},
     {value: "file", label: "A file is edited", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}]},
     {value: "file-text", label: "An edit adds a text", fields: [{name: "pattern", label: "Files, as a path glob", placeholder: "src/*.py"}, {name: "text", label: "Text in the new content", placeholder: "TODO"}]},

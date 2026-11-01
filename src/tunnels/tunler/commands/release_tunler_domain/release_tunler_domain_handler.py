@@ -9,7 +9,7 @@ class ReleaseTunlerDomainHandler(Handler[ReleaseTunlerDomain, str]):
     """Asks the tunler program to release a domain."""
 
     command = ReleaseTunlerDomain
-    in_transaction = False
+    transactional = False
 
     def __init__(self, client: TunlerClient) -> None:
         self.client = client

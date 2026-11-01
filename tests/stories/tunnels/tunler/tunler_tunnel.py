@@ -3,7 +3,7 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.tunnels.tunler.support.fake_tunler_client import TUNLER_HOST, FakeTunlerClient
 from tests.stories.tunnels.tunler.support.set_clock import SetClock
-from tunnels.tunler.tunler_tunnel import CONNECT_LIMIT_SECONDS, TunlerTunnel
+from tunnels.tunler.support.tunler_tunnel import CONNECT_LIMIT_SECONDS, TunlerTunnel
 
 SUBDOMAIN = "cart-team"
 VIEWER_PORT = 8000

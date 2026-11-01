@@ -58,7 +58,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("hook_built")
         with self.settings.keep_rows():
             answers = self.rules.ask(hook)
-        answers = replace(answers, held_lines=self.nudges.held_lines(agent.id, answers, context.timestamp))
+        answers = replace(answers, withheld_lines=self.nudges.withheld_lines(agent.id, answers, context.timestamp))
         self.timing.stamp("rules_asked")
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
@@ -73,7 +73,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.said_nudges, *answers.refusal_nudges)]}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.delivered_nudges, *answers.refusal_nudges)]}})), context)
         self.nudges.write(agent.id, answers, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:

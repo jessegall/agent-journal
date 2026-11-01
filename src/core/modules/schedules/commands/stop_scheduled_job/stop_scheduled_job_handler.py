@@ -12,7 +12,8 @@ LINE_SOURCE = "schedules.stop"
 
 
 class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
-    """Tells the agent to delete the job, since only its own program can; the job stays listed until the deletion is seen."""
+    """Tells the agent to delete the job, since only its own program can; the job stays listed until the
+    deletion is seen."""
 
     command = StopScheduledJob
 

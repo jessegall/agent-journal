@@ -1,6 +1,7 @@
 import secrets
 import threading
 
+from server.viewer.share_route import COOKIE_SEPARATOR
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.session_file import SessionFile
 from server.viewer.session_type import SessionType
@@ -68,9 +69,10 @@ class ViewerLogin:
             raise UnknownLoginKeyError("this session is unknown: open the address journal viewer prints to log in")
         return shared
 
-    def share_session(self, token: str) -> ViewerSession | None:
+    def share_session(self, cookie: str) -> ViewerSession | None:
+        token, _, key = cookie.partition(COOKIE_SEPARATOR)
         link = self.shares.link(token) if token else None
-        if link is None or not link.is_open() or (link.locked and token not in self.shares.unlocked_tokens):
+        if link is None or not link.is_open() or self.shares.is_locked(link, token, key):
             return None
         return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared, comments=link.comments)
 

@@ -5,7 +5,7 @@ from core.modules.messages.commands.read_message.read_message_subcommand import 
 from core.modules.messages.migrations.m006_message_reactions import MessageReactionsMigration
 from core.modules.messages.migrations.m007_message_flowchart import MessageFlowchartMigration
 from core.modules.messages.migrations.m005_message_captions import MessageCaptionsMigration
-from core.modules.messages.commands.main_chat_marks.main_chat_marks_subcommand import MainChatMarksSubcommand
+from core.modules.messages.commands.main_chat_rows.main_chat_rows_subcommand import MainChatRowsSubcommand
 from core.modules.messages.commands.chat_messages.chat_messages_subcommand import ChatMessagesSubcommand
 from core.modules.messages.models.attached_file import AttachedFile
 from core.modules.messages.models.chat_message import ChatMessage
@@ -24,7 +24,7 @@ from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
 from core.modules.messages.migrations.m003_message_delivery import MessageDeliveryMigration
-from core.modules.messages.migrations.m004_message_delivered_at import MessageDeliveredAtMigration
+from core.modules.messages.migrations.m004_message_delivered_at import MessageDeliveredColumnMigration
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
 from core.modules.messages.rules.message_show_read_rule import MessageShowReadRule
@@ -58,16 +58,16 @@ class MessagesModule(Module):
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
-    subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
+    subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
     skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
-                               keywords=("flowchart", "flow chart", "diagram"), commands=("message",))]
+                               keywords=("flowchart", "flow chart", "diagram"), commands=tuple(["message"]))]
     listeners = []
     seeders = [MessagesSeeder]

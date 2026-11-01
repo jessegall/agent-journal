@@ -104,25 +104,25 @@ def test_other_words_start_nothing(new_story):
 
 def test_an_edited_file_a_glob_names_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file", "pattern": "src/*.py"})
-    story.hook("s-1", post_tool("Edit", "edit", ("docs/a.md",)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["docs/a.md"])))
     assert not running(story)
-    story.hook("s-1", post_tool("Edit", "edit", ("src/cart.py",)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["src/cart.py"])))
     assert running(story)
 
 
 def test_a_text_an_edit_adds_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "file-text", "pattern": "*.py", "text": "TODO"})
-    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "del", "line": 1, "text": "TODO old"},)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "del", "line": 1, "text": "TODO old"}])))
     assert not running(story)
-    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "add", "line": 1, "text": "# TODO new"},)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["a.py"]), tuple([{"line_type": "add", "line": 1, "text": "# TODO new"}])))
     assert running(story)
 
 
 def test_a_tool_used_starts_a_sequence(new_story):
     story = triggered_story(new_story, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
-    story.hook("s-1", post_tool("Edit", "edit", ("src/a.py",)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["src/a.py"])))
     assert not running(story)
-    story.hook("s-1", post_tool("Edit", "edit", ("migrations/a.py",)))
+    story.hook("s-1", post_tool("Edit", "edit", tuple(["migrations/a.py"])))
     assert running(story)
 
 

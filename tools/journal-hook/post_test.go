@@ -274,12 +274,12 @@ func TestLimitInUsesTheWaitSetForAToolAndNothingElse(t *testing.T) {
 	if limitIn(root, "pre_tool_use") != 5*time.Second {
 		t.Fatal("with no file a tool's hook waits the standard five seconds")
 	}
-	for text, want := range map[string]time.Duration{"12\n": 12 * time.Second, "nonsense": 5 * time.Second, "0": 5 * time.Second} {
+	for text, expected := range map[string]time.Duration{"12\n": 12 * time.Second, "nonsense": 5 * time.Second, "0": 5 * time.Second} {
 		if err := os.WriteFile(filepath.Join(runtime, "hook-wait-seconds"), []byte(text), 0o644); err != nil {
 			t.Fatal(err)
 		}
-		if got := limitIn(root, "pre_tool_use"); got != want {
-			t.Fatalf("%q gave %s, not %s", text, got, want)
+		if limit := limitIn(root, "pre_tool_use"); limit != expected {
+			t.Fatalf("%q gave %s, not %s", text, limit, expected)
 		}
 	}
 	if err := os.WriteFile(filepath.Join(runtime, "hook-wait-seconds"), []byte("12"), 0o644); err != nil {
@@ -287,5 +287,13 @@ func TestLimitInUsesTheWaitSetForAToolAndNothingElse(t *testing.T) {
 	}
 	if limitIn(root, "stop") != 10*time.Second {
 		t.Fatal("a stop keeps its own wait")
+	}
+}
+
+func TestAStopNeverAnsweredIsNotNotedAsBypassed(t *testing.T) {
+	root := switchedProject(t)
+	postedUntilAnswered(sample(root, "stop"), unreachable, time.Unix(1793395000, 0), 3*time.Millisecond, time.Millisecond)
+	if _, err := os.Stat(filepath.Join(root, ".journal", "runtime", "bypass.log")); err == nil {
+		t.Errorf("a held stop was noted as going through unchecked")
 	}
 }

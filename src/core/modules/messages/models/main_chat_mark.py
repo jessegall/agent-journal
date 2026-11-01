@@ -9,7 +9,8 @@ from core.modules.messages.models.support.views import MAIN_CHAT_MARKS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class MainChatMark(ViewModel):
-    """A mark of the main chat, read from the main_chat_marks view, which leaves out what a worker or a subagent does;
+    """A mark of the main chat, read from the main_chat_marks view, which leaves out what a worker or a
+    subagent does;
     the mark's key is read as mark_key and answered as key, since a view model's own key is a class name."""
 
     cli_name = "chat-mark"

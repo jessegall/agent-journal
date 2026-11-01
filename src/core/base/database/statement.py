@@ -17,6 +17,10 @@ class Statement:
         return Statement(f"{self.sql}{separator}{tail.sql}", (*self.parameters, *tail.parameters))
 
     @classmethod
+    def row_state(cls, table: str, row_id: int) -> "Statement":
+        return Statement(f"SELECT state FROM {table} WHERE id = ?", [row_id])
+
+    @classmethod
     def all_joined(cls, statements: tuple["Statement", ...], separator: str) -> "Statement":
         return Statement(separator.join(statement.sql for statement in statements), tuple(parameter for statement in statements for parameter in statement.parameters))
 

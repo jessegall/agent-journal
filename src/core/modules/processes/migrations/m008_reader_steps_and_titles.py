@@ -2,7 +2,8 @@ from core.base.database.migration import Migration
 
 
 class ReaderStepsAndTitlesMigration(Migration):
-    """A reader says what it selects and how a run's steps look; an output keeps the title and the step counts worked out for it, so a read never works them out again."""
+    """A reader says what it selects and how a run's steps look; an output keeps the title and the step counts
+    worked out for it, so a read never works them out again."""
 
     number = 8
     statements = tuple(["ALTER TABLE readers ADD COLUMN subject TEXT NOT NULL DEFAULT ''",

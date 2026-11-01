@@ -50,7 +50,7 @@ def test_a_block_on_itself_a_missing_row_or_a_finished_row_is_refused(new_story)
     story = new_story(fixture=TwoTasks)
     story.expect_refusal("task block 1 --on task:1", "cannot wait on itself")
     story.expect_refusal("task block 1 --on task:99", "task 99 does not exist")
-    story.expect_refusal("task block 1 --on shop:1", "names nothing to wait on")
+    story.expect_refusal("task block 1 --on shop:1", "gives nothing to wait on")
     story.run('task cancel 2 --reason "no"')
     story.expect_refusal("task block 1 --on task:2", "already")
 
@@ -131,20 +131,20 @@ def test_deleting_the_task_it_waits_on_opens_a_task(new_story):
 
 def test_an_idle_agent_is_typed_that_its_task_opened_and_the_line_is_not_said_twice(new_story):
     story = new_story(fixture=TwoTasks)
-    typed: list[tuple[int, str]] = []
+    entered: list[tuple[int, str]] = []
 
     class KeptTyping(TerminalTyping):
         def __init__(self) -> None:
             pass
 
         def type_line(self, agent_id: int, line: str) -> None:
-            typed.append((agent_id, line))
+            entered.append((agent_id, line))
 
     story.container.bind(TerminalTyping, KeptTyping())
     story.run("task block 1 --on task:2")
     story.run('task cancel 2 --reason "no"')
     story.run_listeners()
-    story.expect_rows(typed == [(story.agent.id, "[journal] task 1, Cart, is open again: what it waited on has ended")])
+    story.expect_rows(entered == [(story.agent.id, "[journal] task 1, Cart, is open again: what it waited on has ended")])
     story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "task 1, Cart, is open again")
 
 

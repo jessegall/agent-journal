@@ -11,7 +11,8 @@ MONITOR_LIFE_SECONDS = 1800
 
 
 class MonitoredRuns(WatchedRuns):
-    """An agent watches a run when one of its runs is going and a Monitor it was allowed to start since that run began can still be alive."""
+    """An agent watches a run when one of its runs is going and a Monitor it was allowed to start since that
+    run began can still be alive."""
 
     def __init__(self, processes: ProcessQuery, queries: Queries, clock: Clock) -> None:
         self.processes, self.queries, self.clock = processes, queries, clock

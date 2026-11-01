@@ -10,7 +10,8 @@ from core.modules.tunnel.support.tunnels import SERVICE_SETTING, Tunnels
 class ServerTunnel:
     """The tunnel the server keeps open for the viewer's port: the one the tunnel service setting chooses,
     opened when the server starts, opened again when it has dropped or the choice or its place changes, closed
-    when the server stops. No row keeps its address, which may change after a restart; the address is read from
+    when the server stops. No row keeps its address, which may change after a restart; the address is read
+    from
     here when a link is shown."""
 
     def __init__(self, home: JournalHome) -> None:

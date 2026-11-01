@@ -7,8 +7,8 @@ from core.modules.dumps.commands.dump_board.dump_board_subcommand import DumpBoa
 from core.modules.dumps.commands.dump_board.dump_item_board_subcommand import DumpItemBoardSubcommand
 from core.modules.dumps.commands.dump_items.dump_items_subcommand import DumpItemsSubcommand
 from core.modules.dumps.models.dump_row import DumpRow
-from core.modules.dumps.commands.failed_item.failed_item_subcommand import FailedItemSubcommand
-from core.modules.dumps.commands.filed_item.filed_item_subcommand import FiledItemSubcommand
+from core.modules.dumps.commands.fail_dump_item.fail_dump_item_subcommand import FailDumpItemSubcommand
+from core.modules.dumps.commands.file_dump_item.file_dump_item_subcommand import FileDumpItemSubcommand
 from core.modules.dumps.commands.make_dump.make_dump_handler import MakeDumpHandler
 from core.modules.dumps.commands.make_dump.make_dump_subcommand import MakeDumpSubcommand
 from core.modules.dumps.commands.move_dump_item.move_dump_item_handler import MoveDumpItemHandler
@@ -40,7 +40,7 @@ class DumpsModule(Module):
     moves = [DumpsMove]
     handlers = [MakeDumpHandler, MoveDumpItemHandler, NameDumpHandler]
     views = [DumpRow]
-    subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FiledItemSubcommand, FailedItemSubcommand, NameDumpSubcommand]
+    subcommands = [DumpBoardSubcommand, DumpItemBoardSubcommand, MakeDumpSubcommand, DumpItemsSubcommand, NoteItemSubcommand, FileDumpItemSubcommand, FailDumpItemSubcommand, NameDumpSubcommand]
     nudges = DUMP_NUDGES
     driver_rules = [OpenDumpRule]
     listeners = [DumpArrivalListener, DumpDockListener]

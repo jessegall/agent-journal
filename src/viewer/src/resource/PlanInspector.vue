@@ -5,6 +5,7 @@ import PlanTimeline from "./PlanTimeline.vue";
 import Segmented from "../kit/Segmented.vue";
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
+import BackButton from "../kit/BackButton.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import Dot from "../kit/Dot.vue";
 import Folded from "../kit/Folded.vue";
@@ -50,7 +51,7 @@ watch(() => props.id, () => {
     <article class="plan-inspector" data-plan-inspector>
         <header class="top">
             <template v-if="backed">
-                <Btn small aria-label="Back" data-resource-back @click="emit('back')"><Icon name="back" :size="12" /></Btn>
+                <BackButton @back="emit('back')" />
             </template>
             <span class="kind"><Icon name="flag" :size="13" /> Plan {{ id }}</span>
             <template v-if="plan">

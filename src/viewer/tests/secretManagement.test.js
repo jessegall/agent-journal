@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle, typeInto as type} from "./support/windowContext.js";
 import SecretRows from "../../core/modules/secrets/web/src/SecretRows.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -13,10 +13,6 @@ async function drawn(rows = [], deleted = []) {
     return {element: await mounted(SecretRows, window), ran};
 }
 
-const type = (input, text) => {
-    input.value = text;
-    input.dispatchEvent(new Event("input"));
-};
 
 test("a new secret is made with its kind, title and note", async () => {
     const {element, ran} = await drawn();

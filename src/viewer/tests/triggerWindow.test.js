@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle, typeInto as typed} from "./support/windowContext.js";
 import TriggerCards from "../../core/modules/triggers/web/src/TriggerCards.vue";
 import {sentence} from "../../core/modules/triggers/web/src/triggerWords.js";
 
@@ -14,10 +14,6 @@ async function drawn(rows = [TRIGGER]) {
     return {element: await mounted(TriggerCards, window), ran};
 }
 
-function typed(field, words) {
-    field.value = words;
-    field.dispatchEvent(new Event("input"));
-}
 
 const panel = () => document.body.querySelector(".dialog-panel");
 

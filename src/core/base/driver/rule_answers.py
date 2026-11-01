@@ -13,7 +13,7 @@ class RuleAnswers:
     layers: Sequence[str]
     rules: Sequence[RuleRecord]
     delays_lines: bool = False
-    held_lines: frozenset[tuple[str, str]] = frozenset()
+    withheld_lines: frozenset[tuple[str, str]] = frozenset()
 
     @property
     def answered(self) -> list[RuleRecord]:
@@ -60,23 +60,20 @@ class RuleAnswers:
 
     @property
     def rule_lines(self) -> list[tuple[str, str]]:
-        said: set[tuple[str, str]] = set()
-        lines: list[tuple[str, str]] = []
+        first_rule: dict[tuple[str, str], str] = {}
         for rule in self.answered:
             for nudge in rule.answer.line_nudges if rule.answer is not None else ():
-                if (nudge.key, nudge.text) not in self.held_lines and (nudge.key, nudge.text) not in said:
-                    said.add((nudge.key, nudge.text))
-                    lines.append((rule.name, nudge.text))
-        return lines
+                first_rule.setdefault((nudge.key, nudge.text), rule.name)
+        return [(name, text) for (key, text), name in first_rule.items() if (key, text) not in self.withheld_lines]
 
     @property
     def line_nudges(self) -> list[Nudge]:
         return [nudge for rule in self.answered if rule.answer is not None for nudge in rule.answer.line_nudges]
 
     @property
-    def said_nudges(self) -> list[Nudge]:
-        said = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.held_lines}
-        return list(said.values())
+    def delivered_nudges(self) -> list[Nudge]:
+        delivered = {(nudge.key, nudge.text): nudge for nudge in self.line_nudges if (nudge.key, nudge.text) not in self.withheld_lines}
+        return list(delivered.values())
 
     @property
     def refusal_nudges(self) -> list[Nudge]:
@@ -84,7 +81,7 @@ class RuleAnswers:
 
     @property
     def labelled_lines(self) -> list[str]:
-        return [nudge.labelled for nudge in (*self.said_nudges, *self.refusal_nudges)]
+        return [nudge.labelled for nudge in (*self.delivered_nudges, *self.refusal_nudges)]
 
     @property
     def commands(self) -> list[tuple[str, Command[object]]]:

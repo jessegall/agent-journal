@@ -1,5 +1,5 @@
 from core.base.driver.nudge import Nudge
-from suites.coding.modules.workers.support.worker_nudges import WORKER_HOLDS_TASK
+from suites.coding.modules.workers.support.worker_nudges import WORKER_TASK
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -25,5 +25,5 @@ class WorkersOutRule(DriverRule):
         nudges: list[Nudge] = []
         for worktree in self.worktrees.environment_worktrees(hook.environment_id):
             task = self.queries.query(Task).find(worktree.task_id)
-            nudges.append(WORKER_HOLDS_TASK.nudge(worker=worktree.agent_id, task=task.id, title=task.title, state=worktree.state.value))
+            nudges.append(WORKER_TASK.nudge(worker=worktree.agent_id, task=task.id, title=task.title, state=worktree.state.value))
         return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

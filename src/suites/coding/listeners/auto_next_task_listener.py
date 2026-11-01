@@ -11,7 +11,7 @@ from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.support.next_task import NextTask
-from suites.coding.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 
 LEAVES_HAND = ("task.close", "task.cancel", "task.block", "task.release")
 HOLDER_FIELD = "holder_id"

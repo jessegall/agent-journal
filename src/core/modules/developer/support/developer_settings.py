@@ -10,8 +10,8 @@ HOOK_DURATIONS_SETTING = f"{HOOKS_SETTING}.terminal-durations"
 HOOK_NUDGES_SETTING = f"{HOOKS_SETTING}.terminal-nudges"
 DEVELOPER_SETTINGS = [
     SettingGroup("tools", "Developer tools", "Tools for working on the journal itself; switching this off turns off every one inside it.", toggleable=True, enabled=False,
-                 children=[SettingGroup("hooks", "Agent hooks", "Shows details of each agent hook in the terminal.", toggleable=True,
-                                        children=[SettingValue("terminal-durations", "Hook times", "Shows how long each hook took and what it cost.",
+                 children=[SettingGroup("hooks", "Agent tool calls", "Shows details of each agent tool call in the terminal.", toggleable=True,
+                                        children=[SettingValue("terminal-durations", "Call times", "Shows how long each call took and what it cost.",
                                                                SettingType.FLAG, default=True, scope=SettingScope.PROJECT),
                                                   SettingValue("terminal-nudges", "Nudges in the terminal", "Shows in the terminal every line the journal sends the agent.",
                                                                SettingType.FLAG, default=True, scope=SettingScope.PROJECT)])]),

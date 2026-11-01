@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.database.database import Database
@@ -8,7 +9,7 @@ class Migration:
     """One change to the database's tables, run once."""
 
     number: ClassVar[int]
-    statements: ClassVar[tuple[str, ...]]
+    statements: ClassVar[Sequence[str]]
 
     def run(self, database: Database) -> None:
         for sql in self.statements:

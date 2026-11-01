@@ -1,4 +1,4 @@
-from core.modules.processes.support.process_nudges import PROCESS_LOST
+from core.modules.processes.support.process_nudges import PROCESS_MISSING
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -7,7 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.processes.commands.end_process.end_process import EndProcess
 from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
-from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.process_part_query import ProcessPartQuery
@@ -15,13 +15,14 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
-TICK_GAP_SECONDS = 150
+TICK_INTERVAL_SECONDS = 150
 
 
 class OrphanProcessRule(DriverRule):
     """On each tick, a run of the agent whose shell has given no sign of life for longer than the limit is
     ended lost and the agent is told; a run whose folder holds an end the server never heard of is ended
-    from the folder. The first tick after a long gap, a machine that slept, ends nothing lost, since no heartbeat
+    from the folder. The first tick after a long gap, a machine that slept, ends nothing lost, since no
+    heartbeat
     could have been written either."""
 
     name = "processes.orphan-process"
@@ -34,19 +35,19 @@ class OrphanProcessRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
-        woke = self.folder.tick_gap_seconds(hook.agent_id, hook.timestamp) > TICK_GAP_SECONDS
+        restarted = self.folder.tick_interval_seconds(hook.agent_id, hook.timestamp) > TICK_INTERVAL_SECONDS
         for process in tuple(self.processes.agent(hook.agent_id).running().oldest().all_rows()):
-            answer = self.checked(answer, hook, process, woke)
+            answer = self.checked(answer, hook, process, restarted)
         return answer
 
-    def checked(self, answer: RuleAnswer, hook: AgentHook, process: Process, woke: bool) -> RuleAnswer:
+    def checked(self, answer: RuleAnswer, hook: AgentHook, process: Process, restarted: bool) -> RuleAnswer:
         code = self.folder.end(process.id)
         if code is not None:
             return answer.running(*self.parts_ended(process), self.ended(process, code))
         last_sign = self.folder.heartbeat(process.id) or process.created_at
-        if woke or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
+        if restarted or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
             return answer
-        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_LOST.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
+        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_MISSING.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
 
     def parts_ended(self, process: Process) -> list[EndProcessPart]:
         ended: list[EndProcessPart] = []

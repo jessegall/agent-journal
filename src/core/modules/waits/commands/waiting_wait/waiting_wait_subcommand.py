@@ -6,6 +6,6 @@ class WaitingWaitSubcommand(ViewRowsSubcommand):
     """`journal wait waiting [--before-id <n>] [--after-id <n>]`: the open waits that wait on the user, each with the
     rows it waits on."""
 
+    model = WaitingRow
     cli_name = "wait"
     name = "waiting"
-    model = WaitingRow

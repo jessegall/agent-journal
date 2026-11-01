@@ -15,7 +15,8 @@ GROUP_LABEL_FIELDS = ("family", "type", "count")
 class MarkDeclaration:
     """A type of chat mark a module adds: its type and variants as members of the module's own enums, its
     family, the words Show in chat lists it under, what a click on it and on its group does, its buttons,
-    the file of its own body if it has one, whether it is a line across the whole chat, and the viewer kit versions it was built for."""
+    the file of its own body if it has one, whether it is a line across the whole chat, and the viewer kit
+    versions it was built for."""
 
     type: StrEnum
     variants: type[StrEnum]

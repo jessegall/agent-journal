@@ -10,9 +10,9 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
-from core.modules.drivers.commands.pause_agent.agent_pause_subcommand import AgentPauseSubcommand
+from core.modules.drivers.commands.pause_agent.pause_agent_subcommand import PauseAgentSubcommand
 from core.modules.drivers.commands.pause_agent.pause_agent_handler import PauseAgentHandler
-from core.modules.drivers.commands.resume_agent.agent_resume_subcommand import AgentResumeSubcommand
+from core.modules.drivers.commands.resume_agent.resume_agent_subcommand import ResumeAgentSubcommand
 from core.modules.drivers.commands.resume_agent.resume_agent_handler import ResumeAgentHandler
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.rules.dispatch_law_rule import DispatchLawRule
@@ -81,7 +81,7 @@ class DriversModule(Module):
     views = [HookCallRow]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration]
     handlers = [RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [AgentPauseSubcommand, AgentResumeSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    subcommands = [PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]

@@ -8,7 +8,7 @@ from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_guards import SequenceGuards
-from core.modules.sequences.support.sequence_nudges import STEP_HOLDS_EDITS
+from core.modules.sequences.support.sequence_nudges import STEP_EDIT_BAN
 
 STEP_SHOWN_CHARACTERS = 40
 
@@ -35,8 +35,8 @@ class StepGuardRule(DriverRule):
         if run.step_number > len(guards):
             return RuleAnswer.allowed()
         guard = guards[run.step_number - 1]
-        if "file_edits_allowed" not in guard or guard["file_edits_allowed"]:
+        if guard.file_edits_allowed:
             return RuleAnswer.allowed()
-        if tool.shell is not None and any(re.search(pattern, tool.shell.line) for pattern in SequenceGuards.patterns(guard)):
+        if tool.shell is not None and any(re.search(pattern, tool.shell.line) for pattern in guard.allowed_commands):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(STEP_HOLDS_EDITS.nudge(sequence=sequence.id, step=run.step_number, text=sequence.steps[run.step_number - 1][:STEP_SHOWN_CHARACTERS]))
+        return RuleAnswer.refused(STEP_EDIT_BAN.nudge(sequence=sequence.id, step=run.step_number, text=sequence.steps[run.step_number - 1][:STEP_SHOWN_CHARACTERS]))

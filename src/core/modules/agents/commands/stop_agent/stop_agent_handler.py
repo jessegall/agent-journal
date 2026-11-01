@@ -13,7 +13,9 @@ from core.modules.agents.support.person_check import PersonCheck
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):
-    """Stops the program under the pid the agent's row keeps, only while that pid still runs that program, before the transaction opens since the stopped program's own hooks need the journal; then ends the session unless those hooks did."""
+    """Stops the program under the pid the agent's row keeps, only while that pid still runs that program,
+    before the transaction opens since the stopped program's own hooks need the journal; then ends the session
+    unless those hooks did."""
 
     command = StopAgent
 

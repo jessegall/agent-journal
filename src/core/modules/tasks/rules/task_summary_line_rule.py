@@ -1,4 +1,4 @@
-from core.modules.tasks.support.task_nudges import MISSED_LOG, TASK_IN_HAND
+from core.modules.tasks.support.task_nudges import MISSED_LOG, CURRENT_TASK
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -24,4 +24,4 @@ class TaskSummaryLineRule(DriverRule):
         if current is None:
             return RuleAnswer.allowed()
         logged = f"last log: {current.last_log.line}" if current.last_log is not None else "nothing logged yet"
-        return RuleAnswer.with_nudges(TASK_IN_HAND.nudge(name=current.name, logged=logged), MISSED_LOG.nudge(task=current.task.id))
+        return RuleAnswer.with_nudges(CURRENT_TASK.nudge(name=current.name, logged=logged), MISSED_LOG.nudge(task=current.task.id))

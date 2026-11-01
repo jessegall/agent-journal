@@ -8,7 +8,8 @@ ANSWER_LIMIT_SECONDS = 5
 
 
 class LauncherLink:
-    """Hands the running launcher a request on its socket; with an answer asked for, gives what it answered, and gives nothing when it could not be reached."""
+    """Hands the running launcher a request on its socket; with an answer asked for, gives what it answered,
+    and gives nothing when it could not be reached."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

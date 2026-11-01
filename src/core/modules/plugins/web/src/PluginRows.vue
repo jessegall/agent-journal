@@ -207,7 +207,7 @@ async function showRecord(row) {
         <Dialog :title="`What ${record.name} did`" @close="record = null">
             <div data-plugin-record-body>
                 <template v-if="record.last_fault">
-                    <p class="plugin-fault">Last fault, {{ record.fault_count }} in a row: {{ record.last_fault }}</p>
+                    <p class="plugin-fault">Last fault, {{ record.fault_count }} without a success: {{ record.last_fault }}</p>
                 </template>
                 <template v-if="record.services?.length">
                     <p class="plugin-note" data-plugin-services>Keeps running: {{ record.services.map((service) => service.name).join(", ") }}</p>

@@ -6,9 +6,9 @@ from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-LOOK = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
+VIEW_LINE = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])).with_fields(event="post_tool_use")
 
-SAME_LINE = HookSamples.shell("make build fast", ShellPart("make", CommandCategory.UNKNOWN, ["build", "fast"])).with_fields(event="post_tool_use")
+IDENTICAL_LINE = HookSamples.shell("make build fast", ShellPart("make", CommandCategory.UNKNOWN, ["build", "fast"])).with_fields(event="post_tool_use")
 
 
 def posted(line):
@@ -38,11 +38,11 @@ def test_a_line_run_often_teaches_an_alias_and_a_rare_one_does_not(new_story):
     story = runner_story(new_story)
     for _ in range(3):
         start_process(story, "make build fast")
-    story.expect_absent_hook_line("s-1", SAME_LINE, "add an alias")
+    story.expect_absent_hook_line("s-1", IDENTICAL_LINE, "add an alias")
     for _ in range(5):
         start_process(story, "make build fast")
-    assert any("you ran make build fast 8 times" in line for line in story.hook("s-1", SAME_LINE).lines)
-    story.expect_absent_hook_line("s-1", LOOK, "add an alias")
+    assert any("you ran make build fast 8 times" in line for line in story.hook("s-1", IDENTICAL_LINE).lines)
+    story.expect_absent_hook_line("s-1", VIEW_LINE, "add an alias")
 
 
 def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_story):
@@ -58,11 +58,11 @@ def test_a_title_that_holds_a_flag_or_a_path_is_refused_and_a_readers_title_is_n
     story = runner_story(new_story)
     process = moved_run(story, "make test")
     for title in ("Running ./build.sh", "Running the tests -q", "Running tests/unit/cart"):
-        story.expect_refusal(f'output title {process.id} "{title}"', "holds a flag or a path", actor=story.agent)
+        story.expect_refusal(f'output title {process.id} "{title}"', "contains a flag or a path", actor=story.agent)
     story.expect_success(f'output title {process.id} "Running the cart tests"', actor=story.agent)
     story.run('reader add tally --commands "pytest*" --title "Running tests" --topic "tests/(\\S+)"')
     start_process(story, "pytest tests/unit/cart")
-    story.expect_absent_hook_line("s-1", LOOK, "flag or a path")
+    story.expect_absent_hook_line("s-1", VIEW_LINE, "flag or a path")
 
 
 def test_two_running_outputs_with_one_title_are_named(new_story):
@@ -70,7 +70,7 @@ def test_two_running_outputs_with_one_title_are_named(new_story):
     first, second = moved_run(story, "make one"), moved_run(story, "make two")
     for process in (first, second):
         story.run(f'output title {process.id} "Building it"', actor=story.agent)
-    assert any(f"outputs {first.id}, {second.id} share the title Building it" in line for line in story.hook("s-1", LOOK).lines)
+    assert any(f"outputs {first.id}, {second.id} share the title Building it" in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
 def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new_story):
@@ -81,20 +81,20 @@ def test_a_line_already_said_in_a_turn_is_not_said_again_until_the_next_turn(new
     shared = f"outputs {first.id}, {second.id} share the title Building it"
     story.hook("s-1", HookSamples.prompt("go on"))
     story.advance(timedelta(seconds=1))
-    assert any(shared in line for line in story.hook("s-1", LOOK).lines)
+    assert any(shared in line for line in story.hook("s-1", VIEW_LINE).lines)
     story.advance(timedelta(minutes=11))
-    story.expect_absent_hook_line("s-1", LOOK, shared)
+    story.expect_absent_hook_line("s-1", VIEW_LINE, shared)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", HookSamples.prompt("and again"))
     story.advance(timedelta(seconds=1))
-    assert any(shared in line for line in story.hook("s-1", LOOK).lines)
+    assert any(shared in line for line in story.hook("s-1", VIEW_LINE).lines)
 
 
 def test_a_title_in_words_says_nothing(new_story):
     story = runner_story(new_story)
     process = moved_run(story, "make test")
     story.run(f'output title {process.id} "Running the cart tests"', actor=story.agent)
-    story.expect_absent_hook_line("s-1", LOOK, "is a flag or a path")
+    story.expect_absent_hook_line("s-1", VIEW_LINE, "is a flag or a path")
 
 
 def test_a_title_is_a_whole_phrase_that_opens_on_what_the_run_does(new_story):

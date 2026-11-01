@@ -10,14 +10,16 @@ from core.modules.agents.models.agent import Agent
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run import MoveSequenceRun
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
-from core.modules.sequences.support.sequence_triggers import ROW_TRIGGER, SequenceTriggers
+from core.modules.sequences.support.sequence_trigger import ROW_TRIGGER
+from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 
 START = "start"
-NO_TRIGGERS = "[]"
+EMPTY_TRIGGERS = "[]"
 
 
 class SequenceRowTriggerListener(CommitListener):
-    """An event a sequence names as its trigger starts that sequence for the environment's main agent, unless one is running."""
+    """An event a sequence names as its trigger starts that sequence for the environment's main agent, unless
+    one is running."""
 
     name = "sequences.row-trigger"
     event = "*.*"
@@ -28,7 +30,7 @@ class SequenceRowTriggerListener(CommitListener):
     def handle(self, event: LoggedEvent) -> None:
         if event.environment_id is None:
             return
-        sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != NO_TRIGGERS and self.met(row, event)), None)
+        sequence = next((row for row in self.queries.query(Sequence).all_rows() if row.triggers != EMPTY_TRIGGERS and self.is_triggered(row, event)), None)
         if sequence is None:
             return
         agents = self.queries.query(Agent).filter(environment_id=event.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
@@ -36,5 +38,5 @@ class SequenceRowTriggerListener(CommitListener):
             self.bus.run(MoveSequenceRun(START, sequence.id), Actor(agents[0].id, ActorType.AGENT), cause_id=event.id, environment_id=event.environment_id)
 
     @staticmethod
-    def met(sequence: Sequence, event: LoggedEvent) -> bool:
-        return any(trigger["trigger_type"] == ROW_TRIGGER and trigger["moment"] == event.event for trigger in SequenceTriggers.parsed(sequence.triggers))
+    def is_triggered(sequence: Sequence, event: LoggedEvent) -> bool:
+        return any(trigger.trigger_type == ROW_TRIGGER and trigger.moment == event.event for trigger in SequenceTriggers.parsed(sequence.triggers))

@@ -25,7 +25,7 @@ from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
-from suites.coding.coding_settings import CODING_SETTINGS
+from suites.coding.support.coding_settings import CODING_SETTINGS
 from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]

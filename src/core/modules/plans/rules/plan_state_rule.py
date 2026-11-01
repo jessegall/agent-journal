@@ -16,7 +16,8 @@ from core.modules.plans.support.plan_nudges import PLAN_APPROVED, PLAN_BLOCKED, 
 
 
 class PlanStateRule(DriverRule):
-    """A plan of the environment approved, cancelled or blocked since this rule last spoke is named to the main agent."""
+    """A plan of the environment approved, cancelled or blocked since this rule last spoke is named to the
+    main agent."""
 
     name = "plans.state-lines"
     hook = HookEventName.POST_TOOL_USE
@@ -29,8 +30,8 @@ class PlanStateRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answered_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
-        since = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
-        changed = self.plans.environment(hook.environment_id).matching(Greater("updated_at", since.text)).oldest().all_rows()
+        start = answered_at or self.queries.query(Agent).find(hook.agent_id).creation_timestamp()
+        changed = self.plans.environment(hook.environment_id).matching(Greater("updated_at", start.text)).oldest().all_rows()
         return RuleAnswer.with_nudges(*(nudge for plan in changed for nudge in self.state_nudges(plan)))
 
     def state_nudges(self, plan: Plan) -> list[Nudge]:

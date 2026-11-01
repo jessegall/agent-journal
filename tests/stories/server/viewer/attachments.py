@@ -18,8 +18,8 @@ def test_a_file_is_uploaded_sent_with_a_message_and_read_back_as_the_same_bytes(
         pending = uploaded(story, cookie)
         story.story.expect_success(f'message send "see this" --file {pending} --environment main', "text: see this", actor=story.story.user)
         story.story.expect_text("message show 1", "files:", "cart.png", actor=story.story.user)
-        status, data, kind = story.viewer_download("/api/files/message/1/cart.png", cookie)
-        assert status == 200 and data == IMAGE_BYTES and kind == "image/png", (status, kind)
+        status, data, category = story.viewer_download("/api/files/message/1/cart.png", cookie)
+        assert status == 200 and data == IMAGE_BYTES and category == "image/png", (status, category)
 
 
 def test_a_file_is_taken_only_with_the_login_cookie(new_story):

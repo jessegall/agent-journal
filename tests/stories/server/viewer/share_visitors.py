@@ -28,7 +28,8 @@ def with_password(story: ServerStory, path: str, password: str) -> tuple[int, di
 def test_a_waiting_link_opens_nothing_until_it_is_accepted(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         story.expect_viewer_login(story.viewer_key("Ada"))
-        story.story.run("share make plans:1 --environment main", actor=story.story.agent)
+        asked = json.loads(story.story.run("share make plans:1 --environment main --json", actor=story.story.agent).output_text)
+        assert asked["token"] is None and asked["link"] is None, asked
         accepted = json.loads(story.story.run("share accept 1 --json", actor=story.story.user).output_text)
         assert viewer_answer(story.viewer_port(), accepted["link"], "", "")[0] == 200
 
@@ -42,7 +43,9 @@ def test_a_locked_link_asks_for_its_password_and_a_guessed_cookie_opens_nothing(
         assert with_password(story, made["link"], "wrong")[0] == 401
         status, headers = with_password(story, made["link"], "open-sesame")
         assert status == 200 and headers["Set-Cookie"].startswith("journal_share="), (status, headers)
-        assert viewer_answer(story.viewer_port(), "/api/session", f"journal_share={made['token']}", "")[0] == 200
+        assert viewer_answer(story.viewer_port(), "/api/session", headers["Set-Cookie"].split(";")[0], "")[0] == 200
+        assert viewer_answer(story.viewer_port(), "/api/session", f"journal_share={made['token']}", "")[0] == 401
+        assert viewer_answer(story.viewer_port(), made["link"], "", "")[0] == 401
 
 
 def test_five_wrong_passwords_lock_the_address_out(new_story):
@@ -96,7 +99,7 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(new_story):
         story.story.expect_text('doc make "The cart rules" --abstract "How the cart counts" --body "Totals are in cents" --environment main', "doc 1: The cart rules", actor=user)
         shared = 1
         story.story.expect_text('doc make "Secret plans" --abstract "Not for visitors" --body "Hidden" --environment main', "doc 2: Secret plans", actor=user)
-        other = 2
+        second = 2
         made = json.loads(story.story.run(f"share make docs:{shared} --json", actor=user).output_text)
         cookie = f"journal_share={made['token']}"
         assert viewer_answer(story.viewer_port(), made["link"], "", "")[0] == 200
@@ -106,6 +109,14 @@ def test_a_shared_document_reads_to_its_visitor_and_no_other_does(new_story):
         line = {"window": window, "line": ["doc", "show", str(shared)], "environment": session["share"]["environment"]}
         status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", line)
         assert status == 200 and "Totals are in cents" in body, (status, body)
-        status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", {**line, "line": ["doc", "show", str(other)]})
+        status, _, body = viewer_answer(story.viewer_port(), "/api/line", cookie, "", {**line, "line": ["doc", "show", str(second)]})
         assert "Hidden" not in body, (status, body)
 
+
+def test_wrong_passwords_on_one_link_leave_another_link_open(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        first = made_link(story, "--password open-sesame")
+        second = json.loads(story.story.run("share make plans:1 --password other-word --json", actor=story.story.user).output_text)
+        statuses = [with_password(story, first["link"], "wrong")[0] for _ in range(6)]
+        assert statuses[-1] == 429, statuses
+        assert with_password(story, second["link"], "other-word")[0] == 200

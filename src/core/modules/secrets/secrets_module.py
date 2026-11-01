@@ -10,18 +10,18 @@ from core.modules.secrets.commands.edit_secret.edit_secret_handler import EditSe
 from core.modules.secrets.commands.fill_secret.fill_secret_handler import FillSecretHandler
 from core.modules.secrets.commands.make_secret.make_secret_handler import MakeSecretHandler
 from core.modules.secrets.commands.propose_program.propose_program_handler import ProposeProgramHandler
-from core.modules.secrets.commands.secret_allow.secret_allow_subcommand import SecretAllowSubcommand
-from core.modules.secrets.commands.secret_delete.secret_delete_subcommand import SecretDeleteSubcommand
-from core.modules.secrets.commands.secret_fill.secret_fill_subcommand import SecretFillSubcommand
+from core.modules.secrets.commands.allow_program.allow_program_subcommand import AllowProgramSubcommand
+from core.modules.secrets.commands.delete_secret.delete_secret_subcommand import DeleteSecretSubcommand
+from core.modules.secrets.commands.fill_secret.fill_secret_subcommand import FillSecretSubcommand
 from core.modules.secrets.commands.secret_list.secret_list_subcommand import SecretListSubcommand
-from core.modules.secrets.commands.secret_make.secret_make_subcommand import SecretMakeSubcommand
-from core.modules.secrets.commands.secret_propose.secret_propose_subcommand import SecretProposeSubcommand
-from core.modules.secrets.commands.secret_request.secret_request_subcommand import SecretRequestSubcommand
-from core.modules.secrets.commands.secret_restore.secret_restore_subcommand import SecretRestoreSubcommand
+from core.modules.secrets.commands.make_secret.make_secret_subcommand import MakeSecretSubcommand
+from core.modules.secrets.commands.propose_program.propose_program_subcommand import ProposeProgramSubcommand
+from core.modules.secrets.commands.request_secret.request_secret_subcommand import RequestSecretSubcommand
+from core.modules.secrets.commands.restore_secret.restore_secret_subcommand import RestoreSecretSubcommand
 from core.modules.secrets.commands.secret_run.secret_run_subcommand import SecretRunSubcommand
 from core.modules.secrets.commands.secret_show.secret_show_subcommand import SecretShowSubcommand
-from core.modules.secrets.commands.secret_store.secret_store_subcommand import SecretStoreSubcommand
-from core.modules.secrets.commands.secret_update.secret_update_subcommand import SecretUpdateSubcommand
+from core.modules.secrets.commands.store_secret.store_secret_subcommand import StoreSecretSubcommand
+from core.modules.secrets.commands.edit_secret.edit_secret_subcommand import EditSecretSubcommand
 from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
 from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
 from core.modules.secrets.models.secret import Secret
@@ -46,8 +46,8 @@ class SecretsModule(Module):
     migrations = [SecretsTableMigration]
     moves = [SecretsMove]
     handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
-    subcommands = (SecretMakeSubcommand, SecretRequestSubcommand, SecretUpdateSubcommand, SecretFillSubcommand, SecretStoreSubcommand, SecretListSubcommand,
-                   SecretShowSubcommand, SecretRunSubcommand, SecretProposeSubcommand, SecretAllowSubcommand, SecretDeleteSubcommand, SecretRestoreSubcommand)
+    subcommands = (MakeSecretSubcommand, RequestSecretSubcommand, EditSecretSubcommand, FillSecretSubcommand, StoreSecretSubcommand, SecretListSubcommand,
+                   SecretShowSubcommand, SecretRunSubcommand, ProposeProgramSubcommand, AllowProgramSubcommand, DeleteSecretSubcommand, RestoreSecretSubcommand)
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
     windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.HASH,

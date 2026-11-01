@@ -4,14 +4,25 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.command.context import Context
+from core.base.database.database import Database
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.nudge import Nudge
 from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
+from core.base.driver.rule_answer import RuleAnswer
+from core.base.driver.rule_answers import RuleAnswers
+from core.base.driver.rule_record import RuleRecord
+from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
+from core.modules.drivers.commands.support.nudge_log import NudgeLog
+from core.modules.messages.commands.read_message.read_message import ReadMessage
+from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.processes.support.process_nudges import UNREAD_OUTPUT
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.base.driver.support.fixtures import SampleSuiteChoice
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
@@ -52,5 +63,22 @@ def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
-    declared = NudgeDeclaration("shop.reminder", NudgeType.INSTRUCTION, "check the cart", once_per_turn=False)
-    assert declared.nudge().once_per_turn is False
+    declared = NudgeDeclaration("shop.reminder", NudgeType.INSTRUCTION, "check the cart", turn_limited=False)
+    assert declared.nudge().turn_limited is False
+
+
+def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    log = story.container.get(NudgeLog)
+    context = Context(Actor.core(), story.clock.timestamp(), ReadMessage(1))
+
+    def write(nudge: Nudge) -> None:
+        answer = RuleAnswer.with_nudges(nudge)
+        with story.container.get(Database).transaction():
+            log.write(story.agent.id, RuleAnswers(["lead"], [RuleRecord("sample", "lead", answer.outcome, answer)]), context)
+
+    write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", turn_limited=False))
+    write(Nudge("sample.clock", NudgeType.INSTRUCTION, "second text", turn_limited=False))
+    write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", repeat_seconds=60, turn_limited=False))
+    rows = story.container.get(Queries).query(NudgeRecord).filter(agent_id=story.agent.id, key="sample.clock").all_rows()
+    assert sorted((row.text, row.said_count) for row in rows) == [("first text", 2), ("second text", 1)]

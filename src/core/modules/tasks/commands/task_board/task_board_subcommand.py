@@ -10,7 +10,8 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.base.query.queries import Queries
 from core.modules.tasks.models.task_card import TaskCard
-from core.modules.tasks.support.task_board import TaskBoard, TaskGroup
+from core.modules.tasks.support.task_board import TaskBoard
+from core.modules.tasks.support.task_group import TaskGroup
 
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
 FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
@@ -44,9 +45,9 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         finished = tuple(TaskGroup(state.value, self.cards(environment_id, state).page(1, COUNT_PAGE_ROWS).total, ()) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
-    def group(self, environment_id: int, state: TaskState, before_id: int | None, size: int) -> TaskGroup:
+    def group(self, environment_id: int, state: TaskState, previous_id: int | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
-        rows = cards.matching(Less("id", before_id)) if before_id is not None else cards
+        rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.newest().page(1, size).rows))
 
     def cards(self, environment_id: int, state: TaskState) -> Query[TaskCard]:

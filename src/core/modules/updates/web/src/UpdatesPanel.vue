@@ -44,7 +44,7 @@ readNotes(1);
 
 <template>
     <template v-if="installing">
-        <div class="cover" role="status" data-update-cover>Updating the journal. This takes a moment.</div>
+        <div class="cover" role="status" data-update-cover>Updating the journal. This takes a short while.</div>
     </template>
     <template v-if="installed">
         <div class="arrived" role="status" data-update-arrived>

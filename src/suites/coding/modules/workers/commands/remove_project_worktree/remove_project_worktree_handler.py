@@ -8,10 +8,11 @@ from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 
 
 class RemoveProjectWorktreeHandler(Handler[RemoveProjectWorktree, str]):
-    """Removes the folder for a person, keeping its branch; the main checkout, a worker's worktree and one an agent runs in stay, and git refuses one with changes."""
+    """Removes the folder for a person, keeping its branch; the main checkout, a worker's worktree and one an
+    agent runs in stay, and git refuses one with changes."""
 
     command = RemoveProjectWorktree
-    in_transaction = False
+    transactional = False
 
     def __init__(self, worktrees: ProjectWorktrees, git: WorktreeGit) -> None:
         self.worktrees, self.git = worktrees, git

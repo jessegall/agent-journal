@@ -28,7 +28,7 @@ class RuleAnswer:
 
     @classmethod
     def refused(cls, nudge: Nudge) -> "RuleAnswer":
-        return cls(refusal=nudge.text, nudges=(nudge,), last=True)
+        return cls(refusal=nudge.text, nudges=tuple([nudge]), last=True)
 
     @classmethod
     def rewritten(cls, tool_input: Mapping[str, object]) -> "RuleAnswer":

@@ -17,7 +17,7 @@ from suites.coding.modules.workers.commands.send_worker.send_worker_handler impo
 from suites.coding.modules.workers.commands.send_worker.send_worker_subcommand import SendWorkerSubcommand
 from suites.coding.modules.workers.listeners.ended_worker_job_listener import EndedWorkerJobListener
 from suites.coding.modules.workers.listeners.ended_worker_listener import EndedWorkerListener
-from suites.coding.modules.workers.listeners.worker_ended_with_job_listener import WorkerEndedWithJobListener
+from suites.coding.modules.workers.listeners.worker_job_resume_listener import WorkerJobResumeListener
 from suites.coding.modules.workers.listeners.released_stop_listener import ReleasedStopListener
 from suites.coding.modules.workers.listeners.worker_program_listener import WorkerProgramListener
 from suites.coding.modules.workers.commands.dispatch_worker.dispatch_worker_handler import DispatchWorkerHandler
@@ -83,7 +83,7 @@ class WorkersModule(Module):
     subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerTestTurnRule, WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
-    listeners = [EndedWorkerListener, EndedWorkerJobListener, WorkerEndedWithJobListener, ReleasedStopListener, WorkerProgramListener]
+    listeners = [EndedWorkerListener, EndedWorkerJobListener, WorkerJobResumeListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],

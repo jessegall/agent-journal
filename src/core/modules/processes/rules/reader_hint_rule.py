@@ -9,7 +9,7 @@ from core.modules.processes.models.output import Output
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.support.process_nudges import READER_HINT
 
-WHOLE_READ_LINE = re.compile(r"(?:^|-- '|&& |; )journal output read (\d+) --all\b")
+FULL_READ_LINE = re.compile(r"(?:^|-- '|&& |; )journal output read (\d+) --all\b")
 
 
 class ReaderHintRule(DriverRule):
@@ -24,7 +24,7 @@ class ReaderHintRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        line = WHOLE_READ_LINE.search(shell.line) if shell is not None else None
+        line = FULL_READ_LINE.search(shell.line) if shell is not None else None
         kept = self.queries.query(Output).filter(process_id=int(line.group(1))).page(1, 1).rows if line is not None else ()
         if not kept or kept[0].reader_id is None or not kept[0].reader_lines:
             return RuleAnswer.allowed()

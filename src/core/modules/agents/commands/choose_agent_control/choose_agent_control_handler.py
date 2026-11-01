@@ -10,7 +10,8 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 
 
 class ChooseAgentControlHandler(Handler[ChooseAgentControl, Agent]):
-    """Finds the line of a choice its program offers and types it into the agent's terminal; a choice it does not offer is refused."""
+    """Finds the line of a choice its program offers and types it into the agent's terminal; a choice it does
+    not offer is refused."""
 
     command = ChooseAgentControl
 

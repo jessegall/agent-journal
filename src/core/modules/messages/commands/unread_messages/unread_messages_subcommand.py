@@ -15,7 +15,8 @@ from core.modules.messages.support.message_text import MessageText
 
 
 class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
-    """`journal message unread`: every unread message of the person, oldest first, as message read shows each; the messages module marks them read once this ran."""
+    """`journal message unread`: every unread message of the person, oldest first, as message read shows each;
+    the messages module marks them read once this ran."""
 
     cli_name = "message"
     name = "unread"
@@ -31,7 +32,7 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
         if environment_id is None:
             raise Refusal("unread messages are read for one environment", "name it with --environment")
         unread = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
-        return tuple(MessageText.of(message, self.links) for message in unread)
+        return tuple(MessageText.built(message, self.links) for message in unread)
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):

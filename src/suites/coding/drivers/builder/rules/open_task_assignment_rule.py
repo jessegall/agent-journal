@@ -1,11 +1,11 @@
-from suites.coding.support.coding_nudges import TASK_IS_YOURS
+from suites.coding.support.coding_nudges import TASK_ASSIGNMENT
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.modules.tasks.queries.task_query import TaskQuery
-from suites.coding.coding_settings import AUTO_MODE_SETTING
+from suites.coding.support.coding_settings import AUTO_MODE_SETTING
 from suites.coding.support.next_task import NextTask
 from core.modules.tasks.commands.start_task.start_task import StartTask
 
@@ -26,4 +26,4 @@ class OpenTaskAssignmentRule(DriverRule):
         following = self.next_task.following(hook.environment_id)
         if following is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(TASK_IS_YOURS.nudge(task=following.id, title=following.title, brief=following.brief or "no brief")).running(StartTask(following.id))
+        return RuleAnswer.refused(TASK_ASSIGNMENT.nudge(task=following.id, title=following.title, brief=following.brief or "no brief")).running(StartTask(following.id))

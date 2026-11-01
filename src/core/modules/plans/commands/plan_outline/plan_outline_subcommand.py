@@ -20,7 +20,7 @@ class PlanOutlineSubcommand(ReadSubcommand[PlanOutline]):
         parser.add_argument("plan_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanOutline:
-        return self.outlines.of(arguments.plan_id)
+        return self.outlines.outline(arguments.plan_id)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanOutline):

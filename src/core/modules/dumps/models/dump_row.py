@@ -6,7 +6,8 @@ from core.modules.dumps.models.support.views import DUMP_ROWS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class DumpRow(ViewModel):
-    """A dump with its title, brief and outcome, or one of its items with its text, state and notes, read from the dump_rows view."""
+    """A dump with its title, brief and outcome, or one of its items with its text, state and notes, read from
+    the dump_rows view."""
 
     cli_name = "dump-row"
     view = "dump_rows"

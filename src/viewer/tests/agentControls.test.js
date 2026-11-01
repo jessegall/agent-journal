@@ -1,6 +1,7 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import AgentControls from "../src/shell/AgentControls.vue";
+import {settle} from "./support/windowContext.js";
 
 vi.stubGlobal("ResizeObserver", class {
     observe() {}
@@ -10,10 +11,6 @@ vi.stubGlobal("ResizeObserver", class {
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const settle = async () => {
-    await new Promise((resolve) => setTimeout(resolve));
-    await nextTick();
-};
 
 const GROUPS = [{key: "model", label: "Model", choices: [{value: "opus", label: "Opus"}]}];
 const answers = (failure = null) => (line) => {

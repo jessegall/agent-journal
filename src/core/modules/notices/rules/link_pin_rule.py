@@ -19,7 +19,8 @@ OUTPUT_FIELD = "stdout"
 
 
 class LinkPinRule(DriverRule):
-    """A link in a command's output that no pin has is offered as a pin, and words in a message that a link is pinned, with no pin made in the last minute, are pointed out."""
+    """A link in a command's output that no pin has is offered as a pin, and words in a message that a link is
+    pinned, with no pin made in the last minute, are pointed out."""
 
     name = "notices.link-pin"
     hook = HookEventName.POST_TOOL_USE

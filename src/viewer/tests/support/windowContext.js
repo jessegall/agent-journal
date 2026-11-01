@@ -43,3 +43,8 @@ export async function mounted(component, windowContext, props = {}) {
 export async function drawn(component, windowContext) {
     return (await mounted(component, windowContext)).textContent;
 }
+
+export function typeInto(input, text) {
+    input.value = text;
+    input.dispatchEvent(new Event("input"));
+}

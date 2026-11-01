@@ -77,19 +77,19 @@ def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder
 def test_a_pid_gone_to_another_program_is_not_killed(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")
-    other = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    second = subprocess.Popen(["sleep", "60"], start_new_session=True)
     try:
         folder = story.container.get(OutputFolder)
-        folder.write_pid(process.id, other.pid)
+        folder.write_pid(process.id, second.pid)
         folder.beat(process.id, story.clock.timestamp())
         story.advance(timedelta(seconds=100))
         story.tick("s-1")
         story.expect_success("process show 1", "state: orphaned", actor=story.agent)
         time.sleep(0.2)
-        assert other.poll() is None, "another program with the pid was killed"
+        assert second.poll() is None, "another program with the pid was killed"
     finally:
-        other.kill()
-        other.wait()
+        second.kill()
+        second.wait()
 
 
 def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):

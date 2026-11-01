@@ -15,7 +15,8 @@ RESUMED_LINE = "the user resumed you: carry on where you stopped"
 
 
 class ResumeAgentHandler(Handler[ResumeAgent, Agent]):
-    """Clears a paused agent's pause and leaves the line that it may carry on, which a listener types once this is committed."""
+    """Clears a paused agent's pause and leaves the line that it may carry on, which a listener types once
+    this is committed."""
 
     command = ResumeAgent
 

@@ -16,6 +16,7 @@ from core.base.provider.hook_trust import HookTrust
 from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.program_folders import ProgramFolders
+from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
@@ -46,6 +47,14 @@ class Provider(ABC):
 
     def __init__(self, folders: ProgramFolders) -> None:
         self.folders = folders
+
+    def model_names(self) -> list[str]:
+        return [model.name for model in self.models]
+
+    def nearest_general_model(self, names: Sequence[str]) -> str:
+        all_names = self.model_names()
+        general = next(index for index, model in enumerate(self.models) if model.tier is ModelTier.GENERAL)
+        return min(names, key=lambda name: abs(all_names.index(name) - general))
 
     @abstractmethod
     def session_command(self, launch: Launch) -> LaunchCommand: ...

@@ -8,7 +8,8 @@ from core.modules.plugins.commands.support.plugin_install import PluginInstall
 
 
 class InstallPluginSubcommand(Subcommand[InstallPlugin, PluginInstall]):
-    """`journal plugin install <folder, link or owner/repo> [--yes]`: shows what it would install, and installs it with --yes."""
+    """`journal plugin install <folder, link or owner/repo> [--yes]`: shows what it would install, and
+    installs it with --yes."""
 
     cli_name = "plugin"
     name = "install"

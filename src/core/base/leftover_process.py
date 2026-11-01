@@ -10,8 +10,10 @@ POLL_SECONDS = 0.05
 
 
 class LeftoverProcess:
-    """A process a journal that was killed left running, found by the pid it kept on disk: stopped only when that
-    pid still runs the program named, its process group with it when it leads one; a ps that does not answer in
+    """A process a journal that was killed left running, found by the pid it kept on disk: stopped only when
+    that
+    pid still runs the program named, its process group with it when it leads one; a ps that does not answer
+    in
     time, or a process gone meanwhile, leaves it alone."""
 
     @classmethod

@@ -1,8 +1,8 @@
-from core.modules.documents.commands.support.text_close_subcommand import TextCloseSubcommand
+from core.modules.documents.commands.support.close_text_subcommand import CloseTextSubcommand
 from core.modules.documents.models.report import Report
 
 
-class ReportCloseSubcommand(TextCloseSubcommand):
+class ReportCloseSubcommand(CloseTextSubcommand):
     """`journal report settle`."""
 
     model = Report

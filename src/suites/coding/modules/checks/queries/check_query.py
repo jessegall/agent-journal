@@ -7,7 +7,7 @@ from core.base.query.query import Query
 from core.base.timestamp import Timestamp
 from datetime import timedelta
 from suites.coding.modules.checks.models.check import Check
-from suites.coding.modules.checks.queries.interval_passed import IntervalPassed
+from suites.coding.modules.checks.queries.support.interval_passed import IntervalPassed
 
 
 

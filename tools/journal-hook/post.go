@@ -103,11 +103,16 @@ func holdsStop(eventName string) bool {
 // postedUntilAnswered asks as post does; a stop the journal does not answer with 200 is asked again, resting between asks, until
 // the window has passed, so a journal that stalls for seconds still holds the stop instead of letting it through.
 func postedUntilAnswered(outgoing delivery, transport http.RoundTripper, firedTime time.Time, window, pause time.Duration) (int, []byte) {
+	if !holdsStop(outgoing.event) {
+		return post(outgoing, transport, firedTime)
+	}
 	began := time.Now()
-	status, answer := post(outgoing, transport, firedTime)
-	for status != http.StatusOK && holdsStop(outgoing.event) && time.Since(began) < window {
+	stamped(outgoing, firedTime)
+	status, answer := posted(outgoing, transport)
+	for status != http.StatusOK && time.Since(began) < window {
 		time.Sleep(pause)
-		status, answer = post(outgoing, transport, firedTime)
+		stamped(outgoing, firedTime)
+		status, answer = posted(outgoing, transport)
 	}
 	return status, answer
 }

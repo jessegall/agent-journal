@@ -13,7 +13,8 @@ MINUTE_SECONDS = 60
 
 
 class WorkerLogDueRule(DriverRule):
-    """A worker that has shown no proof for thirty minutes since its worktree or its last proof is told to log where it stands."""
+    """A worker that has shown no proof for thirty minutes since its worktree or its last proof is told to log
+    where it stands."""
 
     name = "workers.worker-log-due"
     hook = HookEventName.POST_TOOL_USE

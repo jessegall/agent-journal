@@ -7,7 +7,8 @@ from core.modules.messages.models.message import Message
 
 
 class TagMessageSubcommand(Subcommand[TagMessage, Message]):
-    """`journal message tag <n> "<file>" "<what it shows>"`: says what an attached picture shows, so it can be found later."""
+    """`journal message tag <n> "<file>" "<what it shows>"`: says what an attached picture shows, so it can be
+    found later."""
 
     cli_name = "message"
     name = "tag"

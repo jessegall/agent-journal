@@ -4,12 +4,20 @@
     "find": {
         "select": "kind:keyword",
         "where": [
-            {"name": "position"},
-            {"fileMatches": "(^|/)core/modules/plans/"}
+            {
+                "name": "position"
+            },
+            {
+                "fileMatches": "(^|/)core/modules/plans/"
+            }
         ],
         "reject": [
-            {"fileMatches": "(^|/)core/modules/plans/(positions|phase_handlers)\\.py$"},
-            {"testCode": true}
+            {
+                "fileMatches": "(^|/)core/modules/plans/commands/(make_phase|move_phase|place_phase)/"
+            },
+            {
+                "testCode": true
+            }
         ]
     },
     "sin": {

@@ -7,7 +7,8 @@ from core.modules.plans.models.support.views import PLAN_CARDS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class PlanCard(ViewModel):
-    """A plan as the plans window draws it, with its progress, read from the plan_cards view without its brief or reason."""
+    """A plan as the plans window draws it, with its progress, read from the plan_cards view without its brief
+    or reason."""
 
     cli_name = "plan"
     view = "plan_cards"

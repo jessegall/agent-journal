@@ -11,7 +11,8 @@ SILENT_SECONDS = 30
 
 
 class SilentRunRule(DriverRule):
-    """Tells an agent that a run still going has printed nothing, so its reader has nothing to show, and how to make it stream."""
+    """Tells an agent that a run still going has printed nothing, so its reader has nothing to show, and how
+    to make it stream."""
 
     name = "processes.silent-run"
     hook = HookWildcard.ALL_HOOKS

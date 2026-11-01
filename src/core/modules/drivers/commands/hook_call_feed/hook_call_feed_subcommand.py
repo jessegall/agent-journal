@@ -6,7 +6,7 @@ class HookCallFeedSubcommand(ViewRowsSubcommand):
     """`journal hook-call feed [--agent-id <n>] [--before-id <n>] [--after-id <n>]`: a page of an agent's hook calls
     with the fields the activity window draws."""
 
+    model = HookCallRow
+    filters = ["agent_id"]
     cli_name = "hook-call"
     name = "feed"
-    model = HookCallRow
-    filters = ("agent_id",)

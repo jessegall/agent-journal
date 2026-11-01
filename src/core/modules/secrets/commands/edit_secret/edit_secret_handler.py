@@ -1,4 +1,4 @@
-from core.modules.secrets.models.secret_field import SecretField
+from core.modules.secrets.models.support.secret_field import SecretField
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
@@ -10,7 +10,8 @@ from core.modules.secrets.support.secret_values import SecretValues
 
 
 class EditSecretHandler(Handler[EditSecret, Secret]):
-    """Saves a secret's new title or how it is used; its fields keep their variables, and fields can be added, or removed by a person, whose hidden value then stays only to be masked."""
+    """Saves a secret's new title or how it is used; its fields keep their variables, and fields can be added,
+    or removed by a person, whose hidden value then stays only to be masked."""
 
     command = EditSecret
 

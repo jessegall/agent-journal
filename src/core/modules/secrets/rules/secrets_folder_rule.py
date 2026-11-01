@@ -1,4 +1,4 @@
-from core.modules.secrets.support.secret_nudges import SECRETS_OUT_OF_REACH
+from core.modules.secrets.support.secret_nudges import SECRETS_FOLDER_BAN
 import json
 from pathlib import Path
 
@@ -32,7 +32,7 @@ class SecretsFolderRule(DriverRule):
         tool_text = " ".join((*tool.files, tool.shell.line if tool.shell is not None else "", json.dumps(dict(hook.event.tool_input()), default=str)))
         if not any(spelling in tool_text for spelling in self.spellings()):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(SECRETS_OUT_OF_REACH.nudge())
+        return RuleAnswer.refused(SECRETS_FOLDER_BAN.nudge())
 
     def spellings(self) -> tuple[str, ...]:
         home = str(Path.home())

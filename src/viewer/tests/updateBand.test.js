@@ -1,13 +1,10 @@
 import {createApp, h, nextTick} from "vue";
 import {afterEach, expect, test} from "vitest";
 import UpdateBand from "../src/shell/UpdateBand.vue";
+import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const settle = async () => {
-    await new Promise((resolve) => setTimeout(resolve));
-    await nextTick();
-};
 
 async function drawn(answers) {
     const ran = [];

@@ -32,5 +32,5 @@ def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
     older = story.run("task board --environment main --state open --before-id 3 --limit 1 --json", actor=story.user).output_text
     assert "Two" in older and "One" not in older and "Three" not in older
     assert '"total": 3' in older or '"total":3' in older
-    held = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
-    assert "Three" in held and "Two" in held and "One" not in held
+    withheld = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
+    assert "Three" in withheld and "Two" in withheld and "One" not in withheld

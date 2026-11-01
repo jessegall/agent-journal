@@ -12,7 +12,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
-NOT_OFFERED_WINDOWS = {"viewer.shell", "processes.output"}
+HIDDEN_WINDOWS = {"viewer.shell", "processes.output"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 
@@ -39,7 +39,7 @@ def test_every_viewer_file_is_imported_by_something():
         if path.name in BUILD_ENTRIES or path.suffix == ".css":
             continue
         imported = re.compile(rf"""[/"']{re.escape(path.stem)}(\.(vue|js))?["']""")
-        if not any(other != path and imported.search(text) for other, text in readers.items()):
+        if not any(second != path and imported.search(text) for second, text in readers.items()):
             orphans.append(str(path.relative_to(ROOT)))
     assert not orphans, f"nothing imports {orphans}"
 
@@ -51,14 +51,14 @@ def test_a_window_declares_each_line_it_reads_or_runs():
         for path in source_files(folder / "web/src"):
             text = path.read_text(errors="ignore")
             missing += [f"{path.name} reads {line}" for line in READ_LINE.findall(text) if line not in reads]
-            missing += [f"{path.name} runs {noun} {verb}" for noun, verb in RUN_LINE.findall(text) if f"{noun} {verb}" not in runs]
+            missing += [f"{path.name} runs {target_type} {action}" for target_type, action in RUN_LINE.findall(text) if f"{target_type} {action}" not in runs]
     assert not missing, "\n".join(missing)
 
 
 def test_the_shell_declares_each_line_it_reads():
     viewer = next(window for window in ViewerModule.windows if window.name == "viewer.shell")
     declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
-    missing = {f"{noun} {verb}" for path in source_files(VIEWER / "src") for noun, verb in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
+    missing = {f"{target_type} {action}" for path in source_files(VIEWER / "src") for target_type, action in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
     assert not missing, sorted(missing)
 
 
@@ -69,5 +69,5 @@ def test_the_coding_suite_offers_every_window_a_module_declares():
         module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
         declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows}
     text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
-    missing = {name for name in declared if f'"{name}"' not in text} - NOT_OFFERED_WINDOWS
+    missing = {name for name in declared if f'"{name}"' not in text} - HIDDEN_WINDOWS
     assert not missing, sorted(missing)

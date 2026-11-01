@@ -6,7 +6,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from tunnels.tunler.support.tunler_client import TunlerClient
 from tunnels.tunler.support.tunler_domains import TunlerDomains
-from tunnels.tunler.tunler_tunnel import SUBDOMAIN_SETTING
+from tunnels.tunler.support.tunler_tunnel import SUBDOMAIN_SETTING
 
 
 class TunlerDomainsSubcommand(ReadSubcommand[TunlerDomains]):
@@ -22,7 +22,7 @@ class TunlerDomainsSubcommand(ReadSubcommand[TunlerDomains]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> TunlerDomains:
-        return TunlerDomains(tuple(self.client.domains()), self.settings.text(SUBDOMAIN_SETTING, None) or None)
+        return TunlerDomains(tuple(self.client.domains()), self.settings.text(SUBDOMAIN_SETTING, None))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TunlerDomains):

@@ -12,10 +12,9 @@ from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
-from core.modules.plugins.support.plugin_preview import PluginPreview
 from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
-from core.modules.plugins.support.plugin_staging import LEFT_OUT, PluginStaging
+from core.modules.plugins.support.plugin_staging import EXCLUDED_NAMES, PluginStaging
 from core.modules.plugins.support.plugin_upgrade import PluginUpgrade
 
 NEW_SUFFIX = ".new"
@@ -23,7 +22,9 @@ OLD_SUFFIX = ".old"
 
 
 class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
-    """Fetches a plugin's source and, once confirmed, sets the new code up beside the old and swaps them before the transaction opens, so a failing step leaves the old one in place; running services keep the old code until the journal restarts."""
+    """Fetches a plugin's source and, once confirmed, sets the new code up beside the old and swaps them
+    before the transaction opens, so a failing step leaves the old one in place; running services keep the old
+    code until the journal restarts."""
 
     command = UpgradePlugin
 
@@ -37,22 +38,22 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
         manifest = PluginManifest.read(source)
         if manifest.name != plugin.name:
             self.staging.cleared(plugin.source)
-            raise Refusal(f"the source of {plugin.name} now holds a plugin named {manifest.name}", "install that one under its own name")
+            raise Refusal(f"the source of {plugin.name} now contains a plugin called {manifest.name}", "install that one under its own name")
         if not command.confirmed:
             return
         self.steps.check_requirements(manifest, source)
         code = self.folders.code(plugin.name)
-        fresh_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
-        shutil.rmtree(fresh_code, ignore_errors=True)
-        shutil.copytree(source, fresh_code, ignore=LEFT_OUT)
+        new_code, old_code = code.with_name(code.name + NEW_SUFFIX), code.with_name(code.name + OLD_SUFFIX)
+        shutil.rmtree(new_code, ignore_errors=True)
+        shutil.copytree(source, new_code, ignore=EXCLUDED_NAMES)
         try:
-            self.steps.run_setup(manifest, fresh_code)
+            self.steps.run_setup(manifest, new_code)
         except Refusal:
-            shutil.rmtree(fresh_code, ignore_errors=True)
+            shutil.rmtree(new_code, ignore_errors=True)
             raise
         shutil.rmtree(old_code, ignore_errors=True)
         code.rename(old_code)
-        fresh_code.rename(code)
+        new_code.rename(code)
         shutil.rmtree(old_code, ignore_errors=True)
 
     def handle(self, command: UpgradePlugin, context: Context) -> PluginUpgrade:
@@ -72,9 +73,9 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     @staticmethod
     def changes(old: PluginManifest, offered: PluginManifest) -> list[str]:
-        before, after = UpgradePluginHandler.run_lines(old), UpgradePluginHandler.run_lines(offered)
-        return [*(f"no longer {line}" for line in before if line not in after), *(f"new {line}" for line in after if line not in before)]
+        previous, after = UpgradePluginHandler.run_lines(old), UpgradePluginHandler.run_lines(offered)
+        return [*(f"no longer {line}" for line in previous if line not in after), *(f"new {line}" for line in after if line not in previous)]
 
     @staticmethod
     def run_lines(manifest: PluginManifest) -> list[str]:
-        return [f"{row['kind']} {row['label']}: {row['command']}" for row in PluginPreview(manifest, "").rows()]
+        return [f"{row['kind']} {row['label']}: {row['command']}" for row in manifest.run_rows()]

@@ -14,7 +14,8 @@ from suites.coding.modules.workers.support.worker_job import WORKER_JOB_SOURCE
 
 
 class SendWorkerHandler(Handler[SendWorker, AgentLine]):
-    """Gives a worker that still has its worktree its next job as a line; a delivered worker's task goes back in hand."""
+    """Gives a worker that still has its worktree its next job as a line; a delivered worker's task goes back
+    in hand."""
 
     command = SendWorker
 

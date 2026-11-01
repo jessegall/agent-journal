@@ -9,7 +9,8 @@ FORK_AGENT = "fork"
 
 
 class DispatchLawRule(DriverRule):
-    """A subagent dispatch names its model and is bound to a concrete job, a description and a prompt; a fork inherits its model by what it is."""
+    """A subagent dispatch names its model and is bound to a concrete job, a description and a prompt; a fork
+    inherits its model by what it is."""
 
     name = "drivers.dispatch-law"
     hook = HookEventName.PRE_TOOL_USE

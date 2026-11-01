@@ -11,14 +11,16 @@ from suites.coding.support.git_rows import GitRows
 
 BASE_BRANCHES = ("development", "main", "master")
 COMMAND_LIMIT_SECONDS = 15
-PULL_ROW_COUNT = 30
+MERGE_REQUEST_ROW_COUNT = 30
 FAILED_CHECKS = ("FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED", "STARTUP_FAILURE")
 RUNNING_CHECKS = ("PENDING", "QUEUED", "IN_PROGRESS", "WAITING", "EXPECTED", "")
-PULL_FIELDS = '[.number, .isDraft, .reviewDecision, ([.statusCheckRollup[] | (.conclusion // .state // .status // "")] | join(",")), .headRefName, .author.login, .url, .title] | @tsv'
+MERGE_REQUEST_FIELDS = '[.number, .isDraft, .reviewDecision, ([.statusCheckRollup[] | (.conclusion // .state // .status // "")] | join(",")), .headRefName, .author.login, .url, .title] | @tsv'
 
 
 class ProjectGit:
-    """Reads an environment's repository and writes nothing: its branches with the commits each has beyond the base branch and those it lacks, the recent commits of the current branch, and the open pull requests when the gh program is there."""
+    """Reads an environment's repository and writes nothing: its branches with the commits each has beyond the
+    base branch and those it lacks, the recent commits of the current branch, and the open pull requests when
+    the gh program is there."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -65,7 +67,7 @@ class ProjectGit:
     def pulls(self, environment_id: int | None) -> GitPullRows:
         if shutil.which("gh") is None:
             return GitPullRows(False, ())
-        listed = self.output(environment_id, "gh", "pr", "list", "--state", "open", "--limit", str(PULL_ROW_COUNT), "--json", "number,title,headRefName,author,isDraft,reviewDecision,statusCheckRollup,url", "--jq", f".[] | {PULL_FIELDS}")
+        listed = self.output(environment_id, "gh", "pr", "list", "--state", "open", "--limit", str(MERGE_REQUEST_ROW_COUNT), "--json", "number,title,headRefName,author,isDraft,reviewDecision,statusCheckRollup,url", "--jq", f".[] | {MERGE_REQUEST_FIELDS}")
         return GitPullRows(False, ()) if listed is None else GitPullRows(True, tuple(self.pull(line) for line in listed.splitlines()))
 
     @staticmethod

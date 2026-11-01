@@ -9,7 +9,8 @@ from core.modules.memories.commands.weigh_memories.weigh_memories import WeighMe
 
 
 class WeighMemoriesHandler(Handler[WeighMemories, list[Memory]]):
-    """Saves each memory at its new weight, one weight given for several going to all of them; keeping a weight is an answer too, so the round closes either way."""
+    """Saves each memory at its new weight, one weight given for several going to all of them; keeping a
+    weight is an answer too, so the round closes either way."""
 
     command = WeighMemories
 

@@ -1,5 +1,5 @@
 import {afterEach, expect, test} from "vitest";
-import {context, mounted, page, settle} from "./support/windowContext.js";
+import {context, mounted, page, settle, typeInto as typed} from "./support/windowContext.js";
 import SequenceCards from "../../core/modules/sequences/web/src/SequenceCards.vue";
 
 afterEach(() => (document.body.innerHTML = ""));
@@ -14,10 +14,6 @@ async function drawn(runs = []) {
     return {element: await mounted(SequenceCards, window), ran};
 }
 
-function typed(field, words) {
-    field.value = words;
-    field.dispatchEvent(new Event("input"));
-}
 
 const panel = () => document.body.querySelector(".dialog-panel");
 

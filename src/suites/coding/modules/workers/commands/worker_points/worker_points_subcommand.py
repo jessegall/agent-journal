@@ -9,7 +9,8 @@ from suites.coding.modules.workers.support.worker_point_list import WorkerPointL
 
 
 class WorkerPointsSubcommand(ReadSubcommand[WorkerPointList]):
-    """`journal worker-worktree points --agent <n>`: the points of the brief of the agent's newest worktree's task, each with the proof shown for it."""
+    """`journal worker-worktree points --agent <n>`: the points of the brief of the agent's newest worktree's
+    task, each with the proof shown for it."""
 
     cli_name = "worker-worktree"
     name = "points"

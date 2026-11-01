@@ -22,4 +22,4 @@ class ReleaseNotes:
             return ReleaseNotePage((), True)
         text, _ = self.source.fetched(f"https://api.github.com/repos/{repository[1]}/releases?per_page={PAGE_SIZE}&page={number}")
         rows = json.loads(text)
-        return ReleaseNotePage(tuple(ReleaseNote(row["tag_name"], row["body"] or "", row["published_at"]) for row in rows), len(rows) < PAGE_SIZE)
+        return ReleaseNotePage(tuple(ReleaseNote(row["tag_name"], row["body"], row["published_at"]) for row in rows), len(rows) < PAGE_SIZE)

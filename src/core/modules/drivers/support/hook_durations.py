@@ -2,7 +2,7 @@ import time
 from collections.abc import Sequence
 
 from core.base.database.database import Database
-from core.base.database.point_tally import Points
+from core.base.database.points import Points
 from core.base.driver.hook_event import HookEvent
 from core.base.journal_home import JournalHome
 from core.base.timing import Timing

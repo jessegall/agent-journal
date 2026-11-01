@@ -88,16 +88,16 @@ def test_stop_leaves_alone_a_pid_that_now_runs_something_else_and_still_ends_the
 def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(new_story, monkeypatch):
     story = new_story(fixture=UserJoined)
     database = story.container.get(Database)
-    held: list[bool] = []
+    withheld: list[bool] = []
     agent_id = story.new_row_id("agent start s-stopped claude worker --pid 4242 --environment main")
 
     def stopped(pid: int, program: str) -> None:
-        held.append(database.has_transaction)
+        withheld.append(database.has_transaction)
         story.expect_success(f"agent end {agent_id}", actor=story.user)
 
     monkeypatch.setattr(LeftoverProcess, "stop", stopped)
     story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
-    story.expect_rows(held == [False])
+    story.expect_rows(withheld == [False])
     story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 

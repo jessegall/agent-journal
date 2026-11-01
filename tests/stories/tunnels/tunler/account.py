@@ -7,7 +7,7 @@ from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.tunnels.tunler.support.fake_tunler_client import ACCOUNT, TUNLER_HOST, FakeTunlerClient
 from tests.stories.tunnels.tunler.support.set_clock import SetClock
 from tunnels.tunler.support.tunler_client import TunlerClient
-from tunnels.tunler.tunler_tunnel import TunlerTunnel
+from tunnels.tunler.support.tunler_tunnel import TunlerTunnel
 
 MODULE = "tunnels.tunler.tunler_module:TunlerModule"
 SUBDOMAIN_SETTING = "journal.tunnels.tunler.subdomain"
@@ -32,7 +32,7 @@ def test_the_status_says_who_is_logged_in_where_and_whether_this_journal_uses_tu
     story, _ = account_story(new_story)
     status = answer(story, "tunler status")
     assert status["installed"] and status["authenticated"] and status["account"] == ACCOUNT and status["host"] == TUNLER_HOST
-    assert not status["in_use"] and status["subdomain"] is None
+    assert not status["in_use"] and status["subdomain"] == ""
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     story.expect_success(f"setting set {SERVICE_SETTING} tunler --project", actor=story.user)
     status = answer(story, "tunler status")
@@ -128,12 +128,12 @@ def test_a_tunnel_made_for_one_read_sees_the_tunler_the_server_opened(new_story)
     story, client = account_story(new_story)
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     TunlerTunnel(client, story.container.get(SettingValues), SetClock()).open(VIEWER_PORT)
-    fresh = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
-    story.expect_rows(fresh.state() is TunnelState.CONNECTED, fresh.address() == f"https://cart-team.{TUNLER_HOST}", fresh.reason() == "")
+    new = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
+    story.expect_rows(new.state() is TunnelState.CONNECTED, new.address() == f"https://cart-team.{TUNLER_HOST}", new.reason() == "")
 
 
 def test_a_tunnel_made_for_one_read_says_why_none_is_open(new_story):
     story, client = account_story(new_story, FakeTunlerClient(authenticated=False))
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
-    fresh = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
-    story.expect_rows(fresh.state() is TunnelState.DISCONNECTED, fresh.reason() == "this machine is not logged in to tunler: run tunler login")
+    new = TunlerTunnel(client, story.container.get(SettingValues), SetClock())
+    story.expect_rows(new.state() is TunnelState.DISCONNECTED, new.reason() == "this machine is not logged in to tunler: run tunler login")

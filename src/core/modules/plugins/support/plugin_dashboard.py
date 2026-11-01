@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class PluginDashboard:
-    """A plugin's dashboard as the viewer's dashboard draws it: its title, first page and pages, or why there is nothing to draw."""
+    """A plugin's dashboard as the viewer's dashboard draws it: its title, first page and pages, or why there
+    is nothing to draw."""
 
     fields: Mapping[str, object]
 

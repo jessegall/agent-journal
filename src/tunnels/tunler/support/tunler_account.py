@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TunlerAccount:
-    """What the Tunler window shows about this machine: its status, the subdomain this journal asks for, and whether this journal uses tunler."""
+    """What the Tunler window shows about this machine: its status, the subdomain this journal asks for, and
+    whether this journal uses tunler."""
 
     installed: bool
     authenticated: bool

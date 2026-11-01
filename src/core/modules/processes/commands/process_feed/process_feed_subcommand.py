@@ -3,10 +3,11 @@ from core.modules.processes.models.process_row import ProcessRow
 
 
 class ProcessFeedSubcommand(ViewRowsSubcommand):
-    """`journal process feed [--id <n>] [--environment-id <n>] [--before-id <n>] [--after-id <n>]`: a page of processes,
+    """`journal process feed [--id <n>] [--environment-id <n>] [--before-id <n>] [--after-id <n>]`: a page of
+    processes,
     newest first, with the line and state the commands windows draw."""
 
-    cli_name = "process"
-    name = "feed"
     model = ProcessRow
     filters = ("id", "environment_id")
+    cli_name = "process"
+    name = "feed"

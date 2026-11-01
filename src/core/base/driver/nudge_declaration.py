@@ -9,17 +9,19 @@ CUT_END_CHARACTERS = 60
 
 @dataclass(frozen=True)
 class NudgeDeclaration:
-    """A line a module can say to an agent, declared once: its key, its type, its words with {fields}, how long before it may be said again, the longest it may be, cut in its middle so its instruction stays, 0 meaning no limit, and whether a turn says it only once; a reminder on a clock says no."""
+    """A line a module can say to an agent, declared once: its key, its type, its words with {fields}, how
+    long before it may be said again, the longest it may be, cut in its middle so its instruction stays, 0
+    meaning no limit, and whether a turn says it only once; a reminder on a clock says no."""
 
     key: str
     type: NudgeType
     text: str
     repeat_seconds: int = 0
     longest_characters: int = 0
-    once_per_turn: bool = True
+    turn_limited: bool = True
 
     def nudge(self, **fields: object) -> Nudge:
-        return Nudge(self.key, self.type, self.cut(self.text.format(**fields)), self.repeat_seconds, self.once_per_turn)
+        return Nudge(self.key, self.type, self.cut(self.text.format(**fields)), self.repeat_seconds, self.turn_limited)
 
     def cut(self, line: str) -> str:
         if not self.longest_characters or len(line) <= self.longest_characters:

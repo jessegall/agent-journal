@@ -6,16 +6,16 @@ from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.documents.commands.comment_on_text.comment_on_text_handler import CommentOnTextHandler
-from core.modules.documents.commands.doc_comment.doc_comment_subcommand import DocCommentSubcommand
+from core.modules.documents.commands.comment_text.comment_text_handler import CommentTextHandler
+from core.modules.documents.commands.comment_doc.comment_doc_subcommand import CommentDocSubcommand
 from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
 from core.modules.documents.commands.close_text.close_text_handler import CloseTextHandler
-from core.modules.documents.commands.doc_close.doc_close_subcommand import DocCloseSubcommand
+from core.modules.documents.commands.close_doc.close_doc_subcommand import CloseDocSubcommand
 from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
-from core.modules.documents.commands.doc_edit.doc_edit_subcommand import DocEditSubcommand
+from core.modules.documents.commands.edit_doc.edit_doc_subcommand import EditDocSubcommand
 from core.modules.documents.commands.doc_list.doc_list_subcommand import DocListSubcommand
 from core.modules.documents.commands.document_library.document_library_subcommand import DocumentLibrarySubcommand
-from core.modules.documents.commands.doc_make.doc_make_subcommand import DocMakeSubcommand
+from core.modules.documents.commands.make_doc.make_doc_subcommand import MakeDocSubcommand
 from core.modules.documents.commands.doc_revision.doc_revision_subcommand import DocRevisionSubcommand
 from core.modules.documents.commands.doc_revisions.doc_revisions_subcommand import DocRevisionsSubcommand
 from core.modules.documents.commands.doc_show.doc_show_subcommand import DocShowSubcommand
@@ -39,7 +39,8 @@ from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.document_row import DocumentRow
 from core.base.cli.row_links import RowLinks
-from core.modules.documents.listeners.new_text_dock_listeners import NewDocDockListener, NewReportDockListener
+from core.modules.documents.listeners.new_doc_dock_listener import NewDocDockListener
+from core.modules.documents.listeners.new_report_dock_listener import NewReportDockListener
 from core.modules.documents.models.link import Link
 from core.modules.documents.support.stored_row_links import StoredRowLinks
 from core.modules.documents.support.text_docks import TEXT_DOCKS
@@ -67,10 +68,10 @@ class DocumentsModule(Module):
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
-    handlers = [CommentOnTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
+    handlers = [CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
     listeners = [DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = [(RowLinks, StoredRowLinks)]
-    subcommands = (DocCommentSubcommand, ReportCommentSubcommand, DocMakeSubcommand, DocEditSubcommand, DocShowSubcommand, DocListSubcommand, DocCloseSubcommand, KeepRevisionSubcommand,
+    subcommands = (CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
                    ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand)

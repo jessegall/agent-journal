@@ -87,7 +87,7 @@ async function fill(row, field) {
     <template v-if="drafting">
         <form class="draft" data-secret-draft @submit.prevent="create">
             <Segmented :options="KINDS" :value="draft.kind" @pick="draft.kind = $event" />
-            <input v-model="draft.title" placeholder="What it is for" aria-label="Title">
+            <input v-model="draft.title" placeholder="Its purpose" aria-label="Title">
             <input v-model="draft.brief" placeholder="A note on where it is used; you can leave this empty" aria-label="Note">
             <template v-if="draft.kind === 'custom'">
                 <input v-model="draft.field" placeholder="The name of its first field" aria-label="First field" data-secret-first-field>

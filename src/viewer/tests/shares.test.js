@@ -82,8 +82,9 @@ test("an open link shows its views and comments and stops, and every share stops
 test("a visitor reads and writes comments and a refusal says why", async () => {
     const sent = [];
     vi.stubGlobal("fetch", async (url, options) => {
-        if (options) sent.push(JSON.parse(options.body));
-        const refused = options && !sent[0].name.trim();
+        const comment = options?.body ? JSON.parse(options.body) : null;
+        const refused = comment !== null && !comment.name.trim();
+        if (comment && !refused) sent.push(comment);
         return {ok: !refused, json: async () => (refused ? {error: "no name"} : {rows: [{id: 1, visitor_name: "Bo", text: "Nice plan"}]})};
     });
     const {createApp} = await import("vue");
@@ -101,4 +102,13 @@ test("a visitor reads and writes comments and a refusal says why", async () => {
     await settle();
     expect(sent).toEqual([{name: "Bo", text: "Good"}]);
     expect(text.value).toBe("");
+    name.value = " ";
+    name.dispatchEvent(new Event("input"));
+    text.value = "Again";
+    text.dispatchEvent(new Event("input"));
+    await settle();
+    host.querySelector("[data-share-comment-form]").dispatchEvent(new Event("submit", {cancelable: true}));
+    await settle();
+    expect(host.textContent).toContain("no name");
+    expect(sent.length).toBe(1);
 });

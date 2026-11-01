@@ -9,7 +9,8 @@ from suites.coding.modules.workers.support.allowed_models import AllowedModels
 
 
 class WorkerModelsSubcommand(ReadSubcommand[RowList]):
-    """`journal worker models`: each program's models from the cheapest to the strongest, and whether a worker may run on it."""
+    """`journal worker models`: each program's models from the cheapest to the strongest, and whether a worker
+    may run on it."""
 
     cli_name = "worker"
     name = "models"

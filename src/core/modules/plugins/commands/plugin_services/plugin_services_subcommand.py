@@ -13,7 +13,8 @@ from core.modules.plugins.support.plugin_socket_paths import PluginSocketPaths
 
 
 class PluginServicesSubcommand(ReadSubcommand[RowList]):
-    """`journal plugin services`: each service of the plugins switched on and whether it runs, by the pid the journal kept for it."""
+    """`journal plugin services`: each service of the plugins switched on and whether it runs, by the pid the
+    journal kept for it."""
 
     cli_name = "plugin"
     name = "services"

@@ -27,13 +27,13 @@ class ReactMessageHandler(Handler[ReactMessage, Message]):
         if not MessageReactions.is_emoji(command.emoji):
             raise Refusal(f"{command.emoji} is no face", "a reaction is one emoji, such as 👍")
         message = self.queries.query(Message).find(command.message_id)
-        before = len(MessageReactions.of(message))
+        previous = len(MessageReactions.decoded(message))
         saved = self.repository.save(message.changed(reactions=MessageReactions.toggled(message, context.actor, command.emoji)), context)
-        if context.actor.type is ActorType.USER and len(MessageReactions.of(saved)) > before:
-            self.tell_agents(saved, command.emoji, context)
+        if context.actor.type is ActorType.USER and len(MessageReactions.decoded(saved)) > previous:
+            self.notify_agents(saved, command.emoji, context)
         return saved
 
-    def tell_agents(self, message: Message, emoji: str, context: Context) -> None:
+    def notify_agents(self, message: Message, emoji: str, context: Context) -> None:
         line = f"the user put {emoji} on message {message.id}: act on it if it asks for something; never mention it"
         for agent in tuple(self.queries.query(Agent).filter(environment_id=message.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=line, source=REACTION_SOURCE), context)

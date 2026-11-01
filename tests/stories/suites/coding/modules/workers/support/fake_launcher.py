@@ -7,7 +7,8 @@ ACCEPT_TIMEOUT_SECONDS = 10
 
 
 class FakeLauncher:
-    """A launcher socket in a story's journal folder that takes worker requests and keeps them, under a time limit, answering each as told or, as an older launcher does, not at all."""
+    """A launcher socket in a story's journal folder that takes worker requests and keeps them, under a time
+    limit, answering each as told or, as an older launcher does, not at all."""
 
     def __init__(self, path: Path, answer: bytes = b"", request_count: int = 1) -> None:
         self.path, self.requests, self.answer, self.request_count = path, list[dict[str, object]](), answer, request_count

@@ -7,7 +7,8 @@ from suites.coding.modules.workers.commands.remove_project_worktree.remove_proje
 
 
 class RemoveProjectWorktreeSubcommand(Subcommand[RemoveProjectWorktree, str]):
-    """`journal project-worktree remove <folder>`: removes a worktree folder nobody is working in, keeping its branch."""
+    """`journal project-worktree remove <folder>`: removes a worktree folder nobody is working in, keeping its
+    branch."""
 
     cli_name = "project-worktree"
     name = "remove"

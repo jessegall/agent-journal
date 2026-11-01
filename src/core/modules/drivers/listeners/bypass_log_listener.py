@@ -17,7 +17,8 @@ MODULE_NAME = "journal.core.drivers"
 
 
 class BypassLogListener(CommitListener):
-    """The first hook of a main agent the journal records after it was silent names, once, what went around it: a mark in the chat and a line for the agent, from the log the Go hook writes."""
+    """The first hook of a main agent the journal records after it was silent names, once, what went around
+    it: a mark in the chat and a line for the agent, from the log the Go hook writes."""
 
     name = "drivers.bypass-log"
     event = "hook_call.create"
@@ -32,10 +33,10 @@ class BypassLogListener(CommitListener):
         agent = self.queries.query(Agent).find(self.queries.query(HookCall).find(event.row_id).agent_id)
         if agent.role is not AgentRole.MAIN:
             return
-        taken = log.with_suffix(".taken")
-        log.replace(taken)
-        count = sum(1 for line in taken.read_text(errors="replace").splitlines() if line.strip())
-        taken.unlink()
+        claimed = log.with_suffix(".taken")
+        log.replace(claimed)
+        count = sum(1 for line in claimed.read_text(errors="replace").splitlines() if line.strip())
+        claimed.unlink()
         if not count:
             return
         actor = self.actors.actor(MODULE_NAME)

@@ -16,12 +16,12 @@ const guardWords = (index) => [guardOf(index).file_edits_allowed ? "File edits a
 
 function edit() {
     draft.value = [...props.sequence.steps];
-    guardsDraft.value = props.sequence.steps.map((_, index) => ({file_edits_allowed: guardOf(index).file_edits_allowed, commands: guardOf(index).allowed_commands.join(", ")}));
+    guardsDraft.value = props.sequence.steps.map((_, index) => ({step: index, file_edits_allowed: guardOf(index).file_edits_allowed, commands: guardOf(index).allowed_commands.join(", ")}));
 }
 
 function steps(next) {
     draft.value = next;
-    guardsDraft.value = next.map((_, index) => guardsDraft.value[index] ?? {file_edits_allowed: true, commands: ""});
+    guardsDraft.value = next.map((_, index) => guardsDraft.value[index] ?? {step: index, file_edits_allowed: true, commands: ""});
 }
 
 async function save() {
@@ -63,7 +63,7 @@ async function save() {
         </template>
         <template v-else>
             <StepCards :steps="draft" @steps="steps" />
-            <template v-for="(guard, index) in guardsDraft" :key="index">
+            <template v-for="(guard, index) in guardsDraft" :key="guard.step">
                 <div class="guard" data-step-guard-edit>
                     <span class="stop-guard">Step {{ index + 1 }}</span>
                     <label class="guard-allow"><input v-model="guard.file_edits_allowed" type="checkbox" :data-guard-edits="index"> File edits allowed</label>

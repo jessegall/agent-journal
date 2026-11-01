@@ -1,9 +1,9 @@
 from core.base.subcommand.output import Output
-from core.modules.documents.commands.support.text_edit_subcommand import TextEditSubcommand
+from core.modules.documents.commands.support.edit_text_subcommand import EditTextSubcommand
 from core.modules.documents.models.report import Report
 
 
-class ReportEditSubcommand(TextEditSubcommand):
+class ReportEditSubcommand(EditTextSubcommand):
     """`journal report edit`."""
 
     model = Report

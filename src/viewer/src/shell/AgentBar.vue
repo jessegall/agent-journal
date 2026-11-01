@@ -18,7 +18,7 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
         <template v-if="agent">
             <strong data-agent-word>{{ word }}</strong>
             <template v-if="waiting">
-                <button type="button" class="agent-waiting" data-agent-waiting title="Show what the agent needs to go ahead" @click="emit('open', 'waiting')">{{ waiting }} waiting on you</button>
+                <button type="button" class="agent-waiting" data-agent-waiting title="Show what the agent needs to go ahead" @click="emit('open', 'waiting')">Waiting: {{ waiting }}</button>
             </template>
             <template v-if="task">
                 <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>

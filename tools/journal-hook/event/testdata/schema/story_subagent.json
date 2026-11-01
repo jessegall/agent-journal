@@ -8,8 +8,6 @@
   "actor": "agent",
   "environment": "main",
   "subagent": "",
-  "accepts_lines": true,
-  "launch": "",
   "tool": {
     "name": "Agent",
     "category": "agent",
@@ -17,5 +15,13 @@
     "diff": null
   },
   "prompt": null,
-  "raw": {}
+  "raw": {
+    "tool_input": {
+      "model": "haiku",
+      "description": "Read the cart",
+      "prompt": "Find where totals are counted"
+    }
+  },
+  "accepts_lines": true,
+  "launch": ""
 }

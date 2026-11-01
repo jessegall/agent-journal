@@ -75,7 +75,8 @@ onMounted(async () => {
             <template v-else-if="!cards.length">
                 <EmptyState title="No edits by this agent yet" />
             </template>
-            <div v-else class="file-feed-flow">
+            <template v-else>
+            <div class="file-feed-flow">
                 <template v-if="hasOlder && !filter">
                     <Btn small data-feed-older @click="showOlder">Show older edits</Btn>
                 </template>
@@ -100,6 +101,7 @@ onMounted(async () => {
                     />
                 </template>
             </div>
+            </template>
         </div>
     </div>
 </template>

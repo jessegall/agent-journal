@@ -1,28 +1,16 @@
-from dataclasses import dataclass
-
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine
-from core.base.query.queries import Queries
 from core.base.query.conditions.is_null import IsNull
+from core.base.query.queries import Queries
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.background_commands import BackgroundCommands
+from core.modules.processes.support.foreground_run import ForegroundRun
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.support.process_settings import ProcessSettings
 
 BACKGROUND_CATEGORIES = frozenset((CommandCategory.TEST_RUN, CommandCategory.BUILD))
-
-
-@dataclass(frozen=True)
-class ForegroundRun:
-    """How long a line may run in the foreground, whether it goes to the background at once, and
-    the reader an alias it runs names."""
-
-    seconds: int
-    background: bool
-    reader_id: int | None = None
-    aliases: tuple[str, ...] = ()
 
 
 class ForegroundLimit:

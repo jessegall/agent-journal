@@ -18,9 +18,11 @@ ENDED_TABLE = "shares stopped or past their end"
 
 
 class ShareMove(VersionFourMove):
-    """Carries version 4's live shares, the ones not stopped and not past their end, as share links on the plan the
+    """Carries version 4's live shares, the ones not stopped and not past their end, as share links on the
+    plan the
     share's link names, kept by the digest of the old token so the old address still opens it; one not yet
-    approved waits. A stopped or ended share is dropped and counted; one whose row is no plan, or did not move,
+    approved waits. A stopped or ended share is dropped and counted; one whose row is no plan, or did not
+    move,
     or that has a password this version cannot read, is skipped and told."""
 
     name = "sharing"

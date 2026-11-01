@@ -11,14 +11,15 @@ from core.modules.settings.support.settings_tree import BACKUP_COUNT_SETTING, BA
 
 BACKUP_FOLDER = "backups-watch"
 COPY_PREFIX = "version-5-"
-SECONDS_PER_MINUTE = 60
+MINUTE_SECONDS = 60
 PARTIAL_SUFFIX = ".partial"
 LEAST_COPIES = 1
 
 
 class ServerBackup:
     """Writes an online copy of the journal's database once the minutes a setting names have passed since the
-    newest copy, under a name of its own until it is whole, and keeps the newest copies a setting counts, at least the one
+    newest copy, under a name of its own until it is whole, and keeps the newest copies a setting counts, at
+    least the one
     just written; 0 minutes writes none."""
 
     def __init__(self, home: JournalHome) -> None:
@@ -32,7 +33,7 @@ class ServerBackup:
         finally:
             container.get(Database).close()
         copies = self.copies()
-        if minutes == 0 or (copies and time.time() - copies[0].stat().st_mtime < minutes * SECONDS_PER_MINUTE):
+        if minutes == 0 or (copies and time.time() - copies[0].stat().st_mtime < minutes * MINUTE_SECONDS):
             return
         self.write_copy()
         for extra_copy in self.copies()[max(count, LEAST_COPIES):]:

@@ -6,7 +6,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job_handler import EndScheduledJobHandler
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job_handler import RecordScheduledJobHandler
-from core.modules.schedules.commands.scheduled_job_running.scheduled_job_running_subcommand import ScheduledJobRunningSubcommand
+from core.modules.schedules.commands.scheduled_job_state.scheduled_job_state_subcommand import ScheduledJobStateSubcommand
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_handler import StopScheduledJobHandler
 from core.modules.schedules.commands.stop_scheduled_job.stop_scheduled_job_subcommand import StopScheduledJobSubcommand
 from core.modules.schedules.listeners.ended_agent_jobs_listener import EndedAgentJobsListener
@@ -20,12 +20,13 @@ class SchedulesModule(Module):
 
     name = "journal.core.schedules"
     seed_reason = "its jobs are written by an agent's hooks, and the demo has no hooks"
+    move_reason = "version 4 kept its jobs in the agent program, not in a table"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ScheduledJobsTableMigration]
     handlers = [RecordScheduledJobHandler, EndScheduledJobHandler, StopScheduledJobHandler]
-    subcommands = [ScheduledJobRunningSubcommand, StopScheduledJobSubcommand]
+    subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
     driver_rules = [ScheduledJobRule]
     listeners = [EndedAgentJobsListener]
     windows = [WindowDeclaration("schedules.jobs", "Scheduled jobs", "jobs.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.AGENT,

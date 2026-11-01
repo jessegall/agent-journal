@@ -1,0 +1,68 @@
+from collections.abc import Mapping
+from dataclasses import dataclass, fields
+from fnmatch import fnmatch
+from typing import Self
+import re
+
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.hook_event_name import HookEventName
+from core.base.refusal import Refusal
+
+
+ROW_TRIGGER = "row"
+PHRASE_TRIGGER = "phrase"
+COMMAND_TRIGGER = "command"
+FILE_TRIGGER = "file"
+FILE_TEXT_TRIGGER = "file-text"
+TOOL_TRIGGER = "tool"
+REQUIRED_FIELDS = {ROW_TRIGGER: ["moment"], PHRASE_TRIGGER: ["text"], COMMAND_TRIGGER: ["pattern"], FILE_TRIGGER: ["pattern"], FILE_TEXT_TRIGGER: ["pattern", "text"], TOOL_TRIGGER: ["tool"]}
+PATTERN_TRIGGERS = (COMMAND_TRIGGER, TOOL_TRIGGER)
+
+
+@dataclass(frozen=True)
+class SequenceTrigger:
+    """One thing that starts a sequence on its own, by its kind and the fields that kind reads."""
+
+    trigger_type: str = ""
+    moment: str = ""
+    text: str = ""
+    pattern: str = ""
+    tool: str = ""
+
+    @classmethod
+    def parsed(cls, values: Mapping[object, object]) -> Self:
+        names = {field.name for field in fields(cls)}
+        return cls(**{str(name): str(value) for name, value in values.items() if name in names})
+
+    def check(self) -> None:
+        category = self.trigger_type
+        if category not in REQUIRED_FIELDS:
+            raise Refusal(f"{category} is no kind of trigger", f"the kinds are {', '.join(REQUIRED_FIELDS)}")
+        missing = [name for name in REQUIRED_FIELDS[category] if not getattr(self, name).strip()]
+        if missing:
+            raise Refusal(f"a {category} trigger needs its {', '.join(missing)}")
+        if category in PATTERN_TRIGGERS and self.pattern:
+            try:
+                re.compile(self.pattern)
+            except re.error as error:
+                raise Refusal(f"the pattern {self.pattern} does not read: {error}") from error
+
+    def matches_hook(self, hook: AgentHook) -> bool:
+        event = hook.event
+        category = self.trigger_type
+        if category == PHRASE_TRIGGER:
+            return event.event is HookEventName.PROMPT and event.prompt is not None and self.text.lower() in event.prompt.lower()
+        tool = event.tool
+        if event.event is not HookEventName.POST_TOOL_USE or tool is None:
+            return False
+        if category == COMMAND_TRIGGER:
+            return tool.shell is not None and re.search(self.pattern, tool.shell.line) is not None
+        if category == FILE_TRIGGER:
+            return any(fnmatch(path, self.pattern) for path in tool.files)
+        if category == FILE_TEXT_TRIGGER:
+            added = any(row["line_type"] == "add" and self.text in str(row["text"]) for row in tool.diff_rows)
+            return added and any(fnmatch(path, self.pattern) for path in tool.files)
+        if category == TOOL_TRIGGER:
+            searched = tool.shell.line if tool.shell is not None else " ".join(tool.files)
+            return tool.name == self.tool and (not self.pattern or re.search(self.pattern, searched) is not None)
+        return False

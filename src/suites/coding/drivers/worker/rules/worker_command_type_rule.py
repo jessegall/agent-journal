@@ -5,7 +5,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from suites.coding.coding_settings import COMMAND_TYPES
+from suites.coding.support.coding_settings import COMMAND_TYPES
 
 
 

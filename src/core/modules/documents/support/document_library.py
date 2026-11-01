@@ -6,7 +6,8 @@ from core.modules.documents.models.document_row import DocumentRow
 
 @dataclass(frozen=True)
 class DocumentLibrary:
-    """What the documents window draws: one page of the documents or the reports, with how many there are, holding only the fields of a row."""
+    """What the documents window draws: one page of the documents or the reports, with how many there are,
+    holding only the fields of a row."""
 
     total: int
     rows: tuple[DocumentRow, ...]

@@ -8,7 +8,7 @@ from core.modules.schedules.commands.end_scheduled_job.end_scheduled_job import 
 from core.modules.schedules.commands.record_scheduled_job.record_scheduled_job import RecordScheduledJob
 
 SCHEDULE_TOOL = "CronCreate"
-DELETE_TOOL = "CronDelete"
+REMOVAL_TOOL = "CronDelete"
 JOB_ID = re.compile(r"\b[0-9a-f]{8}\b")
 
 
@@ -21,12 +21,12 @@ class ScheduledJobRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is None or tool.name not in (SCHEDULE_TOOL, DELETE_TOOL):
+        if tool is None or tool.name not in (SCHEDULE_TOOL, REMOVAL_TOOL):
             return RuleAnswer.allowed()
         fields = hook.event.tool_input()
-        if tool.name == DELETE_TOOL:
+        if tool.name == REMOVAL_TOOL:
             return RuleAnswer.allowed().running(EndScheduledJob(hook.agent_id, str(fields.get("id", ""))))
-        found = JOB_ID.search(str(hook.event.raw.get("tool_response", "")))
-        if found is None:
+        matches = JOB_ID.search(str(hook.event.raw.get("tool_response", "")))
+        if matches is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordScheduledJob(hook.agent_id, hook.environment_id, found.group(0), str(fields.get("cron", "")), str(fields.get("prompt", "")), fields.get("recurring", True) is not False))
+        return RuleAnswer.allowed().running(RecordScheduledJob(hook.agent_id, hook.environment_id, matches.group(0), str(fields.get("cron", "")), str(fields.get("prompt", "")), fields.get("recurring", True) is not False))

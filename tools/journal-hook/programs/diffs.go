@@ -82,25 +82,25 @@ func claudeRows(eventName string, read commonBody, tool *event.Tool) []event.Dif
 	}
 	collected := make([]edits.Section, 0, len(sections))
 	for _, section := range sections {
-		hunk, _ := section.(map[string]any)
-		lines, _ := hunk["lines"].([]any)
+		part, _ := section.(map[string]any)
+		lines, _ := part["lines"].([]any)
 		texts := make([]string, 0, len(lines))
 		for _, line := range lines {
 			text, _ := line.(string)
 			texts = append(texts, text)
 		}
-		collected = append(collected, edits.Section{OldStart: wholeNumber(hunk["oldStart"]), NewStart: wholeNumber(hunk["newStart"]), Lines: texts})
+		collected = append(collected, edits.Section{OldStart: integerValue(part["oldStart"]), NewStart: integerValue(part["newStart"]), Lines: texts})
 	}
 	return edits.SectionRows(collected)
 }
 
-func wholeNumber(value any) int {
+func integerValue(value any) int {
 	switch number := value.(type) {
 	case float64:
 		return int(number)
 	case json.Number:
-		whole, _ := number.Int64()
-		return int(whole)
+		integer, _ := number.Int64()
+		return int(integer)
 	}
 	return 0
 }

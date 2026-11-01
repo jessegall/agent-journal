@@ -5,18 +5,35 @@
         "select": "call",
         "where": [
             {
-                "nameIn": ["run", "dispatch", "save", "delete", "execute", "update", "insert"]
+                "nameIn": [
+                    "run",
+                    "dispatch",
+                    "save",
+                    "delete",
+                    "execute",
+                    "update",
+                    "insert"
+                ]
             },
             {
                 "any": [
-                    {"extendsAny": "DriverRule", "of": "enclosingType"},
-                    {"extendsAny": "Overlay", "of": "enclosingType"}
+                    {
+                        "extendsAny": "DriverRule",
+                        "of": "enclosingType"
+                    },
+                    {
+                        "extendsAny": "Overlay",
+                        "of": "enclosingType"
+                    }
                 ]
             }
         ],
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)core/modules/plugins/rules/plugin_rule\\.py$"
             }
         ]
     },

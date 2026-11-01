@@ -155,3 +155,14 @@ class PluginManifest:
     def window_ms(self, event: str, ceiling_ms: int) -> int:
         limits = [window.window_ms for window in self.event_windows if window.event == event and window.window_ms > 0]
         return min(limits[0], ceiling_ms) if limits else ceiling_ms
+
+    def run_rows(self) -> list[Mapping[str, str]]:
+        entries = [("requires", requirement.name, requirement.check) for requirement in self.requirements]
+        entries += [("setup", step.name, step.line) for step in self.setup_steps]
+        if self.installed_command:
+            entries.append(("installed", "Asked for its settings", self.installed_command))
+        if self.program:
+            entries.append(("program", ", ".join(self.event_names) or "No events", self.program))
+        entries += [("service", service.name, " ".join(service.command)) for service in self.services]
+        entries += [("alias", alias.name, alias.line) for alias in self.aliases]
+        return [{"kind": category, "label": label, "command": command} for category, label, command in entries]

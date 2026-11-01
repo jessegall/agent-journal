@@ -93,7 +93,7 @@ def test_a_line_that_only_reads_and_writes_files_runs_as_written_pipes_and_all_a
     line = "cat src/cart.py | grep total"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"])))
     assert not reply.updated_input
-    reply = story.hook("s-1", HookSamples.shell("sed -n 1,5p src/cart.py && cat > notes.txt", ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], write_paths=["notes.txt"])))
+    reply = story.hook("s-1", HookSamples.shell("sed -n 1,5p src/cart.py && cat > notes.txt", ShellPart("sed", CommandCategory.READ, ["-n"]), ShellPart("cat", CommandCategory.EDIT, [], edited_paths=["notes.txt"])))
     assert not reply.updated_input
     assert not reply.refusal
     story.expect_success("process list", "nothing found")

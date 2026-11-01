@@ -1,6 +1,6 @@
 import re
 from core.base.driver.nudge import Nudge
-from core.modules.processes.support.process_nudges import DRAFT_A_READER, OUTPUT_ENDED, READER_MISSED, READER_NO_PROGRESS, READER_NO_SUMMARY, READER_TOO_WIDE
+from core.modules.processes.support.process_nudges import READER_DRAFT, OUTPUT_ENDED, READER_MISSED, READER_PROGRESS_MISSING, READER_SUMMARY_MISSING, READER_WIDTH
 from pathlib import PurePath
 
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -10,10 +10,10 @@ from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_folder import OutputFolder
 
-WIDE_FROM_LINES = 50
+WIDTH_LINE_COUNT = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
-SHELL_WORDS = frozenset(("journal", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
+SHELL_TERMS = frozenset(("journal", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
 
 
 class EndedOutputText:
@@ -29,7 +29,7 @@ class EndedOutputText:
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
         ended = OUTPUT_ENDED.nudge(text=self.line(process))
-        return (ended, DRAFT_A_READER.nudge(text=advice), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
+        return (ended, READER_DRAFT.nudge(text=advice), *self.reader_nudges(process)) if advice else (ended, *self.reader_nudges(process))
 
     def reader_nudges(self, process: Process) -> tuple[Nudge, ...]:
         kept = self.outputs.process(process.id).page(1, 1).rows
@@ -40,20 +40,20 @@ class EndedOutputText:
         if reader.type is not ReaderType.PATTERN:
             return ()
         if not output.reader_lines:
-            return (READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id),)
-        found = [READER_TOO_WIDE.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if output.line_count >= WIDE_FROM_LINES and output.reader_lines * WIDE_SHARE >= output.line_count * (WIDE_SHARE - 1) else []
+            return tuple([READER_MISSED.nudge(reader=reader.name, lines=output.line_count, output=process.id)])
+        matches = [READER_WIDTH.nudge(reader=reader.name, kept=output.reader_lines, lines=output.line_count, output=process.id)] if output.line_count >= WIDTH_LINE_COUNT and output.reader_lines * WIDE_SHARE >= output.line_count * (WIDE_SHARE - 1) else []
         if reader.summary_pattern and not output.reader_summary:
-            found.append(READER_NO_SUMMARY.nudge(reader=reader.name, output=process.id))
+            matches.append(READER_SUMMARY_MISSING.nudge(reader=reader.name, output=process.id))
         if not reader.progress_pattern and COUNTED.search(self.folder.last_text(process.id)):
-            found.append(READER_NO_PROGRESS.nudge(reader=reader.name, output=process.id))
-        return tuple(found)
+            matches.append(READER_PROGRESS_MISSING.nudge(reader=reader.name, output=process.id))
+        return tuple(matches)
 
     def advice(self, process: Process) -> str:
         kept = self.outputs.process(process.id).page(1, 1).rows
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return ""
-        first = next((word for word in process.line.split() if "=" not in word), "")
-        if not first or first in SHELL_WORDS:
+        first = process.program_word()
+        if first is None or first in SHELL_TERMS:
             return ""
         name = PurePath(first).name
         return f'no reader reads {name} yet: fill in journal reader add {name} --commands "{first}*" --lines "<the lines that matter>" from this run\'s output and run it'

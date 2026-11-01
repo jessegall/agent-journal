@@ -6,7 +6,8 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True, kw_only=True)
 class ScheduledJob(Model):
-    """A prompt an agent scheduled for itself in its own program: the id the program gave it, its cron schedule, the prompt, whether it repeats, when a person asked it stopped, and when it ended."""
+    """A prompt an agent scheduled for itself in its own program: the id the program gave it, its cron
+    schedule, the prompt, whether it repeats, when a person asked it stopped, and when it ended."""
 
     model_name = "scheduled_job"
     cli_name = "scheduled-job"

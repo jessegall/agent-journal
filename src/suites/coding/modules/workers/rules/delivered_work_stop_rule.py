@@ -1,4 +1,4 @@
-from suites.coding.modules.workers.support.worker_nudges import CHECK_THE_PROOF
+from suites.coding.modules.workers.support.worker_nudges import PROOF_CHECK
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -26,5 +26,5 @@ class DeliveredWorkStopRule(DriverRule):
         for worktree in self.delivered.delivered(hook.agent_id):
             proofs = [proof.id for proof in self.proofs.waiting_proofs(worktree.id).oldest().all_rows()]
             if proofs and (refused_at is None or worktree.updated_at is None or refused_at < worktree.updated_at):
-                return RuleAnswer.refused(CHECK_THE_PROOF.nudge(worker=worktree.agent_id, task=worktree.task_id, proofs=', '.join(map(str, proofs))))
+                return RuleAnswer.refused(PROOF_CHECK.nudge(worker=worktree.agent_id, task=worktree.task_id, proofs=', '.join(map(str, proofs))))
         return RuleAnswer.allowed()

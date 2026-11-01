@@ -2,7 +2,7 @@ from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.prune_outputs.prune_outputs import PruneOutputs
-from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings

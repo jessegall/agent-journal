@@ -12,27 +12,29 @@ from core.modules.drivers.models.nudge_record import NudgeRecord
 
 
 class NudgeLog:
-    """Which lines of a hook are held back: one already said in this turn, one said again too soon, and a repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a number that changes in its text does not start it again. A refusal is never held back."""
+    """Which lines of a hook are held back: one already said in this turn, one said again too soon, and a
+    repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a
+    number that changes in its text does not start it again. A refusal is never held back."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
 
-    def held_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
+    def withheld_lines(self, agent_id: int, answers: RuleAnswers, timestamp: Timestamp) -> frozenset[tuple[str, str]]:
         lines = answers.line_nudges
         if not lines:
             return frozenset()
-        turn_began_at = self.turn_began_at(agent_id)
-        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_held(agent_id, nudge, turn_began_at, timestamp))
+        turn_start = self.turn_start(agent_id)
+        return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_withheld(agent_id, nudge, turn_start, timestamp))
 
-    def is_held(self, agent_id: int, nudge: Nudge, turn_began_at: Timestamp | None, timestamp: Timestamp) -> bool:
-        said_at = self.record(agent_id, nudge).last_said_at
-        if said_at is None:
+    def is_withheld(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp) -> bool:
+        delivered_at = self.record(agent_id, nudge).last_said_at
+        if delivered_at is None:
             return False
-        if nudge.repeat_seconds and said_at.elapsed_seconds(timestamp) < nudge.repeat_seconds:
+        if nudge.repeat_seconds and delivered_at.elapsed_seconds(timestamp) < nudge.repeat_seconds:
             return True
-        return nudge.once_per_turn and (turn_began_at is None or said_at.text >= turn_began_at.text)
+        return nudge.turn_limited and (turn_start is None or delivered_at.text >= turn_start.text)
 
-    def turn_began_at(self, agent_id: int) -> Timestamp | None:
+    def turn_start(self, agent_id: int) -> Timestamp | None:
         prompts = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.PROMPT).newest().page(1, 1).rows
         return prompts[0].created_at if prompts else None
 
@@ -42,6 +44,7 @@ class NudgeLog:
         return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        for nudge in (*answers.said_nudges, *answers.refusal_nudges):
-            current = self.record(agent_id, nudge)
+        for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
+            same_text = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).page(1, 1).rows
+            current = same_text[0] if same_text else self.record(agent_id, nudge)
             self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, said_count=current.said_count + 1, last_said_at=context.timestamp), context)

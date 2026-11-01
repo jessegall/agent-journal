@@ -21,7 +21,8 @@ from core.modules.environments.models.environment import Environment
 
 
 class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
-    """Starts a main agent's row in the caller's environment and hands the launcher its program to start; with no launcher nothing is started."""
+    """Starts a main agent's row in the caller's environment and hands the launcher its program to start; with
+    no launcher nothing is started."""
 
     command = LaunchAgent
 

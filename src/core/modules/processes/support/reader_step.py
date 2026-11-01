@@ -1,30 +1,14 @@
-from dataclasses import dataclass
-
 from core.modules.processes.models.enums.reader_type import ReaderType
 from core.modules.processes.models.output import Output
-from core.modules.processes.models.reader import Reader
 from core.modules.processes.models.process import Process
+from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.reader_advance import ReaderAdvance
 from core.modules.processes.support.reader_run import ReaderRun
 from core.modules.processes.support.step_tally import StepTally
 
 NEWLINE = b"\n"
-
-
-@dataclass(frozen=True)
-class ReaderAdvance:
-    """What the reader made of the bytes that arrived since it last looked: its new lines, how far it has read,
-    and the summary and progress it found; a script reader's lines replace what the file held."""
-
-    lines: list[str]
-    read_offset: int
-    read_lines: int
-    summary: str
-    progress: int
-    replaces: bool = False
-    steps_passed: int = 0
-    steps_failed: int = 0
 
 
 class ReaderStep:

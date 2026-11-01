@@ -15,9 +15,10 @@ from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.session_type import SessionType
 from server.viewer.share_sessions import ShareSessions
+from server.viewer.viewer_session import ViewerSession
 from server.viewer.shared_row import SharedRow
 from server.viewer.share_refusal import ShareRefusal
-from server.viewer.share_route import OPEN, PASSWORD_NEEDED, TOO_MANY_TRIES
+from server.viewer.share_route import OPEN, PASSWORD_NEEDED, PASSWORD_TRY_LIMIT
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
@@ -127,7 +128,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(200, asdict(viewer.routes.session_route.answer(token)))
             return
         if route.path == SHARE_COMMENTS_ROUTE:
-            self.answer_share_comments(viewer, token, None)
+            self.answer_share_comments(viewer, viewer.login.session(token), None)
             return
         if route.path == MARKS_ROUTE:
             self.answer(200, {"marks": viewer.routes.chat_declarations_route.marks()})
@@ -166,7 +167,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer_upload(viewer, token, body)
             return
         if urlsplit(self.path).path == SHARE_COMMENTS_ROUTE:
-            self.answer_share_comments(viewer, token, body)
+            self.answer_share_comments(viewer, viewer.login.session(token), body)
             return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
@@ -208,8 +209,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         event_stream.follow(environment, request.cursor_id, self.stream_message, shared)
 
-    def answer_share_comments(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
-        session = viewer.login.session(token)
+    def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:
             self.answer(403, {"error": "only a link that takes comments has them"})
             return
@@ -223,17 +223,20 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(409, {"error": str(error)})
 
     def answer_share(self, viewer: ViewerServer, token: str) -> None:
-        status = viewer.routes.share_route.status(token, self.headers.get("Authorization"), self.client_address[0])
+        cookies = SimpleCookie(self.headers.get("Cookie", ""))
+        presented = cookies[SHARE_COOKIE_NAME].value if SHARE_COOKIE_NAME in cookies else ""
+        opening = viewer.routes.share_route.opening(token, self.headers.get("Authorization"), presented)
+        status = opening.status
         if status == PASSWORD_NEEDED:
             self.send_response(status)
             self.send_header("WWW-Authenticate", 'Basic realm="Shared page", charset="UTF-8"')
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        if status == TOO_MANY_TRIES:
+        if status == PASSWORD_TRY_LIMIT:
             self.answer(status, {"error": "too many wrong passwords: try again later"})
             return
-        kept = f"{SHARE_COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"
+        kept = f"{SHARE_COOKIE_NAME}={opening.cookie}; HttpOnly; SameSite=Strict; Path=/"
         ended = f"{SHARE_COOKIE_NAME}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
         cookie = {"Set-Cookie": kept if status == OPEN else ended}
         self.answer_module_file(viewer, VIEWER_MODULE, SHELL_PAGE, cookie, status, ENDED_LINK_MARK if status != OPEN else b"")

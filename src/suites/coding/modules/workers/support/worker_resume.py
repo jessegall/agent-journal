@@ -17,12 +17,14 @@ from suites.coding.modules.workers.support.worker_command import WorkerCommand
 from suites.coding.modules.workers.support.worker_job import RESUMING_SOURCES
 from suites.coding.modules.workers.support.worker_launcher import WorkerLauncher
 
-ON_ITS_WAY_SECONDS = 120
+JOB_DELIVERY_SECONDS = 120
 
 
 class WorkerResume:
-    """Resumes an ended worker's session with its waiting job as the brief. A session handed its job in the last two
-    minutes is on its way and takes the line at its first hook; one that has not come back by then failed to start, and the next job starts it again. With no launcher the line stays waiting."""
+    """Resumes an ended worker's session with its waiting job as the brief. A session handed its job in the
+    last two
+    minutes is on its way and takes the line at its first hook; one that has not come back by then failed to
+    start, and the next job starts it again. With no launcher the line stays waiting."""
 
     def __init__(self, launcher: WorkerLauncher, queries: Queries, worktrees: WorktreeQuery, worker_command: WorkerCommand, bus: Bus, clock: Clock) -> None:
         self.launcher, self.queries, self.worktrees, self.worker_command, self.bus, self.clock = launcher, queries, worktrees, worker_command, bus, clock
@@ -31,12 +33,12 @@ class WorkerResume:
         worktree = self.worktrees.worker_worktree(worker.id)
         lines = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
         job = next((line for line in lines if line.source in RESUMING_SOURCES), None)
-        if worktree is None or worker.ended_at is None or job is None or self.on_its_way(worker, worker.ended_at):
+        if worktree is None or worker.ended_at is None or job is None or self.job_on_way(worker, worker.ended_at):
             return
         environment = self.queries.query(Environment).find(worktree.environment_id)
         if self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text)):
             self.bus.run(EnterAgentLine(job.id), Actor(actor_id, ActorType.AGENT), environment_id=worktree.environment_id)
 
-    def on_its_way(self, worker: Agent, ended_at: Timestamp) -> bool:
-        since = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=ON_ITS_WAY_SECONDS)).text)
-        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", since)).exists()
+    def job_on_way(self, worker: Agent, ended_at: Timestamp) -> bool:
+        start = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
+        return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", start)).exists()

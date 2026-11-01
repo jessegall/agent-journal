@@ -7,7 +7,8 @@ from core.modules.processes.models.support.views import PROCESS_ROWS_SELECT
 
 @dataclass(frozen=True, kw_only=True)
 class ProcessRow(ViewModel):
-    """A process as the commands and output windows draw it, read from the process_rows view without its folder, shell and process number."""
+    """A process as the commands and output windows draw it, read from the process_rows view without its
+    folder, shell and process number."""
 
     cli_name = "process"
     view = "process_rows"

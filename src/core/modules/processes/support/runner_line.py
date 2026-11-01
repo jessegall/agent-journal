@@ -1,6 +1,6 @@
 import shlex
 
-from core.modules.processes.support.foreground_limit import ForegroundRun
+from core.modules.processes.support.foreground_run import ForegroundRun
 
 SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 

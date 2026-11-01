@@ -10,12 +10,13 @@ from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_STARTED
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 
-NO_TRIGGERS = "[]"
+EMPTY_TRIGGERS = "[]"
 START = "start"
 
 
 class SequenceTriggerRule(DriverRule):
-    """A prompt or a finished tool call that meets a sequence's trigger starts that sequence for the main agent, unless one is running."""
+    """A prompt or a finished tool call that meets a sequence's trigger starts that sequence for the main
+    agent, unless one is running."""
 
     name = "sequences.triggers"
     hook = HookWildcard.ALL_HOOKS
@@ -26,12 +27,12 @@ class SequenceTriggerRule(DriverRule):
         self.queries, self.runs = queries, runs
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        triggered = [sequence for sequence in self.queries.query(Sequence).all_rows() if sequence.triggers != NO_TRIGGERS and self.met(sequence, hook)]
+        triggered = [sequence for sequence in self.queries.query(Sequence).all_rows() if sequence.triggers != EMPTY_TRIGGERS and self.is_triggered(sequence, hook)]
         if not triggered or self.runs.current(hook.agent_id) is not None:
             return RuleAnswer.allowed()
         sequence = triggered[0]
         return RuleAnswer.with_nudges(SEQUENCE_STARTED.nudge(sequence=sequence.id, title=sequence.title, step=sequence.steps[0])).running(MoveSequenceRun(START, sequence.id))
 
     @staticmethod
-    def met(sequence: Sequence, hook: AgentHook) -> bool:
-        return any(SequenceTriggers.met_by_hook(trigger, hook) for trigger in SequenceTriggers.parsed(sequence.triggers))
+    def is_triggered(sequence: Sequence, hook: AgentHook) -> bool:
+        return any(trigger.matches_hook(hook) for trigger in SequenceTriggers.parsed(sequence.triggers))

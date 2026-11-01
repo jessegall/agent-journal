@@ -10,7 +10,7 @@ class InstallTunlerHandler(Handler[InstallTunler, str]):
     """Installs tunler from the server the address names, without its scheme or path."""
 
     command = InstallTunler
-    in_transaction = False
+    transactional = False
 
     def __init__(self, client: TunlerClient) -> None:
         self.client = client

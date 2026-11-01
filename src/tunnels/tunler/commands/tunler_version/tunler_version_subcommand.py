@@ -8,7 +8,8 @@ from tunnels.tunler.support.tunler_version import TunlerVersion
 
 
 class TunlerVersionSubcommand(ReadSubcommand[TunlerVersion]):
-    """`journal tunler version`: the tunler on this machine, the newest its server offers, and whether an update waits."""
+    """`journal tunler version`: the tunler on this machine, the newest its server offers, and whether an
+    update waits."""
 
     cli_name = "tunler"
     name = "version"

@@ -27,9 +27,9 @@ class TaskWaits:
         task = self.queries.query(Task).find(wait.task_id)
         if task.state is TaskState.BLOCKED and not self.open_waits(task.id).exists():
             self.repository.save(task.moved(TaskLifecycle.unblock), context)
-            self.tell_agents(task, context)
+            self.notify_agents(task, context)
 
-    def tell_agents(self, task: Task, context: Context) -> None:
+    def notify_agents(self, task: Task, context: Context) -> None:
         for agent in tuple(self.queries.query(Agent).filter(environment_id=task.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).all_rows()):
             self.repository.save(AgentLine(agent_id=agent.id, creator_id=context.actor.id, text=f"[journal] task {task.id}, {task.title}, is open again: what it waited on has ended", source=WAIT_ENDED_SOURCE), context)
 

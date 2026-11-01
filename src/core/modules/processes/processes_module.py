@@ -61,7 +61,7 @@ from core.modules.processes.rules.ended_output_line_rule import EndedOutputLineR
 from core.modules.processes.rules.unread_output_reminder_rule import UnreadOutputReminderRule
 from core.modules.processes.rules.folder_change_rule import FolderChangeRule
 from core.modules.processes.rules.runner_rewrite_rule import RunnerRewriteRule
-from core.modules.processes.rules.sleep_poll_refusal_rule import SleepPollRefusalRule
+from core.modules.processes.rules.sleep_poll_rule import SleepPollRule
 from core.modules.processes.commands.add_reader.add_reader_handler import AddReaderHandler
 from core.modules.processes.commands.add_reader.add_reader_subcommand import AddReaderSubcommand
 from core.modules.processes.commands.choose_default_reader.choose_default_reader_handler import ChooseDefaultReaderHandler
@@ -83,7 +83,7 @@ from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery
-from core.modules.processes.models.enums.process_setting import PROCESS_SETTINGS
+from core.modules.processes.models.support.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 
 WINDOW_READS = ["process feed", "output peek"]
@@ -107,7 +107,7 @@ class ProcessesModule(Module):
     handlers = [TitleOutputHandler, StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [AliasSuggestionRule, ReaderHintRule, RunTitleRule, SleepPollRefusalRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
+    driver_rules = [AliasSuggestionRule, ReaderHintRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
     listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]

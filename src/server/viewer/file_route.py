@@ -1,22 +1,13 @@
+from core.base.journal_home import JournalHome
+from pathlib import PurePosixPath
+from server.viewer.file_answer import FileAnswer
+from urllib.parse import unquote
 import mimetypes
 import secrets
-from dataclasses import dataclass
-from pathlib import PurePosixPath
-from urllib.parse import unquote
-
-from core.base.journal_home import JournalHome
 
 TOKEN_BYTES = 8
 LIMIT_BYTES = 64 * 1024 * 1024
 UNKNOWN_TYPE = "application/octet-stream"
-
-
-@dataclass(frozen=True)
-class FileAnswer:
-    """The bytes of a file a message carries, and the type it is served as."""
-
-    data: bytes
-    content_type: str
 
 
 class FileRoute:

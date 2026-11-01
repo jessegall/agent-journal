@@ -21,7 +21,7 @@ class TunnelStatusSubcommand(ReadSubcommand[TunnelStatus]):
 
     def read(self, arguments: Namespace, caller: Caller) -> TunnelStatus:
         tunnel = self.tunnels.chosen()
-        return TunnelStatus(tunnel.state().value, tunnel.address() or "", tunnel.reason())
+        return TunnelStatus(tunnel.state().value, tunnel.address(), tunnel.reason())
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TunnelStatus):

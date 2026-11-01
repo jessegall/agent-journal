@@ -3,7 +3,8 @@ from dataclasses import asdict, dataclass
 
 @dataclass(frozen=True)
 class ProjectWorktree:
-    """A worktree git knows in the project's repository and who holds it: the main checkout, an environment, a worker out on it, or nobody."""
+    """A worktree git knows in the project's repository and who holds it: the main checkout, an environment, a
+    worker out on it, or nobody."""
 
     folder: str
     branch: str | None

@@ -11,7 +11,8 @@ from core.modules.processes.support.ended_output_text import EndedOutputText
 
 
 class EndedOutputLineRule(DriverRule):
-    """Tells an agent once, on its next hook that takes lines, that a run it moved to the background has ended, and how to read such a run better."""
+    """Tells an agent once, on its next hook that takes lines, that a run it moved to the background has
+    ended, and how to read such a run better."""
 
     name = "processes.ended-output-line"
     hook = HookWildcard.ALL_HOOKS

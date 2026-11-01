@@ -8,8 +8,6 @@
   "actor": "agent",
   "environment": "main",
   "subagent": "",
-  "accepts_lines": true,
-  "launch": "",
   "tool": {
     "name": "Bash",
     "category": "shell",
@@ -56,5 +54,7 @@
     "diff": null
   },
   "prompt": null,
-  "raw": {}
+  "raw": {},
+  "accepts_lines": true,
+  "launch": ""
 }

@@ -7,7 +7,8 @@ from core.modules.messages.support.message_nudges import JOURNAL_DISCRETION, JOU
 
 
 class ChatOpeningRule(DriverRule):
-    """A main agent's session start tells it what a journal line is, to keep the journal out of the chat, and that the laws apply."""
+    """A main agent's session start tells it what a journal line is, to keep the journal out of the chat, and
+    that the laws apply."""
 
     name = "messages.chat-opening"
     hook = HookEventName.SESSION_START

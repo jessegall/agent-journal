@@ -7,7 +7,8 @@ from core.modules.settings.models.setting import Setting
 
 
 class HookWaitFileListener(CommitListener):
-    """Writes the hook wait a person sets to a file, since the Go hook reads it before it can ask the journal anything."""
+    """Writes the hook wait a person sets to a file, since the Go hook reads it before it can ask the journal
+    anything."""
 
     name = "drivers.hook-wait-file"
     event = "setting.*"
@@ -16,6 +17,8 @@ class HookWaitFileListener(CommitListener):
         self.queries, self.home = queries, home
 
     def handle(self, event: LoggedEvent) -> None:
-        setting = self.queries.query(Setting).find(event.row_id)
-        if setting.key == HOOK_WAIT_SECONDS:
-            self.home.hook_wait_file.write_text(f"{setting.value}\n")
+        settings = self.queries.query(Setting).filter(key=HOOK_WAIT_SECONDS).newest().page(1, 1).rows
+        if settings:
+            self.home.hook_wait_file.write_text(f"{settings[0].value}\n")
+        else:
+            self.home.hook_wait_file.unlink(missing_ok=True)

@@ -7,7 +7,7 @@ from core.modules.messages.commands.send_message.send_message import SendMessage
 from core.modules.secrets.commands.make_secret.make_secret import MakeSecret
 from core.modules.secrets.models.enums.secret_type import SecretType
 from core.modules.secrets.models.secret import Secret
-from core.modules.secrets.models.secret_field import SecretField
+from core.modules.secrets.models.support.secret_field import SecretField
 
 
 class MakeSecretHandler(Handler[MakeSecret, Secret]):

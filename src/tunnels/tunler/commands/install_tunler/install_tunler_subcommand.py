@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from tunnels.tunler.commands.install_tunler.install_tunler import InstallTunler
 
@@ -17,7 +16,3 @@ class InstallTunlerSubcommand(Subcommand[InstallTunler, str]):
 
     def command(self, arguments: Namespace, caller: Caller) -> InstallTunler:
         return InstallTunler(arguments.server)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, str):
-            output.line(value)

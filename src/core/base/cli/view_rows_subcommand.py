@@ -1,8 +1,9 @@
 from argparse import ArgumentParser, Namespace
+from collections.abc import Sequence
 from typing import ClassVar
 
 from core.base.caller.caller import Caller
-from core.base.cli.view_rows import ViewRows
+from core.base.cli.view_row_page import ViewRowPage
 from core.base.model.view_model import ViewModel
 from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.less import Less
@@ -15,12 +16,12 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 ENVIRONMENT_COLUMN = "environment_id"
 
 
-class ViewRowsSubcommand(ReadSubcommand[ViewRows]):
+class ViewRowsSubcommand(ReadSubcommand[ViewRowPage]):
     """The read of a window that lists a view: rows newest first, by id, only the columns of the view, for the
     filters it names, in the caller's environment unless it names one; --after-id and --before-id page by id."""
 
     model: ClassVar[type[ViewModel]]
-    filters: ClassVar[tuple[str, ...]] = ()
+    filters: ClassVar[Sequence[str]] = ()
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -32,17 +33,18 @@ class ViewRowsSubcommand(ReadSubcommand[ViewRows]):
         for column in self.filters:
             parser.add_argument(f"--{column.replace('_', '-')}", type=int if column.endswith("_id") else str, default=None)
 
-    def read(self, arguments: Namespace, caller: Caller) -> ViewRows:
+    def read(self, arguments: Namespace, caller: Caller) -> ViewRowPage:
         given = {column: getattr(arguments, column) for column in self.filters if getattr(arguments, column) is not None}
-        if ENVIRONMENT_COLUMN in self.filters and ENVIRONMENT_COLUMN not in given and caller.environment_id is not None:
+        environment_missing = ENVIRONMENT_COLUMN in self.filters and ENVIRONMENT_COLUMN not in given
+        if environment_missing and caller.environment_id is not None:
             given[ENVIRONMENT_COLUMN] = caller.environment_id
         query = self.queries.query(self.model).filter(**given)
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))
         if arguments.before_id is not None:
             query = query.matching(Less("id", arguments.before_id))
-        return ViewRows(tuple(query.newest().page(1, arguments.limit).rows))
+        return ViewRowPage(tuple(query.newest().page(1, arguments.limit).rows))
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, ViewRows):
+        if isinstance(value, ViewRowPage):
             output.write("\n".join("  ".join(str(item) for item in row.json().values()) for row in value.rows) or "nothing found", value.json())

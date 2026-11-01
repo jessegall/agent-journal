@@ -9,7 +9,8 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.secrets.queries.secret_query import SecretQuery
-from core.modules.secrets.support.secret_run import SecretRun, SecretRunOutcome
+from core.modules.secrets.support.secret_run import SecretRun
+from core.modules.secrets.support.secret_run_outcome import SecretRunOutcome
 
 SEPARATOR = "--"
 

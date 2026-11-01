@@ -1,32 +1,22 @@
-import os
-import re
-import shutil
-import subprocess
-import tempfile
-from dataclasses import dataclass
-from pathlib import Path
-
 from core.base.journal_home import JournalHome
 from core.base.refusal import Refusal
 from core.modules.secrets.models.secret import Secret
 from core.modules.secrets.support.output_mask import OutputMask
 from core.modules.secrets.support.private_folder import PrivateFolder
 from core.modules.secrets.support.secret_programs import SecretPrograms
+from core.modules.secrets.support.secret_run_outcome import SecretRunOutcome
 from core.modules.secrets.support.secret_values import SecretValues
+from pathlib import Path
+import os
+import re
+import shutil
+import subprocess
+import tempfile
 
 PLACEHOLDER = re.compile(r"\{(\w+)\}")
 HOME_VARIABLES = ("HOME", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "GH_CONFIG_DIR", "DOCKER_CONFIG")
 LIMIT_SECONDS = 120
 RUNS_FOLDER = "runs"
-
-
-@dataclass(frozen=True)
-class SecretRunOutcome:
-    """What a program a secret went to printed, every form of the value masked, and its exit code."""
-
-    program: str
-    exit_code: int
-    output: str
 
 
 class SecretRun:

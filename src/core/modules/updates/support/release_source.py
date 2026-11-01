@@ -7,7 +7,7 @@ from pathlib import Path
 
 from core.base.refusal import Refusal
 from core.modules.settings.bindings.support.setting_values import SettingValues
-from core.modules.updates.models.enums.update_setting import UpdateSetting
+from core.modules.updates.models.support.update_setting import UpdateSetting
 from core.modules.updates.support.published_release import PublishedRelease
 
 ARCHIVE = "agent-journal.tar.gz"

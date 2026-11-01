@@ -1,22 +1,11 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
-from pathlib import Path
-
 from core.base.caller.caller import Caller
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
-
-
-@dataclass(frozen=True)
-class SkillText:
-    """A skill's text with its folder, description and digest, as the catalogue holds them."""
-
-    folder: str
-    description: str
-    digest: str
-    text: str
+from core.modules.skills.support.skill_text import SkillText
+from pathlib import Path
 
 
 class SkillShowSubcommand(ReadSubcommand[SkillText]):

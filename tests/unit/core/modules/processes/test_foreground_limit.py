@@ -2,8 +2,9 @@ from core.base.driver.classification import Classification
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.part import Part
 from core.base.driver.shell_line import ShellLine
-from core.modules.processes.models.enums.process_setting import ProcessSetting
-from core.modules.processes.support.foreground_limit import ForegroundLimit, ForegroundRun
+from core.modules.processes.models.support.process_setting import ProcessSetting
+from core.modules.processes.support.foreground_limit import ForegroundLimit
+from core.modules.processes.support.foreground_run import ForegroundRun
 
 
 class Settings:

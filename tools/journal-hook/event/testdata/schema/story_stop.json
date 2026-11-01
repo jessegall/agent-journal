@@ -8,9 +8,9 @@
   "actor": "agent",
   "environment": "main",
   "subagent": "",
-  "accepts_lines": true,
-  "launch": "",
   "tool": null,
   "prompt": null,
-  "raw": {}
+  "raw": {},
+  "accepts_lines": true,
+  "launch": ""
 }

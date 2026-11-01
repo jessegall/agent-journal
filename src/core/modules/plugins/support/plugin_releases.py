@@ -14,7 +14,8 @@ GITHUB = "https://github.com/"
 
 
 class PluginReleases:
-    """Reads the newest release of a plugin's source: the version in a folder's manifest, or the highest version tag of a repository."""
+    """Reads the newest release of a plugin's source: the version in a folder's manifest, or the highest
+    version tag of a repository."""
 
     def latest(self, name: str, installed: str, source: str) -> PluginLatest:
         newest = PluginManifest.read(Path(source)).version if Path(source).is_dir() else self.newest_tag(source)

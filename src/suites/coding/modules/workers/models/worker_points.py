@@ -6,7 +6,8 @@ from suites.coding.modules.workers.models.support.views import WORKER_POINTS_SEL
 
 @dataclass(frozen=True, kw_only=True)
 class WorkerPoints(ViewModel):
-    """A worker's worktree with its task's title and brief and its proofs as one JSON list, read from the worker_points view."""
+    """A worker's worktree with its task's title and brief and its proofs as one JSON list, read from the
+    worker_points view."""
 
     cli_name = "worker-points"
     view = "worker_points"

@@ -86,8 +86,8 @@ def test_outputs_that_ended_apart_are_named_together_once_in_a_turn(new_story):
     end_run(story, second, TESTS_REPORT, exit_code=1)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
-    named = [line for _ in range(10) for line in lines_of(story, AFTER) if "unread" in line]
-    assert named == [f"output {first.id}, {second.id} unread: journal output read {first.id} --summary"]
+    labelled = [line for _ in range(10) for line in lines_of(story, AFTER) if "unread" in line]
+    assert labelled == [f"output {first.id}, {second.id} unread: journal output read {first.id} --summary"]
 
 
 def test_reading_the_output_ends_the_reminders(new_story):

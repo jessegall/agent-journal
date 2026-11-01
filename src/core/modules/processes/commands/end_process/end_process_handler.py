@@ -7,7 +7,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.processes.commands.end_process.end_process import EndProcess
-from core.modules.processes.models.enums.process_setting import ProcessSetting
+from core.modules.processes.models.support.process_setting import ProcessSetting
 from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
 from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.models.process import Process

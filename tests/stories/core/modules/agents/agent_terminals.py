@@ -60,7 +60,7 @@ def test_with_no_launcher_the_line_is_refused(new_story):
     story.expect_refusal(f'agent type {story.agent.id} "ls"', "no launcher is running here", actor=story.user)
 
 
-def launcher_answering(story, answer: bytes) -> list[bytes]:
+def launcher_with_answer(story, answer: bytes) -> list[bytes]:
     received: list[bytes] = []
     listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     listener.bind(str(story.home.socket("launcher")))
@@ -79,14 +79,14 @@ def launcher_answering(story, answer: bytes) -> list[bytes]:
 
 def test_the_launcher_gets_the_line_and_answers_that_it_typed_it(new_story):
     story = new_story(fixture=UserJoined)
-    received = launcher_answering(story, b"typed\n")
+    received = launcher_with_answer(story, b"typed\n")
     story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
     story.expect_rows(b'"typed": "ls"' in received[0], f'"agent_id": {story.agent.id}'.encode() in received[0])
 
 
 def test_a_launcher_that_gives_no_answer_is_refused_with_what_to_do(new_story):
     story = new_story(fixture=UserJoined)
-    launcher_answering(story, b"")
+    launcher_with_answer(story, b"")
     story.expect_refusal(f'agent type {story.agent.id} "ls"', "the launcher did not type the line", actor=story.user)
 
 

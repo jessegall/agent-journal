@@ -12,7 +12,8 @@ from core.modules.dumps.support.dump_board import DumpBoard
 
 
 class DumpBoardSubcommand(ReadSubcommand[DumpBoard]):
-    """`journal dump board [--before <id>]`: a page of dumps, newest first and before the number given, each with its items in order."""
+    """`journal dump board [--before <id>]`: a page of dumps, newest first and before the number given, each
+    with its items in order."""
 
     cli_name = "dump"
     name = "board"

@@ -1,7 +1,6 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
-from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from tunnels.tunler.commands.release_tunler_domain.release_tunler_domain import ReleaseTunlerDomain
 
@@ -17,7 +16,3 @@ class ReleaseTunlerDomainSubcommand(Subcommand[ReleaseTunlerDomain, str]):
 
     def command(self, arguments: Namespace, caller: Caller) -> ReleaseTunlerDomain:
         return ReleaseTunlerDomain(arguments.domain)
-
-    def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, str):
-            output.line(value)

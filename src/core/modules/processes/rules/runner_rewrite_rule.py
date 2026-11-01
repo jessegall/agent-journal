@@ -13,12 +13,13 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
 from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
-from core.modules.processes.support.foreground_limit import ForegroundLimit, ForegroundRun
+from core.modules.processes.support.foreground_limit import ForegroundLimit
+from core.modules.processes.support.foreground_run import ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
 from core.modules.processes.support.runner_line import RunnerLine
 
 BACKGROUND_FLAG = "run_in_background"
-READ_AND_WRITE_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
+FILE_ACCESS_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
 
 
 class RunnerRewriteRule(DriverRule):
@@ -38,15 +39,15 @@ class RunnerRewriteRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or self.only_reads_and_writes(shell):
+        if shell is None or shell.parse_error or self.is_read_write(shell):
             return RuleAnswer.allowed()
         if not self.runner.is_installed():
             return self.missing(hook)
         run = self.limits.decide(hook.environment_id, shell)
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
-    def only_reads_and_writes(self, shell: ShellLine) -> bool:
-        return bool(shell.parts) and all(part.classification.category in READ_AND_WRITE_CATEGORIES and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
+    def is_read_write(self, shell: ShellLine) -> bool:
+        return bool(shell.parts) and all(part.classification.category in FILE_ACCESS_CATEGORIES and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)

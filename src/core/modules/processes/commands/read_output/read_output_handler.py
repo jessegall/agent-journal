@@ -7,7 +7,7 @@ from core.modules.processes.commands.support.output_lines import OutputLines
 from core.modules.processes.commands.read_output.read_output import ReadOutput
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.queries.output_query import OutputQuery
-from core.modules.processes.commands.read_output.output_texts import OutputTexts
+from core.modules.processes.commands.support.output_texts import OutputTexts
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):

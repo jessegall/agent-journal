@@ -7,7 +7,8 @@ from core.modules.dumps.models.dump_row import DumpRow
 
 @dataclass(frozen=True)
 class DumpBoard:
-    """What the dumps window draws: how many dumps there are, and a page of them, newest first, each with its items in order."""
+    """What the dumps window draws: how many dumps there are, and a page of them, newest first, each with its
+    items in order."""
 
     total: int
     dumps: Sequence[DumpRow]

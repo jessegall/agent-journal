@@ -9,7 +9,8 @@ DEFAULT_INTERVAL_MINUTES = 2
 
 
 class WaitTaskSubcommand(Subcommand[WaitTask, Task]):
-    """`journal task block <n>` with `--on task:<m>`, `--until '<command>'` or `--reason '<words>'`: what it waits on."""
+    """`journal task block <n>` with `--on task:<m>`, `--until '<command>'` or `--reason '<words>'`: what it
+    waits on."""
 
     cli_name = "task"
     name = "block"

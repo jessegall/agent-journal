@@ -8,7 +8,8 @@ from core.modules.sharing.models.share_comment import ShareComment
 
 
 class LeaveShareCommentSubcommand(Subcommand[LeaveShareComment, ShareComment]):
-    """`journal share comment <id> --name <name> --text <text>`: a visitor's comment, brought in by the viewer's listener."""
+    """`journal share comment <id> --name <name> --text <text>`: a visitor's comment, brought in by the
+    viewer's listener."""
 
     cli_name = "share"
     name = "comment"

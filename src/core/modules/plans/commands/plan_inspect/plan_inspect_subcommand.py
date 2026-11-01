@@ -22,7 +22,7 @@ class PlanInspectSubcommand(ReadSubcommand[PlanInspection]):
         parser.add_argument("plan_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanInspection:
-        return PlanInspection(self.queries.query(Plan).find(arguments.plan_id), self.outlines.of(arguments.plan_id))
+        return PlanInspection(self.queries.query(Plan).find(arguments.plan_id), self.outlines.outline(arguments.plan_id))
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PlanInspection):

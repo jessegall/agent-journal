@@ -1,4 +1,4 @@
-from core.modules.tasks.support.task_nudges import BACK_TO_TASK
+from core.modules.tasks.support.task_nudges import TASK_RETURN
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
@@ -21,4 +21,4 @@ class TaskReturnLineRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         current = self.current_tasks.current(hook.agent_id) if hook.control_return else None
-        return RuleAnswer.with_nudges(BACK_TO_TASK.nudge(name=current.name)) if current is not None else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(TASK_RETURN.nudge(name=current.name)) if current is not None else RuleAnswer.allowed()

@@ -105,7 +105,7 @@ def test_a_message_shown_through_the_runners_rewritten_line_is_marked_read(new_s
 def test_a_message_with_an_image_tells_the_agent_to_look_at_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "Look at this" --environment main', actor=story.user)
-    story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ('["shot.png", "notes.txt"]',))
+    story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png", "notes.txt"]'])
     lines = story.hook("s-1", READ_LINE_HOOK).lines
     assert any(line.startswith("message 1 attaches an image: open") and line.endswith('then journal message tag 1 "shot.png" "<what it shows>"') for line in lines)
     assert not any("notes.txt" in line and "attaches an image" in line for line in lines)
@@ -114,7 +114,7 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(new_story):
 def test_a_tagged_image_is_not_asked_for_again_and_a_missing_file_is_refused(new_story):
     story = delivery_story(new_story)
     story.run('message send "Look at this" --environment main', actor=story.user)
-    story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ('["shot.png"]',))
+    story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ['["shot.png"]'])
     story.expect_refusal('message tag 1 "other.png" "a cart"', "has no file other.png", actor=story.agent)
     story.run('message tag 1 "shot.png" "the cart with a wrong total"', actor=story.agent)
     assert not any("attaches an image" in line for line in story.hook("s-1", READ_LINE_HOOK).lines)
@@ -140,7 +140,7 @@ def test_the_main_chat_leaves_out_the_marks_of_a_worker(new_story):
     story = delivery_story(new_story)
     main_id = story.container.get(Database).rows(Statement("SELECT id FROM agents WHERE session = 's-1'"))[0]["id"]
     worker = hook_agent(story, story.hook("s-2", HookSamples.session_start()))
-    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", (worker.id,))
+    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", [worker.id])
     bus, module = story.container.get(Bus), story.container.get(ModuleActors).actor("journal.core.processes")
     bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-main", "From the builder", agent_id=main_id), module, environment_id=1)
     bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker.id), module, environment_id=1)

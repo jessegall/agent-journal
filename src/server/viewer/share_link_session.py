@@ -11,7 +11,8 @@ ACTIVE = "active"
 @dataclass(frozen=True)
 class ShareLinkSession:
     """The share link a cookie's token belongs to, as the sharing module answers it: whose it is, what state
-    it is in, when it ends, if it does, the row it shows, whether visitors may comment and whether it asks for a password."""
+    it is in, when it ends, if it does, the row it shows, whether visitors may comment and whether it asks for
+    a password."""
 
     id: int
     creator_id: int

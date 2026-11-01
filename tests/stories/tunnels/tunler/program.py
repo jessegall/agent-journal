@@ -88,11 +88,11 @@ def test_a_tunler_started_by_one_client_is_seen_running_by_another_and_logging_o
     server = real_client(home)
     server.start(PORT, "cart-team")
     server.log.write_text("tunnel up: cart-team.tunnels.example (https)\n")
-    other = real_client(home)
-    assert other.state() is TunnelState.CONNECTED and other.address() == "cart-team.tunnels.example"
-    other.logout()
+    second = real_client(home)
+    assert second.state() is TunnelState.CONNECTED and second.address() == "cart-team.tunnels.example"
+    second.logout()
     server.process.process.wait(timeout=10)
-    assert not server.running() and other.state() is TunnelState.DISCONNECTED
+    assert not server.running() and second.state() is TunnelState.DISCONNECTED
 
 
 class LocalInstaller(TunlerInstaller):

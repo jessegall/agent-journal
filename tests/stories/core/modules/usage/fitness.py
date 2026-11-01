@@ -29,7 +29,7 @@ def test_with_nothing_waiting_an_agent_scores_full_marks(new_story):
     story = new_story(fixture=UserJoined)
     story.advance(HALF_HOUR)
     answer = fitness(story)
-    story.expect_rows(answer["is_measured"] is True, answer["score"] == 100, answer["load"] == 0)
+    story.expect_rows(answer["is_measured"] is True, answer["score"] == 100, answer["workload"] == 0)
 
 
 def test_a_message_left_waiting_lowers_the_score(new_story):
@@ -56,7 +56,7 @@ def test_messages_arriving_faster_than_answered_raise_the_load_and_its_level(new
     for number in range(2):
         story.expect_success(f'message send "Fix {number}" --environment main', actor=story.user)
     answer = fitness(story)
-    story.expect_rows(answer["load"] == 2.0, answer["load_level"] == "critical")
+    story.expect_rows(answer["workload"] == 2.0, answer["workload_level"] == "critical")
 
 
 def test_tasks_closed_in_the_last_two_hours_count_and_older_ones_do_not(new_story):

@@ -50,7 +50,7 @@ class Console:
             if shell_run is not None:
                 return self.handoff.run(shell_run, stream)
             if not argv or argv[0] in HELP_FLAGS:
-                return self.written_help("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
+                return self.help_line_count("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
             if len(argv) == 1 or argv[1] in HELP_FLAGS:
                 return self.subcommand_help(argv[0], stream)
             return self.chosen_run(argv, caller, output)
@@ -72,9 +72,9 @@ class Console:
         names = self.line_parser.lookup.names(cli_name)
         if not names:
             raise UsageError(f"journal has no {cli_name} commands: journal --help lists them")
-        return self.written_help(f"journal {cli_name}; journal {cli_name} <subcommand> --help shows its flags", names, stream)
+        return self.help_line_count(f"journal {cli_name}; journal {cli_name} <subcommand> --help shows its flags", names, stream)
 
-    def written_help(self, heading: str, names: list[str], stream: TextIO) -> int:
+    def help_line_count(self, heading: str, names: list[str], stream: TextIO) -> int:
         stream.write("\n".join([heading, *(f"  {name}" for name in names)]) + "\n")
         return SUCCESS_CODE
 

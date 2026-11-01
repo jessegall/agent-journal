@@ -11,7 +11,8 @@ from core.modules.sharing.support.share_password import SharePassword
 
 
 class ShareUnlockSubcommand(ReadSubcommand[ShareLink]):
-    """`journal share unlock <token-digest> <password>`: the link, when the password is its own, read by the viewer's listener."""
+    """`journal share unlock <token-digest> <password>`: the link, when the password is its own, read by the
+    viewer's listener."""
 
     cli_name = "share"
     name = "unlock"

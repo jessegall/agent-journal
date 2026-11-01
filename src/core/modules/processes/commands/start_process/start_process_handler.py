@@ -33,7 +33,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
             self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped), context)
         reader = ReaderSelection.choose(self.all_readers(), process) if command.reader_id is None else self.readers.find(command.reader_id)
         self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id if reader is not None else None,
-                                    title=RunTitle.of(reader, process)), context)
+                                    title=RunTitle.title(reader, process)), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         return process
 

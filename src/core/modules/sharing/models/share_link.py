@@ -8,7 +8,8 @@ from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLin
 
 @dataclass(frozen=True, kw_only=True)
 class ShareLink(Model):
-    """A link to show one row read-only, until it expires, if it does, or is revoked; an agent's waits for a person to
+    """A link to show one row read-only, until it expires, if it does, or is revoked; an agent's waits for a
+    person to
     accept it. It keeps only the digests of its token and password, never the two themselves."""
 
     model_name = "share_link"

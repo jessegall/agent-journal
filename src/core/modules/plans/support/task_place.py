@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class TaskPlace:
-    """Where a task stands in its plan: the plan, and which of its phases holds the task; a task in no plan has plan id 0."""
+    """Where a task stands in its plan: the plan, and which of its phases holds the task; a task in no plan
+    has plan id 0."""
 
     plan_id: int = 0
     plan_title: str = ""

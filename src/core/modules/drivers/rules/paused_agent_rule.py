@@ -6,7 +6,8 @@ from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
 
 
 class PausedAgentRule(DriverRule):
-    """A paused agent's tool calls are refused until it is resumed, except journal lines, so it can still answer in the chat."""
+    """A paused agent's tool calls are refused until it is resumed, except journal lines, so it can still
+    answer in the chat."""
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE

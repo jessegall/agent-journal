@@ -15,7 +15,8 @@ DASHBOARD_FOLDER = "dashboards"
 
 
 class PluginDashboardSubcommand(ReadSubcommand[PluginDashboard]):
-    """`journal plugin dashboard <name>`: the dashboard the plugin wrote as dashboards/<board>.json in its data folder."""
+    """`journal plugin dashboard <name>`: the dashboard the plugin wrote as dashboards/<board>.json in its
+    data folder."""
 
     cli_name = "plugin"
     name = "dashboard"

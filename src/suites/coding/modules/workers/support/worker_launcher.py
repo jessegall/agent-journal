@@ -8,7 +8,8 @@ ANSWER_BYTES = 16
 
 
 class WorkerLauncher:
-    """Hands the running launcher a worker's program, folder and agent row to start, and says whether it could; a launcher older than this journal answers nothing, which counts as taken."""
+    """Hands the running launcher a worker's program, folder and agent row to start, and says whether it
+    could; a launcher older than this journal answers nothing, which counts as taken."""
 
     def __init__(self, link: LauncherLink) -> None:
         self.link = link

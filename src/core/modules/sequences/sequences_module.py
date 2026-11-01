@@ -9,7 +9,7 @@ from core.modules.sequences.commands.follow_step.follow_step_subcommand import F
 from core.modules.sequences.commands.make_sequence.make_sequence_handler import MakeSequenceHandler
 from core.modules.sequences.commands.make_sequence.make_sequence_subcommand import MakeSequenceSubcommand
 from core.modules.sequences.commands.move_sequence_run.move_sequence_run_handler import MoveSequenceRunHandler
-from core.modules.sequences.commands.next_step.next_step_subcommand import NextStepSubcommand
+from core.modules.sequences.commands.advance_step.advance_step_subcommand import AdvanceStepSubcommand
 from core.modules.sequences.commands.run_sequence.run_sequence_subcommand import RunSequenceSubcommand
 from core.modules.sequences.commands.sequence_list.sequence_list_subcommand import SequenceListSubcommand
 from core.modules.sequences.commands.sequence_run_list.sequence_run_list_subcommand import SequenceRunListSubcommand
@@ -43,7 +43,7 @@ class SequencesModule(Module):
     moves = [SequencesMove]
     handlers = [MakeSequenceHandler, MoveSequenceRunHandler]
     subcommands = (MakeSequenceSubcommand, SequenceShowSubcommand, SequenceListSubcommand, SequenceRunListSubcommand, RunSequenceSubcommand, FollowStepSubcommand,
-                   NextStepSubcommand, AbandonSequenceSubcommand)
+                   AdvanceStepSubcommand, AbandonSequenceSubcommand)
     views = [SequenceRunRow]
     listeners = [SequenceRowTriggerListener]
     driver_rules = [UntakenStepRule, StepGuardRule, SequenceTriggerRule]

@@ -98,12 +98,14 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
                     </template>
                 </main>
             </template>
-            <div v-else class="share-body" data-share-body :data-arrangement="arrangement">
+            <template v-else>
+            <div class="share-body" data-share-body :data-arrangement="arrangement">
                 <div class="share-part" data-share-part="plan">
                     <WindowHost :name="share.window.name" :component="component" :subscriptions="subscriptions" :environment="share.environment" :options="options" :shared="{model: share.row_model, id: share.row_id}" read-only />
                 </div>
                 <ShareTimeline :phases="phases" />
             </div>
+            </template>
             <template v-if="share.comments">
                 <ShareComments />
             </template>

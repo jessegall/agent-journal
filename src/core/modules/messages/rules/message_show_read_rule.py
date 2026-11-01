@@ -25,8 +25,10 @@ IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
 class MessageShowReadRule(DriverRule):
-    """A message the main agent has read with journal message read, or shown, is marked read, the first time; after
-    journal message read the agent is told how to act on it. The tool's line holds the command inside the runner's
+    """A message the main agent has read with journal message read, or shown, is marked read, the first time;
+    after
+    journal message read the agent is told how to act on it. The tool's line holds the command inside the
+    runner's
     own line by then, so the rule looks for it in the text."""
 
     name = "messages.shown-is-read"
@@ -49,9 +51,10 @@ class MessageShowReadRule(DriverRule):
             commands = {message.id: READ_COMMAND for message in unread}
         read = [message for message in unread if commands[message.id] == READ_COMMAND]
         images = [nudge for message in read for nudge in self.image_nudges(message)]
-        return RuleAnswer.with_nudges(*((MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images) if read else ())).running(*(ReadMessage(message.id) for message in unread))
+        nudges = [MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images] if read else []
+        return RuleAnswer.with_nudges(*nudges).running(*(ReadMessage(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
-        captions = MessageCaptions.of(message)
+        captions = MessageCaptions.decoded(message)
         return [IMAGE_TAG_REQUEST.nudge(message=message.id, path=self.home.message_files(message.id) / name, name=name)
                 for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions]

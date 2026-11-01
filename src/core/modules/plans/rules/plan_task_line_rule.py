@@ -20,8 +20,8 @@ from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 TASK_END_LINE = re.compile(r"(?:^|-- '|&& |; )journal task (?:close|cancel|block|release) (\d+)")
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
-STUCK_STATES = (TaskState.OPEN, TaskState.BLOCKED)
-IN_HAND_STATES = (TaskState.STARTED, TaskState.TESTING)
+BLOCKED_STATES = (TaskState.OPEN, TaskState.BLOCKED)
+ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class PlanTaskLineRule(DriverRule):
@@ -61,10 +61,11 @@ class PlanTaskLineRule(DriverRule):
         if progress.completed_count >= progress.task_count:
             return [PLAN_FINISHED.nudge(plan=place.plan_id)]
         nudges = self.phase_nudges(place)
-        stuck_count = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", STUCK_STATES)).count()
-        in_hand = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", IN_HAND_STATES)).exists()
-        if self.plan_tasks.following(place.plan_id) is None and stuck_count and not in_hand:
-            nudges.append(PLAN_STALLED.nudge(plan=place.plan_id, count=stuck_count))
+        blocked_count = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", BLOCKED_STATES)).count()
+        current = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", ACTIVE_STATES)).exists()
+        plan_finished = self.plan_tasks.following(place.plan_id) is None
+        if plan_finished and blocked_count and not current:
+            nudges.append(PLAN_STALLED.nudge(plan=place.plan_id, count=blocked_count))
         return nudges
 
     def phase_nudges(self, place: PlanTask) -> list[Nudge]:

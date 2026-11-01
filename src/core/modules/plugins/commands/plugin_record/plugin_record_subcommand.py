@@ -29,7 +29,7 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
     def read(self, arguments: Namespace, caller: Caller) -> PluginRecord:
         plugins = self.queries.query(Plugin).filter(name=arguments.name).page(1, 1).rows
         if not plugins:
-            raise Refusal(f"no plugin is called {arguments.name}", "journal plugin list names them")
+            raise Refusal(f"no plugin is called {arguments.name}", "journal plugin list shows them")
         plugin = plugins[0]
         outputs = self.queries.query(PluginOutput).filter(plugin_id=plugin.id).newest().page(1, SHOWN_OUTPUT_COUNT).rows
         services = [{"name": service.name, "condition": service.condition} for service in PluginManifest.read(self.folders.code(plugin.name)).services]
@@ -38,4 +38,6 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginRecord):
             lines = [str(row["output"]) for row in value.outputs]
-            output.write("\n".join([*lines, *([f"last fault: {value.last_fault}"] if value.last_fault else [])]) or "it has done nothing yet", value.json())
+            if value.last_fault:
+                lines.append(f"last fault: {value.last_fault}")
+            output.write("\n".join(lines) or "it has done nothing yet", value.json())

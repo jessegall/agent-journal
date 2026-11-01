@@ -49,4 +49,4 @@ class UnansweredMessageRule(DriverRule):
         read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
         candidates = tuple(read_messages.oldest().all_rows())
         answered: set[int | None] = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
-        return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_from(message, ActorType.AGENT.value))
+        return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_actor(message, ActorType.AGENT.value))

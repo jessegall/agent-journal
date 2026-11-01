@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
+import BackButton from "../kit/BackButton.vue";
 import Icon from "../kit/Icon.vue";
 import MenuItem from "../kit/MenuItem.vue";
 import MenuLabel from "../kit/MenuLabel.vue";
@@ -75,7 +76,7 @@ defineExpose({openStatus});
     <aside :class="['task-inspector', {lone}]" data-task-inspector>
         <div class="top">
             <template v-if="backed">
-                <Btn small aria-label="Back" data-resource-back @click="emit('back')"><Icon name="back" :size="12" /></Btn>
+                <BackButton @back="emit('back')" />
             </template>
             <span class="crumb" data-task-crumb>{{ crumb }}</span>
             <span class="grow" />

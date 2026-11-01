@@ -20,7 +20,7 @@ from core.base.setting.setting_scope import SettingScope
 from core.base.setting.setting_type import SettingType
 from core.base.setting.setting_value import SettingValue
 from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_handler import EnsurePushKeysHandler
-from core.modules.phone.commands.push_key.push_key_subcommand import PushKeySubcommand
+from core.modules.phone.commands.ensure_push_keys.ensure_push_keys_subcommand import EnsurePushKeysSubcommand
 from core.modules.phone.commands.subscribe_phone.subscribe_phone_handler import SubscribePhoneHandler
 from core.modules.phone.commands.subscribe_phone.subscribe_phone_subcommand import SubscribePhoneSubcommand
 from core.modules.phone.listeners.plan_notice_listener import PlanNoticeListener
@@ -44,7 +44,7 @@ class PhoneModule(Module):
               ModelDeclaration(PhoneCode, excluded_subcommands=["make", "list", "show", "edit", "delete"])]
     guards = [PhoneRowGuard, PhoneCodeRowGuard]
     migrations = [PhonesTablesMigration, PhoneSubscriptionMigration, PhoneNoticeWaitingMigration]
-    subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, PushKeySubcommand, SubscribePhoneSubcommand)
+    subcommands = (PairPhoneSubcommand, RedeemPhoneCodeSubcommand, PhoneSessionSubcommand, EnsurePushKeysSubcommand, SubscribePhoneSubcommand)
     handlers = [PairPhoneHandler, RedeemPhoneCodeHandler, EnsurePushKeysHandler, SubscribePhoneHandler, NotePhoneNoticeHandler, SendPhoneNoticesHandler]
     listeners = [QuestionNoticeListener, PlanNoticeListener]
     bindings = [(PushService, WebPush), (PushTransport, PushTransport)]

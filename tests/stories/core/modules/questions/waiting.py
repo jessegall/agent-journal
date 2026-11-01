@@ -7,7 +7,7 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted, CodingEnv
 from core.base.driver.tool_type import ToolType
 
 QUESTION_LINE = 'question ask "Which database?" --options sqlite postgres --environment main'
-OWN_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})
+QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "AskUserQuestion", "category": ToolType.QUESTION, "files": [], "diff": None})
 CODEX_QUESTION_TOOL = HookSamples.sample("pre_tool_use", {"name": "request_user_input", "category": ToolType.QUESTION, "files": [], "diff": None}).with_fields(program="codex")
 
 
@@ -75,7 +75,7 @@ def test_a_closed_question_is_told_to_the_agent_once(new_story):
 
 def test_the_agent_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", OWN_QUESTION_TOOL, "ask with journal question ask")
+    story.expect_hook_refusal("s-1", QUESTION_TOOL, "ask with journal question ask")
 
 
 def test_a_refused_ask_leaves_no_wait(new_story):

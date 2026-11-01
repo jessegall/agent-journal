@@ -3,13 +3,10 @@ import {afterEach, expect, test} from "vitest";
 import PlanInspector from "../src/resource/PlanInspector.vue";
 import PlanReviews from "../src/resource/PlanReviews.vue";
 import PlanTimeline from "../src/resource/PlanTimeline.vue";
+import {settle} from "./support/windowContext.js";
 
 afterEach(() => (document.body.innerHTML = ""));
 
-const settle = async () => {
-    for (let round = 0; round < 4; round++) await nextTick();
-    await new Promise((resolve) => setTimeout(resolve));
-};
 
 async function drawn(component, answer, props = {}) {
     const element = document.createElement("div");

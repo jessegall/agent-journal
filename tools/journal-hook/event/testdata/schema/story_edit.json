@@ -8,8 +8,6 @@
   "actor": "agent",
   "environment": "main",
   "subagent": "",
-  "accepts_lines": true,
-  "launch": "",
   "tool": {
     "name": "Edit",
     "category": "edit",
@@ -24,5 +22,7 @@
     }
   },
   "prompt": null,
-  "raw": {}
+  "raw": {},
+  "accepts_lines": true,
+  "launch": ""
 }
