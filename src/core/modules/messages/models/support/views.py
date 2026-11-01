@@ -5,3 +5,8 @@ MAIN_CHAT_MARKS_SELECT = (
     " FROM chat_marks"
     " WHERE agent_id IS NULL OR agent_id IN (SELECT id FROM agents WHERE role = 'main')"
 )
+
+ATTACHED_FILES_SELECT = (
+    "SELECT messages.id || ':' || file.key AS row_key, messages.id AS message_id, messages.environment_id AS environment_id, file.value AS name, messages.text AS message_text, messages.created_at AS created_at"
+    " FROM messages, json_each(messages.files) AS file"
+)

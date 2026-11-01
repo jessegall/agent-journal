@@ -7,12 +7,14 @@ from core.modules.messages.migrations.m007_message_flowchart import MessageFlowc
 from core.modules.messages.migrations.m005_message_captions import MessageCaptionsMigration
 from core.modules.messages.commands.main_chat_marks.main_chat_marks_subcommand import MainChatMarksSubcommand
 from core.modules.messages.commands.chat_messages.chat_messages_subcommand import ChatMessagesSubcommand
+from core.modules.messages.models.attached_file import AttachedFile
 from core.modules.messages.models.chat_message import ChatMessage
 from core.modules.messages.models.main_chat_mark import MainChatMark
 from core.modules.messages.commands.tag_message.tag_message_handler import TagMessageHandler
 from core.modules.messages.commands.tag_message.tag_message_subcommand import TagMessageSubcommand
 from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
+from core.modules.messages.commands.attachment_list.attachment_list_subcommand import AttachmentListSubcommand
 from core.modules.messages.commands.draw_flowchart.draw_flowchart_handler import DrawFlowchartHandler
 from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand import DrawFlowchartSubcommand
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
@@ -55,13 +57,14 @@ class MessagesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
-    views = [ChatMessage, MainChatMark]
+    views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
-    subcommands = (DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
+    subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
+    windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
+               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
     skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",

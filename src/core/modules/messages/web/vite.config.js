@@ -6,6 +6,7 @@ const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 export default windowBuild({
     entries: {
         "chat": here("./src/chat.js"),
+        attachments: here("./src/attachments.js"),
     },
     outDir: here("./dist"),
 });
