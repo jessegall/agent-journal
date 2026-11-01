@@ -102,3 +102,8 @@ test("a plugin's cards read as words, not JSON", async () => {
     await recordDrawn({ok: true, value: {name: "sins", outputs: [{id: 1, output: JSON.stringify({cards: [{key: "a", detail: "long line at 22"}]})}], fault_count: 0, last_fault: ""}});
     expect(document.querySelector("[data-plugin-output]").textContent).toBe("long line at 22");
 });
+
+test("what a plugin did names the services it keeps running", async () => {
+    await recordDrawn({ok: true, value: {name: "sins", outputs: [], fault_count: 0, last_fault: "", services: [{name: "watcher", condition: "always"}]}});
+    expect(document.querySelector("[data-plugin-services]").textContent).toContain("watcher");
+});

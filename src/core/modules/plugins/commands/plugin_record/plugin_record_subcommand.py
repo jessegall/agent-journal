@@ -7,6 +7,8 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_output import PluginOutput
+from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_record import PluginRecord
 
 SHOWN_OUTPUT_COUNT = 50
@@ -18,8 +20,8 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
     cli_name = "plugin"
     name = "record"
 
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
+    def __init__(self, queries: Queries, folders: PluginFolders) -> None:
+        self.queries, self.folders = queries, folders
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("name")
@@ -30,7 +32,8 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
             raise Refusal(f"no plugin is called {arguments.name}", "journal plugin list names them")
         plugin = plugins[0]
         outputs = self.queries.query(PluginOutput).filter(plugin_id=plugin.id).newest().page(1, SHOWN_OUTPUT_COUNT).rows
-        return PluginRecord(plugin.name, [{"id": row.id, "output": row.output, "created_at": row.created_at.text} for row in outputs], plugin.fault_count, plugin.last_fault)
+        services = [{"name": service.name, "condition": service.condition} for service in PluginManifest.read(self.folders.code(plugin.name)).services]
+        return PluginRecord(plugin.name, [{"id": row.id, "output": row.output, "created_at": row.created_at.text} for row in outputs], plugin.fault_count, plugin.last_fault, services)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginRecord):

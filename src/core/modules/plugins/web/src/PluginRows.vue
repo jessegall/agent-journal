@@ -142,6 +142,9 @@ async function showRecord(row) {
                 <template v-if="record.last_fault">
                     <p class="plugin-fault">Last fault, {{ record.fault_count }} in a row: {{ record.last_fault }}</p>
                 </template>
+                <template v-if="record.services?.length">
+                    <p class="plugin-note" data-plugin-services>Keeps running: {{ record.services.map((service) => service.name).join(", ") }}</p>
+                </template>
                 <template v-if="!record.outputs.length">
                     <p class="plugin-note">It has done nothing yet.</p>
                 </template>
