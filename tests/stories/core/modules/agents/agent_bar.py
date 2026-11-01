@@ -1,0 +1,107 @@
+import json
+import subprocess
+
+from core.modules.agents.support.terminal_typing import TerminalTyping
+from tests.stories.core.support.fixtures import UserJoined
+from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
+
+SLEEP_SECONDS = 300
+
+
+class FakeTyping(TerminalTyping):
+    """Keeps what would be typed, so a story reaches no launcher."""
+
+    def __init__(self) -> None:
+        self.typed: list[tuple[int, str]] = []
+
+    def type_line(self, agent_id: int, line: str) -> None:
+        self.typed.append((agent_id, line))
+
+
+def typing_story(new_story):
+    story = new_story(fixture=UserJoined)
+    typing = FakeTyping()
+    story.container.bind(TerminalTyping, typing)
+    return story, typing
+
+
+def test_the_controls_list_the_programs_choices_without_their_lines(new_story):
+    story, _ = typing_story(new_story)
+    groups = json.loads(story.run(f"agent controls {story.agent.id} --json", actor=story.user).output_text)["groups"]
+    assert [group["key"] for group in groups] == ["model", "effort", "context"]
+    assert {"value": "opus", "label": "Opus"} in groups[0]["choices"]
+
+
+def test_a_choice_types_the_programs_own_line(new_story):
+    story, typing = typing_story(new_story)
+    story.expect_success(f"agent control {story.agent.id} model opus", f"applied to agent {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent control {story.agent.id} effort high", actor=story.user)
+    story.expect_success(f"agent control {story.agent.id} context compact", actor=story.user)
+    story.expect_rows(typing.typed == [(story.agent.id, "/model opus"), (story.agent.id, "/effort high"), (story.agent.id, "/compact")])
+
+
+def test_a_choice_the_program_does_not_offer_an_ended_agent_and_an_agent_asking_are_refused(new_story):
+    story, typing = typing_story(new_story)
+    story.expect_refusal(f"agent control {story.agent.id} model nope", "model nope is not a choice", actor=story.user)
+    story.expect_refusal(f"agent control {story.agent.id} model opus", "only a person changes", actor=story.agent)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_refusal(f"agent control {story.agent.id} model opus", "has ended", actor=story.user)
+    story.expect_rows(typing.typed == [])
+
+
+def test_the_programs_are_listed_by_name_and_title(new_story):
+    story = new_story(fixture=UserJoined)
+    rows = json.loads(story.run("agent programs --json", actor=story.user).output_text)["rows"]
+    assert {"name": "claude", "title": "Claude Code"} in rows
+
+
+def test_stop_ends_the_program_under_the_agents_pid_and_its_session(new_story, tmp_path):
+    story = new_story(fixture=UserJoined)
+    stand_in = tmp_path / "claude"
+    stand_in.write_text(f"#!/bin/sh\nsleep {SLEEP_SECONDS} &\ntrap 'kill $!; exit 0' TERM\nwait\n")
+    stand_in.chmod(0o755)
+    program = subprocess.Popen([str(stand_in)], start_new_session=True)
+    try:
+        agent_id = story.new_row_id(f"agent start s-stand-in claude worker --pid {program.pid} --environment main")
+        story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
+        story.expect_rows(program.wait(timeout=10) is not None)
+        story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
+    finally:
+        program.kill()
+        program.wait()
+
+
+def test_stop_leaves_alone_a_pid_that_now_runs_something_else_and_still_ends_the_session(new_story):
+    story = new_story(fixture=UserJoined)
+    bystander = subprocess.Popen(["sleep", str(SLEEP_SECONDS)])
+    try:
+        agent_id = story.new_row_id(f"agent start s-bystander claude worker --pid {bystander.pid} --environment main")
+        story.expect_success(f"agent stop {agent_id}", actor=story.user)
+        story.expect_rows(bystander.poll() is None)
+    finally:
+        bystander.kill()
+        bystander.wait()
+
+
+def test_only_a_person_stops_and_an_agent_with_no_known_process_or_ended_is_refused(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_refusal(f"agent stop {story.agent.id}", "only a person stops", actor=story.agent)
+    story.expect_refusal(f"agent stop {story.agent.id}", "does not know the process", actor=story.user)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_refusal(f"agent stop {story.agent.id}", "has ended already", actor=story.user)
+
+
+def test_launch_hands_the_launcher_the_program_in_the_environments_folder_under_a_new_agent_row(new_story):
+    story = new_story(fixture=UserJoined)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    story.expect_text("agent launch claude --environment main", "started agent", actor=story.user)
+    launcher.thread.join(timeout=5)
+    request = launcher.requests[0]
+    story.expect_rows(request["environment"] == "main", request["session"].startswith("launch-"), request["command"][0].endswith("claude"), request["variables"]["JOURNAL_LAUNCH"] == request["session"])
+
+
+def test_launch_with_no_launcher_is_refused_and_keeps_no_row(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_refusal("agent launch claude --environment main", "no launcher is running here", actor=story.user)
+    story.expect_absent("agent list --environment main", "launch-", actor=story.user)
+    story.expect_refusal("agent launch claude --environment main", "only a person starts", actor=story.agent)

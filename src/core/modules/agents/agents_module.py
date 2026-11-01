@@ -2,7 +2,15 @@ from core.modules.agents.commands.program_command.program_command_subcommand imp
 from core.modules.agents.commands.program_trust.program_trust_subcommand import ProgramTrustSubcommand
 from core.modules.agents.commands.bind_agent_session.bind_agent_session_handler import BindAgentSessionHandler
 from core.modules.agents.commands.agent_terminal.agent_terminal_subcommand import AgentTerminalSubcommand
+from core.modules.agents.commands.agent_control.agent_control_subcommand import AgentControlSubcommand
+from core.modules.agents.commands.agent_controls.agent_controls_subcommand import AgentControlsSubcommand
+from core.modules.agents.commands.agent_launch.agent_launch_subcommand import AgentLaunchSubcommand
+from core.modules.agents.commands.agent_programs.agent_programs_subcommand import AgentProgramsSubcommand
+from core.modules.agents.commands.agent_stop.agent_stop_subcommand import AgentStopSubcommand
 from core.modules.agents.commands.agent_type.agent_type_subcommand import AgentTypeSubcommand
+from core.modules.agents.commands.choose_agent_control.choose_agent_control_handler import ChooseAgentControlHandler
+from core.modules.agents.commands.launch_agent.launch_agent_handler import LaunchAgentHandler
+from core.modules.agents.commands.stop_agent.stop_agent_handler import StopAgentHandler
 from core.modules.agents.commands.type_in_terminal.type_in_terminal_handler import TypeInTerminalHandler
 from core.modules.agents.commands.agent_transcript.agent_transcript_subcommand import AgentTranscriptSubcommand
 from core.modules.agents.commands.end_agent.end_agent_handler import EndAgentHandler
@@ -35,8 +43,8 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     moves = [AgentsMove]
     migrations = [AgentsTableMigration, AgentLaunchRowMigration]
-    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeInTerminalHandler]
-    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, AgentTypeSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
+    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeInTerminalHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler]
+    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, AgentTypeSubcommand, AgentControlsSubcommand, AgentControlSubcommand, AgentProgramsSubcommand, AgentStopSubcommand, AgentLaunchSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list"],

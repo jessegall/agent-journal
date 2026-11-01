@@ -1,9 +1,10 @@
 <script setup>
 import {computed} from "vue";
+import AgentControls from "./AgentControls.vue";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, helpers: {type: Number, default: 0}});
-const emit = defineEmits(["open"]);
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, run: {type: Function, default: null}, helpers: {type: Number, default: 0}});
+const emit = defineEmits(["open", "changed"]);
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 </script>
 
@@ -27,6 +28,9 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
                 <strong>No agent</strong>
             </template>
             <span class="agent-space" />
+        </template>
+        <template v-if="run && !loading">
+            <AgentControls :agent="agent" :run="run" @changed="emit('changed')" />
         </template>
         <slot />
     </div>

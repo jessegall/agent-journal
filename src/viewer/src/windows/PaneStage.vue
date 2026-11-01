@@ -295,7 +295,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <UpdateBand :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" @open="openCount">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>

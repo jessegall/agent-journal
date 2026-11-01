@@ -16,6 +16,8 @@ from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_hooks import ProgramHooks
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
+from core.base.provider.control_choice import ControlChoice
+from core.base.provider.control_group import ControlGroup
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
@@ -29,6 +31,10 @@ from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
 TRANSCRIPT_AUTHORS = ("user", "assistant")
+
+
+MODEL_CHOICES = (("opus", "Opus"), ("sonnet", "Sonnet"), ("haiku", "Haiku"), ("fable", "Fable"))
+EFFORT_CHOICES = (("low", "Low"), ("medium", "Medium"), ("high", "High"), ("xhigh", "Extra high"), ("max", "Maximum"))
 
 
 class ClaudeCodeProvider(Provider):
@@ -57,6 +63,9 @@ class ClaudeCodeProvider(Provider):
     hook_file = HookFile(Path(".claude/settings.local.json"), {})
     session_variable = "CLAUDE_CODE_SESSION_ID"
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
+    controls = (ControlGroup("model", "Model", tuple(ControlChoice(value, label, f"/model {value}") for value, label in MODEL_CHOICES)),
+                ControlGroup("effort", "Reasoning effort", tuple(ControlChoice(value, label, f"/effort {value}") for value, label in EFFORT_CHOICES)),
+                ControlGroup("context", "Context window", (ControlChoice("compact", "Compact context", "/compact"), ControlChoice("clear", "Clear context", "/clear"))))
     models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST)]
 
     def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:

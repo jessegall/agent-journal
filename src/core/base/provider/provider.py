@@ -7,6 +7,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.tool_type import ToolType
 from core.base.journal_home import JournalHome
+from core.base.provider.control_group import ControlGroup
 from core.base.provider.helper_launch import HelperLaunch
 from core.base.provider.helper_outcome import HelperOutcome
 from core.base.provider.hook_decoder import HookDecoder
@@ -38,6 +39,7 @@ class Provider(ABC):
     refusal_output_tools: ClassVar[Sequence[ToolType]] = ()
     decoder: ClassVar[HookDecoder] = HookDecoder.COMMON
     hook_file: ClassVar[HookFile]
+    controls: ClassVar[Sequence[ControlGroup]] = ()
     session_variable: ClassVar[str]
     markers: ClassVar[Sequence[str]]
     models: ClassVar[Sequence[ProgramModel]]

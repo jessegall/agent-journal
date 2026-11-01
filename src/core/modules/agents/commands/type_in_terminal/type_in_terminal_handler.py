@@ -1,10 +1,10 @@
-from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.modules.agents.commands.type_in_terminal.type_in_terminal import TypeInTerminal
 from core.modules.agents.models.agent import Agent
+from core.modules.agents.support.person_check import PersonCheck
 from core.modules.agents.support.terminal_typing import TerminalTyping
 
 
@@ -17,8 +17,7 @@ class TypeInTerminalHandler(Handler[TypeInTerminal, Agent]):
         self.queries, self.typing = queries, typing
 
     def handle(self, command: TypeInTerminal, context: Context) -> Agent:
-        if context.actor.type is not ActorType.USER:
-            raise Refusal("only a person types in an agent's terminal", "ask the user to type it in the Terminal window")
+        PersonCheck.require(context, "only a person types in an agent's terminal")
         if not command.line.strip():
             raise Refusal("give the line to type")
         agent = self.queries.query(Agent).find(command.agent_id)
