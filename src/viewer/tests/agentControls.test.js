@@ -1,6 +1,6 @@
-import {createApp, h, nextTick} from "vue";
+import {createApp, h, reactive} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
-import AgentControls from "../src/shell/AgentControls.vue";
+import InformationBar from "../src/shell/InformationBar.vue";
 import {settle} from "./support/windowContext.js";
 
 vi.stubGlobal("ResizeObserver", class {
@@ -11,44 +11,72 @@ vi.stubGlobal("ResizeObserver", class {
 
 afterEach(() => (document.body.innerHTML = ""));
 
+const GROUPS = [
+    {key: "model", label: "Model", choices: [{value: "opus", label: "Opus"}]},
+    {key: "effort", label: "Reasoning effort", choices: [{value: "high", label: "High"}]},
+];
+const USAGE = {agents: [{id: 7, model: "sonnet", effort: "low", context_percent: 40}], windows: []};
 
-const GROUPS = [{key: "model", label: "Model", choices: [{value: "opus", label: "Opus"}]}];
-const answers = (failure = null) => (line) => {
-    if (line[1] === "controls") return {ok: true, value: {groups: GROUPS}};
-    if (line[1] === "programs") return {ok: true, value: {rows: [{name: "claude", title: "Claude Code"}]}};
-    return failure ? {ok: false, error: failure} : {ok: true, value: {}};
-};
-
-async function drawn(agent, failure) {
-    const ran = [];
-    const reply = answers(failure);
-    const element = document.createElement("div");
-    document.body.append(element);
-    createApp({render: () => h(AgentControls, {agent, run: async (line) => (ran.push(line.join(" ")), reply(line))})}).mount(element);
-    await settle();
-    return {element, ran};
+function answers(failure) {
+    return (line) => {
+        if (line[1] === "controls") return {ok: true, value: {groups: GROUPS}};
+        if (line[1] === "programs") return {ok: true, value: {rows: [{name: "claude", title: "Claude Code"}]}};
+        return failure ? {ok: false, error: failure} : {ok: true, value: {}};
+    };
 }
 
-test("a running agent's model is chosen from what its program offers", async () => {
-    const {element, ran} = await drawn({id: 7, ended_at: null});
+async function drawn(agent, failure, gate) {
+    const ran = [];
+    const reply = answers(failure);
+    const row = agent ? reactive(agent) : null;
+    const element = document.createElement("div");
+    document.body.append(element);
+    const run = async (line) => (ran.push(line.join(" ")), gate && line[1] !== "controls" && line[1] !== "programs" ? await gate : null, reply(line));
+    createApp({render: () => h(InformationBar, {agent: row, run, usage: USAGE})}).mount(element);
+    await settle();
+    return {element, ran, row};
+}
+
+test("the model and the effort are the facts of the bar, and each is chosen from them", async () => {
+    const {element, ran} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"});
     expect(ran).toContain("agent controls 7");
-    element.querySelector('[data-agent-control="model"]').click();
+    expect(element.querySelector('[data-fact="model"]').textContent).toContain("sonnet");
+    element.querySelector('[data-fact="model"]').click();
     await settle();
     document.querySelector('[data-agent-choice="opus"]').click();
     await settle();
     expect(ran).toContain("agent control 7 model opus");
+    expect(element.querySelector('[data-fact="model"]').textContent).toContain("Opus");
     expect(element.querySelector("[data-agent-told]").textContent).toContain("Opus");
 });
 
-test("stopping asks first and can be kept running", async () => {
-    const {element, ran} = await drawn({id: 7, ended_at: null});
-    element.querySelector("[data-agent-stop]").click();
+test("a chosen model shows before the server answers and goes back when it refuses", async () => {
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    const {element} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"}, "not now", gate);
+    element.querySelector('[data-fact="model"]').click();
     await settle();
-    expect(element.querySelector("[data-agent-stop-ask]")).not.toBeNull();
+    document.querySelector('[data-agent-choice="opus"]').click();
+    await settle();
+    expect(element.querySelector('[data-fact="model"]').textContent).toContain("Opus");
+    release();
+    await settle();
+    expect(element.querySelector('[data-fact="model"]').textContent).toContain("sonnet");
+    expect(element.querySelector("[data-agent-failure]").textContent).toBe("not now");
+});
+
+test("stopping asks first and can be kept running", async () => {
+    const {element, ran} = await drawn({id: 7, ended_at: null, program: "claude", session: "s"});
+    element.querySelector('[data-fact="agent"]').click();
+    await settle();
+    document.querySelector("[data-agent-stop]").click();
+    await settle();
+    expect(document.querySelector("[data-agent-stop-ask]")).not.toBeNull();
     expect(ran).not.toContain("agent stop 7");
-    element.querySelector("[data-agent-stop-confirm]").click();
+    document.querySelector("[data-agent-stop-confirm]").click();
     await settle();
     expect(ran).toContain("agent stop 7");
+    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Ended");
 });
 
 test("with no agent it offers the programs to start, and a refusal says why", async () => {
@@ -61,15 +89,28 @@ test("with no agent it offers the programs to start, and a refusal says why", as
     expect(element.querySelector("[data-agent-failure]").textContent).toBe("no launcher is running here");
 });
 
-test("a running agent is paused and a paused one resumed", async () => {
-    const {element, ran} = await drawn({id: 7, ended_at: null, paused_at: null});
-    element.querySelector("[data-agent-pause]").click();
+test("pausing shows paused at once and resuming shows working, and a refusal puts the state back", async () => {
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    const {element, ran} = await drawn({id: 7, ended_at: null, paused_at: null, program: "claude", session: "s"}, null, gate);
+    element.querySelector('[data-fact="agent"]').click();
+    await settle();
+    document.querySelector("[data-agent-pause]").click();
+    await settle();
+    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Paused");
+    release();
     await settle();
     expect(ran).toContain("agent pause 7");
-    const paused = await drawn({id: 8, ended_at: null, paused_at: "2026-11-01T10:00:00Z"});
-    expect(paused.element.querySelector("[data-agent-pause]")).toBeNull();
-    paused.element.querySelector("[data-agent-resume]").click();
+    element.querySelector('[data-fact="agent"]').click();
     await settle();
-    expect(paused.ran).toContain("agent resume 8");
+    document.querySelector("[data-agent-resume]").click();
+    await settle();
+    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Working");
+    expect(ran).toContain("agent resume 7");
+    const refused = await drawn({id: 8, ended_at: null, paused_at: null, program: "claude", session: "s"}, "no");
+    refused.element.querySelector('[data-fact="agent"]').click();
+    await settle();
+    document.querySelector("[data-agent-pause]").click();
+    await settle();
+    expect(refused.element.querySelector('[data-fact="state"]').textContent).toContain("Working");
 });
-

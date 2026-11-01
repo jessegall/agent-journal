@@ -1,6 +1,10 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref, toRef} from "vue";
 import Icon from "../kit/Icon.vue";
+import MenuItem from "../kit/MenuItem.vue";
+import MenuLabel from "../kit/MenuLabel.vue";
+import MenuPanel from "../kit/MenuPanel.vue";
+import {useAgentControls} from "../composables/agentControls.js";
 import {providerName} from "../domain/agents.js";
 
 // the one line under the agent bar, as version 4's agent facts drew it: who the agent is, its state, the plan's allowance used, how full its
@@ -11,8 +15,28 @@ const props = defineProps({
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     now: {type: Number, default: () => Date.now()},
     fitness: {type: Object, default: null},
+    run: {type: Function, default: null},
 });
-const emit = defineEmits(["open"]);
+const emit = defineEmits(["open", "changed"]);
+const controls = useAgentControls(toRef(props, "agent"), props.run ?? (async () => ({ok: false, error: "nothing to ask"})), () => emit("changed"));
+const anchor = ref(null);
+const opened = ref("");
+const group = computed(() => controls.groups.value.find((one) => one.key === opened.value));
+
+function openMenu(event, key) {
+    anchor.value = event.currentTarget;
+    opened.value = key;
+}
+
+function closeMenu() {
+    anchor.value = null;
+    opened.value = "";
+    controls.asking.value = false;
+}
+
+const offers = (key) => controls.groups.value.some((one) => one.key === key);
+const model = computed(() => controls.chosen.value.model ?? status.value?.model ?? "");
+const effort = computed(() => controls.chosen.value.effort ?? status.value?.effort ?? "effort");
 const LOW_FITNESS = 75;
 const COUNTS = [
     {key: "helpers", title: "Subagents and workers running", icon: "agents"},
@@ -36,15 +60,15 @@ const uptime = computed(() => {
 <template>
     <div class="information" data-information-bar>
         <template v-if="agent">
-            <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}`" @click="emit('open', 'agents')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
-            <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ running ? "Working" : "Ended" }}</span>
+            <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: pause, resume or stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
+            <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ !running ? "Ended" : controls.paused.value ? "Paused" : "Working" }}</span>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage')">
                     <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
                 </button>
             </template>
             <template v-if="context !== null">
-                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full`" @click="emit('open', 'context')">
+                <button type="button" class="fact" data-fact="context" :title="`Context ${context}% full: clear or compact it`" @click="offers('context') ? openMenu($event, 'context') : emit('open', 'context')">
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
@@ -54,8 +78,11 @@ const uptime = computed(() => {
                 </button>
                 <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Messages arriving against those answered" @click="emit('open', 'fitness')">Load {{ fitness.workload }}</button>
             </template>
-            <template v-if="status?.model">
-                <span class="fact" data-fact="model"><Icon name="model" :size="12" /> {{ status.model }}</span>
+            <template v-if="model">
+                <button type="button" class="fact" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
+            </template>
+            <template v-if="offers('effort')">
+                <button type="button" class="fact" data-fact="effort" title="Reasoning effort: change it" @click="openMenu($event, 'effort')"><Icon name="bolt" :size="12" /> {{ effort }}</button>
             </template>
             <template v-if="cost">
                 <button type="button" class="fact" data-fact="cost" title="What this session has cost" @click="emit('open', 'usage')">{{ cost }}</button>
@@ -67,8 +94,49 @@ const uptime = computed(() => {
                 <button type="button" :class="['fact', {none: !facts[count.key]}]" :data-count="count.key" :title="count.title" @click="emit('open', count.key)"><Icon :name="count.icon" :size="12" /> {{ facts[count.key] }}</button>
             </template>
                     </template>
+        <template v-else-if="run">
+            <button type="button" class="fact lead" data-agent-start @click="openMenu($event, 'start')"><Icon name="agents" :size="12" /> Start an agent</button>
+        </template>
         <span class="space" />
+        <template v-if="controls.failure.value">
+            <span class="fact failure" role="alert" data-agent-failure :title="controls.failure.value">{{ controls.failure.value }}</span>
+        </template>
+        <template v-else-if="controls.told.value">
+            <span class="fact" data-agent-told>{{ controls.told.value }}</span>
+        </template>
         <slot />
+        <template v-if="anchor">
+            <MenuPanel :anchor="anchor" :min-width="190" @close="closeMenu">
+                <template v-if="opened === 'agent'">
+                    <template v-if="controls.asking.value">
+                        <MenuLabel data-agent-stop-ask>Stop the agent? It stops what it is doing.</MenuLabel>
+                        <MenuItem data-agent-stop-confirm @click="closeMenu(), controls.stop()">Stop it</MenuItem>
+                        <MenuItem @click="controls.asking.value = false">Keep it running</MenuItem>
+                    </template>
+                    <template v-else>
+                        <template v-if="controls.paused.value">
+                            <MenuItem data-agent-resume @click="closeMenu(), controls.resume()">Resume</MenuItem>
+                        </template>
+                        <template v-else>
+                            <MenuItem data-agent-pause @click="closeMenu(), controls.pause()">Pause</MenuItem>
+                        </template>
+                        <MenuItem data-agent-stop @click="controls.asking.value = true">Stop</MenuItem>
+                    </template>
+                </template>
+                <template v-else-if="opened === 'start'">
+                    <MenuLabel>Start an agent</MenuLabel>
+                    <template v-for="program in controls.programs.value" :key="program.name">
+                        <MenuItem :data-agent-program="program.name" @click="closeMenu(), controls.start(program)">{{ program.title }}</MenuItem>
+                    </template>
+                </template>
+                <template v-else-if="group">
+                    <MenuLabel>{{ group.label }}</MenuLabel>
+                    <template v-for="choice in group.choices" :key="choice.value">
+                        <MenuItem :data-agent-choice="choice.value" @click="controls.choose(group.key, choice), closeMenu()">{{ choice.label }}</MenuItem>
+                    </template>
+                </template>
+            </MenuPanel>
+        </template>
     </div>
 </template>
 
@@ -116,6 +184,13 @@ button.fact {
 button.fact:hover {
     background: var(--hover);
     color: var(--text);
+}
+
+.fact.failure {
+    max-width: 320px;
+    overflow: hidden;
+    color: var(--danger);
+    text-overflow: ellipsis;
 }
 
 .fact.none {

@@ -312,12 +312,12 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <UpdateBand :run="shellRead" />
                 <AwayCard :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" :workers="usage.agents.filter((row) => row.role === 'worker').length" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" :workers="usage.agents.filter((row) => row.role === 'worker').length" @open="openCount">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
             </AgentBar>
-            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :fitness="fitness" :now="now" @open="openCount">
+            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-if="presets">
                         <LayoutPicker :list="presets" />
                     </template>
