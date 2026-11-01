@@ -11,13 +11,17 @@ STOP_POLL_SECONDS = 0.05
 
 
 class ViewerListener(ThreadingHTTPServer):
-    """The viewer's HTTP listener on 127.0.0.1, beside the journal's socket, on a port the system picks; it answers
-    only requests that carry the login cookie and name its own address as their host."""
+    """The viewer's HTTP listener on 127.0.0.1, beside the journal's socket, on the port it had before a restart, or
+    one the system picks when that is taken; it answers only requests that carry the login cookie and name its
+    own address as their host."""
 
     daemon_threads = True
 
-    def __init__(self, login: ViewerLogin, routes: ViewerRoutes) -> None:
-        super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
+    def __init__(self, login: ViewerLogin, routes: ViewerRoutes, remembered_port: int = 0) -> None:
+        try:
+            super().__init__((VIEWER_ADDRESS, remembered_port), ViewerRequestHandler)
+        except OSError:
+            super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
         self.login, self.routes = login, routes
         self.thread = threading.Thread(target=self.serve, name="viewer", daemon=True)
 

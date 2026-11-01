@@ -31,6 +31,10 @@ class JournalHome:
         return self.folder / "runtime" / "timing.log"
 
     @property
+    def viewer_port_file(self) -> Path:
+        return self.folder / "viewer-port"
+
+    @property
     def module_list(self) -> Path:
         return self.folder / "modules.json"
 

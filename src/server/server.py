@@ -44,6 +44,11 @@ TICK_PERIOD_SECONDS = 60.0
 CODE_RECHECK_SECONDS = 1.0
 
 
+def remembered_port(home: JournalHome) -> int:
+    text = home.viewer_port_file.read_text().strip() if home.viewer_port_file.is_file() else ""
+    return int(text) if text.isdigit() else 0
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="journal server")
     parser.add_argument("--home", required=True)
@@ -61,7 +66,8 @@ def main(argv: list[str]) -> int:
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output))
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login))
+    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), remembered_port(home))
+    home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     tunnel = ServerTunnel(home)
     tunnel_thread = ListenerThread(lambda: tunnel.follow(viewer.port), lambda error: files.log_line(f"the tunnel could not be opened: {error}"), TUNNEL_CHECK_SECONDS, "tunnel")
