@@ -68,5 +68,5 @@ class WorkersModule(Module):
     listeners = [EndedWorkerListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree list", "task show", "proof list"], events=["proof.*", "worker_worktree.*"]),
-               WindowDeclaration("workers.todos", "To-do list", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
+               WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
                                  events=["todo_item.*"])]

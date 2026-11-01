@@ -47,7 +47,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
             </template>
         </div>
         <div ref="scroller" class="history" @scroll="followScroll">
-            <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No messages yet">
+            <RowList :rows="rows" :failure="failure" :loaded="loaded" shape="messages" empty="No messages yet">
                 <template #default="{row}">
                     <template v-if="row.kind === 'mark'">
                         <MarkHost :mark="row.row" />
@@ -112,6 +112,8 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 .notices {
     display: flex;
     flex-direction: column;
+    /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides and the top */
+    margin: -16px -16px 0;
 }
 
 .notice {

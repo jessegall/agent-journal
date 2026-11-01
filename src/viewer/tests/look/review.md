@@ -19,3 +19,30 @@ Each line is one difference found, its screenshot pair in this folder and what w
 | 13 | Bars at the top, side panels | Earlier differences of report 1147 | top-bars and side-panels pairs | fixed |
 
 Not compared one by one: the module windows other than chat, tasks and settings. Version 5 draws them with the same kit as the chat and settings.
+
+## Windows, one by one (1280, each as a page of its own: ?environment=...&page=<window>)
+
+| # | Window | Difference | Pair | State |
+|---|--------|------------|------|-------|
+| 14 | Plans | Window lists a plan per row; version 4 draws plan cards with a progress bar, phase line and a New plan button and Open/Closed tabs | windows/plans-v4.png, windows/plans-v5.png | open: content and toolbar |
+| 15 | Documents | Search, tabs and list match; version 4 adds a date-grouped list with abstracts and a New document button | windows/documents-v4.png, windows/documents-v5.png | open: New document button |
+| 16 | Tasks | Window lists tasks flat; version 4 groups by plan and phase with status circles, search, filter and display menu | windows/tasks-v4.png, windows/tasks-v5.png | open: grouping and toolbar |
+| 17 | Agents | Rows present; version 4 shows id, session, state and time per row | windows/agents-v4.png, windows/agents-v5.png | open: row detail |
+| 18 | Checks | Cards present; version 4 adds state, command, run button and a New check button | windows/checks-v4.png, windows/checks-v5.png | open: card detail and button |
+| 19 | File edits | Empty state in the demo; version 4's Files page is a file browser, a different feature | windows/fileedits-v4.png, windows/fileedits-v5.png | open: different feature |
+| 20 | Phone pairing | Version 5 has Pair a phone and its row; version 4 has no page of its own for it | windows/phone-v4.png, windows/phone-v5.png | same |
+| 21 | Plugins | Empty state in the demo; version 4 draws plugin cards with a switch and an install field | windows/plugins-v4.png, windows/plugins-v5.png | open: plugin cards |
+| 22 | Questions | Version 5 answers in place; version 4 lists closed questions with their text | windows/questions-v4.png, windows/questions-v5.png | open: closed list |
+| 23 | Sequences | Cards present; version 4 adds age, step list and a New sequence button | windows/sequences-v4.png, windows/sequences-v5.png | open: card detail and button |
+| 24 | Suggestions | Empty state in the demo; version 4 shows suggestions in a notification panel | windows/suggestions-v4.png, windows/suggestions-v5.png | open: different place |
+| 25 | Templates | Cards present; version 4 shows the text of each template and its age | windows/templates-v4.png, windows/templates-v5.png | open: card detail |
+| 26 | Triggers | Cards present; version 4 has a New trigger button and an empty note | windows/triggers-v4.png, windows/triggers-v5.png | open: button |
+| 27 | Tasks (agent) | Version 5 names the window Tasks now; on a page of its own it needs an agent and says so | windows/workers-v4.png, windows/workers-v5.png | open: needs an agent |
+| 28 | Every window as a page | A window page had no gutter around its content | windows/*-v5.png | fixed |
+| 29 | Chat notices | The strip had padding around it; version 4 runs it flush with the chat's sides and top | bottom-v5.png | fixed |
+| 30 | Bars and headers | An icon button stretched to the height of its bar; now a fixed 24 pixel square, centred | bottom-v5.png | fixed |
+| 31 | Agent tasks window | Named To-do list; now Tasks, with its empty text saying tasks | windows/workers-v5.png | fixed |
+| 32 | Every list and window | A blank while the first read was out; now one shared skeleton shaped like what is coming, fading into the content | not a still | fixed |
+
+Memories, notices, dumps, processes and sharing have no window of their own in version 5 (they draw in the chat, the settings and the activity panel), so there is no page of theirs to pair.
+Lines marked open differ from version 4 in content or toolbar that these windows do not draw yet.

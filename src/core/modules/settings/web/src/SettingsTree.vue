@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {useRows} from "@journal/window-kit";
+import {Skeleton, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 
 const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
@@ -43,7 +43,10 @@ async function saved(words) {
         <label class="settings-search">
             <input v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" />
         </label>
-        <template v-if="failure">
+        <template v-if="!loaded">
+            <Skeleton shape="text" />
+        </template>
+        <template v-else-if="failure">
             <p class="settings-failure">{{ failure }}</p>
         </template>
         <template v-else-if="loaded && !rows.length">

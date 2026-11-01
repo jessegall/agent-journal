@@ -1,55 +1,58 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-b39b929cd89d")) { const style = document.createElement("style"); style.id = "window-styles-b39b929cd89d"; style.textContent = ".cards[data-v-7fd030a7]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-7fd030a7]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-7fd030a7]:hover,.card.open[data-v-7fd030a7]{border-color:var(--border-strong, var(--border))}.card-head[data-v-7fd030a7]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-7fd030a7]{width:14px;height:14px}.card-title[data-v-7fd030a7]{font-weight:600}.card-brief[data-v-7fd030a7]{color:var(--text-2);font-size:13px}.card-steps[data-v-7fd030a7]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-7fd030a7]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-7fd030a7]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
-import { openBlock as t, createElementBlock as s, unref as a, toDisplayString as n, createCommentVNode as h, Fragment as _, renderList as u, normalizeClass as y, createElementVNode as r, createVNode as g, createTextVNode as f } from "vue";
-import { useRows as C, useOpenRow as b, Icon as v } from "@journal/window-kit";
-const N = (i, l) => {
-  const c = i.__vccOpts || i;
-  for (const [p, d] of l)
-    c[p] = d;
+if (!document.getElementById("window-styles-48a3cb77563d")) { const style = document.createElement("style"); style.id = "window-styles-48a3cb77563d"; style.textContent = ".cards[data-v-900bf729]{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-content:start;padding:16px 20px}.card[data-v-900bf729]{display:flex;flex-direction:column;gap:8px;min-height:130px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:inherit;text-align:left;cursor:pointer}.card[data-v-900bf729]:hover,.card.open[data-v-900bf729]{border-color:var(--border-strong, var(--border))}.card-head[data-v-900bf729]{display:flex;gap:6px;align-items:center;color:var(--text-2);font-size:13px}.card-icon[data-v-900bf729]{width:14px;height:14px}.card-title[data-v-900bf729]{font-weight:600}.card-brief[data-v-900bf729]{color:var(--text-2);font-size:13px}.card-steps[data-v-900bf729]{margin:0;padding-left:18px;color:var(--text-2);font-size:13px;line-height:1.6}.card-foot[data-v-900bf729]{margin-top:auto;color:var(--text-3);font-size:12px}.cards-note[data-v-900bf729]{margin:0;color:var(--text-2)}\n"; document.head.appendChild(style); }
+import { openBlock as t, createElementBlock as a, unref as s, createBlock as y, toDisplayString as n, createCommentVNode as h, Fragment as _, renderList as u, normalizeClass as g, createElementVNode as r, createVNode as b, createTextVNode as k } from "vue";
+import { useRows as C, useOpenRow as v, Skeleton as N, Icon as x } from "@journal/window-kit";
+const T = (p, l) => {
+  const c = p.__vccOpts || p;
+  for (const [d, i] of l)
+    c[d] = i;
   return c;
-}, x = { class: "cards" }, T = {
-  key: 0,
-  class: "cards-note"
-}, V = {
+}, V = { class: "cards" }, B = {
   key: 1,
   class: "cards-note"
-}, R = ["data-row", "onClick"], B = { class: "card-head" }, E = { class: "card-title" }, F = { class: "card-brief" }, I = {
+}, R = {
+  key: 2,
+  class: "cards-note"
+}, E = ["data-row", "onClick"], F = { class: "card-head" }, I = { class: "card-title" }, O = { class: "card-brief" }, S = {
   key: 0,
   class: "card-steps"
-}, O = { class: "card-foot" }, $ = {
+}, $ = { class: "card-foot" }, j = {
   __name: "TemplateCards",
-  setup(i) {
-    const { rows: l, failure: c, loaded: p } = C("template list", ["template.*"]), { opened: d, toggle: k } = b();
-    return (j, m) => (t(), s("div", x, [
-      a(c) ? (t(), s("p", T, n(a(c)), 1)) : a(p) && !a(l).length ? (t(), s("p", V, "No templates yet")) : h("", !0),
-      (t(!0), s(_, null, u(a(l), (e) => (t(), s("button", {
+  setup(p) {
+    const { rows: l, failure: c, loaded: d } = C("template list", ["template.*"]), { opened: i, toggle: f } = v();
+    return (z, m) => (t(), a("div", V, [
+      s(d) ? s(c) ? (t(), a("p", B, n(s(c)), 1)) : s(d) && !s(l).length ? (t(), a("p", R, "No templates yet")) : h("", !0) : (t(), y(s(N), {
+        key: 0,
+        shape: "cards"
+      })),
+      (t(!0), a(_, null, u(s(l), (e) => (t(), a("button", {
         key: e.id,
         type: "button",
-        class: y(["card", { open: a(d) === e.id }]),
+        class: g(["card", { open: s(i) === e.id }]),
         "data-row": e.id,
-        onClick: (o) => a(k)(e)
+        onClick: (o) => s(f)(e)
       }, [
-        r("span", B, [
-          g(a(v), {
+        r("span", F, [
+          b(s(x), {
             name: "board",
             class: "card-icon"
           }),
-          f(" Template " + n(e.id), 1)
+          k(" Template " + n(e.id), 1)
         ]),
-        r("span", E, n(e.title), 1),
-        r("span", F, n(e.brief), 1),
-        a(d) === e.id ? (t(), s("ul", I, [
-          (t(!0), s(_, null, u(e.parts, (o) => (t(), s("li", { key: o }, n(o), 1))), 128)),
-          (t(!0), s(_, null, u(e.commands, (o) => (t(), s("li", { key: o }, [
-            m[0] || (m[0] = f("Runs at each phase end: ", -1)),
+        r("span", I, n(e.title), 1),
+        r("span", O, n(e.brief), 1),
+        s(i) === e.id ? (t(), a("ul", S, [
+          (t(!0), a(_, null, u(e.parts, (o) => (t(), a("li", { key: o }, n(o), 1))), 128)),
+          (t(!0), a(_, null, u(e.commands, (o) => (t(), a("li", { key: o }, [
+            m[0] || (m[0] = k("Runs at each phase end: ", -1)),
             r("code", null, n(o), 1)
           ]))), 128))
         ])) : h("", !0),
-        r("span", O, "For " + n(e.targets.length ? e.targets.join(", ") : "any row") + n(e.purpose ? ` · ${e.purpose}` : ""), 1)
-      ], 10, R))), 128))
+        r("span", $, "For " + n(e.targets.length ? e.targets.join(", ") : "any row") + n(e.purpose ? ` · ${e.purpose}` : ""), 1)
+      ], 10, E))), 128))
     ]));
   }
-}, L = /* @__PURE__ */ N($, [["__scopeId", "data-v-7fd030a7"]]);
+}, q = /* @__PURE__ */ T(j, [["__scopeId", "data-v-900bf729"]]);
 export {
-  L as default
+  q as default
 };

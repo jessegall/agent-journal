@@ -76,3 +76,15 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
         </template>
     </section>
 </template>
+
+<style scoped>
+.window {
+    animation: window-fade 0.25s ease both;
+}
+
+@keyframes window-fade {
+    from {
+        opacity: 0;
+    }
+}
+</style>

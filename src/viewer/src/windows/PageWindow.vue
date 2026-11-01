@@ -1,5 +1,6 @@
 <script setup>
 import {ref, shallowRef, watch} from "vue";
+import Skeleton from "../kit/Skeleton.vue";
 import WindowHost from "./WindowHost.vue";
 
 const props = defineProps({
@@ -32,7 +33,12 @@ watch(
 </script>
 
 <template>
-    <WindowHost
+    <template v-if="!component && !loadFailure && !entry.unavailable_reason">
+        <section class="window window-loading" :data-window="entry.name">
+            <Skeleton shape="cards" />
+        </section>
+    </template>
+    <WindowHost v-else
         :key="entry.entry_url"
         :name="entry.name"
         :component="component"
@@ -48,3 +54,15 @@ watch(
         :unavailable-reason="entry.unavailable_reason || loadFailure"
     />
 </template>
+
+<style scoped>
+.window-loading {
+    animation: window-in 0.2s ease both;
+}
+
+@keyframes window-in {
+    from {
+        opacity: 0;
+    }
+}
+</style>

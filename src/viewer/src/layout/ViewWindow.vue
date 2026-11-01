@@ -83,6 +83,14 @@ watchEffect(() => {
     min-height: 0;
 }
 
+.view-window.standalone :deep(.window) {
+    box-sizing: border-box;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 20px;
+}
+
 .view-window-bar {
     flex: none;
     display: flex;

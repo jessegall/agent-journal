@@ -15,19 +15,21 @@ vi.mock("../src/windows/WindowHost.vue", () => ({
 
 const DECLARED = [{control: "toggle", key: "hide", label: "Hide", default: false}];
 const entry = (loading) => ({name: "notes.board", title: "Board", entry_url: "/modules/notes/board.js?v=1", loading, reads: [], runs: [], events: [], options: DECLARED});
-const shown = (window, loading) => {
+// a page window shows its skeleton until its file has loaded (here the file cannot, and the host then says so)
+const shown = async (window, loading) => {
     const element = document.createElement("div");
     createApp(() => h(window, {entry: entry(loading), subscriptions: new WindowSubscriptions(), environment: "main", options: {hide: true}})).mount(element);
+    for (let round = 0; round < 10; round++) await new Promise((resolve) => setTimeout(resolve));
     return JSON.parse(element.querySelector(".host").textContent);
 };
 
-test("a page window gives its host the pane's options and the options it declares, which its context.option reads", () => {
+test("a page window gives its host the pane's options and the options it declares, which its context.option reads", async () => {
     vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: ""})}));
-    expect(shown(PageWindow, "component")).toEqual({options: {hide: true}, declared: DECLARED});
+    expect(await shown(PageWindow, "component")).toEqual({options: {hide: true}, declared: DECLARED});
 });
 
-test("a frame window gives its host the pane's options and the options it declares", () => {
-    expect(shown(FrameWindow, "frame")).toEqual({options: {hide: true}, declared: DECLARED});
+test("a frame window gives its host the pane's options and the options it declares", async () => {
+    expect(await shown(FrameWindow, "frame")).toEqual({options: {hide: true}, declared: DECLARED});
 });
 
 test("a frame asking for an option through the bridge is answered with the pane's value, else the declared default", async () => {

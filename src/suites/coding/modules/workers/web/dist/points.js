@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-6277b4c92604")) { const style = document.createElement("style"); style.id = "window-styles-6277b4c92604"; style.textContent = ".number[data-v-de42c19d]{color:var(--text-3);font-size:12px}.main[data-v-de42c19d]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-de42c19d]{color:var(--text-3);font-size:12px}.main[data-v-41c93352]{flex:1}.note[data-v-41c93352]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-84cb590f6ec5")) { const style = document.createElement("style"); style.id = "window-styles-84cb590f6ec5"; style.textContent = ".number[data-v-de42c19d]{color:var(--text-3);font-size:12px}.main[data-v-de42c19d]{display:flex;flex:1;flex-direction:column;gap:2px}.note[data-v-de42c19d]{color:var(--text-3);font-size:12px}.main[data-v-d17dfe5e]{flex:1}.note[data-v-d17dfe5e]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
 import { ref as c, openBlock as d, createBlock as h, unref as w, withCtx as g, createElementVNode as n, toDisplayString as l, createElementBlock as x, createCommentVNode as P } from "vue";
 import { useWindow as b, RowList as y } from "@journal/window-kit";
 import { _ as $ } from "./_plugin-vue_export-helper-CHgC5LLL.js";

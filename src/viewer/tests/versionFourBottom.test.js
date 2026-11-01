@@ -44,3 +44,42 @@ test("the settings page has a search, a list of sections and a filled switch", (
     expect(tree).toContain("settings-nav");
     expect(read("../../core/modules/settings/web/src/SettingNode.vue")).toMatch(/\.setting-switch\[aria-checked="true"\] \{[^}]*background: var\(--accent\)/);
 });
+
+// task 5476/5489: an icon button never stretches to the height of its bar
+test("an icon button is a fixed small square, centred in its row", () => {
+    expect(read("../src/kit/Btn.vue")).toMatch(/\.btn\.icon \{[^}]*flex: none;[^}]*align-self: center;[^}]*width: 24px;[^}]*height: 24px;/);
+});
+
+// task 5489: the pinned notices run edge to edge under the tab bar, out past the pane's padding
+test("the notices strip runs flush with the chat's sides and top", () => {
+    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/\.notices \{[^}]*margin: -16px -16px 0;/);
+});
+
+// task 5489: one shared skeleton, shaped like what is loading, in every list and every window that is still loading
+test("every module window that tracks loading shows the shared skeleton or lists through RowList", async () => {
+    const {readdirSync} = await import("node:fs");
+    const roots = ["../../core/modules", "../../suites/coding/web", "../../suites/coding/modules"];
+    const files = [];
+    const walk = (dir) => {
+        for (const entry of readdirSync(resolve(__dirname, dir), {withFileTypes: true})) {
+            if (entry.isDirectory() && entry.name !== "node_modules" && entry.name !== "dist") walk(`${dir}/${entry.name}`);
+            else if (entry.name.endsWith(".vue") && dir.includes("/web/src")) files.push(`${dir}/${entry.name}`);
+        }
+    };
+    roots.forEach(walk);
+    // SkillRows only hands its first read to LoadedSkills, which lists through RowList
+    const loading = files.filter((file) => /\bloaded\b/.test(read(file)) && !file.endsWith("SkillRows.vue"));
+    expect(loading.length).toBeGreaterThan(10);
+    for (const file of loading) expect(read(file), file).toMatch(/RowList|Skeleton/);
+});
+
+test("a list shows the skeleton in the shape it was given until its first read answers, then fades the rows in", () => {
+    const list = read("../kit/RowList.vue");
+    expect(list).toContain('<Skeleton :shape="shape" />');
+    expect(list).toMatch(/animation: row-list-in/);
+    expect(read("../src/windows/PageWindow.vue")).toContain('<Skeleton shape="cards" />');
+});
+
+test("a window drawn as a page of its own keeps a gutter around its content", () => {
+    expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 16px 20px;/);
+});

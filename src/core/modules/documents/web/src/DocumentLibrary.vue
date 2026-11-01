@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, Segmented, TextDisplay, TextInput, useRows} from "@journal/window-kit";
+import {Icon, Segmented, Skeleton, TextDisplay, TextInput, useRows} from "@journal/window-kit";
 import {age, grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -49,7 +49,10 @@ watch(noun, () => {
         </div>
         <div class="library-body">
             <div class="library-list">
-                <template v-if="source.failure.value">
+                <template v-if="!source.loaded.value">
+                    <Skeleton shape="cards" />
+                </template>
+                <template v-else-if="source.failure.value">
                     <p class="library-note">{{ source.failure.value }}</p>
                 </template>
                 <template v-else-if="source.loaded.value && !groups.length">

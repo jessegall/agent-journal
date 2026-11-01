@@ -1,5 +1,5 @@
 <script setup>
-import {Icon, useOpenRow, useRows} from "@journal/window-kit";
+import {Icon, Skeleton, useOpenRow, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("trigger list", ["trigger.*"]);
 const {opened, toggle} = useOpenRow();
@@ -7,7 +7,10 @@ const {opened, toggle} = useOpenRow();
 
 <template>
     <div class="cards">
-        <template v-if="failure">
+        <template v-if="!loaded">
+            <Skeleton shape="cards" />
+        </template>
+        <template v-else-if="failure">
             <p class="cards-note">{{ failure }}</p>
         </template>
         <template v-else-if="loaded && !rows.length">

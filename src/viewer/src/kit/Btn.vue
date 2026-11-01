@@ -127,9 +127,14 @@ const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDO
     display: block;
 }
 
+/* an icon button is a small square that never grows with the bar or header it sits in */
 .btn.icon {
-    height: auto;
-    padding: 5px;
+    flex: none;
+    align-self: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
     border-color: transparent;
 }
 .btn.icon:hover {
