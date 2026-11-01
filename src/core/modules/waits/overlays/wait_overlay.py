@@ -6,6 +6,7 @@ from core.base.query.queries import Queries
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.models.enums.wait_state import WaitState
 from core.modules.waits.models.enums.wait_type import WaitType
+from core.modules.waits.rules.long_wait_rule import LongWaitRule
 from core.modules.waits.rules.work_ends_wait_rule import WorkEndsWaitRule
 
 
@@ -15,7 +16,7 @@ class WaitOverlay(Overlay):
 
     name = "waits.wait"
     exclusive = True
-    rules = [WorkEndsWaitRule]
+    rules = [LongWaitRule, WorkEndsWaitRule]
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
