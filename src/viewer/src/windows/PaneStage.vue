@@ -89,6 +89,8 @@ async function readEnvironments() {
     environments.value = rowsOf(answer);
 }
 const facts = ref(NO_FACTS);
+// the bars count what is still going, which a page of the newest rows would leave out
+const WHOLE_LIST = ["--limit", "500"];
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const auto = ref(true);
 async function readAuto() {
@@ -108,12 +110,12 @@ const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", hel
 const openCount = (key) => openView(COUNT_WINDOWS[key]);
 async function readFacts() {
     if (!props.shellRead) return;
-    const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list"]), props.shellRead(["task", "list"]), props.shellRead(["question", "list"])]);
+    const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list", ...WHOLE_LIST]), props.shellRead(["task", "list", ...WHOLE_LIST]), props.shellRead(["question", "list", ...WHOLE_LIST])]);
     taskRows.value = rowsOf(tasks);
     facts.value = barFacts({agents: rowsOf(agents), tasks: taskRows.value, questions: rowsOf(questions)});
 }
 async function readAgent() {
-    const answer = props.shellRead ? await props.shellRead(["agent", "list"]) : null;
+    const answer = props.shellRead ? await props.shellRead(["agent", "list", "--role", "main"]) : null;
     const rows = rowsOf(answer);
     agentRow.value = rows.find((row) => row.role === "main" && !row.ended_at) ?? rows[0] ?? null;
 }
