@@ -1,4 +1,3 @@
-from dataclasses import replace
 
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -28,4 +27,4 @@ class StopAgentHandler(Handler[StopAgent, Agent]):
         if agent.pid is None:
             raise Refusal(f"the journal does not know the process of agent {agent.id}", "stop it in its own terminal")
         LeftoverProcess.stop(agent.pid, self.providers.provider(agent.program).executable)
-        return self.repository.save(replace(agent, ended_at=context.timestamp), context)
+        return self.repository.save(agent.ended(context.timestamp), context)

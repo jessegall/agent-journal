@@ -1,8 +1,18 @@
 from core.base.driver.tool_type import ToolType
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.testing.hook_samples import HookSamples
+from core.base.driver.command_category import CommandCategory
+from core.testing.shell_part import ShellPart
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
+from tests.stories.core.support import story_lines as lines
+from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
 
+JOURNAL_LINE = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message")).with_fields(event="post_tool_use")
+READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
 WRITE_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Write", "category": ToolType.NEW_FILE, "files": ["a.py"], "shell": None, "diff": None})
 
 
@@ -48,3 +58,47 @@ def test_only_a_person_pauses_or_resumes_and_the_state_must_fit(new_story):
     story.expect_refusal(f"agent resume {story.agent.id}", "is not paused", actor=story.user)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_refusal(f"agent pause {story.agent.id}", "is paused already", actor=story.user)
+
+
+def paused_story(new_story, fixture):
+    story = new_story(fixture=fixture)
+    story.container.bind(TerminalTyping, FakeTyping())
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    return story
+
+
+def test_a_paused_agent_with_a_task_in_hand_may_stop(new_story):
+    story = paused_story(new_story, BuilderWithStartedTask)
+    assert story.hook("s-1", HookSamples.stop()).refusal
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+    assert story.hook("s-1", HookSamples.stop()).refusal
+
+
+def test_a_paused_agent_is_given_no_new_task_at_its_stop(new_story):
+    story = paused_story(new_story, OrchestratorWithOpenTask)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_success(lines.TASK_DETAILS, "state: open")
+
+
+def test_a_paused_agent_can_still_run_journal_lines(new_story):
+    story = paused_story(new_story, BuilderWithStartedTask)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_hook_allowed("s-1", JOURNAL_LINE)
+
+
+def test_a_subagent_of_a_paused_agent_is_paused_too(new_story):
+    story = paused_story(new_story, SubagentStarted)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_hook_refusal("s-1", READ_SAMPLE.with_fields(subagent="sub-1"), "the user paused you")
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+    story.expect_hook_allowed("s-1", READ_SAMPLE.with_fields(subagent="sub-1"))
+
+
+def test_the_pause_ends_with_the_agent(new_story):
+    story = paused_story(new_story, BuilderWithStartedTask)
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_rows(story.container.get(Queries).query(Agent).find(story.agent.id).paused_at is None)

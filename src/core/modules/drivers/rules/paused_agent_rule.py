@@ -2,8 +2,6 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.base.query.queries import Queries
-from core.modules.agents.models.agent import Agent
 from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
 
 
@@ -12,13 +10,9 @@ class PausedAgentRule(DriverRule):
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE
-    drivers = ["*"]
-
-    def __init__(self, queries: Queries) -> None:
-        self.queries = queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if self.queries.query(Agent).find(hook.agent_id).paused_at is None or (tool is not None and tool.is_journal_line):
+        if tool is not None and tool.is_journal_line:
             return RuleAnswer.allowed()
         return RuleAnswer.refused(PAUSED_REFUSAL.nudge())

@@ -24,6 +24,6 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
             raise Refusal(f"agent {agent.id} has ended already", f"journal agent show {agent.id}")
         session_rows = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
         if session_rows and session_rows[0].id != agent.id:
-            self.repository.save(replace(agent, ended_at=context.timestamp), context)
+            self.repository.save(agent.ended(context.timestamp), context)
             return self.repository.save(replace(session_rows[0], ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id), context)
         return self.repository.save(replace(agent, session=command.session), context)
