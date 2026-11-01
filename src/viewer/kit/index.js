@@ -38,3 +38,4 @@ export {default as Dialog} from "../src/kit/Dialog.vue";
 export {default as TaskInspector} from "../src/tasks/TaskInspector.vue";
 export {default as TaskStatusIcon} from "../src/tasks/TaskStatusIcon.vue";
 export {useOutside} from "../src/composables/outside.js";
+export {default as QrCode} from "../src/kit/QrCode.vue";

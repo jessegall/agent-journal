@@ -1,6 +1,6 @@
 <script setup>
 import {computed} from "vue";
-import {Btn, RowList, useRows} from "@journal/window-kit";
+import {Btn, QrCode, RowList, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded, act, actionFailure, answer} = useRows("phone list", ["phone.*"]);
 const paired = computed(() => rows.value.filter((row) => row.state === "paired"));
@@ -12,6 +12,9 @@ const paired = computed(() => rows.value.filter((row) => row.state === "paired")
             <Btn kind="primary" @click="act(['phone', 'pair'])">Pair a phone</Btn>
             <template v-if="answer">
                 <p class="phones-code">Code: {{ answer.code }}</p>
+                <template v-if="answer.link">
+                    <div data-phone-qr><QrCode :text="answer.link" /></div>
+                </template>
                 <p class="phones-hint">Open {{ answer.link }} on the phone, or type the code on its pairing page. The code works once, for ten minutes.</p>
             </template>
             <template v-if="actionFailure">

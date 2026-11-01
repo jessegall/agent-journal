@@ -1,50 +1,58 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-1d9533671a2f")) { const style = document.createElement("style"); style.id = "window-styles-1d9533671a2f"; style.textContent = ".phones[data-v-231be85c]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-231be85c]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-231be85c]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-231be85c],.phones-failure[data-v-231be85c]{margin:0;color:var(--text-2)}.phones-name[data-v-231be85c]{flex:1}\n"; document.head.appendChild(style); }
-import { computed as g, openBlock as c, createElementBlock as _, createElementVNode as s, createVNode as u, unref as e, withCtx as h, createTextVNode as k, Fragment as C, toDisplayString as a, createCommentVNode as v } from "vue";
-import { useRows as x, Btn as w, RowList as N } from "@journal/window-kit";
-const R = (r, i) => {
-  const t = r.__vccOpts || r;
-  for (const [p, n] of i)
-    t[p] = n;
-  return t;
-}, V = { class: "phones" }, B = { class: "phones-pair" }, P = { class: "phones-code" }, E = { class: "phones-hint" }, F = {
+if (!document.getElementById("window-styles-b42ee69035f8")) { const style = document.createElement("style"); style.id = "window-styles-b42ee69035f8"; style.textContent = ".phones[data-v-302efb71]{display:flex;flex-direction:column;gap:16px}.phones-pair[data-v-302efb71]{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.phones-code[data-v-302efb71]{margin:0;font-size:18px;letter-spacing:.08em}.phones-hint[data-v-302efb71],.phones-failure[data-v-302efb71]{margin:0;color:var(--text-2)}.phones-name[data-v-302efb71]{flex:1}\n"; document.head.appendChild(style); }
+import { computed as x, openBlock as r, createElementBlock as a, createElementVNode as i, createVNode as p, unref as e, withCtx as h, createTextVNode as v, Fragment as C, toDisplayString as d, createCommentVNode as m } from "vue";
+import { useRows as g, Btn as w, QrCode as N, RowList as R } from "@journal/window-kit";
+const V = (l, c) => {
+  const n = l.__vccOpts || l;
+  for (const [_, s] of c)
+    n[_] = s;
+  return n;
+}, B = { class: "phones" }, P = { class: "phones-pair" }, E = { class: "phones-code" }, F = {
+  key: 0,
+  "data-phone-qr": ""
+}, O = { class: "phones-hint" }, S = {
   key: 1,
   class: "phones-failure"
-}, O = { class: "phones-name" }, S = {
+}, T = { class: "phones-name" }, $ = {
   __name: "PhoneRows",
-  setup(r) {
-    const { rows: i, failure: t, loaded: p, act: n, actionFailure: m, answer: d } = x("phone list", ["phone.*"]), y = g(() => i.value.filter((f) => f.state === "paired"));
-    return (f, o) => (c(), _("div", V, [
-      s("div", B, [
-        u(e(w), {
+  setup(l) {
+    const { rows: c, failure: n, loaded: _, act: s, actionFailure: f, answer: t } = g("phone list", ["phone.*"]), y = x(() => c.value.filter((k) => k.state === "paired"));
+    return (k, o) => (r(), a("div", B, [
+      i("div", P, [
+        p(e(w), {
           kind: "primary",
-          onClick: o[0] || (o[0] = (l) => e(n)(["phone", "pair"]))
+          onClick: o[0] || (o[0] = (u) => e(s)(["phone", "pair"]))
         }, {
           default: h(() => [...o[1] || (o[1] = [
-            k("Pair a phone", -1)
+            v("Pair a phone", -1)
           ])]),
           _: 1
         }),
-        e(d) ? (c(), _(C, { key: 0 }, [
-          s("p", P, "Code: " + a(e(d).code), 1),
-          s("p", E, "Open " + a(e(d).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
-        ], 64)) : v("", !0),
-        e(m) ? (c(), _("p", F, a(e(m)), 1)) : v("", !0)
+        e(t) ? (r(), a(C, { key: 0 }, [
+          i("p", E, "Code: " + d(e(t).code), 1),
+          e(t).link ? (r(), a("div", F, [
+            p(e(N), {
+              text: e(t).link
+            }, null, 8, ["text"])
+          ])) : m("", !0),
+          i("p", O, "Open " + d(e(t).link) + " on the phone, or type the code on its pairing page. The code works once, for ten minutes.", 1)
+        ], 64)) : m("", !0),
+        e(f) ? (r(), a("p", S, d(e(f)), 1)) : m("", !0)
       ]),
-      u(e(N), {
+      p(e(R), {
         rows: y.value,
-        failure: e(t),
-        loaded: e(p),
+        failure: e(n),
+        loaded: e(_),
         empty: "No phone is paired"
       }, {
-        default: h(({ row: l }) => [
-          s("span", O, a(l.name), 1),
-          u(e(w), {
+        default: h(({ row: u }) => [
+          i("span", T, d(u.name), 1),
+          p(e(w), {
             small: "",
-            onClick: (T) => e(n)(["phone", "unpair", String(l.id)])
+            onClick: (b) => e(s)(["phone", "unpair", String(u.id)])
           }, {
             default: h(() => [...o[2] || (o[2] = [
-              k("Unpair", -1)
+              v("Unpair", -1)
             ])]),
             _: 1
           }, 8, ["onClick"])
@@ -53,7 +61,7 @@ const R = (r, i) => {
       }, 8, ["rows", "failure", "loaded"])
     ]));
   }
-}, D = /* @__PURE__ */ R(S, [["__scopeId", "data-v-231be85c"]]);
+}, I = /* @__PURE__ */ V($, [["__scopeId", "data-v-302efb71"]]);
 export {
-  D as default
+  I as default
 };
