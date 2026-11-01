@@ -8,19 +8,22 @@ from core.modules.sharing.models.lifecycles.share_link_lifecycle import ShareLin
 
 @dataclass(frozen=True, kw_only=True)
 class ShareLink(Model):
-    """A link a person made to show one row read-only, until it expires or is revoked; it keeps only the digest
-    of its token, never the token."""
+    """A link to show one row read-only, until it expires, if it does, or is revoked; an agent's waits for a person to
+    accept it. It keeps only the digests of its token and password, never the two themselves."""
 
     model_name = "share_link"
     cli_name = "share"
     lifecycle = ShareLinkLifecycle
-    hidden_fields = frozenset({"token_digest"})
+    hidden_fields = frozenset({"token_digest", "password_digest"})
 
     environment_id: int
     creator_id: int
     token_digest: str
     row_model: str
     row_id: int
-    expires_at: Timestamp
+    expires_at: Timestamp | None = None
     comments: bool = False
+    password_digest: str | None = None
+    locked: bool = False
+    view_count: int = 0
     state: ShareLinkState = ShareLinkState.ACTIVE

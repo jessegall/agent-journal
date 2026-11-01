@@ -14,3 +14,4 @@ class ViewerSession:
     share_id: int | None = None
     ends_at: Timestamp | None = None
     shared: SharedRow | None = None
+    comments: bool = False

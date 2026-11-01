@@ -18,11 +18,11 @@ class SessionRoute:
 
     def answer(self, token: str) -> SessionAnswer:
         session = self.login.session(token)
-        if session.shared is None or session.ends_at is None:
+        if session.shared is None:
             return SessionAnswer(session.type, session.person_id)
         shared = session.shared
         environment = self.login.shares.environment_name(shared.environment_id)
-        return SessionAnswer(session.type, session.person_id, ShareAnswer(shared.model, shared.id, self.window(shared), environment, session.ends_at.text))
+        return SessionAnswer(session.type, session.person_id, ShareAnswer(shared.model, shared.id, self.window(shared), environment, session.ends_at.text if session.ends_at else None, session.comments))
 
     def window(self, shared: SharedRow) -> ViewerWindow:
         container = synced_container(self.home)

@@ -70,9 +70,9 @@ class ViewerLogin:
 
     def share_session(self, token: str) -> ViewerSession | None:
         link = self.shares.link(token) if token else None
-        if link is None or not link.is_open():
+        if link is None or not link.is_open() or (link.locked and token not in self.shares.unlocked_tokens):
             return None
-        return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared)
+        return ViewerSession(SessionType.SHARE, person_id=link.creator_id, share_id=link.id, ends_at=link.expires_at, shared=link.shared, comments=link.comments)
 
     def person_id(self, token: str) -> int:
         session = self.session(token)

@@ -5,10 +5,11 @@ from core.base.timestamp import Timestamp
 
 @dataclass(frozen=True)
 class ShareInvitation:
-    """What a person hands out to share a row: the link's number, the token shown this once, the path that
-    carries it, and when it stops working."""
+    """A link's number, the token shown this once and the path that carries it, and when it stops working, if it
+    does; an agent's request waits for a person, so it has no token yet."""
 
     id: int
-    token: str
-    link: str
-    expires_at: Timestamp
+    state: str
+    token: str | None
+    link: str | None
+    expires_at: Timestamp | None

@@ -1,6 +1,5 @@
 import sqlite3
 from functools import partial
-from datetime import datetime, timedelta
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
@@ -12,7 +11,6 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.sharing.commands.make_share_link.make_share_link_handler import LINK_LIFETIME_DAYS
 
 TABLE = "shares"
 ROW_MODELS = {"plans": "plan"}
@@ -20,10 +18,10 @@ ENDED_TABLE = "shares stopped or past their end"
 
 
 class ShareMove(VersionFourMove):
-    """Carries version 4's live shares, the ones not stopped and not past their end, as active share links on the
-    plan the share's link names, kept by the digest of the old token so the old address still opens it. A
-    stopped or ended share is dropped and counted; one whose row is no plan, or did not move, is skipped and
-    told."""
+    """Carries version 4's live shares, the ones not stopped and not past their end, as share links on the plan the
+    share's link names, kept by the digest of the old token so the old address still opens it; one not yet
+    approved waits. A stopped or ended share is dropped and counted; one whose row is no plan, or did not move,
+    or that has a password this version cannot read, is skipped and told."""
 
     name = "sharing"
     reads = [TABLE, "links (shares)"]
@@ -35,6 +33,9 @@ class ShareMove(VersionFourMove):
         for row in source.rows(TABLE):
             if row["stopped_at"] or (row["expires_at"] and row["expires_at"] <= context.timestamp):
                 report.drop(ENDED_TABLE, 1)
+                continue
+            if row["password"]:
+                report.skip(TABLE, row["id"], "it has a password, which could not be carried, so it would open for anyone")
                 continue
             shared = self.shared_row(targets.get(row["id"]), map)
             if shared is None or not row["token"]:
@@ -59,7 +60,7 @@ class ShareMove(VersionFourMove):
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, shared: tuple[str, int], creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        ends = row["expires_at"] or (datetime.fromisoformat(context.timestamp) + timedelta(days=LINK_LIFETIME_DAYS)).isoformat()
         return rows.insert("share_links", {"environment_id": row["environment_id"], "creator_id": creator_id, "token_digest": TextDigest().hex_digest(row["token"]),
-                                           "row_model": shared[0], "row_id": shared[1], "expires_at": ends, "comments": 0,
+                                           "row_model": shared[0], "row_id": shared[1], "expires_at": row["expires_at"], "comments": row["comments"], "view_count": row["views"],
+                                           "state": "active" if row["approved"] else "waiting",
                                            "created_at": created, "updated_at": row["updated_at"] or created})

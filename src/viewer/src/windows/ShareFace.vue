@@ -2,6 +2,7 @@
 import {computed, onMounted, onUnmounted, ref, shallowRef, watch} from "vue";
 import Icon from "../kit/Icon.vue";
 import Notice from "../kit/Notice.vue";
+import ShareComments from "./ShareComments.vue";
 import ShareStrip from "./ShareStrip.vue";
 import ShareTimeline from "./ShareTimeline.vue";
 import WindowHost from "./WindowHost.vue";
@@ -28,7 +29,7 @@ const arrangement = computed(() => (screenWidth.value >= WIDE_SCREEN ? "beside" 
 const measure = () => (screenWidth.value = window.innerWidth);
 onMounted(() => window.addEventListener("resize", measure));
 onUnmounted(() => window.removeEventListener("resize", measure));
-const ends = computed(() => (share.value ? new Date(share.value.ends_at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : ""));
+const ends = computed(() => (share.value?.ends_at ? new Date(share.value.ends_at).toLocaleDateString(undefined, {day: "numeric", month: "long", year: "numeric"}) : ""));
 const gone = computed(() => failed.value || !share.value || !look.value);
 const options = computed(() => ({open: `${share.value.row_model}:${share.value.row_id}`}));
 const readProgress = ref(-1);
@@ -82,6 +83,9 @@ watch(share, (shown) => shown && look.value && fetchFacts(), {immediate: true});
                 </div>
                 <ShareTimeline :phases="phases" />
             </div>
+            <template v-if="share.comments">
+                <ShareComments />
+            </template>
             <footer class="share-footer">Shared from an agent journal</footer>
         </template>
     </div>

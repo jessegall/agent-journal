@@ -1,7 +1,18 @@
+import json
 from datetime import timedelta
+
+import pytest
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.modules.messages.models.enums.message_type import MessageType
+from core.modules.messages.models.message import Message
+from core.modules.sharing.commands.leave_share_comment.leave_share_comment import LeaveShareComment
+from core.modules.sharing.models.share_link import ShareLink
+from core.modules.sharing.support.share_password import SharePassword
 from core.testing.story import Story
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.fixtures import PlanWithPhases
@@ -39,9 +50,93 @@ def test_a_link_ends_a_week_after_it_is_made(new_story):
     story.expect_text("share show 1", f"expires_at: {expected.strftime('%Y-%m-%d')}", actor=story.user)
 
 
-def test_only_a_person_makes_a_link(new_story):
+def test_an_agent_only_asks_nothing_opens_and_the_person_is_told(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
-    story.expect_refusal("share make plans:1", "only a person shares", actor=story.agent)
+    asked = json.loads(story.run("share make plans:1 --environment main --json", actor=story.agent).output_text)
+    assert "state" in asked, asked
+    assert asked["state"] == "waiting" and asked["token"] is None and asked["link"] is None, asked
+    story.expect_success("share show 1", "state: waiting", actor=story.user)
+    story.expect_text("message list", "I ask to share plan 1", "Nothing opens until you accept it", actor=story.user)
+
+
+def test_a_person_accepts_an_agents_link_owns_it_and_sees_its_token_once(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --environment main", actor=story.agent)
+    story.expect_refusal("share accept 1", "only a person accepts", actor=story.agent)
+    accepted = json.loads(story.run("share accept 1 --json", actor=story.user).output_text)
+    assert accepted["state"] == "active" and accepted["link"] == f"/viewer/share/{accepted['token']}", accepted
+    story.expect_success("share show 1", f"creator_id: {story.user.id}", actor=story.user)
+    story.expect_refusal("share accept 1", "accept", actor=story.user)
+
+
+def test_a_person_denies_an_agents_link_and_an_agent_cannot(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --environment main", actor=story.agent)
+    story.expect_refusal("share deny 1", "only the person", actor=story.agent)
+    story.expect_success("share deny 1", "state: denied", actor=story.user)
+    story.expect_refusal("share accept 1", "accept", actor=story.user)
+
+
+def test_a_link_can_end_when_asked_or_never(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --ends 30d", actor=story.user)
+    expected = story.clock.timestamp().value + timedelta(days=30)
+    story.expect_text("share show 1", f"expires_at: {expected.strftime('%Y-%m-%d')}", actor=story.user)
+    never = json.loads(story.run("share make plans:1 --ends never --json", actor=story.user).output_text)
+    assert never["expires_at"] is None, never
+    story.expect_refusal("share make plans:1 --ends soon", "cannot end after", actor=story.user)
+
+
+def test_a_password_is_kept_only_by_its_digest_and_shown_as_locked(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --password open-sesame --comments", actor=story.user)
+    shown = story.run("share show 1 --json", actor=story.user).output_text
+    assert "open-sesame" not in shown and "password_digest" not in shown and json.loads(shown)["locked"] and json.loads(shown)["comments"], shown
+    assert "open-sesame" not in story.run("event list --json", actor=story.user).output_text
+    digest = story.container.get(Queries).query(ShareLink).find(1).password_digest
+    story.expect_rows(SharePassword.matches("open-sesame", digest), not SharePassword.matches("wrong", digest))
+
+
+def test_the_opens_read_says_what_a_link_shows(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.expect_text("share opens plans:1", "Plan 1, Version 5 core", "3 phases", actor=story.user)
+
+
+def test_only_the_viewer_counts_views_checks_passwords_and_brings_in_comments(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --comments", actor=story.user)
+    story.expect_refusal('share comment 1 --name Bo --text "Nice"', "only a visitor", actor=story.user)
+    story.expect_refusal("share viewed abc", "only the viewer", actor=story.user)
+    story.expect_refusal("share unlock abc --password x", "only the viewer", actor=story.user)
+
+
+def comment(story, text: str = "Nice plan", name: str = "Bo"):
+    return story.container.get(Bus).run(LeaveShareComment(1, name, text), Actor.core())
+
+
+def test_a_visitors_comment_is_kept_and_tells_the_chat_in_the_journals_words(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1 --comments", actor=story.user)
+    comment(story)
+    story.expect_text("share comments 1", "Bo: Nice plan", actor=story.user)
+    story.expect_text("message list", "Bo commented on plan 1 through a shared link: Nice plan", actor=story.user)
+    message = story.container.get(Queries).query(Message).descending("id").page(1, 1).rows[0]
+    story.expect_rows(message.type is MessageType.JOURNAL)
+
+
+def test_a_link_without_comments_a_bad_comment_and_too_many_are_refused(new_story):
+    story = new_story(fixture=PlanAndPersonFixture)
+    story.run("share make plans:1", actor=story.user)
+    with pytest.raises(Refusal, match="takes no comments"):
+        comment(story)
+    story.run("share make plans:1 --comments", actor=story.user)
+    bus = story.container.get(Bus)
+    with pytest.raises(Refusal, match="a name of up to 40"):
+        bus.run(LeaveShareComment(2, "", "text"), Actor.core())
+    for number in range(10):
+        bus.run(LeaveShareComment(2, "Bo", f"comment {number}"), Actor.core())
+    with pytest.raises(Refusal, match="many comments"):
+        bus.run(LeaveShareComment(2, "Bo", "one too many"), Actor.core())
 
 
 def test_a_link_names_a_document_a_report_or_a_plan_that_exists(new_story):
