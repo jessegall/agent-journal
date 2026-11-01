@@ -52,3 +52,12 @@ test("the agent bar names the task the agent is working in, and nothing when it 
     expect(working.querySelector("[data-agent-task]").textContent).toBe("Task 5383: Port the file pages");
     expect(mounted(AgentBar, {agent: MAIN, task: null}).querySelector("[data-agent-task]")).toBeNull();
 });
+
+test("the information bar shows the auto switch, on or off, and asks to toggle it", () => {
+    const toggled = [];
+    const on = mounted(InformationBar, {agent: MAIN, auto: true, onToggleAuto: () => toggled.push("toggle")});
+    expect(on.querySelector("[data-auto-toggle]").textContent.trim()).toBe("Auto on");
+    on.querySelector("[data-auto-toggle]").click();
+    expect(toggled).toEqual(["toggle"]);
+    expect(mounted(InformationBar, {agent: MAIN, auto: false}).querySelector("[data-auto-toggle]").textContent.trim()).toBe("Auto off");
+});

@@ -10,6 +10,13 @@ def test_a_builder_that_stops_with_nothing_in_hand_is_started_on_the_open_task(n
     story.expect_success(lines.SECOND_HOOK_CALL, "hook: stop", "suite: coding", "driver: coding.builder", "answer: refused")
 
 
+def test_a_builder_that_stops_with_auto_mode_off_is_not_given_the_open_task(new_story):
+    story = new_story(fixture=BuilderWithOpenTask)
+    story.run("setting make journal.suites.coding.auto-mode false")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+    story.expect_success(lines.TASK_DETAILS, "state: open")
+
+
 def test_a_builder_with_nothing_open_stops(new_story):
     story = new_story(fixture=BuilderStarted)
     story.expect_hook_allowed("s-1", HookSamples.stop())

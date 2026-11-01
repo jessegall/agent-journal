@@ -17,6 +17,7 @@ from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.coding_settings import CODING_SETTINGS
+from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
 
 FILE_EDIT_READS = ["file-edit list", "file-edit show"]
 
@@ -38,6 +39,7 @@ class CodingModule(Module):
     migrations = [FileEditsTableMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule]
+    listeners = [AutoNextTaskListener]
     windows = [WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],

@@ -6,8 +6,9 @@ const props = defineProps({
     agent: {type: Object, default: null},
     facts: {type: Object, default: () => ({helpers: 0, tasks: 0, waiting: 0})},
     now: {type: Number, default: () => Date.now()},
+    auto: {type: Boolean, default: true},
 });
-const emit = defineEmits(["open"]);
+const emit = defineEmits(["open", "toggle-auto"]);
 // each count asks to open what it counts; the stage knows which window that is
 const COUNTS = [
     {key: "tasks", title: "Open tasks"},
@@ -25,6 +26,9 @@ const uptime = computed(() => {
 <template>
     <div class="information" data-information-bar>
         <template v-if="agent">
+            <button type="button" :class="['information-auto', {on: auto}]" data-auto-toggle :aria-pressed="auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" @click="emit('toggle-auto')">
+                Auto {{ auto ? "on" : "off" }}
+            </button>
             <span>{{ agent.program }}</span>
             <span>{{ running ? "Working" : "Ended" }}</span>
             <span>{{ uptime }} up</span>
@@ -38,6 +42,22 @@ const uptime = computed(() => {
 </template>
 
 <style scoped>
+.information-auto {
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.information-auto.on {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
 .information {
     display: flex;
     gap: 16px;

@@ -88,6 +88,17 @@ async function readEnvironments() {
     environments.value = rowsOf(answer);
 }
 const facts = ref(NO_FACTS);
+const AUTO_MODE = "journal.suites.coding.auto-mode";
+const auto = ref(true);
+async function readAuto() {
+    if (!props.shellRead) return;
+    const answer = await props.shellRead(["setting", "show", AUTO_MODE, "--environment", props.environment]);
+    auto.value = !(answer.ok && answer.value && answer.value.value === false);
+}
+async function toggleAuto() {
+    const answer = await props.shellRead(["setting", "set", AUTO_MODE, String(!auto.value), "--environment", props.environment]);
+    if (answer.ok) auto.value = !auto.value;
+}
 const taskRows = ref([]);
 // the task the agent is working in: the one it holds that is started
 const currentTask = computed(() => taskRows.value.find((row) => row.state === "started" && agentRow.value && row.holder_id === agentRow.value.id) ?? null);
@@ -130,6 +141,7 @@ onMounted(() => {
     readAgent();
     readEnvironments();
     readFacts();
+    readAuto();
     factsTimer = setInterval(() => (readAgent(), readFacts()), FACT_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
@@ -196,7 +208,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
-                <InformationBar :agent="agentRow" :facts="facts" @open="openCount" />
+                <InformationBar :agent="agentRow" :facts="facts" :auto="auto" @open="openCount" @toggle-auto="toggleAuto" />
             </template>
             <nav class="pane-stage-bar agent-bar">
                 <template v-for="window in barWindows().slice(0, room)" :key="window.name">
