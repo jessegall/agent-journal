@@ -1,6 +1,5 @@
 import json
 import shutil
-from pathlib import Path
 
 from core.base.actor import Actor
 from core.base.command.context import Context
@@ -19,10 +18,11 @@ from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
+from core.modules.plugins.support.plugin_staging import LEFT_OUT, PluginStaging
 
 
 class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
-    """Copies a plugin's folder into the journal once the programs it requires are found and runs its setup
+    """Copies a plugin's folder, or a repository at its newest release, into the journal once the programs it requires are found and runs its setup
     steps there, before the install's transaction opens so a step may write to the journal itself, a
     failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
     it switched on with the settings its installed command answers. Only the person installs, and a name
@@ -31,17 +31,19 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     command = InstallPlugin
 
     def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, steps: PluginInstallSteps, repository: Repository,
-                 readers: PluginReaders) -> None:
-        self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers = plugins, folders, skill_files, steps, repository, readers
+                 readers: PluginReaders, staging: PluginStaging) -> None:
+        self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers, self.staging = plugins, folders, skill_files, steps, repository, readers, staging
 
     def prepare(self, command: InstallPlugin, actor: Actor) -> None:
         UserActorCheck.check_actor(actor, "installs")
+        self.staging.fetched(command.source)
         manifest = self.uninstalled(command)
         if not command.confirmed:
             return
         folder = self.folders.code(manifest.name)
-        self.steps.check_requirements(manifest, Path(command.source))
-        shutil.copytree(command.source, folder, dirs_exist_ok=True)
+        source = self.staging.folder(command.source)
+        self.steps.check_requirements(manifest, source)
+        shutil.copytree(source, folder, dirs_exist_ok=True, ignore=LEFT_OUT)
         try:
             self.steps.run_setup(manifest, folder)
         except Refusal:
@@ -52,7 +54,9 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         UserActorCheck.check(context, "installs")
         manifest = self.uninstalled(command)
         if not command.confirmed:
+            self.staging.cleared(command.source)
             return PluginInstall(manifest, command.source, False)
+        self.staging.cleared(command.source)
         folder = self.folders.code(manifest.name)
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
@@ -66,7 +70,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         return PluginInstall(manifest, command.source, True)
 
     def uninstalled(self, command: InstallPlugin) -> PluginManifest:
-        manifest = PluginManifest.read(Path(command.source))
+        manifest = PluginManifest.read(self.staging.folder(command.source))
         if self.plugins.is_installed(manifest.name):
             raise Refusal(f"a plugin named {manifest.name} is installed already", f"journal plugin upgrade {manifest.name}")
         return manifest

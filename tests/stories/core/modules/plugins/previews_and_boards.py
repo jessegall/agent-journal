@@ -120,3 +120,50 @@ def test_the_guide_example_is_a_manifest_the_journal_reads(new_story):
     (folder / "settings.json").write_text("[]")
     manifest = PluginManifest.read(folder)
     story.expect_rows(manifest.name == "standup", manifest.event_names == ("task.close",), manifest.services[0].name == "web", manifest.dashboard.name == "standup")
+
+
+def tagged_repository(story, name: str = "repository", version: str = "1.0.0", tag: str = "v1.0.0") -> Path:
+    folder = story.home.folder.parent / name
+    folder.mkdir(exist_ok=True)
+    (folder / "journal-plugin.json").write_text(json.dumps({"name": "standup", "title": "Standup", "version": version, "setup": [{"name": "packages", "run": "true"}]}))
+    config = ["-c", "user.name=Story", "-c", "user.email=story@example.com"]
+    for line in (["init", "-q"], ["add", "-A"], [*config, "commit", "-q", "--allow-empty", "-m", version], ["tag", tag]):
+        subprocess.run(["git", "-C", str(folder), *line], check=True, capture_output=True, timeout=GIT_LIMIT_SECONDS)
+    return folder
+
+
+def test_a_repository_previews_and_installs_at_its_newest_release_keeping_its_address(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    address = f"file://{tagged_repository(story)}"
+    story.expect_text(f"plugin preview {address}", "setup packages: true")
+    story.expect_text(f"plugin install {address} --yes", "installed standup, on", actor=story.user)
+    story.expect_text("plugin list --json", address, "1.0.0", actor=story.user)
+    story.expect_rows((story.home.folder / "plugins" / "standup" / "journal-plugin.json").is_file(), not (story.home.folder / "plugins" / "standup" / ".git").exists())
+    story.expect_rows(not list((story.home.folder / "plugin-staging").glob("*")) if (story.home.folder / "plugin-staging").exists() else True)
+
+
+def test_a_repository_that_cannot_be_cloned_says_so(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_refusal(f"plugin install file://{story.home.folder.parent}/nowhere --yes", "could not be", actor=story.user)
+
+
+def test_an_upgrade_shows_what_changes_applies_only_with_yes_and_stays_on(new_story):
+    story = installed_plugin(new_story)
+    (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "packages", "run": "true"}, {"name": "more", "run": "echo more"}]}))
+    story.expect_text("plugin upgrade standup", "1.2.0 to 1.3.0", "new setup more: echo more", actor=story.user)
+    story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
+    story.expect_text("plugin upgrade standup --yes", "standup is now 1.3.0", actor=story.user)
+    story.expect_text("plugin list --json", '"release": "1.3.0"', '"enabled": true', actor=story.user)
+    story.expect_rows("1.3.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
+
+
+def test_only_a_person_upgrades_and_a_failed_setup_leaves_the_old_code(new_story):
+    story = installed_plugin(new_story)
+    story.expect_refusal("plugin upgrade standup", "only the user upgrades", actor=story.agent)
+    (story.folder / "journal-plugin.json").write_text(json.dumps({**MANIFEST, "version": "1.3.0", "setup": [{"name": "broken", "run": "false"}]}))
+    story.expect_refusal("plugin upgrade standup --yes", "broken", actor=story.user)
+    story.expect_rows("1.2.0" in (story.home.folder / "plugins" / "standup" / "journal-plugin.json").read_text())
+    story.expect_text("plugin list --json", '"release": "1.2.0"', actor=story.user)
+

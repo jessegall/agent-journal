@@ -36,6 +36,10 @@ async function open(row) {
 }
 
 watch([folder, words], load, {immediate: true});
+
+// an address can name a file to open, as a plugin's dashboard does
+const named = new URLSearchParams(window.location.search).get("file");
+if (named) open({id: named, folder: false});
 </script>
 
 <template>

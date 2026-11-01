@@ -15,11 +15,11 @@ async function drawn(refuse = false) {
         if (line === "plugin dashboards") return page([{id: "sins", plugin: "sins", title: "Sins board"}]);
         if (!Array.isArray(line)) return page([PLUGIN]);
         if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
-        if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0"}};
+        if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0", is_newer: true}};
         if (line[1] === "dashboard") return {ok: true, value: {missing: "sins has written nothing on its dashboard yet."}};
         return {ok: true, value: {settings: [{key: "depth", type: "number", title: "Depth", value: 3}]}};
     };
-    window.run = async (line) => (ran.push(line), refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: {}});
+    window.run = async (line) => (ran.push(line), refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: line[1] === "upgrade" ? {name: "sins", installed: "1.0", version: "v2", changes: ["new setup packages: npm install"]} : {}});
     return {element: await mounted(PluginRows, window), ran};
 }
 
@@ -50,6 +50,20 @@ test("checking for updates says what the source has", async () => {
     element.querySelector("[data-plugin-latest]").click();
     await settle();
     expect(element.querySelector("[data-plugin-latest-line]").textContent).toBe("sins: v2 is newer than 1.0");
+});
+
+test("a newer release shows what changes and upgrades only from there", async () => {
+    const {element, ran} = await drawn();
+    element.querySelector("[data-plugin-latest]").click();
+    await settle();
+    element.querySelector("[data-plugin-upgrade]").click();
+    await settle();
+    expect(ran).toEqual([["plugin", "upgrade", "sins"]]);
+    expect(document.querySelector("[data-plugin-upgrade-change]").textContent).toContain("npm install");
+    document.querySelector("[data-plugin-upgrade-apply]").click();
+    await settle();
+    expect(ran.at(-1)).toEqual(["plugin", "upgrade", "sins", "--yes"]);
+    expect(element.querySelector("[data-plugin-latest-line]").textContent).toContain("is upgraded");
 });
 
 test("a plugin that declares a dashboard offers it and says when nothing is written yet", async () => {

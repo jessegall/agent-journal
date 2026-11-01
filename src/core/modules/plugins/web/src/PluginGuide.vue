@@ -38,7 +38,7 @@ const ANSWER = '{"answer": "refuse", "reason": "why", "line": "a line for the ag
     <Dialog title="Make a plugin" @close="emit('close')">
         <div class="plugin-guide" data-plugin-guide>
             <h3>Manifest</h3>
-            <p>A plugin is a folder with a <code>journal-plugin.json</code>. The journal reads it, shows you everything it would run, and copies the folder when you install it.</p>
+            <p>A plugin is a folder or a repository with a <code>journal-plugin.json</code>. The journal reads it, shows you everything it would run, and copies it when you install it, a repository at its newest version tag.</p>
             <pre>{{ EXAMPLE }}</pre>
             <h3>Keys</h3>
             <dl>

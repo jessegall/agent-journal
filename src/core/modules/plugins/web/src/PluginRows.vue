@@ -48,7 +48,28 @@ const latest = ref({});
 
 async function checkLatest(row) {
     const answer = await context.read(["plugin", "latest", row.name]);
-    latest.value = {...latest.value, [row.name]: answer.ok ? answer.value.line : answer.error};
+    latest.value = {...latest.value, [row.name]: answer.ok ? answer.value : {line: answer.error, is_newer: false}};
+}
+
+const upgrade = ref(null);
+
+async function showUpgrade(row) {
+    const answer = await context.run(["plugin", "upgrade", row.name]);
+    refusal.value = answer.ok ? "" : answer.error;
+    upgrade.value = answer.ok ? answer.value : null;
+}
+
+async function applyUpgrade() {
+    const name = upgrade.value.name;
+    upgrade.value = null;
+    if (await run(["plugin", "upgrade", name, "--yes"])) latest.value = {...latest.value, [name]: {line: `${name} is upgraded; running services change at the next restart`, is_newer: false}};
+}
+
+function openFile(node) {
+    const address = new URL(window.location.href);
+    address.searchParams.set("page", "coding.files");
+    address.searchParams.set("file", node.path);
+    window.location.assign(address.href);
 }
 
 const board = ref(null);
@@ -106,7 +127,7 @@ async function showRecord(row) {
     </div>
     <template v-if="open === 'install'">
         <form class="plugin-form" data-plugin-install-form @submit.prevent="showPreview">
-            <input v-model="source" placeholder="The plugin's folder" aria-label="The plugin's folder">
+            <input v-model="source" placeholder="owner/repo, a link or a folder" aria-label="Where the plugin is">
             <Btn small kind="primary" type="submit" :disabled="!source.trim()">Preview</Btn>
         </form>
     </template>
@@ -158,7 +179,10 @@ async function showRecord(row) {
                     </template>
                 </span>
                 <template v-if="latest[row.name]">
-                    <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name] }}</span>
+                    <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name].line }}</span>
+                    <template v-if="latest[row.name].is_newer">
+                        <Btn small kind="primary" data-plugin-upgrade @click="showUpgrade(row)">See what changes</Btn>
+                    </template>
                 </template>
                 <template v-if="settings[row.name]">
                     <div class="plugin-settings" data-plugin-setting-list>
@@ -201,12 +225,29 @@ async function showRecord(row) {
     <template v-if="preview">
         <PluginInstallPreview :preview="preview" @close="preview = null" @install="install" />
     </template>
+    <template v-if="upgrade">
+        <Dialog :title="`Upgrade ${upgrade.name}`" @close="upgrade = null">
+            <div data-plugin-upgrade-body>
+                <p class="plugin-note">{{ upgrade.installed }} to {{ upgrade.version }}. Services that run keep the old code until the journal restarts.</p>
+                <template v-if="!upgrade.changes.length">
+                    <p class="plugin-note">It runs the same commands as the version you have.</p>
+                </template>
+                <template v-for="change in upgrade.changes" :key="change">
+                    <p class="plugin-output" data-plugin-upgrade-change>{{ change }}</p>
+                </template>
+            </div>
+            <template #foot>
+                <Btn @click="upgrade = null">Cancel</Btn>
+                <Btn kind="primary" data-plugin-upgrade-apply @click="applyUpgrade">Upgrade</Btn>
+            </template>
+        </Dialog>
+    </template>
     <template v-if="guide">
         <PluginGuide @close="guide = false" />
     </template>
     <template v-if="board">
         <Dialog :title="board.title" @close="board = null">
-            <Dashboard :document="board.document" />
+            <Dashboard :document="board.document" @file="openFile" />
         </Dialog>
     </template>
 </template>

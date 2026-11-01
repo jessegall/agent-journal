@@ -9,6 +9,8 @@ from core.modules.plugins.support.plugin_manifest import PluginManifest
 
 GIT_LIMIT_SECONDS = 20
 RELEASE_TAG = re.compile(r"refs/tags/(v?\d+(?:\.\d+)*)$")
+SHORT_REPOSITORY = re.compile(r"[\w.-]+/[\w.-]+")
+GITHUB = "https://github.com/"
 
 
 class PluginReleases:
@@ -20,7 +22,7 @@ class PluginReleases:
 
     def newest_tag(self, source: str) -> str | None:
         try:
-            finished = subprocess.run(["git", "ls-remote", "--tags", source], capture_output=True, text=True, timeout=GIT_LIMIT_SECONDS, check=False, stdin=subprocess.DEVNULL,
+            finished = subprocess.run(["git", "ls-remote", "--tags", self.address(source)], capture_output=True, text=True, timeout=GIT_LIMIT_SECONDS, check=False, stdin=subprocess.DEVNULL,
                                       env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
         except subprocess.TimeoutExpired as timeout:
             raise Refusal(f"{source} did not answer within {GIT_LIMIT_SECONDS} seconds", "try again once the network is back") from timeout
@@ -28,6 +30,10 @@ class PluginReleases:
             raise Refusal(f"the releases of {source} could not be read", finished.stderr.strip())
         tags = [match.group(1) for match in map(RELEASE_TAG.search, finished.stdout.splitlines()) if match]
         return max(tags, key=self.numbers, default=None)
+
+    @staticmethod
+    def address(source: str) -> str:
+        return f"{GITHUB}{source}" if SHORT_REPOSITORY.fullmatch(source) else source
 
     @staticmethod
     def numbers(version: str) -> tuple[int, ...]:
