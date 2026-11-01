@@ -36,6 +36,16 @@ def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks
     story.expect_text("message show 1", "text: Fix the cart first", "read_at: 2026", actor=story.user)
 
 
+def test_a_backlog_of_six_messages_is_told_five_at_a_time_with_the_full_count(new_story):
+    story = delivery_story(new_story)
+    for number in range(6):
+        story.run(f'message send "Message {number}" --environment main', actor=story.user)
+    first = story.hook("s-1", HookSamples.stop())
+    assert "[journal] 6 new messages: journal message unread" in first.lines
+    second = story.hook("s-1", HookSamples.stop())
+    assert "[journal] new message 6: journal message read 6" in second.lines
+
+
 def test_a_message_is_given_once(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
