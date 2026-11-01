@@ -1,0 +1,50 @@
+import importlib
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[5]
+VIEWER = ROOT / "src/viewer"
+MODULE_ROOTS = (ROOT / "src/core/modules", ROOT / "src/suites/coding/modules")
+BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "buildWindows.js", "frameBridgeClient.js"}
+READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
+RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
+SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
+
+
+def source_files(folder):
+    return [path for path in folder.rglob("*") if path.suffix in {".vue", ".js", ".css"} and not SKIPPED_FOLDERS & set(path.parts)]
+
+
+def module_folders():
+    return [folder for root in MODULE_ROOTS for folder in root.iterdir() if (folder / "web/src").is_dir()]
+
+
+def declared_lines(folder):
+    dotted = ".".join(folder.relative_to(ROOT / "src").parts)
+    module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
+    modules = [value for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__]
+    readers = [declared for module in modules for declared in (*module.windows, *module.marks, *module.docks)]
+    return {line for reader in readers for line in getattr(reader, "reads", ())}, {line for reader in readers for line in getattr(reader, "runs", ())}
+
+
+def test_every_viewer_file_is_imported_by_something():
+    readers = {path: path.read_text(errors="ignore") for path in [*source_files(VIEWER), *(file for folder in module_folders() for file in source_files(folder / "web/src"))]}
+    orphans = []
+    for path in source_files(VIEWER):
+        if path.name in BUILD_ENTRIES or path.suffix == ".css":
+            continue
+        imported = re.compile(rf"""[/"']{re.escape(path.stem)}(\.(vue|js))?["']""")
+        if not any(other != path and imported.search(text) for other, text in readers.items()):
+            orphans.append(str(path.relative_to(ROOT)))
+    assert not orphans, f"nothing imports {orphans}"
+
+
+def test_a_window_declares_each_line_it_reads_or_runs():
+    missing = []
+    for folder in module_folders():
+        reads, runs = declared_lines(folder)
+        for path in source_files(folder / "web/src"):
+            text = path.read_text(errors="ignore")
+            missing += [f"{path.name} reads {line}" for line in READ_LINE.findall(text) if line not in reads]
+            missing += [f"{path.name} runs {noun} {verb}" for noun, verb in RUN_LINE.findall(text) if f"{noun} {verb}" not in runs]
+    assert not missing, "\n".join(missing)

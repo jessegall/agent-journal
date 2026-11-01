@@ -28,6 +28,6 @@
         "name": "raw-line-from-a-rule",
         "description": "A driver rule says a line as a string, so the line is registered nowhere and has no type.",
         "rule": "Declare the line as a NudgeDeclaration in the module's <module>_nudges.py, list it in the module's nudges, and say it with its .nudge(...).",
-        "skill": "fix-at-the-source"
+        "skill": "plain-code-words"
     }
 }

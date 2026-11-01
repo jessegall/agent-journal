@@ -9,7 +9,7 @@ const failure = ref("");
 const slowestFirst = ref(false);
 
 async function load() {
-    const answer = await context.run(["developer", "numbers", ...(slowestFirst.value ? ["--slowest"] : [])]);
+    const answer = await context.read(`developer numbers${slowestFirst.value ? " --slowest" : ""}`);
     failure.value = answer.ok ? "" : answer.error;
     if (answer.ok) rows.value = answer.value.rows;
 }

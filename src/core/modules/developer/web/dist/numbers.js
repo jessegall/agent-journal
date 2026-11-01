@@ -1,10 +1,10 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-6a6007226112")) { const style = document.createElement("style"); style.id = "window-styles-6a6007226112"; style.textContent = ".numbers-tools[data-v-b0754bce]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-b0754bce]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-b0754bce]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-b0754bce],.numbers-table td[data-v-b0754bce]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-b0754bce]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
-import { ref as _, openBlock as u, createElementBlock as a, createElementVNode as e, createVNode as v, unref as b, withCtx as k, createTextVNode as f, toDisplayString as s, Fragment as w, renderList as g } from "vue";
+if (!document.getElementById("window-styles-d8d51fcde1fa")) { const style = document.createElement("style"); style.id = "window-styles-d8d51fcde1fa"; style.textContent = ".numbers-tools[data-v-eddf43e8]{display:flex;gap:8px;margin-bottom:10px}.numbers-note[data-v-eddf43e8]{margin:0;color:var(--text-3);font-size:12.5px}.numbers-table[data-v-eddf43e8]{width:100%;border-collapse:collapse;font-size:12.5px}.numbers-table th[data-v-eddf43e8],.numbers-table td[data-v-eddf43e8]{padding:4px 8px;border-bottom:1px solid var(--border);text-align:left}.numbers-table th[data-v-eddf43e8]{color:var(--text-3);font-weight:500}\n"; document.head.appendChild(style); }
+import { ref as _, openBlock as u, createElementBlock as a, createElementVNode as e, createVNode as v, unref as b, withCtx as f, createTextVNode as k, toDisplayString as s, Fragment as w, renderList as g } from "vue";
 import { useWindow as x, usePoll as N, Btn as p } from "@journal/window-kit";
-const B = (i, c) => {
+const B = (i, d) => {
   const o = i.__vccOpts || i;
-  for (const [n, l] of c)
+  for (const [n, l] of d)
     o[n] = l;
   return o;
 }, C = {
@@ -23,19 +23,19 @@ const B = (i, c) => {
 }, F = {
   __name: "HookNumbers",
   setup(i) {
-    const c = x(), o = _([]), n = _(""), l = _(!1);
+    const d = x(), o = _([]), n = _(""), l = _(!1);
     async function m() {
-      const t = await c.run(["developer", "numbers", ...l.value ? ["--slowest"] : []]);
+      const t = await d.read(`developer numbers${l.value ? " --slowest" : ""}`);
       n.value = t.ok ? "" : t.error, t.ok && (o.value = t.value.rows);
     }
     function h() {
       l.value = !l.value, m();
     }
     async function y() {
-      const t = await c.run(["developer", "reset-numbers"]);
+      const t = await d.run(["developer", "reset-numbers"]);
       n.value = t.ok ? "" : t.error, m();
     }
-    return N(m, () => !0), (t, d) => (u(), a("div", C, [
+    return N(m, () => !0), (t, c) => (u(), a("div", C, [
       e("div", H, [
         v(b(p), {
           small: "",
@@ -43,8 +43,8 @@ const B = (i, c) => {
           "data-numbers-sort": "",
           onClick: h
         }, {
-          default: k(() => [
-            f(s(l.value ? "By name" : "Slowest first"), 1)
+          default: f(() => [
+            k(s(l.value ? "By name" : "Slowest first"), 1)
           ]),
           _: 1
         }),
@@ -54,14 +54,14 @@ const B = (i, c) => {
           "data-numbers-reset": "",
           onClick: y
         }, {
-          default: k(() => [...d[0] || (d[0] = [
-            f("Reset the counts", -1)
+          default: f(() => [...c[0] || (c[0] = [
+            k("Reset the counts", -1)
           ])]),
           _: 1
         })
       ]),
       n.value ? (u(), a("p", S, s(n.value), 1)) : o.value.length ? (u(), a("table", E, [
-        d[1] || (d[1] = e("thead", null, [
+        c[1] || (c[1] = e("thead", null, [
           e("tr", null, [
             e("th", null, "Hook"),
             e("th", null, "Count"),
@@ -85,7 +85,7 @@ const B = (i, c) => {
       ])) : (u(), a("p", V, "Nothing counted yet. Hook durations in the developer settings turns the counts on."))
     ]));
   }
-}, D = /* @__PURE__ */ B(F, [["__scopeId", "data-v-b0754bce"]]);
+}, D = /* @__PURE__ */ B(F, [["__scopeId", "data-v-eddf43e8"]]);
 export {
   D as default
 };

@@ -1,0 +1,30 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "vue",
+    "find": {
+        "select": "call",
+        "where": [
+            {
+                "nameIn": [
+                    "fetch",
+                    "EventSource",
+                    "WebSocket"
+                ]
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            },
+            {
+                "fileMatches": "(^|/)src/viewer/src/api/transport\\.js$"
+            }
+        ]
+    },
+    "sin": {
+        "name": "request-outside-transport",
+        "description": "A viewer file makes its own request, so it skips what the viewer does for every request: the environment, the failure answer and the cancel on switch.",
+        "rule": "Every request goes through src/viewer/src/api/transport.js; a window reads and runs through its window context.",
+        "skill": "plain-code-words"
+    }
+}
