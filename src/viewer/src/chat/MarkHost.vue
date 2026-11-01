@@ -56,6 +56,7 @@ const opened = ref(false);
 
 /* a line across the whole chat, as the compaction is: what is above it was summed up */
 .thread-turn.full-width {
+    flex: 1;
     flex-direction: row;
     align-items: center;
     align-self: stretch;

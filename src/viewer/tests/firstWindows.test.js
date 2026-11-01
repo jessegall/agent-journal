@@ -23,6 +23,11 @@ test("the chat names each day above its first row", async () => {
     expect(lines[1]).toContain("Today");
 });
 
+test("the chat's rows are a real list, with or without an arrival motion", async () => {
+    const element = await mounted(Chat, context({"message list": page([{id: 1, type: "user", text: "Ship the cart", created_at: "2020-03-02T10:00:00Z"}])}));
+    expect(element.querySelector(".row-list").tagName).toBe("UL");
+});
+
 test("the chat's pinned links shrink to a corner and come back", async () => {
     const element = await mounted(Chat, context({"message list": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
     expect(element.textContent).toContain("Ready to review");

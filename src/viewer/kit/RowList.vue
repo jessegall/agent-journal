@@ -15,7 +15,7 @@ const props = defineProps({
     // how a row comes in and goes out, {enter, leave} each given the row's element and the call that ends it; with none given rows just appear
     arrival: {type: Object, default: null},
 });
-const list = computed(() => (props.arrival ? {is: TransitionGroup, tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : {is: "ul"}));
+const motion = computed(() => (props.arrival ? {tag: "ul", css: false, onEnter: props.arrival.enter, onLeave: props.arrival.leave} : {}));
 const finished = ref(false);
 async function showMore(older) {
     finished.value = !(await older());
@@ -33,7 +33,7 @@ async function showMore(older) {
         <EmptyState :title="empty" />
     </template>
     <template v-else>
-        <component v-bind="list" class="row-list">
+        <component :is="arrival ? TransitionGroup : 'ul'" v-bind="motion" class="row-list">
             <template v-for="row in rows" :key="row.id">
                 <li class="row-list-row" :data-row="row.id">
                     <slot :row="row" />
