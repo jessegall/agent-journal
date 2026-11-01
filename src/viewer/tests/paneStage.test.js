@@ -273,6 +273,17 @@ test("an agent window's pane menu picks which agent it follows, and any other wi
     expect(element.querySelector('[data-option="agent"]')).toBeNull();
 });
 
+test("a bar button whose window this suite does not offer opens nothing and leaves the layout alone", async () => {
+    const shellRead = async (line) => (line[0] === "usage" && line[1] === "show" ? {ok: true, value: {agents: [{id: 7, role: "main"}], windows: []}} : {ok: false, error: "no"});
+    const {store, element} = await stage(SHAPE, {stageProps: {agent: 7, shellRead}});
+    const before = JSON.stringify(store.layout.value);
+    const button = element.querySelector("[data-workers]");
+    expect(button).not.toBeNull();
+    button.click();
+    await settled();
+    expect(JSON.stringify(store.layout.value)).toBe(before);
+});
+
 test("the pane menu fills or contains a pane and closes it, keeping the last pane", async () => {
     const {store, element} = await stage();
     const own = holder(store, "a.tasks");

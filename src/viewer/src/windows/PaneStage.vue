@@ -125,7 +125,7 @@ const openDropdown = ref(null);
 const openCount = (key) => {
     const name = COUNT_WINDOWS[key];
     if (props.catalogue.dropdown(name)) openDropdown.value = openDropdown.value === name ? null : name;
-    else openView(name);
+    else if (props.catalogue.window(name)) openView(name);
 };
 const pairedPhones = ref([]);
 async function readPhones() {

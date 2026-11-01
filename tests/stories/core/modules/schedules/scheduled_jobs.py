@@ -2,6 +2,8 @@ from datetime import timedelta
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.registry.registry import Registry
+from core.base.registry.suite_windows import SuiteWindows
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
@@ -68,3 +70,9 @@ def test_a_repeating_job_lapses_after_seven_days_and_a_single_one_does_not(new_s
     story.advance(timedelta(days=8))
     story.expect_absent(running(story), JOB)
     story.expect_text(running(story), "9f8e7d6c")
+
+
+def test_the_agent_bars_windows_are_offered_by_the_coding_suite(new_story):
+    story = new_story(fixture=BuilderStarted)
+    windows = {window.name for window in SuiteWindows(story.container.get(Registry)).windows("coding")}
+    story.expect_rows({"schedules.jobs", "workers.workers", "reviews.reviewers"} <= windows)
