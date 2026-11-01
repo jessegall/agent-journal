@@ -32,6 +32,7 @@ import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import QuickMenu from "../shell/QuickMenu.vue";
+import {colorScheme, nextColorScheme, SCHEMES} from "./colorScheme.js";
 import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
@@ -171,6 +172,7 @@ const guide = usePaneGuide(props.environment, {
 });
 followFullscreen();
 const quickOpen = ref(false);
+const schemeLabel = computed(() => SCHEMES.find((scheme) => scheme.key === colorScheme.value)?.label ?? "");
 function messageTheAgent(words = "") {
     const composer = document.querySelector(".composer-input");
     if (!composer) return void openView("messages.chat");
@@ -186,6 +188,7 @@ const quickCommands = computed(() => [
     ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", key: "w", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
     {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
     {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
+    {label: `Color scheme: ${schemeLabel.value}`, keys: "theme dark light color", icon: "wide", run: nextColorScheme},
     {label: activityOpen.value ? "Hide the activity" : "Show the activity", keys: "activity column", icon: "activity", run: toggleActivity},
 ]);
 const SHELL_KEYS = {
@@ -302,6 +305,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
                     <template v-if="menu === id">
                         <div class="pane-menu" role="menu">
+                            <Btn data-menu="color-scheme" :title="`Color scheme: ${schemeLabel}`" @click="nextColorScheme">Color scheme: {{ schemeLabel }}</Btn>
                             <Btn data-menu="split-right" :disabled="pane.tabs.length < 2" @click="split(id, 'right')">Split right</Btn>
                             <Btn data-menu="split-below" :disabled="pane.tabs.length < 2" @click="split(id, 'bottom')">Split below</Btn>
                             <template v-if="floats">

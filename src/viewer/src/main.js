@@ -11,11 +11,15 @@ import PairPage from "./pages/PairPage.vue";
 import SharePage from "./pages/SharePage.vue";
 import {readSession} from "./windows/startup.js";
 import {pageRoute} from "./pageRoute.js";
+import {followColorScheme, pageTitle} from "./windows/colorScheme.js";
+import "./light.css";
 
 const PAGES = {environment: EnvironmentPage, view: ViewWindow, agent: AgentPage, shell: WindowShell, home: HomePage};
 const PAIRING_PATH = "/pair";
 const pairingCode = new URLSearchParams(location.hash.slice(1)).get("code") || "";
 const {page, props} = pageRoute(location.search);
+document.title = pageTitle(props.environment);
+followColorScheme();
 const ENDED_LINK_MARK = 'meta[name="journal-share"][content="gone"]';
 const start = (answer) => {
     const app = location.pathname === PAIRING_PATH
