@@ -11,4 +11,5 @@ PLANS_FAMILY = MarkFamily("plans.plans", "Plans", "plan", MarkGroup.WORK)
 
 PLAN_MARKS = [MarkDeclaration(PlanMarkType.PLAN, PlanMarkVariant, PLANS_FAMILY, "Plan moves", "plan", click=MarkClick.OPEN_ROW)]
 
-PLAN_DOCKS = [DockDeclaration(PlanDockType.STARTED, "plan", "{row_title}", "plan-dock.js", most=1, reads=["plan show"])]
+PLAN_DOCK_READS = ["plan show", "plan progress", "phase list"]
+PLAN_DOCKS = [DockDeclaration(dock_type, "plan", "{row_title}", "plan-dock.js", most=6, reads=PLAN_DOCK_READS) for dock_type in PlanDockType]

@@ -46,3 +46,15 @@ test("a dump is a card with each item, where the agent has got to with it and wh
     expect(items[0].textContent).toContain("Filed into doc 3");
     expect(items[1].textContent).toContain("no home for it");
 });
+
+// task 5498: a plan card says where its plan stands, by the dock type it is docked as
+test("a docked plan's card names where the plan stands from its dock type", async () => {
+    const {default: PlanDock} = await import("../../core/modules/plans/web/src/PlanDock.vue");
+    const stands = {"plans.waiting": "Waiting for you", "plans.started": "Started", "plans.paused": "Paused", "plans.done": "Done", "plans.cancelled": "Cancelled"};
+    for (const [type, words] of Object.entries(stands)) {
+        const window = context({});
+        window.option = () => ({value: {id: 1, type, title: "Checkout"}});
+        const element = await mounted(PlanDock, window);
+        expect(element.textContent.trim()).toBe(words);
+    }
+});

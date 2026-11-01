@@ -4,6 +4,7 @@ import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
 import DockLeave from "./DockLeave.vue";
+import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
 import {api} from "../api/client.js";
@@ -13,6 +14,7 @@ import {pressButton} from "./markButtons.js";
 import {peekRef} from "../route.js";
 
 // one item docked above the chat, drawn as version 4 drew a docked card: the type's icon and title, its buttons, and the body its module gives it
+const emit = defineEmits(["fold"]);
 const props = defineProps({item: {type: Object, required: true}, folded: Boolean, leaving: Boolean});
 const declaration = computed(() => dockDeclaration(props.item.type));
 const look = computed(() => dockLook(props.item, declaration.value));
@@ -31,6 +33,7 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         <template #head>
             <Icon :name="look.icon" class="dock-icon" />
             <span class="dock-title">{{ look.title }}</span>
+            <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
             <span class="chat-dock-acts dock-acts">
                 <template v-for="button in buttons" :key="button.action + button.runs">
                     <Btn small bordered :data-dock-action="button.action" @click="press(button)">{{ button.label }}</Btn>
@@ -75,5 +78,12 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     flex: none;
     gap: 6px;
     margin-left: auto;
+}
+.dock-fold {
+    display: grid;
+    padding: 4px;
+    border: 0;
+    background: none;
+    cursor: pointer;
 }
 </style>

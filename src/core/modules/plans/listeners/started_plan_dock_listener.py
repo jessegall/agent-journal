@@ -1,3 +1,4 @@
+from core.base.actor import Actor
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
@@ -11,10 +12,12 @@ from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
 
 ENDING_MOVES = ("close", "cancel")
+DOCKING_MOVES = {"ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
 class StartedPlanDockListener(CommitListener):
-    """When a plan starts it is docked above the chat, and when it ends it is undocked."""
+    """A plan is docked above the chat as it stands: waiting for the user once ready, started, paused; it is undocked when
+    approved or ended."""
 
     name = "plans.started-dock"
     event = "plan.*"
@@ -26,9 +29,15 @@ class StartedPlanDockListener(CommitListener):
         move = event.event.split(".")[1]
         plan = self.queries.query(Plan).find(event.row_id)
         actor = self.actors.actor(PLANS_MODULE)
-        if move == "start":
-            self.bus.run(AddDockItem(plan.environment_id, PlanDockType.STARTED.value, "plan", plan.id), actor, cause_id=event.id, environment_id=plan.environment_id)
-        if move in ENDING_MOVES:
-            for item in self.items.type_items(PlanDockType.STARTED.value).row_items("plan", plan.id).all_rows():
+        context = {"cause_id": event.id, "environment_id": plan.environment_id}
+        if move in ENDING_MOVES or move == "approve":
+            self.undock(plan, actor, context)
+        if move in DOCKING_MOVES:
+            self.undock(plan, actor, context)
+            self.bus.run(AddDockItem(plan.environment_id, DOCKING_MOVES[move].value, "plan", plan.id), actor, **context)
+
+    def undock(self, plan: Plan, actor: Actor, context: dict[str, int]) -> None:
+        for dock_type in PlanDockType:
+            for item in self.items.type_items(dock_type.value).row_items("plan", plan.id).all_rows():
                 if item.state.value == "docked":
-                    self.bus.run(RemoveDockItem(item.id), actor, cause_id=event.id, environment_id=plan.environment_id)
+                    self.bus.run(RemoveDockItem(item.id), actor, **context)

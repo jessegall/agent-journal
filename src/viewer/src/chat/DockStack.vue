@@ -2,10 +2,11 @@
 import {computed, onUnmounted, ref} from "vue";
 import DockWrapper from "./DockWrapper.vue";
 import {dockDeclaration} from "../domain/dockRegistry.js";
+import {dockFolded} from "../domain/dockFold.js";
 import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
 
 // the items docked at the bottom of the chat, above the composer: a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
-const props = defineProps({items: {type: Array, required: true}});
+const props = defineProps({items: {type: Array, required: true}, folded: Boolean});
 const now = ref(Date.now() / 1000);
 const held = ref(new Set());
 const grouped = ref(false);
@@ -17,6 +18,13 @@ const docked = computed(() => dockedItems(props.items, now.value, held.value));
 const runs = computed(() => keptRuns(docked.value.filter((item) => isRunItem(item, dockDeclaration)), now.value));
 const rows = computed(() => docked.value.filter((item) => !runs.value.includes(item) && !isRunItem(item, dockDeclaration)));
 const shared = computed(() => (grouped.value = groupedRuns(runs.value.length, grouped.value)) && !opened.value);
+
+// a card the person folded or unfolded by hand keeps that, the rest follow the chat's scroll
+const byHand = ref({});
+const foldedFor = (item) => dockFolded(byHand.value[item.id], props.folded);
+function fold(item) {
+    byHand.value = {...byHand.value, [item.id]: !foldedFor(item)};
+}
 
 function hold(item) {
     held.value = new Set([...held.value, item.id]);
@@ -30,12 +38,12 @@ function release(item) {
 <template>
     <template v-for="item in rows" :key="item.id">
         <div @mouseenter="hold(item)" @mouseleave="release(item)">
-            <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" />
+            <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
         </div>
     </template>
     <template v-for="item in shared ? [] : runs" :key="item.id">
         <div @mouseenter="hold(item)" @mouseleave="release(item)">
-            <DockWrapper :item="item" />
+            <DockWrapper :item="item" :folded="foldedFor(item)" @fold="fold(item)" />
         </div>
     </template>
     <template v-if="shared">

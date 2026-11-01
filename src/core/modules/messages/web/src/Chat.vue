@@ -1,7 +1,7 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows} from "@journal/window-kit";
+import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, context} = useRows("message list", ["message.*"]);
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
@@ -12,7 +12,24 @@ const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) =
 const rows = computed(() => interleaved(messages.value, marks.value));
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
 const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? latestCalls.value[0].tool : ""));
-onMounted(() => Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]));
+const FOLD_AFTER_MS = 180;
+const chat = ref(null);
+const docksOpen = ref(true);
+const short = ref(false);
+let lastTop = 0;
+let folding = 0;
+let sizeWatch = null;
+onMounted(() => {
+    Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]);
+    if (chat.value && typeof ResizeObserver !== "undefined") {
+        sizeWatch = new ResizeObserver(([entry]) => (short.value = entry.contentRect.height < SHORT_CHAT));
+        sizeWatch.observe(chat.value);
+    }
+});
+onUnmounted(() => {
+    sizeWatch?.disconnect();
+    clearTimeout(folding);
+});
 const text = ref("");
 const sendFailure = ref("");
 const scroller = ref(null);
@@ -27,13 +44,24 @@ async function send() {
 }
 
 const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), text.value.trim() && send());
-const followScroll = () => (atTop.value = !scroller.value || scroller.value.scrollTop < 8);
+// the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
+function followScroll() {
+    atTop.value = !scroller.value || scroller.value.scrollTop < 8;
+    if (!scroller.value) return;
+    const {scrollTop, scrollHeight, clientHeight} = scroller.value;
+    const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
+    lastTop = scrollTop;
+    if (opening === null) return;
+    clearTimeout(folding);
+    if (opening) docksOpen.value = true;
+    else folding = setTimeout(() => (docksOpen.value = false), FOLD_AFTER_MS);
+}
 const scrollToTop = () => scroller.value?.scrollTo({top: 0, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
 </script>
 
 <template>
-    <div class="chat">
+    <div ref="chat" class="chat">
         <div data-notices class="notices">
             <template v-for="notice in notices" :key="notice.id">
                 <div class="notice">
@@ -64,7 +92,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <button type="button" data-scroll-top :class="['scroll-top', {hidden: atTop}]" aria-label="Scroll to the top" @click="scrollToTop">
             <Icon name="up" :size="14" />
         </button>
-        <DockStack :items="docked" />
+        <DockStack :items="docked" :folded="short || !docksOpen" />
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>

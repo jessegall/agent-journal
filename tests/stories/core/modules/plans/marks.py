@@ -69,3 +69,18 @@ def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "plans.plan")
     assert "Plan 1 made" in marks_text(story) and mark.click == "open row", marks_text(story)
+
+
+def test_a_plan_card_follows_where_the_plan_stands(new_story):
+    story = started_story(new_story)
+    story.run(lines.NEW_PLAN)
+    story.run("plan ready 1")
+    story.run_listeners()
+    story.expect_text("dock-item list", "plans.waiting", "docked")
+    story.run("plan approve 1")
+    story.run("plan start 1", actor=story.agent)
+    story.run_listeners()
+    story.expect_text("dock-item list", "plans.started", "docked")
+    story.run('plan block 1 --reason "waiting for the rates"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("dock-item list", "plans.paused", "docked")

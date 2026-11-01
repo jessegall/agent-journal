@@ -128,6 +128,34 @@ test("docked items: a card shows its title, a line of its text, and buttons to o
     expect(element.querySelector("[data-dock-action='undock']")).not.toBeNull();
 });
 
+// task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
+test("docked cards fold when the chat is scrolled up, open at its foot, and a hand fold holds", async () => {
+    const element = await mountedChat();
+    const history = element.querySelector(".history");
+    Object.defineProperty(history, "scrollHeight", {value: 1000, configurable: true});
+    Object.defineProperty(history, "clientHeight", {value: 300, configurable: true});
+    const scrollTo = async (top) => {
+        history.scrollTop = top;
+        history.dispatchEvent(new Event("scroll"));
+        await new Promise((resolve) => setTimeout(resolve, 260));
+        await settled();
+    };
+    const folded = () => element.querySelector(".chat-dock-body")?.classList.contains("folded");
+    expect(folded()).toBe(false);
+    await scrollTo(700);
+    expect(folded()).toBe(false);
+    await scrollTo(300);
+    expect(folded()).toBe(true);
+    await scrollTo(700);
+    expect(folded()).toBe(false);
+    element.querySelector("[data-dock-fold]").click();
+    await settled();
+    expect(folded()).toBe(true);
+    await scrollTo(100);
+    await scrollTo(700);
+    expect(folded()).toBe(true);
+});
+
 test("pinned notices: a strip above the chat holds each notice with its text, a button with its link and a close cross", async () => {
     const notice = {id: 1, title: "Version 5 demo seeded", link: "http://127.0.0.1:8431/", label: "Open the demo", closed_at: null};
     const element = await mountedChat({"notice list": [notice]});

@@ -79,3 +79,12 @@ Lines marked open differ from version 4 in content or toolbar that these windows
 | C | Composer | The corner button was Dump files and a disabled Send side by side; now one button, Dump files while the box holds no text and Send as soon as something is typed, as in version 4 | composer-empty-v4.png, composer-empty-v5.png, composer-typed-v4.png, composer-typed-v5.png | fixed |
 
 Open after this pass: the New plan, New document, New check, New sequence and New trigger buttons (each needs a create form), the Run button on a check, the plugin install field, and grouping tasks by plan and phase (a task row names no plan yet).
+
+## Plan dock cards (task 5498), pair plandock-v4.png, plandock-v5.png, plandock-v5-folded.png
+
+| # | Item | Difference | State |
+|---|------|------------|-------|
+| P1 | Plan cards in each state | The demo chat shows one card each for started, paused, cancelled, done and waiting for you (the plans seeder, the plan dock types) | fixed |
+| P2 | Card follows the scroll | Cards fold when the chat is scrolled up away from its foot and open again at the foot, and fold when the chat is short, as version 4 | fixed |
+| P3 | Fold by hand | A fold sign on each card folds or unfolds it, and the card keeps that against the scroll | fixed |
+| P4 | Version 4 plan card buttons (Approve, Ask for a critique, Open plan) | Only Open is drawn on a docked plan | open |
