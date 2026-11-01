@@ -15,6 +15,9 @@ from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
+from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
+from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
+from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand import GitOverviewPullsSubcommand
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
 from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
@@ -46,8 +49,9 @@ class CodingModule(Module):
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule]
     listeners = [AutoNextTaskListener]
-    subcommands = [ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
-    windows = [WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
+    subcommands = [GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
+    windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
+               WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
