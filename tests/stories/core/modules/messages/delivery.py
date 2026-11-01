@@ -57,3 +57,11 @@ def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is
     story.expect_hook_refusal("s-1", HookSamples.stop(), "message 1 is unread: journal message show 1")
     story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+def test_a_message_shown_through_the_runners_rewritten_line_is_marked_read(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Fix the cart first" --environment main', actor=story.user)
+    rewritten = "JOURNAL_AGENT_SESSION=s-1 .journal/bin/journal-run --process 1 --limit 0 -- 'journal message show 1'"
+    story.hook("s-1", HookSamples.shell(rewritten, ShellPart("journal-run", CommandCategory.UNKNOWN, ["--process", "1"])).with_fields(event="post_tool_use"))
+    story.expect_text("message show 1", "read_at: 2026", actor=story.user)
