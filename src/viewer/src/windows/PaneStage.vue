@@ -30,6 +30,7 @@ import ResourcePanel from "../resource/ResourcePanel.vue";
 import {peekRef} from "../route.js";
 import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
+import Skeleton from "../kit/Skeleton.vue";
 import QuickMenu from "../shell/QuickMenu.vue";
 import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
@@ -62,6 +63,7 @@ const measure = () => {
 const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,[data-pane-tour]";
 const adding = ref(null);
 const agentRow = ref(null);
+const agentKnown = ref(false);
 // the rows a list read gave, none when it failed or answered something else
 const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
 const environments = ref([]);
@@ -99,6 +101,7 @@ async function readUsage() {
     if (!answer?.ok) return;
     usage.value = answer.value;
     agentRow.value = answer.value.agents.find((row) => row.role === "main") ?? null;
+    agentKnown.value = true;
 }
 const openDropdown = ref(null);
 const openCount = (key) => {
@@ -252,7 +255,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
-            <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" @open="openCount">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
@@ -326,7 +329,12 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             />
                         </template>
                         <template v-else>
-                            <p class="pane-empty">Nothing is open in this pane.</p>
+                            <template v-if="catalogue.windows.value.length">
+                                <p class="pane-empty">Nothing is open in this pane.</p>
+                            </template>
+                            <template v-else>
+                                <Skeleton shape="rows" />
+                            </template>
                         </template>
                     </div>
                     <template v-if="offer?.id === id">

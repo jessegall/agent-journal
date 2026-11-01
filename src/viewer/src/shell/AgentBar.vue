@@ -2,14 +2,16 @@
 import {computed} from "vue";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, helpers: {type: Number, default: 0}});
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, helpers: {type: Number, default: 0}});
 const emit = defineEmits(["open"]);
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 </script>
 
 <template>
     <div class="agent-state" data-agent-bar>
-        <span :class="['dot', {running}]" />
+        <template v-if="agent || !loading">
+            <span :class="['dot', {running}]" />
+        </template>
         <template v-if="agent">
             <strong>{{ running ? "Working" : "Ended" }}</strong>
             <template v-if="task">
@@ -21,7 +23,9 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
             </button>
         </template>
         <template v-else>
-            <strong>No agent</strong>
+            <template v-if="!loading">
+                <strong>No agent</strong>
+            </template>
             <span class="agent-space" />
         </template>
         <slot />

@@ -3,6 +3,7 @@ import {rememberedRef} from "../windows/rememberedState.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import Skeleton from "../kit/Skeleton.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
 // foldable group, each opening where a click on it says, a count beside a window that has one, then the environments
@@ -51,6 +52,9 @@ function fold(key) {
             </button>
             <template v-if="!folded.has('environment')">
                 <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" />Home</a>
+            </template>
+            <template v-if="!windows.length">
+                <Skeleton shape="rows" />
             </template>
             <template v-for="section in sections" :key="section.module">
                 <button type="button" class="fold-head" :data-fold="section.module" @click="fold(section.module)">

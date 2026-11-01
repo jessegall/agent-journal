@@ -30,6 +30,11 @@ test("the agent bar shows its state and a helpers button asking to open the help
     expect(element.textContent).toContain("Working");
 });
 
+test("the agent bar says nothing until it knows, then No agent when there is none", () => {
+    expect(mounted(AgentBar, {agent: null, loading: true}).textContent).not.toContain("No agent");
+    expect(mounted(AgentBar, {agent: null}).textContent).toContain("No agent");
+});
+
 test("the top bar holds the breadcrumb, the activity and the full screen buttons, the second the status and the mode bar, and the third the facts and the view controls", async () => {
     const {readFileSync} = await import("node:fs");
     const {resolve} = await import("node:path");
