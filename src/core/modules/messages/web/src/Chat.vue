@@ -13,6 +13,7 @@ const outgoing = ref([]);
 const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
 const rows = computed(() => withDayLines(interleaved([...messages.value, ...echoes.value], marks.value)));
 const {visible: pinned} = usePins(() => notices.value);
+const quoteOf = (message) => messages.value.find((row) => row.id === message.parent_id)?.text ?? "";
 // the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
 const runningTool = ref("");
 async function readTool() {
@@ -249,7 +250,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                         <MarkHost :mark="row.row" />
                     </template>
                     <template v-else>
-                        <MessageCard :message="row.row" @reply="startReply" @delete="removeMessage" />
+                        <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" />
                     </template>
                 </template>
             </RowList>

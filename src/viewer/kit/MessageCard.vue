@@ -8,7 +8,7 @@ import "../src/text/all.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card
-const props = defineProps({message: {type: Object, required: true}});
+const props = defineProps({message: {type: Object, required: true}, quote: {type: String, default: ""}});
 const emit = defineEmits(["reply", "delete"]);
 const copied = ref(false);
 const deletable = computed(() => props.message.type === "user" && !props.message.read_at && !props.message.local);
@@ -18,7 +18,14 @@ async function copy() {
     setTimeout(() => (copied.value = false), COPIED_MS);
 }
 const html = computed(() => render(props.message.text ?? "", {env: ""}));
+const quoteHtml = computed(() => render(props.quote || EARLIER, {env: ""}));
+function goToQuoted() {
+    const shown = document.querySelector(`[data-ref="message:${props.message.parent_id}"]`);
+    if (shown) shown.scrollIntoView({block: "center", behavior: "smooth"});
+    else peekRef(`messages:${props.message.parent_id}`);
+}
 const COPIED_MS = 1500;
+const EARLIER = "An earlier message";
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
 const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIComponent(name)}`;
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name)})));
@@ -27,11 +34,13 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 <template>
     <article class="message" data-message :data-from="message.type" :data-ref="`message:${message.id}`">
-        <template v-if="message.parent_id">
-            <button type="button" class="message-reply" data-message-reply @click="peekRef(`messages:${message.parent_id}`)">Reply to message {{ message.parent_id }}</button>
-        </template>
         <div class="message-body">
-            <div class="message-card md" @click="peekChip" v-html="html" />
+            <div class="message-card md" @click="peekChip">
+                <template v-if="message.parent_id">
+                    <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
+                </template>
+                <div v-html="html" />
+            </div>
             <div class="message-tools" data-message-tools>
                 <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
                 <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
@@ -118,18 +127,29 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
     color: var(--text);
 }
 
-.message-reply {
-    padding: 0 2px;
-    border: 0;
-    background: none;
+.message-quote {
+    display: -webkit-box;
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 0;
+    min-width: 100%;
+    margin: 0 0 6px;
+    padding: 2px 0 2px 9px;
+    border-left: 2px solid var(--accent);
     color: var(--text-3);
-    font: inherit;
-    font-size: 11.5px;
+    font-size: 12px;
+    white-space: pre-wrap;
     cursor: pointer;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
 }
 
-.message-reply:hover {
-    color: var(--text);
+.message-quote :deep(p) {
+    margin: 0;
+}
+
+.message-quote:hover {
+    color: var(--text-2);
 }
 
 .message-card {

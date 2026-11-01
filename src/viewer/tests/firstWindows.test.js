@@ -28,6 +28,18 @@ test("the chat's rows are a real list, with or without an arrival motion", async
     expect(element.querySelector(".row-list").tagName).toBe("UL");
 });
 
+test("a reply shows a band with what it answers on top of its bubble, or says it was earlier", async () => {
+    const element = await mounted(Chat, context({"message list": page([
+        {id: 3, type: "agent", text: "On it", parent_id: 1, created_at: "2026-11-01T10:02:00Z"},
+        {id: 2, type: "agent", text: "Which one?", parent_id: 99, created_at: "2026-11-01T10:01:00Z"},
+        {id: 1, type: "user", text: "Fix the cart", created_at: "2026-11-01T10:00:00Z"},
+    ])}));
+    const [earlier, known] = element.querySelectorAll(".message-card .message-quote");
+    expect(earlier.textContent).toContain("An earlier message");
+    expect(known.textContent).toContain("Fix the cart");
+    expect(known.closest(".message-card").textContent).toContain("On it");
+});
+
 test("the chat's pinned links shrink to a corner and come back", async () => {
     const element = await mounted(Chat, context({"message list": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
     expect(element.textContent).toContain("Ready to review");
