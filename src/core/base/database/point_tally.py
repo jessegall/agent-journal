@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 
 BYTES_PER_KILOBYTE = 1024
 TABLES_SHOWN = 3
+STATEMENT_CHARACTERS = 300
 TABLE_PATTERN = re.compile(r"\bFROM\s+(\w+)", re.IGNORECASE)
 COUNT_PATTERN = re.compile(r"\s*SELECT\s+count\(", re.IGNORECASE)
 
@@ -20,13 +21,15 @@ class Points:
     writes: int = 0
     kilobytes: int = 0
     tables: Counter[str] = field(default_factory=Counter)
+    statements: Counter[str] = field(default_factory=Counter)
 
     @property
     def total(self) -> int:
         return self.rows + self.writes + self.kilobytes
 
     def since(self, earlier: "Points") -> "Points":
-        return Points(self.rows - earlier.rows, self.writes - earlier.writes, self.kilobytes - earlier.kilobytes, self.tables - earlier.tables)
+        return Points(self.rows - earlier.rows, self.writes - earlier.writes, self.kilobytes - earlier.kilobytes, self.tables - earlier.tables,
+                      self.statements - earlier.statements)
 
     def line(self) -> str:
         costliest = ", ".join(f"{table} {rows}" for table, rows in self.tables.most_common(TABLES_SHOWN))
@@ -40,6 +43,7 @@ class PointTally:
     def __init__(self) -> None:
         self.rows, self.writes, self.bytes = 0, 0, 0
         self.tables: Counter[str] = Counter()
+        self.statements: Counter[str] = Counter()
 
     def loaded(self, rows: Sequence[sqlite3.Row], sql: str) -> None:
         if COUNT_PATTERN.match(sql):
@@ -47,10 +51,11 @@ class PointTally:
         self.rows += len(rows)
         found = TABLE_PATTERN.search(sql)
         self.tables[found.group(1) if found else "other"] += len(rows)
+        self.statements[sql[:STATEMENT_CHARACTERS]] += len(rows)
         self.bytes += sum(len(value) for row in rows for value in row if isinstance(value, (str, bytes)))
 
     def wrote(self) -> None:
         self.writes += 1
 
     def points(self) -> Points:
-        return Points(self.rows, self.writes, math.ceil(self.bytes / BYTES_PER_KILOBYTE), Counter(self.tables))
+        return Points(self.rows, self.writes, math.ceil(self.bytes / BYTES_PER_KILOBYTE), Counter(self.tables), Counter(self.statements))

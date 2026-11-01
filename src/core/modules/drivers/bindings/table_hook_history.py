@@ -25,6 +25,9 @@ class TableHookHistory(HookHistory):
         history = self.history(key)
         return history.last_answer_at if history is not None else None
 
+    def row(self, key: RuleHistoryKey) -> RuleHistory | None:
+        return self.history(key)
+
     def history(self, key: RuleHistoryKey) -> RuleHistory | None:
         if key not in self.kept:
             rows = self.queries.query(RuleHistory).filter(agent_id=key.agent_id, rule=key.rule, layer=key.layer).page(1, 1).rows

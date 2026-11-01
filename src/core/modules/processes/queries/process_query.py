@@ -7,6 +7,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.query import Query
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
+from core.modules.processes.queries.unread_output import UnreadOutput
 
 OPEN = (ProcessState.RUNNING, ProcessState.BACKGROUND)
 
@@ -31,6 +32,9 @@ class ProcessQuery(Query[Process]):
 
     def line(self, line: str) -> Self:
         return self.filter(line=line)
+
+    def unread(self) -> Self:
+        return self.matching(UnreadOutput())
 
     def moved(self) -> Self:
         return self.matching(Greater("moved_at", ""))

@@ -6,6 +6,7 @@ from core.base.query.query import Query
 from core.base.timestamp import Timestamp
 from datetime import timedelta
 from suites.coding.modules.checks.models.check import Check
+from suites.coding.modules.checks.queries.interval_passed import IntervalPassed
 
 
 
@@ -23,7 +24,7 @@ class CheckQuery(Query[Check]):
         return [check for check in self.kept() if check.is_running]
 
     def due(self, present: Timestamp) -> list[Check]:
-        return [check for check in self.running() if check.interval_minutes and (check.last_run_at is None or Timestamp(check.last_run_at.value + timedelta(minutes=check.interval_minutes)) <= present)]
+        return list(self.matching(IsNull("removed_at")).filter(stopped=False).matching(IntervalPassed(present.text)).oldest().all_rows())
 
     def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
         failing = self.matching(IsNull("removed_at")).filter(stopped=False, last_passed=False)

@@ -12,3 +12,9 @@ class HookHistory:
 
     def answer_time(self, key: RuleHistoryKey) -> Timestamp | None:
         return None
+
+    def row(self, key: RuleHistoryKey) -> object | None:
+        return None
+
+    def forget(self) -> None:
+        return None

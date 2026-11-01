@@ -28,7 +28,7 @@ class UnreadOutputReminderRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         spacing = self.settings.integer(ProcessSetting.UNREAD_OUTPUT_TOOL_USES, hook.environment_id)
-        ended = self.processes.agent(hook.agent_id).moved().ended().oldest().all_rows()
+        ended = self.processes.agent(hook.agent_id).moved().ended().unread().oldest().all_rows()
         return RuleAnswer.with_lines(*(self.text.line(process) for process in ended if self.needs_reminder(hook, process, max(1, spacing))))
 
     def needs_reminder(self, hook: AgentHook, process: Process, spacing: int) -> bool:
