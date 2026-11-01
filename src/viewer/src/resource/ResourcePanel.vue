@@ -5,6 +5,7 @@ import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentFacts from "./AgentFacts.vue";
+import TextDetails from "./TextDetails.vue";
 import PlanInspector from "./PlanInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
@@ -85,6 +86,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </template>
                             <template v-if="kind === 'agent'">
                                 <AgentFacts :id="opened.id" :read="read" />
+                            </template>
+                            <template v-if="kind === 'doc' || kind === 'report'">
+                                <TextDetails :kind="kind" :id="opened.id" :row="row" :read="read" @changed="load" />
                             </template>
                             <section class="section" data-resource-fields>
                                 <template v-for="[name, value] in fields" :key="name">

@@ -6,6 +6,9 @@ from core.base.setting.setting_value import SettingValue
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.modules.documents.commands.comment_on_text.comment_on_text_handler import CommentOnTextHandler
+from core.modules.documents.commands.doc_comment.doc_comment_subcommand import DocCommentSubcommand
+from core.modules.documents.commands.report_comment.report_comment_subcommand import ReportCommentSubcommand
 from core.modules.documents.commands.close_text.close_text_handler import CloseTextHandler
 from core.modules.documents.commands.doc_close.doc_close_subcommand import DocCloseSubcommand
 from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
@@ -64,10 +67,10 @@ class DocumentsModule(Module):
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"])]
     views = [DocumentRow]
-    handlers = [MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
+    handlers = [CommentOnTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
     listeners = [DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = [(RowLinks, StoredRowLinks)]
-    subcommands = (DocMakeSubcommand, DocEditSubcommand, DocShowSubcommand, DocListSubcommand, DocCloseSubcommand, KeepRevisionSubcommand,
+    subcommands = (DocCommentSubcommand, ReportCommentSubcommand, DocMakeSubcommand, DocEditSubcommand, DocShowSubcommand, DocListSubcommand, DocCloseSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
                    ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand)

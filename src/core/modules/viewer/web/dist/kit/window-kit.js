@@ -231,7 +231,7 @@ const te = (e, t) => {
       e.open ? ge(s.$slots, "default", {}, void 0, !0, 0) : D("", !0)
     ]));
   }
-}, Fh = /* @__PURE__ */ te(qa, [["__scopeId", "data-v-9ef1865c"]]), We = Symbol.for("journal.window-context");
+}, Uh = /* @__PURE__ */ te(qa, [["__scopeId", "data-v-9ef1865c"]]), We = Symbol.for("journal.window-context");
 function hs() {
   const e = Ze(We, null);
   if (!e) throw new Error("useWindow is called only inside a window the viewer hosts");
@@ -310,7 +310,7 @@ const Fa = {
       })
     ]));
   }
-}, Uh = /* @__PURE__ */ te(Ya, [["__scopeId", "data-v-e3ee3449"]]), Ja = ["aria-checked", "aria-label", "title"], Za = {
+}, Vh = /* @__PURE__ */ te(Ya, [["__scopeId", "data-v-e3ee3449"]]), Ja = ["aria-checked", "aria-label", "title"], Za = {
   key: 0,
   class: "switch-inner"
 }, Qa = {
@@ -340,7 +340,7 @@ const Fa = {
       e.word && !e.labelled ? (c(), d("span", Qa, I(e.word), 1)) : D("", !0)
     ], 10, Ja));
   }
-}, Vh = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-1bfb90f3"]]);
+}, zh = /* @__PURE__ */ te(Xa, [["__scopeId", "data-v-1bfb90f3"]]);
 function fs(e, t, n) {
   try {
     const s = e().getItem(t);
@@ -2453,7 +2453,7 @@ const cl = ["data-from", "data-ref"], ul = { class: "message-body" }, dl = ["inn
       ])
     ], 8, cl));
   }
-}, zh = /* @__PURE__ */ te(El, [["__scopeId", "data-v-cfb192f1"]]), Al = ["innerHTML"], Tl = ["innerHTML"], Cl = {
+}, Kh = /* @__PURE__ */ te(El, [["__scopeId", "data-v-cfb192f1"]]), Al = ["innerHTML"], Tl = ["innerHTML"], Cl = {
   __name: "TextDisplay",
   props: {
     text: { type: String, default: "" },
@@ -2661,7 +2661,7 @@ const cl = ["data-from", "data-ref"], ul = { class: "message-body" }, dl = ["inn
       [q(Gn), r.value]
     ]);
   }
-}), Kh = /* @__PURE__ */ te(Hl, [["__scopeId", "data-v-d9c38ca8"]]);
+}), Gh = /* @__PURE__ */ te(Hl, [["__scopeId", "data-v-d9c38ca8"]]);
 function ql(e, t, { incremental: n = !1 } = {}) {
   const s = hs(), a = H([]), r = H(""), l = H(!1), o = H(""), u = H(null);
   async function h(O) {
@@ -2721,7 +2721,7 @@ const Fl = { class: "title" }, Ul = { class: "state" }, Vl = {
       _: 1
     }, 8, ["rows", "failure", "loaded", "empty"]));
   }
-}, Gh = /* @__PURE__ */ te(Vl, [["__scopeId", "data-v-a69084cd"]]), zl = ["data-tip", "aria-label"], Kl = {
+}, Yh = /* @__PURE__ */ te(Vl, [["__scopeId", "data-v-a69084cd"]]), zl = ["data-tip", "aria-label"], Kl = {
   key: 0,
   class: "mact-word"
 }, Gl = {
@@ -3560,7 +3560,7 @@ function ea(e, t) {
   };
   return { load: s, read: a, fetchAll: async () => s(await a()), find: (r) => n.value.get(r) || null };
 }
-const ta = ea("/api/marks", "marks"), Yh = ta.fetchAll, $u = ta.find, Mu = ["data-ref"], _u = { class: "mark-row" }, Su = {
+const ta = ea("/api/marks", "marks"), Jh = ta.fetchAll, $u = ta.find, Mu = ["data-ref"], _u = { class: "mark-row" }, Su = {
   __name: "MarkHost",
   props: { mark: { type: Object, required: !0 }, allowedRuns: { type: Array, default: null } },
   setup(e) {
@@ -3602,7 +3602,7 @@ const ta = ea("/api/marks", "marks"), Yh = ta.fetchAll, $u = ta.find, Mu = ["dat
       ], 10, Mu);
     };
   }
-}, Jh = /* @__PURE__ */ te(Su, [["__scopeId", "data-v-a8e93858"]]);
+}, Zh = /* @__PURE__ */ te(Su, [["__scopeId", "data-v-a8e93858"]]);
 function Eu(e) {
   const t = H(null), n = new ResizeObserver(() => t.value = e.value.offsetHeight);
   return Pe(() => n.observe(e.value)), pn(() => n.disconnect()), t;
@@ -3659,7 +3659,7 @@ const Au = { class: "chat-dock-fold" }, Tu = ["aria-label"], Cu = { class: "chat
       $("i", { style: s })
     ]));
   }
-}, Iu = /* @__PURE__ */ te(Ru, [["__scopeId", "data-v-d0c4b012"]]), na = ea("/api/docks", "docks"), Zh = na.fetchAll, on = na.find, ju = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), Xn = (e, t, n, s) => ({ action: e, icon: t, label: n, runs: s });
+}, Iu = /* @__PURE__ */ te(Ru, [["__scopeId", "data-v-d0c4b012"]]), na = ea("/api/docks", "docks"), Qh = na.fetchAll, on = na.find, ju = (e, t) => e.title || ((t == null ? void 0 : t.title) || "").replace("{row_id}", String(e.target_id)).replace("{row_title}", e.row_title || ""), Xn = (e, t, n, s) => ({ action: e, icon: t, label: n, runs: s });
 function Nu(e, t) {
   var n;
   return [
@@ -3763,8 +3763,8 @@ const Pu = (e, t) => ({
       _: 1
     }, 8, ["label", "folded"]));
   }
-}, es = /* @__PURE__ */ te(Uu, [["__scopeId", "data-v-0554906e"]]), Vu = 24, zu = 8, Qh = 420;
-function Xh({ top: e, before: t, height: n, shown: s }) {
+}, es = /* @__PURE__ */ te(Uu, [["__scopeId", "data-v-0554906e"]]), Vu = 24, zu = 8, Xh = 420;
+function e1({ top: e, before: t, height: n, shown: s }) {
   const a = n - e - s;
   return a <= Vu && e > t ? !0 : e < t && a > zu ? !1 : null;
 }
@@ -3778,7 +3778,7 @@ function Qu(e, t, n = Gu) {
   const a = new Set(e.filter((r) => r.leaves_at && !r.kept && !(r.leaves_at > t)).slice(0, s).map((r) => r.id));
   return e.filter((r) => !a.has(r.id));
 }
-const Xu = (e, t) => e >= Yu ? !0 : e <= 1 ? !1 : t, ed = ["onMouseenter", "onMouseleave"], td = ["onMouseenter", "onMouseleave"], e1 = {
+const Xu = (e, t) => e >= Yu ? !0 : e <= 1 ? !1 : t, ed = ["onMouseenter", "onMouseleave"], td = ["onMouseenter", "onMouseleave"], t1 = {
   __name: "DockStack",
   props: { items: { type: Array, required: !0 }, folded: Boolean },
   setup(e) {
@@ -3827,16 +3827,16 @@ const Xu = (e, t) => e >= Yu ? !0 : e <= 1 ? !1 : t, ed = ["onMouseenter", "onMo
       }, I(u.value.length) + " runs", 1)) : D("", !0)
     ], 64));
   }
-}, nd = (e) => `show-${e}`, t1 = (e, t, n) => e.filter((s) => {
+}, nd = (e) => `show-${e}`, n1 = (e, t, n) => e.filter((s) => {
   var a;
   return n(nd((a = t(s.type)) == null ? void 0 : a.family)) !== !1;
 }), Vt = (e) => typeof e == "number" ? e : Date.parse(e);
-function n1(e, t) {
+function s1(e, t) {
   const n = (a, r) => ({ kind: a, id: `${a}:${r.id}`, row: r, time: Vt(r.created_at) / 1e3 });
   return [...e.map((a) => n("message", a)), ...t.map((a) => n("mark", a))].sort((a, r) => Vt(a.row.created_at) - Vt(r.row.created_at) || (a.kind === r.kind ? a.row.id - r.row.id : a.kind === "message" ? -1 : 1));
 }
 const sd = 2e3;
-function s1(e, t) {
+function a1(e, t) {
   let n = null;
   const s = () => {
     n = setTimeout(async () => {
@@ -3847,7 +3847,7 @@ function s1(e, t) {
     await e(), s();
   }), pn(() => clearTimeout(n));
 }
-function a1() {
+function r1() {
   const e = H(null);
   return { opened: e, toggle: (n) => {
     e.value = e.value === n.id ? null : n.id;
@@ -3858,7 +3858,7 @@ function rd(e, t) {
   const n = new Date(e * 1e3), s = n.getFullYear() === new Date(t * 1e3).getFullYear(), a = n.toLocaleDateString("en-GB", { day: "numeric", month: "long", ...s ? {} : { year: "numeric" } }), r = Math.round((ln(t) - ln(e)) / ad);
   return r === 0 ? `Today, ${a}` : r === 1 ? `Yesterday, ${a}` : `${n.toLocaleDateString("en-GB", { weekday: "long" })}, ${a}`;
 }
-function r1(e, t = Date.now() / 1e3) {
+function o1(e, t = Date.now() / 1e3) {
   const n = [];
   let s = 0;
   for (const a of e) {
@@ -3882,7 +3882,7 @@ function ld(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a
   };
   s(h);
 }
-function o1(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a = () => performance.now() }, r) {
+function i1(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a = () => performance.now() }, r) {
   if (!t || !n()) return r();
   Object.assign(e.style, { opacity: "0", transform: `translateY(${od}px)` }), e.offsetHeight, e.style.transition = `opacity ${Gt}ms ease-out, transform ${Gt}ms ${at}`, Object.assign(e.style, { opacity: "1", transform: "translateY(0)" });
   const l = a(), o = () => {
@@ -3892,7 +3892,7 @@ function o1(e, { pane: t, follows: n, frame: s = requestAnimationFrame, clock: a
   s(o);
 }
 const cd = 140, gt = 220, ud = 5;
-function i1({ gap: e = cd, later: t = setTimeout } = {}) {
+function l1({ gap: e = cd, later: t = setTimeout } = {}) {
   const n = [];
   let s = !1;
   const a = (o) => {
@@ -3919,7 +3919,7 @@ function i1({ gap: e = cd, later: t = setTimeout } = {}) {
       o.el.style.display = o.display, o.done();
   }, l;
 }
-function l1(e, t, n = setTimeout) {
+function c1(e, t, n = setTimeout) {
   Object.assign(e.style, { boxSizing: "border-box", height: `${e.offsetHeight}px`, overflow: "hidden" }), e.offsetHeight, e.style.transition = `height ${gt}ms ${at}, opacity ${gt}ms ease-in, margin ${gt}ms ${at}`, Object.assign(e.style, { height: "0px", opacity: "0", marginTop: "0px", marginBottom: "0px" }), n(t, gt);
 }
 const aa = "chat.pins.minimised", wt = H(tt(aa, !1));
@@ -3955,7 +3955,7 @@ const hd = ["title"], fd = {
       q(s) ? (c(), d("span", fd, I(q(n).length), 1)) : D("", !0)
     ], 10, hd)) : D("", !0);
   }
-}, c1 = /* @__PURE__ */ te(pd, [["__scopeId", "data-v-c0d11526"]]);
+}, u1 = /* @__PURE__ */ te(pd, [["__scopeId", "data-v-c0d11526"]]);
 function md(e, t, n, s = () => window) {
   Pe(() => {
     var a;
@@ -4100,7 +4100,7 @@ const xd = ["aria-modal", "aria-label", "aria-labelledby"], $d = {
       }, 8, ["onAfterLeave"])
     ]));
   }
-}, u1 = /* @__PURE__ */ te(Ad, [["__scopeId", "data-v-6d1ecd98"]]), Td = {
+}, d1 = /* @__PURE__ */ te(Ad, [["__scopeId", "data-v-6d1ecd98"]]), Td = {
   key: 0,
   class: "menu-item-text"
 }, Cd = {
@@ -4244,27 +4244,27 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
 ], Ud = (e) => !e || e.ended_at ? [] : [
   e.paused_at ? { word: "resume", label: "Resume", main: !0 } : { word: "pause", label: "Pause" },
   { word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing." }
-], Vd = (e, t) => {
+], Vd = (e) => !e || e.close_reason ? [] : [{ word: "close", label: "Close", flag: "--why", ask: "Why does it need no action?" }], zd = (e, t) => {
   var n;
-  return e === "agent" ? Ud(t) : e === "question" ? Fd(t) : ((n = { plan: Hd, task: qd }[e]) == null ? void 0 : n[t == null ? void 0 : t.state]) ?? [];
-}, zd = {
+  return e === "doc" || e === "report" ? Vd(t) : e === "agent" ? Ud(t) : e === "question" ? Fd(t) : ((n = { plan: Hd, task: qd }[e]) == null ? void 0 : n[t == null ? void 0 : t.state]) ?? [];
+}, Kd = {
   key: 0,
   class: "refusal",
   role: "alert",
   "data-resource-refusal": ""
-}, Kd = {
+}, Gd = {
   key: 1,
   class: "ask",
   "data-resource-confirm": ""
-}, Gd = { class: "ask-text" }, Yd = ["placeholder", "aria-label"], Jd = {
+}, Yd = { class: "ask-text" }, Jd = ["placeholder", "aria-label"], Zd = {
   key: 3,
   class: "moves"
-}, Zd = {
+}, Qd = {
   __name: "RowMoves",
   props: { kind: { type: String, required: !0 }, id: { type: Number, required: !0 }, row: { type: Object, default: null }, read: { type: Function, required: !0 }, inline: Boolean },
   emits: ["done"],
   setup(e, { expose: t, emit: n }) {
-    const s = e, a = n, r = L(() => Vd(s.kind, s.row)), l = H(""), o = H(null), u = H("");
+    const s = e, a = n, r = L(() => zd(s.kind, s.row)), l = H(""), o = H(null), u = H("");
     ye(() => s.id, () => {
       l.value = "", o.value = null;
     });
@@ -4279,9 +4279,9 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         key: 0,
         class: re(["foot", { inline: e.inline }])
       }, [
-        l.value ? (c(), d("p", zd, I(l.value), 1)) : D("", !0),
-        (U = o.value) != null && U.confirm ? (c(), d("div", Kd, [
-          $("span", Gd, I(o.value.confirm), 1),
+        l.value ? (c(), d("p", Kd, I(l.value), 1)) : D("", !0),
+        (U = o.value) != null && U.confirm ? (c(), d("div", Gd, [
+          $("span", Yd, I(o.value.confirm), 1),
           Y(ve, {
             small: "",
             kind: "primary",
@@ -4315,7 +4315,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             placeholder: o.value.ask,
             "aria-label": o.value.ask,
             onKeydown: R[3] || (R[3] = ba(De((O) => o.value = null, ["stop"]), ["esc"]))
-          }, null, 40, Yd), [
+          }, null, 40, Jd), [
             [xa, u.value]
           ]),
           Y(ve, {
@@ -4339,7 +4339,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             ])]),
             _: 1
           })
-        ], 32)) : (c(), d("div", Jd, [
+        ], 32)) : (c(), d("div", Zd, [
           (c(!0), d(ae, null, he(r.value, (O) => (c(), G(ve, {
             key: O.word,
             small: "",
@@ -4356,7 +4356,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 2)) : D("", !0);
     };
   }
-}, Qd = /* @__PURE__ */ te(Zd, [["__scopeId", "data-v-efc12731"]]), Xd = {
+}, Xd = /* @__PURE__ */ te(Qd, [["__scopeId", "data-v-efc12731"]]), eh = {
   started: "In progress",
   testing: "Testing",
   paused: "Paused",
@@ -4364,11 +4364,11 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   planned: "Planned",
   asked: "Needs you",
   open: "Open"
-}, eh = { ...Xd, done: "Completed" }, th = { class: "task-status-icon" }, nh = ["width", "height", "aria-label"], sh = {
+}, th = { ...eh, done: "Completed" }, nh = { class: "task-status-icon" }, sh = ["width", "height", "aria-label"], ah = {
   __name: "TaskStatusIcon",
   props: { status: { type: String, required: !0 }, size: { type: Number, default: 14 } },
   setup(e) {
-    return (t, n) => (c(), d("span", th, [
+    return (t, n) => (c(), d("span", nh, [
       Y(dn, {
         name: "turn",
         mode: "out-in"
@@ -4381,7 +4381,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             height: e.size,
             viewBox: "0 0 16 16",
             role: "img",
-            "aria-label": q(eh)[e.status]
+            "aria-label": q(th)[e.status]
           }, [
             Y(us, { value: e.status }, {
               blocked: J(() => [...n[0] || (n[0] = [
@@ -4494,65 +4494,65 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
               ])]),
               _: 1
             }, 8, ["value"])
-          ], 10, nh))
+          ], 10, sh))
         ]),
         _: 1
       })
     ]));
   }
-}, ss = /* @__PURE__ */ te(sh, [["__scopeId", "data-v-2ab7e404"]]), ah = { class: "top" }, rh = {
+}, ss = /* @__PURE__ */ te(ah, [["__scopeId", "data-v-2ab7e404"]]), rh = { class: "top" }, oh = {
   class: "crumb",
   "data-task-crumb": ""
-}, oh = {
+}, ih = {
   key: 0,
   class: "failure",
   role: "alert",
   "data-resource-failure": ""
-}, ih = {
+}, lh = {
   key: 1,
   class: "body"
-}, lh = { class: "stamp" }, ch = {
+}, ch = { class: "stamp" }, uh = {
   class: "title",
   "data-resource-title": ""
-}, uh = { class: "since" }, dh = {
+}, dh = { class: "since" }, hh = {
   key: 0,
   class: "reason",
   "data-task-reason": ""
-}, hh = { class: "text" }, fh = {
+}, fh = { class: "text" }, ph = {
   key: 1,
   class: "reason",
   "data-task-reason": ""
-}, ph = { class: "text" }, mh = { class: "facts" }, gh = { class: "fact wide" }, vh = { class: "fact-value" }, yh = {
+}, mh = { class: "text" }, gh = { class: "facts" }, vh = { class: "fact wide" }, yh = { class: "fact-value" }, wh = {
   key: 0,
   class: "fact"
-}, wh = { class: "fact-value" }, kh = {
+}, kh = { class: "fact-value" }, bh = {
   key: 1,
   class: "fact"
-}, bh = { class: "fact-value" }, xh = {
+}, xh = { class: "fact-value" }, $h = {
   key: 2,
   class: "fact wide"
-}, $h = {
+}, Mh = {
   key: 0,
   class: "refusal",
   role: "alert",
   "data-task-refusal": ""
-}, Mh = {
+}, _h = {
   key: 2,
   class: "part",
   "data-resource-waits": ""
-}, _h = ["onClick"], Sh = { class: "wait-id" }, Eh = { class: "wait-title" }, Ah = {
+}, Sh = ["onClick"], Eh = { class: "wait-id" }, Ah = { class: "wait-title" }, Th = {
   key: 3,
   class: "part",
   "data-task-outcome": ""
-}, Th = { class: "text" }, Ch = {
+}, Ch = { class: "text" }, Oh = {
   key: 4,
   class: "part",
   "data-task-brief": ""
-}, Oh = {
+}, Bh = {
   key: 5,
   class: "part",
   "data-resource-logs": ""
-}, Bh = 180, Lh = {
+}, Lh = 180, Dh = {
   __name: "TaskInspector",
   props: { id: { type: Number, required: !0 }, read: { type: Function, required: !0 }, lone: Boolean, stepped: Boolean, backed: Boolean, changes: { type: Number, default: 0 } },
   emits: ["close", "step", "select", "back"],
@@ -4591,7 +4591,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
         class: re(["task-inspector", { lone: e.lone }]),
         "data-task-inspector": ""
       }, [
-        $("div", ah, [
+        $("div", rh, [
           e.backed ? (c(), G(ve, {
             key: 0,
             small: "",
@@ -4607,7 +4607,7 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             ]),
             _: 1
           })) : D("", !0),
-          $("span", rh, I(z.value), 1),
+          $("span", oh, I(z.value), 1),
           f[7] || (f[7] = $("span", { class: "grow" }, null, -1)),
           e.stepped ? (c(), d(ae, { key: 1 }, [
             Y(ve, {
@@ -4654,12 +4654,12 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
             _: 1
           })
         ]),
-        h.value ? (c(), d("p", oh, I(h.value), 1)) : o.value ? (c(), d("div", {
+        h.value ? (c(), d("p", ih, I(h.value), 1)) : o.value ? (c(), d("div", {
           key: o.value.id,
           class: "body"
         }, [
-          $("div", lh, "Task " + I(o.value.id) + " · updated " + I(q(En)(q($t)(o.value)) || "just now"), 1),
-          $("h3", ch, I(o.value.title), 1),
+          $("div", ch, "Task " + I(o.value.id) + " · updated " + I(q(En)(q($t)(o.value)) || "just now"), 1),
+          $("h3", uh, I(o.value.title), 1),
           $("div", {
             class: re(["state-line", O(o.value.state)])
           }, [
@@ -4675,30 +4675,30 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
               }, null, 8, ["status"]),
               pe(" " + I(B(o.value.state)), 1)
             ]),
-            $("span", uh, "since " + I(q(En)(q($t)(o.value)) || "just now"), 1)
+            $("span", dh, "since " + I(q(En)(q($t)(o.value)) || "just now"), 1)
           ], 2),
-          o.value.state === "blocked" ? (c(), d("section", dh, [
+          o.value.state === "blocked" ? (c(), d("section", hh, [
             f[8] || (f[8] = $("span", { class: "label" }, "Blocked, waiting on", -1)),
-            $("p", hh, I(o.value.reason || "Other tasks"), 1),
+            $("p", fh, I(o.value.reason || "Other tasks"), 1),
             f[9] || (f[9] = $("p", { class: "note" }, "Nothing opens it by itself. Unblock it when that is done.", -1))
-          ])) : o.value.state === "cancelled" && o.value.reason ? (c(), d("section", fh, [
+          ])) : o.value.state === "cancelled" && o.value.reason ? (c(), d("section", ph, [
             f[10] || (f[10] = $("span", { class: "label" }, "Why it was cancelled", -1)),
-            $("p", ph, I(o.value.reason), 1)
+            $("p", mh, I(o.value.reason), 1)
           ])) : D("", !0),
-          $("div", mh, [
-            $("div", gh, [
+          $("div", gh, [
+            $("div", vh, [
               f[11] || (f[11] = $("span", { class: "fact-label" }, "Plan", -1)),
-              $("span", vh, I((A = u.value) != null && A.plan_id ? `Plan ${u.value.plan_id}: ${u.value.plan_title}` : "Not in a plan"), 1)
+              $("span", yh, I((A = u.value) != null && A.plan_id ? `Plan ${u.value.plan_id}: ${u.value.plan_title}` : "Not in a plan"), 1)
             ]),
-            ((v = u.value) == null ? void 0 : v.phase_total) > 1 ? (c(), d("div", yh, [
+            ((v = u.value) == null ? void 0 : v.phase_total) > 1 ? (c(), d("div", wh, [
               f[12] || (f[12] = $("span", { class: "fact-label" }, "Phase", -1)),
-              $("span", wh, I(u.value.phase_number) + " of " + I(u.value.phase_total) + ": " + I(u.value.phase_title), 1)
+              $("span", kh, I(u.value.phase_number) + " of " + I(u.value.phase_total) + ": " + I(u.value.phase_title), 1)
             ])) : D("", !0),
-            o.value.state === "started" && o.value.holder_id ? (c(), d("div", kh, [
+            o.value.state === "started" && o.value.holder_id ? (c(), d("div", bh, [
               f[13] || (f[13] = $("span", { class: "fact-label" }, "Holder", -1)),
-              $("span", bh, "Agent " + I(o.value.holder_id), 1)
+              $("span", xh, "Agent " + I(o.value.holder_id), 1)
             ])) : D("", !0),
-            q(a).has(o.value.state) ? D("", !0) : (c(), d("div", xh, [
+            q(a).has(o.value.state) ? D("", !0) : (c(), d("div", $h, [
               f[14] || (f[14] = $("span", { class: "fact-label" }, "Priority", -1)),
               Y(Nl, {
                 options: s,
@@ -4706,10 +4706,10 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
                 "data-task-priority": "",
                 onPick: Q
               }, null, 8, ["value"]),
-              m.value ? (c(), d("p", $h, I(m.value), 1)) : D("", !0)
+              m.value ? (c(), d("p", Mh, I(m.value), 1)) : D("", !0)
             ]))
           ]),
-          o.value.waits.length ? (c(), d("section", Mh, [
+          o.value.waits.length ? (c(), d("section", _h, [
             f[15] || (f[15] = $("h4", null, "Waits on", -1)),
             (c(!0), d(ae, null, he(o.value.waits, (w) => (c(), d("button", {
               key: w.id,
@@ -4721,37 +4721,37 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
                 status: O(w.state),
                 size: 12
               }, null, 8, ["status"]),
-              $("span", Sh, I(w.id), 1),
-              $("span", Eh, I(w.title), 1)
-            ], 8, _h))), 128))
+              $("span", Eh, I(w.id), 1),
+              $("span", Ah, I(w.title), 1)
+            ], 8, Sh))), 128))
           ])) : D("", !0),
-          o.value.state === "completed" && o.value.outcome ? (c(), d("section", Ah, [
+          o.value.state === "completed" && o.value.outcome ? (c(), d("section", Th, [
             f[16] || (f[16] = $("h4", null, "How it was done", -1)),
-            $("p", Th, I(o.value.outcome), 1)
+            $("p", Ch, I(o.value.outcome), 1)
           ])) : D("", !0),
-          o.value.brief ? (c(), d("section", Ch, [
+          o.value.brief ? (c(), d("section", Oh, [
             f[17] || (f[17] = $("h4", null, "The brief", -1)),
             $("p", {
               class: re(["text", { clamped: !T.value }])
             }, I(o.value.brief), 3),
-            o.value.brief.length > Bh && !T.value ? (c(), d("button", {
+            o.value.brief.length > Lh && !T.value ? (c(), d("button", {
               key: 0,
               type: "button",
               class: "more",
               onClick: f[5] || (f[5] = (w) => T.value = !0)
             }, "Show the whole brief")) : D("", !0)
           ])) : D("", !0),
-          o.value.logs.length ? (c(), d("section", Oh, [
+          o.value.logs.length ? (c(), d("section", Bh, [
             f[18] || (f[18] = $("h4", null, "Log", -1)),
             (c(!0), d(ae, null, he(o.value.logs, (w) => (c(), d("p", {
               key: w.id,
               class: "log"
             }, I(w.line), 1))), 128))
           ])) : D("", !0)
-        ])) : (c(), d("div", ih, [
+        ])) : (c(), d("div", lh, [
           Y(Et)
         ])),
-        Y(Qd, {
+        Y(Xd, {
           ref_key: "footer",
           ref: R,
           kind: "task",
@@ -4789,12 +4789,12 @@ const Ve = 8, Pd = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
       ], 2);
     };
   }
-}, d1 = /* @__PURE__ */ te(Lh, [["__scopeId", "data-v-9fd1611e"]]);
-function Dh(e) {
+}, h1 = /* @__PURE__ */ te(Dh, [["__scopeId", "data-v-9fd1611e"]]);
+function Rh(e) {
   return e && e.__esModule && Object.prototype.hasOwnProperty.call(e, "default") ? e.default : e;
 }
 var Yt = { exports: {} }, as;
-function Rh() {
+function Ih() {
   return as || (as = 1, (function(e, t) {
     var n = (function() {
       var s = function(y, C) {
@@ -5840,13 +5840,13 @@ function Rh() {
     });
   })(Yt)), Yt.exports;
 }
-var Ih = Rh();
-const jh = /* @__PURE__ */ Dh(Ih), Nh = ["width", "height", "viewBox"], Ph = ["width", "height"], Wh = ["d"], Hh = {
+var jh = Ih();
+const Nh = /* @__PURE__ */ Rh(jh), Ph = ["width", "height", "viewBox"], Wh = ["width", "height"], Hh = ["d"], qh = {
   __name: "QrCode",
   props: { text: { type: String, required: !0 }, size: { type: Number, default: 200 } },
   setup(e) {
     const t = e, n = L(() => {
-      const s = jh(0, "M");
+      const s = Nh(0, "M");
       s.addData(t.text), s.make();
       const a = s.getModuleCount(), r = [];
       for (let l = 0; l < a; l += 1)
@@ -5867,60 +5867,60 @@ const jh = /* @__PURE__ */ Dh(Ih), Nh = ["width", "height", "viewBox"], Ph = ["w
         width: n.value.count,
         height: n.value.count,
         fill: "#fff"
-      }, null, 8, Ph),
+      }, null, 8, Wh),
       $("path", {
         d: n.value.path,
         fill: "#000"
-      }, null, 8, Wh)
-    ], 8, Nh));
+      }, null, 8, Hh)
+    ], 8, Ph));
   }
-}, h1 = /* @__PURE__ */ te(Hh, [["__scopeId", "data-v-489f0852"]]), f1 = "1.0.0", p1 = "3.5";
+}, f1 = /* @__PURE__ */ te(qh, [["__scopeId", "data-v-489f0852"]]), p1 = "1.0.0", m1 = "3.5";
 export {
   ve as Btn,
   ws as CloseButton,
-  u1 as Dialog,
-  e1 as DockStack,
+  d1 as Dialog,
+  t1 as DockStack,
   ds as EmptyState,
-  Fh as FoldGroup,
+  Uh as FoldGroup,
   Ks as FoldSign,
   Ce as Icon,
-  f1 as KIT_VERSION,
-  p1 as KIT_VUE,
-  Jh as MarkHost,
+  p1 as KIT_VERSION,
+  m1 as KIT_VUE,
+  Zh as MarkHost,
   Od as MenuItem,
   Rd as MenuLabel,
   Wd as MenuPanel,
-  zh as MessageCard,
-  c1 as PinsToggle,
-  h1 as QrCode,
+  Kh as MessageCard,
+  u1 as PinsToggle,
+  f1 as QrCode,
   hr as RowList,
-  Uh as RunningCommand,
-  Qh as SHORT_CHAT,
+  Vh as RunningCommand,
+  Xh as SHORT_CHAT,
   Nl as Segmented,
   Et as Skeleton,
-  Gh as StateRows,
-  Vh as Switch,
-  d1 as TaskInspector,
+  Yh as StateRows,
+  zh as Switch,
+  h1 as TaskInspector,
   ss as TaskStatusIcon,
   pt as TextDisplay,
-  Kh as TextInput,
+  Gh as TextInput,
   We as WINDOW_CONTEXT,
   En as ago,
-  i1 as arrivalQueue,
-  o1 as arriveAtOnce,
-  l1 as depart,
-  Xh as dockOpening,
-  Zh as fetchDockDeclarations,
-  Yh as fetchMarkDeclarations,
-  n1 as interleaved,
+  l1 as arrivalQueue,
+  i1 as arriveAtOnce,
+  c1 as depart,
+  e1 as dockOpening,
+  Qh as fetchDockDeclarations,
+  Jh as fetchMarkDeclarations,
+  s1 as interleaved,
   $u as markDeclaration,
   rt as peekRef,
-  t1 as shownMarks,
-  a1 as useOpenRow,
+  n1 as shownMarks,
+  r1 as useOpenRow,
   Nd as useOutside,
   dd as usePins,
-  s1 as usePoll,
+  a1 as usePoll,
   ql as useRows,
   hs as useWindow,
-  r1 as withDayLines
+  o1 as withDayLines
 };

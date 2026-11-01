@@ -23,3 +23,20 @@ def test_a_document_with_no_comments_says_so(new_story):
     story = new_story(fixture=UserJoined)
     story.run('doc make "Plan notes" --abstract "Notes" --body "text"', actor=story.user)
     story.expect_text("doc comments 1", "no comments on doc 1", actor=story.user)
+
+
+def test_a_comment_goes_to_the_chat_naming_the_text_and_lists_on_the_text(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "## Totals\\nin cents"', actor=story.user)
+    story.expect_text("doc comment 1 \"Use cents everywhere\" --environment main", "comment written as message", actor=story.user)
+    story.expect_text("doc comments 1", "Use cents everywhere", actor=story.user)
+    story.expect_text("message feed --environment-id 1", "On doc 1, Cart rules: Use cents everywhere", actor=story.user)
+
+
+def test_a_comment_on_a_report_and_an_empty_comment(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('report make "Cart review" --abstract "What the review found" --body "## Found\\nnothing"', actor=story.user)
+    story.expect_text("report comment 1 \"Good\" --environment main", "comment written as message", actor=story.user)
+    story.expect_text("report comments 1", "Good", actor=story.user)
+    story.expect_refusal('report comment 1 " " --environment main', "give the comment's text", actor=story.user)
+

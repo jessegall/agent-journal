@@ -43,4 +43,6 @@ const agentMoves = (row) => (!row || row.ended_at ? [] : [
     {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing."},
 ]);
 
-export const movesOf = (kind, row) => (kind === "agent" ? agentMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);
+const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Close", flag: "--why", ask: "Why does it need no action?"}]);
+
+export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? agentMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);
