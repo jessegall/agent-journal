@@ -12,11 +12,14 @@ from core.modules.messages.commands.record_message_delivery.record_message_deliv
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
+DELIVERED_PER_HOOK = 5
+
 
 class MessageDeliveryRule(DriverRule):
     """On a hook that takes lines, the main agent is told, once, the number of each message the
     person wrote in its environment and how to read it, as version 4 did, with the path of each
-    file it came with; the text stays out, and only reading it marks it read."""
+    file it came with; the text stays out, and only reading it marks it read. A hook tells of the oldest
+    five at most, the rest on the hooks after it, so a long backlog never makes one hook expensive."""
 
     name = "messages.delivery"
     hook = HookWildcard.ALL_HOOKS
@@ -30,10 +33,11 @@ class MessageDeliveryRule(DriverRule):
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
         undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
-        messages = list(undelivered.all_rows())
+        messages = undelivered.page(1, DELIVERED_PER_HOOK).rows
         if not messages:
             return RuleAnswer.allowed()
-        heading = NEW_MESSAGE.nudge(message=messages[0].id) if len(messages) == 1 else NEW_MESSAGES.nudge(count=len(messages))
+        waiting = undelivered.count()
+        heading = NEW_MESSAGE.nudge(message=messages[0].id) if waiting == 1 else NEW_MESSAGES.nudge(count=waiting)
         return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
 
     def file_nudges(self, message: Message) -> list[Nudge]:
