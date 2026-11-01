@@ -8,11 +8,11 @@ const props = defineProps({
     now: {type: Number, default: () => Date.now()},
 });
 const emit = defineEmits(["open"]);
-// each count opens the window that lists what it counts
+// each count asks to open what it counts; the stage knows which window that is
 const COUNTS = [
-    {key: "tasks", title: "Open tasks", window: "tasks.tasks"},
-    {key: "waiting", title: "Questions waiting", window: "questions.questions"},
-    {key: "helpers", title: "Helpers running", window: "agents.subagents"},
+    {key: "tasks", title: "Open tasks"},
+    {key: "waiting", title: "Questions waiting"},
+    {key: "helpers", title: "Helpers running"},
 ];
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const uptime = computed(() => {
@@ -29,7 +29,7 @@ const uptime = computed(() => {
             <span>{{ running ? "Working" : "Ended" }}</span>
             <span>{{ uptime }} up</span>
             <template v-for="count in COUNTS" :key="count.key">
-                <button type="button" class="information-count" :data-count="count.key" :title="count.title" @click="emit('open', count.window)">
+                <button type="button" class="information-count" :data-count="count.key" :title="count.title" @click="emit('open', count.key)">
                     {{ facts[count.key] }} <span class="information-count-name">{{ count.title.toLowerCase() }}</span>
                 </button>
             </template>

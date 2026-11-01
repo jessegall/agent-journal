@@ -21,22 +21,22 @@ test("the bars' counts: helpers still running, tasks not done, questions waiting
     expect(facts).toEqual({helpers: 1, tasks: 3, waiting: 1});
 });
 
-test("the information bar shows the program, the state, the uptime and each count, each opening the window it names", () => {
+test("the information bar shows the program, the state, the uptime and each count, each asking to open what it counts", () => {
     const opened = [];
     const element = mounted(InformationBar, {agent: MAIN, facts: {helpers: 2, tasks: 5, waiting: 1}, onOpen: (name) => opened.push(name)});
     expect(element.textContent).toContain("claude");
     expect(element.textContent).toContain("Working");
     for (const key of ["tasks", "waiting", "helpers"]) element.querySelector(`[data-count="${key}"]`).click();
-    expect(opened).toEqual(["tasks.tasks", "questions.questions", "agents.subagents"]);
+    expect(opened).toEqual(["tasks", "waiting", "helpers"]);
     expect(element.querySelector(`[data-count="tasks"]`).textContent).toContain("5");
 });
 
-test("the agent bar shows its state and a helpers button that opens the subagents", () => {
+test("the agent bar shows its state and a helpers button asking to open the helpers", () => {
     const opened = [];
     const element = mounted(AgentBar, {agent: MAIN, helpers: 1, onOpen: (name) => opened.push(name)});
     expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
     element.querySelector("[data-helpers]").click();
-    expect(opened).toEqual(["agents.subagents"]);
+    expect(opened).toEqual(["helpers"]);
     expect(element.textContent).toContain("Working");
 });
 

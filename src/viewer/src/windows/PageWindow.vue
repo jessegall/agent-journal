@@ -38,21 +38,23 @@ watch(
             <Skeleton shape="cards" />
         </section>
     </template>
-    <WindowHost v-else
-        :key="entry.entry_url"
-        :name="entry.name"
-        :component="component"
-        :subscriptions="subscriptions"
-        :environment="environment"
-        :agent="agent"
-        :visible="visible"
-        :permissions="permissions"
-        :prompts="prompts"
-        :options="options"
-        :declared="entry.options"
-        :events="entry.events"
-        :unavailable-reason="entry.unavailable_reason || loadFailure"
-    />
+    <template v-else>
+        <WindowHost
+            :key="entry.entry_url"
+            :name="entry.name"
+            :component="component"
+            :subscriptions="subscriptions"
+            :environment="environment"
+            :agent="agent"
+            :visible="visible"
+            :permissions="permissions"
+            :prompts="prompts"
+            :options="options"
+            :declared="entry.options"
+            :events="entry.events"
+            :unavailable-reason="entry.unavailable_reason || loadFailure"
+        />
+    </template>
 </template>
 
 <style scoped>

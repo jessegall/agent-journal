@@ -14,7 +14,7 @@ const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
             <strong>{{ running ? "Working" : "Ended" }}</strong>
             <span class="detail">{{ agent.program }} · {{ agent.role }} · {{ agent.session }}</span>
             <span class="agent-space" />
-            <button type="button" class="agent-helpers" data-helpers title="Helpers running" @click="emit('open', 'agents.subagents')">
+            <button type="button" class="agent-helpers" data-helpers title="Helpers running" @click="emit('open', 'helpers')">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
             </button>
         </template>

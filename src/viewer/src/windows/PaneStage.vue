@@ -88,6 +88,9 @@ async function readEnvironments() {
     environments.value = rowsOf(answer);
 }
 const facts = ref(NO_FACTS);
+// the window that lists what each count in the bars counts
+const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents"};
+const openCount = (key) => openView(COUNT_WINDOWS[key]);
 async function readFacts() {
     if (!props.shellRead) return;
     const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list"]), props.shellRead(["task", "list"]), props.shellRead(["question", "list"])]);
@@ -188,8 +191,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
-                <AgentBar :agent="agentRow" :helpers="facts.helpers" @open="openView" />
-                <InformationBar :agent="agentRow" :facts="facts" @open="openView" />
+                <AgentBar :agent="agentRow" :helpers="facts.helpers" @open="openCount" />
+                <InformationBar :agent="agentRow" :facts="facts" @open="openCount" />
             </template>
             <nav class="pane-stage-bar agent-bar">
                 <template v-for="window in barWindows().slice(0, room)" :key="window.name">

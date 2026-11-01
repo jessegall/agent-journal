@@ -48,7 +48,7 @@ const windowOf = (hit) => WINDOW_OF[hit.cli_name] || "";
     <div class="search">
         <form class="search-form" @submit.prevent="find">
             <Icon name="search" :size="14" />
-            <input v-model="terms" class="search-input" type="search" placeholder="Search every row" aria-label="Search every row" />
+            <input v-model="terms" class="search-input" type="search" placeholder="Search the journal" aria-label="Search the journal" />
             <Btn kind="primary" small data-search-go @click="find">Search</Btn>
         </form>
         <template v-if="models.length">
