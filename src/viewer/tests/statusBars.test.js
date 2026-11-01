@@ -1,6 +1,5 @@
 import {createApp, h} from "vue";
 import {expect, test} from "vitest";
-import {barFacts} from "../src/domain/barFacts.js";
 import AgentBar from "../src/shell/AgentBar.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
 
@@ -11,15 +10,6 @@ const mounted = (component, props) => {
     return element;
 };
 const MAIN = {id: 1, role: "main", program: "claude", session: "s", process_started_at: null, ended_at: null};
-
-test("the bars' counts: helpers still running, tasks not done, questions waiting", () => {
-    const facts = barFacts({
-        agents: [MAIN, {role: "worker", ended_at: null}, {role: "worker", ended_at: "2026-01-01"}],
-        tasks: [{state: "open"}, {state: "started"}, {state: "completed"}, {state: "cancelled"}, {state: "blocked"}],
-        questions: [{state: "open"}, {state: "answered"}],
-    });
-    expect(facts).toEqual({helpers: 1, tasks: 3, waiting: 1});
-});
 
 test("the information bar shows the program, the state, the uptime and each count, each asking to open what it counts", () => {
     const opened = [];

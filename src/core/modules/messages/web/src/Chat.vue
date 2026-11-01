@@ -7,20 +7,19 @@ const {rows: messages, failure, loaded, load, older, context} = useRows("message
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark list", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
-const {rows: latestCalls} = useRows("hook-call list --limit 25", ["hook_call.*"]);
-const {rows: mainAgents} = useRows("agent list --role main --limit 5", ["agent.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo is dropped when a message of the user with the same words has landed since
 const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
 const rows = computed(() => interleaved([...messages.value, ...echoes.value], marks.value));
-// the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
-// the tool the agent last began, whichever it is, until the agent stops or a message of yours starts a new turn
-const runningTool = computed(() => {
-    const mains = new Set(mainAgents.value.map((row) => row.id));
-    const call = latestCalls.value.find((row) => mains.has(row.agent_id) && ["pre_tool_use", "stop", "prompt", "session_start"].includes(row.hook));
-    return call?.hook === "pre_tool_use" ? [call.tool, call.summary].filter(Boolean).join(" ") : "";
-});
+// the tool the agent has in hand, read each time a hook call lands, empty until it begins the next
+const runningTool = ref("");
+async function readTool() {
+    const answer = await context.read("usage tool");
+    runningTool.value = answer.ok ? answer.value.tool : "";
+}
+context.follow(["hook_call.*"], readTool);
+readTool();
 const FOLD_AFTER_MS = 180;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;

@@ -1,3 +1,6 @@
+from core.base.driver.command_category import CommandCategory
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.usage.support.status_files import full_status, save_status_file
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import UserJoined
@@ -50,3 +53,21 @@ def test_the_usage_window_reads_the_usage_and_the_counts(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("usage.usage", "usage show")
     window.expect_window_allowed("usage.usage", "statistic list")
+
+
+def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_task(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run(HELPER_START.format(parent=story.agent.id))
+    story.run('task make "Fix the cart" --environment main', actor=story.agent)
+    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+    story.run("task start 1", actor=story.agent)
+    story.expect_text("usage bars --environment main", "1 helpers, 2 tasks, 0 waiting", actor=story.user)
+    story.expect_text("usage bars --environment main --json", '"task_id": 1', '"task_title": "Fix the cart"', actor=story.user)
+
+
+def test_the_tool_is_the_one_the_main_agent_began_until_it_stops(new_story):
+    story = new_story(fixture=UserJoined)
+    story.hook("s-1", HookSamples.shell("ls build", ShellPart("ls", CommandCategory.SEARCH, ["build"])))
+    story.expect_text("usage tool --environment main", "Bash ls build", actor=story.user)
+    story.hook("s-1", HookSamples.stop())
+    story.expect_absent("usage tool --environment main", "Bash", actor=story.user)

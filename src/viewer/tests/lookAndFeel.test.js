@@ -36,7 +36,7 @@ function windowContext(answers) {
     return {
         read: async (line) => {
             lines.push(line);
-            return {ok: true, value: {rows: answers[line] ?? []}};
+            return {ok: true, value: Array.isArray(answers[line]) || !answers[line] ? {rows: answers[line] ?? []} : answers[line]};
         },
         run: async (line) => {
             runs.push(line);
@@ -204,7 +204,7 @@ test("composer: Dump files opens a form where pasted paragraphs and dropped file
 });
 
 test("composer: the running tool rolls at the foot of the chat, and a button scrolls the chat to its newest", async () => {
-    const element = await mountedChat({"agent list --role main --limit 5": [{id: 1}], "hook-call list --limit 25": [{id: 10, agent_id: 1, hook: "post_tool_use", tool: "mcp__playwright__browser_navigate"}, {id: 9, agent_id: 1, hook: "pre_tool_use", tool: "mcp__playwright__browser_navigate"}]});
+    const element = await mountedChat({"usage tool": {tool: "mcp__playwright__browser_navigate"}});
     await new Promise((resolve) => setTimeout(resolve, 400));
     expect(element.querySelector("[data-running-command]")?.textContent).toContain("browser_navigate");
     expect(element.querySelector("[data-scroll-foot]")).not.toBeNull();

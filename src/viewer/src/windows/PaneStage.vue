@@ -28,7 +28,7 @@ import InformationBar from "../shell/InformationBar.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {peekRef} from "../route.js";
-import {barFacts, NO_FACTS} from "../domain/barFacts.js";
+import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
@@ -96,8 +96,6 @@ async function readEnvironments() {
 }
 const facts = ref(NO_FACTS);
 const now = ref(Date.now());
-// the bars count what is still going, which a page of the newest rows would leave out
-const WHOLE_LIST = ["--limit", "500"];
 const AUTO_MODE = "journal.suites.coding.auto-mode";
 const auto = ref(true);
 async function readAuto() {
@@ -109,9 +107,7 @@ async function toggleAuto() {
     const answer = await props.shellRead(["setting", "set", AUTO_MODE, String(!auto.value), "--environment", props.environment]);
     if (answer.ok) auto.value = !auto.value;
 }
-const taskRows = ref([]);
-// the task the agent is working in: the one it holds that is started
-const currentTask = computed(() => taskRows.value.find((row) => row.state === "started" && agentRow.value && row.holder_id === agentRow.value.id) ?? null);
+const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
 const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", usage: "usage.usage"};
 const usage = ref({agents: [], windows: []});
@@ -128,13 +124,12 @@ const openCount = (key) => {
 async function readFacts() {
     if (!props.shellRead) return;
     readUsage();
-    const [agents, startedTasks, openTasks, questions] = await Promise.all([props.shellRead(["agent", "list", ...WHOLE_LIST]), props.shellRead(["task", "list", "--state", "started", ...WHOLE_LIST]), props.shellRead(["task", "list", "--state", "open", ...WHOLE_LIST]), props.shellRead(["question", "list", ...WHOLE_LIST])]);
-    taskRows.value = [...rowsOf(startedTasks), ...rowsOf(openTasks)];
+    const answer = await props.shellRead(["usage", "bars"]);
     now.value = Date.now();
-    facts.value = barFacts({agents: rowsOf(agents), tasks: taskRows.value, questions: rowsOf(questions)});
+    if (answer.ok) facts.value = answer.value;
 }
 async function readAgent() {
-    const answer = props.shellRead ? await props.shellRead(["agent", "list", "--role", "main"]) : null;
+    const answer = props.shellRead ? await props.shellRead(["agent", "list", "--role", "main", "--limit", "5"]) : null;
     const rows = rowsOf(answer);
     agentRow.value = rows.find((row) => row.role === "main" && !row.ended_at) ?? rows[0] ?? null;
 }
