@@ -7,6 +7,7 @@ from core.base.driver.hook_event import HookEvent
 from core.base.journal_home import JournalHome
 from core.base.timing import Timing
 from core.modules.developer.support.developer_settings import HOOK_DURATIONS_SETTING, HOOK_NUDGES_SETTING
+from core.modules.developer.support.hook_numbers_file import HookNumbersFile
 from core.modules.settings.bindings.support.setting_values import SettingValues
 
 HOOK_LIMIT_POINTS = 50
@@ -20,8 +21,8 @@ class HookDurations:
     sent; a hook that cost 50 points or more says so, is update_statements to runtime/costly-
     hooks.log and is told to the agent in one line, which hears of no hook under."""
 
-    def __init__(self, timing: Timing, settings: SettingValues, database: Database, home: JournalHome) -> None:
-        self.timing, self.settings, self.database, self.home = timing, settings, database, home
+    def __init__(self, timing: Timing, settings: SettingValues, database: Database, home: JournalHome, numbers: HookNumbersFile) -> None:
+        self.timing, self.settings, self.database, self.home, self.numbers = timing, settings, database, home, numbers
         self.begun = Points()
 
     def begin(self) -> None:
@@ -42,6 +43,7 @@ class HookDurations:
     def duration(self, event: HookEvent) -> tuple[str, str]:
         milliseconds = (time.time_ns() // 1000 - self.timing.stamps[0][1]) // 1000
         points = self.database.tally.points().minus(self.begun)
+        self.numbers.add(event.event.value, milliseconds, points.total)
         if points.total < HOOK_LIMIT_POINTS:
             return f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()})", ""
         line = f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()}), over the {HOOK_LIMIT_POINTS} a hook may cost"
