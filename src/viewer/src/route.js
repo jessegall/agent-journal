@@ -89,7 +89,8 @@ export function opening(stack, sub = "") {
         .filter(([key]) => key !== "open" && key !== "sub")
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`);
     const parts = [...kept, ...(stack.length ? [`open=${stack.map(entry).join(",")}`] : []), ...(sub ? [`sub=${sub}`] : [])].join("&");
-    location.replace(`#${path}${parts ? `?${parts}` : ""}`);
+    // each row opened or closed is a step of the browser's history, so back and forward walk the panel
+    location.hash = `#${path}${parts ? `?${parts}` : ""}`;
 }
 
 const inChat = {};

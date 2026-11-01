@@ -26,6 +26,7 @@ import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
+import {peekRef} from "../route.js";
 import {barFacts, NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
@@ -144,7 +145,7 @@ const windowOfRef = (ref) => `${ref.split(":")[0]}.${ref.split(":")[0]}`;
 const linkedRef = () => new URLSearchParams(location.hash.slice(1)).get("open");
 function openRef(ref) {
     if (phone.value) chosen.value = windowOfRef(ref);
-    else openView(windowOfRef(ref));
+    else peekRef(ref);
 }
 const heardWorker = (event) => event.data?.open && openRef(event.data.open);
 onMounted(() => {

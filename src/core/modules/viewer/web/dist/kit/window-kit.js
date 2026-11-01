@@ -420,7 +420,7 @@ function lr(e = "", t = 0, n = "") {
 const cr = (e) => `${e.table}:${e.id}${e.comment ? `:${e.comment}` : ""}${e.env ? `@${e.env}` : ""}`;
 function kn(e, t = "") {
   const [n, s = ""] = location.hash.replace(/^#/, "").split("?"), a = [...[...new URLSearchParams(s)].filter(([o]) => o !== "open" && o !== "sub").map(([o, i]) => `${o}=${encodeURIComponent(i)}`), ...e.length ? [`open=${e.map(cr).join(",")}`] : [], ...t ? [`sub=${t}`] : []].join("&");
-  location.replace(`#${n}${a ? `?${a}` : ""}`);
+  location.hash = `#${n}${a ? `?${a}` : ""}`;
 }
 const Fe = {};
 function bn(e, t, n = 0, s = "") {

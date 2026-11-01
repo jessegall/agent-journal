@@ -95,3 +95,14 @@ test("any other row shows its fields, labels above, and a refused read says why"
     await opened("#?open=secret:1", answering({"secret show 1": {ok: false, error: "viewer.shell does not declare secret show"}}));
     expect(shown().querySelector("[data-resource-failure]").textContent).toContain("does not declare");
 });
+
+
+test("the browser's back and forward walk the rows opened", async () => {
+    await opened("#?open=plans:5", answering(PLAN));
+    shown().querySelector("[data-resource-task]").click();
+    await later();
+    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Fix the totals");
+    history.back();
+    await new Promise((resolve) => setTimeout(resolve, 80));
+    expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
+});
