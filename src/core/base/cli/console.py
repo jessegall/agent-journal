@@ -26,6 +26,7 @@ from core.base.refusal import Refusal
 from core.base.refusal_log import RefusalLog
 
 SUCCESS_CODE, REFUSED_CODE, USAGE_CODE, ERROR_CODE = 0, 1, 2, 3
+HELP_FLAGS = ("--help", "-h")
 
 
 class Console:
@@ -48,8 +49,10 @@ class Console:
             shell_run = self.aliases.shell_run(argv, caller, request)
             if shell_run is not None:
                 return self.handoff.run(shell_run, stream)
-            if len(argv) < 2:
-                raise UsageError("write journal <model> <subcommand>; journal --help lists them")
+            if not argv or argv[0] in HELP_FLAGS:
+                return self.written_help("the journal's commands; journal <name> --help lists one's subcommands", self.line_parser.lookup.cli_names(), stream)
+            if len(argv) == 1 or argv[1] in HELP_FLAGS:
+                return self.subcommand_help(argv[0], stream)
             return self.chosen_run(argv, caller, output)
         except (UsageError, StaleRegistryError) as error:
             output.error(str(error))
@@ -64,6 +67,16 @@ class Console:
         except Exception as error:
             output.error(self.errors.reported(argv, error, caller.environment_id))
             return ERROR_CODE
+
+    def subcommand_help(self, cli_name: str, stream: TextIO) -> int:
+        names = self.line_parser.lookup.names(cli_name)
+        if not names:
+            raise UsageError(f"journal has no {cli_name} commands: journal --help lists them")
+        return self.written_help(f"journal {cli_name}; journal {cli_name} <subcommand> --help shows its flags", names, stream)
+
+    def written_help(self, heading: str, names: list[str], stream: TextIO) -> int:
+        stream.write("\n".join([heading, *(f"  {name}" for name in names)]) + "\n")
+        return SUCCESS_CODE
 
     def requested_run(self, argv: list[str], request: CallerRequest, stream: TextIO) -> int:
         try:

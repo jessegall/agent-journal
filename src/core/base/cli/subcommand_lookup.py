@@ -12,6 +12,9 @@ from core.base.cli.usage_error import UsageError
 
 
 AnySubcommand = Subcommand[Command[object], object] | ReadSubcommand[object]
+STANDARD_SUBCOMMANDS = ("make", "show", "list", "edit", "delete")
+
+
 class SubcommandLookup:
     """Chooses the subcommand a command line asks for: a module's own when it wrote one, else the one the core
     builds for the model; it imports that subcommand and nothing else."""
@@ -29,17 +32,32 @@ class SubcommandLookup:
             if is_subcommand_class(subcommand_class):
                 return self.container.get(subcommand_class)
         entry = self.registry.models.get(cli_name)
-        if entry is None:
-            raise UsageError(f"journal has no {cli_name} commands: journal --help lists them")
-        if name in entry.excluded_subcommands:
-            raise UsageError(f"journal {cli_name} has no subcommand {name}")
+        if entry is None or name in entry.excluded_subcommands:
+            raise self.no_subcommand(cli_name, name)
         model = entry.model.loaded()
         if not issubclass(model, Model):
             raise UsageError(f"{entry.model.text} is no model")
         built = self.built(model, entry.commands, name)
         if built is None:
-            raise UsageError(f"journal {cli_name} has no subcommand {name}: journal {cli_name} --help lists them")
+            raise self.no_subcommand(cli_name, name)
         return built
+
+    def no_subcommand(self, cli_name: str, name: str) -> UsageError:
+        names = self.names(cli_name)
+        if not names:
+            return UsageError(f"journal has no {cli_name} commands: journal --help lists them")
+        return UsageError(f"journal {cli_name} has no subcommand {name}; it has: {', '.join(names)}")
+
+    def cli_names(self) -> list[str]:
+        return sorted({*self.registry.models, *(line.split(" ", 1)[0] for line in (*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS))})
+
+    def names(self, cli_name: str) -> list[str]:
+        words = {line.split(" ", 1)[1] for line in (*self.registry.subcommands, *BOOKKEEPING_SUBCOMMANDS) if line.startswith(f"{cli_name} ")}
+        entry = self.registry.models.get(cli_name)
+        model = entry.model.loaded() if entry is not None else None
+        if entry is not None and isinstance(model, type) and issubclass(model, Model):
+            words |= {*STANDARD_SUBCOMMANDS, *(move.name for move in self.defaults.moves(model, entry.commands))} - set(entry.excluded_subcommands)
+        return sorted(words)
 
     def built(self, model: type[Model], command_paths: Sequence[str], name: str) -> AnySubcommand | None:
         standard = {"make": self.defaults.make, "show": self.defaults.show, "list": self.defaults.list, "edit": self.defaults.edit, "delete": self.defaults.delete}
