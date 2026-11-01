@@ -12,7 +12,7 @@ from core.modules.drivers.models.nudge_record import NudgeRecord
 
 
 class NudgeLog:
-    """Which lines of a hook are held back: one already said in this turn, one said again too soon, and a repeat within the hook; and what was said, kept per agent. A refusal is never held back."""
+    """Which lines of a hook are held back: one already said in this turn, one said again too soon, and a repeat within the hook; and what was said, kept per agent. A line on a clock is held by its key, so a number that changes in its text does not start it again. A refusal is never held back."""
 
     def __init__(self, queries: Queries, repository: Repository) -> None:
         self.queries, self.repository = queries, repository
@@ -37,10 +37,11 @@ class NudgeLog:
         return prompts[0].created_at if prompts else None
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
-        kept = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).page(1, 1).rows
+        rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
+        kept = (rows if nudge.repeat_seconds else rows.filter(text=nudge.text)).descending("last_said_at").page(1, 1).rows
         return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.said_nudges, *answers.refusal_nudges):
             current = self.record(agent_id, nudge)
-            self.repository.save(replace(current, creator_id=context.actor.id, said_count=current.said_count + 1, last_said_at=context.timestamp), context)
+            self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, said_count=current.said_count + 1, last_said_at=context.timestamp), context)
