@@ -147,3 +147,20 @@ def test_the_main_chat_leaves_out_the_marks_of_a_worker(new_story):
     bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-nobody", "From the journal"), module, environment_id=1)
     text = story.run("chat-mark main --environment main --json", actor=story.user).output_text
     assert "From the builder" in text and "From the journal" in text and "From the worker" not in text
+
+
+def test_a_line_that_only_mentions_the_command_marks_nothing_read(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Fix the cart" --environment main', actor=story.user)
+    story.hook("s-1", HookSamples.stop())
+    mention = HookSamples.shell('grep -rn "journal message unread" src', ShellPart("grep", CommandCategory.SEARCH, ["-rn"])).with_fields(event="post_tool_use")
+    story.hook("s-1", mention)
+    assert "read_at: 2026" not in story.run("message show 1", actor=story.user).output_text
+
+
+def test_a_message_not_yet_announced_is_not_marked_read_by_unread(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Fix the cart" --environment main', actor=story.user)
+    story.hook("s-1", UNREAD_LINE_HOOK.with_fields(event="post_tool_use"))
+    story.run('message send "And the totals" --environment main', actor=story.user)
+    assert "read_at: 2026" not in story.run("message show 2", actor=story.user).output_text

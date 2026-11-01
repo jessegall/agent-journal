@@ -25,6 +25,7 @@ const emit = defineEmits(["close", "step", "select", "back"]);
 const task = ref(null);
 const place = ref(null);
 const failure = ref("");
+const refusal = ref("");
 const briefWhole = ref(false);
 const menu = ref(null);
 const footer = ref(null);
@@ -57,8 +58,8 @@ watch(() => props.changes, load);
 
 async function setPriority(priority) {
     const answer = await props.read(["task", "edit", String(props.id), "--priority", priority]);
+    refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) return load();
-    failure.value = answer.error;
 }
 
 function pick(move) {
@@ -131,10 +132,15 @@ defineExpose({openStatus});
                             <span class="fact-value">Agent {{ task.holder_id }}</span>
                         </div>
                     </template>
-                    <div class="fact wide">
-                        <span class="fact-label">Priority</span>
-                        <Segmented :options="PRIORITIES" :value="task.priority" data-task-priority @pick="setPriority" />
-                    </div>
+                    <template v-if="!FINISHED.has(task.state)">
+                        <div class="fact wide">
+                            <span class="fact-label">Priority</span>
+                            <Segmented :options="PRIORITIES" :value="task.priority" data-task-priority @pick="setPriority" />
+                            <template v-if="refusal">
+                                <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
+                            </template>
+                        </div>
+                    </template>
                 </div>
                 <template v-if="task.waits.length">
                     <section class="part" data-resource-waits>
@@ -235,6 +241,12 @@ defineExpose({openStatus});
     flex: 1;
     margin: 0;
     padding: 18px 20px;
+    color: var(--danger);
+    font-size: 12.5px;
+}
+
+.refusal {
+    margin: 2px 0 0;
     color: var(--danger);
     font-size: 12.5px;
 }

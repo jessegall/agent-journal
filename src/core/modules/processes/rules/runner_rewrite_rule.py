@@ -4,6 +4,7 @@ from collections.abc import Mapping, Sequence
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.command_effect import CommandEffect
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_history import HookHistory
@@ -45,7 +46,7 @@ class RunnerRewriteRule(DriverRule):
         return RuleAnswer.allowed().running(StartProcess.build(hook, shell, run)).rewriting_after_commands(lambda results: self.tool_input(hook, shell, run, results))
 
     def only_reads_and_writes(self, shell: ShellLine) -> bool:
-        return bool(shell.parts) and all(part.classification.category in READ_AND_WRITE_CATEGORIES for part in shell.parts)
+        return bool(shell.parts) and all(part.classification.category in READ_AND_WRITE_CATEGORIES and CommandEffect.RUNS_LONG not in part.classification.effects for part in shell.parts)
 
     def tool_input(self, hook: AgentHook, shell: ShellLine, run: ForegroundRun, results: Sequence[object]) -> Mapping[str, object]:
         process = next((made for made in results if isinstance(made, Process)), None)

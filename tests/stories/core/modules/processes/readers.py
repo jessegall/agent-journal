@@ -99,3 +99,8 @@ def test_a_reader_counts_the_steps_of_a_run_and_keeps_them_on_its_output(new_sto
     story.run(f"output read {process.id} --summary", actor=story.agent)
     card = json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)
     assert (card["steps_passed"], card["steps_failed"]) == (7, 2)
+
+
+def test_a_reader_with_a_pattern_that_does_not_compile_is_refused(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.expect_refusal('reader add broken --commands "make*" --lines "ok" --topic "("', "--topic pattern that does not compile", actor=story.agent)

@@ -1,3 +1,4 @@
+import re
 from dataclasses import replace
 
 from core.base.command.context import Context
@@ -19,6 +20,7 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         self.readers, self.repository = readers, repository
 
     def handle(self, command: AddReader, context: Context) -> Reader:
+        self.check_patterns(command)
         existing = self.readers.with_name(command.name).page(1, 1).rows
         if existing:
             return self.repository.save(self.changed(existing[0], command), context)
@@ -28,6 +30,14 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         return self.repository.save(Reader(creator_id=context.actor.id, name=command.name, type=reader_type, commands=command.commands, lines_pattern=command.lines,
                                            script=command.script, progress_pattern=command.progress, finished_pattern=command.finished, failed_pattern=command.failed,
                                            summary_pattern=command.summary, topic_pattern=command.topic, title=command.title, subject=command.subject, step_pattern=command.step), context)
+
+    @staticmethod
+    def check_patterns(command: AddReader) -> None:
+        for flag, pattern in (("lines", command.lines), ("progress", command.progress), ("finished", command.finished), ("failed", command.failed), ("summary", command.summary), ("topic", command.topic), ("step", command.step)):
+            try:
+                re.compile(pattern)
+            except re.error as error:
+                raise Refusal(f"reader {command.name} has a --{flag} pattern that does not compile: {error}", "write it as a Python regular expression") from error
 
     def changed(self, reader: Reader, command: AddReader) -> Reader:
         given = {"commands": command.commands, "lines_pattern": command.lines, "script": command.script, "progress_pattern": command.progress,

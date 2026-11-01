@@ -208,7 +208,7 @@ const SETTLE_MS = 1500;
 let settled = false;
 watch(loaded, () => setTimeout(() => (settled = true), SETTLE_MS));
 const comeIn = arrivalQueue();
-const arrivalPane = () => ({pane: scroller.value, follows: () => settled && atFoot});
+const arrivalPane = () => ({pane: scroller.value, follows: () => settled && atFoot && !document.hidden});
 const rowOf = (element) => rows.value.find((row) => row.id === element.dataset.row)?.row;
 const isEcho = (row) => Boolean(row?.local);
 const arrival = {
@@ -216,8 +216,11 @@ const arrival = {
         const row = rowOf(element);
         return isEcho(row) ? arriveAtOnce(element, arrivalPane(), done) : row?.type === "user" ? done() : comeIn(element, arrivalPane(), done);
     },
-    leave: (element, done) => (!atFoot || !element.querySelector("[data-message]") ? done() : depart(element, done)),
+    leave: (element, done) => (!atFoot || !element.querySelector("[data-message]") || element.dataset.row.startsWith("message:sending-") ? done() : depart(element, done)),
 };
+const flushWhenHidden = () => document.hidden && comeIn.flush();
+document.addEventListener("visibilitychange", flushWhenHidden);
+onUnmounted(() => document.removeEventListener("visibilitychange", flushWhenHidden));
 const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
 </script>

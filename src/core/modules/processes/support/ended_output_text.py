@@ -13,7 +13,7 @@ from core.modules.processes.support.output_folder import OutputFolder
 WIDE_FROM_LINES = 50
 WIDE_SHARE = 10
 COUNTED = re.compile(r"\[ *[0-9]+%\]|\b[0-9]+/[0-9]+\b")
-SHELL_WORDS = frozenset(("for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
+SHELL_WORDS = frozenset(("journal", "for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
 
 
 class EndedOutputText:
@@ -52,8 +52,8 @@ class EndedOutputText:
         kept = self.outputs.process(process.id).page(1, 1).rows
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return ""
-        first = process.line.split()[0]
-        if first in SHELL_WORDS:
+        first = next((word for word in process.line.split() if "=" not in word), "")
+        if not first or first in SHELL_WORDS:
             return ""
         name = PurePath(first).name
         return f'no reader reads {name} yet: fill in journal reader add {name} --commands "{first}*" --lines "<the lines that matter>" from this run\'s output and run it'

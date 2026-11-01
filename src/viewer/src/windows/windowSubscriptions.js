@@ -7,7 +7,9 @@ export class WindowSubscriptions {
     }
 
     follow(window, patterns, heard, visible = () => true) {
-        this.follows.push({window, patterns, heard, visible});
+        const follow = {window, patterns, heard, visible};
+        this.follows.push(follow);
+        return () => (this.follows = this.follows.filter((other) => other !== follow));
     }
 
     count(window) {

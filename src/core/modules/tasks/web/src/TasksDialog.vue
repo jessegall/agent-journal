@@ -15,7 +15,8 @@ const selected = ref(0);
 const inspecting = ref(false);
 const drafting = ref(false);
 const changes = ref(0);
-context.follow(["task.*"], () => (changes.value += 1));
+const stopFollowing = context.follow(["task.*"], () => (changes.value += 1));
+onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));
 const standing = computed(() => {

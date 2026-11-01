@@ -17,8 +17,9 @@ from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
-MESSAGE_READ_LINE = re.compile(r"\bjournal message (read|show) (\d+)")
-MESSAGE_UNREAD_LINE = re.compile(r"\bjournal message unread\b")
+COMMAND_START = r"(?:^|-- '|&& |; )"
+MESSAGE_READ_LINE = re.compile(COMMAND_START + r"journal message (read|show) (\d+)")
+MESSAGE_UNREAD_LINE = re.compile(COMMAND_START + r"journal message unread\b")
 READ_COMMAND = "read"
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
@@ -44,7 +45,7 @@ class MessageShowReadRule(DriverRule):
         unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", tuple(commands))).all_rows()) if commands else []
         if MESSAGE_UNREAD_LINE.search(shell.line):
             all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
-            unread = list(all_unread)
+            unread = [message for message in all_unread if message.delivered_at is not None]
             commands = {message.id: READ_COMMAND for message in unread}
         read = [message for message in unread if commands[message.id] == READ_COMMAND]
         images = [nudge for message in read for nudge in self.image_nudges(message)]

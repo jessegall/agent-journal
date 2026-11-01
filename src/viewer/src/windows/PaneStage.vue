@@ -187,7 +187,7 @@ function messageTheAgent(words = "") {
 const quickCommands = computed(() => [
     {label: "Message the agent", keys: "write send", icon: "arrow", run: () => messageTheAgent()},
     ...props.catalogue.windows.value.map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => openView(window.name)})),
-    ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", key: "w", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
+    ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
     {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
     {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
     {label: `Color scheme: ${schemeLabel.value}`, keys: "theme dark light color", icon: "wide", run: nextColorScheme},
@@ -199,7 +199,7 @@ const SHELL_KEYS = {
     "quick-menu": () => (quickOpen.value = true),
 };
 function shellKeyed(event) {
-    const action = SHELL_KEYS[shellKeyAction(event, {wide: shell.wide, opened: quickOpen.value})];
+    const action = SHELL_KEYS[shellKeyAction(event, {wide: shell.wide, opened: quickOpen.value || Boolean(document.querySelector("[role=dialog]"))})];
     if (!action) return;
     event.preventDefault();
     action();

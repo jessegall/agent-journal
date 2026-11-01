@@ -23,6 +23,8 @@ test("Cmd or Ctrl with Shift and Enter switches full screen, also from a field",
 });
 
 test("Escape leaves full screen, and only then", () => {
+    expect(shellKeyAction({key: "Escape", target: page}, {wide: true, opened: true})).toBeNull();
+    expect(shellKeyAction({key: "Escape", target: field}, {wide: true})).toBeNull();
     expect(shellKeyAction({key: "Escape", target: page}, {wide: true})).toBe("leave-fullscreen");
     expect(shellKeyAction({key: "Escape", target: page}, {wide: false})).toBeNull();
 });

@@ -38,7 +38,8 @@ class WindowLines:
             raise WindowRefusal(f"{window_name} may never run {subcommand_name}: only a person gives rights and changes settings")
         parsed = self.parsed(window_name, argv)
         skips_guard = not parsed.is_read and bool(self.flags.skipped_guards(parsed.arguments))
-        if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment):
+        named_id = getattr(parsed.arguments, "environment_id", None)
+        if skips_guard or getattr(parsed.arguments, "environment", None) not in (None, environment) or (named_id is not None and named_id != self.environment_names.environment_id(environment)):
             raise WindowRefusal(f"{window_name} may not skip a guard or name another environment")
         if parsed.line in WINDOW_SETTING_LINES:
             if parsed.arguments.window != window_name:

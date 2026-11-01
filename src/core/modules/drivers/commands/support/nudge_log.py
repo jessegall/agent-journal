@@ -41,6 +41,6 @@ class NudgeLog:
         return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
-        for nudge in answers.said_nudges:
+        for nudge in (*answers.said_nudges, *answers.refusal_nudges):
             current = self.record(agent_id, nudge)
             self.repository.save(replace(current, creator_id=context.actor.id, said_count=current.said_count + 1, last_said_at=context.timestamp), context)

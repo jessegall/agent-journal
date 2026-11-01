@@ -104,3 +104,9 @@ def test_a_line_that_also_runs_something_else_still_goes_through_the_runner(new_
     line = "cat src/cart.py && pytest -q"
     reply = story.hook("s-1", HookSamples.shell(line, ShellPart("cat", CommandCategory.READ, ["src/cart.py"]), ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"])))
     assert dict(reply.updated_input) == {"command": runner_line(story, 1, line, background=True)}
+
+
+def test_a_read_that_never_ends_still_goes_through_the_runner(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    follow = HookSamples.shell("tail -f server.log", ShellPart("tail", CommandCategory.READ, ["-f", "server.log"], effects=[CommandEffect.READS_FILES, CommandEffect.RUNS_LONG]))
+    assert story.hook("s-1", follow).updated_input

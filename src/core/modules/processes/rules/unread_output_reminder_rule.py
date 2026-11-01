@@ -20,7 +20,7 @@ REMINDER_PERIOD = timedelta(minutes=30)
 
 
 class UnreadOutputReminderRule(DriverRule):
-    """Names in one line, every few tool uses counted from the newest, the outputs of runs an agent
+    """Names in one line, a few tool uses after the newest ended and once in a turn, the outputs of runs an agent
     moved to the background and has not read, each for half an hour after its run ended."""
 
     name = "processes.unread-output-reminder"

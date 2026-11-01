@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, onUnmounted, ref} from "vue";
 import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the going groups and the count of the finished ones,
@@ -46,7 +46,8 @@ const groups = computed(() => {
 });
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
-context.follow(["task.*"], load);
+const stopFollowing = context.follow(["task.*"], load);
+onUnmounted(() => stopFollowing?.());
 load();
 defineExpose({groups, focusSearch: () => search.value?.focus()});
 </script>
