@@ -24,6 +24,7 @@ from server.hook.hook_database import HookDatabase
 from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.listener_work import ListenerWork
+from server.check_work import CheckWork
 from server.tick_work import TickWork
 from server.viewer.session_file import SessionFile
 from server.viewer.viewer_listener import ViewerListener
@@ -40,6 +41,7 @@ TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
 HEALTH_CHECK_SECONDS = 60.0
 TICK_PERIOD_SECONDS = 60.0
+CHECK_PERIOD_SECONDS = 60.0
 
 # How long a request may be answered on code that has changed since the last check of its files.
 CODE_RECHECK_SECONDS = 1.0
@@ -70,6 +72,8 @@ def main(argv: list[str]) -> int:
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), remembered_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
+    check_round = JournalRound(home, "checks", CheckWork())
+    check_thread = ListenerThread(check_round.run, check_round.report, CHECK_PERIOD_SECONDS, "checks")
     tunnel = ServerTunnel(home)
     tunnel_thread = ListenerThread(lambda: tunnel.follow(viewer.port), lambda error: files.log_line(f"the tunnel could not be opened: {error}"), TUNNEL_CHECK_SECONDS, "tunnel")
     plugin_services = ServerPluginServices(home)
@@ -85,6 +89,7 @@ def main(argv: list[str]) -> int:
         signal.signal(signal.SIGTERM, lambda signal_number, frame: server.request_stop())
     listener_thread.start()
     ticker.start()
+    check_thread.start()
     viewer.start()
     tunnel_thread.wake()
     tunnel_thread.start()
@@ -95,7 +100,7 @@ def main(argv: list[str]) -> int:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (health_thread, services_thread, tunnel_thread, ticker, listener_thread)
+        threads = (health_thread, services_thread, tunnel_thread, check_thread, ticker, listener_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()

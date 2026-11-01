@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from core.base.periodic_checks import PeriodicChecks
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -26,3 +29,20 @@ def test_a_removed_check_runs_no_more_and_says_so(new_story):
 def test_check_create_makes_a_check_as_version_4_plugins_still_call_it(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success('check create "Suite" --command "true" --every 0', "check 1: Suite", actor=story.user)
+
+
+def test_a_due_check_runs_on_the_periodic_round_and_never_in_a_hook(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 1', actor=story.user)
+    story.advance(timedelta(minutes=2))
+    story.hook("s-1", HookSamples.stop())
+    story.expect_absent("check list", "passed", actor=story.user)
+    story.container.get(PeriodicChecks).run()
+    story.expect_text("check list", "passed", "Suite", actor=story.user)
+
+
+def test_a_stopped_check_is_not_run_by_hand(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "true" --every 0', actor=story.user)
+    story.run("check stop 1", actor=story.user)
+    story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)

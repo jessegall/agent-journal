@@ -1,24 +1,35 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from suites.coding.modules.checks.commands.run_check import RunCheck
+from suites.coding.modules.checks.commands.record_check_run import RecordCheckRun
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
+from suites.coding.modules.checks.commands.support.check_runner import CheckRunner
+from suites.coding.modules.checks.commands.support.kept_checks import KeptChecks
 from suites.coding.modules.checks.models.check import Check
 
 
-class RunCheckSubcommand(Subcommand[RunCheck, Check]):
-    """`journal check run <n>`: runs the check now, says whether it passed and shows what it printed on a failure."""
+class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
+    """`journal check run <n>`: runs the check now, outside any transaction, says whether it passed and shows what it
+    printed on a failure."""
 
     cli_name = "check"
     name = "run"
 
+    def __init__(self, checks: KeptChecks, runner: CheckRunner) -> None:
+        self.checks, self.runner = checks, runner
+
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
 
-    def command(self, arguments: Namespace, caller: Caller) -> RunCheck:
-        return RunCheck(arguments.id)
+    def command(self, arguments: Namespace, caller: Caller) -> RecordCheckRun:
+        check = self.checks.find(arguments.id)
+        if check.stopped:
+            raise Refusal(f"check {check.id} is stopped", "journal check remove ends it")
+        outcome = self.runner.run(check.command)
+        return RecordCheckRun(check.id, outcome.passed, outcome.output)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Check):

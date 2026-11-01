@@ -5,7 +5,9 @@ from suites.coding.modules.checks.models.check import Check
 
 
 @dataclass(frozen=True)
-class RunCheck(Command[Check]):
-    """Runs a check's command at once and keeps whether it passed and what it printed."""
+class RecordCheckRun(Command[Check]):
+    """Keeps whether a check's run, already finished outside the transaction, passed and what it printed."""
 
     check_id: int
+    passed: bool
+    output: str
