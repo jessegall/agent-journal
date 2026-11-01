@@ -15,9 +15,9 @@ class AddReaderSubcommand(Subcommand[AddReader, Reader]):
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("reader_name")
-        for flag in ("commands", "lines", "script", "progress", "finished", "failed", "summary", "topic", "title"):
+        for flag in ("commands", "lines", "script", "progress", "finished", "failed", "summary", "topic", "title", "subject", "step"):
             parser.add_argument(f"--{flag}", default="")
 
     def command(self, arguments: Namespace, caller: Caller) -> AddReader:
         return AddReader(arguments.reader_name, arguments.commands, arguments.lines, arguments.script, arguments.progress, arguments.finished, arguments.failed,
-                         arguments.summary, arguments.topic, arguments.title)
+                         arguments.summary, arguments.topic, arguments.title, arguments.subject, arguments.step)

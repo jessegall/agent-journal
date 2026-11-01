@@ -20,6 +20,10 @@ const isRunning = () => standing.value === "running";
 const ended = computed(() => standing.value === "good" || standing.value === "bad");
 const fraction = computed(() => Number(run.value?.progress ?? 0) / 100);
 const width = computed(() => (ended.value ? "100%" : `${Math.round(fraction.value * 100)}%`));
+const steps = computed(() => {
+    if (!run.value?.steps_passed && !run.value?.steps_failed) return "";
+    return run.value.steps_failed ? `${run.value.steps_passed} passed, ${run.value.steps_failed} failed` : `${run.value.steps_passed} passed`;
+});
 const ranFor = computed(() => {
     if (!run.value?.created_at) return "";
     const until = run.value.ended_at ? Date.parse(run.value.ended_at) : now.value;
@@ -31,7 +35,7 @@ async function load() {
     const id = item.value?.target_id;
     if (!id) return;
     now.value = Date.now();
-    const shown = await context.read(`process show ${id}`);
+    const shown = await context.read(`process card ${id}`);
     run.value = shown.ok ? shown.value : null;
     const text = await context.read(`output peek ${id} --summary`);
     lines.value = text.ok ? text.value.lines : [];
@@ -46,9 +50,12 @@ usePoll(load, isRunning);
             <Teleport :to="head?.value ?? head">
                 <span class="output-dock-state" :data-state="standing" :style="{'--tone': TONES[standing]}"><Icon :name="ICONS[standing]" /></span>
                 <button type="button" class="output-dock-label" data-output-toggle :aria-expanded="opened" :title="run?.line" @click="opened = !opened">
-                    <span class="output-dock-title">{{ run?.line }}</span>
+                    <span class="output-dock-title">{{ run?.title || run?.line }}</span>
                     <FoldSign :open="opened" />
                 </button>
+                <template v-if="steps">
+                    <span class="output-dock-figure" data-output-steps>{{ steps }}</span>
+                </template>
                 <template v-if="ranFor">
                     <span class="output-dock-figure">{{ ranFor }}</span>
                 </template>

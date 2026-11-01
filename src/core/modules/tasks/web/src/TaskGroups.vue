@@ -81,7 +81,7 @@ defineExpose({groups, focusSearch: () => search.value?.focus()});
                         </div>
                     </template>
                     <template v-if="group.rows.length < group.total">
-                        <button type="button" class="tasks-more" :data-more="group.state" @click="more(group)">Show {{ group.rows.length ? "more" : "them" }}</button>
+                        <button type="button" class="tasks-more" :data-more="group.state" @click="more(group)">{{ group.rows.length ? "Show more" : `Show ${group.total} ${group.total === 1 ? "task" : "tasks"}` }}</button>
                     </template>
                 </section>
             </template>

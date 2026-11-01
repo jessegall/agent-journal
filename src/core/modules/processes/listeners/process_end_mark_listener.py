@@ -12,6 +12,7 @@ from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.modules.processes.models.enums.process_state import ProcessState
+from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
 
@@ -46,11 +47,21 @@ class ProcessEndMarkListener(CommitListener):
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
         variant = ProcessMarkVariant(process.state.value)
-        figure = f"{process.progress}%" if process.progress and process.state not in ENDED else ""
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{PHRASES[process.state]} {ProjectPaths.relative_line(process.line, process.folder)[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
+        output = next(self.queries.query(Output).filter(process_id=process.id).all_rows(), None)
+        figure = self.figure(process, output)
+        text = output.title if output and output.title else f"{PHRASES[process.state]} {ProjectPaths.relative_line(process.line, process.folder)[:LINE_CHARACTERS]}"
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, text, agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
+
+    @staticmethod
+    def figure(process: Process, output: Output | None) -> str:
+        if output and output.steps_failed:
+            return f"{output.steps_passed} passed, {output.steps_failed} failed"
+        if output and output.steps_passed:
+            return f"{output.steps_passed} passed"
+        return f"{process.progress}%" if process.progress and process.state not in ENDED else ""
 
     def last_lines(self, process: Process) -> str:
         return "\n".join(self.folder.last_lines(process.id, LAST_LINES))

@@ -26,5 +26,7 @@ class Reader(Model):
     summary_pattern: str = ""
     topic_pattern: str = ""
     title: str = ""
+    subject: str = ""
+    step_pattern: str = ""
     is_default: bool = False
     plugin_name: str = ""

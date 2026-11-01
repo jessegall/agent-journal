@@ -172,3 +172,12 @@ def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new
 def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("messages.chat", "output peek 1 --all")
+
+
+def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "./deploy.sh staging")
+    story.advance(timedelta(seconds=6))
+    wanted = f'journal output title {process.id} "<what it does>"'
+    assert any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    assert not any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)

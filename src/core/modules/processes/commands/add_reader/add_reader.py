@@ -19,3 +19,5 @@ class AddReader(Command[Reader]):
     summary: str = ""
     topic: str = ""
     title: str = ""
+    subject: str = ""
+    step: str = ""

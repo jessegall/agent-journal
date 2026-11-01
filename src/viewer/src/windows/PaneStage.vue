@@ -204,6 +204,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment">
                     <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
+                    <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
+                        <Icon name="wide" :size="13" />
+                    </Btn>
                 </Breadcrumb>
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
@@ -214,9 +217,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
             </AgentBar>
             <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :now="now" @open="openCount">
-                    <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
-                        <Icon name="wide" :size="13" />
-                    </Btn>
                     <template v-if="presets">
                         <LayoutPicker :list="presets" />
                     </template>

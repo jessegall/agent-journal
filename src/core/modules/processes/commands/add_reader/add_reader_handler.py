@@ -27,12 +27,12 @@ class AddReaderHandler(Handler[AddReader, Reader]):
         reader_type = ReaderType.SCRIPT if command.script else ReaderType.PATTERN
         return self.repository.save(Reader(creator_id=context.actor.id, name=command.name, type=reader_type, commands=command.commands, lines_pattern=command.lines,
                                            script=command.script, progress_pattern=command.progress, finished_pattern=command.finished, failed_pattern=command.failed,
-                                           summary_pattern=command.summary, topic_pattern=command.topic, title=command.title), context)
+                                           summary_pattern=command.summary, topic_pattern=command.topic, title=command.title, subject=command.subject, step_pattern=command.step), context)
 
     def changed(self, reader: Reader, command: AddReader) -> Reader:
         given = {"commands": command.commands, "lines_pattern": command.lines, "script": command.script, "progress_pattern": command.progress,
                  "finished_pattern": command.finished, "failed_pattern": command.failed, "summary_pattern": command.summary, "topic_pattern": command.topic,
-                 "title": command.title}
+                 "title": command.title, "subject": command.subject, "step_pattern": command.step}
         changed = replace(reader, **{field: value for field, value in given.items() if value})
         if command.script:
             return replace(changed, type=ReaderType.SCRIPT)

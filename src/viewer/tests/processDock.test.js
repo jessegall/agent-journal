@@ -35,9 +35,22 @@ test("the card of a docked process stops watching it with its button", async () 
     expect(lines).toEqual([["output", "unwatch", "3"]]);
 });
 
+test("a docked process's card shows the title and steps its output keeps, in place of the raw command", async () => {
+    const window = context({
+        "process card 3": {ok: true, value: {id: 3, state: "running", line: "pytest -q", title: "Running tests", steps_passed: 12, steps_failed: 1}},
+        "output peek 3": {ok: true, value: {lines: []}},
+    });
+    const head = document.createElement("span");
+    document.body.append(head);
+    window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+    await mounted(OutputDock, window);
+    expect(head.querySelector(".output-dock-title").textContent).toBe("Running tests");
+    expect(head.querySelector("[data-output-steps]").textContent).toBe("12 passed, 1 failed");
+});
+
 test("a docked process's card shows the run live: its state and the last lines of its reader", async () => {
     const window = context({
-        "process show 3": {ok: true, value: {id: 3, state: "running", line: "make build"}},
+        "process card 3": {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0}},
         "output peek 3": {ok: true, value: {lines: ["compiling the cart", "[ 40%]"]}},
     });
     const head = document.createElement("span");

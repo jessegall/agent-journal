@@ -7,6 +7,7 @@ from core.modules.processes.models.process import Process
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.reader_run import ReaderRun
+from core.modules.processes.support.step_tally import StepTally
 
 NEWLINE = b"\n"
 
@@ -22,6 +23,8 @@ class ReaderAdvance:
     summary: str
     progress: int
     replaces: bool = False
+    steps_passed: int = 0
+    steps_failed: int = 0
 
 
 class ReaderStep:
@@ -43,11 +46,15 @@ class ReaderStep:
             return None
         text = ready_bytes.decode(errors="replace")
         counted = text.count("\n") + (0 if text.endswith("\n") else 1)
+        steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
         return ReaderAdvance(self.run.lines(reader, text, process.state.value, output.read_lines + 1), output.read_offset + len(ready_bytes), output.read_lines + counted,
-                             self.run.summary(reader, text) or output.reader_summary, self.run.progress(reader, text, output.progress))
+                             self.run.summary(reader, text) or output.reader_summary, self.run.progress(reader, text, output.progress),
+                             steps_passed=output.steps_passed + steps.passed, steps_failed=output.steps_failed + steps.failed)
 
     def script_advance(self, process: Process, output: Output, reader: Reader, is_final: bool) -> ReaderAdvance | None:
         if not is_final:
             return None
         text = self.folder.all_output(process.id)
-        return ReaderAdvance(self.run.lines(reader, text, process.state.value), len(text.encode()), text.count("\n"), self.run.summary(reader, text), output.progress, replaces=True)
+        steps = StepTally.counted(reader.step_pattern, reader.progress_pattern, text)
+        return ReaderAdvance(self.run.lines(reader, text, process.state.value), len(text.encode()), text.count("\n"), self.run.summary(reader, text), output.progress, replaces=True,
+                             steps_passed=steps.passed, steps_failed=steps.failed)

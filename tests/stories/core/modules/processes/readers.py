@@ -1,3 +1,5 @@
+import json
+
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
@@ -67,3 +69,33 @@ def test_the_shipped_pytest_reader_reads_a_pytest_output(new_story):
     process = ended_run(story, "pytest -q tests", report, exit_code=1)
     story.expect_text(f"output read {process.id} --summary", f"output {process.id} failed with exit code 1", "3: FAILED tests/test_cart.py::test_total - assert 1 == 2", "summary: 2 failed 1 passed", actor=story.agent)
     story.expect_refusal("reader remove pytest", "was made by", actor=story.agent)
+
+
+def run_title(story, line):
+    process = ended_run(story, line, "")
+    return json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)["title"]
+
+
+def test_a_run_keeps_the_title_of_its_reader_with_its_topic(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('reader add merges --commands "merge*" --lines "done" --topic "merge +([0-9]+)" --title "Merging worker {topic}"', actor=story.agent)
+    story.run('reader add deploys --commands "deploy*" --lines "done" --topic "deploy +(\\w+)" --title "Deploying"', actor=story.agent)
+    assert run_title(story, "merge 3") == "Merging worker 3"
+    assert run_title(story, "deploy staging") == "Deploying: staging"
+
+
+def test_a_run_with_no_reader_has_no_title_until_the_agent_gives_one(new_story):
+    story = new_story(fixture=BuilderStarted)
+    process = ended_run(story, "./deploy.sh", "uploading\n")
+    assert json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)["title"] == ""
+    story.run(f'output title {process.id} "Deploying the site"', actor=story.agent)
+    assert json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)["title"] == "Deploying the site"
+
+
+def test_a_reader_counts_the_steps_of_a_run_and_keeps_them_on_its_output(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run(f'{TESTS_READER} --step "[.FE]" --subject "the failed tests" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
+    process = ended_run(story, "pytest -q", "tests/a.py ...F. [ 50%]\ntests/b.py ..E. [100%]\n1 failed, 6 passed\n")
+    story.run(f"output read {process.id} --summary", actor=story.agent)
+    card = json.loads(story.run(f"process card {process.id} --json", actor=story.agent).output_text)
+    assert (card["steps_passed"], card["steps_failed"]) == (7, 2)

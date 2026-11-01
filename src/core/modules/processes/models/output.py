@@ -26,6 +26,9 @@ class Output(Model):
     read_lines: int = 0
     reader_lines: int = 0
     reader_summary: str = ""
+    title: str = ""
+    steps_passed: int = 0
+    steps_failed: int = 0
     progress: int = 0
     state: OutputState = OutputState.KEPT
     ended_at: Timestamp | None = None
