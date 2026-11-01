@@ -12,7 +12,7 @@ def test_the_shipped_shell_window_reads_a_line_it_declares_with_no_allowance(new
 
 
 def test_a_window_is_refused_a_line_it_does_not_declare(new_story):
-    window_story(new_story).expect_window_refusal("viewer.shell", "task list", "viewer.shell does not declare task list")
+    window_story(new_story).expect_window_refusal("viewer.shell", "secret list", "viewer.shell does not declare secret list")
 
 
 def test_a_window_is_refused_a_line_that_skips_a_guard(new_story):

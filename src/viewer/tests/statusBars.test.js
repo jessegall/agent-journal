@@ -56,8 +56,8 @@ test("the agent bar names the task the agent is working in, and nothing when it 
 test("the information bar shows the auto switch, on or off, and asks to toggle it", () => {
     const toggled = [];
     const on = mounted(InformationBar, {agent: MAIN, auto: true, onToggleAuto: () => toggled.push("toggle")});
-    expect(on.querySelector("[data-auto-toggle]").textContent.trim()).toBe("Auto on");
+    expect(on.querySelector("[data-auto-toggle]").getAttribute("aria-checked")).toBe("true");
     on.querySelector("[data-auto-toggle]").click();
     expect(toggled).toEqual(["toggle"]);
-    expect(mounted(InformationBar, {agent: MAIN, auto: false}).querySelector("[data-auto-toggle]").textContent.trim()).toBe("Auto off");
+    expect(mounted(InformationBar, {agent: MAIN, auto: false}).querySelector("[data-auto-toggle]").getAttribute("aria-checked")).toBe("false");
 });

@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import Switch from "../../kit/Switch.vue";
 
 // the one line under the agent bar, as version 4's information bar drew it: the program, the state and how long the agent has run
 const props = defineProps({
@@ -26,9 +27,7 @@ const uptime = computed(() => {
 <template>
     <div class="information" data-information-bar>
         <template v-if="agent">
-            <button type="button" :class="['information-auto', {on: auto}]" data-auto-toggle :aria-pressed="auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" @click="emit('toggle-auto')">
-                Auto {{ auto ? "on" : "off" }}
-            </button>
+            <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="emit('toggle-auto')" />
             <span>{{ agent.program }}</span>
             <span>{{ running ? "Working" : "Ended" }}</span>
             <span>{{ uptime }} up</span>

@@ -12,11 +12,11 @@ from tests.stories.core.modules.chat.support.mark_samples import mark_count, mar
 from tests.stories.core.support.fixtures import UnansweredMessage
 
 
-def test_an_agents_message_shows_a_thought_mark_after_the_commit(new_story):
+def test_an_agents_message_is_one_bubble_and_makes_no_mark_of_its_words(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.expect_success('message reply 1 "On it, fixing the cart" --environment main', actor=story.agent)
     story.run_listeners()
-    assert "On it, fixing the cart" in marks_text(story) and mark_count(story) >= 1, marks_text(story)
+    assert "On it, fixing the cart" not in marks_text(story), marks_text(story)
 
 
 def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_show_it(new_story):

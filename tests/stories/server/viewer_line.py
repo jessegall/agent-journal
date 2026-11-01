@@ -11,7 +11,7 @@ def test_a_line_that_names_no_window_is_refused(new_story):
 def test_a_line_outside_the_windows_declaration_is_refused(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
-        story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["task", "list"], "environment": "main"}, 200, '"code": 1')
+        story.expect_viewer_line(cookie, {"window": "viewer.shell", "line": ["secret", "list"], "environment": "main"}, 200, '"code": 1')
 
 
 def test_an_abbreviated_flag_is_a_usage_error(new_story):

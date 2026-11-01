@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn} from "@journal/window-kit";
+import {Btn, Switch} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 
 // one setting or group: a group draws its title, its switch when it can be switched off, and each child as a node
@@ -46,9 +46,7 @@ function savedSecret() {
             <div class="setting-group-head">
                 <h3 class="setting-group-title">{{ row.title }}</h3>
                 <template v-if="row.toggleable && !readOnly">
-                    <button type="button" class="setting-switch" role="switch" :aria-checked="row.value !== false" data-group-switch @click="switchGroup">
-                        {{ row.value === false ? "Off" : "On" }}
-                    </button>
+                    <Switch :on="row.value !== false" :title="`Switch ${row.title} ${row.value === false ? 'on' : 'off'}`" data-group-switch @change="switchGroup" />
                 </template>
             </div>
             <p class="setting-description">{{ row.description }}</p>
@@ -71,9 +69,7 @@ function savedSecret() {
                 <input :id="row.key" v-model="typed" class="setting-field" type="password" :disabled="readOnly" placeholder="Type a new value" @change="savedSecret" />
             </template>
             <template v-else-if="row.type === 'flag'">
-                <button type="button" class="setting-switch" role="switch" :aria-checked="row.value === true" :disabled="readOnly" @click="saveValue(row.value === true ? 'off' : 'on')">
-                    {{ row.value === true ? "On" : "Off" }}
-                </button>
+                <Switch :on="row.value === true" :title="row.title" :disabled="readOnly" data-flag-switch @change="(on) => !readOnly && saveValue(on ? 'on' : 'off')" />
             </template>
             <template v-else-if="row.type === 'choice'">
                 <div class="setting-choices">
