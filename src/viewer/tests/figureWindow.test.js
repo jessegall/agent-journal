@@ -45,5 +45,7 @@ test("a chosen figure puts its canvas beside the composer carrying the voice, an
     const none = await mountedChat({figure: "none"});
     expect(none.querySelector("[data-figure-canvas]")).toBeNull();
     const chosen = await mountedChat({figure: "butler"});
+    // the figure's code loads on demand, so the canvas comes a moment after the chat
+    await vi.waitFor(() => expect(chosen.querySelector("[data-figure-canvas]")).not.toBeNull(), {timeout: 3000});
     expect(chosen.querySelector("[data-figure-canvas]").dataset.voice).toBe("butler");
 });
