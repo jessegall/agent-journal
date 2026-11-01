@@ -1,5 +1,5 @@
 import {computed, ref} from "vue";
-import {activated, docked, leaves, measure, opened, resized, wellShaped} from "../domain/panes.js";
+import {activated, docked, fresh, leaves, measure, opened, resized, wellShaped} from "../domain/panes.js";
 import {LayoutStore} from "./layoutStore.js";
 
 export const SAVE_DELAY_MS = 500;
@@ -49,7 +49,8 @@ function tidied(layout, entry) {
 // module offers keeps its tab and is listed as gone, and loading never saves
 export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
     const store = new LayoutStore({saved, defaults, save});
-    const layout = ref(null);
+    // a page has a layout from the first moment, an empty one until its own is loaded (a journal with no suite chosen never loads one)
+    const layout = ref(fresh());
     const refusal = ref("");
     const born = ref({});
     const dying = ref({});
@@ -91,6 +92,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
     }
 
     function keep() {
+        if (key === null) return;
         layout.value = tidied(layout.value, entry);
         tab.write(tabKey(key), layout.value);
         if (pending) clearTimeout(pending.timer);

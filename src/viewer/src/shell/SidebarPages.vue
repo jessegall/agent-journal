@@ -11,6 +11,7 @@ const props = defineProps({
     environments: {type: Array, default: () => []},
     current: {type: String, default: ""},
     counts: {type: Object, default: () => ({})},
+    open: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
 const folded = ref(new Set());
@@ -22,6 +23,17 @@ const sections = computed(() => {
         return {module, title: name.slice(0, 1).toUpperCase() + name.slice(1), windows: own};
     });
 });
+
+// each window has its own address; a plain click on the home page opens it in a pane, any other click follows the address
+const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;
+
+function go(event, window) {
+    if (window.unavailable_reason) return event.preventDefault();
+    if (!props.open && !event.metaKey && !event.ctrlKey && !event.shiftKey && event.button === 0) {
+        event.preventDefault();
+        emit("open", window.name);
+    }
+}
 
 function fold(key) {
     const next = new Set(folded.value);
@@ -42,7 +54,7 @@ function fold(key) {
                 Environment<Icon :name="folded.has('environment') ? 'right' : 'down'" :size="12" />
             </button>
             <template v-if="!folded.has('environment')">
-                <a class="item active" :href="`?environment=${current}`"><Icon name="home" :size="14" />Home</a>
+                <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" />Home</a>
             </template>
             <template v-for="section in sections" :key="section.module">
                 <button type="button" class="fold-head" :data-fold="section.module" @click="fold(section.module)">
@@ -50,12 +62,12 @@ function fold(key) {
                 </button>
                 <template v-if="!folded.has(section.module)">
                     <template v-for="window in section.windows" :key="window.name">
-                        <button type="button" class="item" :data-sidebar-window="window.name" :disabled="Boolean(window.unavailable_reason)" @click="emit('open', window.name)">
+                        <a :class="['item', {active: window.name === open}]" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
                             <MarkIcon :name="window.icon || 'window'" /><span class="item-title">{{ window.title }}</span>
                             <template v-if="counts[window.name]">
                                 <span class="item-count">{{ counts[window.name] }}</span>
                             </template>
-                        </button>
+                        </a>
                     </template>
                 </template>
             </template>

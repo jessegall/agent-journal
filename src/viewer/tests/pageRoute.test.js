@@ -10,3 +10,10 @@ test("the address picks the page: a float's window, an agent's page, a fixed row
     expect(pageRoute("")).toEqual({page: "environment", props: {search: ""}});
     expect(pageRoute("?view=a.b&agent=1&environment=main").page).toBe("view");
 });
+
+// task 5476: every window has an address of its own, as version 4 had a page per feature
+test("?page= names one window as a page of its own, with the environment it is read in", () => {
+    expect(pageRoute("?page=settings.settings&environment=main")).toEqual({page: "window", props: {environment: "main", window: "settings.settings"}});
+    expect(pageRoute("?page=documents.documents")).toEqual({page: "environment", props: {search: "?page=documents.documents"}});
+    expect(pageRoute("?view=a.b&page=c.d&environment=main").page).toBe("view");
+});

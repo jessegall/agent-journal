@@ -4,6 +4,7 @@ import {createApp, h} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import HomePage from "../src/pages/HomePage.vue";
 import AgentPage from "../src/pages/AgentPage.vue";
+import WindowPage from "../src/pages/WindowPage.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
 const entry = (name, extra = {}) => ({name, module: name.split(".")[0], title: name, icon: "window", options: [], line: "task list", loading: "document", place: "environment", roles: [], reads: [], runs: [], events: [], unavailable_reason: "", allowed: true, ...extra});
@@ -250,4 +251,36 @@ test("a journal that cannot run the shell's lines says why above the page", asyn
 test("a page whose suite is simply not chosen shows no problem", async () => {
     const {element} = await mount(HomePage);
     expect(element.querySelector(".home-problem")).toBeNull();
+});
+
+// task 5476: a window opens as a page of its own, the sidebar linking each window's address
+test("a window page draws the sidebar with a link to each window's own address and the window itself", async () => {
+    const {element} = await mount(WindowPage, {window: "tasks.tasks"});
+    expect(element.querySelector(`[data-page="tasks.tasks"]`)).not.toBeNull();
+    expect(element.querySelector(`[data-sidebar-window="agents.notes"]`).getAttribute("href")).toBe("?environment=main&page=agents.notes");
+    expect(element.querySelector("[data-breadcrumb]").textContent).toContain("tasks.tasks");
+    expect(element.querySelector(`section.window[data-window="tasks.tasks"]`)).not.toBeNull();
+});
+
+test("on the home page a plain click on a sidebar window opens it in a pane and the link keeps its address", async () => {
+    const {default: SidebarPages} = await import("../src/shell/SidebarPages.vue");
+    const opened = [];
+    const element = document.createElement("div");
+    document.body.append(element);
+    createApp(() => h(SidebarPages, {windows: [entry("agents.briefing")], current: "main", onOpen: (name) => opened.push(name)})).mount(element);
+    const link = element.querySelector(`[data-sidebar-window="agents.briefing"]`);
+    expect(link.getAttribute("href")).toBe("?environment=main&page=agents.briefing");
+    link.dispatchEvent(new MouseEvent("click", {bubbles: true, cancelable: true, button: 0}));
+    expect(opened).toEqual(["agents.briefing"]);
+});
+
+// a fresh journal has no suite chosen, so no layout is ever loaded; the page still has one, and a click on a window works
+test("on a fresh page with no suite chosen, a click on a closed window's button opens it instead of throwing", async () => {
+    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 2, value: null, error: "no suite is chosen"})}));
+    const {element} = await mount(HomePage);
+    const button = element.querySelector(`.agent-bar [data-reopen="tasks.tasks"]`);
+    expect(button).not.toBeNull();
+    button.dispatchEvent(new MouseEvent("click", {bubbles: true}));
+    await settle();
+    expect(element.querySelector(`[data-tab="tasks.tasks"]`)).not.toBeNull();
 });
