@@ -34,3 +34,11 @@ def test_a_long_result_is_named_and_a_short_one_is_not(new_story):
     story = new_story(fixture=UserJoined)
     assert any("that result was 500 lines" in line for line in story.hook("s-1", finished("line\n" * 500)).lines)
     story.expect_absent_hook_line("s-1", finished("short\n"), "that result was")
+
+
+def test_a_long_read_of_a_file_is_named_too(new_story):
+    story = new_story(fixture=UserJoined)
+    read = HookSamples.sample("post_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
+    long = read.with_fields(raw={"tool_response": {"type": "text", "file": {"filePath": "a.py", "content": "line\n" * 500}}})
+    assert any("that result was 500 lines" in line for line in story.hook("s-1", long).lines)
+    story.expect_absent_hook_line("s-1", read.with_fields(raw={"tool_response": {"type": "text", "file": {"content": "line\n"}}}), "that result was")

@@ -1,4 +1,3 @@
-import re
 from collections import defaultdict
 
 from core.base.agent_role import AgentRole
@@ -10,13 +9,11 @@ from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.process_nudges import FLAGGED_TITLE, SHARED_TITLE
-
-FLAG_OR_PATH = re.compile(r"^(-|\.{0,2}/)|\s--?[a-z]|/[a-z]")
+from core.modules.processes.support.process_nudges import SHARED_TITLE
 
 
 class RunTitleRule(DriverRule):
-    """A running output titled by a flag or a path, or two running outputs with one title, teach the title in words."""
+    """Two running outputs with one title teach the title in words."""
 
     name = "processes.run-titles"
     hook = HookEventName.POST_TOOL_USE
@@ -32,6 +29,5 @@ class RunTitleRule(DriverRule):
         same = defaultdict(list)
         for output in titled:
             same[output.title].append(str(output.process_id))
-        flagged = [FLAGGED_TITLE.nudge(output=output.process_id, title=output.title) for output in titled if FLAG_OR_PATH.search(output.title)]
         shared = [SHARED_TITLE.nudge(outputs=", ".join(numbers), title=title) for title, numbers in same.items() if len(numbers) > 1]
-        return RuleAnswer.with_nudges(*flagged, *shared)
+        return RuleAnswer.with_nudges(*shared)

@@ -7,6 +7,7 @@ from core.modules.drivers.support.driver_nudges import LONG_OUTPUT
 
 LONG_OUTPUT_LINE_COUNT = 400
 TEXT_FIELDS = ("stdout", "content", "output")
+FILE_FIELD = "file"
 
 
 class LongOutputRule(DriverRule):
@@ -18,7 +19,15 @@ class LongOutputRule(DriverRule):
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        response = hook.event.raw.get("tool_response")
-        text = response if isinstance(response, str) else next((response[name] for name in TEXT_FIELDS if isinstance(response, dict) and isinstance(response.get(name), str)), "")
-        lines = text.count("\n")
+        lines = self.text(hook.event.raw.get("tool_response")).count("\n")
         return RuleAnswer.with_nudges(LONG_OUTPUT.nudge(lines=lines)) if lines >= LONG_OUTPUT_LINE_COUNT else RuleAnswer.allowed()
+
+    @classmethod
+    def text(cls, response: object) -> str:
+        if isinstance(response, str):
+            return response
+        if not isinstance(response, dict):
+            return ""
+        if FILE_FIELD in response:
+            return cls.text(response[FILE_FIELD])
+        return next((response[name] for name in TEXT_FIELDS if isinstance(response.get(name), str)), "")
