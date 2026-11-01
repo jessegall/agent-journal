@@ -59,7 +59,7 @@ const emit = defineEmits(["pick", "close", "grab"]);
     height: 34px;
     padding: 0 5px 0 14px;
     border-bottom: 1px solid var(--border);
-    background: #111215;
+    background: var(--side);
 }
 
 .pane-tabs-row {
