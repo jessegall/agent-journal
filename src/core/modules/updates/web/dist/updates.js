@@ -1,6 +1,6 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-ce62b2847dc9")) { const style = document.createElement("style"); style.id = "window-styles-ce62b2847dc9"; style.textContent = ".failure[data-v-00829306]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-00829306]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-00829306]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-00829306]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-00829306],.release[data-v-00829306]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-00829306],.title[data-v-00829306]{flex:1}.heading[data-v-00829306]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-00829306]{color:var(--text-3);font-size:12px}button[data-v-00829306]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { ref as i, openBlock as n, createElementBlock as r, Fragment as N, createCommentVNode as c, createElementVNode as t, createVNode as h, unref as u, withCtx as y, createTextVNode as D, toDisplayString as d, createBlock as B, renderList as L } from "vue";
+if (!document.getElementById("window-styles-105c1f50d941")) { const style = document.createElement("style"); style.id = "window-styles-105c1f50d941"; style.textContent = ".failure[data-v-c92fb600]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-c92fb600]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-c92fb600]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-c92fb600]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-c92fb600],.release[data-v-c92fb600]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-c92fb600],.title[data-v-c92fb600]{flex:1}.heading[data-v-c92fb600]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-c92fb600]{color:var(--text-3);font-size:12px}button[data-v-c92fb600]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { ref as i, openBlock as n, createElementBlock as r, Fragment as N, createCommentVNode as c, createElementVNode as t, createVNode as g, unref as u, withCtx as y, createTextVNode as D, toDisplayString as d, createBlock as B, renderList as L } from "vue";
 import { useRows as P, Btn as F, RowList as R, TextDisplay as S } from "@journal/window-kit";
 const T = (_, l) => {
   const a = _.__vccOpts || _;
@@ -28,25 +28,25 @@ const T = (_, l) => {
   __name: "UpdatesPanel",
   setup(_) {
     const l = P("release list", ["release.*"]), a = i(null), v = i(""), p = i(!1), m = i(!1), k = i([]), w = i(1), x = i(!0), f = i("");
-    async function g() {
+    async function h() {
       const s = await l.context.read("update check");
       a.value = s.ok ? s.value : null, v.value = s.ok ? "" : s.error;
     }
     async function C() {
       p.value = !0;
       const s = await l.act(["update", "install"]);
-      p.value = !1, s.ok && (await g(), m.value = !0);
+      p.value = !1, s.ok && (await h(), m.value = !0);
     }
     async function b(s) {
       const e = await l.context.read(`update notes --page ${s}`);
       f.value = e.ok ? "" : e.error, e.ok && (k.value = [...k.value, ...e.value.notes], w.value = s, x.value = e.value.is_last_page);
     }
     const U = () => window.location.reload();
-    return g(), b(1), (s, e) => (n(), r(N, null, [
-      p.value ? (n(), r("div", V, "Updating the journal. This takes a moment.")) : c("", !0),
+    return h(), b(1), (s, e) => (n(), r(N, null, [
+      p.value ? (n(), r("div", V, "Updating the journal. This takes a short while.")) : c("", !0),
       m.value ? (n(), r("div", I, [
         e[2] || (e[2] = t("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
-        h(u(F), {
+        g(u(F), {
           small: "",
           kind: "primary",
           "data-update-reload": "",
@@ -63,7 +63,7 @@ const T = (_, l) => {
         t("span", j, d(a.value ? a.value.line : "Checking for a newer release"), 1),
         t("button", {
           type: "button",
-          onClick: g
+          onClick: h
         }, "Check again"),
         a.value && !a.value.is_current ? (n(), B(u(F), {
           key: 0,
@@ -84,7 +84,7 @@ const T = (_, l) => {
         }, "Install it again")) : c("", !0)
       ]),
       e[3] || (e[3] = t("h3", { class: "heading" }, "Installed releases", -1)),
-      h(u(R), {
+      g(u(R), {
         rows: u(l).rows.value,
         failure: u(l).failure.value,
         loaded: u(l).loaded.value,
@@ -112,7 +112,7 @@ const T = (_, l) => {
           t("span", G, d(o.tag), 1),
           t("span", H, d(new Date(o.published_at).toLocaleDateString()), 1)
         ]),
-        h(u(S), {
+        g(u(S), {
           text: o.text
         }, null, 8, ["text"])
       ]))), 128)),
@@ -124,7 +124,7 @@ const T = (_, l) => {
       }, "Show older releases"))
     ], 64));
   }
-}, Q = /* @__PURE__ */ T(J, [["__scopeId", "data-v-00829306"]]);
+}, Q = /* @__PURE__ */ T(J, [["__scopeId", "data-v-c92fb600"]]);
 export {
   Q as default
 };
