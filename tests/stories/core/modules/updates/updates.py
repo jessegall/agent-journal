@@ -1,3 +1,7 @@
+import json
+
+from core.modules.updates.support.release_notes import PAGE_SIZE
+from core.modules.updates.support.release_source import ReleaseSource
 from tests.stories.core.modules.updates.support.release_folder import ARCHIVE, installed_marker, published, released_story
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 
@@ -46,3 +50,44 @@ def test_the_updates_window_checks_and_lists_the_installed_releases(new_story, t
     window.expect_window_allowed("updates.updates", "update check")
     window.expect_window_allowed("updates.updates", "release list")
     window.expect_window_allowed("updates.updates", "update install")
+
+
+class GithubReleases(ReleaseSource):
+    """A release source at a GitHub address that answers from a list a story sets, and records what it was asked."""
+
+    def __init__(self, settings, rows: list[dict]) -> None:
+        super().__init__(settings)
+        self.rows, self.asked = rows, []
+
+    def address(self) -> str:
+        return "https://github.com/shop/cart/releases/latest/download"
+
+    def fetched(self, address: str) -> tuple[bytes, str]:
+        self.asked.append(address)
+        return json.dumps(self.rows).encode(), address
+
+
+def note_row(tag: str) -> dict:
+    return {"tag_name": tag, "body": f"changes of {tag}", "published_at": "2026-10-01T10:00:00Z"}
+
+
+def test_the_notes_of_a_github_release_say_what_changed_and_a_full_page_has_older_ones(new_story, tmp_path):
+    story = released_story(new_story, tmp_path / "release")
+    source = GithubReleases(story.container.get(ReleaseSource).settings, [note_row(f"v{n}") for n in range(PAGE_SIZE)])
+    story.container.bind(ReleaseSource, source)
+    answer = json.loads(story.run("update notes --page 2 --json", actor=story.user).output_text)
+    assert answer["notes"][0] == {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"} and not answer["is_last_page"]
+    assert source.asked == [f"https://api.github.com/repos/shop/cart/releases?per_page={PAGE_SIZE}&page=2"]
+    source.rows = [note_row("v1")]
+    assert json.loads(story.run("update notes --json", actor=story.user).output_text)["is_last_page"]
+
+
+def test_a_release_address_outside_github_publishes_no_notes(new_story, tmp_path):
+    story = released_story(new_story, tmp_path / "release")
+    assert json.loads(story.run("update notes --json", actor=story.user).output_text) == {"notes": [], "is_last_page": True}
+
+
+def test_the_check_names_the_newest_release_for_the_update_button(new_story, tmp_path):
+    story = released_story(new_story, tmp_path / "release")
+    assert "tag" in json.loads(story.run("update check --json", actor=story.user).output_text)
+

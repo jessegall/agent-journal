@@ -1,6 +1,6 @@
 <script setup>
-import {computed, reactive} from "vue";
-import {RowList, useRows} from "@journal/window-kit";
+import {computed, reactive, ref} from "vue";
+import {ago, Btn, RowList, useRows} from "@journal/window-kit";
 
 const installed = useRows("mcp list", []);
 const suggested = useRows("mcp suggested", []);
@@ -8,7 +8,37 @@ const typed = reactive({});
 
 const installedNames = computed(() => new Set(installed.rows.value.map((row) => row.name)));
 const offered = computed(() => suggested.rows.value.filter((row) => !installedNames.value.has(row.name)));
+const notice = ref("");
 const failure = computed(() => installed.actionFailure.value || suggested.actionFailure.value);
+const added = reactive({name: "", target: ""});
+const checkLines = ref([]);
+const checkedAt = ref(null);
+
+async function check() {
+    const result = await installed.context.read("mcp check");
+    checkLines.value = result.ok ? result.value.lines : [];
+    checkedAt.value = result.ok ? new Date().toISOString() : null;
+}
+
+const checkLine = (row) => checkLines.value.find((line) => line.startsWith(`${row.name}  `))?.slice(row.name.length + 2);
+
+async function refresh() {
+    await Promise.all([installed.load(), suggested.load(), check()]);
+}
+
+async function add() {
+    const result = await installed.act(["mcp", "add", added.name.trim(), added.target.trim()]);
+    if (!result.ok) return;
+    Object.assign(added, {name: "", target: ""});
+    await check();
+}
+
+async function signIn(row) {
+    const result = await installed.act(["message", "send", `Please sign in to ${row.title}: call mcp__${row.name}__authenticate, then complete_authentication, and tell me when it is done.`]);
+    notice.value = result.ok ? `Asked the agent to sign in to ${row.title}; a browser window opens from its terminal.` : "";
+}
+
+check();
 
 async function install(row) {
     await suggested.act(["mcp", "install", row.name]);
@@ -27,15 +57,31 @@ async function giveKey(row) {
     <template v-if="failure">
         <p class="failure">{{ failure }}</p>
     </template>
-    <h3 class="heading">Installed</h3>
+    <template v-if="notice">
+        <p class="notice" data-mcp-notice>{{ notice }}</p>
+    </template>
+    <div class="top">
+        <h3 class="heading">Installed</h3>
+        <template v-if="checkedAt">
+            <span class="subject" data-mcp-checked>Checked {{ ago(checkedAt) }}</span>
+        </template>
+        <Btn small data-mcp-refresh @click="refresh">Refresh</Btn>
+    </div>
     <RowList :rows="installed.rows.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
         <template #default="{row}">
             <div class="server" :data-row="row.id">
                 <div class="head">
                     <span class="title">{{ row.title }}</span>
                     <span class="standing">{{ row.standing }}</span>
+                    <template v-if="row.auth === 'oauth'">
+                        <button type="button" data-mcp-sign-in @click="signIn(row)">Sign in</button>
+                    </template>
                     <button type="button" @click="installed.act(['mcp', 'remove', row.name])">Remove</button>
                 </div>
+                <code class="subject">{{ row.url || [row.command, ...row.args].join(" ") }}</code>
+                <template v-if="checkLine(row)">
+                    <span class="subject" data-mcp-check>{{ checkLine(row) }}</span>
+                </template>
                 <template v-if="row.standing === 'needs its key'">
                     <form class="key" @submit.prevent="giveKey(row)">
                         <label :for="`key-${row.name}`">{{ row.key_variable }}</label>
@@ -46,6 +92,12 @@ async function giveKey(row) {
             </div>
         </template>
     </RowList>
+    <h3 class="heading">Add a server</h3>
+    <form class="add" data-mcp-add @submit.prevent="add">
+        <input v-model="added.name" placeholder="Name" aria-label="Name">
+        <input v-model="added.target" placeholder="Its address, or the command that starts it" aria-label="Its address, or the command that starts it">
+        <Btn small kind="primary" type="submit" :disabled="!added.name.trim() || !added.target.trim()">Add</Btn>
+    </form>
     <h3 class="heading">Suggested</h3>
     <RowList :rows="offered" :failure="suggested.failure.value" :loaded="suggested.loaded.value" empty="Every suggested server is installed">
         <template #default="{row}">
@@ -64,6 +116,39 @@ async function giveKey(row) {
 .failure {
     margin: 0 0 8px;
     color: var(--bad, var(--text-2));
+    font-size: 12px;
+}
+
+.notice {
+    margin: 0 0 8px;
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.top {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.top .heading {
+    flex: 1;
+}
+
+.add {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.add input {
+    flex: 1;
+    min-width: 120px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: inherit;
     font-size: 12px;
 }
 

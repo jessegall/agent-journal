@@ -14,7 +14,7 @@ const BODY = {id: 1, title: "Cart rules", abstract: "How the cart counts money",
 
 function mounted() {
     const reads = [];
-    const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --kind doc" ? DOCS : []}});
+    const read = async (line) => (reads.push(line), line.startsWith("doc show") ? {ok: true, value: BODY} : {ok: true, value: {total: DOCS.length, rows: line === "document library --kind doc --state open" ? DOCS : []}});
     const context = {read, run: async () => ({ok: true}), follow: () => {}, face: "person"};
     const element = document.createElement("div");
     createApp({setup: () => () => h(DocumentLibrary), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
@@ -33,7 +33,7 @@ test("documents are listed with their title, abstract and number", async () => {
 test("the library is read once, a page of one kind", async () => {
     const {reads} = mounted();
     await settled();
-    expect(reads).toEqual(["document library --kind doc"]);
+    expect(reads).toEqual(["document library --kind doc --state open"]);
 });
 
 test("choosing a document reads it whole and shows its text", async () => {
@@ -52,3 +52,13 @@ test("rows fall under the age heading of their last edit", () => {
         ["Last 30 days", [2]],
     ]);
 });
+
+test("the library reads the open texts first and the closed ones when chosen", async () => {
+    const {element, reads} = mounted();
+    await settled();
+    expect(reads[0]).toContain("--state open");
+    [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === "Closed").click();
+    await settled();
+    expect(reads.at(-1)).toContain("--state closed");
+});
+

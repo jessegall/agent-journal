@@ -128,3 +128,31 @@ def test_a_row_write_holding_a_server_key_is_refused(new_story):
     story = new_story(fixture=ServersInstalled)
     story.expect_success(f"mcp key github {KEY}", actor=story.user)
     story.expect_refusal(f'message send "the token is {KEY}" --environment main', f"a row may not hold the value of {GITHUB_VARIABLE}", actor=story.agent)
+
+
+def test_a_server_added_by_its_address_is_reached_over_http(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success("mcp add shop https://mcp.shop.example/mcp", "added shop", actor=story.user)
+    story.expect_rows(json.loads(claude_file(story).read_text())["mcpServers"]["shop"] == {"type": "http", "url": "https://mcp.shop.example/mcp"})
+    story.expect_text("mcp list", "shop  ready  shop", actor=story.user)
+
+
+def test_a_server_added_by_its_command_is_started_with_its_arguments(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('mcp add shop "npx -y shop-server --quiet"', actor=story.user)
+    story.expect_rows(json.loads(claude_file(story).read_text())["mcpServers"]["shop"] == {"command": "npx", "args": ["-y", "shop-server", "--quiet"]})
+
+
+def test_an_added_server_needs_a_usable_name_a_new_name_and_a_target(new_story):
+    story = installed_story(new_story, "linear")
+    story.expect_refusal("mcp add linear https://other.example", "linear is installed already", actor=story.user)
+    story.expect_refusal('mcp add "Bad Name" https://other.example', "Bad Name cannot name a server", actor=story.user)
+    story.expect_refusal('mcp add shop " "', "give the server's address", actor=story.user)
+
+
+def test_an_added_server_comes_off_like_any_other(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success("mcp add shop https://mcp.shop.example/mcp", actor=story.user)
+    story.expect_success("mcp remove shop", actor=story.user)
+    story.expect_rows("shop" not in json.loads(claude_file(story).read_text())["mcpServers"])
+

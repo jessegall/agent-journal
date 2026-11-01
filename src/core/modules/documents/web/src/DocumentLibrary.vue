@@ -7,12 +7,17 @@ const LIBRARIES = [
     {key: "doc", label: "Documents"},
     {key: "report", label: "Reports"},
 ];
+const STATES = [
+    {key: "open", label: "Open"},
+    {key: "closed", label: "Closed"},
+];
 const ORDERS = [
     {key: "newest", label: "Newest"},
     {key: "title", label: "A to Z"},
 ];
 
 const noun = ref("doc");
+const state = ref("open");
 const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
@@ -31,8 +36,9 @@ const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 // the first page of the kind chosen, in one read; a page more is asked for after the last number held
 async function load() {
     const kind = noun.value;
-    const answer = await context.read(`document library --kind ${kind}`);
-    if (kind !== noun.value) return;
+    const shown = state.value;
+    const answer = await context.read(`document library --kind ${kind} --state ${shown}`);
+    if (kind !== noun.value || shown !== state.value) return;
     failure.value = answer.ok ? "" : answer.error;
     rows.value = answer.ok ? answer.value.rows : [];
     total.value = answer.ok ? answer.value.total : 0;
@@ -41,9 +47,10 @@ async function load() {
 
 async function more() {
     const kind = noun.value;
-    const answer = await context.read(`document library --kind ${kind} --after ${Math.max(...rows.value.map((row) => row.id))}`);
+    const shown = state.value;
+    const answer = await context.read(`document library --kind ${kind} --state ${shown} --after ${Math.max(...rows.value.map((row) => row.id))}`);
     if (!answer.ok) return void (failure.value = answer.error);
-    if (kind === noun.value) rows.value = [...rows.value, ...answer.value.rows];
+    if (kind === noun.value && shown === state.value) rows.value = [...rows.value, ...answer.value.rows];
 }
 
 async function readRow(row) {
@@ -85,7 +92,7 @@ function closeOrClear() {
     }
 }
 
-watch(noun, () => {
+watch([noun, state], () => {
     chosen.value = null;
     reading.value = null;
     rows.value = [];
@@ -101,6 +108,7 @@ load();
         <div class="library-bar">
             <TextInput v-model="words" icon="search" class="library-search" placeholder="Search titles and abstracts" />
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
+            <Segmented :options="STATES" :value="state" data-library-state @pick="state = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />
             <Btn small bordered data-library-new @click="drafting = !drafting">New {{ label.toLowerCase() }}</Btn>
         </div>

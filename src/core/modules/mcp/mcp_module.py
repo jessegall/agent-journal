@@ -12,6 +12,8 @@ from core.modules.mcp.commands.mcp_list.mcp_list_subcommand import McpListSubcom
 from core.modules.mcp.commands.mcp_remove.mcp_remove_subcommand import McpRemoveSubcommand
 from core.modules.mcp.commands.mcp_suggested.mcp_suggested_subcommand import McpSuggestedSubcommand
 from core.modules.mcp.commands.remove_server.remove_server_handler import RemoveServerHandler
+from core.modules.mcp.commands.add_server.add_server_handler import AddServerHandler
+from core.modules.mcp.commands.mcp_add.mcp_add_subcommand import McpAddSubcommand
 from core.modules.mcp.migrations.m001_mcp_servers import McpServersTableMigration
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
@@ -30,7 +32,7 @@ class McpModule(Module):
     models = [ModelDeclaration(McpServer, query=McpServerQuery, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]
-    handlers = [InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
-    subcommands = (McpListSubcommand, McpSuggestedSubcommand, McpInstallSubcommand, McpKeySubcommand, McpRemoveSubcommand, McpCheckSubcommand)
+    handlers = [AddServerHandler, InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
+    subcommands = (McpAddSubcommand, McpListSubcommand, McpSuggestedSubcommand, McpInstallSubcommand, McpKeySubcommand, McpRemoveSubcommand, McpCheckSubcommand)
     windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN,
-                                 reads=["mcp list", "mcp suggested"], runs=["mcp install", "mcp key", "mcp remove"])]
+                                 reads=["mcp list", "mcp suggested", "mcp check"], runs=["mcp add", "mcp install", "mcp key", "mcp remove", "message send"])]

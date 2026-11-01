@@ -1,61 +1,130 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-fe200c1602d9")) { const style = document.createElement("style"); style.id = "window-styles-fe200c1602d9"; style.textContent = ".failure[data-v-2b34dc3e]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.standing[data-v-2b34dc3e],.release[data-v-2b34dc3e]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-2b34dc3e],.title[data-v-2b34dc3e]{flex:1}.heading[data-v-2b34dc3e]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-2b34dc3e]{color:var(--text-3);font-size:12px}button[data-v-2b34dc3e]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { ref as p, openBlock as u, createElementBlock as d, Fragment as k, unref as l, toDisplayString as r, createCommentVNode as v, createElementVNode as a, createVNode as h, withCtx as m } from "vue";
-import { useRows as g, RowList as w } from "@journal/window-kit";
-const y = (i, e) => {
-  const t = i.__vccOpts || i;
-  for (const [n, o] of e)
-    t[n] = o;
-  return t;
-}, C = {
+if (!document.getElementById("window-styles-ce62b2847dc9")) { const style = document.createElement("style"); style.id = "window-styles-ce62b2847dc9"; style.textContent = ".failure[data-v-00829306]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.cover[data-v-00829306]{margin-bottom:8px;padding:10px 12px;border:1px solid var(--border-2);border-radius:10px;font-size:13px}.arrived[data-v-00829306]{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px}.note[data-v-00829306]{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px}.standing[data-v-00829306],.release[data-v-00829306]{display:flex;align-items:baseline;gap:10px;font-size:13px}.line[data-v-00829306],.title[data-v-00829306]{flex:1}.heading[data-v-00829306]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.detail[data-v-00829306]{color:var(--text-3);font-size:12px}button[data-v-00829306]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { ref as i, openBlock as n, createElementBlock as r, Fragment as N, createCommentVNode as c, createElementVNode as t, createVNode as h, unref as u, withCtx as y, createTextVNode as D, toDisplayString as d, createBlock as B, renderList as L } from "vue";
+import { useRows as P, Btn as F, RowList as R, TextDisplay as S } from "@journal/window-kit";
+const T = (_, l) => {
+  const a = _.__vccOpts || _;
+  for (const [v, p] of l)
+    a[v] = p;
+  return a;
+}, V = {
   key: 0,
+  class: "cover",
+  role: "status",
+  "data-update-cover": ""
+}, I = {
+  key: 1,
+  class: "arrived",
+  role: "status",
+  "data-update-arrived": ""
+}, $ = {
+  key: 2,
   class: "failure"
-}, b = { class: "standing" }, x = { class: "line" }, F = ["data-row"], N = { class: "title" }, I = { class: "detail" }, V = {
+}, E = { class: "standing" }, j = { class: "line" }, O = ["data-row"], W = { class: "title" }, q = { class: "detail" }, z = {
+  key: 3,
+  class: "detail",
+  "data-update-notes-failure": ""
+}, A = { class: "release" }, G = { class: "title" }, H = { class: "detail" }, J = {
   __name: "UpdatesPanel",
-  setup(i) {
-    const e = g("release list", ["release.*"]), t = p(null), n = p("");
-    async function o() {
-      const s = await e.context.read("update check");
-      t.value = s.ok ? s.value : null, n.value = s.ok ? "" : s.error;
+  setup(_) {
+    const l = P("release list", ["release.*"]), a = i(null), v = i(""), p = i(!1), m = i(!1), k = i([]), w = i(1), x = i(!0), f = i("");
+    async function g() {
+      const s = await l.context.read("update check");
+      a.value = s.ok ? s.value : null, v.value = s.ok ? "" : s.error;
     }
-    async function f() {
-      (await e.act(["update", "install"])).ok && await o();
+    async function C() {
+      p.value = !0;
+      const s = await l.act(["update", "install"]);
+      p.value = !1, s.ok && (await g(), m.value = !0);
     }
-    return o(), (s, _) => (u(), d(k, null, [
-      n.value || l(e).actionFailure.value ? (u(), d("p", C, r(n.value || l(e).actionFailure.value), 1)) : v("", !0),
-      a("div", b, [
-        a("span", x, r(t.value ? t.value.line : "Checking for a newer release"), 1),
-        a("button", {
+    async function b(s) {
+      const e = await l.context.read(`update notes --page ${s}`);
+      f.value = e.ok ? "" : e.error, e.ok && (k.value = [...k.value, ...e.value.notes], w.value = s, x.value = e.value.is_last_page);
+    }
+    const U = () => window.location.reload();
+    return g(), b(1), (s, e) => (n(), r(N, null, [
+      p.value ? (n(), r("div", V, "Updating the journal. This takes a moment.")) : c("", !0),
+      m.value ? (n(), r("div", I, [
+        e[2] || (e[2] = t("span", { class: "line" }, "The update is installed. Reload the page to see it.", -1)),
+        h(u(F), {
+          small: "",
+          kind: "primary",
+          "data-update-reload": "",
+          onClick: U
+        }, {
+          default: y(() => [...e[1] || (e[1] = [
+            D("Reload", -1)
+          ])]),
+          _: 1
+        })
+      ])) : c("", !0),
+      v.value || u(l).actionFailure.value ? (n(), r("p", $, d(v.value || u(l).actionFailure.value), 1)) : c("", !0),
+      t("div", E, [
+        t("span", j, d(a.value ? a.value.line : "Checking for a newer release"), 1),
+        t("button", {
           type: "button",
-          onClick: o
+          onClick: g
         }, "Check again"),
-        t.value && !t.value.is_current ? (u(), d("button", {
+        a.value && !a.value.is_current ? (n(), B(u(F), {
           key: 0,
+          small: "",
+          kind: "primary",
+          "data-update-install": "",
+          onClick: C
+        }, {
+          default: y(() => [
+            D(d(a.value.tag ? `Update to ${a.value.tag}` : "Update to the latest"), 1)
+          ]),
+          _: 1
+        })) : a.value ? (n(), r("button", {
+          key: 1,
           type: "button",
-          onClick: f
-        }, "Install")) : v("", !0)
+          "data-update-force": "",
+          onClick: C
+        }, "Install it again")) : c("", !0)
       ]),
-      _[0] || (_[0] = a("h3", { class: "heading" }, "Installed releases", -1)),
-      h(l(w), {
-        rows: l(e).rows.value,
-        failure: l(e).failure.value,
-        loaded: l(e).loaded.value,
+      e[3] || (e[3] = t("h3", { class: "heading" }, "Installed releases", -1)),
+      h(u(R), {
+        rows: u(l).rows.value,
+        failure: u(l).failure.value,
+        loaded: u(l).loaded.value,
         empty: "No release installed from here yet"
       }, {
-        default: m(({ row: c }) => [
-          a("div", {
+        default: y(({ row: o }) => [
+          t("div", {
             class: "release",
-            "data-row": c.id
+            "data-row": o.id
           }, [
-            a("span", N, r(c.tag || c.checksum.slice(0, 12)), 1),
-            a("span", I, r(new Date(c.created_at).toLocaleString()), 1)
-          ], 8, F)
+            t("span", W, d(o.tag || o.checksum.slice(0, 12)), 1),
+            t("span", q, d(new Date(o.created_at).toLocaleString()), 1)
+          ], 8, O)
         ]),
         _: 1
-      }, 8, ["rows", "failure", "loaded"])
+      }, 8, ["rows", "failure", "loaded"]),
+      e[4] || (e[4] = t("h3", { class: "heading" }, "What changed", -1)),
+      f.value ? (n(), r("p", z, d(f.value), 1)) : c("", !0),
+      (n(!0), r(N, null, L(k.value, (o) => (n(), r("article", {
+        key: o.tag,
+        class: "note",
+        "data-update-note": ""
+      }, [
+        t("div", A, [
+          t("span", G, d(o.tag), 1),
+          t("span", H, d(new Date(o.published_at).toLocaleDateString()), 1)
+        ]),
+        h(u(S), {
+          text: o.text
+        }, null, 8, ["text"])
+      ]))), 128)),
+      x.value ? c("", !0) : (n(), r("button", {
+        key: 4,
+        type: "button",
+        "data-update-older": "",
+        onClick: e[0] || (e[0] = (o) => b(w.value + 1))
+      }, "Show older releases"))
     ], 64));
   }
-}, E = /* @__PURE__ */ y(V, [["__scopeId", "data-v-2b34dc3e"]]);
+}, Q = /* @__PURE__ */ T(J, [["__scopeId", "data-v-00829306"]]);
 export {
-  E as default
+  Q as default
 };

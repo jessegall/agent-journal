@@ -19,4 +19,5 @@ class DocumentRow(ViewModel):
     id: int
     title: str
     abstract: str
+    close_reason: str
     updated_at: Timestamp

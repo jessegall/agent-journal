@@ -27,4 +27,4 @@ class UpdateCheckSubcommand(ReadSubcommand[UpdateStanding]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, UpdateStanding):
-            output.write(value.line, {"line": value.line, "is_current": value.installed is not None and value.installed.checksum == value.newest.checksum})
+            output.write(value.line, {"line": value.line, "tag": value.newest.tag, "is_current": value.installed is not None and value.installed.checksum == value.newest.checksum})

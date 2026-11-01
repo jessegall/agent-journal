@@ -1,96 +1,181 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-841095608dc9")) { const style = document.createElement("style"); style.id = "window-styles-841095608dc9"; style.textContent = ".failure[data-v-b5c8e526]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.heading[data-v-b5c8e526]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-b5c8e526]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-b5c8e526]{display:flex;align-items:baseline;gap:10px}.title[data-v-b5c8e526]{flex:1;font-weight:600}.standing[data-v-b5c8e526],.subject[data-v-b5c8e526],.key label[data-v-b5c8e526]{color:var(--text-3);font-size:12px}.key[data-v-b5c8e526]{display:flex;flex-direction:column;gap:4px}.key input[data-v-b5c8e526]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-b5c8e526]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
-import { reactive as C, computed as m, openBlock as v, createElementBlock as _, Fragment as x, toDisplayString as d, createCommentVNode as f, createElementVNode as t, createVNode as y, unref as l, withCtx as h, withModifiers as N, withDirectives as R, vModelText as V } from "vue";
-import { useRows as k, RowList as g } from "@journal/window-kit";
-const $ = (r, s) => {
-  const o = r.__vccOpts || r;
-  for (const [i, u] of s)
-    o[i] = u;
-  return o;
-}, E = {
+if (!document.getElementById("window-styles-12844f23a9d4")) { const style = document.createElement("style"); style.id = "window-styles-12844f23a9d4"; style.textContent = ".failure[data-v-8119dcb4]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.notice[data-v-8119dcb4]{margin:0 0 8px;color:var(--text-2);font-size:12px}.top[data-v-8119dcb4]{display:flex;align-items:baseline;gap:10px}.top .heading[data-v-8119dcb4]{flex:1}.add[data-v-8119dcb4]{display:flex;flex-wrap:wrap;gap:6px}.add input[data-v-8119dcb4]{flex:1;min-width:120px;padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}.heading[data-v-8119dcb4]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-8119dcb4]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-8119dcb4]{display:flex;align-items:baseline;gap:10px}.title[data-v-8119dcb4]{flex:1;font-weight:600}.standing[data-v-8119dcb4],.subject[data-v-8119dcb4],.key label[data-v-8119dcb4]{color:var(--text-3);font-size:12px}.key[data-v-8119dcb4]{display:flex;flex-direction:column;gap:4px}.key input[data-v-8119dcb4]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-8119dcb4]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+import { reactive as w, computed as b, ref as S, openBlock as c, createElementBlock as u, Fragment as P, toDisplayString as o, createCommentVNode as m, createElementVNode as s, unref as l, createVNode as v, withCtx as _, createTextVNode as x, withModifiers as I, withDirectives as C, vModelText as $ } from "vue";
+import { useRows as R, ago as M, Btn as A, RowList as U } from "@journal/window-kit";
+const T = (h, n) => {
+  const i = h.__vccOpts || h;
+  for (const [r, f] of n)
+    i[r] = f;
+  return i;
+}, K = {
   key: 0,
   class: "failure"
-}, F = ["data-row"], I = { class: "head" }, j = { class: "title" }, B = { class: "standing" }, D = ["onClick"], M = ["onSubmit"], U = ["for"], K = ["id", "onUpdate:modelValue"], L = { class: "server" }, O = { class: "head" }, P = { class: "title" }, T = ["onClick"], q = { class: "subject" }, z = {
+}, W = {
+  key: 1,
+  class: "notice",
+  "data-mcp-notice": ""
+}, q = { class: "top" }, z = {
+  key: 0,
+  class: "subject",
+  "data-mcp-checked": ""
+}, G = ["data-row"], H = { class: "head" }, J = { class: "title" }, Q = { class: "standing" }, X = ["onClick"], Y = ["onClick"], Z = { class: "subject" }, ee = {
+  key: 0,
+  class: "subject",
+  "data-mcp-check": ""
+}, te = ["onSubmit"], ae = ["for"], se = ["id", "onUpdate:modelValue"], ne = { class: "server" }, le = { class: "head" }, oe = { class: "title" }, ie = ["onClick"], de = { class: "subject" }, ce = {
   __name: "ServerRows",
-  setup(r) {
-    const s = k("mcp list", []), o = k("mcp suggested", []), i = C({}), u = m(() => new Set(s.rows.value.map((a) => a.name))), b = m(() => o.rows.value.filter((a) => !u.value.has(a.name))), p = m(() => s.actionFailure.value || o.actionFailure.value);
-    async function S(a) {
-      await o.act(["mcp", "install", a.name]), await s.load();
+  setup(h) {
+    const n = R("mcp list", []), i = R("mcp suggested", []), r = w({}), f = b(() => new Set(n.rows.value.map((a) => a.name))), B = b(() => i.rows.value.filter((a) => !f.value.has(a.name))), k = S(""), N = b(() => n.actionFailure.value || i.actionFailure.value), d = w({ name: "", target: "" }), V = S([]), g = S(null);
+    async function y() {
+      const a = await n.context.read("mcp check");
+      V.value = a.ok ? a.value.lines : [], g.value = a.ok ? (/* @__PURE__ */ new Date()).toISOString() : null;
     }
-    async function w(a) {
-      const n = (i[a.name] || "").trim();
-      if (!n) return;
-      (await s.act(["mcp", "key", a.name, n])).ok && (i[a.name] = "");
+    const j = (a) => {
+      var t;
+      return (t = V.value.find((e) => e.startsWith(`${a.name}  `))) == null ? void 0 : t.slice(a.name.length + 2);
+    };
+    async function D() {
+      await Promise.all([n.load(), i.load(), y()]);
     }
-    return (a, n) => (v(), _(x, null, [
-      p.value ? (v(), _("p", E, d(p.value), 1)) : f("", !0),
-      n[1] || (n[1] = t("h3", { class: "heading" }, "Installed", -1)),
-      y(l(g), {
-        rows: l(s).rows.value,
-        failure: l(s).failure.value,
-        loaded: l(s).loaded.value,
+    async function E() {
+      (await n.act(["mcp", "add", d.name.trim(), d.target.trim()])).ok && (Object.assign(d, { name: "", target: "" }), await y());
+    }
+    async function F(a) {
+      const t = await n.act(["message", "send", `Please sign in to ${a.title}: call mcp__${a.name}__authenticate, then complete_authentication, and tell me when it is done.`]);
+      k.value = t.ok ? `Asked the agent to sign in to ${a.title}; a browser window opens from its terminal.` : "";
+    }
+    y();
+    async function L(a) {
+      await i.act(["mcp", "install", a.name]), await n.load();
+    }
+    async function O(a) {
+      const t = (r[a.name] || "").trim();
+      if (!t) return;
+      (await n.act(["mcp", "key", a.name, t])).ok && (r[a.name] = "");
+    }
+    return (a, t) => (c(), u(P, null, [
+      N.value ? (c(), u("p", K, o(N.value), 1)) : m("", !0),
+      k.value ? (c(), u("p", W, o(k.value), 1)) : m("", !0),
+      s("div", q, [
+        t[3] || (t[3] = s("h3", { class: "heading" }, "Installed", -1)),
+        g.value ? (c(), u("span", z, "Checked " + o(l(M)(g.value)), 1)) : m("", !0),
+        v(l(A), {
+          small: "",
+          "data-mcp-refresh": "",
+          onClick: D
+        }, {
+          default: _(() => [...t[2] || (t[2] = [
+            x("Refresh", -1)
+          ])]),
+          _: 1
+        })
+      ]),
+      v(l(U), {
+        rows: l(n).rows.value,
+        failure: l(n).failure.value,
+        loaded: l(n).loaded.value,
         empty: "No servers installed"
       }, {
-        default: h(({ row: e }) => [
-          t("div", {
+        default: _(({ row: e }) => [
+          s("div", {
             class: "server",
             "data-row": e.id
           }, [
-            t("div", I, [
-              t("span", j, d(e.title), 1),
-              t("span", B, d(e.standing), 1),
-              t("button", {
+            s("div", H, [
+              s("span", J, o(e.title), 1),
+              s("span", Q, o(e.standing), 1),
+              e.auth === "oauth" ? (c(), u("button", {
+                key: 0,
                 type: "button",
-                onClick: (c) => l(s).act(["mcp", "remove", e.name])
-              }, "Remove", 8, D)
+                "data-mcp-sign-in": "",
+                onClick: (p) => F(e)
+              }, "Sign in", 8, X)) : m("", !0),
+              s("button", {
+                type: "button",
+                onClick: (p) => l(n).act(["mcp", "remove", e.name])
+              }, "Remove", 8, Y)
             ]),
-            e.standing === "needs its key" ? (v(), _("form", {
-              key: 0,
+            s("code", Z, o(e.url || [e.command, ...e.args].join(" ")), 1),
+            j(e) ? (c(), u("span", ee, o(j(e)), 1)) : m("", !0),
+            e.standing === "needs its key" ? (c(), u("form", {
+              key: 1,
               class: "key",
-              onSubmit: N((c) => w(e), ["prevent"])
+              onSubmit: I((p) => O(e), ["prevent"])
             }, [
-              t("label", {
+              s("label", {
                 for: `key-${e.name}`
-              }, d(e.key_variable), 9, U),
-              R(t("input", {
+              }, o(e.key_variable), 9, ae),
+              C(s("input", {
                 id: `key-${e.name}`,
-                "onUpdate:modelValue": (c) => i[e.name] = c,
+                "onUpdate:modelValue": (p) => r[e.name] = p,
                 type: "password",
                 autocomplete: "off",
                 placeholder: "Paste the key"
-              }, null, 8, K), [
-                [V, i[e.name]]
+              }, null, 8, se), [
+                [$, r[e.name]]
               ]),
-              n[0] || (n[0] = t("button", { type: "submit" }, "Save", -1))
-            ], 40, M)) : f("", !0)
-          ], 8, F)
+              t[4] || (t[4] = s("button", { type: "submit" }, "Save", -1))
+            ], 40, te)) : m("", !0)
+          ], 8, G)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"]),
-      n[2] || (n[2] = t("h3", { class: "heading" }, "Suggested", -1)),
-      y(l(g), {
-        rows: b.value,
-        failure: l(o).failure.value,
-        loaded: l(o).loaded.value,
+      t[6] || (t[6] = s("h3", { class: "heading" }, "Add a server", -1)),
+      s("form", {
+        class: "add",
+        "data-mcp-add": "",
+        onSubmit: I(E, ["prevent"])
+      }, [
+        C(s("input", {
+          "onUpdate:modelValue": t[0] || (t[0] = (e) => d.name = e),
+          placeholder: "Name",
+          "aria-label": "Name"
+        }, null, 512), [
+          [$, d.name]
+        ]),
+        C(s("input", {
+          "onUpdate:modelValue": t[1] || (t[1] = (e) => d.target = e),
+          placeholder: "Its address, or the command that starts it",
+          "aria-label": "Its address, or the command that starts it"
+        }, null, 512), [
+          [$, d.target]
+        ]),
+        v(l(A), {
+          small: "",
+          kind: "primary",
+          type: "submit",
+          disabled: !d.name.trim() || !d.target.trim()
+        }, {
+          default: _(() => [...t[5] || (t[5] = [
+            x("Add", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"])
+      ], 32),
+      t[7] || (t[7] = s("h3", { class: "heading" }, "Suggested", -1)),
+      v(l(U), {
+        rows: B.value,
+        failure: l(i).failure.value,
+        loaded: l(i).loaded.value,
         empty: "Every suggested server is installed"
       }, {
-        default: h(({ row: e }) => [
-          t("div", L, [
-            t("div", O, [
-              t("span", P, d(e.title), 1),
-              t("button", {
+        default: _(({ row: e }) => [
+          s("div", ne, [
+            s("div", le, [
+              s("span", oe, o(e.title), 1),
+              s("button", {
                 type: "button",
-                onClick: (c) => S(e)
-              }, "Install", 8, T)
+                onClick: (p) => L(e)
+              }, "Install", 8, ie)
             ]),
-            t("span", q, d(e.subject), 1)
+            s("span", de, o(e.subject), 1)
           ])
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"])
     ], 64));
   }
-}, H = /* @__PURE__ */ $(z, [["__scopeId", "data-v-b5c8e526"]]);
+}, me = /* @__PURE__ */ T(ce, [["__scopeId", "data-v-8119dcb4"]]);
 export {
-  H as default
+  me as default
 };

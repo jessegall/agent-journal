@@ -6,6 +6,7 @@ from core.base.viewer.window_loading import WindowLoading
 from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
 from core.modules.updates.commands.update_check.update_check_subcommand import UpdateCheckSubcommand
 from core.modules.updates.commands.update_install.update_install_subcommand import UpdateInstallSubcommand
+from core.modules.updates.commands.update_notes.update_notes_subcommand import UpdateNotesSubcommand
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
 from core.modules.updates.models.release import Release
@@ -24,6 +25,6 @@ class UpdatesModule(Module):
     models = [ModelDeclaration(Release, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ReleasesTableMigration]
     handlers = [InstallReleaseHandler]
-    subcommands = (UpdateCheckSubcommand, UpdateInstallSubcommand)
+    subcommands = (UpdateCheckSubcommand, UpdateInstallSubcommand, UpdateNotesSubcommand)
     windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.UPDATE,
-                                 reads=["update check", "release list"], runs=["update install"], events=["release.*"])]
+                                 reads=["update check", "update notes", "release list"], runs=["update install"], events=["release.*"])]

@@ -12,4 +12,4 @@ class DocumentLibrary:
     rows: tuple[DocumentRow, ...]
 
     def json(self) -> Mapping[str, object]:
-        return {"total": self.total, "rows": [{"id": row.id, "title": row.title, "abstract": row.abstract, "updated_at": row.updated_at.text} for row in self.rows]}
+        return {"total": self.total, "rows": [{"id": row.id, "title": row.title, "abstract": row.abstract, "close_reason": row.close_reason, "updated_at": row.updated_at.text} for row in self.rows]}
