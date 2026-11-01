@@ -10,6 +10,8 @@ from core.base.journal_home import JournalHome
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.resumed_session import ResumedSession
 from core.base.provider.session_start import SessionStart
+from core.modules.secrets.support.private_folder import PrivateFolder
+from core.modules.secrets.support.server_keys import ServerKeys
 from core.modules.codex.providers.codex_provider import CodexProvider
 
 HOOK_FOLDER = Path(__file__).resolve().parents[6] / "tools" / "journal-hook"
@@ -20,8 +22,8 @@ VARIABLES = {"JOURNAL_ENV": "main"}
 
 
 @pytest.fixture
-def provider() -> CodexProvider:
-    return CodexProvider(ProgramFolders())
+def provider(tmp_path: Path) -> CodexProvider:
+    return CodexProvider(ProgramFolders(), ServerKeys(PrivateFolder(JournalHome(tmp_path / ".journal"))))
 
 
 def test_a_session_runs_codex_with_its_model_and_names_no_session_of_its_own(provider):

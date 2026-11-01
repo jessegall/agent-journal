@@ -62,10 +62,11 @@ TABLES = (
     f"CREATE TABLE entries ({COMMON})",
     f"CREATE TABLE journal_versions ({COMMON})",
     f"CREATE TABLE library_items ({COMMON})",
-    f"CREATE TABLE mcp_servers ({COMMON})",
+    f"CREATE TABLE mcp_servers ({COMMON}, name TEXT, title TEXT, transport TEXT, command TEXT, args TEXT, url TEXT, key_var TEXT, auth TEXT, state TEXT, last_error TEXT)",
     f"CREATE TABLE migrated_rows ({COMMON})",
     f"CREATE TABLE release_messages ({COMMON})",
-    f"CREATE TABLE secrets ({COMMON})",
+    f"CREATE TABLE secrets ({COMMON}, title TEXT, brief TEXT, secret_type TEXT, fields TEXT, filled TEXT, programs TEXT, proposed TEXT, helpers INTEGER, url TEXT,"
+    " auto_login INTEGER, questioned_at TEXT, used_at TEXT, session_at TEXT, session_expires TEXT, login_started_at TEXT, deleted_at TEXT)",
     f"CREATE TABLE state_transitions ({COMMON})",
     f"CREATE TABLE test_turns ({COMMON})",
     f"CREATE TABLE version3_migrations ({COMMON})",
@@ -74,6 +75,14 @@ STAMP = "2026-09-01T10:00:00+00:00"
 USER = "user:1"
 JANUARY_2026, JANUARY_2036 = "2026-01-01T00:00:00+00:00", "2036-01-01T00:00:00+00:00"
 SHARE_TOKEN = "648b92de-9235-4709-a2f3-33d968a3a4bf"
+SECRET_COLUMNS = "(title, brief, secret_type, fields, filled, programs, proposed, helpers, url, deleted_at, created_at, creator)"
+GITHUB_FIELDS = '[{"name": "key", "hidden": true, "variable": "GITHUB_KEY"}]'
+AWS_FIELDS = ('[{"name": "username", "hidden": false, "variable": "AWS_CONSOLE_USERNAME"},'
+              ' {"name": "password", "hidden": true, "variable": "AWS_CONSOLE_PASSWORD"}]')
+SERVER_COLUMNS = "(name, title, transport, command, args, url, key_var, auth, state, last_error, created_at, creator)"
+PROJECT_ID = "5c1d0e9a7b2f4e3d8a6b1c0d9e8f7a6b"
+GITHUB_VALUE = "ghv4-value-0a1b2c3d"
+SERVER_KEY = "ghp_v4key_9z8y7x6w"
 ROWS = (
     ("users", "(name, email, created_at)", ("Jesse", "jesse@example.org", STAMP)),
     ("environments", "(name, branch, key, created_at, creator)", ("main", "development", "key-main", STAMP, "system:")),
@@ -203,6 +212,14 @@ ROWS = (
     ("checks", "(title, brief, command, interval, last_passed, last_output, last_run_at, wait_target, is_retired, failure_reported_at, created_at, creator)", ("Lint", "", "echo two problems; false", 15, 0, "two problems", STAMP, 1, 0, 1788000000.0, STAMP, USER)),
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("Old check", "", "true", 0, 1, STAMP, USER)),
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("", "", "true", 0, 0, STAMP, USER)),
+    ("secrets", SECRET_COLUMNS, ("Github", "gh api user", "api key", GITHUB_FIELDS, '["key"]', '["head"]', '["curl"]', 1, "", None, STAMP, USER)),
+    ("secrets", SECRET_COLUMNS, ("AWS console", "", "login", AWS_FIELDS, "[]", "[]", "[]", 0, "", None, STAMP, USER)),
+    ("secrets", SECRET_COLUMNS, ("Old token", "", "custom", '[{"name": "token", "hidden": true, "variable": "OLD_TOKEN_TOKEN"}]', "[]", "[]", "[]", 0, "",
+                                 JANUARY_2026, STAMP, USER)),
+    ("secrets", SECRET_COLUMNS, ("Portal", "", "browser login", "[]", "[]", "[]", "[]", 0, "https://portal.example.org", None, STAMP, USER)),
+    ("mcp_servers", SERVER_COLUMNS, ("github", "GitHub", "stdio", "npx", '["-y", "@modelcontextprotocol/server-github"]', "", "GITHUB_PERSONAL_ACCESS_TOKEN", "key",
+                                     "needs_key", "", STAMP, USER)),
+    ("mcp_servers", SERVER_COLUMNS, ("linear", "Linear", "http", "", "[]", "https://mcp.linear.app/mcp", "", "oauth", "failed", "timed out", STAMP, USER)),
 )
 
 
@@ -216,6 +233,17 @@ def version_four_fixture(path: Path, with_rows: bool = True) -> Path:
     connection.commit()
     connection.close()
     return path
+
+
+def with_private_values(journal_folder: Path, secrets_folder: Path) -> None:
+    """What version 4 kept outside the project: the project's id, its values file in the secrets folder and its MCP
+    server keys under ~/.journal/keys, named by the project folder's path."""
+    (journal_folder / "project-id").write_text(PROJECT_ID)
+    secrets_folder.mkdir(parents=True, exist_ok=True)
+    (secrets_folder / f"{PROJECT_ID}.env").write_text(f'# version 4 values\nGITHUB_KEY="{GITHUB_VALUE}"\n')
+    keys = Path.home() / ".journal" / "keys"
+    keys.mkdir(parents=True, exist_ok=True)
+    (keys / f"{str(journal_folder.resolve().parent).strip('/').replace('/', '-')}.json").write_text(f'{{"GITHUB_PERSONAL_ACCESS_TOKEN": "{SERVER_KEY}"}}\n')
 
 
 def strip_release_columns(path: Path) -> None:

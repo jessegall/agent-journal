@@ -14,12 +14,14 @@ from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_hooks import ProgramHooks
+from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
+from core.modules.secrets.support.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
@@ -31,7 +33,8 @@ TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 class ClaudeCodeProvider(Provider):
     """Anthropic's Claude Code: hooks in .claude/settings.local.json, sessions under its config folder's projects, a
-    session id the journal chooses, and a state file that records the folders it trusts."""
+    session id the journal chooses, and a state file that records the folders it trusts;
+    a main session starts with the MCP servers' keys in its environment."""
 
     name = "claude"
     title = "Claude Code"
@@ -56,10 +59,14 @@ class ClaudeCodeProvider(Provider):
     markers = ["CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT", "CLAUDE_CODE_SESSION_ID", "CLAUDE_CODE_SHELL_PREFIX"]
     models = [ProgramModel("haiku", ModelTier.FAST), ProgramModel("sonnet", ModelTier.GENERAL), ProgramModel("opus", ModelTier.STRONGEST)]
 
+    def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
+        super().__init__(folders)
+        self.keys = keys
+
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-skip-permissions"] if launch.skip_prompts else []
         arguments = [self.executable, "--model", launch.model, *skip, *launch.session.arguments(self)]
-        return LaunchCommand(arguments, launch.folder, launch.variables, launch.session.session)
+        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()}, launch.session.session)
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "-p", launch.brief, "--model", launch.model, "--dangerously-skip-permissions",

@@ -14,12 +14,13 @@ from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.model_tier import ModelTier
 from core.base.provider.program_hooks import ProgramHooks
-from core.base.provider.program_hooks import ProgramHooks
+from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
+from core.modules.secrets.support.server_keys import ServerKeys
 from core.modules.codex.providers.support.codex_token_count import CodexTokenCount
 from core.modules.codex.providers.support.codex_event import CodexEvent
 from core.modules.codex.providers.support.codex_trust import CodexTrust
@@ -30,7 +31,8 @@ TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 class CodexProvider(Provider):
     """OpenAI's Codex: hooks in .codex/hooks.json, trusted per file and hook in its config.toml, rollouts under its
-    sessions folder, and a session it names itself, which the first hook brings."""
+    sessions folder, and a session it names itself, which the first hook brings; a main session starts with the MCP
+    servers' keys in its environment."""
 
     name = "codex"
     title = "Codex"
@@ -53,10 +55,14 @@ class CodexProvider(Provider):
                "CODEX_APPLY_PATCH_PRESERVE_LINE_ENDINGS"]
     models = [ProgramModel("gpt-5.6-luna", ModelTier.FAST), ProgramModel("gpt-5.6-terra", ModelTier.GENERAL), ProgramModel("gpt-6.1-sol", ModelTier.STRONGEST)]
 
+    def __init__(self, folders: ProgramFolders, keys: ServerKeys) -> None:
+        super().__init__(folders)
+        self.keys = keys
+
     def session_command(self, launch: Launch) -> LaunchCommand:
         skip = ["--dangerously-bypass-approvals-and-sandbox"] if launch.skip_prompts else []
         arguments = [self.executable, "--no-daemon", "-m", launch.model, *skip, *launch.session.arguments(self)]
-        return LaunchCommand(arguments, launch.folder, launch.variables)
+        return LaunchCommand(arguments, launch.folder, {**launch.variables, **self.keys.all()})
 
     def helper_command(self, launch: HelperLaunch) -> LaunchCommand:
         arguments = [self.executable, "exec", *launch.session.arguments(self), "--json", "--dangerously-bypass-approvals-and-sandbox",

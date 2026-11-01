@@ -1,0 +1,52 @@
+from core.base.module.model_declaration import ModelDeclaration
+from core.base.module.module import Module
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
+from core.modules.secrets.commands.allow_program_handler import AllowProgramHandler
+from core.modules.secrets.commands.change_secret_deletion_handler import ChangeSecretDeletionHandler
+from core.modules.secrets.commands.edit_secret_handler import EditSecretHandler
+from core.modules.secrets.commands.fill_secret_handler import FillSecretHandler
+from core.modules.secrets.commands.make_secret_handler import MakeSecretHandler
+from core.modules.secrets.commands.propose_program_handler import ProposeProgramHandler
+from core.modules.secrets.commands.secret_allow_subcommand import SecretAllowSubcommand
+from core.modules.secrets.commands.secret_delete_subcommand import SecretDeleteSubcommand
+from core.modules.secrets.commands.secret_fill_subcommand import SecretFillSubcommand
+from core.modules.secrets.commands.secret_list_subcommand import SecretListSubcommand
+from core.modules.secrets.commands.secret_make_subcommand import SecretMakeSubcommand
+from core.modules.secrets.commands.secret_propose_subcommand import SecretProposeSubcommand
+from core.modules.secrets.commands.secret_request_subcommand import SecretRequestSubcommand
+from core.modules.secrets.commands.secret_restore_subcommand import SecretRestoreSubcommand
+from core.modules.secrets.commands.secret_run_subcommand import SecretRunSubcommand
+from core.modules.secrets.commands.secret_show_subcommand import SecretShowSubcommand
+from core.modules.secrets.commands.secret_store_subcommand import SecretStoreSubcommand
+from core.modules.secrets.commands.secret_update_subcommand import SecretUpdateSubcommand
+from core.modules.secrets.guards.secret_value_guard import SecretValueGuard
+from core.modules.secrets.migrations.m001_secrets import SecretsTableMigration
+from core.modules.secrets.models.secret import Secret
+from core.modules.secrets.queries.secret_query import SecretQuery
+from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
+from core.modules.secrets.upgrade.secrets_move import SecretsMove
+
+BUILT = ["make", "edit", "show", "list", "delete"]
+
+
+class SecretsModule(Module):
+    """Adds secrets: keys and logins the agent gives to programs without seeing them, their values in a file
+    outside the project, the Secrets window where the user types them and allows programs, and the guards that
+    keep a value out of every tool and row."""
+
+    name = "journal.core.secrets"
+    seed_reason = "a secret's value is typed by the person, never made up for a demo"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
+    models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=BUILT)]
+    migrations = [SecretsTableMigration]
+    moves = [SecretsMove]
+    handlers = [MakeSecretHandler, EditSecretHandler, FillSecretHandler, ProposeProgramHandler, AllowProgramHandler, ChangeSecretDeletionHandler]
+    subcommands = (SecretMakeSubcommand, SecretRequestSubcommand, SecretUpdateSubcommand, SecretFillSubcommand, SecretStoreSubcommand, SecretListSubcommand,
+                   SecretShowSubcommand, SecretRunSubcommand, SecretProposeSubcommand, SecretAllowSubcommand, SecretDeleteSubcommand, SecretRestoreSubcommand)
+    guards = [SecretValueGuard]
+    driver_rules = [SecretsFolderRule]
+    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, icon=WindowIcon.HASH,
+                                 reads=["secret list", "secret show"], runs=["secret fill", "secret allow"], events=["secret.*"])]
