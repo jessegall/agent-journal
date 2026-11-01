@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 from enum import StrEnum
 from core.base.caller.caller import Caller
+from core.base.environment_names import EnvironmentNames
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.model.model import Model
 from core.base.model.table import Table
@@ -9,15 +10,18 @@ from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
 
+ENVIRONMENT_COLUMN = "environment_id"
+
 
 class ListSubcommand(ReadSubcommand[Page[Model]]):
     """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with a filter flag
-    for each enum column and each foreign key, named without its _id."""
+    for each enum column and each foreign key, named without its _id; --environment takes the environment's name,
+    as every other command does, or its number."""
 
     name = "list"
 
-    def __init__(self, table: Table[Model], queries: Queries) -> None:
-        self.table, self.queries = table, queries
+    def __init__(self, table: Table[Model], queries: Queries, environment_names: EnvironmentNames) -> None:
+        self.table, self.queries, self.environment_names = table, queries, environment_names
         self.cli_name = table.model.cli_name
 
     def arguments(self, parser: ArgumentParser) -> None:
@@ -25,10 +29,13 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
         parser.add_argument("--oldest", action="store_true")
         for column in self.filter_columns():
-            parser_argument(parser, f"--{filter_flag(column)}", self.table.types[column])
+            parser_argument(parser, f"--{filter_flag(column)}", str if column == ENVIRONMENT_COLUMN else self.table.types[column])
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:
         values = {column: getattr(arguments, filter_flag(column).replace("-", "_")) for column in self.filter_columns()}
+        if values.get(ENVIRONMENT_COLUMN) is not None:
+            named = str(values[ENVIRONMENT_COLUMN])
+            values[ENVIRONMENT_COLUMN] = int(named) if named.isdigit() else self.environment_names.environment_id(named)
         query = self.queries.query(self.table.model).filter(**{column: value for column, value in values.items() if value is not None})
         return (query.oldest() if arguments.oldest else query.newest()).page(arguments.page, arguments.limit)
 

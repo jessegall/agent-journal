@@ -8,6 +8,7 @@ from core.base.model.table import Table
 from core.base.registry.dotted_path import DottedPath
 from core.base.model.tables import Tables
 from core.base.query.queries import Queries
+from core.base.environment_names import EnvironmentNames
 from core.base.cli.make_subcommand import MakeSubcommand
 from core.base.cli.show_subcommand import ShowSubcommand
 from core.base.cli.list_subcommand import ListSubcommand
@@ -20,8 +21,8 @@ from core.base.cli.subcommand_columns import generic_base
 class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""
 
-    def __init__(self, tables: Tables, queries: Queries) -> None:
-        self.tables, self.queries = tables, queries
+    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames) -> None:
+        self.tables, self.queries, self.environment_names = tables, queries, environment_names
 
     def make(self, model: type[Model]) -> MakeSubcommand:
         return MakeSubcommand(self.tables.table(model))
@@ -30,7 +31,7 @@ class DefaultSubcommands:
         return ShowSubcommand(self.tables.table(model), self.queries)
 
     def list(self, model: type[Model]) -> ListSubcommand:
-        return ListSubcommand(self.tables.table(model), self.queries)
+        return ListSubcommand(self.tables.table(model), self.queries, self.environment_names)
 
     def edit(self, model: type[Model]) -> EditSubcommand:
         return EditSubcommand(self.tables.table(model))
