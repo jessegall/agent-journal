@@ -1,3 +1,4 @@
+from core.modules.questions.support.question_nudges import OWN_QUESTION_TOOL
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -19,4 +20,4 @@ class OwnQuestionToolRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.category is not ToolType.QUESTION:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused('ask with journal question ask "<one line>" --options "a" "b", not your own question tool')
+        return RuleAnswer.refused(OWN_QUESTION_TOOL.nudge())

@@ -1,3 +1,4 @@
+from core.modules.questions.support.question_nudges import QUESTION_CHANGED
 from collections.abc import Callable
 
 from core.base.driver.agent_hook import AgentHook
@@ -22,7 +23,7 @@ class QuestionChanges:
         last_answer_at = self.history.answer_time(RuleHistoryKey(hook.agent_id, rule, hook.layer_ref))
         lines = [line(question) for question in self.questions.agent(hook.agent_id).state(state).oldest().all_rows()
                  if (last_answer_at is None or question.updated_at is None or question.updated_at > last_answer_at) and not self.waiting(question.id)]
-        return RuleAnswer.with_lines(*lines) if lines else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(*(QUESTION_CHANGED.nudge(text=line) for line in lines)) if lines else RuleAnswer.allowed()
 
     def waiting(self, question_id: int) -> bool:
         return self.queries.query(WaitTarget).filter(row_table="questions", row_id=question_id).matching(IsNull("resolved_at")).exists()

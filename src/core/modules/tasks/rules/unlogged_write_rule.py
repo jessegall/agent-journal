@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import UNLOGGED_WRITES
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -27,4 +28,4 @@ class UnloggedWriteRule(DriverRule):
         current, writes = counted
         if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"{UNLOGGED_WRITES_CEILING} writes since you logged {current.name}: writes wait for journal task log {current.task.id} \"<what was done>\"")
+        return RuleAnswer.refused(UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, name=current.name, task=current.task.id))

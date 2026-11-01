@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import WORKER_COMMAND_TYPE
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -24,4 +25,4 @@ class WorkerCommandTypeRule(DriverRule):
                         and part.classification.category.value not in allowed), None) if shell is not None else None
         if refused is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"a worker here runs no {refused.classification.category.value} command: {refused.text}")
+        return RuleAnswer.refused(WORKER_COMMAND_TYPE.nudge(category=refused.classification.category.value, text=refused.text))

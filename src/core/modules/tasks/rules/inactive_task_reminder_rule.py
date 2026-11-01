@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import INACTIVE_TASK
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -33,4 +34,4 @@ class InactiveTaskReminderRule(DriverRule):
             return RuleAnswer.allowed()
         if newest.created_at.elapsed_seconds(hook.timestamp) < INACTIVE_MINUTES * MINUTE_SECONDS:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(f"nothing has happened for {INACTIVE_MINUTES} minutes: carry on with {current.name}, or log why it waits")
+        return RuleAnswer.with_nudges(INACTIVE_TASK.nudge(minutes=INACTIVE_MINUTES, name=current.name))

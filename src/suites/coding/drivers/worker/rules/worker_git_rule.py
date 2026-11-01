@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import WORKER_RUNS_NO_GIT
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -13,5 +14,5 @@ class WorkerGitRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is not None and any(part.program == "git" for part in shell.parts):
-            return RuleAnswer.refused("a worker runs no git: the journal commits and merges your work")
+            return RuleAnswer.refused(WORKER_RUNS_NO_GIT.nudge())
         return RuleAnswer.allowed()

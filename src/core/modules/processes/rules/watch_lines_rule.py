@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import OUTPUT_PROGRESS
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -35,5 +36,4 @@ class WatchLinesRule(DriverRule):
         step = progress - progress % PROGRESS_STEP_PERCENT
         if step <= watch.given_percent:
             return answer
-        line = f"output {watch.process_id}: {progress}%"
-        return RuleAnswer(refusal=answer.refusal, lines=[*answer.lines, line], commands=[*answer.commands, RecordGivenPercent(watch.id, step)])
+        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, OUTPUT_PROGRESS.nudge(output=watch.process_id, percent=progress)], commands=[*answer.commands, RecordGivenPercent(watch.id, step)])

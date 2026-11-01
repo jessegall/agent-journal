@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from core.modules.messages.support.message_nudges import MESSAGE_FILE, NEW_MESSAGE, NEW_MESSAGES
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -31,11 +33,8 @@ class MessageDeliveryRule(DriverRule):
         messages = list(undelivered.all_rows())
         if not messages:
             return RuleAnswer.allowed()
-        lines = [line for message in messages for line in self.lines(message)] if len(messages) == 1 else [f"[journal] {len(messages)} new messages: journal message unread", *(line for message in messages for line in self.file_lines(message))]
-        return RuleAnswer.with_lines(*lines).running(*(RecordMessageDelivery(message.id) for message in messages))
+        heading = NEW_MESSAGE.nudge(message=messages[0].id) if len(messages) == 1 else NEW_MESSAGES.nudge(count=len(messages))
+        return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
 
-    def lines(self, message: Message) -> list[str]:
-        return [f"[journal] new message {message.id}: journal message read {message.id}", *self.file_lines(message)]
-
-    def file_lines(self, message: Message) -> list[str]:
-        return [f"  file {self.home.message_files(message.id) / name}" for name in message.files]
+    def file_nudges(self, message: Message) -> list[Nudge]:
+        return [MESSAGE_FILE.nudge(path=self.home.message_files(message.id) / name) for name in message.files]

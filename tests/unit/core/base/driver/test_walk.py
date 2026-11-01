@@ -1,3 +1,4 @@
+from core.testing.sample_nudge import sample_nudge
 from core.base.fault_sink import FaultSink
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -45,21 +46,21 @@ class AddsLine(DriverRule):
     """AddsLine the agent which layer it was asked for."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines(f"asked for {hook.layer_ref or 'the driver'}")
+        return RuleAnswer.with_nudges(sample_nudge(f"asked for {hook.layer_ref or 'the driver'}"))
 
 
 class Refuses(DriverRule):
     """Refuses the hook."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.refused("no")
+        return RuleAnswer.refused(sample_nudge("no"))
 
 
 class AllowsNow(DriverRule):
     """Lets the hook through at once, ending the walk."""
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.final_allowance("go on")
+        return RuleAnswer.final_allowance(sample_nudge("go on"))
 
 
 class Raises(DriverRule):
@@ -89,7 +90,7 @@ class ControlReturnLine(DriverRule):
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("control regained") if hook.control_return else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(sample_nudge("control regained")) if hook.control_return else RuleAnswer.allowed()
 
 
 class OldWait(Overlay):

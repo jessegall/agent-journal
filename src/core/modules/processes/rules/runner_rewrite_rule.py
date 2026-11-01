@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import RUNNER_MISSING
 from collections.abc import Mapping, Sequence
 
 from core.base.agent_role import AgentRole
@@ -56,4 +57,4 @@ class RunnerRewriteRule(DriverRule):
     def missing(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref)) is not None:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(f"journal-run is not installed in {self.runner.path.parent}, so your shell lines run as you wrote them and are not kept as numbered outputs")
+        return RuleAnswer.with_nudges(RUNNER_MISSING.nudge(folder=self.runner.path.parent))

@@ -1,3 +1,4 @@
+from core.modules.triggers.support.trigger_nudges import TRIGGER_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -26,6 +27,7 @@ class TriggersModule(Module):
     """Adds triggers: a phrase in the user's words or in a tool call, or a time, gives the agent a text or refuses."""
 
     name = "journal.core.triggers"
+    nudges = TRIGGER_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(Trigger, query=TriggerQuery, excluded_subcommands=BUILT)]

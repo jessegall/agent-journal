@@ -1,10 +1,10 @@
+from core.modules.memories.support.memory_nudges import WEIGH_FIRST
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 
-WEIGH_FIRST_LINE = "weigh your memories first: journal memory weigh <numbers> <weights>, or journal memory skip \"<why nothing needs keeping>\""
 
 
 class WeighFirstRule(DriverRule):
@@ -19,4 +19,4 @@ class WeighFirstRule(DriverRule):
         writes = hook.hook_name == HookEventName.PRE_TOOL_USE and tool is not None and tool.is_writing_files()
         if hook.hook_name != HookEventName.STOP and not writes:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(WEIGH_FIRST_LINE)
+        return RuleAnswer.refused(WEIGH_FIRST.nudge())

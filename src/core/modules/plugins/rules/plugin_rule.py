@@ -1,3 +1,4 @@
+from core.modules.plugins.support.plugin_nudges import PLUGIN_LINE, PLUGIN_REFUSAL
 import json
 
 from core.base.agent_role import AgentRole
@@ -69,8 +70,8 @@ class PluginRule(DriverRule):
                     continue
                 refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands, values)
                 if refusal:
-                    return RuleAnswer(refusal=refusal, lines=tuple(lines), commands=tuple(commands))
-        return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
+                    return RuleAnswer(refusal=refusal, nudges=(*(PLUGIN_LINE.nudge(text=line) for line in lines), PLUGIN_REFUSAL.nudge(text=refusal)), commands=tuple(commands))
+        return RuleAnswer(nudges=tuple(PLUGIN_LINE.nudge(text=line) for line in lines), commands=tuple(commands))
 
     def queued(self, hook: AgentHook, plugin: Plugin, lines: list[str], commands: list[Command[object]]) -> None:
         queue = PluginQueue(self.folders.data(plugin.name))

@@ -1,0 +1,61 @@
+<script setup>
+import {RowList, useRows} from "@journal/window-kit";
+
+// every line the modules can say to an agent: its key, its type, its words and how often it was said
+const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
+</script>
+
+<template>
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No module declares a nudge">
+        <template #default="{row}">
+            <div class="nudge" data-nudge>
+                <p class="nudge-head">
+                    <span class="nudge-key">{{ row.key }}</span>
+                    <span class="nudge-type" :data-type="row.type">{{ row.type }}</span>
+                    <span class="nudge-count">said {{ row.said_count }} {{ row.said_count === 1 ? "time" : "times" }}</span>
+                </p>
+                <p class="nudge-text">{{ row.text }}</p>
+            </div>
+        </template>
+    </RowList>
+</template>
+
+<style scoped>
+.nudge {
+    min-width: 0;
+    padding: 6px 0;
+}
+
+.nudge-head {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    margin: 0 0 2px;
+    font-size: 12px;
+}
+
+.nudge-key {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.nudge-type,
+.nudge-count {
+    color: var(--text-3);
+}
+
+.nudge-type[data-type="refusal"] {
+    color: var(--tone-bad);
+}
+
+.nudge-type[data-type="instruction"] {
+    color: var(--accent-text);
+}
+
+.nudge-text {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+}
+</style>

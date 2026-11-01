@@ -1,3 +1,4 @@
+from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -27,6 +28,7 @@ class SequencesModule(Module):
     """Adds sequences: steps an agent works through in order, taking each up before it edits, one run at a time."""
 
     name = "journal.core.sequences"
+    nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=BUILT)]

@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import PROCESS_NUDGES
 from core.base.driver.watched_runs import WatchedRuns
 from core.modules.processes.support.monitored_runs import MonitoredRuns
 from core.base.module.model_declaration import ModelDeclaration
@@ -89,6 +90,7 @@ class ProcessesModule(Module):
     output."""
 
     name = "journal.core.processes"
+    nudges = PROCESS_NUDGES
     requires_core = ">=5,<6"
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]

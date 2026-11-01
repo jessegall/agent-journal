@@ -1,3 +1,4 @@
+from core.modules.skills.support.skill_nudges import UNREAD_SKILLS
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -19,4 +20,4 @@ class UnreadSkillStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         folders = self.due.folders(hook.agent_id)
-        return RuleAnswer.refused(f"unread skills: {', '.join(folders)}") if folders else RuleAnswer.allowed()
+        return RuleAnswer.refused(UNREAD_SKILLS.nudge(skills=', '.join(folders))) if folders else RuleAnswer.allowed()

@@ -1,3 +1,4 @@
+from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
@@ -57,6 +58,7 @@ class MemoriesModule(Module):
     keywords that bring one back and the context marks that ask the agent to weigh them."""
 
     name = "journal.core.memories"
+    nudges = MEMORY_NUDGES
     requires_core = ">=5,<6"
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",

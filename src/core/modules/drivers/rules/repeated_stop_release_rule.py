@@ -1,3 +1,4 @@
+from core.modules.drivers.support.driver_nudges import REPEATED_STOP
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -24,4 +25,4 @@ class RepeatedStopReleaseRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.role is AgentRole.MAIN or self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT:
             return RuleAnswer.allowed()
-        return RuleAnswer.final_allowance("your stop was refused five times in a row: report what held it with journal report create")
+        return RuleAnswer.final_allowance(REPEATED_STOP.nudge())

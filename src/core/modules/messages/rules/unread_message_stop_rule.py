@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_nudges import UNREAD_AT_STOP
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -22,4 +23,4 @@ class UnreadMessageStopRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unread = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().page(1, 1).rows
-        return RuleAnswer.refused(f"message {unread[0].id} is unread: journal message read {unread[0].id}") if unread else RuleAnswer.allowed()
+        return RuleAnswer.refused(UNREAD_AT_STOP.nudge(message=unread[0].id)) if unread else RuleAnswer.allowed()

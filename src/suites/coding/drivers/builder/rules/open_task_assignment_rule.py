@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import TASK_IS_YOURS
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -25,4 +26,4 @@ class OpenTaskAssignmentRule(DriverRule):
         following = self.next_task.following(hook.environment_id)
         if following is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"task {following.id} is yours now: {following.title}").running(StartTask(following.id))
+        return RuleAnswer.refused(TASK_IS_YOURS.nudge(task=following.id, title=following.title)).running(StartTask(following.id))

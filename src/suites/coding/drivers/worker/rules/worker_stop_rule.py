@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import WORKER_TASK_STARTED
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -18,4 +19,4 @@ class WorkerStopRule(DriverRule):
         rows = self.tasks.holder(hook.agent_id).started().page(1, 1).rows
         if not rows:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"task {rows[0].id}, {rows[0].title}, is still started: finish it and deliver it with journal worker deliver")
+        return RuleAnswer.refused(WORKER_TASK_STARTED.nudge(task=rows[0].id, title=rows[0].title))

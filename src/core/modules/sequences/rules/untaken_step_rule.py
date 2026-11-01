@@ -1,3 +1,4 @@
+from core.modules.sequences.support.sequence_nudges import STEP_WAITS
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -29,4 +30,4 @@ class UntakenStepRule(DriverRule):
         if run is None or run.step_started:
             return RuleAnswer.allowed()
         step = self.queries.query(Sequence).find(run.sequence_id).steps[run.step_number - 1]
-        return RuleAnswer.refused(f"sequence {run.sequence_id} step {run.step_number} waits: {step[:STEP_SHOWN_CHARACTERS]}; run journal sequence follow first")
+        return RuleAnswer.refused(STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number, text=step[:STEP_SHOWN_CHARACTERS]))

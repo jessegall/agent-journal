@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import WORKER_TASK_NOT_STARTED
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -18,4 +19,4 @@ class WorkerTaskStartRule(DriverRule):
         tool = hook.event.tool
         if tool is None or (tool.shell is not None and tool.shell.is_journal_line) or self.tasks.holder(hook.agent_id).started().exists():
             return RuleAnswer.allowed()
-        return RuleAnswer.refused("your task has not started yet: only journal commands run until it does")
+        return RuleAnswer.refused(WORKER_TASK_NOT_STARTED.nudge())

@@ -15,6 +15,7 @@ from core.base.registry.button_line import ButtonLine
 from core.base.registry.button_window import ButtonWindow
 from core.base.registry.dock_entry import DockEntry
 from core.base.registry.mark_entry import MarkEntry
+from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.setting_entry import SettingEntry
 from core.base.registry.tunnel_entry import TunnelEntry
 from core.base.registry.model_entry import ModelEntry
@@ -49,6 +50,7 @@ class Registry:
     drivers: tuple[DriverEntry, ...] = ()
     windows: tuple[WindowEntry, ...] = ()
     marks: tuple[MarkEntry, ...] = ()
+    nudges: tuple[NudgeEntry, ...] = ()
     docks: tuple[DockEntry, ...] = ()
     providers: tuple[ProviderEntry, ...] = ()
     settings: tuple[SettingEntry, ...] = ()
@@ -92,6 +94,7 @@ class Registry:
                                       window.get("float_height", DEFAULT_FLOAT_SIZE.height), tuple(window.get("options", [])), window.get("count", ""), tuple(window.get("shared_reads", [])))
                           for window in entries.get("windows", [])),
             marks=tuple(MarkEntry.restored(mark) for mark in entries.get("marks", [])),
+            nudges=tuple(NudgeEntry.restored(nudge) for nudge in entries.get("nudges", [])),
             docks=tuple(DockEntry.restored(dock) for dock in entries.get("docks", [])),
             providers=tuple(ProviderEntry(provider["name"], DottedPath(provider["path"]), provider["module"], provider["title"]) for provider in entries.get("providers", [])),
             settings=tuple(SettingEntry.restored(setting) for setting in entries.get("settings", [])),
@@ -128,6 +131,7 @@ class Registry:
                          "shipped": window.shipped, "unavailable_reason": window.unavailable_reason, "icon": window.icon,
                          "float_width": window.float_width, "float_height": window.float_height, "options": [dict(option) for option in window.options], "count": window.count, "shared_reads": list(window.shared_reads)} for window in self.windows],
             "marks": [asdict(mark) for mark in self.marks],
+            "nudges": [asdict(nudge) for nudge in self.nudges],
             "docks": [asdict(dock) for dock in self.docks],
             "providers": [{"name": provider.name, "path": provider.path.text, "module": provider.module, "title": provider.title} for provider in self.providers],
             "settings": [asdict(setting) for setting in self.settings],

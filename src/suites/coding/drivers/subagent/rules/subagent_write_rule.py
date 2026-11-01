@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import SUBAGENT_READS_ONLY
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -14,5 +15,5 @@ class SubagentWriteRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         if tool is not None and tool.is_writing_files():
-            return RuleAnswer.refused("a subagent reads and searches only: the agent that sent it makes the change")
+            return RuleAnswer.refused(SUBAGENT_READS_ONLY.nudge())
         return RuleAnswer.allowed()

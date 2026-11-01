@@ -1,3 +1,4 @@
+from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
@@ -47,6 +48,7 @@ class PluginsModule(Module):
     agent may only propose."""
 
     name = "journal.core.plugins"
+    nudges = PLUGIN_NUDGES
     seed_reason = "a plugin is a program the person installs, which a demo has none of"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",

@@ -1,3 +1,4 @@
+from core.modules.drivers.support.driver_nudges import DRIVER_NUDGES
 from core.base.driver.essential_allowances import EssentialAllowances
 from core.base.driver.hook_history import HookHistory
 from core.base.guard.change_filter import ChangeFilter
@@ -30,6 +31,9 @@ from core.modules.drivers.migrations.m003_hook_call_hook_index import HookCallHo
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
 from core.modules.drivers.rules.missing_process_rule import MissingProcessRule
+from core.modules.drivers.models.nudge_record import NudgeRecord
+from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
+from core.modules.drivers.commands.nudge_list.nudge_list_subcommand import NudgeListSubcommand
 from core.modules.drivers.rules.opening_lines_rule import OpeningLinesRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
 from core.modules.drivers.models.rule_history import RuleHistory
@@ -52,20 +56,22 @@ class DriversModule(Module):
     the suites, drivers and rules of the installed modules."""
 
     name = "journal.core.drivers"
+    nudges = DRIVER_NUDGES
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
-    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration]
+    models = [ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration]
     handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    subcommands = [NudgeListSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
     driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
-    windows = [WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,
+    windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
+               WindowDeclaration("drivers.hook-calls", "Activity", "hook-calls.js", WindowLoading.COMPONENT, icon=WindowIcon.RUNS, place=WindowPlace.AGENT,
                                  reads=["hook-call list", "hook-call show"], events=["hook_call.create"])]
     seeders = [DriversSeeder]

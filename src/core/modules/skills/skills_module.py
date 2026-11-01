@@ -1,3 +1,4 @@
+from core.modules.skills.support.skill_nudges import SKILL_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -38,6 +39,7 @@ class SkillsModule(Module):
     the agent programs."""
 
     name = "journal.core.skills"
+    nudges = SKILL_NUDGES
     move_reason = "version 4 kept skills as files, not as a table"
     requires_core = ">=5,<6"
     settings = SKILL_SETTINGS

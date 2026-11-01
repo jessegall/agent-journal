@@ -1,3 +1,4 @@
+from core.modules.drivers.support.driver_nudges import OPENING_LINE
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -17,4 +18,4 @@ class OpeningLinesRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         driver = self.registry.driver(hook.driver)
-        return RuleAnswer.with_lines(*driver.opening_lines) if driver is not None and driver.opening_lines else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(*(OPENING_LINE.nudge(text=line) for line in driver.opening_lines)) if driver is not None and driver.opening_lines else RuleAnswer.allowed()

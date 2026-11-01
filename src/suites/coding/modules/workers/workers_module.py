@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -52,6 +53,7 @@ class WorkersModule(Module):
     """Adds the coding suite's workers: the worktree each one writes in and the proofs it shows for its task."""
 
     name = "journal.suites.coding.workers"
+    nudges = WORKER_NUDGES
     seed_reason = "a worker needs a git worktree, which a scratch demo has none of"
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS

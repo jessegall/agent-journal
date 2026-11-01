@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import JOURNAL_COMMAND_LAST
 import re
 
 from core.base.agent_role import AgentRole
@@ -12,7 +13,6 @@ JOURNAL = "journal"
 LOOPS = ("until", "while", "for")
 SHORT_CATEGORIES = (CommandCategory.JOURNAL, CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
 JOURNAL_COMMAND = re.compile(rf"(^|[;(|&]\s*|\bdo\s+|\buntil\s+|\bwhile\s+|\bthen\s+){JOURNAL}\s+[a-z]")
-REFUSAL = "a journal command may not follow a long command or run in a loop: run it on its own line"
 
 
 class JournalChainRule(DriverRule):
@@ -30,7 +30,7 @@ class JournalChainRule(DriverRule):
         has_long_part = False
         for part in shell.parts:
             if self.is_journal_loop(part) or (part.program == JOURNAL and has_long_part):
-                return RuleAnswer.refused(REFUSAL)
+                return RuleAnswer.refused(JOURNAL_COMMAND_LAST.nudge())
             has_long_part = has_long_part or part.classification.category not in SHORT_CATEGORIES
         return RuleAnswer.allowed()
 

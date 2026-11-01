@@ -1,3 +1,4 @@
+from core.modules.questions.support.question_nudges import QUESTION_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.questions.commands.answer_question.answer_question import AnswerQuestion
@@ -31,6 +32,7 @@ class QuestionsModule(Module):
     """Adds questions an agent asks the user, with the options it offers and the answer it gets."""
 
     name = "journal.core.questions"
+    nudges = QUESTION_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]

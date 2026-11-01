@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from suites.coding.modules.workers.support.worker_nudges import WORKER_HOLDS_TASK
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -20,8 +22,8 @@ class WorkersOutRule(DriverRule):
         self.queries, self.worktrees = queries, worktrees
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        lines: list[str] = []
+        nudges: list[Nudge] = []
         for worktree in self.worktrees.environment_worktrees(hook.environment_id):
             task = self.queries.query(Task).find(worktree.task_id)
-            lines.append(f"worker {worktree.agent_id} holds task {task.id}, {task.title}: its worktree is {worktree.state.value}")
-        return RuleAnswer.with_lines(*lines) if lines else RuleAnswer.allowed()
+            nudges.append(WORKER_HOLDS_TASK.nudge(worker=worktree.agent_id, task=task.id, title=task.title, state=worktree.state.value))
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

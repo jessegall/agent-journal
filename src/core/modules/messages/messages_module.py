@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
 from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
@@ -34,6 +35,7 @@ class MessagesModule(Module):
     """Adds messages: what the user, the agents and the journal say in an environment's chat."""
 
     name = "journal.core.messages"
+    nudges = MESSAGE_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]

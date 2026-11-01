@@ -3,6 +3,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import ClassVar, Never
 
+from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.chat.dock_declaration import DockDeclaration
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.command.command import Command
@@ -61,6 +62,7 @@ class Module:
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
     windows: ClassVar[Sequence[WindowDeclaration]] = ()
     marks: ClassVar[Sequence[MarkDeclaration]] = ()
+    nudges: ClassVar[Sequence[NudgeDeclaration]] = ()
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()
     settings: ClassVar[Sequence[SettingNode]] = ()

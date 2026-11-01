@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 
+from core.base.driver.nudge_declaration import NudgeDeclaration
+from core.base.driver.nudge_type import NudgeType
 from core.base.driver.rule_answer import RuleAnswer
 
+RULE_FAILED = NudgeDeclaration("drivers.rule_failed", NudgeType.INSTRUCTION, "{text}")
 RAISED = "raised"
 SILENCED = "silenced"
 
@@ -20,4 +23,4 @@ class RuleOutcome:
 
     @classmethod
     def raised(cls, line: str) -> "RuleOutcome":
-        return cls(RAISED, RuleAnswer.with_lines(line))
+        return cls(RAISED, RuleAnswer.with_nudges(RULE_FAILED.nudge(text=line)))

@@ -1,3 +1,4 @@
+from core.testing.sample_nudge import sample_nudge
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
@@ -94,7 +95,7 @@ class StopLine(DriverRule):
     hook = HookEventName.STOP
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("the lead stops here")
+        return RuleAnswer.with_nudges(sample_nudge("the lead stops here"))
 
 
 class RemovalRule(DriverRule):
@@ -106,7 +107,7 @@ class RemovalRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is not None and shell.line.startswith("rm -rf"):
-            return RuleAnswer.refused("the lead removes no folder")
+            return RuleAnswer.refused(sample_nudge("the lead removes no folder"))
         return RuleAnswer.allowed()
 
 
@@ -208,7 +209,7 @@ class LockedEditRefusal(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if hook.event.tool is not None and hook.event.tool.category is ToolType.EDIT:
-            return RuleAnswer.refused(f"{hook.layer_ref} refuses every edit")
+            return RuleAnswer.refused(sample_nudge(f"{hook.layer_ref} refuses every edit"))
         return RuleAnswer.allowed()
 
 
@@ -221,7 +222,7 @@ class ReturnLine(DriverRule):
     history = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("you are back at your own work") if hook.control_return else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(sample_nudge("you are back at your own work")) if hook.control_return else RuleAnswer.allowed()
 
 
 class FailingRule(DriverRule):
@@ -244,7 +245,7 @@ class EssentialClaim(DriverRule):
     essential = True
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_lines("the sample rule answers first")
+        return RuleAnswer.with_nudges(sample_nudge("the sample rule answers first"))
 
 
 class LockRelease(DriverRule):
@@ -277,7 +278,7 @@ class StopRefusal(DriverRule):
         self.settings = settings
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.refused("the sample lead may not stop yet") if self.settings.project_value("samples.refuse-stops") is True else RuleAnswer.allowed()
+        return RuleAnswer.refused(sample_nudge("the sample lead may not stop yet")) if self.settings.project_value("samples.refuse-stops") is True else RuleAnswer.allowed()
 
 
 class ReopenClaim(DriverRule):

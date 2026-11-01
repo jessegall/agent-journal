@@ -13,7 +13,7 @@ from core.base.driver.hook_reply import HookReply
 from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
-from core.base.guard.guard_refusal import GuardRefusal
+from core.base.refusal import Refusal
 from core.base.metadata import Metadata
 from core.base.provider.providers import Providers
 from core.base.query.queries import Queries
@@ -23,6 +23,7 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.commands.support.delivered_lines import DeliveredLines
+from core.modules.drivers.commands.support.nudge_log import NudgeLog
 from core.modules.drivers.commands.support.one_move_per_row import OneMovePerRow
 from core.modules.drivers.commands.support.rule_history_writer import RuleHistoryWriter
 from core.modules.drivers.models.agent_line import AgentLine
@@ -44,7 +45,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     command = RecordHookCall
 
     def __init__(self, bus: Bus, database: Database, queries: Queries, repository: Repository, rules: DriverRules, choice: SuiteChoice,
-                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers) -> None:
+                 history: RuleHistoryWriter, timing: Timing, settings: SettingValues, providers: Providers, nudges: NudgeLog) -> None:
+        self.nudges = nudges
         self.bus, self.database, self.queries, self.repository = bus, database, queries, repository
         self.rules, self.choice, self.history, self.timing, self.settings, self.providers = rules, choice, history, timing, settings, providers
 
@@ -56,6 +58,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         self.timing.stamp("hook_built")
         with self.settings.keep_rows():
             answers = self.rules.ask(hook)
+        answers = replace(answers, held_lines=self.nudges.held_lines(agent.id, answers, context.timestamp))
         self.timing.stamp("rules_asked")
         self.history.record(agent.id, answers, context)
         self.timing.stamp("history_recorded")
@@ -70,7 +73,8 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
                                              writes_files=tool is not None and tool.is_writing_files(), suite=suite.name if suite is not None else "",
                                              driver=hook.driver, answer=HookAnswer.REFUSED if answers.refusal else HookAnswer.ALLOWED, refusal=answers.refusal,
                                              lines="\n".join([*answers.lines, *handed_lines.texts]), updated_input=json.dumps(dict(answers.updated_input)),
-                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name}})), context)
+                                             metadata=Metadata({DRIVERS_MODULE: {**answers.metadata(), "dropped": list(moves.dropped), "rewritten_by": answers.rewriter_name, "nudges": [nudge.key for nudge in (*answers.said_nudges, *answers.refusal_nudges)]}})), context)
+        self.nudges.write(agent.id, answers, context)
         self.timing.stamp("call_saved")
         for row in handed_lines.rows:
             self.bus.dispatch(DeliverAgentLine(row.id, call.id, context.timestamp), context)
@@ -82,7 +86,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
             self.repository.save(replace(call, updated_input=json.dumps(dict(updated_input))), context)
         if command.event.event == HookEventName.TICK:
             return self.save_waiting_lines(agent.id, [*answers.rule_lines, *refused], call.id, context)
-        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input)
+        return HookReply(answers.refusal, [*answers.lines, *handed_lines.texts, *(line for _, line in refused)], call.id, updated_input, labelled_lines=[*answers.labelled_lines, *handed_lines.texts, *(line for _, line in refused)])
 
     def save_waiting_lines(self, agent_id: int, rule_lines: list[tuple[str, str]], call_id: int, context: Context) -> HookReply:
         for rule, text in rule_lines:
@@ -93,7 +97,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
         try:
             with self.database.savepoint(type(rule_command).__name__):
                 return "", self.bus.dispatch(rule_command, context.nested(rule_command))
-        except GuardRefusal as refusal:
+        except Refusal as refusal:
             return f"the journal could not run {type(rule_command).__name__}: {refusal}", None
 
     def updated_input(self, answers: RuleAnswers, outcomes: list[tuple[str, str, object]]) -> Mapping[str, object]:

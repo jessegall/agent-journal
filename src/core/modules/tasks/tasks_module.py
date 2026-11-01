@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import TASK_NUDGES
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 from core.modules.tasks.commands.block_task.block_task import BlockTask
@@ -43,6 +44,7 @@ class TasksModule(Module):
     that keep an agent at its task."""
 
     name = "journal.core.tasks"
+    nudges = TASK_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))

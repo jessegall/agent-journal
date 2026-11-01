@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_nudges import BUILDER_BUILDS
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
 from core.base.driver.driver_rule import DriverRule
@@ -27,4 +28,4 @@ class DispatchAllowanceRule(DriverRule):
                                                for part in shell.parts)
         if not dispatches or self.settings.value(DISPATCHES_WORKERS_SETTING, hook.environment_id) is not False:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused("this builder builds its tasks itself: coding.builder-dispatches-workers is false")
+        return RuleAnswer.refused(BUILDER_BUILDS.nudge())

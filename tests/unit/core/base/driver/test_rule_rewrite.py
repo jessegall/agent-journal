@@ -1,3 +1,4 @@
+from core.testing.sample_nudge import sample_nudge
 from core.base.driver.hook_reply import HookReply
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
@@ -15,7 +16,7 @@ def test_an_answer_carries_the_new_input_of_the_tool_and_names_the_outcome_rewri
 
 
 def test_one_rewrite_on_a_hook_is_the_hooks_new_input_and_names_its_rule():
-    answers = RuleAnswers(["lead"], [record("a.run", RuleAnswer.rewritten({"command": "x"})), record("b.line", RuleAnswer.with_lines("a line"))])
+    answers = RuleAnswers(["lead"], [record("a.run", RuleAnswer.rewritten({"command": "x"})), record("b.line", RuleAnswer.with_nudges(sample_nudge("a line")))])
     assert dict(answers.updated_input) == {"command": "x"} and answers.rewriter_name == "a.run" and answers.refusal == ""
 
 

@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import SLEEP_REFUSED
 import re
 
 from core.base.agent_role import AgentRole
@@ -29,7 +30,7 @@ class SleepPollRefusalRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None or shell.parse_error or not any(self.is_sleep_poll(part) for part in shell.parts):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"a sleep with nothing to wait on is refused: {self.watch_advice(hook)}")
+        return RuleAnswer.refused(SLEEP_REFUSED.nudge(advice=self.watch_advice(hook)))
 
     def is_sleep_poll(self, part: Part) -> bool:
         return part.program == SLEEP or (part.program in LOOPS and SLEEP_LOOP.match(part.text) is not None)

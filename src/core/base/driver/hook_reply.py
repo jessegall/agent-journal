@@ -15,6 +15,7 @@ class HookReply:
     hook_call_id: int | None = None
     updated_input: Mapping[str, object] = field(default_factory=dict[str, object])
     terminal: str = ""
+    labelled_lines: Sequence[str] = field(default=(), compare=False)
 
     @classmethod
     def allowed(cls, *lines: str) -> "HookReply":

@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import TASK_AT_STOP
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -22,4 +23,4 @@ class TaskStopRule(DriverRule):
         current = self.current_tasks.current(hook.agent_id)
         if current is None or self.runs.is_watching(hook.agent_id):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"{current.name}, is in hand: carry on, or block it with journal task block {current.task.id} --reason \"<why>\"")
+        return RuleAnswer.refused(TASK_AT_STOP.nudge(name=current.name, task=current.task.id))

@@ -35,6 +35,7 @@ from core.base.registry.skill_entry import SkillEntry
 from core.base.skill.skill_declaration import SKILLS_FOLDER
 from core.base.skill.skill_digest import SkillDigest
 from core.base.registry.mark_entry import MarkEntry
+from core.base.registry.nudge_entry import NudgeEntry
 from core.base.registry.window_entry import WindowEntry
 from core.base.module.window_check import unavailable_reason
 from core.base.module.module import ListenerClass, Module
@@ -117,6 +118,7 @@ class ModuleSync:
             drivers=self.entries.drivers(modules),
             windows=self.windows(modules),
             marks=self.marks(modules),
+            nudges=self.nudges(modules),
             docks=self.docks(modules),
             providers=self.providers.providers(modules),
             settings=tuple(entry for module in modules for entry in SettingTree().entries(module.name, module.settings)),
@@ -141,6 +143,9 @@ class ModuleSync:
                                tuple(button.listed() for button in mark.group_buttons), tuple(button.listed() for button in mark.buttons), mark.body, mark.shown, mark.main,
                                mark.process, mark.full_width, module in shipped, unavailable_reason(mark.kit))
                      for module in modules for mark in module.marks)
+
+    def nudges(self, modules: tuple[type[Module], ...]) -> tuple[NudgeEntry, ...]:
+        return tuple(NudgeEntry(nudge.key, module.name, nudge.type.value, nudge.text, nudge.repeat_seconds, nudge.longest_characters) for module in modules for nudge in module.nudges)
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
         shipped = set(self.finder.default_modules())

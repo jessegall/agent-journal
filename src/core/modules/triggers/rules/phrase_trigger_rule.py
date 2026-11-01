@@ -1,3 +1,4 @@
+from core.modules.triggers.support.trigger_nudges import TRIGGER_DENIES, TRIGGER_LINE
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -28,8 +29,8 @@ class PhraseTriggerRule(DriverRule):
         matching = [trigger for trigger in self.triggers.phrased() if any(phrase.lower() in text for phrase in trigger.phrases)] if text else []
         deny = next((trigger for trigger in matching if trigger.action is TriggerAction.DENY), None)
         if deny is not None:
-            return RuleAnswer.refused(f"a trigger denies this: {deny.text}")
-        return RuleAnswer.with_lines(*(self.line(trigger) for trigger in matching)) if matching else RuleAnswer.allowed()
+            return RuleAnswer.refused(TRIGGER_DENIES.nudge(text=deny.text))
+        return RuleAnswer.with_nudges(*(TRIGGER_LINE.nudge(text=self.line(trigger)) for trigger in matching)) if matching else RuleAnswer.allowed()
 
     def text(self, hook: AgentHook) -> str:
         event = hook.event

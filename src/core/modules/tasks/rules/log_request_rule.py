@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import LOG_REQUEST
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -27,4 +28,4 @@ class LogRequestRule(DriverRule):
         current, writes = counted
         if writes != LOG_REQUEST_WRITES:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(f"{LOG_REQUEST_WRITES} writes since you logged {current.name}: log where it stands with journal task log {current.task.id} \"<where it stands>\"")
+        return RuleAnswer.with_nudges(LOG_REQUEST.nudge(writes=LOG_REQUEST_WRITES, name=current.name, task=current.task.id))

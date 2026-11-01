@@ -1,3 +1,4 @@
+from core.modules.tasks.support.task_nudges import BLOCKED_TASKS
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -28,4 +29,4 @@ class BlockedWorkRule(DriverRule):
         blocked = self.tasks.environment(hook.environment_id).filter(state=TaskState.BLOCKED).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked or self.calls.last_stop_refused(hook.agent_id):
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"blocked tasks: {', '.join(str(task.id) for task in blocked)}: unblock what can go on with journal task unblock <n>, or stop again to leave them")
+        return RuleAnswer.refused(BLOCKED_TASKS.nudge(tasks=', '.join(str(task.id) for task in blocked)))

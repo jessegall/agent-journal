@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from suites.coding.modules.workers.support.worker_nudges import MERGE_WAITS
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -29,10 +31,9 @@ class MergeCheckoutRule(DriverRule):
         reminded_at = self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref))
         if reminded_at is not None and reminded_at.elapsed_seconds(hook.timestamp) < REMINDER_SECONDS:
             return RuleAnswer.allowed()
-        lines: list[str] = []
+        nudges: list[Nudge] = []
         for worktree in self.delivered.delivered(hook.agent_id):
             environment = self.queries.query(Environment).find(worktree.environment_id)
             if not self.proofs.waiting_proofs(worktree.id).exists() and self.git.head(environment.folder) != worktree.base_branch:
-                lines.append(f"the merge of worker {worktree.agent_id} waits for the checkout of environment {environment.name} to return to"
-                             f" {worktree.base_branch}")
-        return RuleAnswer.with_lines(*lines) if lines else RuleAnswer.allowed()
+                nudges.append(MERGE_WAITS.nudge(worker=worktree.agent_id, environment=environment.name, branch=worktree.base_branch))
+        return RuleAnswer.with_nudges(*nudges) if nudges else RuleAnswer.allowed()

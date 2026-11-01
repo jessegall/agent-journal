@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from core.modules.processes.support.process_nudges import NAME_THE_RUN
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.command_category import CommandCategory
@@ -15,13 +17,13 @@ DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """A run of the agent's that has gone on for more than 5 seconds docks its output above the
+    """A run of the main agent's that has gone on for more than 5 seconds docks its output above the
     chat, once, and the agent is told if its card has only the raw command to show; a journal command never does."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS
     drivers = ["*"]
-    roles = [AgentRole.MAIN, AgentRole.WORKER]
+    roles = [AgentRole.MAIN]
 
     def __init__(self, processes: ProcessQuery, items: DockItemQuery, outputs: OutputQuery) -> None:
         self.processes, self.items, self.outputs = processes, items, outputs
@@ -31,11 +33,10 @@ class LongRunDockRule(DriverRule):
         due = [process for process in running if self.needs_dock(process, hook)]
         if not due:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(*self.title_lines(due)).running(*(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id) for process in due))
+        return RuleAnswer.with_nudges(*self.title_nudges(due)).running(*(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id) for process in due))
 
-    def title_lines(self, due: list[Process]) -> list[str]:
-        return [f'output {process.id} is docked with its raw command as its title: name what it does with journal output title {process.id} "<what it does>", or give its reader a --title'
-                for process in due if not self.has_title(process)]
+    def title_nudges(self, due: list[Process]) -> list[Nudge]:
+        return [NAME_THE_RUN.nudge(process=process.id) for process in due if not self.has_title(process)]
 
     def has_title(self, process: Process) -> bool:
         kept = self.outputs.process(process.id).page(1, 1).rows

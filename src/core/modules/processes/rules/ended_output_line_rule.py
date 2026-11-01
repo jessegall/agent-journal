@@ -29,4 +29,4 @@ class EndedOutputLineRule(DriverRule):
         ended = self.processes.agent(hook.agent_id).moved().ended()
         if answered_at is not None:
             ended = ended.matching(Greater("ended_at", answered_at.text))
-        return RuleAnswer.with_lines(*(line for process in ended.oldest().all_rows() for line in self.text.lines(process)))
+        return RuleAnswer.with_nudges(*(nudge for process in ended.oldest().all_rows() for nudge in self.text.nudges(process)))

@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import OPEN_TASKS_WAIT
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -22,4 +23,4 @@ class OpenTaskStopRule(DriverRule):
         if len(self.worktrees.environment_worktrees(hook.environment_id)) >= self.settings.number(WORKER_LIMIT, hook.environment_id):
             return RuleAnswer.allowed()
         open_ids = [str(task.id) for task in self.tasks.open_tasks(hook.environment_id).oldest().page().rows]
-        return RuleAnswer.refused(f"open tasks wait for a worker: {', '.join(open_ids)}") if open_ids else RuleAnswer.allowed()
+        return RuleAnswer.refused(OPEN_TASKS_WAIT.nudge(tasks=', '.join(open_ids))) if open_ids else RuleAnswer.allowed()

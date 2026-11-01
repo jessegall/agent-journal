@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import USE_A_MONITOR
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -20,7 +21,7 @@ class OutputStatusMonitorRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         numbers = [part.arguments[2] for part in shell.parts if self.is_status(part)] if shell is not None else []
-        return RuleAnswer.with_lines(*(f"do not ask again for output {number}: set a Monitor that ends when .journal/processes/{number}/end exists" for number in numbers))
+        return RuleAnswer.with_nudges(*(USE_A_MONITOR.nudge(output=number) for number in numbers))
 
     def is_status(self, part: Part) -> bool:
         return part.program == JOURNAL and list(part.arguments[:2]) == OUTPUT_STATUS_COMMAND and len(part.arguments) > 2

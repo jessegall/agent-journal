@@ -1,3 +1,4 @@
+from core.modules.memories.support.memory_nudges import WEIGH_MEMORIES
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -35,4 +36,4 @@ class OpenMarkRule(DriverRule):
         if reached is None:
             return RuleAnswer.allowed()
         memories = list(self.memories.query(hook).mark_memories().weight_order().all_rows())
-        return RuleAnswer.with_lines(*MemoryLines.weigh(reached, memories)).running(OpenMemoryMark(hook.agent_id, reached))
+        return RuleAnswer.with_nudges(*(WEIGH_MEMORIES.nudge(text=line) for line in MemoryLines.weigh(reached, memories))).running(OpenMemoryMark(hook.agent_id, reached))

@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import PROCESS_LOST
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -40,8 +41,7 @@ class OrphanProcessRule(DriverRule):
         last_sign = self.folder.heartbeat(process.id) or process.created_at
         if last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
             return answer
-        line = f"process {process.id} was lost: its shell is gone; journal output read {process.id} --summary"
-        return RuleAnswer(refusal=answer.refusal, lines=[*answer.lines, line], commands=[*answer.commands, OrphanProcess(process.id)])
+        return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_LOST.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
 
     def parts_ended(self, process: Process) -> list[EndProcessPart]:
         ended: list[EndProcessPart] = []

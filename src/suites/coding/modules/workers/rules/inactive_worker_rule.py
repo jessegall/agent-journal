@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.support.worker_nudges import WORKER_INACTIVE
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -32,7 +33,7 @@ class InactiveWorkerRule(DriverRule):
         if reminded_at is not None and reminded_at.elapsed_seconds(hook.timestamp) < INACTIVE_MINUTES * MINUTE_SECONDS:
             return RuleAnswer.allowed()
         lines = [line for line in (self.inactive_line(worktree, hook) for worktree in self.worktrees.main_worktrees(hook.agent_id)) if line]
-        return RuleAnswer.with_lines(*lines) if lines else RuleAnswer.allowed()
+        return RuleAnswer.with_nudges(*(WORKER_INACTIVE.nudge(text=line) for line in lines)) if lines else RuleAnswer.allowed()
 
     def inactive_line(self, worktree: Worktree, hook: AgentHook) -> str:
         worker = self.queries.query(Agent).find(worktree.agent_id)

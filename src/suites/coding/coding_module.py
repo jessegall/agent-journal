@@ -1,3 +1,4 @@
+from suites.coding.support.coding_nudges import CODING_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -27,6 +28,7 @@ class CodingModule(Module):
     modules only coding uses live in its modules folder."""
 
     name = "journal.suites.coding"
+    nudges = CODING_NUDGES
     seed_reason = "its file edits are written by an agent's edit hooks, and the demo has no hooks"
     requires_core = ">=5,<6"
     settings = CODING_SETTINGS

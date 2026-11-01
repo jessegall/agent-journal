@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from core.modules.messages.support.message_nudges import ACT_ON_MESSAGES, TAG_THE_IMAGE
 import re
 from pathlib import PurePath
 
@@ -18,7 +20,6 @@ from core.modules.messages.support.message_captions import MessageCaptions
 MESSAGE_READ_LINE = re.compile(r"\bjournal message (read|show) (\d+)")
 MESSAGE_UNREAD_LINE = re.compile(r"\bjournal message unread\b")
 READ_COMMAND = "read"
-ACT_LINE = "act on what you read: if it steers your work, take it as steering and follow it from now on; if it asks for an update, give the update now; if it asks for work, make a task for it; otherwise answer it"
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
@@ -45,12 +46,11 @@ class MessageShowReadRule(DriverRule):
             all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
             unread = list(all_unread)
             commands = {message.id: READ_COMMAND for message in unread}
-        lines = [line for message in unread if commands[message.id] == READ_COMMAND for line in self.image_lines(message)]
-        if any(commands[message.id] == READ_COMMAND for message in unread):
-            lines.insert(0, ACT_LINE)
-        return RuleAnswer.with_lines(*lines).running(*(ReadMessage(message.id) for message in unread))
+        read = [message for message in unread if commands[message.id] == READ_COMMAND]
+        images = [nudge for message in read for nudge in self.image_nudges(message)]
+        return RuleAnswer.with_nudges(*((ACT_ON_MESSAGES.nudge(), *images) if read else ())).running(*(ReadMessage(message.id) for message in unread))
 
-    def image_lines(self, message: Message) -> list[str]:
+    def image_nudges(self, message: Message) -> list[Nudge]:
         captions = MessageCaptions.of(message)
-        return [f'message {message.id} attaches an image: open {self.home.message_files(message.id) / name}, then journal message tag {message.id} "{name}" "<what it shows>"'
+        return [TAG_THE_IMAGE.nudge(message=message.id, path=self.home.message_files(message.id) / name, name=name)
                 for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions]

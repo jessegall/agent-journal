@@ -1,3 +1,4 @@
+from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -37,6 +38,7 @@ class SecretsModule(Module):
     keep a value out of every tool and row."""
 
     name = "journal.core.secrets"
+    nudges = SECRET_NUDGES
     seed_reason = "a secret's value is typed by the person, never made up for a demo"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]

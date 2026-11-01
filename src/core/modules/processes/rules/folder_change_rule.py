@@ -1,3 +1,4 @@
+from core.modules.processes.support.process_nudges import DO_NOT_MOVE
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -23,5 +24,5 @@ class FolderChangeRule(DriverRule):
         folder = str(hook.event.raw.get("cwd", "")).rstrip("/")
         for part in shell.parts:
             if part.program == CHANGE_WORD and [argument.rstrip("/") for argument in part.arguments] != [folder]:
-                return RuleAnswer.refused(f"do not move with cd: you are in {folder or 'the project'}, so name paths from there; a tool takes its own folder, such as npm --prefix or vitest --root")
+                return RuleAnswer.refused(DO_NOT_MOVE.nudge(folder=folder or "the project"))
         return RuleAnswer.allowed()

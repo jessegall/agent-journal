@@ -1,3 +1,5 @@
+from core.base.driver.nudge import Nudge
+from core.modules.processes.support.process_nudges import DRAFT_A_READER, OUTPUT_ENDED
 from pathlib import PurePath
 
 from core.modules.processes.models.enums.process_state import ProcessState
@@ -17,9 +19,10 @@ class EndedOutputText:
     def line(self, process: Process) -> str:
         return f"output {process.id} ended: {self.summary(process) or self.outcome(process)}; journal output read {process.id} --summary"
 
-    def lines(self, process: Process) -> tuple[str, ...]:
+    def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)
-        return (self.line(process), advice) if advice else (self.line(process),)
+        ended = OUTPUT_ENDED.nudge(text=self.line(process))
+        return (ended, DRAFT_A_READER.nudge(text=advice)) if advice else (ended,)
 
     def advice(self, process: Process) -> str:
         kept = self.outputs.process(process.id).page(1, 1).rows
