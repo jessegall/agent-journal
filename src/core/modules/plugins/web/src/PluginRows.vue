@@ -1,11 +1,15 @@
 <script setup>
 import {ref} from "vue";
-import {Dialog, Btn, Skeleton, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import {Dashboard, Dialog, Btn, Skeleton, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import PluginGuide from "./PluginGuide.vue";
+import PluginInstallPreview from "./PluginInstallPreview.vue";
 import PluginServices from "./PluginServices.vue";
 
 // the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
 const context = useWindow();
 const {rows, failure, loaded, load} = useRows("plugin list", ["plugin.*"]);
+const {rows: boards} = useRows("plugin dashboards", ["plugin.*"]);
+const boardOf = (row) => boards.value.find((board) => board.plugin === row.name);
 const tools = useListTools(rows, {title: (row) => row.title || row.name, isOpen: (row) => row.enabled});
 const refusal = ref("");
 const open = ref(null);
@@ -23,8 +27,36 @@ async function run(line) {
     return answer.ok;
 }
 
+const preview = ref(null);
+const guide = ref(false);
+
+// an install shows everything the plugin would run first, and goes ahead only from there
+async function showPreview() {
+    if (!source.value.trim()) return;
+    const answer = await context.read(["plugin", "preview", source.value.trim()]);
+    refusal.value = answer.ok ? "" : answer.error;
+    preview.value = answer.ok ? answer.value : null;
+}
+
 async function install() {
-    if (source.value.trim() && (await run(["plugin", "install", source.value.trim(), "--yes"]))) (source.value = ""), (open.value = null);
+    const installed = await run(["plugin", "install", preview.value.source, "--yes"]);
+    preview.value = null;
+    if (installed) (source.value = ""), (open.value = null);
+}
+
+const latest = ref({});
+
+async function checkLatest(row) {
+    const answer = await context.read(["plugin", "latest", row.name]);
+    latest.value = {...latest.value, [row.name]: answer.ok ? answer.value.line : answer.error};
+}
+
+const board = ref(null);
+
+async function showBoard(row) {
+    const answer = await context.read(["plugin", "dashboard", row.name]);
+    refusal.value = answer.ok ? "" : answer.error;
+    board.value = answer.ok ? {title: boardOf(row).title, document: answer.value} : null;
 }
 
 async function askTheAgent() {
@@ -70,11 +102,12 @@ async function showRecord(row) {
     <div class="plugin-tools">
         <Btn small bordered data-plugin-install @click="open = open === 'install' ? null : 'install'">Install a plugin</Btn>
         <Btn small bordered data-plugin-make @click="open = open === 'make' ? null : 'make'">Ask the agent to make one</Btn>
+        <Btn small bordered data-plugin-guide-open @click="guide = true">How to make a plugin</Btn>
     </div>
     <template v-if="open === 'install'">
-        <form class="plugin-form" data-plugin-install-form @submit.prevent="install">
-            <input v-model="source" placeholder="owner/repo, a link or a folder" aria-label="Where the plugin is">
-            <Btn small kind="primary" type="submit" :disabled="!source.trim()">Install</Btn>
+        <form class="plugin-form" data-plugin-install-form @submit.prevent="showPreview">
+            <input v-model="source" placeholder="The plugin's folder" aria-label="The plugin's folder">
+            <Btn small kind="primary" type="submit" :disabled="!source.trim()">Preview</Btn>
         </form>
     </template>
     <template v-if="open === 'make'">
@@ -111,6 +144,10 @@ async function showRecord(row) {
                 <span class="plugin-moves">
                     <Btn small data-plugin-settings @click="toggleSettings(row)">Settings</Btn>
                     <Btn small data-plugin-record @click="showRecord(row)">What it did</Btn>
+                    <Btn small data-plugin-latest @click="checkLatest(row)">Check for updates</Btn>
+                    <template v-if="boardOf(row)">
+                        <Btn small data-plugin-board @click="showBoard(row)">{{ boardOf(row).title }}</Btn>
+                    </template>
                     <template v-if="removing === row.name">
                         <Btn small @click="removing = ''">Keep it</Btn>
                         <Btn small kind="danger" data-plugin-remove-keep @click="remove(row, false)">Remove, keep its data</Btn>
@@ -120,6 +157,9 @@ async function showRecord(row) {
                         <Btn small data-plugin-remove @click="removing = row.name">Remove</Btn>
                     </template>
                 </span>
+                <template v-if="latest[row.name]">
+                    <span class="plugin-note" data-plugin-latest-line>{{ latest[row.name] }}</span>
+                </template>
                 <template v-if="settings[row.name]">
                     <div class="plugin-settings" data-plugin-setting-list>
                         <template v-if="!settings[row.name].length">
@@ -158,6 +198,17 @@ async function showRecord(row) {
         </Dialog>
     </template>
     <PluginServices />
+    <template v-if="preview">
+        <PluginInstallPreview :preview="preview" @close="preview = null" @install="install" />
+    </template>
+    <template v-if="guide">
+        <PluginGuide @close="guide = false" />
+    </template>
+    <template v-if="board">
+        <Dialog :title="board.title" @close="board = null">
+            <Dashboard :document="board.document" />
+        </Dialog>
+    </template>
 </template>
 
 <style scoped>

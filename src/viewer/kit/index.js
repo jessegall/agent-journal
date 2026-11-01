@@ -6,6 +6,7 @@ export {default as Switch} from "./Switch.vue";
 export {peekRef} from "../src/route.js";
 export {default as CloseButton} from "../src/kit/CloseButton.vue";
 export {default as RowList} from "./RowList.vue";
+export {default as Dashboard} from "../src/kit/Dashboard.vue";
 export {default as MessageCard} from "./MessageCard.vue";
 export {default as TextDisplay} from "../src/kit/TextDisplay.vue";
 export {default as Skeleton} from "../src/kit/Skeleton.vue";

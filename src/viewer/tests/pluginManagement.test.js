@@ -6,10 +6,19 @@ afterEach(() => (document.body.innerHTML = ""));
 
 const PLUGIN = {id: 1, name: "sins", title: "Sins", release: "1.0", enabled: true, source: "owner/sins", failing: false};
 
+const PREVIEW = {name: "sins", title: "Sins", version: "1.0", source: "owner/repo", rows: [{kind: "setup", label: "packages", command: "npm install"}]};
+
 async function drawn(refuse = false) {
     const ran = [];
     const window = context({"plugin list": page([PLUGIN])});
-    window.read = async (line) => (Array.isArray(line) ? {ok: true, value: {settings: [{key: "depth", type: "number", title: "Depth", value: 3}]}} : page([PLUGIN]));
+    window.read = async (line) => {
+        if (line === "plugin dashboards") return page([{id: "sins", plugin: "sins", title: "Sins board"}]);
+        if (!Array.isArray(line)) return page([PLUGIN]);
+        if (line[1] === "preview") return refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: PREVIEW};
+        if (line[1] === "latest") return {ok: true, value: {line: "sins: v2 is newer than 1.0"}};
+        if (line[1] === "dashboard") return {ok: true, value: {missing: "sins has written nothing on its dashboard yet."}};
+        return {ok: true, value: {settings: [{key: "depth", type: "number", title: "Depth", value: 3}]}};
+    };
     window.run = async (line) => (ran.push(line), refuse ? {ok: false, error: "no such plugin"} : {ok: true, value: {}});
     return {element: await mounted(PluginRows, window), ran};
 }
@@ -20,7 +29,7 @@ const type = async (input, text) => {
     await settle();
 };
 
-test("a plugin is installed from a source", async () => {
+test("a plugin shows everything it would run, and installs only from there", async () => {
     const {element, ran} = await drawn();
     element.querySelector("[data-plugin-install]").click();
     await settle();
@@ -28,7 +37,36 @@ test("a plugin is installed from a source", async () => {
     await type(form.querySelector("input"), "owner/repo");
     form.dispatchEvent(new Event("submit", {cancelable: true}));
     await settle();
+    expect(ran).toEqual([]);
+    expect(document.querySelector("[data-plugin-preview]").textContent).toContain("npm install");
+    document.querySelector("[data-plugin-preview-install]").click();
+    await settle();
     expect(ran).toContainEqual(["plugin", "install", "owner/repo", "--yes"]);
+    expect(document.querySelector("[data-plugin-preview]")).toBeNull();
+});
+
+test("checking for updates says what the source has", async () => {
+    const {element} = await drawn();
+    element.querySelector("[data-plugin-latest]").click();
+    await settle();
+    expect(element.querySelector("[data-plugin-latest-line]").textContent).toBe("sins: v2 is newer than 1.0");
+});
+
+test("a plugin that declares a dashboard offers it and says when nothing is written yet", async () => {
+    const {element} = await drawn();
+    const button = element.querySelector("[data-plugin-board]");
+    expect(button.textContent).toContain("Sins board");
+    button.click();
+    await settle();
+    expect(document.body.textContent).toContain("sins has written nothing on its dashboard yet.");
+});
+
+test("the guide opens with every manifest key", async () => {
+    const {element} = await drawn();
+    element.querySelector("[data-plugin-guide-open]").click();
+    await settle();
+    const guide = document.querySelector("[data-plugin-guide]").textContent;
+    for (const key of ["journal-plugin.json", "hears", "holds", "services", "dashboard", "$JOURNAL_PLUGIN_DATA"]) expect(guide).toContain(key);
 });
 
 test("a refused install says why", async () => {
