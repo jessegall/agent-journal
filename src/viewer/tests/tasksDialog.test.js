@@ -159,3 +159,11 @@ test("deleting from the more menu asks a second time", async () => {
     await settle();
     expect(ran).toContainEqual(["task", "delete", "7"]);
 });
+
+test("the standing counts every task not done, whatever the filter shows", async () => {
+    const {shown} = await dialog();
+    const before = shown.querySelector("[data-tasks-standing]").textContent;
+    (await menuItem('[data-filter-state="blocked"]', "[data-menu-filter]")).click();
+    await settle();
+    expect(shown.querySelector("[data-tasks-standing]").textContent).toBe(before);
+});

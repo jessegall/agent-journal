@@ -42,9 +42,9 @@ onUnmounted(() => stopFollowing?.());
 
 const order = computed(() => (list.value?.groups ?? []).flatMap(({tasks}) => tasks.map((task) => task.id)));
 const standing = computed(() => {
-    const going = (list.value?.groups ?? []).filter(({group}) => group.state !== "completed" && group.state !== "cancelled");
-    const blocked = going.find(({group}) => group.state === "blocked")?.group.total;
-    return `${going.reduce((total, {group}) => total + group.total, 0)} not done${blocked ? `, ${blocked} blocked` : ""}`;
+    const going = (list.value?.board ?? []).filter((group) => group.state !== "completed" && group.state !== "cancelled");
+    const blocked = going.find((group) => group.state === "blocked")?.total;
+    return `${going.reduce((total, group) => total + group.total, 0)} not done${blocked ? `, ${blocked} blocked` : ""}`;
 });
 
 function select(id) {

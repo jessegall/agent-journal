@@ -64,7 +64,7 @@ const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${i
 const stopFollowing = context.follow(["task.*"], load);
 onUnmounted(() => stopFollowing?.());
 load();
-defineExpose({groups, query, focusSearch: () => search.value?.focus()});
+defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
