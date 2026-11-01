@@ -8,8 +8,8 @@ from core.base.chat.mark_button import MarkButton
 @dataclass(frozen=True)
 class DockDeclaration:
     """A type of item a module may dock above the chat: its type as a member of the module's own enum, its
-    icon and title, the buttons on its wrapper, the file of its body, its limits, and the viewer kit
-    versions it was built for."""
+    icon and title, the buttons on its wrapper, the file of its body, its limits, the viewer kit
+    versions it was built for, and the word on a badge after its title."""
 
     type: StrEnum
     icon: str
@@ -20,3 +20,4 @@ class DockDeclaration:
     leaves_after_seconds: int = 0
     reads: Sequence[str] = ()
     kit: str = ">=1,<2"
+    badge: str = ""

@@ -7,6 +7,7 @@ from core.modules.aliases.aliases_module import AliasesModule
 from core.modules.demo.demo_module import DemoModule
 from core.modules.search.search_module import SearchModule
 from core.modules.docking.docking_module import DockingModule
+from core.modules.developer.developer_module import DeveloperModule
 from core.modules.drivers.drivers_module import DriversModule
 from core.modules.environments.environments_module import EnvironmentsModule
 from core.modules.memories.memories_module import MemoriesModule
@@ -36,4 +37,4 @@ from core.modules.mcp.mcp_module import McpModule
 from core.modules.usage.usage_module import UsageModule
 from core.modules.updates.updates_module import UpdatesModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, UpdatesModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, UpdatesModule)

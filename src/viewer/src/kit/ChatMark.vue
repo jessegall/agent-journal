@@ -144,7 +144,7 @@ const tint = computed(() => ({
                 <span class="worker">{{ mark.worker }}</span>
             </template>
             <span class="head">
-                <TextDisplay :text="mark.label" inline :row-names="false" />
+                <TextDisplay :text="mark.label" inline />
                 <template v-if="mark.name">
                     <strong>{{ mark.name }}</strong>
                 </template>

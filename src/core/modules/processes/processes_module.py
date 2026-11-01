@@ -40,6 +40,7 @@ from core.modules.processes.commands.stop_process_handler import StopProcessHand
 from core.modules.processes.commands.stop_process_subcommand import StopProcessSubcommand
 from core.modules.processes.rules.ended_output_line_rule import EndedOutputLineRule
 from core.modules.processes.rules.unread_output_reminder_rule import UnreadOutputReminderRule
+from core.modules.processes.rules.folder_change_rule import FolderChangeRule
 from core.modules.processes.rules.runner_rewrite_rule import RunnerRewriteRule
 from core.modules.processes.rules.sleep_poll_refusal_rule import SleepPollRefusalRule
 from core.modules.processes.commands.add_reader_handler import AddReaderHandler
@@ -83,7 +84,7 @@ class ProcessesModule(Module):
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusalRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
+    driver_rules = [SleepPollRefusalRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
     listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     docks = PROCESS_DOCKS

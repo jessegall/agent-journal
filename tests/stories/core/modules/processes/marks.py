@@ -124,3 +124,10 @@ def test_a_plain_command_that_ended_after_moving_to_the_background_ends_its_mark
     end_run(story, process, "done\n")
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1 --state ended", "process:1")
+
+
+def test_a_mark_names_the_command_and_not_where_the_project_lives(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "cd /work/main && make test /work/main/cart.py", category=CommandCategory.TEST_RUN)
+    story.run_listeners()
+    story.expect_text(MARKS, "make test cart.py")

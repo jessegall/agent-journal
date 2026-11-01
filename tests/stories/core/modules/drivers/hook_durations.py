@@ -5,8 +5,8 @@ from core.base.actor_type import ActorType
 from core.testing.story_fixture import StoryFixture
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-MASTER = "journal.core.drivers.developer"
-HOOKS = "journal.core.drivers.developer.hooks"
+MASTER = "journal.core.developer.tools"
+HOOKS = "journal.core.developer.tools.hooks"
 
 
 class BuilderWithUser(StoryFixture):
@@ -71,3 +71,11 @@ def test_the_agent_is_told_of_a_hook_only_when_it_costs_the_points_over_the_limi
     monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_POINT_LIMIT", 1)
     timing.stamps[:] = Timing.started("go_start").stamps
     assert any("cost" in line and "points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+
+
+def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_setting_is_on(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    assert "to the agent:" not in story.hook("s-1", HookSamples.session_start()).terminal
+    story.run(f"setting switch {MASTER} on --project", actor=story.user)
+    story.run('task make "Fix the cart" --environment main', actor=story.user)
+    assert "to the agent: task 1 is yours now" in story.hook("s-1", HookSamples.stop()).terminal

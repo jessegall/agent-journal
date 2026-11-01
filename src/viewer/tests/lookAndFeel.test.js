@@ -203,11 +203,11 @@ test("composer: Dump files opens a form where pasted paragraphs and dropped file
     expect(element.querySelector("[data-dump-form]")).toBeNull();
 });
 
-test("composer: the running tool rolls at the foot of the chat, and a button scrolls the chat to its top", async () => {
+test("composer: the running tool rolls at the foot of the chat, and a button scrolls the chat to its newest", async () => {
     const element = await mountedChat({"hook-call list --limit 10": [{id: 10, hook: "post_tool_use", tool: "mcp__playwright__browser_navigate"}, {id: 9, hook: "pre_tool_use", tool: "mcp__playwright__browser_navigate"}]});
     await new Promise((resolve) => setTimeout(resolve, 400));
     expect(element.querySelector("[data-running-command]")?.textContent).toContain("browser_navigate");
-    expect(element.querySelector("[data-scroll-top]")).not.toBeNull();
+    expect(element.querySelector("[data-scroll-foot]")).not.toBeNull();
 });
 
 test("bars: an agent bar names the agent's state and task, and an information bar its context use and model", () => {

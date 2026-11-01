@@ -8,7 +8,6 @@ SUITE_SETTING = f"{MODULE_KEY}.suite"
 DAYS_SETTING = f"{MODULE_KEY}.hook-call-days"
 DRIVER_SETTINGS = f"{MODULE_KEY}.driver."
 ALLOWANCE_SETTINGS = f"{MODULE_KEY}.essential."
-HOOK_DURATIONS_SETTING = f"{MODULE_KEY}.developer.hooks.terminal-durations"
 DRIVERS_SETTINGS = [
     SettingValue("suite", "Suite", "The suite of agents this environment works with.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
@@ -17,8 +16,4 @@ DRIVERS_SETTINGS = [
                  any_key=SettingValue("*", "Driver", "The driver this kind of agent works under.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT)),
     SettingGroup("essential", "Essential rules", "Essential rules the user allowed to be switched off.",
                  any_key=SettingValue("*", "Allowed", "Whether this essential rule may be switched off.", SettingType.FLAG, default=False, scope=SettingScope.PROJECT)),
-    SettingGroup("developer", "Developer", "Tools for working on the journal itself; switching this off turns off every one inside it.", toggleable=True, enabled=False,
-                 children=[SettingGroup("hooks", "Hooks", "What the journal shows about the hooks of the agent program.", toggleable=True,
-                                        children=[SettingValue("terminal-durations", "Hook durations in the terminal", "Shows in the terminal how long each hook took.",
-                                                               SettingType.FLAG, default=True, scope=SettingScope.PROJECT)])]),
 ]

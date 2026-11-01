@@ -13,6 +13,7 @@ from core.modules.processes.models.enums.process_mark_variant import ProcessMark
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
+from core.modules.processes.support.project_paths import ProjectPaths
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70
@@ -46,7 +47,7 @@ class ProcessEndMarkListener(CommitListener):
             return
         variant = ProcessMarkVariant(process.state.value)
         figure = f"{process.progress}%" if process.progress and process.state not in ENDED else ""
-        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{PHRASES[process.state]} {process.line[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
+        self.bus.run(ShowMark(process.environment_id, ProcessMarkType.COMMAND, variant, key, f"{PHRASES[process.state]} {ProjectPaths.relative_line(process.line, process.folder)[:LINE_CHARACTERS]}", agent_id=process.agent_id, detail=self.last_lines(process),
                               row_model="process", row_id=process.id, outcome=OUTCOMES.get(process.state, MarkOutcome.RUNNING), figure=figure,
                               fraction=process.progress / 100 if process.state not in ENDED else 0.0, ended=process.state in ENDED),
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)

@@ -33,6 +33,9 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
         <template #head>
             <Icon :name="look.icon" class="dock-icon" />
             <span class="dock-title">{{ look.title }}</span>
+            <template v-if="declaration?.badge">
+                <span :class="['dock-badge', item.type.split('.')[1]]" data-dock-badge>{{ declaration.badge }}</span>
+            </template>
             <button type="button" class="dock-fold" data-dock-fold :aria-expanded="!folded" :title="folded ? 'Unfold' : 'Fold'" @click="emit('fold')"><FoldSign :open="!folded" /></button>
             <span class="chat-dock-acts dock-acts">
                 <template v-for="button in buttons" :key="button.action + button.runs">
@@ -53,6 +56,31 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 <style scoped>
 .dock-icon {
     flex: none;
+    color: var(--text-3);
+}
+
+.dock-badge {
+    flex: none;
+    padding: 1px 8px;
+    border-radius: 9px;
+    background: var(--raised);
+    color: var(--text-2);
+    font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.dock-badge.started {
+    background: var(--accent-dim);
+    color: var(--accent-text);
+}
+
+.dock-badge.waiting {
+    background: color-mix(in srgb, var(--warn, #d9a441) 22%, transparent);
+    color: var(--warn, #d9a441);
+}
+
+.dock-badge.cancelled,
+.dock-badge.paused {
     color: var(--text-3);
 }
 

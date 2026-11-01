@@ -20,8 +20,9 @@ class DockEntry:
     reads: Sequence[str]
     shipped: bool
     unavailable_reason: str
+    badge: str = ""
 
     @classmethod
     def restored(cls, stored: Mapping[str, Any]) -> "DockEntry":
         return cls(stored["type"], stored["module"], stored["icon"], stored["title"], stored["body"], tuple(stored["buttons"]), stored["most"],
-                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"])
+                   stored["leaves_after_seconds"], tuple(stored["reads"]), stored["shipped"], stored["unavailable_reason"], stored.get("badge", ""))

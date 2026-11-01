@@ -21,3 +21,17 @@ test("a message of the user shows a sent tick, and a read one shows it read", ()
 test("a message of the agent shows no ticks", () => {
     expect(shown({...user, type: "agent"})).toBeNull();
 });
+
+test("a row named in a message is a link that opens it, and a reply links the message it answers", async () => {
+    const element = document.createElement("div");
+    const app = createApp({render: () => h(MessageCard, {message: {...user, text: "see task 5", parent_id: 9}})});
+    app.mount(element);
+    element.querySelector("[data-peek='tasks:5']").click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(location.hash).toContain("open=tasks:5");
+    element.querySelector("[data-message-reply]").click();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(location.hash).toContain("messages:9");
+    app.unmount();
+    location.hash = "";
+});

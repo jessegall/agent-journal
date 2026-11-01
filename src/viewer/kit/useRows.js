@@ -35,7 +35,10 @@ export function useRows(line, patterns, {incremental = false} = {}) {
 
     async function load() {
         const result = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line);
-        rows.value = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
+        const fresh = result.ok ? (context.shared ? [result.value] : result.value.rows) : [];
+        // older pages already read stay when the newest page is read again, so a chat scrolled up keeps its place
+        const reach = fresh.length ? Math.min(...fresh.map((row) => row.id)) : 0;
+        rows.value = incremental && result.ok && reach ? [...fresh, ...rows.value.filter((row) => row.id < reach)] : fresh;
         failure.value = result.ok ? "" : result.error;
         loaded.value = true;
     }

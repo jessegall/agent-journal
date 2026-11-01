@@ -4,7 +4,7 @@ import DumpForm from "./DumpForm.vue";
 import {Btn, DockStack, RunningCommand, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message list", ["message.*"], {incremental: true});
-const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
+const {rows: allMarks, older: olderMarks} = useRows("chat-mark list", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const {rows: latestCalls} = useRows("hook-call list --limit 10", ["hook_call.*"]);
@@ -45,6 +45,8 @@ const text = ref("");
 const sendFailure = ref("");
 const scroller = ref(null);
 const atTop = ref(true);
+const awayFromFoot = ref(false);
+const arrived = ref(0);
 const dumping = ref(false);
 const attached = ref([]);
 const picker = ref(null);
@@ -102,7 +104,8 @@ async function pageOlder() {
     if (paging || !loaded.value) return;
     paging = true;
     const before = scroller.value.scrollHeight;
-    if (await older()) {
+    const [more, moreMarks] = await Promise.all([older(), olderMarks()]);
+    if (more || moreMarks) {
         await nextTick();
         scroller.value.scrollTop += scroller.value.scrollHeight - before;
     }
@@ -114,6 +117,8 @@ function followScroll() {
     if (!scroller.value) return;
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
     atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS;
+    awayFromFoot.value = !atFoot;
+    if (atFoot) arrived.value = 0;
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
     lastTop = scrollTop;
     if (opening === null) return;
@@ -122,11 +127,14 @@ function followScroll() {
     else folding = setTimeout(() => (docksOpen.value = false), FOLD_AFTER_MS);
 }
 // the newest message and mark are at the foot: a chat that was at its foot stays there as rows land, one scrolled up is left where it is
+watch(() => messages.value[0]?.id, (newest, before) => {
+    if (before && newest > before && !atFoot) arrived.value += 1;
+});
 watch([rows, loaded], async () => {
     await nextTick();
     if (atFoot && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
 });
-const scrollToTop = () => scroller.value?.scrollTo({top: 0, behavior: "smooth"});
+const scrollToFoot = () => scroller.value?.scrollTo({top: scroller.value.scrollHeight, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
 </script>
 
@@ -157,9 +165,11 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
             </RowList>
         </div>
         <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
-        <button type="button" data-scroll-top :class="['scroll-top', {hidden: atTop}]" aria-label="Scroll to the top" @click="scrollToTop">
-            <Icon name="up" :size="14" />
-        </button>
+        <div class="jump-holder">
+            <button type="button" data-scroll-foot :class="['jump', {hidden: !awayFromFoot}]" @click="scrollToFoot">
+                {{ arrived ? `${arrived} new` : "Newest" }}
+            </button>
+        </div>
         <DockStack :items="docked" :folded="short || !docksOpen" />
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
@@ -295,22 +305,33 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     background: var(--text-4);
 }
 
-.scroll-top {
-    position: absolute;
-    right: 14px;
-    top: 120px;
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border: 1px solid var(--border-2);
-    border-radius: 50%;
-    background: var(--bg);
-    color: var(--text-2);
-    cursor: pointer;
+.jump-holder {
+    position: relative;
+    flex: none;
+    height: 0;
 }
 
-.scroll-top.hidden {
+.jump {
+    position: absolute;
+    z-index: 2;
+    bottom: 8px;
+    left: 50%;
+    padding: 4px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 13px;
+    background: var(--raised);
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transform: translateX(-50%);
+}
+
+.jump:hover {
+    color: var(--text);
+}
+
+.jump.hidden {
     visibility: hidden;
 }
 

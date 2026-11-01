@@ -3,11 +3,12 @@ import {computed} from "vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
+import {peekChip, peekRef} from "../src/route.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card
 const props = defineProps({message: {type: Object, required: true}});
-const html = computed(() => render(props.message.text ?? "", {env: "", rowNames: false}));
+const html = computed(() => render(props.message.text ?? "", {env: ""}));
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
 const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIComponent(name)}`;
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name)})));
@@ -16,7 +17,10 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 <template>
     <article class="message" data-message :data-from="message.type" :data-ref="`message:${message.id}`">
-        <div class="message-card md" v-html="html" />
+        <template v-if="message.parent_id">
+            <button type="button" class="message-reply" data-message-reply @click="peekRef(`messages:${message.parent_id}`)">Reply to message {{ message.parent_id }}</button>
+        </template>
+        <div class="message-card md" @click="peekChip" v-html="html" />
         <template v-if="files.length">
             <div class="message-files" data-message-files>
                 <template v-for="file in files" :key="file.name">
@@ -50,6 +54,20 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 .message[data-from="user"] {
     align-items: flex-end;
     margin-left: auto;
+}
+
+.message-reply {
+    padding: 0 2px;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.message-reply:hover {
+    color: var(--text);
 }
 
 .message-card {
