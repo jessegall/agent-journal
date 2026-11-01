@@ -57,7 +57,7 @@ class FitnessMeasures:
 
     def completion_rate(self, agent: Agent, now: Timestamp) -> FitnessMeasure:
         since = Timestamp(now.value - timedelta(hours=COMPLETION_WINDOW_HOURS)).text
-        closed = self.queries.query(Task).filter(holder_id=agent.id, state=TaskState.COMPLETED).matching(Greater("closed_at", since)).count()
+        closed = self.queries.query(Task).filter(environment_id=agent.environment_id, state=TaskState.COMPLETED).matching(Greater("closed_at", since)).count()
         return FitnessMeasure("completion_rate", "Tasks completed an hour", closed / COMPLETION_WINDOW_HOURS, None, 1.0, 0)
 
     def load(self, agent: Agent, now: Timestamp) -> float:

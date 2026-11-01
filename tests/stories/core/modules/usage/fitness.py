@@ -57,3 +57,14 @@ def test_messages_arriving_faster_than_answered_raise_the_load_and_its_level(new
         story.expect_success(f'message send "Fix {number}" --environment main', actor=story.user)
     answer = fitness(story)
     story.expect_rows(answer["load"] == 2.0, answer["load_level"] == "critical")
+
+
+def test_tasks_closed_in_the_last_two_hours_count_and_older_ones_do_not(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_success('task make "Fix the cart" --environment main', actor=story.agent)
+    story.expect_success("task start 1", actor=story.agent)
+    story.expect_success('task close 1 --outcome "done"', actor=story.agent)
+    story.expect_rows(measure(fitness(story), "completion_rate")["value"] == 0.5)
+    story.advance(timedelta(hours=3))
+    story.expect_rows(measure(fitness(story), "completion_rate")["value"] == 0)
+
