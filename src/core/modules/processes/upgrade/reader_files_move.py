@@ -10,8 +10,9 @@ READERS_FOLDER = "readers"
 
 
 class ReaderFilesMove:
-    """Carries the readers version 4 kept as files in the readers folder beside its database into version 5's readers, a script one
-    still reading through its file; a name version 5 ships already keeps version 5's reader and is counted."""
+    """Carries the readers version 4 kept as files in the readers folder beside its database into version
+    5's readers, a script one still reading through its file; a name version 5 ships already keeps
+    version 5's reader and is counted."""
 
     def move(self, folder: Path, rows: RowInsert, report: MoveReport, context: MoveContext) -> None:
         for reader_file in ReaderFile.found(folder / READERS_FOLDER):
