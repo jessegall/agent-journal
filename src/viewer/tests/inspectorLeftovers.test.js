@@ -18,13 +18,30 @@ function drawn(component, props) {
     return element;
 }
 
-test("a memory's panel lists its keywords, and none draws nothing", async () => {
-    const element = drawn(MemoryFacts, {id: 3, read: async () => ({ok: true, value: {rows: [{word: "cart"}, {word: "total"}]}})});
+test("a memory's panel lists its keywords, adds one and takes one off", async () => {
+    const lines = [];
+    const read = async (line) => (lines.push(line), {ok: true, value: {rows: [{id: 7, word: "cart"}]}});
+    const element = drawn(MemoryFacts, {id: 3, read});
     await settled();
-    expect(element.querySelector("[data-memory-keywords]").textContent).toContain("cart, total");
-    const none = drawn(MemoryFacts, {id: 3, read: async () => ({ok: true, value: {rows: []}})});
+    expect(lines[0]).toEqual(["memory-keyword", "list", "--memory-id", "3"]);
+    expect(element.querySelector("[data-memory-word]").textContent).toContain("cart");
+    const form = element.querySelector("[data-memory-word-form]");
+    const input = form.querySelector("input");
+    input.value = "total";
+    input.dispatchEvent(new Event("input"));
     await settled();
-    expect(none.querySelector("[data-memory-keywords]")).toBeNull();
+    form.dispatchEvent(new Event("submit", {cancelable: true}));
+    await settled();
+    expect(lines).toContainEqual(["memory-keyword", "make", "3", "total"]);
+    element.querySelector("[data-memory-word-off]").click();
+    await settled();
+    expect(lines).toContainEqual(["memory-keyword", "delete", "7"]);
+});
+
+test("a memory with no keywords says what that means", async () => {
+    const element = drawn(MemoryFacts, {id: 3, read: async () => ({ok: true, value: {rows: []}})});
+    await settled();
+    expect(element.textContent).toContain("No keywords");
 });
 
 test("a worker's panel shows each point with its proof or that it has none", async () => {
