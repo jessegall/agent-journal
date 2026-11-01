@@ -27,6 +27,10 @@ class HookCallQuery(Query[HookCall]):
         refused = [stop.answer == HookAnswer.REFUSED for stop in stops]
         return refused.index(False) if False in refused else len(refused)
 
+    def last_stop_refused(self, agent_id: int) -> bool:
+        stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().page(1, 1).rows
+        return bool(stops) and stops[0].answer == HookAnswer.REFUSED
+
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
 

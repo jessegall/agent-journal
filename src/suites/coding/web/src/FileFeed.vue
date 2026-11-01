@@ -1,7 +1,7 @@
 <script setup>
 import {RowList, useRows, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded} = useRows(`file-edit list --agent ${useWindow().agent}`, ["file_edit.create"]);
+const {rows, failure, loaded} = useRows(useWindow().agent == null ? "file-edit list" : `file-edit list --agent ${useWindow().agent}`, ["file_edit.create"]);
 </script>
 
 <template>

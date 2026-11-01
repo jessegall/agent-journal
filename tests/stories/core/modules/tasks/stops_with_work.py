@@ -10,7 +10,7 @@ def test_a_builder_that_stops_with_its_task_in_hand_is_told_to_carry_on(new_stor
 
 def test_a_builder_is_told_to_carry_on_at_every_stop_while_its_task_is_in_hand(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
-    for _ in range(5):
+    for _ in range(12):
         story.expect_hook_refusal("s-1", HookSamples.stop(), "task 1, Fix the cart, is in hand: carry on")
 
 

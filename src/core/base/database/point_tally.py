@@ -9,6 +9,7 @@ BYTES_PER_KILOBYTE = 1024
 TABLES_SHOWN = 3
 STATEMENT_CHARACTERS = 300
 TABLE_PATTERN = re.compile(r"\bFROM\s+(\w+)", re.IGNORECASE)
+EVENT_LOG_PATTERN = re.compile(r"\s*INSERT\s+INTO\s+events\b", re.IGNORECASE)
 COUNT_PATTERN = re.compile(r"\s*SELECT\s+count\(", re.IGNORECASE)
 
 
@@ -39,7 +40,7 @@ class Points:
 
 class PointTally:
     """Counts the points the database is asked for as they happen: a row loaded, a write and a started kilobyte loaded;
-    a count of rows loads none."""
+    a count of rows loads none, and the event log row of a write is part of that write."""
 
     def __init__(self) -> None:
         self.rows, self.writes, self.bytes = 0, 0, 0
@@ -57,6 +58,8 @@ class PointTally:
         self.bytes += sum(len(value) for row in rows for value in row if isinstance(value, (str, bytes)))
 
     def wrote(self, sql: str) -> None:
+        if EVENT_LOG_PATTERN.match(sql):
+            return
         self.writes += 1
         self.written[sql[:STATEMENT_CHARACTERS]] += 1
 

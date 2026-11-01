@@ -22,7 +22,7 @@ PROGRESS = 'reader add steps --commands "make*" --lines "FAILED" --progress "\\[
 
 def test_a_run_shows_a_process_mark_keyed_by_its_number(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "make test")
+    start_process(story, "make test", category=CommandCategory.TEST_RUN)
     story.run_listeners()
     story.expect_text(MARKS, "processes.command", "process:1", "make test")
 
@@ -30,7 +30,7 @@ def test_a_run_shows_a_process_mark_keyed_by_its_number(new_story):
 def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.run(PROGRESS, actor=story.agent)
-    process = start_process(story, "make test")
+    process = start_process(story, "make test", category=CommandCategory.TEST_RUN)
     story.run_listeners()
     starting_count = mark_count(story)
     story.container.get(OutputFolder).write_output(process.id, 1, "building\n[ 40%]\n")
@@ -47,7 +47,7 @@ def test_the_readers_progress_is_the_marks_figure_updated_in_place(new_story):
 
 def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    passing, failing = start_process(story, "make one"), start_process(story, "make two")
+    passing, failing = start_process(story, "make one", category=CommandCategory.BUILD), start_process(story, "make two", category=CommandCategory.BUILD)
     end_run(story, passing, "ok\n")
     end_run(story, failing, "boom\n", exit_code=2)
     story.run_listeners()
@@ -58,7 +58,7 @@ def test_the_end_of_a_run_ends_its_mark_with_the_outcome_by_its_exit_code(new_st
 
 def test_a_run_moved_to_the_background_updates_its_mark_in_place(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = start_process(story, "make build")
+    process = start_process(story, "make build", category=CommandCategory.BUILD)
     story.run_listeners()
     starting_count = mark_count(story)
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
@@ -90,3 +90,27 @@ def test_a_watch_docks_the_output_and_it_leaves_10_seconds_after_its_process_end
     story.run_listeners()
     story.expect_text("dock-item show 1", "state: docked")
     story.expect_text("dock-item show 2", "state: undocked")
+
+
+def test_a_plain_command_that_ends_well_in_the_foreground_makes_no_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "cat notes")
+    end_run(story, process, "text\n")
+    story.run_listeners()
+    assert mark_count(story) == 0
+
+
+def test_a_failed_plain_command_makes_a_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "cat notes")
+    end_run(story, process, "no such file\n", exit_code=1)
+    story.run_listeners()
+    story.expect_text(MARKS, "process:1")
+
+
+def test_a_plain_command_moved_to_the_background_makes_a_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "tail -f log")
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_listeners()
+    story.expect_text(MARKS, "process:1", "background")

@@ -1,6 +1,7 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
+from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
@@ -20,11 +21,14 @@ OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: Mark
 PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
 ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED)
+MARKED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE, CommandCategory.PROCESS)
+MARKED_STATES = (ProcessState.BACKGROUND, ProcessState.FAILED, ProcessState.ORPHANED, ProcessState.STOPPED)
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A run shows one mark, kept up to date in place by the key process:<id>: running, with the reader's
-    progress as its figure, moved to the background, then ended with its outcome."""
+    """A test run, a build, a check, a package or a process shows one mark, and so does any run that moves to the
+    background or ends badly; the mark is kept up to date in place by the key process:<id>: running, with the
+    reader's progress as its figure, moved to the background, then ended with its outcome. Other runs show none."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -34,6 +38,8 @@ class ProcessEndMarkListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(event.row_id)
+        if process.category not in MARKED_CATEGORIES and process.state not in MARKED_STATES:
+            return
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
         if shown is not None and shown.state is ChatMarkState.ENDED:

@@ -4,12 +4,11 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 from tests.stories.core.support import story_lines as lines
 
 
-def test_a_stop_refused_five_times_in_a_row_goes_through_the_next_time_with_a_line_to_report_it(new_story):
+def test_the_main_agents_stop_is_refused_every_time_however_often_it_was_refused_before(new_story):
     story = new_story(SAMPLES, fixture=LeadStarted)
     story.run("setting make samples.refuse-stops true")
-    for _ in range(5):
+    for _ in range(8):
         story.expect_hook_refusal("s-1", HookSamples.stop(), "the sample lead may not stop yet")
-    story.expect_hook_allowed("s-1", HookSamples.stop(), "your stop was refused five times in a row")
 
 
 def test_a_session_end_ends_its_agent(new_story):
