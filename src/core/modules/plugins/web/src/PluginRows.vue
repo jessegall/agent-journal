@@ -1,6 +1,7 @@
 <script setup>
 import {ref} from "vue";
 import {Dialog, Btn, Skeleton, useRows, useWindow, ListTools, useListTools} from "@journal/window-kit";
+import PluginServices from "./PluginServices.vue";
 
 // the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
 const context = useWindow();
@@ -156,6 +157,7 @@ async function showRecord(row) {
             </div>
         </Dialog>
     </template>
+    <PluginServices />
 </template>
 
 <style scoped>

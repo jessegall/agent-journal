@@ -33,6 +33,15 @@ def test_a_service_that_answers_is_asked_in_place_of_the_program(new_story):
         story.processes.close()
 
 
+def test_the_services_read_names_each_service_and_whether_it_runs(new_story):
+    story = served_story(new_story)
+    try:
+        story.expect_text("plugin services", "served answers: running")
+    finally:
+        story.processes.close()
+    story.expect_text("plugin services", "served answers: stopped")
+
+
 def test_a_service_that_ended_is_started_again_by_the_next_follow(new_story):
     story = served_story(new_story)
     try:

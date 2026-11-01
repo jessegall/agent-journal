@@ -57,6 +57,10 @@ from suites.coding.modules.workers.support.worker_settings import WORKER_SETTING
 from suites.coding.modules.workers.upgrade.workers_move import WorkersMove
 
 WORKTREE_MOVES = [move.name for move in WorktreeLifecycle.moves()]
+from suites.coding.modules.workers.commands.worker_models.worker_models_subcommand import WorkerModelsSubcommand
+from suites.coding.modules.workers.commands.project_worktree_list.project_worktree_list_subcommand import ProjectWorktreeListSubcommand
+from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_handler import RemoveProjectWorktreeHandler
+from suites.coding.modules.workers.commands.remove_project_worktree.remove_project_worktree_subcommand import RemoveProjectWorktreeSubcommand
 
 
 class WorkersModule(Module):
@@ -74,12 +78,16 @@ class WorkersModule(Module):
     migrations = [WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration]
     views = [WorkerPoints]
     moves = [WorkersMove]
-    handlers = [SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler]
-    subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand]
+    handlers = [SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler]
+    subcommands = [SendWorkerSubcommand, WorkerPointsSubcommand, ProofPointsSubcommand, DispatchWorkerSubcommand, ReleaseWorkerSubcommand, MakeProofSubcommand, DeliverTaskSubcommand, MergeWorkerSubcommand, PrepareWorktreeSubcommand, WorkerModelsSubcommand, ProjectWorktreeListSubcommand, RemoveProjectWorktreeSubcommand]
     guards = [DispatchBranchGuard, DispatchWorkerGuard, ProofPointGuard, WorkerTaskGuard, MergeProofGuard, BaseBranchGuard]
     driver_rules = [WorkerFileRule, WorkerLogDueRule, DeliveredWorkStopRule, DispatchAllowanceRule, MergeCheckoutRule, RecordTodoListRule, WorkersOutRule, InactiveWorkerRule]
     listeners = [EndedWorkerListener, EndedWorkerJobListener, WorkerEndedWithJobListener, ReleasedStopListener, WorkerProgramListener]
     windows = [WindowDeclaration("workers.points", "Points", "points.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK, place=WindowPlace.AGENT,
                                  reads=["worker-worktree points", "proof points"], events=["proof.*", "worker_worktree.*"]),
                WindowDeclaration("workers.todos", "Tasks", "todos.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, place=WindowPlace.AGENT, reads=["todo-item list"],
-                                 events=["todo_item.*"])]
+                                 events=["todo_item.*"]),
+               WindowDeclaration("workers.models", "Worker models", "models.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.MENU, reads=["worker models", "setting show"],
+                                 runs=["setting set"], events=["setting.*"]),
+               WindowDeclaration("workers.worktrees", "Worktrees", "worktrees.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.BRANCH, reads=["project-worktree list"],
+                                 runs=["project-worktree remove"])]

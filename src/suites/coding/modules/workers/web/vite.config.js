@@ -7,6 +7,8 @@ export default windowBuild({
     entries: {
         points: here("./src/points.js"),
         todos: here("./src/todos.js"),
+        models: here("./src/models.js"),
+        worktrees: here("./src/worktrees.js"),
     },
     outDir: here("./dist"),
 });

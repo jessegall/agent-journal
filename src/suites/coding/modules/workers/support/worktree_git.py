@@ -66,6 +66,21 @@ class WorktreeGit:
         self.git(folder, GIT_LIMIT_SECONDS, "branch", "-D", worktree.branch)
         return False
 
+    def folders(self, folder: str) -> list[tuple[str, str | None]]:
+        blocks = self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "list", "--porcelain").stdout.strip().split("\n\n")
+        return [self.folder_entry(block.splitlines()) for block in blocks]
+
+    @staticmethod
+    def folder_entry(lines: list[str]) -> tuple[str, str | None]:
+        branch = next((line.removeprefix("branch refs/heads/") for line in lines if line.startswith("branch refs/heads/")), None)
+        return lines[0].removeprefix("worktree "), branch
+
+    def remove_folder(self, folder: str, path: str) -> None:
+        if Path(path).exists():
+            self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "remove", path)
+        else:
+            self.checked(folder, GIT_LIMIT_SECONDS, "worktree", "prune")
+
     def changed_files(self, worktree: Worktree) -> tuple[str, ...]:
         tracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", worktree.base_commit).stdout.splitlines()
         untracked = self.git(worktree.folder, GIT_LIMIT_SECONDS, "ls-files", "--others", "--exclude-standard").stdout.splitlines()
