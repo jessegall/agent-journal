@@ -7,7 +7,8 @@ import {GROUND} from "../figure/figure.js";
 import {readFloors} from "../figure/floors.js";
 import {strideAtDistance} from "../figure/gait.js";
 import {GLANCE, glanceAfter, glancePoint} from "../figure/looks.js";
-import {between, perchOn, perchSpot} from "../figure/perches.js";
+import {between, bubbleNear, perchOn, perchSpot} from "../figure/perches.js";
+import {READING, readingAt, readingFacing} from "../figure/reactions.js";
 import {boxAt, cornerAt, freeEdge, freeSpot, restOf, tripTo} from "../figure/places.js";
 import {airborneFrame, fallingFrom, legAt, legEnded} from "../domain/figureMotion.js";
 import {useFigureBody} from "../composables/figureBody.js";
@@ -32,6 +33,9 @@ const PERCH_SECONDS = [6, 12];
 const CLIMB_SHARE = 0.4;
 let perch = null;
 let glance = null;
+let reading = null;
+let readAt = 0;
+const READ_SECONDS = [20, 45];
 const HEAD_HEIGHT = 0.3;
 
 const {body, start: startBody, stop: stopBody} = useFigureBody(frame);
@@ -117,6 +121,18 @@ function fall(now) {
 
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// it reads along a bubble beside it: its body turned to the bubble and its eyes following the lines, for a few seconds
+function startReading(now) {
+    readAt = now + between(READ_SECONDS, Math.random) * 1000;
+    const floor = bubbleNear(readFloors(), body.place, figure);
+    if (floor && !body.airborne) reading = {floor, began: now};
+}
+
+function stopReading(now) {
+    reading = null;
+    readAt = now + between(READ_SECONDS, Math.random) * 1000;
+}
+
 function frame() {
     if (!player) return;
     const now = performance.now();
@@ -126,7 +142,9 @@ function frame() {
     }
     if (body.trip) walk(now);
     else if (frames++ % 6 === 0) rest();
-    if (!body.trip && now > strollAt && !props.running) {
+    if (!body.trip && !reading && now > readAt) startReading(now);
+    if (reading && (body.trip || body.airborne || now - reading.began > READING.seconds * 1000)) stopReading(now);
+    if (!body.trip && !reading && now > strollAt && !props.running) {
         if (perch || !(Math.random() < CLIMB_SHARE && climb())) stroll();
         strollAt = now + 1000;
     }
@@ -143,11 +161,11 @@ function draw(now) {
     const index = Math.floor(((now - began) / 1000) * clip.fps) % clip.frames;
     const blinking = blinkOpenness(now - blinkAt);
     if (now - blinkAt > BLINK.close + BLINK.open) blinkAt = now + nextBlinkMs(Math.random);
-    const facing = walking ? (body.trip.way > 0 ? 90 : 270) : (body.place.face ?? 0);
+    const facing = walking ? (body.trip.way > 0 ? 90 : 270) : reading ? readingFacing(reading.floor, body.at.x + SIZE / 2, SIZE) : (body.place.face ?? 0);
     const stride = walking && !body.leg.hopping ? strideAtDistance(Math.abs(body.at.x - body.walk.from.x), SIZE) : null;
     const seconds = now / 1000;
     glance = glanceAfter(glance, seconds, Math.random, GLANCE);
-    const at = walking || body.airborne ? null : glancePoint(glance, seconds, {x: body.at.x + SIZE / 2, y: body.at.y + SIZE * HEAD_HEIGHT}, SIZE);
+    const at = walking || body.airborne ? null : reading ? readingAt(reading.floor, (now - reading.began) / 1000) : glancePoint(glance, seconds, {x: body.at.x + SIZE / 2, y: body.at.y + SIZE * HEAD_HEIGHT}, SIZE);
     player.show(clip, index, facing, {posture: walking && !body.leg.hopping ? "walk" : "stand", open: blinking, stride, at});
 }
 
@@ -159,6 +177,7 @@ async function start() {
         clips = CLIPS;
         player = new FigurePlayer(figure, canvas.value);
         strollAt = performance.now() + between(STROLL_SECONDS, Math.random) * 1000;
+        readAt = performance.now() + between(READ_SECONDS, Math.random) * 1000;
         rest();
         startBody();
     } catch (error) {
