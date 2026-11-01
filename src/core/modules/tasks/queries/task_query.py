@@ -33,6 +33,9 @@ class TaskQuery(Query[Task]):
     def started(self) -> Self:
         return self.filter(state=TaskState.STARTED)
 
+    def unopenable_blocks(self, environment_id: int) -> Self:
+        return self.environment(environment_id).filter(state=TaskState.BLOCKED).matching(SubqueryMatch("id", Select("task_waits").matching(IsNull("ended_at")).column("task_id"), negated=True))
+
     def open_tasks(self, environment_id: int) -> Self:
         return self.environment(environment_id).filter(state=TaskState.OPEN)
 

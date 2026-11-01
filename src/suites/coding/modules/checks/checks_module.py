@@ -19,7 +19,11 @@ from suites.coding.modules.checks.commands.run_check.run_check_subcommand import
 from suites.coding.modules.checks.commands.stop_check.stop_check_handler import StopCheckHandler
 from suites.coding.modules.checks.commands.stop_check.stop_check_subcommand import StopCheckSubcommand
 from suites.coding.modules.checks.commands.report_check.report_check_handler import ReportCheckHandler
+from suites.coding.modules.checks.listeners.task_wait_check_listener import TaskWaitCheckListener
+from suites.coding.modules.checks.listeners.task_wait_pass_listener import TaskWaitPassListener
 from suites.coding.modules.checks.migrations.m001_checks import ChecksTableMigration
+from suites.coding.modules.checks.migrations.m002_check_task_wait import CheckTaskWaitMigration
+from suites.coding.modules.checks.rules.broken_task_wait_rule import BrokenTaskWaitRule
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
@@ -37,10 +41,11 @@ class ChecksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
-    migrations = [ChecksTableMigration]
+    listeners = [TaskWaitCheckListener, TaskWaitPassListener]
+    migrations = [ChecksTableMigration, CheckTaskWaitMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = (MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
-    driver_rules = [FailedCheckRule]
+    driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = [(PeriodicChecks, DueCheckRuns)]
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK,
                                  reads=["check list"], events=["check.*"])]

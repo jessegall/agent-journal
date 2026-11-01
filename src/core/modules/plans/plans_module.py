@@ -36,6 +36,7 @@ from core.modules.plans.upgrade.plans_move import PlansMove
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
 from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
 from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
@@ -63,7 +64,7 @@ class PlansModule(Module):
                  NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     nudges = PLAN_NUDGES
-    driver_rules = [PlanTaskLineRule, PlanStateRule]
+    driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]

@@ -9,5 +9,6 @@ PLAN_STALLED = NudgeDeclaration("plans.plan_stalled", NudgeType.INSTRUCTION, "pl
 PLAN_APPROVED = NudgeDeclaration("plans.plan_approved", NudgeType.INSTRUCTION, "plan {plan} approved", once_per_turn=False)
 PLAN_CANCELLED = NudgeDeclaration("plans.plan_cancelled", NudgeType.INSTRUCTION, "plan {plan} cancelled: {reason}", once_per_turn=False)
 PLAN_BLOCKED = NudgeDeclaration("plans.plan_blocked", NudgeType.INSTRUCTION, "plan {plan} is blocked: {reason}", once_per_turn=False)
+UNLINKED_TASKS = NudgeDeclaration("plans.unlinked_tasks", NudgeType.REMARK, "plan {plan}: {count} open tasks, none blocked; set what each waits on: journal task block <n> --on task:<m>", once_per_turn=False)
 
-PLAN_NUDGES = [NEXT_TASK, PLAN_FINISHED, PHASE_FINISHED, CHECKPOINT_FINISHED, PLAN_STALLED, PLAN_APPROVED, PLAN_CANCELLED, PLAN_BLOCKED]
+PLAN_NUDGES = [UNLINKED_TASKS, NEXT_TASK, PLAN_FINISHED, PHASE_FINISHED, CHECKPOINT_FINISHED, PLAN_STALLED, PLAN_APPROVED, PLAN_CANCELLED, PLAN_BLOCKED]

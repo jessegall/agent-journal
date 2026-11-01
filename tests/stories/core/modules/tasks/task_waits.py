@@ -1,22 +1,92 @@
-from tests.stories.core.support import story_lines as lines
-from tests.stories.core.support.fixtures import TaskWaitingOnSecond
+from core.base.driver.command_category import CommandCategory
+from core.testing.hook_samples import HookSamples
+from core.testing.shell_part import ShellPart
+from tests.stories.core.support.fixtures import AgentStarted
 
 
-def test_a_task_that_waits_on_an_open_task_cannot_start_and_is_told_how_to_stop_waiting(new_story):
-    story = new_story(fixture=TaskWaitingOnSecond)
-    story.expect_refusal(lines.TASK_START, "task 1 waits on open task 2", actor=story.agent)
-    story.expect_text(lines.TASK_DETAILS, "state: open")
+def posted(line):
+    return HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand=line.split()[1])).with_fields(event="post_tool_use")
 
 
-def test_a_task_starts_once_the_task_it_waits_on_is_completed(new_story):
-    story = new_story(fixture=TaskWaitingOnSecond)
-    story.run(lines.SECOND_TASK_START, actor=story.agent)
-    story.run('task close 2 --outcome "done"', actor=story.agent)
-    story.run_listeners()
-    story.expect_text(lines.TASK_DETAILS, "state: started")
+def task_story(new_story):
+    story = new_story(fixture=AgentStarted)
+    for title in ("Cart", "Tax"):
+        story.run(f'task make "{title}" --environment main')
+    return story
 
 
-def test_a_task_starts_once_the_task_it_waits_on_is_cancelled(new_story):
-    story = new_story(fixture=TaskWaitingOnSecond)
-    story.run('task cancel 2 --reason "not needed"')
-    story.expect_success(lines.TASK_START, "state: started", actor=story.agent)
+def test_a_task_blocked_on_another_opens_by_itself_when_that_task_ends(new_story):
+    story = task_story(new_story)
+    story.expect_success("task block 1 --on task:2", "state: blocked", "reason: waits on task 2")
+    story.expect_success('task cancel 2 --reason "not needed"')
+    story.expect_success("task show 1", "state: open")
+
+
+def test_a_task_waiting_on_two_opens_only_when_both_have_ended(new_story):
+    story = task_story(new_story)
+    story.run('task make "Totals" --environment main')
+    story.run("task block 1 --on task:2 --on task:3")
+    story.run('task cancel 2 --reason "no"')
+    story.expect_success("task show 1", "state: blocked")
+    story.run('task cancel 3 --reason "no"')
+    story.expect_success("task show 1", "state: open")
+
+
+def test_a_block_with_nothing_named_is_refused_and_says_how(new_story):
+    story = task_story(new_story)
+    story.expect_refusal("task block 1", "say what it waits on")
+
+
+def test_a_block_on_itself_a_missing_row_or_a_finished_row_is_refused(new_story):
+    story = task_story(new_story)
+    story.expect_refusal("task block 1 --on task:1", "cannot wait on itself")
+    story.expect_refusal("task block 1 --on task:99", "task 99 does not exist")
+    story.expect_refusal("task block 1 --on shop:1", "names nothing to wait on")
+    story.run('task cancel 2 --reason "no"')
+    story.expect_refusal("task block 1 --on task:2", "already")
+
+
+def test_a_reason_in_words_is_opened_by_hand(new_story):
+    story = task_story(new_story)
+    story.expect_success('task block 1 --reason "needs the price list"', "state: blocked", "reason: needs the price list")
+    story.expect_success("task unblock 1", "state: open")
+
+
+def test_unblocking_by_hand_ends_the_wait_so_a_later_end_changes_nothing(new_story):
+    story = task_story(new_story)
+    story.run("task block 1 --on task:2")
+    story.run("task unblock 1")
+    story.run("task start 1", actor=story.agent)
+    story.run('task cancel 2 --reason "no"')
+    story.expect_success("task show 1", "state: started")
+
+
+def test_a_wait_in_words_teaches_the_block_and_a_block_with_a_flag_does_not(new_story):
+    story = task_story(new_story)
+    assert any("a wait is a block the journal can see" in line for line in story.hook("s-1", posted('journal task log 1 waiting for the keys')).lines)
+    story.expect_absent_hook_line("s-1", posted('journal task block 1 --on task:2 waiting for the keys'), "a wait is a block")
+    story.expect_absent_hook_line("s-1", posted('journal task log 1 the cart is done'), "a wait is a block")
+
+
+def test_a_block_nothing_opens_is_named_and_one_with_a_wait_is_not(new_story):
+    story = task_story(new_story)
+    story.run("task block 1 --on task:2")
+    story.expect_absent_hook_line("s-1", posted("journal task list"), "blocked with nothing to open them")
+    story.run('task block 2 --reason "needs a key"')
+    assert any("blocked with nothing to open them: 2:" in line for line in story.hook("s-1", posted("journal task list")).lines)
+
+
+def test_a_stop_does_not_refuse_over_a_task_that_opens_by_itself(new_story):
+    story = task_story(new_story)
+    story.run('task make "Waits" --environment main')
+    story.run("task block 1 --on task:3")
+    story.run("task block 2 --on task:3")
+    story.run("task block 3 --until 'true'")
+    story.expect_hook_allowed("s-1", HookSamples.stop())
+
+
+def test_a_task_whose_brief_names_an_open_task_is_told_how_to_block_on_it(new_story):
+    story = task_story(new_story)
+    story.run('task edit 1 --brief "Build on task 2 first"')
+    story.run("task start 1", actor=story.agent)
+    assert "task 1 names open task 2; if it waits on it: journal task block 1 --on task:2" in story.hook("s-1", posted("journal task start 1")).lines

@@ -10,4 +10,7 @@ UNLOGGED_WRITES = NudgeDeclaration("tasks.unlogged_writes", NudgeType.REFUSAL, '
 INACTIVE_TASK = NudgeDeclaration("tasks.inactive_task", NudgeType.INSTRUCTION, 'nothing has happened for {minutes} minutes: carry on with {name}, or log why it waits', once_per_turn=False)
 
 MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.REMARK, 'log what the summary missed: journal task log {task} "<what>"')
-TASK_NUDGES = [MISSED_LOG, BACK_TO_TASK, BLOCKED_TASKS, TASK_IN_HAND, LOG_REQUEST, TASK_AT_STOP, UNLOGGED_WRITES, INACTIVE_TASK]
+WAIT_IN_WORDS = NudgeDeclaration("tasks.wait_in_words", NudgeType.INSTRUCTION, "a wait is a block the journal can see, not words: journal task block <n> --on task:<m> opens by itself when that task ends, --until '<command>' opens when the command passes", repeat_seconds=1800)
+NAMED_TASK = NudgeDeclaration("tasks.named_task", NudgeType.REMARK, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", once_per_turn=False)
+UNOPENABLE_BLOCKS = NudgeDeclaration("tasks.unopenable_blocks", NudgeType.REMARK, "blocked with nothing to open them: {tasks}: give each --on or --until with journal task block, or journal task unblock <n> once what it waits on has arrived", repeat_seconds=2700)
+TASK_NUDGES = [WAIT_IN_WORDS, NAMED_TASK, UNOPENABLE_BLOCKS, MISSED_LOG, BACK_TO_TASK, BLOCKED_TASKS, TASK_IN_HAND, LOG_REQUEST, TASK_AT_STOP, UNLOGGED_WRITES, INACTIVE_TASK]

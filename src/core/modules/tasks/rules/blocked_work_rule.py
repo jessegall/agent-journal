@@ -5,7 +5,6 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.tasks.queries.task_query import TaskQuery
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.base.agent_role import AgentRole
 
 BLOCKED_TASK_PAGE_SIZE = 10
@@ -26,7 +25,7 @@ class BlockedWorkRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         if self.tasks.holder(hook.agent_id).started().exists() or self.tasks.open_tasks(hook.environment_id).exists():
             return RuleAnswer.allowed()
-        blocked = self.tasks.environment(hook.environment_id).filter(state=TaskState.BLOCKED).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
+        blocked = self.tasks.unopenable_blocks(hook.environment_id).oldest().page(1, BLOCKED_TASK_PAGE_SIZE).rows
         if not blocked or self.calls.last_stop_refused(hook.agent_id):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(BLOCKED_TASKS.nudge(tasks=', '.join(str(task.id) for task in blocked)))

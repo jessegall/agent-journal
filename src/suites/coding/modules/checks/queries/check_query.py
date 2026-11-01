@@ -1,3 +1,4 @@
+from core.base.query.conditions.greater import Greater
 from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
@@ -24,11 +25,14 @@ class CheckQuery(Query[Check]):
     def running(self) -> list[Check]:
         return [check for check in self.kept() if check.is_running]
 
+    def task_waits(self) -> list[Check]:
+        return list(self.matching(IsNull("removed_at")).matching(Greater("task_wait_id", 0)).oldest().all_rows())
+
     def due(self, present: Timestamp) -> list[Check]:
         return list(self.matching(IsNull("removed_at")).filter(stopped=False).matching(IntervalPassed(present.text)).oldest().all_rows())
 
     def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
-        failing = self.matching(IsNull("removed_at")).filter(stopped=False, last_passed=False)
+        failing = self.matching(IsNull("removed_at")).matching(IsNull("task_wait_id")).filter(stopped=False, last_passed=False)
         unreported_rows = failing.matching(IsNull("reported_at")).oldest().all_rows()
         cutoff = Timestamp(present.value - timedelta(minutes=repeat_minutes))
         repeat_rows = failing.matching(Less("reported_at", cutoff.text)).oldest().all_rows()
