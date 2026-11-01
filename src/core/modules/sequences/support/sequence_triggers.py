@@ -34,6 +34,8 @@ class SequenceTriggers:
 
     @staticmethod
     def check(trigger: Mapping[str, str]) -> None:
+        if not isinstance(trigger, dict):
+            raise Refusal("a sequence's trigger is an object")
         kind = trigger.get("trigger_type")
         if kind not in REQUIRED_FIELDS:
             raise Refusal(f"{kind} is no kind of trigger", f"the kinds are {', '.join(REQUIRED_FIELDS)}")

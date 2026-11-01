@@ -159,3 +159,11 @@ def test_a_step_that_holds_edits_refuses_them_until_the_next_step(new_story):
     story.run("sequence follow", actor=story.agent)
     story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
 
+
+def test_step_guards_that_do_not_read_are_refused_when_written(new_story):
+    story = new_story(fixture=UserJoined)
+    base = 'sequence make "Release" --steps "Run the suite"'
+    story.expect_refusal(f"{base} --step-guards not-json", "step guards are JSON", actor=story.user)
+    story.expect_refusal(f"{base} --step-guards {shlex.quote(json.dumps({'a': 1}))}", "are a list", actor=story.user)
+    story.expect_refusal(f"{base} --step-guards {shlex.quote(json.dumps([{'file_edits_allowed': False, 'allowed_commands': ['(']}]))}", "does not read", actor=story.user)
+

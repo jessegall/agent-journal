@@ -1,4 +1,3 @@
-import json
 import re
 
 from core.base.driver.agent_hook import AgentHook
@@ -8,6 +7,7 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.sequences.models.sequence import Sequence
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
+from core.modules.sequences.support.sequence_guards import SequenceGuards
 from core.modules.sequences.support.sequence_nudges import STEP_HOLDS_EDITS
 
 STEP_SHOWN_CHARACTERS = 40
@@ -31,7 +31,7 @@ class StepGuardRule(DriverRule):
         if run is None:
             return RuleAnswer.allowed()
         sequence = self.queries.query(Sequence).find(run.sequence_id)
-        guards = json.loads(sequence.step_guards)
+        guards = SequenceGuards.parsed(sequence.step_guards)
         guard = guards[run.step_number - 1] if run.step_number <= len(guards) else {}
         if guard.get("file_edits_allowed", True):
             return RuleAnswer.allowed()

@@ -3,6 +3,9 @@ import sqlite3
 
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
+from core.base.refusal import Refusal
+from core.modules.sequences.support.sequence_guards import SequenceGuards
+from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -16,7 +19,8 @@ TABLE = "sequences"
 
 class SequencesMove(VersionFourMove):
     """Carries version 4's sequences with their numbers, each step as its title and its instructions, with their
-    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name."""
+    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name. A sequence
+    whose triggers or guards do not read is skipped and told, since one such row would fail every read of them all."""
 
     name = "sequences"
     reads = [TABLE]
@@ -29,6 +33,10 @@ class SequencesMove(VersionFourMove):
             if not steps:
                 report.skip(TABLE, row["id"], "it has no step")
                 continue
+            problem = self.problem(row)
+            if problem:
+                report.skip(TABLE, row["id"], problem)
+                continue
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, steps, creators.actor_id(row["creator"]), context)))
         return report
 
@@ -36,6 +44,15 @@ class SequencesMove(VersionFourMove):
         created = row["created_at"] or context.timestamp
         return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "steps": json.dumps(steps), "triggers": json.dumps(self.triggers(row)), "step_guards": json.dumps(self.guards(row)),
                                    "created_at": created, "updated_at": row["updated_at"] or created})
+
+    def problem(self, row: sqlite3.Row) -> str | None:
+        try:
+            SequenceTriggers.parsed(row["triggers"] or "[]")
+            SequenceTriggers.parsed(json.dumps(self.triggers(row)))
+            SequenceGuards.parsed(json.dumps(self.guards(row)))
+        except Refusal as refusal:
+            return refusal.reason
+        return None
 
     @staticmethod
     def triggers(row: sqlite3.Row) -> list[dict]:

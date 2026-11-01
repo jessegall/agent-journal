@@ -148,6 +148,8 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("proofs:1", "tasks:1", "proves", STAMP, USER)),
     ("subagents", "(environment_id, dispatch, brief, agent_type, model, session, state, name)", (1, "d-1", "read the cart", "Explore", "haiku", "s-1", "ended", "Darwin")),
     ("sequences", "(title, steps, locked, triggers, created_at, creator)", ("Release steps", '[{"title": "Run the suite", "instructions": "all of it"}, {"title": "Tag it", "instructions": ""}]', 0, "[]", STAMP, USER)),
+    ("sequences", "(title, steps, locked, triggers, created_at, creator)", ("Broken trigger", '[{"title": "Run the suite", "instructions": ""}]', 0, '[{"trigger_type": "nonsense"}]', STAMP, USER)),
+    ("sequences", "(title, steps, locked, triggers, created_at, creator)", ("Broken guard", '[{"title": "Run the suite", "instructions": "", "allowed_commands": ["("]}]', 0, "[]", STAMP, USER)),
     ("templates", "(title, targets, purpose, brief, parts, commands, created_at, creator)", ("Find what is missing", '["plan"]', "critique", "Read the plan against its goal", '["Gaps: what is left out"]', "[]", STAMP, USER)),
     ("docs", "(environment_id, title, body, abstract, settled_reason, created_at, creator)", (0, "Cart rules", "## Totals\nin cents, see task 1", "How the cart counts", "", STAMP, USER)),
     ("docs", "(environment_id, title, body, abstract, settled_reason, created_at, creator)", (1, "Old notes", None, "Notes from the start", "kept for reference", STAMP, USER)),

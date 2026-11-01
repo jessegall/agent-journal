@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from core.base.model.model import Model
 from core.base.refusal import Refusal
+from core.modules.sequences.support.sequence_guards import SequenceGuards
 from core.modules.sequences.support.sequence_triggers import SequenceTriggers
 
 STEP_LIMIT_CHARACTERS = 600
@@ -23,6 +24,7 @@ class Sequence(Model):
 
     def __post_init__(self) -> None:
         SequenceTriggers.parsed(self.triggers)
+        SequenceGuards.parsed(self.step_guards)
         if not self.steps:
             raise Refusal("a sequence has at least one step", "give them with --steps 'first | second'")
         for step in self.steps:
