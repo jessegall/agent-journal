@@ -84,14 +84,14 @@ class Database:
         return rows
 
     def insert(self, statement: Statement) -> int:
-        self.tally.wrote()
+        self.tally.wrote(statement.sql)
         row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
         return row_id
 
     def update(self, statement: Statement) -> int:
-        self.tally.wrote()
+        self.tally.wrote(statement.sql)
         return statement.result(self.connection).rowcount
 
     def close(self) -> None:

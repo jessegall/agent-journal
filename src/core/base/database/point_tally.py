@@ -22,6 +22,7 @@ class Points:
     kilobytes: int = 0
     tables: Counter[str] = field(default_factory=Counter)
     statements: Counter[str] = field(default_factory=Counter)
+    written: Counter[str] = field(default_factory=Counter)
 
     @property
     def total(self) -> int:
@@ -29,7 +30,7 @@ class Points:
 
     def since(self, earlier: "Points") -> "Points":
         return Points(self.rows - earlier.rows, self.writes - earlier.writes, self.kilobytes - earlier.kilobytes, self.tables - earlier.tables,
-                      self.statements - earlier.statements)
+                      self.statements - earlier.statements, self.written - earlier.written)
 
     def line(self) -> str:
         costliest = ", ".join(f"{table} {rows}" for table, rows in self.tables.most_common(TABLES_SHOWN))
@@ -44,6 +45,7 @@ class PointTally:
         self.rows, self.writes, self.bytes = 0, 0, 0
         self.tables: Counter[str] = Counter()
         self.statements: Counter[str] = Counter()
+        self.written: Counter[str] = Counter()
 
     def loaded(self, rows: Sequence[sqlite3.Row], sql: str) -> None:
         if COUNT_PATTERN.match(sql):
@@ -54,8 +56,9 @@ class PointTally:
         self.statements[sql[:STATEMENT_CHARACTERS]] += len(rows)
         self.bytes += sum(len(value) for row in rows for value in row if isinstance(value, (str, bytes)))
 
-    def wrote(self) -> None:
+    def wrote(self, sql: str) -> None:
         self.writes += 1
+        self.written[sql[:STATEMENT_CHARACTERS]] += 1
 
     def points(self) -> Points:
-        return Points(self.rows, self.writes, math.ceil(self.bytes / BYTES_PER_KILOBYTE), Counter(self.tables), Counter(self.statements))
+        return Points(self.rows, self.writes, math.ceil(self.bytes / BYTES_PER_KILOBYTE), Counter(self.tables), Counter(self.statements), Counter(self.written))

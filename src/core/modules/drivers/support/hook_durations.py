@@ -36,4 +36,5 @@ class HookDurations:
             with self.home.costly_hooks_log.open("a") as log:
                 log.write(f"{time.strftime('%H:%M:%S')} {line}\n")
                 log.writelines(f"    {rows} rows: {sql}\n" for sql, rows in points.statements.most_common(STATEMENTS_LOGGED))
+                log.writelines(f"    {count} writes: {sql}\n" for sql, count in points.written.most_common(STATEMENTS_LOGGED))
         return line

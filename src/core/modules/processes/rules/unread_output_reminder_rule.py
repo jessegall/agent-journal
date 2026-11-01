@@ -8,7 +8,6 @@ from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
-from core.modules.processes.queries.output_query import OutputQuery
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.process_settings import ProcessSettings
@@ -23,8 +22,8 @@ class UnreadOutputReminderRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, processes: ProcessQuery, outputs: OutputQuery, text: EndedOutputText, settings: ProcessSettings, queries: Queries) -> None:
-        self.processes, self.outputs, self.text, self.settings, self.queries = processes, outputs, text, settings, queries
+    def __init__(self, processes: ProcessQuery, text: EndedOutputText, settings: ProcessSettings, queries: Queries) -> None:
+        self.processes, self.text, self.settings, self.queries = processes, text, settings, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         spacing = self.settings.integer(ProcessSetting.UNREAD_OUTPUT_TOOL_USES, hook.environment_id)
@@ -32,7 +31,7 @@ class UnreadOutputReminderRule(DriverRule):
         return RuleAnswer.with_lines(*(self.text.line(process) for process in ended if self.needs_reminder(hook, process, max(1, spacing))))
 
     def needs_reminder(self, hook: AgentHook, process: Process, spacing: int) -> bool:
-        if process.ended_at is None or not self.outputs.process(process.id).unread().exists():
+        if process.ended_at is None:
             return False
         tool_uses = self.queries.query(HookCall).filter(agent_id=hook.agent_id, hook=HookEventName.POST_TOOL_USE).matching(Greater("created_at", process.ended_at.text)).count()
         return (tool_uses + 1) % spacing == 0
