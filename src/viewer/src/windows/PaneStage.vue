@@ -106,10 +106,16 @@ const taskRows = ref([]);
 // the task the agent is working in: the one it holds that is started
 const currentTask = computed(() => taskRows.value.find((row) => row.state === "started" && agentRow.value && row.holder_id === agentRow.value.id) ?? null);
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents"};
+const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", usage: "usage.usage"};
+const usage = ref({agents: [], windows: []});
+async function readUsage() {
+    const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
+    if (answer?.ok) usage.value = answer.value;
+}
 const openCount = (key) => openView(COUNT_WINDOWS[key]);
 async function readFacts() {
     if (!props.shellRead) return;
+    readUsage();
     const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list", ...WHOLE_LIST]), props.shellRead(["task", "list", ...WHOLE_LIST]), props.shellRead(["question", "list", ...WHOLE_LIST])]);
     taskRows.value = rowsOf(tasks);
     facts.value = barFacts({agents: rowsOf(agents), tasks: taskRows.value, questions: rowsOf(questions)});
@@ -211,7 +217,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
-                <InformationBar :agent="agentRow" :facts="facts" :auto="auto" @open="openCount" @toggle-auto="toggleAuto" />
+                <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :auto="auto" @open="openCount" @toggle-auto="toggleAuto" />
             </template>
             <nav class="pane-stage-bar agent-bar">
                 <template v-for="window in barWindows().slice(0, room)" :key="window.name">

@@ -24,7 +24,7 @@ test("the bars' counts: helpers still running, tasks not done, questions waiting
 test("the information bar shows the program, the state, the uptime and each count, each asking to open what it counts", () => {
     const opened = [];
     const element = mounted(InformationBar, {agent: MAIN, facts: {helpers: 2, tasks: 5, waiting: 1}, onOpen: (name) => opened.push(name)});
-    expect(element.textContent).toContain("claude");
+    expect(element.textContent).toContain("Claude");
     expect(element.textContent).toContain("Working");
     for (const key of ["tasks", "waiting", "helpers"]) element.querySelector(`[data-count="${key}"]`).click();
     expect(opened).toEqual(["tasks", "waiting", "helpers"]);
@@ -60,4 +60,17 @@ test("the information bar shows the auto switch, on or off, and asks to toggle i
     on.querySelector("[data-auto-toggle]").click();
     expect(toggled).toEqual(["toggle"]);
     expect(mounted(InformationBar, {agent: MAIN, auto: false}).querySelector("[data-auto-toggle]").getAttribute("aria-checked")).toBe("false");
+});
+
+
+test("the information bar shows the allowance used, the context, the model and the cost, and opens usage", () => {
+    const opened = [];
+    const usage = {agents: [{id: 1, context_percent: 89, model: "Opus 5.5", cost_dollars: 40.86}], windows: [{title: "7 days", used_percent: 12.4}]};
+    const element = mounted(InformationBar, {agent: MAIN, usage, onOpen: (name) => opened.push(name)});
+    expect(element.querySelector("[data-fact='usage']").textContent).toContain("12%");
+    expect(element.querySelector("[data-fact='context']").textContent).toContain("89%");
+    expect(element.querySelector("[data-fact='model']").textContent).toContain("Opus 5.5");
+    expect(element.querySelector("[data-fact='cost']").textContent).toContain("$40.86");
+    element.querySelector("[data-fact='context']").click();
+    expect(opened).toEqual(["usage"]);
 });
