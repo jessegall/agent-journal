@@ -42,6 +42,21 @@ def test_the_reminder_comes_every_5_tool_uses_while_the_output_is_not_read(new_s
     assert reminders == [False, False, False, False, True, False, False, False, False, True]
 
 
+def test_outputs_that_ended_apart_are_named_together_every_5_tool_uses(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    first = moved_run(story, "pytest -q")
+    end_run(story, first, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
+    lines_of(story, AFTER)
+    lines_of(story, AFTER)
+    second = moved_run(story, "pytest -q tests/cart")
+    end_run(story, second, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(seconds=1))
+    story.hook("s-1", NOTHING)
+    named = [line for _ in range(10) for line in lines_of(story, AFTER) if "unread" in line]
+    assert named == [f"output {first.id}, {second.id} unread: journal output read {first.id} --summary"] * 2
+
+
 def test_reading_the_output_ends_the_reminders(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "pytest -q")

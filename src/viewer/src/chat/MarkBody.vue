@@ -1,18 +1,34 @@
 <script setup>
-import {computed, watch} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import OutputLines from "../kit/OutputLines.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
 import {api} from "../api/client.js";
-import {useOutputPages} from "../composables/outputPages.js";
+import {lineResult} from "../windows/windowContext.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
 const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}});
 
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
-const OUTPUT_MODEL = "output";
-const pages = useOutputPages((...page) => api.readOutput(props.mark.target_id, ...page));
-const hasOutput = computed(() => props.mark.target_model === OUTPUT_MODEL && Boolean(props.mark.target_id));
-watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll().catch(() => {}), {immediate: true});
+const RUN_MODEL = "process";
+const POLL_MILLISECONDS = 2000;
+const outputLines = ref([]);
+const outputLoaded = ref(false);
+const hasOutput = computed(() => props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
+async function readOutput() {
+    const answer = await lineResult("messages.chat", ["output", "peek", String(props.mark.target_id), "--all"], api.env());
+    outputLoaded.value = true;
+    if (answer.ok) outputLines.value = answer.value.lines;
+}
+let poll = null;
+const stopPoll = () => clearInterval(poll);
+watch(() => props.shown && hasOutput.value, (reading) => {
+    stopPoll();
+    if (!reading) return;
+    readOutput();
+    if (!props.mark.ended_at) poll = setInterval(readOutput, POLL_MILLISECONDS);
+}, {immediate: true});
+watch(() => props.mark.ended_at, (ended) => ended && props.shown && hasOutput.value && (stopPoll(), readOutput()));
+onUnmounted(stopPoll);
 </script>
 
 <template>
@@ -22,9 +38,9 @@ watch(() => props.shown && hasOutput.value, (reading) => reading && pages.poll()
                 <ModuleBody :declaration="declaration" :row="mark" :head="head" />
             </template>
             <template v-else>
-                <template v-if="hasOutput && pages.loaded.value">
+                <template v-if="hasOutput && outputLoaded">
                     <p class="mark-label">Output</p>
-                    <OutputLines class="mark-terminal" :lines="pages.lines.value" @older="pages.older" />
+                    <OutputLines class="mark-terminal" :lines="outputLines" />
                 </template>
                 <template v-else-if="lines.length">
                     <p class="mark-lines">{{ lines.join("\n") }}</p>

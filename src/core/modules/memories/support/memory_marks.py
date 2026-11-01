@@ -17,7 +17,7 @@ MEMORY_MARKS = [
     MarkDeclaration(MemoryMarkType.REMINDER, MemoryMarkVariant, REMINDERS_FAMILY, "Rules and reminders recalled", "rule", click=MarkClick.OPEN_ROW,
                     group_label="{count} rules and reminders recalled"),
     MarkDeclaration(MemoryMarkType.COMPACTION, MemoryMarkVariant, CONTEXT_FAMILY, "Conversation compacted", "compact", click=MarkClick.NONE,
-                    grouping=MarkGrouping.NONE),
+                    grouping=MarkGrouping.NONE, full_width=True),
 ]
 
 MEMORY_DOCKS = [DockDeclaration(MemoryDockType.MEMORY, "fact", "Memory {row_id}", "memory-dock.js", most=6, reads=["memory show"])]

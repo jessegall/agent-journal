@@ -6,17 +6,19 @@ import MarkButtons from "./MarkButtons.vue";
 import {markDeclaration} from "../domain/markRegistry.js";
 import {markLook} from "../domain/markLook.js";
 
+const OUTPUT_MODELS = new Set(["output", "process"]);
+
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
 const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
 const declaration = computed(() => markDeclaration(props.mark.type));
 const look = computed(() => markLook(props.mark, declaration.value));
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
-const opens = computed(() => Boolean(props.mark.lines || props.mark.target_model === "output" || declaration.value?.body_url));
+const opens = computed(() => Boolean(props.mark.lines || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opened = ref(false);
 </script>
 
 <template>
-    <div class="thread-turn card" :data-ref="`chat_mark:${mark.id}`">
+    <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
         <span class="mark-row">
             <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
                 <template v-if="opens" #default="{shown}">
@@ -50,6 +52,24 @@ const opened = ref(false);
 
 :global(html.phone .mark-row) {
     gap: 4px;
+}
+
+/* a line across the whole chat, as the compaction is: what is above it was summed up */
+.thread-turn.full-width {
+    flex-direction: row;
+    align-items: center;
+    align-self: stretch;
+    gap: 10px;
+    max-width: none;
+    margin: 4px 0;
+}
+
+.thread-turn.full-width::before,
+.thread-turn.full-width::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-2);
 }
 
 /* an opened mark may take the chat's whole width, past the share a folded line keeps */

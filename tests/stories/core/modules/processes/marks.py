@@ -14,7 +14,9 @@ from tests.stories.core.modules.processes.support.process_samples import end_run
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
+from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.coding_fixtures import BuilderStarted
+from tests.stories.core.support.fixtures import UserJoined
 
 MARKS = "chat-mark list --environment 1 --oldest"
 AFTER = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"])).with_fields(event="post_tool_use")
@@ -165,3 +167,8 @@ def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new
     story.run_listeners()
     story.expect_text("dock-item show 1", "state: docked")
     story.expect_refusal("dock-item show 2", "no dock-item 2")
+
+
+def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
+    window = WindowStory(new_story(fixture=UserJoined))
+    window.expect_window_allowed("messages.chat", "output peek 1 --all")

@@ -139,7 +139,7 @@ class ModuleSync:
         return tuple(MarkEntry(mark.type.value, module.name, mark.family.name, mark.family.title, mark.family.icon, mark.family.group.value, mark.family.colouring.value,
                                tuple(variant.value for variant in mark.variants), mark.label, mark.mark_icon, mark.click.value, mark.grouping.value, mark.group_label,
                                tuple(button.listed() for button in mark.group_buttons), tuple(button.listed() for button in mark.buttons), mark.body, mark.shown, mark.main,
-                               mark.process, module in shipped, unavailable_reason(mark.kit))
+                               mark.process, mark.full_width, module in shipped, unavailable_reason(mark.kit))
                      for module in modules for mark in module.marks)
 
     def docks(self, modules: tuple[type[Module], ...]) -> tuple[DockEntry, ...]:
