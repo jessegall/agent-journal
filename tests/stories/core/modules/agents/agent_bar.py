@@ -1,6 +1,8 @@
 import json
 import subprocess
 
+from core.base.database.database import Database
+from core.base.leftover_process import LeftoverProcess
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
@@ -81,6 +83,22 @@ def test_stop_leaves_alone_a_pid_that_now_runs_something_else_and_still_ends_the
     finally:
         bystander.kill()
         bystander.wait()
+
+
+def test_stopping_holds_no_write_lock_and_a_session_its_hooks_ended_stays_ended(new_story, monkeypatch):
+    story = new_story(fixture=UserJoined)
+    database = story.container.get(Database)
+    held: list[bool] = []
+    agent_id = story.new_row_id("agent start s-stopped claude worker --pid 4242 --environment main")
+
+    def stopped(pid: int, program: str) -> None:
+        held.append(database.has_transaction)
+        story.expect_success(f"agent end {agent_id}", actor=story.user)
+
+    monkeypatch.setattr(LeftoverProcess, "stop", stopped)
+    story.expect_success(f"agent stop {agent_id}", f"stopped agent {agent_id}", actor=story.user)
+    story.expect_rows(held == [False])
+    story.expect_text(f"agent show {agent_id}", "ended_at:", actor=story.user)
 
 
 def test_only_a_person_stops_and_an_agent_with_no_known_process_or_ended_is_refused(new_story):

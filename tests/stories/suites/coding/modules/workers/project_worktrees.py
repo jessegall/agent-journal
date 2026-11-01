@@ -2,6 +2,8 @@ import shutil
 
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
+from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import GitRepository
@@ -31,6 +33,16 @@ def test_a_person_removes_a_worktree_nobody_holds_and_its_branch_stays(new_story
     story.expect_text(f"project-worktree remove {folder} --environment main", "its branch stays", actor=story.user)
     story.expect_absent("project-worktree list --environment main", folder)
     repository.expect_branch_tip(LEFT_BRANCH, tip)
+
+
+def test_removing_a_worktree_holds_no_write_lock(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    folder = left_worktree(story, repository_environment(story))
+    database = story.container.get(Database)
+    held: list[bool] = []
+    monkeypatch.setattr(WorktreeGit, "remove_folder", lambda self, repository, path: held.append(database.has_transaction))
+    story.expect_success(f"project-worktree remove {folder} --environment main", actor=story.user)
+    story.expect_rows(held == [False])
 
 
 def test_an_agent_cannot_remove_a_worktree(new_story):

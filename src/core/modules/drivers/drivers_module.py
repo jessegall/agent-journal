@@ -40,6 +40,7 @@ from core.modules.drivers.migrations.m002_hook_call_updated_input import HookCal
 from core.modules.drivers.migrations.m003_hook_call_hook_index import HookCallHookIndexMigration
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
+from core.modules.drivers.listeners.resume_line_listener import ResumeLineListener
 from core.modules.drivers.rules.missing_process_rule import MissingProcessRule
 from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
@@ -79,7 +80,7 @@ class DriversModule(Module):
     subcommands = [AgentPauseSubcommand, AgentResumeSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [NewDriverLinesListener, SubagentStopListener]
+    listeners = [ResumeLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     driver_rules = [DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),

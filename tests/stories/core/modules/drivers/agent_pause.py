@@ -5,6 +5,7 @@ from core.base.driver.command_category import CommandCategory
 from core.testing.shell_part import ShellPart
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.database.database import Database
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from tests.stories.core.support import story_lines as lines
@@ -42,6 +43,24 @@ def test_resume_types_that_it_may_carry_on(new_story):
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
     story.expect_rows(typing.typed == [(story.agent.id, "the user resumed you: carry on where you stopped")])
+
+
+def test_resume_types_only_after_its_commit_and_the_line_is_not_said_twice(new_story):
+    story = new_story(fixture=UserJoined)
+    database = story.container.get(Database)
+    held: list[bool] = []
+
+    class WatchedTyping(FakeTyping):
+        def type_line(self, agent_id: int, line: str) -> None:
+            held.append(database.has_transaction)
+            super().type_line(agent_id, line)
+
+    story.container.bind(TerminalTyping, WatchedTyping())
+    story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
+    story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
+    story.expect_rows(held == [False])
+    story.expect_text(f"agent-line list --agent {story.agent.id} --state entered", "the user resumed you", actor=story.user)
+    story.expect_absent(f"agent-line list --agent {story.agent.id} --state waiting", "the user resumed you", actor=story.user)
 
 
 def test_with_no_terminal_the_resume_line_waits_for_the_next_hook(new_story):

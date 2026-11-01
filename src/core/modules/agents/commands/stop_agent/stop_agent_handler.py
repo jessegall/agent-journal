@@ -1,4 +1,5 @@
 
+from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.leftover_process import LeftoverProcess
@@ -12,19 +13,23 @@ from core.modules.agents.support.person_check import PersonCheck
 
 
 class StopAgentHandler(Handler[StopAgent, Agent]):
-    """Stops the program under the pid the agent's row keeps, only while that pid still runs that program, and ends the session."""
+    """Stops the program under the pid the agent's row keeps, only while that pid still runs that program, before the transaction opens since the stopped program's own hooks need the journal; then ends the session unless those hooks did."""
 
     command = StopAgent
 
     def __init__(self, queries: Queries, providers: Providers, repository: Repository) -> None:
         self.queries, self.providers, self.repository = queries, providers, repository
 
-    def handle(self, command: StopAgent, context: Context) -> Agent:
-        PersonCheck.require(context, "only a person stops an agent")
+    def prepare(self, command: StopAgent, actor: Actor) -> None:
+        PersonCheck.require_actor(actor, "only a person stops an agent")
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended already")
         if agent.pid is None:
             raise Refusal(f"the journal does not know the process of agent {agent.id}", "stop it in its own terminal")
         LeftoverProcess.stop(agent.pid, self.providers.provider(agent.program).executable)
-        return self.repository.save(agent.ended(context.timestamp), context)
+
+    def handle(self, command: StopAgent, context: Context) -> Agent:
+        PersonCheck.require(context, "only a person stops an agent")
+        agent = self.queries.query(Agent).find(command.agent_id)
+        return agent if agent.ended_at is not None else self.repository.save(agent.ended(context.timestamp), context)

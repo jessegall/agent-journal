@@ -9,6 +9,7 @@ class UpdateTunlerHandler(Handler[UpdateTunler, str]):
     """Asks the tunler program to update itself."""
 
     command = UpdateTunler
+    in_transaction = False
 
     def __init__(self, client: TunlerClient) -> None:
         self.client = client

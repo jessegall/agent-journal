@@ -10,6 +10,7 @@ class LogInTunlerHandler(Handler[LogInTunler, TunlerLogin]):
     """Asks the tunler program to log in."""
 
     command = LogInTunler
+    in_transaction = False
 
     def __init__(self, client: TunlerClient) -> None:
         self.client = client
