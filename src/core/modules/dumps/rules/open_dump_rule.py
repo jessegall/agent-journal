@@ -10,10 +10,10 @@ from core.modules.dumps.support.dump_nudges import DUMP_OPEN
 
 
 class OpenDumpRule(DriverRule):
-    """When the main agent stops with a dump of its environment not filed, it is told what is left of the oldest one."""
+    """While the main agent works with a dump of its environment not filed, it is told what is left of the oldest one, after a tool since a stop takes no lines."""
 
     name = "dumps.open-dump"
-    hook = HookEventName.STOP
+    hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
 

@@ -107,3 +107,16 @@ func TestALineForTheTerminalGoesWithTheAnswerAndAloneWhenThereIsNoOther(t *testi
 		t.Errorf("printed %q", terminalOnly)
 	}
 }
+
+func TestLinesReachAnAgentAfterAToolAndNeverAtAStop(t *testing.T) {
+	line := "dump 1 is not filed"
+	after, _, _ := shippedAnswer("claude", "PostToolUse", "post_tool_use", Reply{Lines: []string{line}})
+	if !strings.Contains(after, line) {
+		t.Fatalf("a line after a tool did not reach the agent: %q", after)
+	}
+	stop, _, _ := shippedAnswer("claude", "Stop", "stop", Reply{Lines: []string{line}})
+	if strings.Contains(stop, line) {
+		t.Fatalf("a line at a stop is not read by the program, yet it was sent: %q", stop)
+	}
+}
+
