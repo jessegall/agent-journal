@@ -50,6 +50,9 @@ async function toggleAuto() {
     if (await setSetting(AUTO_MODE, !auto.value)) auto.value = !auto.value;
 }
 
+window.addEventListener("journal:toggle-auto", toggleAuto);
+onUnmounted(() => window.removeEventListener("journal:toggle-auto", toggleAuto));
+
 async function toggleDispatches() {
     if (await setSetting(DISPATCHES, !dispatches.value)) dispatches.value = !dispatches.value;
 }

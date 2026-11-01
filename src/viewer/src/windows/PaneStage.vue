@@ -30,6 +30,8 @@ import ResourcePanel from "../resource/ResourcePanel.vue";
 import {peekRef} from "../route.js";
 import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
+import QuickMenu from "../shell/QuickMenu.vue";
+import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
 
@@ -165,6 +167,37 @@ const guide = usePaneGuide(props.environment, {
     close: () => (menu.value = null),
 });
 followFullscreen();
+const quickOpen = ref(false);
+function messageTheAgent(words = "") {
+    const composer = document.querySelector(".composer-input");
+    if (!composer) return void openView("messages.chat");
+    if (words) {
+        composer.value = words;
+        composer.dispatchEvent(new Event("input", {bubbles: true}));
+    }
+    composer.focus();
+}
+const quickCommands = computed(() => [
+    {label: "Message the agent", keys: "write send", icon: "arrow", run: () => messageTheAgent()},
+    ...props.catalogue.windows.value.map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => openView(window.name)})),
+    ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", key: "w", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
+    {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
+    {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
+    {label: activityOpen.value ? "Hide the activity" : "Show the activity", keys: "activity column", icon: "activity", run: toggleActivity},
+]);
+const SHELL_KEYS = {
+    fullscreen: () => (shell.wide = !shell.wide),
+    "leave-fullscreen": () => (shell.wide = false),
+    "quick-menu": () => (quickOpen.value = true),
+};
+function shellKeyed(event) {
+    const action = SHELL_KEYS[shellKeyAction(event, {wide: shell.wide, opened: quickOpen.value})];
+    if (!action) return;
+    event.preventDefault();
+    action();
+}
+window.addEventListener("keydown", shellKeyed);
+onUnmounted(() => window.removeEventListener("keydown", shellKeyed));
 const closeMenusOutside = (event) => {
     if (event.target.closest?.(MENU_PARTS)) return;
     menu.value = null;
@@ -328,6 +361,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         </template>
         <template v-if="shellRead">
             <ResourcePanel :read="shellRead" />
+        </template>
+        <template v-if="quickOpen">
+            <QuickMenu :commands="quickCommands" @close="quickOpen = false" @message="messageTheAgent" />
         </template>
     </div>
 </template>
