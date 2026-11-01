@@ -15,6 +15,8 @@ from core.modules.drivers.commands.pause_agent.pause_agent_handler import PauseA
 from core.modules.drivers.commands.resume_agent.agent_resume_subcommand import AgentResumeSubcommand
 from core.modules.drivers.commands.resume_agent.resume_agent_handler import ResumeAgentHandler
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.rules.dispatch_law_rule import DispatchLawRule
+from core.modules.drivers.rules.long_output_rule import LongOutputRule
 from core.modules.drivers.rules.paused_agent_rule import PausedAgentRule
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
@@ -78,7 +80,7 @@ class DriversModule(Module):
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
-    driver_rules = [PausedAgentRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
+    driver_rules = [DispatchLawRule, LongOutputRule, PausedAgentRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
