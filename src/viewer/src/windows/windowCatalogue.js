@@ -1,5 +1,5 @@
 import {transport} from "../api/transport.js";
-import {computed, shallowRef} from "vue";
+import {ref, computed, shallowRef} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
 
 // the windows the journal lists for this environment and the person they are listed for, asked again whenever the registry is synced: a window whose entry
@@ -69,8 +69,28 @@ export async function fetchWindowCatalogue(environment) {
     return await response.json();
 }
 
+// false once the event stream has been gone for a while; a short gap, such as a restart, says nothing
+export const streamAlive = ref(true);
+export const STREAM_GONE_MS = 15000;
+
 export function followEvents(environment, heard) {
     const source = transport.stream(`/api/events?environment=${encodeURIComponent(environment)}`);
-    source.onmessage = (message) => heard(JSON.parse(message.data));
-    return () => source.close();
+    let gone = null;
+    const back = () => {
+        clearTimeout(gone);
+        gone = null;
+        streamAlive.value = true;
+    };
+    source.onopen = back;
+    source.onmessage = (message) => {
+        back();
+        heard(JSON.parse(message.data));
+    };
+    source.onerror = () => {
+        gone ??= setTimeout(() => (streamAlive.value = false), STREAM_GONE_MS);
+    };
+    return () => {
+        clearTimeout(gone);
+        source.close();
+    };
 }
