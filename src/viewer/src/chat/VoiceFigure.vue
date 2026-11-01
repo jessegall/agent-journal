@@ -8,7 +8,7 @@ import {readFloors} from "../figure/floors.js";
 import {strideAtDistance} from "../figure/gait.js";
 import {between, perchOn, perchSpot} from "../figure/perches.js";
 import {boxAt, cornerAt, freeEdge, freeSpot, restOf, tripTo} from "../figure/places.js";
-import {legAt, legEnded} from "../domain/figureMotion.js";
+import {airborneFrame, fallingFrom, legAt, legEnded} from "../domain/figureMotion.js";
 import {useFigureBody} from "../composables/figureBody.js";
 
 // the figure of a voice at home on the compose box, playing the clip for the tool in hand and blinking now and then; with nothing to do it
@@ -43,7 +43,11 @@ const placed = (spot) => {
 // page moves under it
 function rest() {
     const held = perch && perchSpot(perch, readFloors(), figure);
-    if (perch && !held) perch = null;
+    if (perch && !held) {
+        perch = null;
+        body.airborne = fallingFrom(body.place, null, readFloors().floors, performance.now());
+        return;
+    }
     body.place = held ?? restOf(figure, body.place.on ? body.place : null);
     body.at = placed(body.place);
     body.here = true;
@@ -96,9 +100,27 @@ function walk(now) {
     rest();
 }
 
+// the bubble went from under it: it falls through the air to the floor below, then rests where it lands
+function fall(now) {
+    const {airborne, landed} = airborneFrame(body.airborne, readFloors().floors, now, reducedMotion());
+    body.airborne = airborne;
+    if (airborne) body.at = placed(airborne);
+    else {
+        body.place = landed.spot;
+        strollAt = now + between(STROLL_SECONDS, Math.random) * 1000;
+        rest();
+    }
+}
+
+const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 function frame() {
     if (!player) return;
     const now = performance.now();
+    if (body.airborne) {
+        fall(now);
+        return draw(now);
+    }
     if (body.trip) walk(now);
     else if (frames++ % 6 === 0) rest();
     if (!body.trip && now > strollAt && !props.running) {
@@ -109,8 +131,8 @@ function frame() {
 }
 
 function draw(now) {
-    const walking = Boolean(body.trip);
-    const clip = clipNamed(walking ? (body.leg.clip ?? "walk") : heldClip(props.running, props.heardAt, Date.now() / 1000));
+    const walking = Boolean(body.trip) && !body.airborne;
+    const clip = clipNamed(body.airborne ? "fall" : walking ? (body.leg.clip ?? "walk") : heldClip(props.running, props.heardAt, Date.now() / 1000));
     if (clip.name !== shownClip) {
         shownClip = clip.name;
         began = now;
