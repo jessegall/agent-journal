@@ -4,7 +4,7 @@ import {createApp, h} from "vue";
 import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import HomePage from "../src/pages/HomePage.vue";
 import AgentPage from "../src/pages/AgentPage.vue";
-import WindowPage from "../src/pages/WindowPage.vue";
+import ViewWindow from "../src/layout/ViewWindow.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
 
 const entry = (name, extra = {}) => ({name, module: name.split(".")[0], title: name, icon: "window", options: [], line: "task list", loading: "document", place: "environment", roles: [], reads: [], runs: [], events: [], unavailable_reason: "", allowed: true, ...extra});
@@ -255,7 +255,7 @@ test("a page whose suite is simply not chosen shows no problem", async () => {
 
 // task 5476: a window opens as a page of its own, the sidebar linking each window's address
 test("a window page draws the sidebar with a link to each window's own address and the window itself", async () => {
-    const {element} = await mount(WindowPage, {window: "tasks.tasks"});
+    const {element} = await mount(ViewWindow, {view: "tasks.tasks", float: 0, standalone: true});
     expect(element.querySelector(`[data-page="tasks.tasks"]`)).not.toBeNull();
     expect(element.querySelector(`[data-sidebar-window="agents.notes"]`).getAttribute("href")).toBe("?environment=main&page=agents.notes");
     expect(element.querySelector("[data-breadcrumb]").textContent).toContain("tasks.tasks");

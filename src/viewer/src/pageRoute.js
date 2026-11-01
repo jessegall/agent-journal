@@ -5,7 +5,7 @@ export function pageRoute(search) {
     const environment = query.get("environment");
     if (!environment) return {page: "environment", props: {search}};
     if (query.get("view")) return {page: "view", props: {environment, view: query.get("view"), float: Number(query.get("float")) || 0}};
-    if (query.get("page")) return {page: "window", props: {environment, window: query.get("page")}};
+    if (query.get("page")) return {page: "view", props: {environment, view: query.get("page"), float: 0, standalone: true}};
     if (query.get("agent")) return {page: "agent", props: {environment, agent: Number(query.get("agent"))}};
     if (query.get("windows")) return {page: "shell", props: {environment, layout: query.get("windows").split(",")}};
     return {page: "home", props: {environment}};

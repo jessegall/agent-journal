@@ -5,7 +5,6 @@ import "./phone/phone.css";
 import ViewWindow from "./layout/ViewWindow.vue";
 import EnvironmentPage from "./pages/EnvironmentPage.vue";
 import AgentPage from "./pages/AgentPage.vue";
-import WindowPage from "./pages/WindowPage.vue";
 import HomePage from "./pages/HomePage.vue";
 import WindowShell from "./windows/WindowShell.vue";
 import PairPage from "./pages/PairPage.vue";
@@ -13,7 +12,7 @@ import SharePage from "./pages/SharePage.vue";
 import {readSession} from "./windows/startup.js";
 import {pageRoute} from "./pageRoute.js";
 
-const PAGES = {environment: EnvironmentPage, view: ViewWindow, agent: AgentPage, shell: WindowShell, home: HomePage, window: WindowPage};
+const PAGES = {environment: EnvironmentPage, view: ViewWindow, agent: AgentPage, shell: WindowShell, home: HomePage};
 const PAIRING_PATH = "/pair";
 const pairingCode = new URLSearchParams(location.hash.slice(1)).get("code") || "";
 const {page, props} = pageRoute(location.search);
