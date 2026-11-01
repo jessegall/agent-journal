@@ -37,7 +37,7 @@ def test_several_lines_in_one_request_are_answered_in_order_each_checked_on_its_
                           {"window": "viewer.shell", "line": ["environment", "list", "--js"], "environment": "main"}]}
         status, _, answer = viewer_answer(story.viewer_port(), "/api/lines", cookie, "", body)
         answers = json.loads(answer)["answers"]
-        assert status == 200 and [one["code"] for one in answers] == [0, 1, 2], (status, answer)
+        assert status == 200 and [item["code"] for item in answers] == [0, 1, 2], (status, answer)
 
 
 def test_a_lines_request_without_its_list_is_refused(new_story):

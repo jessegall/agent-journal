@@ -7,7 +7,7 @@ from server.viewer.viewer_request_error import ViewerRequestError
 
 @dataclass(frozen=True)
 class ViewerLinesRequest:
-    """The body of POST /api/lines: command lines in the shape of POST /api/line, answered in the order they are given."""
+    """The body of POST /api/lines: command lines, answered in the order they are given."""
 
     lines: list[ViewerLineRequest]
 

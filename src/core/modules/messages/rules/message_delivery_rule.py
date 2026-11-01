@@ -12,7 +12,7 @@ from core.modules.messages.commands.record_message_delivery.record_message_deliv
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
-DELIVERED_PER_HOOK = 5
+LISTED_MESSAGES = 5
 
 
 class MessageDeliveryRule(DriverRule):
@@ -33,7 +33,7 @@ class MessageDeliveryRule(DriverRule):
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
         undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
-        messages = undelivered.page(1, DELIVERED_PER_HOOK).rows
+        messages = undelivered.page(1, LISTED_MESSAGES).rows
         if not messages:
             return RuleAnswer.allowed()
         waiting = undelivered.count()

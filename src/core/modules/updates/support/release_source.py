@@ -29,15 +29,15 @@ class ReleaseSource:
     def __init__(self, settings: SettingValues, home: JournalHome, clock: Clock) -> None:
         self.settings, self.home, self.clock = settings, home, clock
 
-    def newest(self, fresh: bool = False) -> PublishedRelease:
+    def newest(self, from_network: bool = False) -> PublishedRelease:
         """The newest release; one answered in the last hour, or a failure in the last five minutes, is kept in a
-        file, so a page asking for it does not wait on the network each time. An install asks for a fresh one."""
+        file, so a page asking for it does not wait on the network each time. An install asks the network."""
         address = self.address()
-        kept = None if fresh else self.kept(address)
-        if kept is not None:
-            if "failure" in kept:
-                raise Refusal(str(kept["failure"]), "check the release address in the settings")
-            return PublishedRelease(address, str(kept["checksum"]), str(kept["tag"]))
+        saved = None if from_network else self.kept(address)
+        if saved is not None:
+            if "failure" in saved:
+                raise Refusal(str(saved["failure"]), "check the release address in the settings")
+            return PublishedRelease(address, str(saved["checksum"]), str(saved["tag"]))
         try:
             release = self.fetched_newest(address)
         except Refusal as refusal:

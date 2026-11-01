@@ -30,9 +30,9 @@ def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_
     database = story.container.get(Database)
     over = {}
     for name, sample in SAMPLES.items():
-        before = database.tally.points()
+        start = database.tally.points()
         story.hook("s-1", sample)
-        points = database.tally.points().minus(before)
-        if points.total >= HOOK_LIMIT_POINTS:
-            over[name] = f"{points.total} points ({points.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in points.statements.most_common(3))
+        cost = database.tally.points().minus(start)
+        if cost.total >= HOOK_LIMIT_POINTS:
+            over[name] = f"{cost.total} points ({cost.line()}); " + "; ".join(f"{rows} rows: {sql[:90]}" for sql, rows in cost.statements.most_common(3))
     assert not over, "\n".join(f"{name}: {line}" for name, line in over.items())

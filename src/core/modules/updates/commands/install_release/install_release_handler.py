@@ -26,7 +26,7 @@ class InstallReleaseHandler(Handler[InstallRelease, Release]):
     def handle(self, command: InstallRelease, context: Context) -> Release:
         if context.actor.type is not ActorType.USER:
             raise Refusal("only the user installs a release, with the Install button on the Updates window", "journal update check tells you whether one is out")
-        release = self.source.newest(fresh=True)
+        release = self.source.newest(from_network=True)
         with tempfile.TemporaryDirectory() as folder:
             CodeCopy(self.source.unpacked(release, Path(folder)), self.home).make()
         return self.repository.save(Release(creator_id=context.actor.id, checksum=release.checksum, tag=release.tag), context)

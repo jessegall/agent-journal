@@ -11,9 +11,8 @@ VERSION_PARAMETER = "v"
 
 @dataclass(frozen=True)
 class ModuleFileCaching:
-    """How long a browser keeps a file the viewer serves: forever for a name that holds its content's hash or an address
-    that carries its version, and otherwise until the file's tag changes, which a repeat request names so the
-    answer is only that nothing changed."""
+    """How long a browser keeps a file the viewer serves: forever for a hashed name or a versioned address,
+    else until its tag changes."""
 
     cache_control: str
     etag: str

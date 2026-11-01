@@ -19,8 +19,8 @@ class CodeFingerprint:
         self.listings: dict[tuple[Path, ...], FolderListing] = {}
 
     def text(self, modules: Sequence[type[Module]]) -> str:
-        outside = (module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER))
-        return self.folder_text([CORE_FOLDER, *outside])
+        plugin_folders = (module.folder() for module in modules if not module.folder().is_relative_to(CORE_FOLDER))
+        return self.folder_text([CORE_FOLDER, *plugin_folders])
 
     def module_text(self, module: type[Module]) -> str:
         return self.folder_text([module.folder()])
