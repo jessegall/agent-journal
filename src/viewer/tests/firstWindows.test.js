@@ -118,3 +118,19 @@ test("the transcript window shows one agent's conversation, each turn under its 
     expect(text).toContain("The total is in cents now");
     expect(windowContext.reads).toContain("agent transcript 7");
 });
+
+test("a line typed in the terminal goes to the agent, and a refusal gives it back with the reason", async () => {
+    const window = {...context({"agent terminal": page([])}, 7), lines: []};
+    window.run = async (line) => (window.lines.push(line), {ok: false, error: "no launcher is running here"});
+    const element = await mounted(Terminal, window);
+    const form = element.querySelector("[data-terminal-run]");
+    const input = form.querySelector("input");
+    input.value = "ls -la";
+    input.dispatchEvent(new Event("input"));
+    form.dispatchEvent(new Event("submit"));
+    await settle();
+    expect(window.lines).toEqual([["agent", "type", "7", "ls -la"]]);
+    expect(element.querySelector("[data-terminal-refusal]").textContent).toBe("no launcher is running here");
+    expect(form.querySelector("input").value).toBe("ls -la");
+});
+

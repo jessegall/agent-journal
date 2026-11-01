@@ -1,4 +1,9 @@
-from tests.stories.core.support.fixtures import AgentStarted
+import socket
+import threading
+
+from core.modules.agents.support.terminal_typing import TerminalTyping
+from tests.stories.core.modules.viewer.support.window_story import WindowStory
+from tests.stories.core.support.fixtures import AgentStarted, UserJoined
 
 TERMINAL_LINES = "1\tready\n2\tReading cart.py\n3\tThe total is in cents now\n"
 
@@ -16,3 +21,73 @@ def test_an_agents_terminal_lines_are_read_from_the_launchers_log_and_after_a_li
 def test_an_agent_the_launcher_never_ran_has_no_terminal_lines(new_story):
     story = new_story(fixture=AgentStarted)
     story.expect_success(f"agent terminal {story.agent.id}", "nothing found")
+
+
+class FakeTyping(TerminalTyping):
+    """Keeps what would be typed, so a story reaches no launcher."""
+
+    def __init__(self) -> None:
+        self.typed: list[tuple[int, str]] = []
+
+    def type_line(self, agent_id: int, line: str) -> None:
+        self.typed.append((agent_id, line))
+
+
+def test_a_person_types_a_line_in_a_running_agents_terminal(new_story):
+    story = new_story(fixture=UserJoined)
+    typing = FakeTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.expect_success(f'agent type {story.agent.id} "ls -la"', f"typed in the terminal of agent {story.agent.id}", actor=story.user)
+    story.expect_rows(typing.typed == [(story.agent.id, "ls -la")])
+
+
+def test_an_agent_an_empty_line_and_an_ended_agent_are_refused(new_story):
+    story = new_story(fixture=UserJoined)
+    typing = FakeTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.expect_refusal(f'agent type {story.agent.id} "ls"', "only a person types", actor=story.agent)
+    story.expect_refusal(f'agent type {story.agent.id} " "', "give the line to type", actor=story.user)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user)
+    story.expect_refusal(f'agent type {story.agent.id} "ls"', "has ended", actor=story.user)
+    story.expect_rows(typing.typed == [])
+
+
+def test_with_no_launcher_the_line_is_refused(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_refusal(f'agent type {story.agent.id} "ls"', "no launcher is running here", actor=story.user)
+
+
+def launcher_answering(story, answer: bytes) -> list[bytes]:
+    received: list[bytes] = []
+    listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    listener.bind(str(story.home.socket("launcher")))
+    listener.listen(1)
+
+    def serve() -> None:
+        connection, _ = listener.accept()
+        received.append(connection.recv(4096))
+        connection.sendall(answer)
+        connection.close()
+        listener.close()
+
+    threading.Thread(target=serve, daemon=True).start()
+    return received
+
+
+def test_the_launcher_gets_the_line_and_answers_that_it_typed_it(new_story):
+    story = new_story(fixture=UserJoined)
+    received = launcher_answering(story, b"typed\n")
+    story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
+    story.expect_rows(b'"typed": "ls"' in received[0], f'"agent_id": {story.agent.id}'.encode() in received[0])
+
+
+def test_a_launcher_that_gives_no_answer_is_refused_with_what_to_do(new_story):
+    story = new_story(fixture=UserJoined)
+    launcher_answering(story, b"")
+    story.expect_refusal(f'agent type {story.agent.id} "ls"', "the launcher did not type the line", actor=story.user)
+
+
+def test_the_terminal_window_may_type(new_story):
+    story = new_story(fixture=UserJoined)
+    WindowStory(story).expect_window_allowed("coding.terminal", f'agent type {story.agent.id} "ls"')
+

@@ -27,7 +27,7 @@ func TestAWorkerRequestOnTheLaunchersSocketStartsItsProgramInTheWorktreeWithTheW
 	defer os.RemoveAll(folder)
 	socket := filepath.Join(folder, "launcher.sock")
 	starter := fakeStarter{started: make(chan ProgramStart, 1)}
-	listener, err := Listen(socket, starter)
+	listener, err := Listen(socket, starter, NewTerminalInputs())
 	if err != nil {
 		t.Fatal(err)
 	}

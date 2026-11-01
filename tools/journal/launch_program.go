@@ -40,7 +40,8 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 			fmt.Fprintln(stderr, line)
 		}
 	}
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home}); err == nil {
+	inputs := launch.NewTerminalInputs()
+	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs}, inputs); err == nil {
 		defer listener.Close()
 	}
 	launchName := "launch-" + strconv.FormatInt(time.Now().UnixNano(), 36)
@@ -76,7 +77,8 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		command.Env = append(command.Env, name+"="+value)
 	}
 	restoreProgram := terminal.Raw()
-	err = launch.RunInTerminal(command, os.Stdin, stdout, log)
+	defer inputs.Close(agentID)
+	err = launch.RunInTerminal(command, inputs.Open(agentID, os.Stdin), stdout, log)
 	restoreProgram()
 	if err != nil {
 		var exit *exec.ExitError
