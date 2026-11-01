@@ -41,3 +41,13 @@ func Parts(line string) []Part {
 	}
 	return parts
 }
+
+// LeadingJournal counts the parts at the head of a line that are journal commands.
+func LeadingJournal(parts []Part) int {
+	for index, part := range parts {
+		if words := strings.Fields(part.Text); len(words) == 0 || words[0] != "journal" {
+			return index
+		}
+	}
+	return len(parts)
+}

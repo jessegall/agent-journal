@@ -38,6 +38,11 @@ func (folder Folder) Start(line string, parts []Part, script string) error {
 
 func (folder Folder) Script() string { return filepath.Join(folder.Path, "run.sh") }
 
+func (folder Folder) Exists() bool {
+	_, err := os.Stat(folder.Path)
+	return err == nil
+}
+
 func (folder Folder) WritePid(pid int) error {
 	return os.WriteFile(filepath.Join(folder.Path, "pid"), []byte(strconv.Itoa(pid)), 0o644)
 }

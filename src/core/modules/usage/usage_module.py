@@ -3,6 +3,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
+from core.base.viewer.window_place import WindowPlace
 from core.modules.usage.commands.statistic_list_subcommand import StatisticListSubcommand
 from core.modules.usage.commands.usage_show_subcommand import UsageShowSubcommand
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
@@ -22,4 +23,4 @@ class UsageModule(Module):
     migrations = [StatisticsTableMigration]
     moves = [StatisticsMove]
     subcommands = (UsageShowSubcommand, StatisticListSubcommand)
-    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, reads=["usage show", "statistic list"])]
+    windows = [WindowDeclaration("usage.usage", "Usage", "usage.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, place=WindowPlace.DROPDOWN, reads=["usage show", "statistic list"])]

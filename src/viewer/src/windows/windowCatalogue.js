@@ -9,13 +9,16 @@ export class WindowCatalogue {
         this.fetchOffers = fetchOffers;
         this.fetchMarks = fetchMarks;
         this.windows = shallowRef([]);
+        this.dropdowns = shallowRef([]);
         this.person = null;
     }
 
     async load() {
         const offers = await this.fetchOffers();
         this.person = offers.person_id ?? null;
-        this.windows.value = withFamilyOptions(offers.windows, await this.fetchMarks());
+        const offered = withFamilyOptions(offers.windows, await this.fetchMarks());
+        this.windows.value = offered.filter((window) => window.place !== "dropdown");
+        this.dropdowns.value = offered.filter((window) => window.place === "dropdown");
     }
 
     heard(event) {
@@ -48,6 +51,10 @@ export class WindowCatalogue {
 
     window(name) {
         return this.windows.value.find((window) => window.name === name) || null;
+    }
+
+    dropdown(name) {
+        return this.dropdowns.value.find((window) => window.name === name) || null;
     }
 }
 

@@ -200,12 +200,15 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 </template>
             </RowList>
         </div>
-        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
         <div class="jump-holder">
-            <button type="button" data-scroll-foot :class="['jump', {hidden: !awayFromFoot}]" @click="scrollToFoot">
-                {{ arrived ? `${arrived} new` : "Newest" }}
-            </button>
+            <Transition name="rise">
+                <button v-show="awayFromFoot" type="button" data-scroll-foot class="jump" :title="arrived ? `${arrived} arrived while you were reading` : 'Back to the newest'" @click="scrollToFoot">
+                    <Icon name="down" />
+                    {{ arrived ? `${arrived} new` : "Newest" }}
+                </button>
+            </Transition>
         </div>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
         <DockStack :items="docked" :folded="short || !docksOpen" />
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
@@ -355,26 +358,46 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 
 .jump {
     position: absolute;
-    z-index: 2;
-    bottom: 8px;
+    z-index: 3;
+    bottom: 6px;
     left: 50%;
-    padding: 4px 12px;
-    border: 1px solid var(--border-2);
-    border-radius: 13px;
-    background: var(--raised);
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    padding: 4px 11px;
+    border: 1px solid var(--text);
+    border-radius: 99px;
+    background: var(--text);
+    color: #0d0e10;
+    font-size: 11.5px;
+    font-weight: 500;
     cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
     transform: translateX(-50%);
 }
 
 .jump:hover {
-    color: var(--text);
+    border-color: #fff;
+    background: #fff;
+    color: #000;
 }
 
-.jump.hidden {
-    visibility: hidden;
+.rise-enter-active {
+    transition:
+        opacity 0.22s ease-out,
+        transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rise-leave-active {
+    transition:
+        opacity 0.16s ease-in,
+        transform 0.16s ease-in;
+}
+
+.rise-enter-from,
+.rise-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 8px);
 }
 
 .composer-quote {

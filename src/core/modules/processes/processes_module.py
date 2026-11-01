@@ -27,9 +27,11 @@ from core.modules.processes.listeners.output_dock_listener import OutputDockList
 from core.modules.processes.listeners.process_end_mark_listener import ProcessEndMarkListener
 from core.modules.processes.support.process_marks import PROCESS_DOCKS, PROCESS_MARKS
 from core.modules.processes.commands.read_new_output_handler import ReadNewOutputHandler
+from core.modules.processes.listeners.orphaned_process_kill_listener import OrphanedProcessKillListener
 from core.modules.processes.listeners.stopped_process_output_listener import StoppedProcessOutputListener
 from core.modules.processes.migrations.m004_output_readers import OutputReadersMigration
 from core.modules.processes.migrations.m005_reader_plugins import ReaderPluginsMigration
+from core.modules.processes.rules.journal_chain_rule import JournalChainRule
 from core.modules.processes.rules.output_reader_rule import OutputReaderRule
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
 from core.modules.processes.guards.run_owner_reports_guard import RunOwnerReportsGuard
@@ -85,8 +87,8 @@ class ProcessesModule(Module):
     handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusalRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
-    listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, ProcessEndMarkListener, OutputDockListener]
+    driver_rules = [SleepPollRefusalRule, JournalChainRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
+    listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     docks = PROCESS_DOCKS
     windows = [WindowDeclaration("processes.outputs", "Commands", "outputs.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, reads=WINDOW_READS, runs=WINDOW_RUNS, events=WINDOW_EVENTS),

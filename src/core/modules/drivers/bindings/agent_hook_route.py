@@ -24,8 +24,8 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 class AgentHookRoute(HookRoute):
     """Answers a hook as the agent that sent it: finds its open agent by session, then by the launch name it
     was started under, saving the real session on it, or by the subagent the hook names, starts the main
-    agent at its session's first hook and a subagent at its first, gives back the stored answer of a hook
-    sent twice, and lets through, without a record, a hook from an agent it does not know."""
+    agent at its session's first hook and a subagent at its first hook other than a stop, gives back the stored
+    answer of a hook sent twice, and lets through, without a record, a hook from an agent it does not know."""
 
     def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues) -> None:
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
@@ -52,7 +52,10 @@ class AgentHookRoute(HookRoute):
             main = self.started(event, AgentRole.MAIN, None)
         if main is None or not event.subagent:
             return main
-        return self.open_agent(event.subagent) or self.started(event, AgentRole.SUBAGENT, main.id)
+        subagent = self.open_agent(event.subagent)
+        if subagent is None and event.event != HookEventName.STOP:
+            return self.started(event, AgentRole.SUBAGENT, main.id)
+        return subagent
 
     def launch_name_agent(self, event: HookEvent) -> Agent | None:
         if not event.launch:

@@ -27,7 +27,7 @@ class SleepPollRefusalRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        if shell is None or shell.parse_error or len(shell.parts) != 1 or not self.is_sleep_poll(shell.parts[0]):
+        if shell is None or shell.parse_error or not any(self.is_sleep_poll(part) for part in shell.parts):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(f"a sleep with nothing to wait on is refused: {self.watch_advice(hook)}")
 

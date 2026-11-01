@@ -33,7 +33,7 @@ class HookDurations:
             line, note = self.duration(event)
             shown.append(line)
         if self.settings.value(HOOK_NUDGES_SETTING, environment_id) is True:
-            shown.extend(f"to the agent: {nudge[:TERMINAL_NUDGE_CHARACTERS]}" for nudge in nudges if nudge)
+            shown.extend(nudge[:TERMINAL_NUDGE_CHARACTERS] for nudge in nudges if nudge)
         return "\n".join(shown), note
 
     def duration(self, event: HookEvent) -> tuple[str, str]:

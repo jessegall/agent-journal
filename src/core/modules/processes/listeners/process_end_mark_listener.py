@@ -22,13 +22,13 @@ OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: Mark
 PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
 ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED)
-MARKED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE, CommandCategory.PROCESS)
-MARKED_STATES = (ProcessState.BACKGROUND, ProcessState.FAILED, ProcessState.ORPHANED, ProcessState.STOPPED)
+MARKED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
+MARKED_STATES = (ProcessState.BACKGROUND,)
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A test run, a build, a check, a package or a process shows one mark, and so does any run that moves to the
-    background or ends badly; the mark is kept up to date in place by the key process:<id>: running, with the
+    """A test run, a build, a check or a package shows one mark, and so does any run that moves to the
+    background; the mark is kept up to date in place by the key process:<id>: running, with the
     reader's progress as its figure, moved to the background, then ended with its outcome. Other runs show none."""
 
     name = "processes.process-mark"

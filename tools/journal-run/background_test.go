@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -48,4 +49,24 @@ func TestALimitOf0NeverMoves(t *testing.T) {
 	if code != 0 || !strings.Contains(output, "uncapped") || strings.Contains(output, "moved to the background") {
 		t.Fatalf("printed %q with code %d", output, code)
 	}
+}
+
+func TestAJournalCommandAtTheHeadOfALineFinishesBeforeTheRunMoves(t *testing.T) {
+	bin := t.TempDir()
+	if err := os.WriteFile(bin+"/journal", []byte("#!/bin/sh\nsleep 1\necho answered\n"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
+	setup := options(t, "journal task show 1; sleep 3")
+	setup.Background = true
+	output, _ := run(t, setup, newClient())
+	if !strings.Contains(output, "answered") || !strings.Contains(output, "moved to the background") {
+		t.Fatalf("printed %q", output)
+	}
+}
+
+func TestAFollowerEndsWhenItsFolderIsGone(t *testing.T) {
+	setup := options(t, "sleep 5")
+	tracker := Tracker{Options: setup, Client: newClient(), Folder: NewFolder(setup.Home, setup.Process), Parts: 1, Reported: map[int]bool{}}
+	bounded(t, 5*time.Second, tracker.Watch)
 }

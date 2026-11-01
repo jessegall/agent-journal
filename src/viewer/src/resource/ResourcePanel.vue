@@ -54,10 +54,10 @@ async function load() {
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     const shown = answer.ok ? answer.value : null;
+    row.value = shown;
     const more = !shown ? {} : name === "plan" ? {phases: await planParts(open.id)} : name === "task" ? await taskParts(open.id) : {};
     if (turn !== reading) return;
     parts.value = {phases: [], logs: [], waits: [], ...more};
-    row.value = shown;
 }
 
 watch(() => `${opened.value?.table}:${opened.value?.id}`, () => {

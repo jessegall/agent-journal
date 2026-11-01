@@ -10,6 +10,14 @@ def test_a_subagents_start_with_no_main_agent_starts_nothing(new_story):
     story.expect_success("agent list --environment 1", "nothing found")
 
 
+def test_a_stop_from_a_subagent_the_journal_has_not_seen_makes_no_row(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    story.hook("s-1", HookSamples.session_start())
+    story.hook("s-1", HookSamples.stop().with_fields(subagent="sub-1"))
+    story.run_listeners()
+    story.expect_absent("agent list --environment 1", "sub-1")
+
+
 def test_a_subagents_stop_that_is_let_through_ends_its_row(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     main = hook_agent(story, story.hook("s-1", HookSamples.session_start()))

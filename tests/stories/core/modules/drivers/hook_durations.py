@@ -78,4 +78,4 @@ def test_each_line_sent_to_the_agent_shows_in_the_terminal_while_the_nudges_sett
     assert "to the agent:" not in story.hook("s-1", HookSamples.session_start()).terminal
     story.run(f"setting switch {MASTER} on --project", actor=story.user)
     story.run('task make "Fix the cart" --environment main', actor=story.user)
-    assert "to the agent: task 1 is yours now" in story.hook("s-1", HookSamples.stop()).terminal
+    assert "task 1 is yours now" in story.hook("s-1", HookSamples.stop()).terminal

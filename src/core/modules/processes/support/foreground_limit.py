@@ -26,21 +26,21 @@ class ForegroundRun:
 
 class ForegroundLimit:
     """How a shell line is run: no limit to move at for a line of journal commands, in the background at once
-    for a journal command its module marks, an alias marked so, a test run, a build or a command whose last
-    run went past the limit, else the seconds the settings give, fewer while the user waits on a message; a
-    line that runs an alias is a shell line, read by the alias's reader."""
+    for an alias marked so, a test run, a build or a command whose last run went past the limit, else the seconds
+    the settings give, fewer while the user waits on a message; a line that runs an alias is a shell line, read by
+    the alias's reader."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries
 
     def decide(self, environment_id: int, shell: ShellLine) -> ForegroundRun:
-        is_journal_background, alias_runs = self.background.includes(shell), self.background.alias_runs(shell)
-        if shell.is_journal_line and not is_journal_background and not alias_runs:
+        alias_runs = self.background.alias_runs(shell)
+        if shell.is_journal_line and not alias_runs:
             return ForegroundRun(0, False)
         categories = frozenset(part.classification.category for part in shell.parts)
         is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell.line)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
-        return ForegroundRun(self.seconds_allowed(environment_id), is_journal_background or is_long, reader_id)
+        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id)
 
     def has_moved_run(self, environment_id: int, line: str) -> bool:
         return self.processes.environment(environment_id).line(line).moved().exists()

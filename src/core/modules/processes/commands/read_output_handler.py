@@ -11,7 +11,7 @@ from core.modules.processes.commands.support.output_texts import OutputTexts
 
 
 class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
-    """Reads an output in the way asked and notes when it was read."""
+    """Reads an output in the way asked and notes when it was first read; a later read writes nothing."""
 
     command = ReadOutput
 
@@ -21,6 +21,6 @@ class ReadOutputHandler(Handler[ReadOutput, OutputLines]):
     def handle(self, command: ReadOutput, context: Context) -> OutputLines:
         lines = self.texts.lines(context.actor, command)
         kept = self.outputs.process(command.process_id).filter(state=OutputState.KEPT).page(1, 1).rows
-        if kept:
+        if kept and kept[0].read_at is None:
             self.repository.save(replace(kept[0], read_at=context.timestamp), context)
         return OutputLines(lines)

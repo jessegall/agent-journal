@@ -25,6 +25,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {peekRef} from "../route.js";
 import {barFacts, NO_FACTS} from "../domain/barFacts.js";
@@ -117,7 +118,12 @@ async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
     if (answer?.ok) usage.value = answer.value;
 }
-const openCount = (key) => openView(COUNT_WINDOWS[key]);
+const openDropdown = ref(null);
+const openCount = (key) => {
+    const name = COUNT_WINDOWS[key];
+    if (props.catalogue.dropdown(name)) openDropdown.value = openDropdown.value === name ? null : name;
+    else openView(name);
+};
 async function readFacts() {
     if (!props.shellRead) return;
     readUsage();
@@ -223,6 +229,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
                 <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :auto="auto" @open="openCount" @toggle-auto="toggleAuto" />
+                <template v-if="openDropdown">
+                    <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
+                </template>
             </template>
             <nav class="pane-stage-bar agent-bar">
                 <template v-for="window in barWindows().slice(0, room)" :key="window.name">

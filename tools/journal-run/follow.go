@@ -11,19 +11,17 @@ import (
 // Tracker reads a run's folder as the shell fills it: it shows what the agent sees as each part ends, reports each
 // part and the end through the journal client, and moves the run to the background past its limit.
 type Tracker struct {
-	Options  Options
-	Client   Client
-	Folder   Folder
-	Parts    int
-	Reported map[int]bool
-	Shown    int
+	Options        Options
+	Client         Client
+	Folder         Folder
+	Parts          int
+	LeadingJournal int
+	Reported       map[int]bool
+	Shown          int
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
 	started := time.Now()
-	if tracker.Options.Background {
-		return tracker.move(stdout)
-	}
 	for {
 		tracker.reportParts(stdout)
 		if code, ended := tracker.Folder.End(); ended {
@@ -32,22 +30,32 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 		if !tracker.Options.ShellAlive() {
 			return tracker.orphan(stdout)
 		}
-		limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
-		if limit > 0 && time.Since(started) >= limit {
+		if tracker.mayMove(started) {
 			return tracker.move(stdout)
 		}
 		time.Sleep(pollInterval)
 	}
 }
 
-// Watch follows a run that moved until it ends, as a program of its own.
+// mayMove says whether the run may go to the background: never while a journal command at the head of the line runs.
+func (tracker *Tracker) mayMove(started time.Time) bool {
+	for position := 1; position <= tracker.LeadingJournal; position++ {
+		if _, ended := tracker.Folder.Status(position); !ended {
+			return false
+		}
+	}
+	limit := time.Duration(tracker.Options.LimitSeconds) * time.Second
+	return tracker.Options.Background || (limit > 0 && time.Since(started) >= limit)
+}
+
+// Watch follows a moved run as a program of its own until the run ends or its folder has been pruned.
 func (tracker *Tracker) Watch() {
 	for position := 1; position <= tracker.Parts; position++ {
 		if _, ended := tracker.Folder.Status(position); ended {
 			tracker.Reported[position] = true
 		}
 	}
-	for {
+	for tracker.Folder.Exists() {
 		tracker.reportParts(io.Discard)
 		if code, ended := tracker.Folder.End(); ended {
 			tracker.finish(io.Discard, code)

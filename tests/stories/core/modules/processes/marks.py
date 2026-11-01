@@ -100,12 +100,12 @@ def test_a_plain_command_that_ends_well_in_the_foreground_makes_no_mark(new_stor
     assert mark_count(story) == 0
 
 
-def test_a_failed_plain_command_makes_a_mark(new_story):
+def test_a_failed_plain_command_makes_no_mark(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "cat notes")
     end_run(story, process, "no such file\n", exit_code=1)
     story.run_listeners()
-    story.expect_text(MARKS, "process:1")
+    assert mark_count(story) == 0
 
 
 def test_a_plain_command_moved_to_the_background_makes_a_mark(new_story):

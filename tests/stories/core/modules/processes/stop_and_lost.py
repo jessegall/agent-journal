@@ -42,6 +42,25 @@ def test_a_heartbeat_older_than_90_seconds_ends_the_run_lost_and_tells_the_agent
     assert any(ORPHAN_LINE in line for line in story.hook("s-1", NOTHING).lines)
 
 
+def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    group = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, group.pid)
+        folder.beat(process.id, story.clock.timestamp())
+        story.advance(timedelta(seconds=100))
+        story.tick("s-1")
+        deadline = time.monotonic() + 5
+        while group.poll() is None and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert group.poll() is not None, "the group of the lost run is still alive"
+    finally:
+        group.kill()
+        group.wait()
+
+
 def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "make build")
