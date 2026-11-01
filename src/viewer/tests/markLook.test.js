@@ -12,8 +12,8 @@ test("the registry finds a declaration by its type", () => {
 });
 
 test("a mark takes its icon, group and words from its row and declaration", () => {
-    const look = markLook({id: 4, text: "Memory 3: weight set", detail: "d", state: "shown", created_at: 9, target_model: "memory", target_id: 3}, memory);
-    expect(look).toMatchObject({key: "chat_mark:4", icon: "fact", markIcon: "fact", group: "reminders", tone: "", label: "Memory 3: weight set", detail: "d", time: 9, ended: false});
+    const look = markLook({id: 4, text: "Memory 3: weight set", detail: "d", state: "shown", created_at: "2026-11-01T10:00:09Z", target_model: "memory", target_id: 3}, memory);
+    expect(look).toMatchObject({key: "chat_mark:4", icon: "fact", markIcon: "fact", group: "reminders", tone: "", label: "Memory 3: weight set", detail: "d", time: Date.parse("2026-11-01T10:00:09Z") / 1000, ended: false});
     expect(look.action).not.toBe("");
     expect(typeof look.handlers.onAct).toBe("function");
 });

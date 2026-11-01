@@ -14,7 +14,7 @@ const KINDS = [
 
 for (const kind of KINDS) {
     test(`a ${kind.type} mark has the fields ChatMark draws: icon, mark icon, group, label, time and state`, () => {
-        const row = {id: 3, text: "words", detail: "more", figure: "2", fraction: 0.5, state: "ended", created_at: 11, target_model: "memories", target_id: 3};
+        const row = {id: 3, text: "words", detail: "more", figure: "2", fraction: 0.5, state: "ended", created_at: "2026-11-01T10:00:11Z", target_model: "memories", target_id: 3};
         expect(markLook(row, kind)).toMatchObject({
             key: "chat_mark:3",
             icon: kind.family_icon,
@@ -27,7 +27,7 @@ for (const kind of KINDS) {
             fraction: 0.5,
             ended: false,
             active: false,
-            time: 11,
+            time: Date.parse("2026-11-01T10:00:11Z") / 1000,
         });
     });
 }

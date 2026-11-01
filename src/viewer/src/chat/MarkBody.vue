@@ -1,4 +1,6 @@
 <script setup>
+import {peekRef} from "../route.js";
+import {STOPPED_VARIANTS} from "../domain/markLook.js";
 import {computed, inject, onUnmounted, ref, watch} from "vue";
 import OutputLines from "../kit/OutputLines.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
@@ -10,6 +12,9 @@ const props = defineProps({declaration: {type: Object, required: true}, mark: {t
 const context = inject(WINDOW_CONTEXT);
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
 const RUN_MODEL = "process";
+const TASK_MODEL = "task";
+const stopReason = computed(() => (STOPPED_VARIANTS.has(props.mark.variant) ? props.mark.detail || "" : ""));
+const taskId = computed(() => (props.mark.target_model === TASK_MODEL ? props.mark.target_id : 0));
 const POLL_MILLISECONDS = 2000;
 const outputLines = ref([]);
 const outputLoaded = ref(false);
@@ -40,6 +45,10 @@ onUnmounted(stopPoll);
                 <ModuleBody :declaration="declaration" :row="mark" :head="head" />
             </template>
             <template v-else>
+                <template v-if="stopReason">
+                    <p class="mark-label">Why it stopped</p>
+                    <p class="mark-lines" data-mark-reason>{{ stopReason }}</p>
+                </template>
                 <template v-if="hasOutput && outputFailure">
                     <p class="mark-lines" role="alert">{{ outputFailure }}</p>
                 </template>
@@ -50,12 +59,31 @@ onUnmounted(stopPoll);
                 <template v-else-if="lines.length">
                     <p class="mark-lines">{{ lines.join("\n") }}</p>
                 </template>
+                <template v-if="taskId">
+                    <button type="button" class="mark-proofs" data-mark-task @click.stop="peekRef(`${TASK_MODEL}:${taskId}`)">Open task {{ taskId }} and its proofs</button>
+                </template>
             </template>
         </div>
     </div>
 </template>
 
 <style scoped>
+.mark-proofs {
+    margin-top: 6px;
+    padding: 2px 8px;
+    border: 1px solid var(--border-2);
+    border-radius: 6px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.mark-proofs:hover {
+    background: var(--hover);
+}
+
 .mark-more {
     grid-column: 1 / -1;
     contain: inline-size;
