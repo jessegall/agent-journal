@@ -1,7 +1,7 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
-import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
+import {Btn, DockStack, RunningCommand, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message list", ["message.*"], {incremental: true});
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
@@ -14,7 +14,7 @@ const outgoing = ref([]);
 const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
 const rows = computed(() => interleaved([...messages.value, ...echoes.value], marks.value));
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
-const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? latestCalls.value[0].tool : ""));
+const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? [latestCalls.value[0].tool, latestCalls.value[0].summary].filter(Boolean).join(" ") : ""));
 const FOLD_AFTER_MS = 180;
 const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
@@ -151,10 +151,8 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </template>
                 </template>
             </RowList>
-            <template v-if="runningTool">
-                <p data-running-tool class="running-tool"><span class="running-dot" />{{ runningTool }}</p>
-            </template>
         </div>
+        <p class="running-strip"><span :class="['running-dot', {idle: !runningTool}]" /><RunningCommand :text="runningTool" idle="waiting" /></p>
         <button type="button" data-scroll-top :class="['scroll-top', {hidden: atTop}]" aria-label="Scroll to the top" @click="scrollToTop">
             <Icon name="up" :size="14" />
         </button>
@@ -269,21 +267,28 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     cursor: pointer;
 }
 
-.running-tool {
+.running-strip {
     display: flex;
+    flex: none;
     gap: 8px;
     align-items: center;
-    margin: 4px 10px;
+    margin: 0;
+    padding: 4px 14px;
     color: var(--text-3);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 12px;
 }
 
 .running-dot {
+    flex: none;
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: var(--accent);
+}
+
+.running-dot.idle {
+    background: var(--text-4);
 }
 
 .scroll-top {
