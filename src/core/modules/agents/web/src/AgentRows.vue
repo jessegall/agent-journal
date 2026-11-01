@@ -2,11 +2,11 @@
 import {RowList, useRows} from "@journal/window-kit";
 
 const props = defineProps({line: {type: String, required: true}, empty: {type: String, required: true}});
-const {rows, failure, loaded} = useRows(props.line, ["agent.*"]);
+const {rows, failure, loaded, older} = useRows(props.line, ["agent.*"], {incremental: true});
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" :empty="empty">
+    <RowList :rows="rows" :failure="failure" :loaded="loaded" :older="older" :empty="empty">
         <template #default="{row}">
             <span class="id">#{{ row.id }}</span>
             <span class="main">{{ row.session }}</span>

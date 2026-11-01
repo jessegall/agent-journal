@@ -1,26 +1,40 @@
 <script setup>
-import {computed, ref, watch} from "vue";
-import {Btn, Icon, Skeleton, peekRef, useRows} from "@journal/window-kit";
+import {computed, ref} from "vue";
+import {Btn, Icon, Skeleton, peekRef, useWindow} from "@journal/window-kit";
 
-// plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed
-const {rows, failure, loaded, context} = useRows("plan list", ["plan.*", "phase.*", "task.*"]);
-const CLOSED = new Set(["completed", "cancelled"]);
+// plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
+const context = useWindow();
 const tab = ref("open");
-const progress = ref({});
-const open = computed(() => rows.value.filter((row) => !CLOSED.has(row.state)));
-const closed = computed(() => rows.value.filter((row) => CLOSED.has(row.state)));
-const shown = computed(() => (tab.value === "open" ? open.value : closed.value));
+const board = ref({open_total: 0, closed_total: 0, plans: []});
+const failure = ref("");
+const loaded = ref(false);
+const page = ref(1);
+const line = (number) => `plan board${tab.value === "closed" ? " --closed" : ""}${number > 1 ? ` --page ${number}` : ""}`;
 
-watch(rows, async (list) => {
-    if (context.shared) return;
-    const read = await Promise.all(list.map((row) => context.read(`plan progress ${row.id}`)));
-    progress.value = Object.fromEntries(list.map((row, at) => [row.id, read[at].ok ? read[at].value : null]));
-}, {immediate: true});
+async function load() {
+    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line(1));
+    failure.value = answer.ok ? "" : answer.error;
+    loaded.value = true;
+    page.value = 1;
+    if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, ...answer.value}]} : answer.value;
+}
 
-const share = (row) => {
-    const counts = progress.value[row.id];
-    return counts && counts.task_count ? Math.round((counts.completed_count / counts.task_count) * 100) : 0;
+async function more() {
+    const answer = await context.read(line(page.value + 1));
+    if (!answer.ok) return void (failure.value = answer.error);
+    page.value += 1;
+    board.value = {...answer.value, plans: [...board.value.plans, ...answer.value.plans]};
+}
+
+const choose = (name) => {
+    tab.value = name;
+    load();
 };
+const shown = computed(() => board.value.plans);
+const total = computed(() => (tab.value === "open" ? board.value.open_total : board.value.closed_total));
+const share = (row) => (row.task_count ? Math.round((row.completed_count / row.task_count) * 100) : 0);
+context.follow(["plan.*", "phase.*", "task.*"], load);
+load();
 </script>
 
 <template>
@@ -33,8 +47,8 @@ const share = (row) => {
         </template>
         <template v-else>
             <div class="plans-tabs">
-                <Btn kind="text" :class="['plans-tab', {on: tab === 'open'}]" data-tab="open" @click="tab = 'open'">Open {{ open.length }}</Btn>
-                <Btn kind="text" :class="['plans-tab', {on: tab === 'closed'}]" data-tab="closed" @click="tab = 'closed'">Closed {{ closed.length }}</Btn>
+                <Btn kind="text" :class="['plans-tab', {on: tab === 'open'}]" data-tab="open" @click="choose('open')">Open {{ board.open_total }}</Btn>
+                <Btn kind="text" :class="['plans-tab', {on: tab === 'closed'}]" data-tab="closed" @click="choose('closed')">Closed {{ board.closed_total }}</Btn>
             </div>
             <template v-if="!shown.length">
                 <p class="plans-note">{{ tab === "open" ? "No open plans" : "No closed plans" }}</p>
@@ -45,12 +59,13 @@ const share = (row) => {
                         <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span class="plan-state">{{ row.state }}</span></span>
                         <span class="plan-title">{{ row.title }}</span>
                         <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
-                        <template v-if="progress[row.id]">
-                            <span class="plan-foot">{{ progress[row.id].completed_count }} of {{ progress[row.id].task_count }} tasks done · phase {{ progress[row.id].current_phase }}</span>
-                        </template>
+                        <span class="plan-foot">{{ row.completed_count }} of {{ row.task_count }} tasks done · phase {{ row.current_phase }}</span>
                     </div>
                 </template>
             </div>
+            <template v-if="shown.length < total">
+                <Btn kind="text" data-plans-more @click="more">Show more</Btn>
+            </template>
         </template>
     </div>
 </template>

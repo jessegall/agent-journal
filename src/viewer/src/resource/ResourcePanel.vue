@@ -29,12 +29,8 @@ const moves = computed(() => movesOf(kind.value, row.value));
 const fields = computed(() => fieldsOf(row.value));
 
 async function planParts(id) {
-    const phases = rowsOf(await props.read(["phase", "list", "--plan", String(id), "--oldest", "--limit", "100"]));
-    return Promise.all(phases.map(async (phase) => {
-        const places = rowsOf(await props.read(["phase-task", "list", "--phase", String(phase.id), "--oldest", "--limit", "100"]));
-        const answers = await Promise.all(places.map((place) => props.read(["task", "show", String(place.task_id)])));
-        return {...phase, tasks: answers.filter((answer) => answer.ok).map((answer) => answer.value)};
-    }));
+    const answer = await props.read(["plan", "outline", String(id)]);
+    return answer.ok ? answer.value.phases : [];
 }
 
 async function taskParts(id) {

@@ -93,7 +93,9 @@ const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", hel
 const usage = ref({agents: [], windows: []});
 async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
-    if (answer?.ok) usage.value = answer.value;
+    if (!answer?.ok) return;
+    usage.value = answer.value;
+    agentRow.value = answer.value.agents.find((row) => row.role === "main") ?? null;
 }
 const openDropdown = ref(null);
 const openCount = (key) => {
@@ -107,11 +109,6 @@ async function readFacts() {
     const answer = await props.shellRead(["usage", "bars"]);
     now.value = Date.now();
     if (answer.ok) facts.value = answer.value;
-}
-async function readAgent() {
-    const answer = props.shellRead ? await props.shellRead(["agent", "list", "--role", "main", "--limit", "5"]) : null;
-    const rows = rowsOf(answer);
-    agentRow.value = rows.find((row) => row.role === "main" && !row.ended_at) ?? rows[0] ?? null;
 }
 const chatFirst = (pane) => (pane.pane.tabs.includes(CHAT_WINDOW) ? 0 : 1);
 const phone = computed(() => props.face === "phone");
@@ -135,10 +132,9 @@ onMounted(() => {
     window.addEventListener("resize", measure);
     navigator.serviceWorker?.addEventListener("message", heardWorker);
     presets?.load();
-    readAgent();
     readEnvironments();
     readFacts();
-    factsTimer = setInterval(() => (readAgent(), readFacts()), FACT_SECONDS * 1000);
+    factsTimer = setInterval(readFacts, FACT_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
 });

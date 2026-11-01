@@ -8,17 +8,11 @@ const context = useWindow();
 const item = context.option("row");
 const phases = ref([]);
 const hidden = computed(() => Math.max(0, phases.value.length - PREVIEW_PHASES));
-const rowsOf = (answer) => (answer.ok ? answer.value.rows : []);
-
 async function load() {
     const planId = item.value?.target_id;
     if (!planId) return;
-    const found = rowsOf(await context.read(`phase list --plan ${planId} --oldest --limit 100`));
-    const shown = await Promise.all(found.slice(0, PREVIEW_PHASES).map(async (phase) => ({
-        ...phase,
-        tasks: rowsOf(await context.read(`phase-task list --phase ${phase.id} --limit 100`)).length,
-    })));
-    phases.value = [...shown, ...found.slice(PREVIEW_PHASES)];
+    const answer = await context.read(`plan outline ${planId}`);
+    phases.value = answer.ok ? answer.value.phases.map((phase) => ({...phase, tasks: phase.tasks.length})) : [];
 }
 
 context.follow(["phase.*", "phase_task.*"], load);

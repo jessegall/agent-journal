@@ -1,7 +1,7 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-776b33fc6e3c")) { const style = document.createElement("style"); style.id = "window-styles-776b33fc6e3c"; style.textContent = ".id[data-v-82d859bc]{flex:none;width:44px;color:var(--text-3);font-size:12px}.state[data-v-82d859bc]{flex:none;color:var(--text-3);font-size:12px}.state.running[data-v-82d859bc]{color:var(--accent-text)}.main[data-v-82d859bc]{flex:1}.note[data-v-82d859bc]{color:var(--text-3);font-size:12px}.author[data-v-f34e0cbb]{color:var(--text-3);font-size:12px;min-width:72px}.text[data-v-f34e0cbb]{flex:1;white-space:pre-wrap}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-3e4986246ea2")) { const style = document.createElement("style"); style.id = "window-styles-3e4986246ea2"; style.textContent = ".id[data-v-91909350]{flex:none;width:44px;color:var(--text-3);font-size:12px}.state[data-v-91909350]{flex:none;color:var(--text-3);font-size:12px}.state.running[data-v-91909350]{color:var(--accent-text)}.main[data-v-91909350]{flex:1}.note[data-v-91909350]{color:var(--text-3);font-size:12px}.author[data-v-f34e0cbb]{color:var(--text-3);font-size:12px;min-width:72px}.text[data-v-f34e0cbb]{flex:1;white-space:pre-wrap}\n"; document.head.appendChild(style); }
 import { h as t } from "vue";
-import { A as e } from "./AgentRows-QZyoFC-N.js";
+import { A as e } from "./AgentRows-Bp-H_7Qv.js";
 const r = { render: () => t(e, { line: "agent list", empty: "No agents yet" }) };
 export {
   r as default

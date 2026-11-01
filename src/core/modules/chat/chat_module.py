@@ -6,6 +6,7 @@ from core.modules.chat.commands.record_journal_fault.record_journal_fault_handle
 from core.modules.chat.listeners.journal_fault_mark_listener import JournalFaultMarkListener
 from core.modules.chat.listeners.upgrade_mark_listener import UpgradeMarkListener
 from core.modules.chat.migrations.m002_journal_faults import JournalFaultTableMigration
+from core.modules.chat.migrations.m003_chat_mark_key_index import ChatMarkKeyIndexMigration
 from core.modules.chat.models.journal_fault import JournalFault
 from core.modules.chat.support.chat_fault_sink import ChatFaultSink
 from core.modules.chat.commands.show_mark.show_mark_handler import ShowMarkHandler
@@ -25,7 +26,7 @@ class ChatModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments"]
     models = [ModelDeclaration(ChatMark, query=ChatMarkQuery), ModelDeclaration(JournalFault, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ChatMarkTableMigration, JournalFaultTableMigration]
+    migrations = [ChatMarkTableMigration, JournalFaultTableMigration, ChatMarkKeyIndexMigration]
     handlers = [ShowMarkHandler, RecordJournalFaultHandler]
     guards = [MarkTypeGuard, AgentChatGuard]
     marks = CHAT_MARKS

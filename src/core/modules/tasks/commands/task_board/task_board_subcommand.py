@@ -1,0 +1,49 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.environment_names import EnvironmentNames
+from core.base.query.query import PAGE_SIZE_ROWS
+from core.base.refusal import Refusal
+from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.tasks.support.task_board import TaskBoard, TaskGroup
+
+GOING_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
+FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
+COUNT_PAGE_ROWS = 1
+
+
+class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
+    """`journal task board [--environment <name>] [--state <state> --page <n>]`: the first page of each going state and the
+    count of each finished one in one answer, or one more page of one state."""
+
+    cli_name = "task"
+    name = "board"
+
+    def __init__(self, tasks: TaskQuery, environment_names: EnvironmentNames) -> None:
+        self.tasks, self.environment_names = tasks, environment_names
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--environment")
+        parser.add_argument("--state", type=TaskState)
+        parser.add_argument("--page", type=int, default=1)
+
+    def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
+        environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
+        if environment_id is None:
+            raise Refusal("the board is shown for one environment", "name it with --environment")
+        if arguments.state is not None:
+            return TaskBoard((self.group(environment_id, arguments.state, arguments.page, PAGE_SIZE_ROWS),))
+        going = tuple(self.group(environment_id, state, 1, PAGE_SIZE_ROWS) for state in GOING_STATES)
+        finished = tuple(TaskGroup(state.value, self.tasks.environment(environment_id).filter(state=state).page(1, COUNT_PAGE_ROWS).total, ()) for state in FINISHED_STATES)
+        return TaskBoard((*going, *finished))
+
+    def group(self, environment_id: int, state: TaskState, page: int, size: int) -> TaskGroup:
+        found = self.tasks.environment(environment_id).filter(state=state).newest().page(page, size)
+        return TaskGroup(state.value, found.total, tuple(found.rows))
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, TaskBoard):
+            output.write("\n".join(f"{group.state}: {group.total}" for group in value.groups), value.json())

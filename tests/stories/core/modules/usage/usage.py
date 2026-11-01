@@ -49,10 +49,9 @@ def test_usage_outside_an_environment_is_refused_with_how_to_name_one(new_story)
     story.expect_refusal("usage show", "usage is shown for one environment: name it with --environment", actor=story.user)
 
 
-def test_the_usage_window_reads_the_usage_and_the_counts(new_story):
+def test_the_usage_window_reads_the_usage(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("usage.usage", "usage show")
-    window.expect_window_allowed("usage.usage", "statistic list")
 
 
 def test_the_bars_count_helpers_tasks_and_questions_and_name_the_main_agents_task(new_story):

@@ -1,4 +1,5 @@
 <script setup>
+import {ref} from "vue";
 import EmptyState from "../src/kit/EmptyState.vue";
 import Skeleton from "../src/kit/Skeleton.vue";
 
@@ -9,7 +10,13 @@ defineProps({
     loaded: {type: Boolean, required: true},
     // what the skeleton looks like while the first read is out: the shape of what is coming
     shape: {type: String, default: "rows"},
+    // reads the next page behind the rows and says whether it found any; with none given the list has no pages
+    older: {type: Function, default: null},
 });
+const finished = ref(false);
+async function showMore(older) {
+    finished.value = !(await older());
+}
 </script>
 
 <template>
@@ -30,10 +37,30 @@ defineProps({
                 </li>
             </template>
         </ul>
+        <template v-if="older && !finished && rows.length">
+            <button type="button" class="row-list-more" data-row-list-more @click="showMore(older)">Show more</button>
+        </template>
     </template>
 </template>
 
 <style scoped>
+.row-list-more {
+    margin: 6px 0 0;
+    padding: 2px 8px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.row-list-more:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
 .row-list {
     animation: row-list-in 0.25s ease both;
     display: flex;

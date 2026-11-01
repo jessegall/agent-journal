@@ -16,13 +16,13 @@ test("the chat window shows the environment's messages", async () => {
 });
 
 test("the tasks window shows each task's title and state", async () => {
-    const text = await drawn(TaskList, context({"task list": page([{id: 7, title: "Fix the cart", state: "started"}])}));
+    const text = await drawn(TaskList, context({"task board": {ok: true, value: {groups: [{state: "started", total: 1, rows: [{id: 7, title: "Fix the cart", state: "started"}]}]}}}));
     expect(text).toContain("Fix the cart");
     expect(text).toContain("Started");
 });
 
 test("the plans window shows each plan's title and state", async () => {
-    const text = await drawn(PlanList, context({"plan list": page([{id: 3, title: "Checkout", state: "started"}])}));
+    const text = await drawn(PlanList, context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}));
     expect(text).toContain("Checkout");
     expect(text).toContain("started");
 });
@@ -59,7 +59,7 @@ test("the file edits window shows every agent's edits", async () => {
 });
 
 test("a window shows the reason a read was refused", async () => {
-    expect(await drawn(TaskList, context({}))).toContain("no answer for task list");
+    expect(await drawn(TaskList, context({}))).toContain("no answer for task board");
 });
 
 test("the terminal window draws its agent's terminal lines and reads the newer ones after the last", async () => {

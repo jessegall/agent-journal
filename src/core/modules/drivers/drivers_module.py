@@ -26,6 +26,7 @@ from core.modules.drivers.commands.hook_call_show.hook_call_show_subcommand impo
 from core.modules.drivers.guards.driver_setting_guard import DriverSettingGuard
 from core.modules.drivers.migrations.m001_drivers import DriversTablesMigration
 from core.modules.drivers.migrations.m002_hook_call_updated_input import HookCallUpdatedInputMigration
+from core.modules.drivers.migrations.m003_hook_call_hook_index import HookCallHookIndexMigration
 from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLinesListener
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
 from core.modules.drivers.rules.missing_process_rule import MissingProcessRule
@@ -56,7 +57,7 @@ class DriversModule(Module):
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
     models = [ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
-    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration]
+    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration]
     handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]

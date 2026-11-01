@@ -35,8 +35,7 @@ afterEach(async () => {
 
 const PLAN = {
     "plan show 5": {ok: true, value: {id: 5, title: "Move the cart", brief: "Why the **cart** moves", state: "ready"}},
-    "phase list --plan 5 --oldest --limit 100": {ok: true, value: {rows: [{id: 2, title: "First phase", goal: "The goal"}]}},
-    "phase-task list --phase 2 --oldest --limit 100": {ok: true, value: {rows: [{id: 9, task_id: 7}]}},
+    "plan outline 5": {ok: true, value: {plan_id: 5, phases: [{id: 2, title: "First phase", goal: "The goal", tasks: [{id: 7, title: "Fix the totals", state: "open"}]}]}},
     "task show 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "open"}},
     "plan approve 5": {ok: true, value: {}},
 };
