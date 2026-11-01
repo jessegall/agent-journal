@@ -44,7 +44,7 @@ class RunnerRewriteRule(DriverRule):
         if process is None:
             return {}
         kept = {str(field): value for field, value in hook.event.tool_input().items() if field != BACKGROUND_FLAG}
-        return {**kept, "command": RunnerLine.build(str(self.runner.path), process.id, run, shell.line)}
+        return {**kept, "command": RunnerLine.build(str(self.runner.path), process.id, run, shell.line, hook.event.session)}
 
     def missing(self, hook: AgentHook) -> RuleAnswer:
         if self.hook_history.answer_time(RuleHistoryKey(hook.agent_id, self.name, hook.layer_ref)) is not None:
