@@ -20,13 +20,13 @@ export function useLayoutPresets({environment, page, shellLine, catalogue, store
 
     async function load() {
         const offered = await shellLine(["suite", "presets", environment, page]);
-        suite.value = offered.ok && offered.value?.presets ? offered.value.presets.map((preset) => ({...preset, shape: arrangedShape(preset.shape)})) : [];
+        suite.value = offered.ok && offered.value?.rows ? offered.value.rows.map((preset) => ({...preset, shape: arrangedShape(preset.shape)})) : [];
         await reload();
     }
 
     async function reload() {
         const own = await shellLine(["person-preset", "list", "--page", page]);
-        person.value = own.ok && own.value?.presets ? own.value.presets.map((row) => ({key: `person:${row.id}`, id: row.id, name: row.name, text: SAVED_TEXT, saved: true, shape: JSON.parse(row.shape)})) : [];
+        person.value = own.ok && own.value?.rows ? own.value.rows.map((row) => ({key: `person:${row.id}`, id: row.id, name: row.name, text: SAVED_TEXT, saved: true, shape: JSON.parse(row.shape)})) : [];
     }
 
     const usable = (name) => {

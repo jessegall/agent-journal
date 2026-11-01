@@ -14,17 +14,17 @@ const SUITE_PRESETS = [
     {key: "blocked", name: "Blocked", text: "A window that cannot run", shape: {windows: ["old.board"], active: "old.board"}},
 ];
 
-async function presets({person = []} = {}) {
+async function presets({person = [], catalogue: names = null} = {}) {
     const lines = [];
     const shellLine = async (line) => {
         lines.push(line);
         const words = line.join(" ");
-        if (words.startsWith("suite presets main home")) return {ok: true, value: {presets: SUITE_PRESETS}};
-        if (words.startsWith("person-preset list")) return {ok: true, value: {presets: person}};
+        if (words.startsWith("suite presets main home")) return {ok: true, value: {rows: SUITE_PRESETS}};
+        if (words.startsWith("person-preset list")) return {ok: true, value: {rows: person}};
         return {ok: true, value: {id: 9}};
     };
     const catalogue = new WindowCatalogue(async () => ({windows: []}));
-    catalogue.windows.value = [offered("messages.chat"), offered("tasks.tasks"), offered("old.board", {unavailable_reason: "Needs window kit 2."})];
+    catalogue.windows.value = names ? names.map((name) => offered(name)) : [offered("messages.chat"), offered("tasks.tasks"), offered("old.board", {unavailable_reason: "Needs window kit 2."})];
     const store = paneLayout({
         saved: async () => null,
         defaults: async () => ({dir: "row", r: 0.5, a: {tabs: ["messages.chat"], active: "messages.chat"}, b: {tabs: ["tasks.tasks"], active: "tasks.tasks"}}),
@@ -148,3 +148,28 @@ test("a command the journal refuses shows its error as the notice", async () => 
     expect(refusing.notice.value).toBe("only a person keeps a layout");
     expect(list.notice.value).toBe("");
 });
+
+// task 5491: the eight layouts version 4 offered, as the coding suite declares them, each applies to the live layout
+const t = (...windows) => ({windows, active: windows[0]});
+const row = (share, first, second) => ({direction: "row", share, first, second});
+const col = (share, first, second) => ({direction: "col", share, first, second});
+const VERSION_FOUR = {
+    default: [row(0.7, t("messages.chat"), t("tasks.tasks", "plans.plans")), ["messages.chat", "tasks.tasks"]],
+    developer: [row(0.62, t("messages.chat"), col(0.74, t("coding.file-feed", "tasks.tasks"), t("coding.terminal"))), ["messages.chat", "coding.file-feed", "coding.terminal"]],
+    chat: [t("messages.chat"), ["messages.chat"]],
+    terminal: [row(0.72, t("coding.terminal"), t("messages.chat")), ["coding.terminal", "messages.chat"]],
+    review: [row(0.5, t("coding.file-feed"), t("messages.chat")), ["coding.file-feed", "messages.chat"]],
+    monitor: [row(0.62, t("coding.terminal"), col(0.55, t("coding.file-feed"), t("tasks.tasks"))), ["coding.terminal", "coding.file-feed", "tasks.tasks"]],
+    inbox: [row(0.6, t("messages.chat"), col(0.5, t("plans.plans"), t("tasks.tasks"))), ["messages.chat", "plans.plans", "tasks.tasks"]],
+    agents: [row(0.34, t("messages.chat"), t("agents.agents")), ["messages.chat", "agents.agents"]],
+};
+
+for (const [key, [shape, actives]] of Object.entries(VERSION_FOUR)) {
+    test(`version 4's ${key} layout applies: its panes show ${actives.join(", ")}`, async () => {
+        SUITE_PRESETS.push({key, name: key, text: "", shape});
+        const {list, store} = await presets({catalogue: ["messages.chat", "tasks.tasks", "plans.plans", "coding.file-feed", "coding.terminal", "agents.agents"]});
+        list.apply(key);
+        const after = store.layout.value;
+        expect(leaves(after.tree).map((id) => after.panes[id].active)).toEqual(actives);
+    });
+}

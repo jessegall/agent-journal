@@ -31,7 +31,7 @@ for (const [page, width] of [["home", 1200], ["home", 400], ["agent", 1200], ["a
             disconnect() {}
             unobserve() {}
         });
-        const shellLine = async (line) => (line[0] === "suite" ? {ok: true, value: {presets: [{key: "default", name: "Default", text: "Chat and a board", shape: SHAPE}]}} : {ok: true, value: {presets: []}});
+        const shellLine = async (line) => (line[0] === "suite" ? {ok: true, value: {rows: [{key: "default", name: "Default", text: "Chat and a board", shape: SHAPE}]}} : {ok: true, value: {rows: []}});
         const catalogue = new WindowCatalogue(async () => ({windows: []}));
         catalogue.windows.value = [entry("messages.chat"), entry("thirdparty.board")];
         const store = paneLayout({
