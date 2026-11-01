@@ -5,6 +5,7 @@ const here = (path) => fileURLToPath(new URL(path, import.meta.url));
 
 export default windowBuild({
     entries: {
+        files: here("./src/files.js"),
         "file-feed": here("./src/file-feed.js"),
         "file-edits": here("./src/file-edits.js"),
         terminal: here("./src/terminal.js"),

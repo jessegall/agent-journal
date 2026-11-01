@@ -61,6 +61,7 @@ const measure = () => {
     narrow.value = window.innerWidth < PHONE_WIDTH;
     width.value = window.innerWidth;
 };
+const FILES_WINDOW = "coding.files";
 const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,.pane-tour";
 const adding = ref(null);
 const agentRow = ref(null);
@@ -190,11 +191,15 @@ const quickCommands = computed(() => [
     ...props.catalogue.windows.value.map((window, index) => ({label: `Go to ${window.title}`, keys: window.title, key: index < 9 ? String(index + 1) : "", markIcon: window.icon || "window", run: () => openView(window.name)})),
     ...(currentTask.value ? [{label: `Open the task in hand: ${currentTask.value.title}`, keys: "task work current doing", icon: "activity", run: () => peekRef(`tasks:${currentTask.value.id}`)}] : []),
     {label: shell.wide ? "Leave full screen" : "Full screen", keys: "full screen wide zen", icon: "wide", run: () => (shell.wide = !shell.wide)},
+    ...(props.catalogue.window(FILES_WINDOW) ? [{label: "Open project file", keys: "file files open find", icon: "file", run: () => openView(FILES_WINDOW)}] : []),
+    {label: "Search", keys: "search find everything", icon: "search", run: () => openView("search.search")},
+    {label: "Show what happened while you were away", keys: "away digest recap activity", icon: "activity", run: () => (activityOpen.value = true)},
     {label: "Pause or resume auto mode", keys: "auto mode", icon: "activity", run: () => window.dispatchEvent(new CustomEvent("journal:toggle-auto"))},
     {label: `Color scheme: ${schemeLabel.value}`, keys: "theme dark light color", icon: "wide", run: nextColorScheme},
     {label: activityOpen.value ? "Hide the activity" : "Show the activity", keys: "activity column", icon: "activity", run: toggleActivity},
 ]);
 const SHELL_KEYS = {
+    "open-file": () => props.catalogue.window(FILES_WINDOW) && openView(FILES_WINDOW),
     fullscreen: () => (shell.wide = !shell.wide),
     "leave-fullscreen": () => (shell.wide = false),
     "quick-menu": () => (quickOpen.value = true),

@@ -1,0 +1,128 @@
+/* @code-commandments-generated */
+if (!document.getElementById("window-styles-96d86c380078")) { const style = document.createElement("style"); style.id = "window-styles-96d86c380078"; style.textContent = ".filter[data-v-89de1475]{box-sizing:border-box;width:100%;max-width:320px;margin-bottom:8px;padding:5px 10px;border:1px solid var(--border-2);border-radius:8px;background:transparent;color:var(--text);font:inherit;font-size:12.5px}.main[data-v-89de1475]{flex:1}.note[data-v-89de1475]{color:var(--text-3);font-size:12px}.main[data-v-f4d9e119]{flex:1}.note[data-v-f4d9e119]{color:var(--text-3);font-size:12px}.files[data-v-9c5bab02]{display:flex;flex-direction:column;height:100%;min-height:0}.files-bar[data-v-9c5bab02]{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--border)}.files-search[data-v-9c5bab02]{flex:0 1 280px;min-width:160px;margin-right:6px}.files-body[data-v-9c5bab02]{display:grid;flex:1;grid-template-columns:minmax(220px,1fr) 3fr;min-height:0}.files-list[data-v-9c5bab02]{overflow-y:auto;padding:6px;border-right:1px solid var(--border)}.files-row[data-v-9c5bab02]{display:flex;gap:8px;align-items:center;width:100%;padding:4px 8px;border:0;border-radius:6px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}.files-row[data-v-9c5bab02]:hover,.files-row.on[data-v-9c5bab02]{background:var(--hover)}.files-name[data-v-9c5bab02]{overflow:hidden;min-width:0;text-overflow:ellipsis;white-space:nowrap}.files-reader[data-v-9c5bab02]{overflow:auto;padding:14px 18px}.files-path[data-v-9c5bab02]{margin:0 0 10px;font-size:14px;font-weight:600}.files-text[data-v-9c5bab02]{margin:0;font-family:var(--mono, monospace);font-size:12.5px;line-height:1.5}.files-line[data-v-9c5bab02]{display:block;white-space:pre}.files-number[data-v-9c5bab02]{display:inline-block;width:44px;margin-right:12px;color:var(--text-3);text-align:right;-webkit-user-select:none;user-select:none}.files-note[data-v-9c5bab02]{margin:6px 8px;color:var(--text-2);font-size:13px}.terminal[data-v-4276f3c8]{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--code-bg)}.terminal-body[data-v-4276f3c8]{flex:1;min-height:0;margin:0;padding:8px 12px;overflow:auto;color:var(--text-1);font-family:var(--font-mono, ui-monospace, monospace);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word}.terminal-failure[data-v-4276f3c8]{padding:8px 12px;color:var(--text-3)}.agentset[data-v-6aa7e24f]{position:relative;display:flex;align-items:center;gap:10px;padding:3px 4px 3px 8px;border:1px solid var(--border-2);border-radius:8px}.agentset-settings[data-v-6aa7e24f]{display:inline-flex;align-items:center;padding:3px 5px;border:0;border-radius:5px;background:none;color:var(--text-2);cursor:pointer}.agentset-settings[data-v-6aa7e24f]:hover,.agentset-settings[aria-expanded=true][data-v-6aa7e24f]{background:var(--hover);color:var(--text)}.agentset-menu[data-v-6aa7e24f]{position:absolute;top:calc(100% + 8px);right:0;z-index:40;display:flex;flex-direction:column;gap:10px;width:260px;padding:12px;border:1px solid var(--border-2);border-radius:10px;background:var(--raised);box-shadow:0 12px 32px #00000073}.agentset-row[data-v-6aa7e24f]{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--text-2);font-size:12.5px}.agentset-number[data-v-6aa7e24f]{width:56px;padding:3px 6px;border:1px solid var(--border-2);border-radius:5px;background:var(--bg);color:var(--text);font:inherit}.agentset-failure[data-v-6aa7e24f]{margin:0;color:var(--danger);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as d, computed as g, watch as P, openBlock as l, createElementBlock as s, createElementVNode as i, createVNode as k, unref as f, withCtx as w, createTextVNode as y, Fragment as _, renderList as b, createBlock as x, toDisplayString as r, createCommentVNode as V, normalizeClass as I } from "vue";
+import { useWindow as J, TextInput as T, Btn as $, Skeleton as z, Icon as E } from "@journal/window-kit";
+import { _ as D } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const L = { class: "files" }, U = { class: "files-bar" }, W = { class: "files-body" }, q = {
+  class: "files-list",
+  "data-files-list": ""
+}, A = {
+  key: 0,
+  class: "files-note",
+  role: "alert"
+}, G = {
+  key: 2,
+  class: "files-note"
+}, H = ["data-file", "onClick"], K = { class: "files-name" }, M = { class: "files-reader" }, Q = {
+  key: 0,
+  class: "files-note",
+  role: "alert"
+}, R = { class: "files-path" }, X = {
+  key: 0,
+  class: "files-note"
+}, Y = {
+  class: "files-text",
+  "data-file-text": ""
+}, Z = { class: "files-number" }, ee = {
+  key: 2,
+  class: "files-note"
+}, te = {
+  __name: "ProjectFiles",
+  setup(le) {
+    const C = J(), n = d(""), c = d(""), v = d(null), p = d(""), u = d(null), m = d(""), j = g(() => n.value ? n.value.split("/") : []), h = (a) => j.value.slice(0, a + 1).join("/"), S = g(() => {
+      var a;
+      return (((a = u.value) == null ? void 0 : a.text) ?? "").split(`
+`);
+    });
+    let N = 0;
+    async function B() {
+      const a = ++N, t = c.value.trim(), e = await C.read(t ? `project-file find ${JSON.stringify(t)}` : `project-file list ${JSON.stringify(n.value)}`);
+      a === N && (p.value = e.ok ? "" : e.error, v.value = e.ok ? e.value.rows : []);
+    }
+    async function F(a) {
+      if (a.folder) {
+        c.value = "", n.value = a.id;
+        return;
+      }
+      const t = await C.read(`project-file show ${JSON.stringify(a.id)}`);
+      m.value = t.ok ? "" : t.error, u.value = t.ok ? t.value : null;
+    }
+    return P([n, c], B, { immediate: !0 }), (a, t) => (l(), s("div", L, [
+      i("div", U, [
+        k(f(T), {
+          modelValue: c.value,
+          "onUpdate:modelValue": t[0] || (t[0] = (e) => c.value = e),
+          icon: "search",
+          class: "files-search",
+          placeholder: "Find a file in the project",
+          "data-files-search": ""
+        }, null, 8, ["modelValue"]),
+        k(f($), {
+          small: "",
+          "data-files-root": "",
+          disabled: !n.value,
+          onClick: t[1] || (t[1] = (e) => n.value = "")
+        }, {
+          default: w(() => [...t[2] || (t[2] = [
+            y("Project", -1)
+          ])]),
+          _: 1
+        }, 8, ["disabled"]),
+        (l(!0), s(_, null, b(j.value, (e, o) => (l(), x(f($), {
+          key: h(o),
+          small: "",
+          "data-files-crumb": h(o),
+          onClick: (O) => n.value = h(o)
+        }, {
+          default: w(() => [
+            y(r(e), 1)
+          ]),
+          _: 2
+        }, 1032, ["data-files-crumb", "onClick"]))), 128))
+      ]),
+      i("div", W, [
+        i("div", q, [
+          p.value ? (l(), s("p", A, r(p.value), 1)) : v.value === null ? (l(), x(f(z), {
+            key: 1,
+            shape: "rows"
+          })) : v.value.length ? V("", !0) : (l(), s("p", G, r(c.value ? "No file matches" : "This folder is empty"), 1)),
+          (l(!0), s(_, null, b(v.value ?? [], (e) => {
+            var o;
+            return l(), s("button", {
+              key: e.id,
+              type: "button",
+              class: I(["files-row", { on: e.id === ((o = u.value) == null ? void 0 : o.path) }]),
+              "data-file": e.id,
+              onClick: (O) => F(e)
+            }, [
+              k(f(E), {
+                name: e.folder ? "folder" : "file",
+                size: 13
+              }, null, 8, ["name"]),
+              i("span", K, r(c.value ? e.id : e.name), 1)
+            ], 10, H);
+          }), 128))
+        ]),
+        i("div", M, [
+          m.value ? (l(), s("p", Q, r(m.value), 1)) : u.value ? (l(), s(_, { key: 1 }, [
+            i("h2", R, r(u.value.path), 1),
+            u.value.cut ? (l(), s("p", X, "Only the start of this file is shown.")) : V("", !0),
+            i("pre", Y, [
+              (l(!0), s(_, null, b(S.value, (e, o) => (l(), s("span", {
+                key: o,
+                class: "files-line"
+              }, [
+                i("span", Z, r(o + 1), 1),
+                y(r(e) + `
+`, 1)
+              ]))), 128))
+            ])
+          ], 64)) : (l(), s("p", ee, "Choose a file to read it here."))
+        ])
+      ])
+    ]));
+  }
+}, ne = /* @__PURE__ */ D(te, [["__scopeId", "data-v-9c5bab02"]]);
+export {
+  ne as default
+};

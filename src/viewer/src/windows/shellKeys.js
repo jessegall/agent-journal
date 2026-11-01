@@ -6,6 +6,7 @@ export function shellKeyAction(event, {wide = false, opened = false} = {}) {
     if (event.key === "Enter" && event.shiftKey && (event.metaKey || event.ctrlKey)) return "fullscreen";
     if (opened || event.target?.closest?.(TYPING)) return null;
     if (event.key === "Escape" && wide) return "leave-fullscreen";
+    if (event.key.toLowerCase() === "o" && (event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey) return "open-file";
     if (event.key === " " && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey) return "quick-menu";
     return null;
 }
