@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Icon, Segmented, Skeleton, TextDisplay, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, Icon, Segmented, Skeleton, TextDisplay, TextInput, useWindow} from "@journal/window-kit";
 import {age, grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -22,6 +22,9 @@ const rows = ref([]);
 const total = ref(0);
 const failure = ref("");
 const loaded = ref(false);
+const drafting = ref(false);
+const draft = ref({title: "", abstract: "", body: ""});
+const refusal = ref("");
 const groups = computed(() => grouped(sorted(searched(rows.value, words.value), order.value), order.value));
 const label = computed(() => (noun.value === "doc" ? "Document" : "Report"));
 
@@ -54,6 +57,34 @@ function open(row) {
     readRow(row).then((value) => (reading.value = value));
 }
 
+async function create() {
+    const {title, abstract, body} = draft.value;
+    if (!title.trim() || !abstract.trim()) return;
+    const answer = await context.run([noun.value, "make", title.trim(), "--abstract", abstract.trim(), "--body", body.trim() || abstract.trim()]);
+    refusal.value = answer.ok ? "" : answer.error;
+    if (!answer.ok) return;
+    drafting.value = false;
+    draft.value = {title: "", abstract: "", body: ""};
+    load();
+}
+
+const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
+
+function step(by) {
+    if (!shownRows.value.length) return;
+    const at = shownRows.value.findIndex((row) => row.id === chosen.value);
+    open(shownRows.value[at < 0 ? 0 : Math.max(0, Math.min(shownRows.value.length - 1, at + by))]);
+}
+
+function closeOrClear() {
+    if (chosen.value) {
+        chosen.value = null;
+        reading.value = null;
+    } else {
+        words.value = "";
+    }
+}
+
 watch(noun, () => {
     chosen.value = null;
     reading.value = null;
@@ -71,9 +102,24 @@ load();
             <TextInput v-model="words" icon="search" class="library-search" placeholder="Search titles and abstracts" />
             <Segmented :options="LIBRARIES" :value="noun" @pick="noun = $event" />
             <Segmented :options="ORDERS" :value="order" @pick="order = $event" />
+            <Btn small bordered data-library-new @click="drafting = !drafting">New {{ label.toLowerCase() }}</Btn>
         </div>
+        <template v-if="drafting">
+            <form class="library-draft" data-library-draft @submit.prevent="create">
+                <input v-model="draft.title" placeholder="Title" aria-label="Title">
+                <input v-model="draft.abstract" placeholder="One line on what it says" aria-label="Abstract">
+                <textarea v-model="draft.body" rows="4" placeholder="The text" aria-label="Text" />
+                <template v-if="refusal">
+                    <p class="library-note" role="alert">{{ refusal }}</p>
+                </template>
+                <div class="library-draft-foot">
+                    <Btn small @click="drafting = false">Cancel</Btn>
+                    <Btn small kind="primary" type="submit" :disabled="!draft.title.trim() || !draft.abstract.trim()" data-library-create>Make it</Btn>
+                </div>
+            </form>
+        </template>
         <div class="library-body">
-            <div class="library-list">
+            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear">
                 <template v-if="!loaded">
                     <Skeleton shape="cards" />
                 </template>
@@ -82,6 +128,9 @@ load();
                 </template>
                 <template v-else-if="loaded && !groups.length">
                     <p class="library-note">{{ words ? "Nothing matches the search" : `No ${LIBRARIES.find((kind) => kind.key === noun).label.toLowerCase()} yet` }}</p>
+                    <template v-if="words">
+                        <Btn small data-library-clear @click="words = ''">Clear the search</Btn>
+                    </template>
                 </template>
                 <template v-for="group in groups" :key="group.key">
                     <template v-if="group.title">
@@ -121,6 +170,22 @@ load();
 </template>
 
 <style scoped>
+.library-draft {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+}
+
+.library-draft-foot {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
 .library {
     display: flex;
     flex-direction: column;
