@@ -15,7 +15,6 @@ from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
 from core.modules.messages.models.message import Message
 from core.modules.messages.upgrade.messages_move import MessagesMove
-from core.modules.messages.listeners.message_filed_mark_listener import MessageFiledMarkListener
 from core.modules.messages.listeners.message_thought_mark_listener import MessageThoughtMarkListener
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
@@ -37,5 +36,5 @@ class MessagesModule(Module):
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
-    listeners = [MessageThoughtMarkListener, MessageFiledMarkListener]
+    listeners = [MessageThoughtMarkListener]
     seeders = [MessagesSeeder]

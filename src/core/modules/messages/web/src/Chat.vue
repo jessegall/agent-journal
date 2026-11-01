@@ -22,6 +22,7 @@ let atFoot = true;
 let folding = 0;
 let sizeWatch = null;
 onMounted(() => {
+    focusComposer();
     Promise.all([fetchMarkDeclarations(), fetchDockDeclarations()]);
     if (chat.value && typeof ResizeObserver !== "undefined") {
         sizeWatch = new ResizeObserver(([entry]) => (short.value = entry.contentRect.height < SHORT_CHAT));
@@ -39,6 +40,8 @@ const atTop = ref(true);
 const dumping = ref(false);
 const attached = ref([]);
 const picker = ref(null);
+const composerInput = ref(null);
+const focusComposer = () => nextTick(() => composerInput.value?.focus());
 const dragging = ref(false);
 
 async function attach(files) {
@@ -50,6 +53,7 @@ async function attach(files) {
         entry.failure = result.ok ? "" : result.error;
         attached.value = [...attached.value];
     }
+    focusComposer();
 }
 const picked = (event) => {
     attach([...event.target.files]);
@@ -72,6 +76,7 @@ async function send() {
     sendFailure.value = result.ok ? "" : result.error;
     if (result.ok) (text.value = "", attached.value = []);
     load();
+    focusComposer();
 }
 
 const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), sendable.value && send());
@@ -145,7 +150,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </template>
                 </ul>
             </template>
-            <textarea v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @paste="pasted" />
+            <textarea ref="composerInput" v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @paste="pasted" />
             <div class="composer-row">
                 <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
                 <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">

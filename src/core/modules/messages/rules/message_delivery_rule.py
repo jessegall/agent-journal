@@ -10,6 +10,8 @@ from core.modules.messages.commands.read_message import ReadMessage
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 
+TEXT_LIMIT_CHARACTERS = 2000
+
 
 class MessageDeliveryRule(DriverRule):
     """On any hook of the main agent, each message the person wrote in its environment that it has not read is
@@ -32,4 +34,5 @@ class MessageDeliveryRule(DriverRule):
 
     def lines(self, message: Message) -> list[str]:
         files = [f"  file {self.home.message_files(message.id) / name}" for name in message.files]
-        return [f"[journal] new message {message.id}: {message.text}", *files]
+        text = message.text if len(message.text) <= TEXT_LIMIT_CHARACTERS else f"{message.text[:TEXT_LIMIT_CHARACTERS]} ... (whole text: journal message show {message.id})"
+        return [f"[journal] new message {message.id}: {text}", *files]

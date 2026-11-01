@@ -42,6 +42,10 @@ class JournalHome:
         return self.folder / "files" / "message" / str(message_id)
 
     @property
+    def viewer_sessions_file(self) -> Path:
+        return self.folder / "viewer-sessions.json"
+
+    @property
     def module_list(self) -> Path:
         return self.folder / "modules.json"
 

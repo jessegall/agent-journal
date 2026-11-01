@@ -2,6 +2,7 @@ import secrets
 import threading
 
 from server.viewer.phone_sessions import PhoneSessions
+from server.viewer.session_file import SessionFile
 from server.viewer.session_type import SessionType
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.share_session_error import ShareSessionError
@@ -12,16 +13,16 @@ KEY_BYTES = 24
 
 
 class ViewerLogin:
-    """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, each naming
+    """The viewer's logins: a one-time key opened once, and the session token it leaves in a cookie, which a restart keeps, each naming
     who the viewer acts for: a person, a person's phone, or one share. A phone's token and a share link's are
     asked of their modules, not held here, so they outlive a restart and end with the
     unpairing or the revoking; a link is never spent."""
 
-    def __init__(self, phones: PhoneSessions, shares: ShareSessions) -> None:
-        self.phones, self.shares = phones, shares
+    def __init__(self, phones: PhoneSessions, shares: ShareSessions, kept: SessionFile | None = None) -> None:
+        self.phones, self.shares, self.kept = phones, shares, kept
         self.lock = threading.Lock()
         self.keys: dict[str, ViewerSession] = {}
-        self.sessions: dict[str, ViewerSession] = {}
+        self.sessions: dict[str, ViewerSession] = {token: ViewerSession(SessionType.PERSON, person_id=person) for token, person in (kept.load() if kept else {}).items()}
 
     def new_key(self, person_id: int, session_type: SessionType = SessionType.PERSON) -> str:
         return self.session_key(ViewerSession(session_type, person_id=person_id))
@@ -47,7 +48,12 @@ class ViewerLogin:
             if key not in self.keys:
                 raise UnknownLoginKeyError("this login key is spent or unknown: ask journal viewer for a new one")
             self.sessions[token] = self.keys.pop(key)
+            self.keep()
         return token
+
+    def keep(self) -> None:
+        if self.kept is not None:
+            self.kept.save({token: session.person_id for token, session in self.sessions.items() if session.type is SessionType.PERSON and session.person_id is not None})
 
     def session(self, token: str) -> ViewerSession:
         with self.lock:

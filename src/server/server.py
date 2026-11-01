@@ -25,6 +25,7 @@ from server.journal_round import JournalRound
 from server.listener_thread import STOP_LIMIT_SECONDS, ListenerThread
 from server.listener_work import ListenerWork
 from server.tick_work import TickWork
+from server.viewer.session_file import SessionFile
 from server.viewer.viewer_listener import ViewerListener
 from server.viewer.phone_sessions import PhoneSessions
 from server.viewer.share_sessions import ShareSessions
@@ -65,7 +66,7 @@ def main(argv: list[str]) -> int:
     tick_round = JournalRound(home, "ticker", TickWork())
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
-    login = ViewerLogin(phones, ShareSessions(phones.journal_output))
+    login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), remembered_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")

@@ -40,3 +40,9 @@ def test_a_message_of_the_agent_is_not_given_back_to_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "new message")
+
+
+def test_a_long_message_is_given_cut_with_the_way_to_read_it_whole(new_story):
+    story = delivery_story(new_story)
+    story.run(f'message send "{"long " * 1000}" --environment main', actor=story.user)
+    story.expect_hook_allowed("s-1", HookSamples.stop(), "(whole text: journal message show 1)")

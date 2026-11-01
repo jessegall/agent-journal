@@ -19,11 +19,11 @@ def test_an_agents_message_shows_a_thought_mark_after_the_commit(new_story):
     assert "On it, fixing the cart" in marks_text(story) and mark_count(story) >= 1, marks_text(story)
 
 
-def test_a_users_message_read_by_the_agent_shows_a_filed_mark(new_story):
+def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_show_it(new_story):
     story = new_story(fixture=UnansweredMessage)
     story.expect_success("message read 1", actor=story.agent)
     story.run_listeners()
-    assert "Filed from your message 1" in marks_text(story), marks_text(story)
+    assert "Filed from your message" not in marks_text(story), marks_text(story)
 
 
 def test_a_failed_send_shows_no_mark(new_story):
