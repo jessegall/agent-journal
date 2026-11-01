@@ -13,11 +13,14 @@ def delivery_story(new_story):
     return story
 
 
-def test_an_unread_message_of_the_user_reaches_the_agent_at_its_next_hook_and_is_then_read(new_story):
+def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks_it_read(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    story.expect_hook_allowed("s-1", HookSamples.stop(), "[journal] new message 1: Fix the cart first")
-    story.expect_text("message show 1", "read_at:", actor=story.user)
+    reply = story.hook("s-1", HookSamples.stop())
+    assert "[journal] new message 1: journal message read 1" in reply.lines
+    assert not any("Fix the cart" in line for line in reply.lines)
+    assert "read_at: None" in story.run("message show 1 ", actor=story.user).output_text or "read_at:" not in story.run("message show 1", actor=story.user).output_text
+    story.expect_text("message read 1", "text: Fix the cart first", actor=story.agent)
 
 
 def test_a_message_is_given_once(new_story):
@@ -40,9 +43,3 @@ def test_a_message_of_the_agent_is_not_given_back_to_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", HookSamples.stop(), "new message")
-
-
-def test_a_long_message_is_given_cut_with_the_way_to_read_it_whole(new_story):
-    story = delivery_story(new_story)
-    story.run(f'message send "{"long " * 1000}" --environment main', actor=story.user)
-    story.expect_hook_allowed("s-1", HookSamples.stop(), "(whole text: journal message show 1)")

@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch} from "vue";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -14,6 +14,7 @@ import PaneGrid from "../panes/PaneGrid.vue";
 import SplitOffer from "../panes/SplitOffer.vue";
 import PaneTour from "../panes/PaneTour.vue";
 import {usePaneGuide} from "../composables/paneGuide.js";
+import {rememberedRef} from "./rememberedState.js";
 import {followFullscreen} from "../platform/fullscreen.js";
 import {store as shell} from "../state/store.js";
 import {leaves} from "../domain/panes.js";
@@ -69,7 +70,10 @@ const agentRow = ref(null);
 const rowsOf = (answer) => (answer?.ok && Array.isArray(answer.value?.rows) ? answer.value.rows : []);
 const environments = ref([]);
 const events = ref([]);
-const activityOpen = ref(false);
+const activityOpen = rememberedRef("activity-open", false);
+const wideKept = rememberedRef("full-screen", false);
+shell.wide = wideKept.value;
+watch(() => shell.wide, (wide) => (wideKept.value = wide));
 const SIDEBAR_FROM_WIDTH = 1100;
 const ACTIVITY_SECONDS = 4;
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH);

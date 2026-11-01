@@ -10,6 +10,7 @@ NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, 
 AFTER = NOTHING.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
 ENDED = "output 1 ended: 2 failed 1 passed; journal output read 1 --summary"
+UNREAD = "output 1 unread: journal output read 1 --summary"
 
 
 def lines_of(story, sample) -> list[str]:
@@ -37,7 +38,7 @@ def test_the_reminder_comes_every_5_tool_uses_while_the_output_is_not_read(new_s
     end_run(story, process, TESTS_REPORT, exit_code=1)
     story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
-    reminders = [ENDED in lines_of(story, AFTER) for _ in range(10)]
+    reminders = [UNREAD in lines_of(story, AFTER) for _ in range(10)]
     assert reminders == [False, False, False, False, True, False, False, False, False, True]
 
 
@@ -48,7 +49,7 @@ def test_reading_the_output_ends_the_reminders(new_story):
     story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
     story.run(f"output read {process.id} --summary", actor=story.agent)
-    assert [ENDED in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
+    assert [UNREAD in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
 
 
 def test_an_output_left_unread_for_half_an_hour_is_no_longer_named(new_story):
@@ -57,4 +58,4 @@ def test_an_output_left_unread_for_half_an_hour_is_no_longer_named(new_story):
     end_run(story, process, TESTS_REPORT, exit_code=1)
     story.advance(timedelta(minutes=31))
     story.hook("s-1", NOTHING)
-    assert [ENDED in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
+    assert [UNREAD in lines_of(story, AFTER) for _ in range(10)] == [False] * 10

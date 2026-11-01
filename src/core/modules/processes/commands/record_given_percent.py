@@ -5,8 +5,8 @@ from core.modules.processes.models.watch import Watch
 
 
 @dataclass(frozen=True)
-class RecordGivenLines(Command[Watch]):
-    """Notes how many lines of the run the watch has been given."""
+class RecordGivenPercent(Command[Watch]):
+    """Notes the percent of the run the watch last told the agent of."""
 
     watch_id: int
-    given_lines: int
+    given_percent: int

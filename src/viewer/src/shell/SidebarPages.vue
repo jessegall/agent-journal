@@ -1,4 +1,5 @@
 <script setup>
+import {rememberedRef} from "../windows/rememberedState.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
@@ -14,7 +15,8 @@ const props = defineProps({
     open: {type: String, default: ""},
 });
 const emit = defineEmits(["open"]);
-const folded = ref(new Set());
+const foldedNames = rememberedRef("sidebar-folded", []);
+const folded = computed(() => new Set(foldedNames.value));
 // every window stands in one group for now, in the order the suite lists them
 const sections = computed(() => (props.windows.length ? [{module: "windows", title: "Windows", windows: props.windows}] : []));
 
@@ -33,7 +35,7 @@ function fold(key) {
     const next = new Set(folded.value);
     if (next.has(key)) next.delete(key);
     else next.add(key);
-    folded.value = next;
+    foldedNames.value = [...next];
 }
 </script>
 

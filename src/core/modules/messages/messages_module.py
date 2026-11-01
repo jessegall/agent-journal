@@ -1,9 +1,11 @@
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.commands.read_message_handler import ReadMessageHandler
+from core.modules.messages.commands.tell_message_handler import TellMessageHandler
 from core.modules.messages.commands.send_message_handler import SendMessageHandler
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
+from core.modules.messages.migrations.m003_message_told import MessageToldMigration
 from core.modules.messages.commands.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
@@ -28,9 +30,9 @@ class MessagesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
-    migrations = [MessagesTableMigration, MessageFilesMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageToldMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (SendMessageHandler, ReadMessageHandler)
+    handlers = (SendMessageHandler, ReadMessageHandler, TellMessageHandler)
     driver_rules = [MessageDeliveryRule, AgentTextRule]
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "notice close", "dump make"],

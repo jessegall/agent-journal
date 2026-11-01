@@ -93,7 +93,8 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
 }
 
 .dock-text {
-    margin: 0 14px 10px 36px;
+    margin: 0 14px 0 36px;
+    padding-bottom: 10px;
     overflow: hidden;
     color: var(--text-2);
     font-size: 13px;

@@ -1,6 +1,7 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.chat.mark_outcome import MarkOutcome
 from core.base.command.bus import Bus
+from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
@@ -13,7 +14,6 @@ from core.modules.processes.models.enums.process_mark_variant import ProcessMark
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.output_folder import OutputFolder
-from core.modules.processes.support.project_paths import ProjectPaths
 
 MODULE_NAME = "journal.core.processes"
 LINE_CHARACTERS = 70

@@ -12,7 +12,6 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
-from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
@@ -20,21 +19,22 @@ REMINDED_FOR = timedelta(minutes=30)
 
 
 class UnreadOutputReminderRule(DriverRule):
-    """Tells an agent again, every few tool uses, of an output of a run it moved to the background that it has
-    not read, for half an hour after the run ended and no longer."""
+    """Tells an agent again in one line, every few tool uses, of the outputs of runs it moved to the background that it
+    has not read, for half an hour after each run ended and no longer."""
 
     name = "processes.unread-output-reminder"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, processes: ProcessQuery, text: EndedOutputText, settings: ProcessSettings, queries: Queries) -> None:
-        self.processes, self.text, self.settings, self.queries = processes, text, settings, queries
+    def __init__(self, processes: ProcessQuery, settings: ProcessSettings, queries: Queries) -> None:
+        self.processes, self.settings, self.queries = processes, settings, queries
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         spacing = self.settings.integer(ProcessSetting.UNREAD_OUTPUT_TOOL_USES, hook.environment_id)
         ended = self.processes.agent(hook.agent_id).moved().ended().unread().matching(Greater("ended_at", Timestamp(hook.timestamp.value - REMINDED_FOR).text)).oldest().all_rows()
-        return RuleAnswer.with_lines(*(self.text.line(process) for process in ended if self.needs_reminder(hook, process, max(1, spacing))))
+        due = [process.id for process in ended if self.needs_reminder(hook, process, max(1, spacing))]
+        return RuleAnswer.with_lines(f"output {', '.join(map(str, due))} unread: journal output read {due[0]} --summary") if due else RuleAnswer.allowed()
 
     def needs_reminder(self, hook: AgentHook, process: Process, spacing: int) -> bool:
         if process.ended_at is None:

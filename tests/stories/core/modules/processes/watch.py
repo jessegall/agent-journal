@@ -16,18 +16,21 @@ def watched(story) -> int:
     return process.id
 
 
-def test_a_watch_gives_the_readers_lines_of_the_running_output_after_each_tool_use_and_only_the_new_ones(new_story):
+def test_a_watch_tells_the_progress_only_as_it_passes_each_10_percent(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process_id = watched(story)
+    story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
+    process_id = start_process(story, "make test").id
+    story.run(f"output watch {process_id}", actor=story.agent)
     folder = story.container.get(OutputFolder)
-    folder.write_output(process_id, 1, "step 1\nFAILED a\n")
+    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n")
     tick(story)
-    assert f"output {process_id}: 2: FAILED a" in story.hook("s-1", AFTER).lines
+    assert f"output {process_id}: 42%" in story.hook("s-1", AFTER).lines
+    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n")
+    tick(story)
     assert not any("output" in line for line in story.hook("s-1", AFTER).lines)
-    folder.write_output(process_id, 1, "step 1\nFAILED a\nerror b\n")
+    folder.write_output(process_id, 1, "[ 42%]\nFAILED a\n[ 47%]\n[ 53%]\n")
     tick(story)
-    new = list(story.hook("s-1", AFTER).lines)
-    assert f"output {process_id}: 3: error b" in new and f"output {process_id}: 2: FAILED a" not in new
+    assert f"output {process_id}: 53%" in story.hook("s-1", AFTER).lines
 
 
 def test_a_watch_of_an_ended_process_is_refused_and_a_watch_ends_with_its_process(new_story):

@@ -12,7 +12,7 @@ from core.modules.processes.commands.peek_output_subcommand import PeekOutputSub
 from core.modules.processes.commands.read_output_handler import ReadOutputHandler
 from core.modules.processes.commands.read_output_subcommand import ReadOutputSubcommand
 from core.modules.processes.commands.show_output_status_subcommand import ShowOutputStatusSubcommand
-from core.modules.processes.commands.record_given_lines_handler import RecordGivenLinesHandler
+from core.modules.processes.commands.record_given_percent_handler import RecordGivenPercentHandler
 from core.modules.processes.commands.unwatch_output_handler import UnwatchOutputHandler
 from core.modules.processes.commands.unwatch_output_subcommand import UnwatchOutputSubcommand
 from core.modules.processes.commands.watch_output_handler import WatchOutputHandler
@@ -52,6 +52,7 @@ from core.modules.processes.commands.remove_reader_subcommand import RemoveReade
 from core.modules.processes.guards.reader_owner_guard import ReaderOwnerGuard
 from core.modules.processes.migrations.m002_readers import ReadersTableMigration
 from core.modules.processes.migrations.m003_stock_readers import StockReadersMigration
+from core.modules.processes.migrations.m006_watch_percent import WatchPercentMigration
 from core.modules.processes.models.reader import Reader
 from core.modules.processes.queries.reader_query import ReaderQuery
 from core.modules.processes.migrations.m001_processes import ProcessesTablesMigration
@@ -80,8 +81,8 @@ class ProcessesModule(Module):
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Process, query=ProcessQuery, commands=(MoveProcess, OrphanProcess), excluded_subcommands=["make", "finish", "fail", "stop"]), ModelDeclaration(ProcessPart, query=ProcessPartQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Output, query=OutputQuery, excluded_subcommands=["make", "edit"]), ModelDeclaration(Watch, query=WatchQuery), ModelDeclaration(Reader, query=ReaderQuery, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration]
-    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenLinesHandler, PruneOutputsHandler, ReadNewOutputHandler]
+    migrations = [ProcessesTablesMigration, ReadersTableMigration, StockReadersMigration, OutputReadersMigration, ReaderPluginsMigration, WatchPercentMigration]
+    handlers = [StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
     driver_rules = [SleepPollRefusalRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]

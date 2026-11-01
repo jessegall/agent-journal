@@ -10,6 +10,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rules import DriverRules
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_reply import HookReply
+from core.base.driver.project_paths import ProjectPaths
 from core.base.driver.refusal_line import RefusalLine
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.guard.guard_refusal import GuardRefusal
@@ -105,7 +106,7 @@ class RecordHookCallHandler(Handler[RecordHookCall, HookReply]):
     def summary(self, command: RecordHookCall) -> str:
         tool = command.event.tool
         if tool is not None and tool.shell is not None:
-            return tool.shell.line[:SUMMARY_CHARACTERS]
+            return ProjectPaths.relative_line(tool.shell.line, str(command.event.raw.get("cwd", "")))[:SUMMARY_CHARACTERS] if command.event.raw.get("cwd") else tool.shell.line[:SUMMARY_CHARACTERS]
         if tool is not None and tool.files:
             return tool.files[0][:SUMMARY_CHARACTERS]
         return (command.event.prompt or "").split("\n", 1)[0][:SUMMARY_CHARACTERS]
