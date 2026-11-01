@@ -20,6 +20,12 @@ class HookSamples:
         return HookSamples.sample("stop")
 
     @staticmethod
+    def message_display(text: str, final: bool = True) -> HookSample:
+        sample = HookSamples.sample("message_display")
+        return sample.with_fields(raw={"hook_event_name": "MessageDisplay", "turn_id": "turn-1", "message_id": "message-1", "index": 0, "final": final, "delta": text},
+                                  accepts_lines=False)
+
+    @staticmethod
     def prompt(text: str) -> HookSample:
         return HookSamples.sample("prompt", prompt=text)
 
