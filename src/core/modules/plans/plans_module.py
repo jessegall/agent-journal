@@ -5,7 +5,7 @@ from core.modules.plans.guards.plan_close_guard import PlanCloseGuard
 from core.modules.plans.listeners.cancel_open_plan_tasks_listener import CancelOpenPlanTasksListener
 from core.modules.plans.listeners.phase_renumbering_listener import PhaseRenumberingListener
 from core.modules.plans.listeners.forget_place_listener import ForgetPlaceListener
-from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener
+from core.modules.plans.listeners.next_plan_task_starter_listener import NextPlanTaskStarterListener, NextTaskAfterCancelListener
 from core.modules.plans.migrations.m002_paused_plans_blocked import PausedPlansBlockedMigration
 from core.modules.plans.migrations.m001_plans import PlansTablesMigration
 from core.modules.plans.commands.make_phase_handler import MakePhaseHandler
@@ -51,7 +51,7 @@ class PlansModule(Module):
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
-                 NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
+                 NextPlanTaskStarterListener, NextTaskAfterCancelListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan list", "plan show", "plan progress", "phase list", "phase show"],
