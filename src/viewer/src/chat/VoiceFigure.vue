@@ -4,8 +4,9 @@ import {BLINK, blinkOpenness, nextBlinkMs} from "../figure/blink.js";
 import {loadVoiceFigure} from "../figure/assets.js";
 import {heldClip} from "../figure/heldClip.js";
 import {GROUND} from "../figure/figure.js";
+import {readFloors} from "../figure/floors.js";
 import {strideAtDistance} from "../figure/gait.js";
-import {between} from "../figure/perches.js";
+import {between, perchOn, perchSpot} from "../figure/perches.js";
 import {boxAt, cornerAt, freeEdge, freeSpot, restOf, tripTo} from "../figure/places.js";
 import {legAt, legEnded} from "../domain/figureMotion.js";
 import {useFigureBody} from "../composables/figureBody.js";
@@ -26,6 +27,9 @@ let strollAt = 0;
 let frames = 0;
 const figure = {size: SIZE, below: GROUND};
 const STROLL_SECONDS = [8, 20];
+const PERCH_SECONDS = [6, 12];
+const CLIMB_SHARE = 0.4;
+let perch = null;
 
 const {body, start: startBody, stop: stopBody} = useFigureBody(frame);
 
@@ -35,34 +39,60 @@ const placed = (spot) => {
     return {x: box.left, y: box.top};
 };
 
-// the spot the figure rests on now, a corner of the edge it stands on, kept as the page moves under it
+// the spot the figure rests on now: a corner of the edge it stands on, or the bubble it climbed onto while that stays in view, kept as the
+// page moves under it
 function rest() {
-    body.place = restOf(figure, body.place.on ? body.place : null);
+    const held = perch && perchSpot(perch, readFloors(), figure);
+    if (perch && !held) perch = null;
+    body.place = held ?? restOf(figure, body.place.on ? body.place : null);
     body.at = placed(body.place);
     body.here = true;
 }
 
-// a stroll to the corner of the edge farther from where it stands: a straight trip, only its walk
+// a trip to `spot`: its legs run one after the other, each carrying the picture from where the one before it ended
+function setOff(spot) {
+    const trip = tripTo(body.place, spot, figure, {random: Math.random});
+    const legs = trip?.legs.filter((each) => each.ms > 0);
+    if (!legs?.length) return false;
+    body.trip = {to: spot, way: trip.way, legs: legs.slice(1)};
+    startLeg(legs[0], body.at, performance.now());
+    return true;
+}
+
+function startLeg(leg, from, now) {
+    body.leg = leg;
+    body.walk = {from: {...from}, began: now, on: null};
+}
+
+// a stroll to the corner of the edge farther from where it stands, or from a bubble down to the edge
 function stroll() {
     const {element, edge} = freeEdge();
     const far = cornerAt(edge, body.place.x - edge.left < edge.width / 2 ? "right" : "left", figure);
     const spot = freeSpot([{...far, view: null, on: element}], figure, body.place);
-    const trip = spot && tripTo(body.place, spot, figure, {straight: true});
-    const leg = trip?.legs.find((each) => each.ms > 0);
-    if (!leg) return;
-    body.trip = {to: spot, way: trip.way};
-    body.leg = leg;
-    body.walk = {from: {...body.at}, began: performance.now(), on: null};
-    body.trip.moves = true;
+    if (spot) perch = null;
+    return spot && setOff(spot);
+}
+
+// a climb onto a bubble in view, by the jump the trip has for the height
+function climb() {
+    const taken = perchOn(readFloors(), figure, [], Math.random, {now: performance.now() / 1000});
+    const spot = taken?.kind === "stand" && perchSpot(taken, readFloors(), figure);
+    if (!spot || !setOff(spot)) return false;
+    perch = taken;
+    return true;
 }
 
 function walk(now) {
-    const elapsed = now - body.walk.began;
-    body.at = legAt(body.leg, body.walk.from, elapsed);
+    body.at = legAt(body.leg, body.walk.from, now - body.walk.began);
     if (!legEnded(body.leg, body.walk.began, now)) return;
+    const [next, ...legs] = body.trip.legs;
+    if (next) {
+        body.trip = {...body.trip, legs};
+        return startLeg(next, body.at, now);
+    }
     body.place = body.trip.to;
     body.trip = null;
-    strollAt = now + between(STROLL_SECONDS, Math.random) * 1000;
+    strollAt = now + between(perch ? PERCH_SECONDS : STROLL_SECONDS, Math.random) * 1000;
     rest();
 }
 
@@ -71,13 +101,16 @@ function frame() {
     const now = performance.now();
     if (body.trip) walk(now);
     else if (frames++ % 6 === 0) rest();
-    if (!body.trip && now > strollAt && !props.running) stroll();
+    if (!body.trip && now > strollAt && !props.running) {
+        if (perch || !(Math.random() < CLIMB_SHARE && climb())) stroll();
+        strollAt = now + 1000;
+    }
     draw(now);
 }
 
 function draw(now) {
     const walking = Boolean(body.trip);
-    const clip = clipNamed(walking ? "walk" : heldClip(props.running, props.heardAt, Date.now() / 1000));
+    const clip = clipNamed(walking ? (body.leg.clip ?? "walk") : heldClip(props.running, props.heardAt, Date.now() / 1000));
     if (clip.name !== shownClip) {
         shownClip = clip.name;
         began = now;
@@ -86,8 +119,8 @@ function draw(now) {
     const blinking = blinkOpenness(now - blinkAt);
     if (now - blinkAt > BLINK.close + BLINK.open) blinkAt = now + nextBlinkMs(Math.random);
     const facing = walking ? (body.trip.way > 0 ? 90 : 270) : (body.place.face ?? 0);
-    const stride = walking ? strideAtDistance(Math.abs(body.at.x - body.walk.from.x), SIZE) : null;
-    player.show(clip, index, facing, {posture: walking ? "walk" : "stand", open: blinking, stride});
+    const stride = walking && !body.leg.hopping ? strideAtDistance(Math.abs(body.at.x - body.walk.from.x), SIZE) : null;
+    player.show(clip, index, facing, {posture: walking && !body.leg.hopping ? "walk" : "stand", open: blinking, stride});
 }
 
 const style = computed(() => ({transform: `translate(${body.at.x}px, ${body.at.y}px)`, width: `${SIZE}px`, height: `${SIZE}px`}));
