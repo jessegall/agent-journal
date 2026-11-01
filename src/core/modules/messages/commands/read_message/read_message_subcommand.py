@@ -1,5 +1,4 @@
 from argparse import ArgumentParser, Namespace
-from dataclasses import dataclass
 
 from core.base.caller.caller import Caller
 from core.base.cli.row_links import RowLinks
@@ -7,14 +6,7 @@ from core.base.query.queries import Queries
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.messages.models.message import Message
-
-
-@dataclass(frozen=True)
-class MessageText:
-    """What reading a message shows: its words and the lines naming what it links to."""
-
-    text: str
-    links: tuple[str, ...]
+from core.modules.messages.support.message_text import MessageText
 
 
 class ReadMessageSubcommand(ReadSubcommand[MessageText]):
@@ -30,9 +22,8 @@ class ReadMessageSubcommand(ReadSubcommand[MessageText]):
         parser.add_argument("message_id", type=int)
 
     def read(self, arguments: Namespace, caller: Caller) -> MessageText:
-        message = self.queries.query(Message).find(arguments.message_id)
-        return MessageText(message.text, tuple(self.links.lines(Message.model_name, message.id)))
+        return MessageText.of(self.queries.query(Message).find(arguments.message_id), self.links)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, MessageText):
-            output.write("\n".join((value.text, *value.links)), {"text": value.text, "links": list(value.links)})
+            output.write("\n".join(value.lines()), value.json())

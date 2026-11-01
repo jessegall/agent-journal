@@ -1,6 +1,11 @@
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
 from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
+from core.modules.messages.migrations.m005_message_captions import MessageCaptionsMigration
+from core.modules.messages.commands.main_chat_marks.main_chat_marks_subcommand import MainChatMarksSubcommand
+from core.modules.messages.commands.tag_message.tag_message_handler import TagMessageHandler
+from core.modules.messages.commands.tag_message.tag_message_subcommand import TagMessageSubcommand
+from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
 from core.modules.messages.queries.message_query import MessageQuery
@@ -33,12 +38,12 @@ class MessagesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler)
+    handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule]
-    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call list", "output peek"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
+    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand)
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call list", "output peek"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
     listeners = []

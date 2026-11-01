@@ -55,8 +55,10 @@ export function arriveAtOnce(el, {pane, follows, frame = requestAnimationFrame, 
 // how long a message waits after the one before it has come in, when several arrive together
 export const QUEUE_GAP_MS = 140;
 export const DEPART_MS = 220;
+// how many waiting turns come in together, so a long queue does not take long to show
+export const BATCH_ROWS = 5;
 
-// Turns that arrive together come in one after another: the first at once, each next a short gap after the one before it has finished, the
+// Turns that arrive together come in by batches: the first at once, then up to BATCH_ROWS together, a short gap after the batch before has finished, the
 // ones still waiting held off the page (display none) so the chat stays where it is. A reader who is away gets every turn at once.
 export function arrivalQueue({gap = QUEUE_GAP_MS, later = setTimeout} = {}) {
     const waiting = [];
@@ -66,11 +68,18 @@ export function arrivalQueue({gap = QUEUE_GAP_MS, later = setTimeout} = {}) {
         later(next, gap);
     };
     function next() {
-        const item = waiting.shift();
-        running = Boolean(item);
-        if (!item) return;
-        item.el.style.display = item.display;
-        item.arrival(item.el, item.options, () => finish(item));
+        const batch = waiting.splice(0, BATCH_ROWS);
+        running = batch.length > 0;
+        if (!running) return;
+        let left = batch.length;
+        for (const item of batch) {
+            item.el.style.display = item.display;
+            item.arrival(item.el, item.options, () => {
+                item.done();
+                left -= 1;
+                if (!left) later(next, gap);
+            });
+        }
     }
     const enqueue = (el, options, done, arrival = arrive) => {
         if (!options.pane || !options.follows()) return done();

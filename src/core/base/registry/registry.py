@@ -185,7 +185,8 @@ class Registry:
 
     def button_lines(self, window: str) -> tuple[ButtonLine, ...]:
         if window == ButtonWindow.MARKS:
-            return tuple(ButtonLine(mark.module, button["runs"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons))
+            return (*(ButtonLine(mark.module, button["runs"]) for mark in self.marks for button in (*mark.buttons, *mark.group_buttons)),
+                    *(ButtonLine(dock.module, button["runs"]) for dock in self.docks for button in dock.buttons))
         if window == ButtonWindow.DOCK:
             return tuple(ButtonLine(dock.module, button["runs"]) for dock in self.docks for button in dock.buttons)
         return ()

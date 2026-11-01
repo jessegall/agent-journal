@@ -1,6 +1,12 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
 from core.base.database.database import Database
+from core.base.database.statement import Statement
+from core.base.module.module_actors import ModuleActors
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
+from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
+from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -61,7 +67,7 @@ def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is
 
 
 READ_LINE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
-ACT_ON_IT = "act on message 1:"
+ACT_ON_IT = "act on what you read:"
 
 
 def test_reading_a_message_shows_only_its_text_and_marks_it_read(new_story):
@@ -101,5 +107,43 @@ def test_a_message_with_an_image_tells_the_agent_to_look_at_it(new_story):
     story.run('message send "Look at this" --environment main', actor=story.user)
     story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ('["shot.png", "notes.txt"]',))
     lines = story.hook("s-1", READ_LINE_HOOK).lines
-    assert any(line.startswith("message 1 attaches an image: open") and line.endswith("shot.png and look at it before you act") for line in lines)
+    assert any(line.startswith("message 1 attaches an image: open") and line.endswith('then journal message tag 1 "shot.png" "<what it shows>"') for line in lines)
     assert not any("notes.txt" in line and "attaches an image" in line for line in lines)
+
+
+def test_a_tagged_image_is_not_asked_for_again_and_a_missing_file_is_refused(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Look at this" --environment main', actor=story.user)
+    story.container.get(Database).connection.execute("UPDATE messages SET files = ? WHERE id = 1", ('["shot.png"]',))
+    story.expect_refusal('message tag 1 "other.png" "a cart"', "has no file other.png", actor=story.agent)
+    story.run('message tag 1 "shot.png" "the cart with a wrong total"', actor=story.agent)
+    assert not any("attaches an image" in line for line in story.hook("s-1", READ_LINE_HOOK).lines)
+
+
+UNREAD_LINE_HOOK = HookSamples.shell("journal message unread", ShellPart("journal", CommandCategory.JOURNAL, ["message", "unread"], subcommand="message")).with_fields(event="post_tool_use")
+
+
+def test_unread_prints_every_unread_message_and_marks_them_read(new_story):
+    story = delivery_story(new_story)
+    story.run('message send "Fix the cart" --environment main', actor=story.user)
+    story.run('message send "And the totals" --environment main', actor=story.user)
+    reply = story.hook("s-1", HookSamples.stop())
+    assert "[journal] 2 new messages: journal message unread" in reply.lines
+    text = story.run("message unread --environment main", actor=story.user).output_text
+    assert "message 1:\nFix the cart" in text and "message 2:\nAnd the totals" in text
+    lines = story.hook("s-1", UNREAD_LINE_HOOK).lines
+    assert sum(line.startswith(ACT_ON_IT) for line in lines) == 1
+    story.expect_text("message show 2", "read_at: 2026", actor=story.user)
+
+
+def test_the_main_chat_leaves_out_the_marks_of_a_worker(new_story):
+    story = delivery_story(new_story)
+    main_id = story.container.get(Database).rows(Statement("SELECT id FROM agents WHERE session = 's-1'"))[0]["id"]
+    worker = hook_agent(story, story.hook("s-2", HookSamples.session_start()))
+    story.container.get(Database).connection.execute("UPDATE agents SET role = 'worker' WHERE id = ?", (worker.id,))
+    bus, module = story.container.get(Bus), story.container.get(ModuleActors).actor("journal.core.processes")
+    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-main", "From the builder", agent_id=main_id), module, environment_id=1)
+    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-worker", "From the worker", agent_id=worker.id), module, environment_id=1)
+    bus.run(ShowMark(1, ProcessMarkType.COMMAND, ProcessMarkVariant.FINISHED, "from-nobody", "From the journal"), module, environment_id=1)
+    text = story.run("chat-mark main --environment main --json", actor=story.user).output_text
+    assert "From the builder" in text and "From the journal" in text and "From the worker" not in text

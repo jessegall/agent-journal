@@ -21,3 +21,4 @@ class Message(Model):
     read_at: Timestamp | None = None
     delivered_at: Timestamp | None = None
     files: tuple[str, ...] = ()
+    captions: str = "{}"

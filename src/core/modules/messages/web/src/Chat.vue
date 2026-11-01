@@ -4,7 +4,7 @@ import DumpForm from "./DumpForm.vue";
 import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, PinsToggle, RunningCommand, Icon, MarkHost, MessageCard, RowList, Skeleton, markDeclaration, usePins, withDayLines, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
 const {rows: messages, failure, loaded, load, older, context} = useRows("message list", ["message.*"], {incremental: true});
-const {rows: allMarks, older: olderMarks} = useRows("chat-mark list", ["chat_mark.*"], {incremental: true});
+const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));

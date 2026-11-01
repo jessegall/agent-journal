@@ -31,8 +31,11 @@ class MessageDeliveryRule(DriverRule):
         messages = list(undelivered.all_rows())
         if not messages:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_lines(*(line for message in messages for line in self.lines(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
+        lines = [line for message in messages for line in self.lines(message)] if len(messages) == 1 else [f"[journal] {len(messages)} new messages: journal message unread", *(line for message in messages for line in self.file_lines(message))]
+        return RuleAnswer.with_lines(*lines).running(*(RecordMessageDelivery(message.id) for message in messages))
 
     def lines(self, message: Message) -> list[str]:
-        files = [f"  file {self.home.message_files(message.id) / name}" for name in message.files]
-        return [f"[journal] new message {message.id}: journal message read {message.id}", *files]
+        return [f"[journal] new message {message.id}: journal message read {message.id}", *self.file_lines(message)]
+
+    def file_lines(self, message: Message) -> list[str]:
+        return [f"  file {self.home.message_files(message.id) / name}" for name in message.files]

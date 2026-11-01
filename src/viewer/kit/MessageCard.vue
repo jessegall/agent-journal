@@ -31,7 +31,8 @@ const COPIED_MS = 1500;
 const EARLIER = "An earlier message";
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
 const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIComponent(name)}`;
-const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name)})));
+const captions = computed(() => JSON.parse(props.message.captions || "{}"));
+const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name), title: captions.value[name] || name})));
 const time = computed(() => clock(new Date(props.message.created_at).getTime() / 1000 || props.message.created_at));
 </script>
 
@@ -56,7 +57,7 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
             <div class="message-files" data-message-files>
                 <template v-for="file in files" :key="file.name">
                     <template v-if="file.isImage">
-                        <a :href="file.address" target="_blank" class="message-image" :title="file.name"><img :src="file.address" :alt="file.name"></a>
+                        <a :href="file.address" target="_blank" class="message-image" :title="file.title"><img :src="file.address" :alt="file.name"></a>
                     </template>
                     <template v-else>
                         <a :href="file.address" target="_blank" class="message-file">{{ file.name }}</a>
@@ -157,6 +158,15 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 .message-quote:hover {
     color: var(--text-2);
+}
+
+.message-card :deep(pre) {
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.message-card :deep(code) {
+    overflow-wrap: anywhere;
 }
 
 .message-card :deep(p),
