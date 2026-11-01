@@ -97,3 +97,8 @@ test("a plugin that did nothing says so, and a refused read says why", async () 
     const {element} = await recordDrawn({ok: false, error: "no plugin is called sins"});
     expect(element.querySelector("[data-plugin-record-failure]").textContent).toContain("no plugin is called sins");
 });
+
+test("a plugin's cards read as words, not JSON", async () => {
+    await recordDrawn({ok: true, value: {name: "sins", outputs: [{id: 1, output: JSON.stringify({cards: [{key: "a", detail: "long line at 22"}]})}], fault_count: 0, last_fault: ""}});
+    expect(document.querySelector("[data-plugin-output]").textContent).toBe("long line at 22");
+});

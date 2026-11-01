@@ -46,6 +46,15 @@ async function toggleSettings(row) {
 const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
 
 const record = ref(null);
+
+// a plugin that reports cards writes them as JSON; what a person reads is each card's words
+function outputWords(text) {
+    try {
+        return JSON.parse(text).cards.map((card) => card.detail || card.title).join("\n");
+    } catch {
+        return text;
+    }
+}
 const recordFailure = ref("");
 
 async function showRecord(row) {
@@ -137,7 +146,7 @@ async function showRecord(row) {
                     <p class="plugin-note">It has done nothing yet.</p>
                 </template>
                 <template v-for="row in record.outputs" :key="row.id">
-                    <p class="plugin-output" data-plugin-output>{{ row.output }}</p>
+                    <p class="plugin-output" data-plugin-output>{{ outputWords(row.output) }}</p>
                 </template>
             </div>
         </Dialog>

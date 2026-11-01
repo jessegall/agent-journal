@@ -1,77 +1,86 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-de688e23c0c8")) { const style = document.createElement("style"); style.id = "window-styles-de688e23c0c8"; style.textContent = ".plugin-output[data-v-3b61a9df]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-3b61a9df]{margin:0;color:var(--text-2);font-size:13px}.plugin-tools[data-v-3b61a9df],.plugin-form[data-v-3b61a9df]{display:flex;gap:8px;margin-bottom:10px}.plugin-form input[data-v-3b61a9df]{flex:1;min-width:0}.plugin-moves[data-v-3b61a9df]{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.plugin-settings[data-v-3b61a9df]{display:flex;flex-direction:column;gap:8px;margin-top:8px}.plugin-setting[data-v-3b61a9df]{display:flex;flex-direction:column;gap:2px}.plugin-setting-title[data-v-3b61a9df]{color:var(--text-3);font-size:12px}.plugins[data-v-3b61a9df]{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.plugin[data-v-3b61a9df]{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plugin-head[data-v-3b61a9df]{display:flex;gap:10px;align-items:center}.name[data-v-3b61a9df]{flex:1;font-weight:500}.release[data-v-3b61a9df],.plugin-source[data-v-3b61a9df],.plugin-note[data-v-3b61a9df]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-3b61a9df]{color:var(--danger);font-size:12px}.toggle[data-v-3b61a9df]{position:relative;flex:none;width:30px;height:17px;border:0;border-radius:9px;background:var(--raised);cursor:pointer}.toggle[data-v-3b61a9df]:after{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;content:\"\";transition:transform .15s ease}.toggle.on[data-v-3b61a9df]{background:var(--accent)}.toggle.on[data-v-3b61a9df]:after{transform:translate(13px)}\n"; document.head.appendChild(style); }
-import { ref as f, openBlock as t, createElementBlock as n, Fragment as S, createElementVNode as i, createVNode as m, unref as a, withCtx as o, createTextVNode as p, withModifiers as w, withDirectives as A, vModelText as D, createCommentVNode as d, toDisplayString as r, createBlock as B, renderList as I, normalizeClass as K } from "vue";
-import { useWindow as j, useRows as q, Btn as g, Skeleton as G, Dialog as H } from "@journal/window-kit";
-const J = (V, h) => {
-  const b = V.__vccOpts || V;
-  for (const [C, W] of h)
-    b[C] = W;
+if (!document.getElementById("window-styles-11d8c8a67035")) { const style = document.createElement("style"); style.id = "window-styles-11d8c8a67035"; style.textContent = ".plugin-output[data-v-a417ae13]{margin:0 0 6px;font-size:13px;white-space:pre-wrap}.plugin-note[data-v-a417ae13]{margin:0;color:var(--text-2);font-size:13px}.plugin-tools[data-v-a417ae13],.plugin-form[data-v-a417ae13]{display:flex;gap:8px;margin-bottom:10px}.plugin-form input[data-v-a417ae13]{flex:1;min-width:0}.plugin-moves[data-v-a417ae13]{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}.plugin-settings[data-v-a417ae13]{display:flex;flex-direction:column;gap:8px;margin-top:8px}.plugin-setting[data-v-a417ae13]{display:flex;flex-direction:column;gap:2px}.plugin-setting-title[data-v-a417ae13]{color:var(--text-3);font-size:12px}.plugins[data-v-a417ae13]{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}.plugin[data-v-a417ae13]{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface)}.plugin-head[data-v-a417ae13]{display:flex;gap:10px;align-items:center}.name[data-v-a417ae13]{flex:1;font-weight:500}.release[data-v-a417ae13],.plugin-source[data-v-a417ae13],.plugin-note[data-v-a417ae13]{margin:0;color:var(--text-3);font-size:12px}.plugin-fault[data-v-a417ae13]{color:var(--danger);font-size:12px}.toggle[data-v-a417ae13]{position:relative;flex:none;width:30px;height:17px;border:0;border-radius:9px;background:var(--raised);cursor:pointer}.toggle[data-v-a417ae13]:after{position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:#fff;content:\"\";transition:transform .15s ease}.toggle.on[data-v-a417ae13]{background:var(--accent)}.toggle.on[data-v-a417ae13]:after{transform:translate(13px)}\n"; document.head.appendChild(style); }
+import { ref as f, openBlock as t, createElementBlock as a, Fragment as S, createElementVNode as i, createVNode as m, unref as s, withCtx as o, createTextVNode as p, withModifiers as w, withDirectives as A, vModelText as D, createCommentVNode as r, toDisplayString as d, createBlock as B, renderList as I, normalizeClass as J } from "vue";
+import { useWindow as K, useRows as q, Btn as g, Skeleton as G, Dialog as H } from "@journal/window-kit";
+const Q = (x, h) => {
+  const b = x.__vccOpts || x;
+  for (const [C, N] of h)
+    b[C] = N;
   return b;
-}, Q = { class: "plugin-tools" }, X = {
+}, X = { class: "plugin-tools" }, Y = {
   key: 2,
   class: "plugin-fault",
   role: "alert",
   "data-plugin-refusal": ""
-}, Y = { class: "plugins" }, Z = {
+}, Z = { class: "plugins" }, ee = {
   key: 1,
   class: "plugin-note"
-}, ee = {
+}, le = {
   key: 2,
   class: "plugin-note"
-}, le = ["data-row"], te = { class: "plugin-head" }, ne = { class: "name" }, ae = { class: "release" }, se = ["aria-checked", "aria-label", "onClick"], ue = { class: "plugin-source" }, ie = {
+}, te = ["data-row"], ne = { class: "plugin-head" }, ae = { class: "name" }, se = { class: "release" }, ue = ["aria-checked", "aria-label", "onClick"], ie = { class: "plugin-source" }, oe = {
   key: 0,
   class: "plugin-fault"
-}, oe = { class: "plugin-moves" }, de = {
+}, re = { class: "plugin-moves" }, de = {
   key: 1,
   class: "plugin-settings",
   "data-plugin-setting-list": ""
-}, re = {
+}, pe = {
   key: 0,
   class: "plugin-note"
-}, pe = { class: "plugin-setting-title" }, ge = ["value", "data-plugin-setting", "onChange"], ve = {
+}, ge = { class: "plugin-setting-title" }, ve = ["value", "data-plugin-setting", "onChange"], me = {
   key: 3,
   class: "plugin-fault",
   role: "alert",
   "data-plugin-record-failure": ""
-}, me = { "data-plugin-record-body": "" }, ce = {
+}, ce = { "data-plugin-record-body": "" }, ke = {
   key: 0,
   class: "plugin-fault"
-}, ke = {
+}, fe = {
   key: 1,
   class: "plugin-note"
-}, fe = {
+}, _e = {
   __name: "PluginRows",
-  setup(V) {
-    const h = j(), { rows: b, failure: C, loaded: W, load: F } = q("plugin list", ["plugin.*"]), x = f(""), c = f(null), _ = f(""), y = f(""), R = f(""), k = f({}), P = (s) => $(`plugin ${s.enabled ? "disable" : "enable"} ${s.name}`);
-    async function $(s) {
-      const e = await h.run(s);
-      return x.value = e.ok ? "" : e.error, e.ok && F(), e.ok;
+  setup(x) {
+    const h = K(), { rows: b, failure: C, loaded: N, load: F } = q("plugin list", ["plugin.*"]), R = f(""), c = f(null), _ = f(""), y = f(""), W = f(""), k = f({}), O = (n) => $(`plugin ${n.enabled ? "disable" : "enable"} ${n.name}`);
+    async function $(n) {
+      const e = await h.run(n);
+      return R.value = e.ok ? "" : e.error, e.ok && F(), e.ok;
     }
-    async function E() {
+    async function P() {
       _.value.trim() && await $(["plugin", "install", _.value.trim(), "--yes"]) && (_.value = "", c.value = null);
     }
-    async function L() {
+    async function E() {
       y.value.trim() && await $(["message", "send", `Please make a plugin: ${y.value.trim()}`]) && (y.value = "", c.value = null);
     }
-    async function T(s, e) {
-      await $(["plugin", "remove", s.name, ...e ? ["--purge"] : []]) && (R.value = "");
+    async function T(n, e) {
+      await $(["plugin", "remove", n.name, ...e ? ["--purge"] : []]) && (W.value = "");
     }
-    async function M(s) {
-      if (k.value[s.name]) {
-        const { [s.name]: l, ...u } = k.value;
+    async function L(n) {
+      if (k.value[n.name]) {
+        const { [n.name]: l, ...u } = k.value;
         return void (k.value = u);
       }
-      const e = await h.read(["plugin", "settings", s.name]);
-      x.value = e.ok ? "" : e.error, e.ok && (k.value = { ...k.value, [s.name]: e.value.settings });
+      const e = await h.read(["plugin", "settings", n.name]);
+      R.value = e.ok ? "" : e.error, e.ok && (k.value = { ...k.value, [n.name]: e.value.settings });
     }
-    const O = (s, e, l) => $(["plugin", "configure", s.name, e.key, l]), v = f(null), N = f("");
-    async function U(s) {
-      const e = await h.read(`plugin record ${s.name}`);
-      N.value = e.ok ? "" : e.error, v.value = e.ok ? e.value : null;
+    const M = (n, e, l) => $(["plugin", "configure", n.name, e.key, l]), v = f(null);
+    function U(n) {
+      try {
+        return JSON.parse(n).cards.map((e) => e.detail || e.title).join(`
+`);
+      } catch {
+        return n;
+      }
     }
-    return (s, e) => (t(), n(S, null, [
-      i("div", Q, [
-        m(a(g), {
+    const V = f("");
+    async function j(n) {
+      const e = await h.read(`plugin record ${n.name}`);
+      V.value = e.ok ? "" : e.error, v.value = e.ok ? e.value : null;
+    }
+    return (n, e) => (t(), a(S, null, [
+      i("div", X, [
+        m(s(g), {
           small: "",
           bordered: "",
           "data-plugin-install": "",
@@ -82,7 +91,7 @@ const J = (V, h) => {
           ])]),
           _: 1
         }),
-        m(a(g), {
+        m(s(g), {
           small: "",
           bordered: "",
           "data-plugin-make": "",
@@ -94,11 +103,11 @@ const J = (V, h) => {
           _: 1
         })
       ]),
-      c.value === "install" ? (t(), n("form", {
+      c.value === "install" ? (t(), a("form", {
         key: 0,
         class: "plugin-form",
         "data-plugin-install-form": "",
-        onSubmit: w(E, ["prevent"])
+        onSubmit: w(P, ["prevent"])
       }, [
         A(i("input", {
           "onUpdate:modelValue": e[2] || (e[2] = (l) => _.value = l),
@@ -107,7 +116,7 @@ const J = (V, h) => {
         }, null, 512), [
           [D, _.value]
         ]),
-        m(a(g), {
+        m(s(g), {
           small: "",
           kind: "primary",
           type: "submit",
@@ -118,12 +127,12 @@ const J = (V, h) => {
           ])]),
           _: 1
         }, 8, ["disabled"])
-      ], 32)) : d("", !0),
-      c.value === "make" ? (t(), n("form", {
+      ], 32)) : r("", !0),
+      c.value === "make" ? (t(), a("form", {
         key: 1,
         class: "plugin-form",
         "data-plugin-make-form": "",
-        onSubmit: w(L, ["prevent"])
+        onSubmit: w(E, ["prevent"])
       }, [
         A(i("input", {
           "onUpdate:modelValue": e[3] || (e[3] = (l) => y.value = l),
@@ -132,7 +141,7 @@ const J = (V, h) => {
         }, null, 512), [
           [D, y.value]
         ]),
-        m(a(g), {
+        m(s(g), {
           small: "",
           kind: "primary",
           type: "submit",
@@ -143,64 +152,64 @@ const J = (V, h) => {
           ])]),
           _: 1
         }, 8, ["disabled"])
-      ], 32)) : d("", !0),
-      x.value ? (t(), n("p", X, r(x.value), 1)) : d("", !0),
-      i("div", Y, [
-        a(W) ? !a(C) && !a(b).length ? (t(), n("p", Z, "No plugins installed")) : a(C) ? (t(), n("p", ee, r(a(C)), 1)) : d("", !0) : (t(), B(a(G), {
+      ], 32)) : r("", !0),
+      R.value ? (t(), a("p", Y, d(R.value), 1)) : r("", !0),
+      i("div", Z, [
+        s(N) ? !s(C) && !s(b).length ? (t(), a("p", ee, "No plugins installed")) : s(C) ? (t(), a("p", le, d(s(C)), 1)) : r("", !0) : (t(), B(s(G), {
           key: 0,
           shape: "cards"
         })),
-        (t(!0), n(S, null, I(a(b), (l) => (t(), n("div", {
+        (t(!0), a(S, null, I(s(b), (l) => (t(), a("div", {
           key: l.id,
           class: "plugin",
           "data-row": l.id
         }, [
-          i("span", te, [
-            i("span", ne, r(l.title), 1),
-            i("span", ae, r(l.release), 1),
+          i("span", ne, [
+            i("span", ae, d(l.title), 1),
+            i("span", se, d(l.release), 1),
             i("button", {
               type: "button",
               role: "switch",
               "aria-checked": l.enabled,
               "aria-label": l.enabled ? "Switch off" : "Switch on",
-              class: K(["toggle", { on: l.enabled }]),
-              onClick: (u) => P(l)
-            }, null, 10, se)
+              class: J(["toggle", { on: l.enabled }]),
+              onClick: (u) => O(l)
+            }, null, 10, ue)
           ]),
-          i("span", ue, r(l.source), 1),
-          l.failing ? (t(), n("span", ie, r(l.last_fault || "Failing"), 1)) : d("", !0),
-          i("span", oe, [
-            m(a(g), {
+          i("span", ie, d(l.source), 1),
+          l.failing ? (t(), a("span", oe, d(l.last_fault || "Failing"), 1)) : r("", !0),
+          i("span", re, [
+            m(s(g), {
               small: "",
               "data-plugin-settings": "",
-              onClick: (u) => M(l)
+              onClick: (u) => L(l)
             }, {
               default: o(() => [...e[10] || (e[10] = [
                 p("Settings", -1)
               ])]),
               _: 1
             }, 8, ["onClick"]),
-            m(a(g), {
+            m(s(g), {
               small: "",
               "data-plugin-record": "",
-              onClick: (u) => U(l)
+              onClick: (u) => j(l)
             }, {
               default: o(() => [...e[11] || (e[11] = [
                 p("What it did", -1)
               ])]),
               _: 1
             }, 8, ["onClick"]),
-            R.value === l.name ? (t(), n(S, { key: 0 }, [
-              m(a(g), {
+            W.value === l.name ? (t(), a(S, { key: 0 }, [
+              m(s(g), {
                 small: "",
-                onClick: e[4] || (e[4] = (u) => R.value = "")
+                onClick: e[4] || (e[4] = (u) => W.value = "")
               }, {
                 default: o(() => [...e[12] || (e[12] = [
                   p("Keep it", -1)
                 ])]),
                 _: 1
               }),
-              m(a(g), {
+              m(s(g), {
                 small: "",
                 kind: "danger",
                 "data-plugin-remove-keep": "",
@@ -211,7 +220,7 @@ const J = (V, h) => {
                 ])]),
                 _: 1
               }, 8, ["onClick"]),
-              m(a(g), {
+              m(s(g), {
                 small: "",
                 kind: "danger",
                 "data-plugin-remove-purge": "",
@@ -222,11 +231,11 @@ const J = (V, h) => {
                 ])]),
                 _: 1
               }, 8, ["onClick"])
-            ], 64)) : (t(), B(a(g), {
+            ], 64)) : (t(), B(s(g), {
               key: 1,
               small: "",
               "data-plugin-remove": "",
-              onClick: (u) => R.value = l.name
+              onClick: (u) => W.value = l.name
             }, {
               default: o(() => [...e[15] || (e[15] = [
                 p("Remove", -1)
@@ -234,44 +243,44 @@ const J = (V, h) => {
               _: 1
             }, 8, ["onClick"]))
           ]),
-          k.value[l.name] ? (t(), n("div", de, [
-            k.value[l.name].length ? d("", !0) : (t(), n("p", re, "This plugin has no settings")),
-            (t(!0), n(S, null, I(k.value[l.name], (u) => (t(), n("label", {
+          k.value[l.name] ? (t(), a("div", de, [
+            k.value[l.name].length ? r("", !0) : (t(), a("p", pe, "This plugin has no settings")),
+            (t(!0), a(S, null, I(k.value[l.name], (u) => (t(), a("label", {
               key: u.key,
               class: "plugin-setting"
             }, [
-              i("span", pe, r(u.title || u.key), 1),
+              i("span", ge, d(u.title || u.key), 1),
               i("input", {
                 value: u.value,
                 "data-plugin-setting": u.key,
-                onChange: (z) => O(l, u, z.target.value)
-              }, null, 40, ge)
+                onChange: (z) => M(l, u, z.target.value)
+              }, null, 40, ve)
             ]))), 128))
-          ])) : d("", !0)
-        ], 8, le))), 128))
+          ])) : r("", !0)
+        ], 8, te))), 128))
       ]),
-      N.value ? (t(), n("p", ve, r(N.value), 1)) : d("", !0),
-      v.value ? (t(), B(a(H), {
+      V.value ? (t(), a("p", me, d(V.value), 1)) : r("", !0),
+      v.value ? (t(), B(s(H), {
         key: 4,
         title: `What ${v.value.name} did`,
         onClose: e[5] || (e[5] = (l) => v.value = null)
       }, {
         default: o(() => [
-          i("div", me, [
-            v.value.last_fault ? (t(), n("p", ce, "Last fault, " + r(v.value.fault_count) + " in a row: " + r(v.value.last_fault), 1)) : d("", !0),
-            v.value.outputs.length ? d("", !0) : (t(), n("p", ke, "It has done nothing yet.")),
-            (t(!0), n(S, null, I(v.value.outputs, (l) => (t(), n("p", {
+          i("div", ce, [
+            v.value.last_fault ? (t(), a("p", ke, "Last fault, " + d(v.value.fault_count) + " in a row: " + d(v.value.last_fault), 1)) : r("", !0),
+            v.value.outputs.length ? r("", !0) : (t(), a("p", fe, "It has done nothing yet.")),
+            (t(!0), a(S, null, I(v.value.outputs, (l) => (t(), a("p", {
               key: l.id,
               class: "plugin-output",
               "data-plugin-output": ""
-            }, r(l.output), 1))), 128))
+            }, d(U(l.output)), 1))), 128))
           ])
         ]),
         _: 1
-      }, 8, ["title"])) : d("", !0)
+      }, 8, ["title"])) : r("", !0)
     ], 64));
   }
-}, he = /* @__PURE__ */ J(fe, [["__scopeId", "data-v-3b61a9df"]]);
+}, be = /* @__PURE__ */ Q(_e, [["__scopeId", "data-v-a417ae13"]]);
 export {
-  he as default
+  be as default
 };
