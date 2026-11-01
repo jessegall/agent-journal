@@ -7,10 +7,11 @@ from core.base.repository.repository import Repository
 from core.modules.processes.commands.title_output.title_output import TitleOutput
 from core.modules.processes.models.output import Output
 from core.modules.processes.queries.output_query import OutputQuery
+from core.modules.processes.support.title_phrase import TitlePhrase
 
 
 class TitleOutputHandler(Handler[TitleOutput, Output]):
-    """Keeps the title an agent gives a run on its output."""
+    """Keeps the title an agent gives a run on its output, once it reads as a whole phrase."""
 
     command = TitleOutput
 
@@ -21,4 +22,4 @@ class TitleOutputHandler(Handler[TitleOutput, Output]):
         kept = self.outputs.process(command.process_id).page(1, 1).rows
         if not kept:
             raise Refusal(f"process {command.process_id} keeps no output", "a short run keeps none")
-        return self.repository.save(replace(kept[0], title=command.title), context)
+        return self.repository.save(replace(kept[0], title=TitlePhrase.checked(command.title)), context)

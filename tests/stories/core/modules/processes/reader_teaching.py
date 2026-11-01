@@ -52,20 +52,30 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
 def test_a_title_that_is_a_flag_or_a_path_is_named(new_story):
     story = runner_story(new_story)
     process = moved_run(story, "make test")
-    story.run(f'output title {process.id} "./build.sh"', actor=story.agent)
-    assert any(f"output {process.id}'s title ./build.sh is a flag or a path" in line for line in story.hook("s-1", LOOK).lines)
+    story.run(f'output title {process.id} "Running ./build.sh"', actor=story.agent)
+    assert any(f"output {process.id}'s title Running ./build.sh is a flag or a path" in line for line in story.hook("s-1", LOOK).lines)
 
 
 def test_two_running_outputs_with_one_title_are_named(new_story):
     story = runner_story(new_story)
     first, second = moved_run(story, "make one"), moved_run(story, "make two")
     for process in (first, second):
-        story.run(f'output title {process.id} "Build it"', actor=story.agent)
-    assert any(f"outputs {first.id}, {second.id} share the title Build it" in line for line in story.hook("s-1", LOOK).lines)
+        story.run(f'output title {process.id} "Building it"', actor=story.agent)
+    assert any(f"outputs {first.id}, {second.id} share the title Building it" in line for line in story.hook("s-1", LOOK).lines)
 
 
 def test_a_title_in_words_says_nothing(new_story):
     story = runner_story(new_story)
     process = moved_run(story, "make test")
-    story.run(f'output title {process.id} "Run the cart tests"', actor=story.agent)
+    story.run(f'output title {process.id} "Running the cart tests"', actor=story.agent)
     story.expect_absent_hook_line("s-1", LOOK, "is a flag or a path")
+
+
+def test_a_title_is_a_whole_phrase_that_opens_on_what_the_run_does(new_story):
+    story = runner_story(new_story)
+    process = moved_run(story, "make test")
+    story.expect_refusal(f'output title {process.id} "Tests"', "not the single word", actor=story.agent)
+    story.expect_refusal(f'output title {process.id} "The cart tests"', "open it on what it does", actor=story.agent)
+    story.expect_refusal(f'output title {process.id} "Running the tests of"', "which stops on 'of'", actor=story.agent)
+    story.expect_success(f'output title {process.id} "Running the cart tests"', actor=story.agent)
+
