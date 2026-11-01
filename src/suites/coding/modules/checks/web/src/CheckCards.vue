@@ -1,5 +1,5 @@
 <script setup>
-import {Icon, Skeleton, useOpenRow, useRows} from "@journal/window-kit";
+import {Icon, Skeleton, useOpenRow, useRows, Btn, peekRef} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("check list", ["check.*"]);
 const {opened, toggle} = useOpenRow();
@@ -20,6 +20,7 @@ const {opened, toggle} = useOpenRow();
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
                 <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
                 <span class="card-title">{{ row.title }}</span>
+                <Btn small data-check-open @click.stop="peekRef(`checks:${row.id}`)">Details</Btn>
                 <code class="card-detail">{{ row.command }}</code>
                 <template v-if="opened === row.id">
                     <template v-if="row.last_output">

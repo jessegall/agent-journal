@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {RowList, useListTools, ListTools, useRows} from "@journal/window-kit";
+import {RowList, useListTools, ListTools, useRows, peekRef} from "@journal/window-kit";
 
 const {rows, failure, loaded, load, context} = useRows("question list", ["question.*"]);
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
@@ -33,7 +33,7 @@ function choiceLabel(row, option) {
         <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
                 <div class="question" :data-state="row.state">
-                    <p class="question-text">{{ row.text }}</p>
+                    <p class="question-text"><button type="button" class="question-open" :data-question-open="row.id" @click="peekRef(`questions:${row.id}`)">{{ row.text }}</button></p>
                     <template v-if="row.state !== 'open'">
                         <p class="question-closed">{{ row.state === "answered" ? `Answered: ${row.answer}` : "Closed" }}</p>
                     </template>
@@ -61,6 +61,16 @@ function choiceLabel(row, option) {
 </template>
 
 <style scoped>
+.question-open {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
 .question {
     display: flex;
     flex: 1;

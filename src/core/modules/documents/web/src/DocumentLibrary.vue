@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, Segmented, Skeleton, TextDisplay, TextInput, useWindow} from "@journal/window-kit";
+import {Btn, Icon, peekRef, Segmented, Skeleton, TextInput, useWindow} from "@journal/window-kit";
 import {age, grouped, searched, sorted} from "./libraryGroups.js";
 
 const LIBRARIES = [
@@ -21,7 +21,6 @@ const state = ref("open");
 const order = ref("newest");
 const words = ref("");
 const chosen = ref(null);
-const reading = ref(null);
 const context = useWindow();
 const rows = ref([]);
 const total = ref(0);
@@ -53,15 +52,10 @@ async function more() {
     if (kind === noun.value && shown === state.value) rows.value = [...rows.value, ...answer.value.rows];
 }
 
-async function readRow(row) {
-    const answer = await context.read(`${noun.value} show ${row.id} --json`);
-    if (!answer.ok) return null;
-    return answer.value;
-}
-
+// a row opens in the panel, as every other row does
 function open(row) {
     chosen.value = row.id;
-    readRow(row).then((value) => (reading.value = value));
+    peekRef(`${noun.value === "doc" ? "docs" : "reports"}:${row.id}`);
 }
 
 async function create() {
@@ -75,26 +69,25 @@ async function create() {
     load();
 }
 
+const openChosen = () => {
+    const row = shownRows.value.find((held) => held.id === chosen.value);
+    if (row) open(row);
+};
 const shownRows = computed(() => groups.value.flatMap((group) => group.rows));
 
 function step(by) {
     if (!shownRows.value.length) return;
     const at = shownRows.value.findIndex((row) => row.id === chosen.value);
-    open(shownRows.value[at < 0 ? 0 : Math.max(0, Math.min(shownRows.value.length - 1, at + by))]);
+    chosen.value = shownRows.value[at < 0 ? 0 : Math.max(0, Math.min(shownRows.value.length - 1, at + by))].id;
 }
 
 function closeOrClear() {
-    if (chosen.value) {
-        chosen.value = null;
-        reading.value = null;
-    } else {
-        words.value = "";
-    }
+    if (chosen.value) chosen.value = null;
+    else words.value = "";
 }
 
 watch([noun, state], () => {
     chosen.value = null;
-    reading.value = null;
     rows.value = [];
     loaded.value = false;
     load();
@@ -127,7 +120,7 @@ load();
             </form>
         </template>
         <div class="library-body">
-            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear">
+            <div class="library-list" tabindex="0" data-library-list @keydown.down.prevent="step(1)" @keydown.up.prevent="step(-1)" @keydown.esc="closeOrClear" @keydown.enter.self="openChosen">
                 <template v-if="!loaded">
                     <Skeleton shape="cards" />
                 </template>
@@ -158,19 +151,6 @@ load();
                 </template>
                 <template v-if="rows.length < total && !words">
                     <button type="button" class="library-more" @click="more">Show more</button>
-                </template>
-            </div>
-            <div class="library-reader">
-                <template v-if="reading">
-                    <h2 class="reader-title">{{ reading.title }}</h2>
-                    <p class="reader-abstract">{{ reading.abstract }}</p>
-                    <TextDisplay :text="reading.body" class="reader-body" />
-                </template>
-                <template v-else>
-                    <div class="reader-empty">
-                        <p class="reader-empty-title">Choose a {{ label.toLowerCase() }} to read it here</p>
-                        <p class="reader-empty-text">Choose one on the left to see its text here.</p>
-                    </div>
                 </template>
             </div>
         </div>

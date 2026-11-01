@@ -25,7 +25,7 @@ watch(() => props.id, load, {immediate: true});
                 <template v-for="(review, index) in shown" :key="review.id">
                     <li class="round" data-plan-review>
                         <div class="head">
-                            <span class="title">Round {{ index + 1 }}</span>
+                            <span class="title">Round {{ index + 1 }}<template v-if="review.reviewer_id"> · reviewer {{ review.reviewer_id }}</template></span>
                             <span class="state">{{ label(review.state) }}</span>
                         </div>
                         <template v-if="review.report">

@@ -43,6 +43,15 @@ const agentMoves = (row) => (!row || row.ended_at ? [] : [
     {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing."},
 ]);
 
+// a worker is an agent too, with its own commands: its work merged, or it taken off its task; a job or a reason goes after its number
+const workerMoves = (row) => (row?.role !== "worker" || row.ended_at ? [] : [
+    {noun: "worker", word: "send", label: "Send a job", ask: "What should it do?", positional: true},
+    {noun: "worker", word: "merge", label: "Merge", confirm: "Merge its work? Each point needs a checked proof."},
+    {noun: "worker", word: "release", label: "Release", ask: "Why is it taken off its task?", positional: true},
+]);
+
+const checkMoves = (row) => (!row || row.removed_at ? [] : [row.stopped ? {word: "run", label: "Start again", main: true} : {word: "run", label: "Run now", main: true}, ...(row.stopped ? [] : [{word: "stop", label: "Stop"}])]);
+
 const textMoves = (row) => (!row || row.close_reason ? [] : [{word: "close", label: "Close", flag: "--why", ask: "Why does it need no action?"}]);
 
-export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? agentMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);
+export const movesOf = (kind, row) => (kind === "doc" || kind === "report" ? textMoves(row) : kind === "agent" ? [...workerMoves(row), ...agentMoves(row)] : kind === "check" ? checkMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);

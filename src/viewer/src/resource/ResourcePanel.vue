@@ -5,6 +5,8 @@ import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
 import AgentFacts from "./AgentFacts.vue";
+import MemoryFacts from "./MemoryFacts.vue";
+import WorkerFacts from "./WorkerFacts.vue";
 import TextDetails from "./TextDetails.vue";
 import PlanInspector from "./PlanInspector.vue";
 import RowMoves from "./RowMoves.vue";
@@ -21,9 +23,10 @@ let reading = 0;
 
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
 const OWN_INSPECTORS = new Set(["task", "plan"]);
+const TEXT_KINDS = new Set(["question", "memory"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
-const text = computed(() => row.value?.body || row.value?.brief || (kind.value === "question" ? row.value?.text : "") || "");
+const text = computed(() => row.value?.body || row.value?.brief || (TEXT_KINDS.has(kind.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const fields = computed(() => fieldsOf(row.value));
 
@@ -86,6 +89,12 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </template>
                             <template v-if="kind === 'agent'">
                                 <AgentFacts :id="opened.id" :read="read" />
+                                <template v-if="row.role === 'worker'">
+                                    <WorkerFacts :id="opened.id" :read="read" />
+                                </template>
+                            </template>
+                            <template v-if="kind === 'memory'">
+                                <MemoryFacts :id="opened.id" :read="read" />
                             </template>
                             <template v-if="kind === 'doc' || kind === 'report'">
                                 <TextDetails :kind="kind" :id="opened.id" :row="row" :read="read" @changed="load" />

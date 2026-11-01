@@ -1,41 +1,46 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-95931b8e742e")) { const style = document.createElement("style"); style.id = "window-styles-95931b8e742e"; style.textContent = ".suggestion[data-v-f4d06b4c]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-f4d06b4c]{flex:1}.answer[data-v-f4d06b4c]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as _, createElementBlock as g, Fragment as p, createVNode as i, unref as t, withCtx as w, createElementVNode as c, toDisplayString as u } from "vue";
-import { useRows as f, useListTools as m, ListTools as h, RowList as v } from "@journal/window-kit";
-const x = (n, a) => {
-  const e = n.__vccOpts || n;
-  for (const [l, o] of a)
-    e[l] = o;
-  return e;
-}, y = ["data-row"], R = { class: "title" }, S = { class: "answer" }, k = {
+if (!document.getElementById("window-styles-496b944af43a")) { const style = document.createElement("style"); style.id = "window-styles-496b944af43a"; style.textContent = "button.title[data-v-5f8119ec]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.suggestion[data-v-5f8119ec]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-5f8119ec]{flex:1}.answer[data-v-5f8119ec]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as g, createElementBlock as _, Fragment as p, createVNode as c, unref as t, withCtx as f, createElementVNode as r, toDisplayString as u } from "vue";
+import { useRows as w, useListTools as m, ListTools as h, RowList as k, peekRef as v } from "@journal/window-kit";
+const y = (a, i) => {
+  const o = a.__vccOpts || a;
+  for (const [l, n] of i)
+    o[l] = n;
+  return o;
+}, x = ["data-row"], R = ["data-suggestion-open", "onClick"], S = { class: "answer" }, C = {
   __name: "SuggestionRows",
-  setup(n) {
-    const { rows: a, failure: e, loaded: l } = f("suggestion list", ["suggestion.*"]), o = m(a, { title: (s) => s.title }), d = (s) => s.answer ? `Answer: ${s.answer}` : "Answer: none yet";
-    return (s, L) => (_(), g(p, null, [
-      i(t(h), {
-        tools: t(o),
+  setup(a) {
+    const { rows: i, failure: o, loaded: l } = w("suggestion list", ["suggestion.*"]), n = m(i, { title: (e) => e.title }), d = (e) => e.answer ? `Answer: ${e.answer}` : "Answer: none yet";
+    return (e, L) => (g(), _(p, null, [
+      c(t(h), {
+        tools: t(n),
         placeholder: "Search the suggestions"
       }, null, 8, ["tools"]),
-      i(t(v), {
-        rows: t(o).shown.value,
-        failure: t(e),
+      c(t(k), {
+        rows: t(n).shown.value,
+        failure: t(o),
         loaded: t(l),
         empty: "No suggestions yet"
       }, {
-        default: w(({ row: r }) => [
-          c("div", {
+        default: f(({ row: s }) => [
+          r("div", {
             class: "suggestion",
-            "data-row": r.id
+            "data-row": s.id
           }, [
-            c("span", R, u(r.title), 1),
-            c("span", S, u(d(r)), 1)
-          ], 8, y)
+            r("button", {
+              type: "button",
+              class: "title",
+              "data-suggestion-open": s.id,
+              onClick: (N) => t(v)(`suggestions:${s.id}`)
+            }, u(s.title), 9, R),
+            r("span", S, u(d(s)), 1)
+          ], 8, x)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"])
     ], 64));
   }
-}, A = /* @__PURE__ */ x(k, [["__scopeId", "data-v-f4d06b4c"]]);
+}, b = /* @__PURE__ */ y(C, [["__scopeId", "data-v-5f8119ec"]]);
 export {
-  A as default
+  b as default
 };

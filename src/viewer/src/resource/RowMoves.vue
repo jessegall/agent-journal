@@ -17,7 +17,7 @@ watch(() => props.id, () => {
 });
 
 async function run(move, said = "") {
-    const answer = await props.read([props.kind, move.word, String(props.id), ...(move.flag ? [move.flag, said] : [])]);
+    const answer = await props.read([move.noun ?? props.kind, move.word, String(props.id), ...(move.flag ? [move.flag, said] : move.positional ? [said] : [])]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     asking.value = null;
@@ -25,7 +25,7 @@ async function run(move, said = "") {
     emit("done");
 }
 
-const press = (move) => (move.confirm ? (asking.value = move) : move.said ? run(move, move.said) : move.flag ? ((asking.value = move), (words.value = "")) : run(move));
+const press = (move) => (move.confirm ? (asking.value = move) : move.said ? run(move, move.said) : move.flag || move.positional ? ((asking.value = move), (words.value = "")) : run(move));
 const send = () => words.value.trim() && run(asking.value, words.value.trim());
 defineExpose({moves, press});
 </script>

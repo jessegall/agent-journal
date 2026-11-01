@@ -1,41 +1,41 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-cbbb49e7b688")) { const style = document.createElement("style"); style.id = "window-styles-cbbb49e7b688"; style.textContent = ".question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.question[data-v-9236b95c]{display:flex;flex:1;flex-direction:column;gap:6px}.question-text[data-v-9236b95c]{margin:0}.question-choices[data-v-9236b95c],.question-form[data-v-9236b95c]{display:flex;flex-wrap:wrap;gap:6px}.question-answer[data-v-9236b95c]{flex:1;min-width:120px}.question-choice.recommended[data-v-9236b95c]{font-weight:600}.question-failure[data-v-9236b95c]{margin:6px 8px 0;color:var(--text-2)}.question-closed[data-v-9236b95c]{margin:2px 0 0;color:var(--text-3);font-size:12px}.waiting-heading[data-v-2998b0fd]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-2998b0fd]{flex:1}.detail[data-v-2998b0fd]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { ref as f, openBlock as i, createElementBlock as a, createVNode as v, unref as c, withCtx as S, createElementVNode as n, toDisplayString as u, createCommentVNode as r, Fragment as q, renderList as $, normalizeClass as L, withModifiers as V, withDirectives as g, vModelText as N } from "vue";
-import { useRows as R, useListTools as T, ListTools as A, RowList as B } from "@journal/window-kit";
-import { _ as D } from "./_plugin-vue_export-helper-CHgC5LLL.js";
-const E = { class: "questions" }, F = ["data-state"], M = { class: "question-text" }, Q = {
+if (!document.getElementById("window-styles-178eb76aafed")) { const style = document.createElement("style"); style.id = "window-styles-178eb76aafed"; style.textContent = ".question-dock[data-v-3f6f88a1]{display:flex;gap:8px;font-size:12px;line-height:1.45}.question-dock-state[data-v-3f6f88a1]{color:var(--text-4)}.question-open[data-v-70feb67d]{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}.question[data-v-70feb67d]{display:flex;flex:1;flex-direction:column;gap:6px}.question-text[data-v-70feb67d]{margin:0}.question-choices[data-v-70feb67d],.question-form[data-v-70feb67d]{display:flex;flex-wrap:wrap;gap:6px}.question-answer[data-v-70feb67d]{flex:1;min-width:120px}.question-choice.recommended[data-v-70feb67d]{font-weight:600}.question-failure[data-v-70feb67d]{margin:6px 8px 0;color:var(--text-2)}.question-closed[data-v-70feb67d]{margin:2px 0 0;color:var(--text-3);font-size:12px}.waiting-heading[data-v-2998b0fd]{margin:0 8px 6px;font-size:12px;font-weight:600;color:var(--text-2)}.label[data-v-2998b0fd]{flex:1}.detail[data-v-2998b0fd]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { ref as f, openBlock as a, createElementBlock as u, createVNode as q, unref as i, withCtx as S, createElementVNode as n, toDisplayString as l, createCommentVNode as r, Fragment as v, renderList as w, normalizeClass as L, withModifiers as R, withDirectives as V, vModelText as g } from "vue";
+import { useRows as N, useListTools as T, ListTools as A, RowList as B, peekRef as D } from "@journal/window-kit";
+import { _ as E } from "./_plugin-vue_export-helper-CHgC5LLL.js";
+const F = { class: "questions" }, M = ["data-state"], Q = { class: "question-text" }, U = ["data-question-open", "onClick"], z = {
   key: 0,
   class: "question-closed"
-}, U = { class: "question-choices" }, z = ["onClick"], I = ["onSubmit"], O = ["onUpdate:modelValue"], j = ["onClick"], G = ["onClick"], H = {
+}, I = { class: "question-choices" }, O = ["onClick"], j = ["onSubmit"], G = ["onUpdate:modelValue"], H = ["onClick"], J = ["onClick"], K = {
   key: 0,
   class: "question-failure"
-}, J = {
+}, P = {
   __name: "QuestionRows",
-  setup(K) {
-    const { rows: k, failure: y, loaded: C, load: b, context: x } = R("question list", ["question.*"]), _ = T(k, { title: (t) => t.text, isOpen: (t) => t.state === "open" }), l = f({}), d = f("");
-    async function m(t) {
+  setup(W) {
+    const { rows: k, failure: y, loaded: C, load: b, context: x } = N("question list", ["question.*"]), _ = T(k, { title: (t) => t.text, isOpen: (t) => t.state === "open" }), c = f({}), d = f("");
+    async function p(t) {
       const s = await x.run(t);
       d.value = s.ok ? "" : s.error, b();
     }
-    function p(t, s) {
-      return m(["question", "answer", String(t.id), "--answer", s]);
+    function m(t, s) {
+      return p(["question", "answer", String(t.id), "--answer", s]);
     }
     function h(t) {
-      const s = (l.value[t.id] || "").trim();
-      s && p(t, s).then(() => l.value[t.id] = "");
+      const s = (c.value[t.id] || "").trim();
+      s && m(t, s).then(() => c.value[t.id] = "");
     }
-    function w(t, s) {
+    function $(t, s) {
       return s === t.recommended ? `${s} (recommended)` : s;
     }
-    return (t, s) => (i(), a("div", E, [
-      v(c(A), {
-        tools: c(_),
+    return (t, s) => (a(), u("div", F, [
+      q(i(A), {
+        tools: i(_),
         placeholder: "Search the questions"
       }, null, 8, ["tools"]),
-      v(c(B), {
-        rows: c(_).shown.value,
-        failure: c(y),
-        loaded: c(C),
+      q(i(B), {
+        rows: i(_).shown.value,
+        failure: i(y),
+        loaded: i(C),
         empty: "No open questions"
       }, {
         default: S(({ row: e }) => [
@@ -43,48 +43,55 @@ const E = { class: "questions" }, F = ["data-state"], M = { class: "question-tex
             class: "question",
             "data-state": e.state
           }, [
-            n("p", M, u(e.text), 1),
-            e.state !== "open" ? (i(), a("p", Q, u(e.state === "answered" ? `Answered: ${e.answer}` : "Closed"), 1)) : r("", !0),
-            e.state === "open" ? (i(), a(q, { key: 1 }, [
-              n("div", U, [
-                (i(!0), a(q, null, $(e.options, (o) => (i(), a("button", {
+            n("p", Q, [
+              n("button", {
+                type: "button",
+                class: "question-open",
+                "data-question-open": e.id,
+                onClick: (o) => i(D)(`questions:${e.id}`)
+              }, l(e.text), 9, U)
+            ]),
+            e.state !== "open" ? (a(), u("p", z, l(e.state === "answered" ? `Answered: ${e.answer}` : "Closed"), 1)) : r("", !0),
+            e.state === "open" ? (a(), u(v, { key: 1 }, [
+              n("div", I, [
+                (a(!0), u(v, null, w(e.options, (o) => (a(), u("button", {
                   key: o,
                   type: "button",
                   class: L(["question-choice", { recommended: o === e.recommended }]),
-                  onClick: (P) => p(e, o)
-                }, u(w(e, o)), 11, z))), 128))
+                  onClick: (X) => m(e, o)
+                }, l($(e, o)), 11, O))), 128))
               ]),
               n("form", {
                 class: "question-form",
-                onSubmit: V((o) => h(e), ["prevent"])
+                onSubmit: R((o) => h(e), ["prevent"])
               }, [
-                g(n("input", {
-                  "onUpdate:modelValue": (o) => l.value[e.id] = o,
+                V(n("input", {
+                  "onUpdate:modelValue": (o) => c.value[e.id] = o,
                   class: "question-answer",
                   placeholder: "Answer in your own words"
-                }, null, 8, O), [
-                  [N, l.value[e.id]]
+                }, null, 8, G), [
+                  [g, c.value[e.id]]
                 ]),
                 n("button", {
                   type: "button",
                   class: "question-send",
                   onClick: (o) => h(e)
-                }, "Answer", 8, j),
+                }, "Answer", 8, H),
                 n("button", {
                   type: "button",
                   class: "question-close",
-                  onClick: (o) => m(["question", "close", String(e.id)])
-                }, "Close", 8, G)
-              ], 40, I)
+                  onClick: (o) => p(["question", "close", String(e.id)])
+                }, "Close", 8, J)
+              ], 40, j)
             ], 64)) : r("", !0)
-          ], 8, F)
+          ], 8, M)
         ]),
         _: 1
       }, 8, ["rows", "failure", "loaded"]),
-      d.value ? (i(), a("p", H, u(d.value), 1)) : r("", !0)
+      d.value ? (a(), u("p", K, l(d.value), 1)) : r("", !0)
     ]));
   }
-}, Z = /* @__PURE__ */ D(J, [["__scopeId", "data-v-9236b95c"]]);
+}, te = /* @__PURE__ */ E(P, [["__scopeId", "data-v-70feb67d"]]);
 export {
-  Z as default
+  te as default
 };

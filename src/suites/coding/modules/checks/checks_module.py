@@ -30,7 +30,7 @@ from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
 
-BUILT = ["make", "edit", "show", "list", "delete"]
+BUILT = ["make", "edit", "list", "delete"]
 
 
 class ChecksModule(Module):

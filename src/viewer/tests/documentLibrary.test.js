@@ -4,6 +4,7 @@ import {settled} from "./settled.js";
 import DocumentLibrary from "../../core/modules/documents/web/src/DocumentLibrary.vue";
 import {grouped} from "../../core/modules/documents/web/src/libraryGroups.js";
 import {WINDOW_CONTEXT} from "../kit/windowContextKey.js";
+import {opening} from "../src/route.js";
 
 const NOW = Date.parse("2026-10-31T12:00:00Z");
 const DOCS = [
@@ -36,14 +37,19 @@ test("the library is read once, a page of one kind", async () => {
     expect(reads).toEqual(["document library --kind doc --state open"]);
 });
 
-test("choosing a document reads it whole and shows its text", async () => {
-    const {element, reads} = mounted();
+test("choosing a document opens it in the panel, by the mouse or by Enter", async () => {
+    const {element} = mounted();
     await settled();
     element.querySelector('[data-row="1"]').click();
     await settled();
-    expect(reads).toContain("doc show 1 --json");
-    expect(element.querySelector(".reader-title").textContent).toBe("Cart rules");
-    expect(element.querySelector(".reader-body").textContent).toContain("in cents");
+    expect(window.location.href).toContain("docs:1");
+    opening([]);
+    const list = element.querySelector("[data-library-list]");
+    list.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowDown"}));
+    list.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
+    await settled();
+    expect(window.location.href).toContain("docs:2");
+    opening([]);
 });
 
 test("rows fall under the age heading of their last edit", () => {
