@@ -251,6 +251,25 @@ test("the pane menu splits a pane with several tabs and moves its tab to another
     expect(tabsIn(store, holder(store, "a.chat"))).toEqual(["a.chat", "a.notes"]);
 });
 
+test("the pane menu fills or contains a pane and closes it, keeping the last pane", async () => {
+    const {store, element} = await stage();
+    const own = holder(store, "a.tasks");
+    element.querySelector(`[data-tabs-of="${own}"] .pane-menu-button`).click();
+    await settled();
+    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Contain");
+    element.querySelector('[data-menu="width"]').click();
+    await settled();
+    expect(store.layout.value.panes[own].options.width).toBe("contained");
+    expect(element.querySelector('[data-menu="width"]').textContent).toContain("Fill");
+    element.querySelector('[data-menu="close"]').click();
+    await settled();
+    expect(leaves(store.layout.value.tree)).toHaveLength(1);
+    const last = leaves(store.layout.value.tree)[0];
+    element.querySelector(`[data-tabs-of="${last}"] .pane-menu-button`).click();
+    await settled();
+    expect(element.querySelector('[data-menu="close"]').disabled).toBe(true);
+});
+
 test("f makes the focused pane full screen and Escape returns it", async () => {
     const {store, element} = await stage();
     const own = holder(store, "a.tasks");

@@ -169,7 +169,7 @@ const {counts} = useTabCounts({
     environment: props.environment,
     names: () => [...new Set([...(props.store.layout.value ? props.store.open.value : []), ...props.catalogue.windows.value.map((window) => window.name)])],
 });
-const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, tabsOf, closedWindows, openView, openIn, grabWindow, offer, offerText, answer} = usePaneActions({
+const {detached, detach, setOption, full, menu, keyed, toggleMenu, split, moveTo, others, aimed, ghost, grabTab, pick, closeTab, closePane, tabsOf, closedWindows, openView, openIn, grabWindow, offer, offerText, answer} = usePaneActions({
     store: props.store,
     area: grid,
     catalogue: props.catalogue,
@@ -245,7 +245,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-if="phone">
             <template v-if="picked">
                 <section class="pane phone-pane">
-                    <div class="pane-body">
+                    <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
                         <WindowPane
                             :key="picked"
                             :name="picked"
@@ -348,13 +348,18 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             <template v-if="floats">
                                 <Btn data-menu="detach" @click="detach(id)">Detach</Btn>
                             </template>
+                            <Btn data-menu="width" @click="setOption(id, 'width', pane.options?.width === 'contained' ? 'full' : 'contained')">{{ pane.options?.width === "contained" ? "Fill" : "Contain" }}</Btn>
                             <PaneMenuOptions :declared="declaredBy(pane)" :values="pane.options || {}" @set="(key, value) => setOption(id, key, value)" />
                             <template v-for="other in others(id)" :key="other.id">
                                 <Btn :data-menu="`move-${other.id}`" @click="moveTo(id, other.id)">Move to {{ other.title }}</Btn>
                             </template>
+                            <Btn data-menu="close" :disabled="Object.keys(store.layout.value.panes).length < 2" @click="closePane(id); menu = null">Close</Btn>
+                            <template v-if="presets?.presets.value.length">
+                                <Btn data-menu="reset" @click="presets.apply(presets.presets.value[0].key); menu = null">Reset layout</Btn>
+                            </template>
                         </div>
                     </template>
-                    <div class="pane-body">
+                    <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
                         <template v-if="pane.active">
                             <WindowPane
                                 :key="pane.active"
@@ -489,6 +494,11 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     padding: 4px 6px;
     color: var(--text-3);
     font-size: 12px;
+}
+
+.pane-body.contained > * {
+    max-width: 860px;
+    margin-inline: auto;
 }
 
 .pane-body {

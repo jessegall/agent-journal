@@ -25,12 +25,14 @@ export const sessionTab = {
     },
 };
 
+const PANE_OWN_OPTIONS = ["width"];
+
 // each pane's tabs with the titles the catalogue gives them, a gone window keeping the title it had, and its options
-// only those its windows declare
+// only those its windows declare and those every pane has
 function tidied(layout, entry) {
     const panes = Object.fromEntries(Object.entries(layout.panes).map(([id, pane]) => {
         const titles = {...(pane.titles || {})};
-        const declared = new Set();
+        const declared = new Set(PANE_OWN_OPTIONS);
         for (const name of pane.tabs) {
             const window = entry(name);
             if (!window) continue;
