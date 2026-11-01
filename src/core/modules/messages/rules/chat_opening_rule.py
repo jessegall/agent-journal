@@ -1,0 +1,18 @@
+from core.base.agent_role import AgentRole
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.driver_rule import DriverRule
+from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.rule_answer import RuleAnswer
+from core.modules.messages.support.message_nudges import DISCRETION, JOURNAL_LINE
+
+
+class ChatOpeningRule(DriverRule):
+    """A main agent's session start tells it what a journal line is and to keep the journal out of the chat."""
+
+    name = "messages.chat-opening"
+    hook = HookEventName.SESSION_START
+    drivers = ["*"]
+    roles = [AgentRole.MAIN]
+
+    def answer(self, hook: AgentHook) -> RuleAnswer:
+        return RuleAnswer.with_nudges(JOURNAL_LINE.nudge(), DISCRETION.nudge())

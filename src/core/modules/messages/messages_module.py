@@ -20,7 +20,12 @@ from core.modules.messages.migrations.m004_message_delivered_at import MessageDe
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
 from core.modules.messages.rules.message_show_read_rule import MessageShowReadRule
+from core.modules.messages.rules.chat_manners_rule import ChatMannersRule
+from core.modules.messages.rules.chat_opening_rule import ChatOpeningRule
+from core.modules.messages.rules.plain_code_rule import PlainCodeRule
+from core.modules.messages.rules.unanswered_message_rule import UnansweredMessageRule
 from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageStopRule
+from core.modules.messages.rules.unread_message_write_rule import UnreadMessageWriteRule
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
@@ -47,7 +52,7 @@ class MessagesModule(Module):
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration, MessageCaptionsMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
-    driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule]
+    driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatMarksSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]

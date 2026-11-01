@@ -34,6 +34,9 @@ class HookCallQuery(Query[HookCall]):
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()
 
+    def tool_call_count(self, agent_id: int, timestamp: Timestamp) -> int:
+        return self.agent(agent_id).filter(hook=HookEventName.PRE_TOOL_USE).matching(Minimum("created_at", timestamp.text)).count()
+
     def newest_agent_hook(self, agent_id: int) -> HookCall | None:
         calls = self.agent(agent_id).matching(Equal("hook", HookEventName.TICK, negated=True)).newest().page(1, 1).rows
         return calls[0] if calls else None
