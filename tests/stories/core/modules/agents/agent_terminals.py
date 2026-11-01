@@ -1,6 +1,9 @@
 import socket
 import threading
 
+from core.base.actor import Actor
+from core.base.command.bus import Bus
+from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
 from core.modules.agents.support.terminal_typing import TerminalTyping
 from tests.stories.core.modules.viewer.support.window_story import WindowStory
 from tests.stories.core.support.fixtures import AgentStarted, UserJoined
@@ -90,4 +93,23 @@ def test_a_launcher_that_gives_no_answer_is_refused_with_what_to_do(new_story):
 def test_the_terminal_window_may_type(new_story):
     story = new_story(fixture=UserJoined)
     WindowStory(story).expect_window_allowed("coding.terminal", f'agent type {story.agent.id} "ls"')
+
+
+def resumed_story(new_story):
+    story = new_story(fixture=UserJoined)
+    launch_id = story.new_row_id("agent start launch-one claude main --environment main")
+    story.container.get(Bus).run(BindAgentSession(launch_id, "s-1"), Actor.core())
+    return story, launch_id
+
+
+def test_a_resumed_session_reads_and_types_in_the_terminal_of_the_launch_it_runs_in(new_story):
+    story, launch_id = resumed_story(new_story)
+    terminal_file = story.home.terminal_file(launch_id)
+    terminal_file.parent.mkdir(parents=True)
+    terminal_file.write_text("1\tready\n")
+    typing = FakeTyping()
+    story.container.bind(TerminalTyping, typing)
+    story.expect_success(f"agent terminal {story.agent.id}", "1  ready")
+    story.expect_success(f'agent type {story.agent.id} "ls"', actor=story.user)
+    story.expect_rows(typing.typed == [(launch_id, "ls")])
 

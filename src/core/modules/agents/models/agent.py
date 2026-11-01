@@ -21,4 +21,9 @@ class Agent(Model):
     role: AgentRole
     pid: int | None = None
     process_started_at: Timestamp | None = None
+    launch_agent_id: int | None = None
     ended_at: Timestamp | None = None
+
+    @property
+    def terminal_id(self) -> int:
+        return self.launch_agent_id if self.launch_agent_id is not None else self.id

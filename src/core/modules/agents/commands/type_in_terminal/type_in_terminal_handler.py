@@ -24,5 +24,5 @@ class TypeInTerminalHandler(Handler[TypeInTerminal, Agent]):
         agent = self.queries.query(Agent).find(command.agent_id)
         if agent.ended_at is not None:
             raise Refusal(f"agent {agent.id} has ended, so it has no terminal to type in")
-        self.typing.type_line(agent.id, command.line)
+        self.typing.type_line(agent.terminal_id, command.line)
         return agent

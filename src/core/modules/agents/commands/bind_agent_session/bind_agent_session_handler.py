@@ -11,7 +11,7 @@ from core.modules.agents.models.agent import Agent
 
 class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
     """Saves the real session on an open agent row, refusing one that has ended; a session that an ended agent
-    holds already is that agent resumed, so it is reopened on the launch's process and the launch row ends."""
+    holds already is that agent resumed, so it is reopened on the launch's process and terminal, and the launch row ends."""
 
     command = BindAgentSession
 
@@ -25,5 +25,5 @@ class BindAgentSessionHandler(Handler[BindAgentSession, Agent]):
         session_rows = self.queries.query(Agent).filter(session=command.session).page(1, 1).rows
         if session_rows and session_rows[0].id != agent.id:
             self.repository.save(replace(agent, ended_at=context.timestamp), context)
-            return self.repository.save(replace(session_rows[0], ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at), context)
+            return self.repository.save(replace(session_rows[0], ended_at=None, pid=agent.pid, process_started_at=agent.process_started_at, launch_agent_id=agent.id), context)
         return self.repository.save(replace(agent, session=command.session), context)
