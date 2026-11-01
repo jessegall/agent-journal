@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Skeleton, useRows} from "@journal/window-kit";
+import {Skeleton, peekRef, useRows} from "@journal/window-kit";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state, each with its number, state mark and priority
 const {rows, failure, loaded} = useRows("task list", ["task.*"]);
@@ -31,7 +31,7 @@ const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
                 <section class="tasks-group" :data-state="group.state">
                     <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.tasks.length }}</span></h3>
                     <template v-for="row in group.tasks" :key="row.id">
-                        <div class="task" :data-row="row.id">
+                        <div class="task" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`tasks:${row.id}`)" @keydown.enter="peekRef(`tasks:${row.id}`)">
                             <span :class="['task-mark', row.state]" />
                             <span class="task-id">{{ row.id }}</span>
                             <span class="task-title">{{ row.title }}</span>
@@ -76,6 +76,7 @@ const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 }
 
 .task {
+    cursor: pointer;
     display: flex;
     gap: 10px;
     align-items: center;

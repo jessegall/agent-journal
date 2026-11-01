@@ -24,6 +24,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import ResourcePanel from "../resource/ResourcePanel.vue";
 import {barFacts, NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
@@ -325,6 +326,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     </div>
         <template v-if="activityOpen">
             <ActivityPanel :events="events" />
+        </template>
+        <template v-if="shellRead">
+            <ResourcePanel :read="shellRead" />
         </template>
     </div>
 </template>

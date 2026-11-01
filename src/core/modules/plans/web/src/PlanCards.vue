@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref, watch} from "vue";
-import {Btn, Icon, Skeleton, useRows} from "@journal/window-kit";
+import {Btn, Icon, Skeleton, peekRef, useRows} from "@journal/window-kit";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed
 const {rows, failure, loaded, context} = useRows("plan list", ["plan.*", "phase.*", "task.*"]);
@@ -41,7 +41,7 @@ const share = (row) => {
             </template>
             <div class="plans-grid">
                 <template v-for="row in shown" :key="row.id">
-                    <div class="plan" :data-row="row.id">
+                    <div class="plan" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`plans:${row.id}`)" @keydown.enter="peekRef(`plans:${row.id}`)">
                         <span class="plan-head"><Icon name="plan" :size="12" /> Plan {{ row.id }}<span class="plan-state">{{ row.state }}</span></span>
                         <span class="plan-title">{{ row.title }}</span>
                         <span class="plan-bar"><span class="plan-bar-fill" :style="{width: `${share(row)}%`}" /></span>
@@ -92,6 +92,7 @@ const share = (row) => {
 }
 
 .plan {
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     gap: 8px;
