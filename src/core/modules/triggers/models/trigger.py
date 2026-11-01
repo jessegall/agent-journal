@@ -16,6 +16,7 @@ class Trigger(Model):
 
     model_name = "trigger"
     cli_name = "trigger"
+    search_fields = ["text"]
 
     creator_id: int
     phrases: tuple[str, ...] = ()

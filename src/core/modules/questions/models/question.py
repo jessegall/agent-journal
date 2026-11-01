@@ -16,6 +16,7 @@ class Question(Model):
 
     model_name = "question"
     cli_name = "question"
+    search_fields = ["text", "answer"]
     lifecycle = QuestionLifecycle
 
     environment_id: int

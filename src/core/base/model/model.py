@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from typing import ClassVar, Self
@@ -17,6 +18,7 @@ class Model:
     cli_name: ClassVar[str]
     lifecycle: ClassVar[type[Lifecycle] | None] = None
     hidden_fields: ClassVar[frozenset[str]] = frozenset()
+    search_fields: ClassVar[Sequence[str]] = ()
 
     id: int = 0
     version: int = 0
@@ -24,6 +26,14 @@ class Model:
     created_at: Timestamp | None = None
     updated_at: Timestamp | None = None
     move: Move | None = field(default=None, compare=False)
+
+    def creation_timestamp(self) -> Timestamp:
+        if self.created_at is None:
+            raise ModelError(f"{type(self).__name__} {self.id} was never saved")
+        return self.created_at
+
+    def search_text(self) -> str:
+        return " ".join(str(getattr(self, name)) for name in self.search_fields)
 
     @property
     def is_saved(self) -> bool:

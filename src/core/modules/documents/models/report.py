@@ -9,3 +9,4 @@ class Report(TextRow):
 
     model_name = "report"
     cli_name = "report"
+    search_fields = ["title", "abstract", "body"]

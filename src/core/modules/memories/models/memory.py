@@ -19,6 +19,7 @@ class Memory(Model):
 
     model_name = "memory"
     cli_name = "memory"
+    search_fields = ["text", "reason"]
     lifecycle = MemoryLifecycle
     table = "memories"
 

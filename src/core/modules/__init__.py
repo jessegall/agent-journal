@@ -4,6 +4,7 @@ from core.modules.chat.chat_module import ChatModule
 from core.modules.claude_code.claude_code_module import ClaudeCodeModule
 from core.modules.codex.codex_module import CodexModule
 from core.modules.demo.demo_module import DemoModule
+from core.modules.search.search_module import SearchModule
 from core.modules.docking.docking_module import DockingModule
 from core.modules.drivers.drivers_module import DriversModule
 from core.modules.environments.environments_module import EnvironmentsModule
@@ -30,4 +31,4 @@ from core.modules.suggestions.suggestions_module import SuggestionsModule
 from core.modules.plugins.plugins_module import PluginsModule
 from core.modules.dumps.dumps_module import DumpsModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, SearchModule, WaitsModule, ViewerModule, ClaudeCodeModule, CodexModule)

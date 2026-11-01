@@ -14,6 +14,7 @@ class Check(Model):
 
     model_name = "check"
     cli_name = "check"
+    search_fields = ["title", "brief", "command"]
 
     creator_id: int
     title: str

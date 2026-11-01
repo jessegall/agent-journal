@@ -9,6 +9,7 @@ class TaskLog(Model):
 
     model_name = "task_log"
     cli_name = "task-log"
+    search_fields = ["line"]
 
     task_id: int
     creator_id: int

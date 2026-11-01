@@ -10,6 +10,7 @@ class Message(Model):
 
     model_name = "message"
     cli_name = "message"
+    search_fields = ["text"]
 
     environment_id: int
     agent_id: int | None = None

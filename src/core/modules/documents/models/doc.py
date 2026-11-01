@@ -9,3 +9,4 @@ class Doc(TextRow):
 
     model_name = "doc"
     cli_name = "doc"
+    search_fields = ["title", "abstract", "body"]

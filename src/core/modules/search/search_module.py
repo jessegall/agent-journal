@@ -1,0 +1,13 @@
+from core.base.module.module import Module
+from core.modules.search.commands.search_find_subcommand import SearchFindSubcommand
+
+
+class SearchModule(Module):
+    """Adds search: the rows of every model that names its search fields, found by the terms they hold."""
+
+    name = "journal.core.search"
+    move_reason = "version 4 search kept no rows of its own"
+    seed_reason = "it reads the rows the other modules seed"
+    requires_core = ">=5,<6"
+    dependencies = ["journal.core.actors"]
+    subcommands = [SearchFindSubcommand]

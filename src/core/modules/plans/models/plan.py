@@ -14,6 +14,7 @@ class Plan(Model):
 
     model_name = "plan"
     cli_name = "plan"
+    search_fields = ["title", "brief"]
     lifecycle = PlanLifecycle
 
     environment_id: int

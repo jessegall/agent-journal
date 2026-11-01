@@ -12,6 +12,7 @@ class Sequence(Model):
 
     model_name = "sequence"
     cli_name = "sequence"
+    search_fields = ["title"]
 
     creator_id: int
     title: str

@@ -9,6 +9,7 @@ class Phase(Model):
 
     model_name = "phase"
     cli_name = "phase"
+    search_fields = ["title", "goal"]
 
     plan_id: int
     creator_id: int

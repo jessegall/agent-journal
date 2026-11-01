@@ -17,6 +17,7 @@ class Notice(Model):
 
     model_name = "notice"
     cli_name = "notice"
+    search_fields = ["title"]
 
     environment_id: int
     creator_id: int

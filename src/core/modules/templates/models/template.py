@@ -10,6 +10,7 @@ class Template(Model):
 
     model_name = "template"
     cli_name = "template"
+    search_fields = ["title", "brief", "purpose"]
 
     creator_id: int
     title: str

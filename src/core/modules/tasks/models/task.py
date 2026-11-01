@@ -18,6 +18,7 @@ class Task(Model):
 
     model_name = "task"
     cli_name = "task"
+    search_fields = ["title", "brief", "outcome"]
     lifecycle = TaskLifecycle
 
     environment_id: int
