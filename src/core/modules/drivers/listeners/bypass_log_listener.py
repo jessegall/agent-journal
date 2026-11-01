@@ -6,7 +6,6 @@ from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.base.repository.repository import Repository
 from core.modules.agents.models.agent import Agent
 from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.drivers.commands.record_bypass_line.record_bypass_line import RecordBypassLine

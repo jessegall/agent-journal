@@ -39,7 +39,8 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
 
     def waits_on(self, task_id: int, other_id: int) -> bool:
         edges = tuple(self.queries.query(TaskEdge).all_rows())
-        seen, waiting = set(), [task_id]
+        seen: set[int] = set()
+        waiting = [task_id]
         while waiting:
             current = waiting.pop()
             if current == other_id:

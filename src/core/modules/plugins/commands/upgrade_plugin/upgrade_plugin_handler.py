@@ -72,6 +72,9 @@ class UpgradePluginHandler(Handler[UpgradePlugin, PluginUpgrade]):
 
     @staticmethod
     def changes(old: PluginManifest, offered: PluginManifest) -> list[str]:
-        lines = lambda manifest: [f"{row['kind']} {row['label']}: {row['command']}" for row in PluginPreview(manifest, "").rows()]
-        before, after = lines(old), lines(offered)
+        before, after = UpgradePluginHandler.run_lines(old), UpgradePluginHandler.run_lines(offered)
         return [*(f"no longer {line}" for line in before if line not in after), *(f"new {line}" for line in after if line not in before)]
+
+    @staticmethod
+    def run_lines(manifest: PluginManifest) -> list[str]:
+        return [f"{row['kind']} {row['label']}: {row['command']}" for row in PluginPreview(manifest, "").rows()]

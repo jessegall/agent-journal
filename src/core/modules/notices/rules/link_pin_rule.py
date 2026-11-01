@@ -7,6 +7,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
+from core.base.type_guards import is_mapping
 from core.modules.notices.models.notice import Notice
 from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
 
@@ -36,7 +37,7 @@ class LinkPinRule(DriverRule):
         if PIN_CLAIM.search(tool.shell.line) and not any(notice.created_at is not None and notice.created_at.elapsed_seconds(self.clock.timestamp()) <= CLAIM_WINDOW_SECONDS for notice in notices):
             return RuleAnswer.with_nudges(UNPINNED_CLAIM.nudge())
         response = hook.event.raw.get("tool_response")
-        output = response.get(OUTPUT_FIELD) if isinstance(response, dict) else None
+        output = response.get(OUTPUT_FIELD) if is_mapping(response) else None
         if not isinstance(output, str):
             return RuleAnswer.allowed()
         pinned = {str(notice.link).rstrip("/") for notice in notices}

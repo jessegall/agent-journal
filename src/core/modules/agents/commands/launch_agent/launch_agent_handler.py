@@ -31,6 +31,8 @@ class LaunchAgentHandler(Handler[LaunchAgent, Agent]):
     def handle(self, command: LaunchAgent, context: Context) -> Agent:
         PersonCheck.require(context, "only a person starts an agent from the viewer")
         provider = self.providers.provider(command.program)
+        if context.environment_id is None:
+            raise Refusal("an agent starts in an environment", "start it from an environment")
         environment = self.queries.query(Environment).find(context.environment_id)
         name = f"launch-{uuid4().hex}"
         model = next(model.name for model in provider.models if model.tier is ModelTier.GENERAL)

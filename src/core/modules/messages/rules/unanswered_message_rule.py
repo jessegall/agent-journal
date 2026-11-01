@@ -38,14 +38,15 @@ class UnansweredMessageRule(DriverRule):
         if not unanswered or (tool is not None and tool.shell is not None and REPLY_LINE.search(tool.shell.line)):
             return RuleAnswer.allowed()
         message_numbers = ", ".join(str(message.id) for message in unanswered)
-        remaining_calls = ALLOWED_TOOL_CALL_COUNT - self.hook_calls.tool_call_count(hook.agent_id, unanswered[0].read_at)
+        first_read_at = next(message.read_at for message in unanswered if message.read_at is not None)
+        remaining_calls = ALLOWED_TOOL_CALL_COUNT - self.hook_calls.tool_call_count(hook.agent_id, first_read_at)
         if remaining_calls <= 0:
             return RuleAnswer.refused(UNANSWERED_REFUSAL.nudge(messages=message_numbers, message=unanswered[0].id))
         return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(messages=message_numbers, count=remaining_calls) if remaining_calls <= COUNTDOWN_CALL_COUNT else UNANSWERED.nudge(messages=message_numbers))
 
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
         agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
-        read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].created_at.text if agent_messages else ""))
+        read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].creation_timestamp().text if agent_messages else ""))
         candidates = tuple(read_messages.oldest().all_rows())
-        answered = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
+        answered: set[int | None] = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
         return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_from(message, ActorType.AGENT.value))

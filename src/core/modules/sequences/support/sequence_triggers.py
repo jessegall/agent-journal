@@ -6,6 +6,7 @@ from fnmatch import fnmatch
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.hook_event_name import HookEventName
 from core.base.refusal import Refusal
+from core.base.type_guards import is_list, is_mapping
 
 ROW_TRIGGER = "row"
 PHRASE_TRIGGER = "phrase"
@@ -23,19 +24,20 @@ class SequenceTriggers:
     @staticmethod
     def parsed(text: str) -> Sequence[Mapping[str, str]]:
         try:
-            triggers = json.loads(text)
+            triggers: object = json.loads(text)
         except ValueError as error:
             raise Refusal(f"a sequence's triggers are JSON: {error}") from error
-        if not isinstance(triggers, list):
+        if not is_list(triggers):
             raise Refusal("a sequence's triggers are a list")
-        for trigger in triggers:
+        if not all(is_mapping(trigger) for trigger in triggers):
+            raise Refusal("a sequence's trigger is an object")
+        checked = [{str(name): str(value) for name, value in trigger.items()} for trigger in triggers if is_mapping(trigger)]
+        for trigger in checked:
             SequenceTriggers.check(trigger)
-        return triggers
+        return checked
 
     @staticmethod
     def check(trigger: Mapping[str, str]) -> None:
-        if not isinstance(trigger, dict):
-            raise Refusal("a sequence's trigger is an object")
         kind = trigger.get("trigger_type")
         if kind not in REQUIRED_FIELDS:
             raise Refusal(f"{kind} is no kind of trigger", f"the kinds are {', '.join(REQUIRED_FIELDS)}")

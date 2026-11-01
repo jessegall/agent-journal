@@ -55,9 +55,9 @@ class SequencesMove(VersionFourMove):
         return None
 
     @staticmethod
-    def triggers(row: sqlite3.Row) -> list[dict]:
+    def triggers(row: sqlite3.Row) -> list[dict[str, object]]:
         return [{**trigger, "moment": trigger["moment"].replace(".created", ".create")} if trigger.get("moment") else trigger for trigger in json.loads(row["triggers"] or "[]")]
 
     @staticmethod
-    def guards(row: sqlite3.Row) -> list[dict]:
+    def guards(row: sqlite3.Row) -> list[dict[str, object]]:
         return [{"file_edits_allowed": fields.get("file_edits_allowed", True), "allowed_commands": fields.get("allowed_commands", [])} for fields in json.loads(row["steps"] or "[]")]

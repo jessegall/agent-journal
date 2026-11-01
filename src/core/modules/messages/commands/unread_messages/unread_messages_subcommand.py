@@ -8,6 +8,7 @@ from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_text import MessageText
@@ -33,6 +34,6 @@ class UnreadMessagesSubcommand(ReadSubcommand[tuple[MessageText, ...]]):
         return tuple(MessageText.of(message, self.links) for message in unread)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
+        if is_tuple(value):
             blocks = ["\n".join((f"message {text.id}:", *text.lines())) for text in value if isinstance(text, MessageText)]
             output.write("\n\n".join(blocks) or "no unread messages", {"messages": [text.json() for text in value if isinstance(text, MessageText)]})

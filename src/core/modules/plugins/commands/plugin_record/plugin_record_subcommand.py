@@ -33,7 +33,7 @@ class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
         plugin = plugins[0]
         outputs = self.queries.query(PluginOutput).filter(plugin_id=plugin.id).newest().page(1, SHOWN_OUTPUT_COUNT).rows
         services = [{"name": service.name, "condition": service.condition} for service in PluginManifest.read(self.folders.code(plugin.name)).services]
-        return PluginRecord(plugin.name, [{"id": row.id, "output": row.output, "created_at": row.created_at.text} for row in outputs], plugin.fault_count, plugin.last_fault, services)
+        return PluginRecord(plugin.name, [{"id": row.id, "output": row.output, "created_at": row.creation_timestamp().text} for row in outputs], plugin.fault_count, plugin.last_fault, services)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginRecord):

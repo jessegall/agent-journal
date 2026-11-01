@@ -32,9 +32,11 @@ class StepGuardRule(DriverRule):
             return RuleAnswer.allowed()
         sequence = self.queries.query(Sequence).find(run.sequence_id)
         guards = SequenceGuards.parsed(sequence.step_guards)
-        guard = guards[run.step_number - 1] if run.step_number <= len(guards) else {}
-        if guard.get("file_edits_allowed", True):
+        if run.step_number > len(guards):
             return RuleAnswer.allowed()
-        if tool.shell is not None and any(re.search(pattern, tool.shell.line) for pattern in guard.get("allowed_commands", [])):
+        guard = guards[run.step_number - 1]
+        if "file_edits_allowed" not in guard or guard["file_edits_allowed"]:
+            return RuleAnswer.allowed()
+        if tool.shell is not None and any(re.search(pattern, tool.shell.line) for pattern in SequenceGuards.patterns(guard)):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(STEP_HOLDS_EDITS.nudge(sequence=sequence.id, step=run.step_number, text=sequence.steps[run.step_number - 1][:STEP_SHOWN_CHARACTERS]))

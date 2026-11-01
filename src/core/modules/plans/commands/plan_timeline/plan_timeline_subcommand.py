@@ -30,11 +30,11 @@ class PlanTimelineSubcommand(ReadSubcommand[PlanTimeline]):
         tasks = {task.id: task for task in self.queries.query(Task).find_many([place.task_id for place in places])}
         logs = self.queries.query(TaskLog).matching(Among("task_id", tuple(tasks))).all_rows() if tasks else ()
         moments = [*(moment for task in tasks.values() for moment in self.task_moments(task)),
-                   *(PlanMoment(log.created_at.text, "logged", log.task_id, tasks[log.task_id].title, log.line) for log in logs)]
+                   *(PlanMoment(log.creation_timestamp().text, "logged", log.task_id, tasks[log.task_id].title, log.line) for log in logs)]
         return PlanTimeline(arguments.plan_id, tuple(sorted(moments, key=lambda moment: moment.time, reverse=True)))
 
     def task_moments(self, task: Task) -> list[PlanMoment]:
-        made = PlanMoment(task.created_at.text, "made", task.id, task.title, "")
+        made = PlanMoment(task.creation_timestamp().text, "made", task.id, task.title, "")
         if task.closed_at is None:
             return [made]
         cancelled = task.state is TaskState.CANCELLED

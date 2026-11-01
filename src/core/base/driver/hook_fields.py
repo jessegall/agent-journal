@@ -31,8 +31,7 @@ def mapping(value: object, name: str) -> Mapping[object, object]:
     return value
 
 
-def mappings(fields: Mapping[str, object], name: str) -> tuple[Mapping[str, object], ...]:
-    rows = fields.get(name)
+def mappings(rows: object, name: str) -> tuple[Mapping[str, object], ...]:
     if not is_list(rows):
         return ()
-    return tuple(mapping(row, name) for row in rows)
+    return tuple({str(key): value for key, value in mapping(row, name).items()} for row in rows)

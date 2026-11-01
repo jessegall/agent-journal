@@ -6,6 +6,7 @@ from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.drivers.support.nudge_row import NudgeRow
 
 SAID = Statement("SELECT key, SUM(said_count) AS said_count, MAX(last_said_at) AS last_said_at FROM nudge_records GROUP BY key")
@@ -29,6 +30,6 @@ class NudgeListSubcommand(ReadSubcommand[tuple[NudgeRow, ...]]):
                      for entry in self.registry.nudges)
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
+        if is_tuple(value):
             rows = [row for row in value if isinstance(row, NudgeRow)]
             output.write("\n".join(f"{row.key}: {row.type}, said {row.said_count} times" for row in rows), {"rows": [row.json() for row in rows]})

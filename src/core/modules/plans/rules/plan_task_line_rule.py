@@ -46,7 +46,7 @@ class PlanTaskLineRule(DriverRule):
 
     def next_task_nudges(self, agent_id: int, ended: Task) -> list[Nudge]:
         current = self.current_tasks.current(agent_id)
-        if current is None or current.task.updated_at.text < ended.updated_at.text:
+        if current is None or current.task.update_timestamp().text < ended.update_timestamp().text:
             return []
         places = self.queries.query(PlanTask).filter(task_id=current.task.id).page(1, 1).rows
         place = f" in plan {places[0].plan_id}" if places else ""

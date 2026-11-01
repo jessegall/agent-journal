@@ -19,6 +19,6 @@ class PlanOutlines:
         tasks = {task.id: task for task in self.queries.query(Task).find_many([place.task_id for place in places])}
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
         holders = {task.holder_id for task in tasks.values() if task.holder_id is not None}
-        workers = {agent.id for agent in self.queries.query(Agent).filter(role=AgentRole.WORKER).matching(Among("id", tuple(holders))).all_rows()} if holders else set()
+        workers: set[int] = {agent.id for agent in self.queries.query(Agent).filter(role=AgentRole.WORKER).matching(Among("id", tuple(holders))).all_rows()} if holders else set()
         return PlanOutline(plan_id, tuple(OutlinePhase(phase.id, phase.title, phase.goal, tuple(OutlineTask(place.task_id, tasks[place.task_id].title, place.state.value, tasks[place.task_id].holder_id if tasks[place.task_id].holder_id in workers else None) for place in places if place.phase_id == phase.id), phase.checkpoint)
                                           for phase in phases))

@@ -34,7 +34,7 @@ class FitnessMeasures:
 
     def fitness(self, agent: Agent, now: Timestamp) -> AgentFitness:
         measures = [self.message_wait(agent, now), self.wait_share(agent, now), self.completion_rate(agent, now)]
-        is_measured = agent.created_at.elapsed_seconds(now) >= WARM_UP_MINUTES * 60
+        is_measured = agent.creation_timestamp().elapsed_seconds(now) >= WARM_UP_MINUTES * 60
         weights = sum(measure.weight for measure in measures)
         score = round(100 * sum(measure.weight * measure.closeness for measure in measures) / weights) if is_measured else None
         load = round(self.load(agent, now), 2)
@@ -42,7 +42,7 @@ class FitnessMeasures:
 
     def message_wait(self, agent: Agent, now: Timestamp) -> FitnessMeasure:
         waiting = self.queries.query(Message).filter(environment_id=agent.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().page(1, 1).rows
-        minutes = waiting[0].created_at.elapsed_seconds(now) / 60 if waiting else 0.0
+        minutes = waiting[0].creation_timestamp().elapsed_seconds(now) / 60 if waiting else 0.0
         return FitnessMeasure("message_wait", "Oldest message waiting, minutes", round(minutes, 1), MESSAGE_WAIT_PASS_MINUTES, self.minutes_closeness(minutes), MESSAGE_WEIGHT)
 
     def wait_share(self, agent: Agent, now: Timestamp) -> FitnessMeasure:

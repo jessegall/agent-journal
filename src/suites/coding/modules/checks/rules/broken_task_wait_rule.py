@@ -24,4 +24,4 @@ class BrokenTaskWaitRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         broken = [check for check in self.checks.task_waits() if check.last_passed is False and any(words in check.last_output for words in CANNOT_RUN_WORDS)]
-        return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=self.queries.query(TaskWait).find(check.task_wait_id).task_id, output=check.last_output.strip()) for check in broken))
+        return RuleAnswer.with_nudges(*(BROKEN_TASK_WAIT.nudge(task=self.queries.query(TaskWait).find(check.task_wait_id).task_id, output=check.last_output.strip()) for check in broken if check.task_wait_id is not None))

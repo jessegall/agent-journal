@@ -41,4 +41,4 @@ class MainChatMarksSubcommand(ReadSubcommand[ViewRows]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ViewRows):
-            output.write("\n".join(f"{row.id}  {row.type}  {row.text}" for row in value.rows) or "nothing found", value.json())
+            output.write("\n".join(f"{row.id}  {row.type}  {row.text}" for row in value.rows if isinstance(row, MainChatMark)) or "nothing found", value.json())

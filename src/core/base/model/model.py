@@ -32,6 +32,9 @@ class Model:
             raise ModelError(f"{type(self).__name__} {self.id} was never saved")
         return self.created_at
 
+    def update_timestamp(self) -> Timestamp:
+        return self.updated_at if self.updated_at is not None else self.creation_timestamp()
+
     def search_text(self) -> str:
         return " ".join(str(getattr(self, name)) for name in self.search_fields)
 

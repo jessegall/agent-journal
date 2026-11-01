@@ -3,6 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.type_guards import is_mapping
 from core.modules.drivers.support.driver_nudges import LONG_OUTPUT
 
 LONG_OUTPUT_LINE_COUNT = 400
@@ -26,8 +27,8 @@ class LongOutputRule(DriverRule):
     def text(cls, response: object) -> str:
         if isinstance(response, str):
             return response
-        if not isinstance(response, dict):
+        if not is_mapping(response):
             return ""
         if FILE_FIELD in response:
             return cls.text(response[FILE_FIELD])
-        return next((response[name] for name in TEXT_FIELDS if isinstance(response.get(name), str)), "")
+        return next((text for text in (response[name] for name in TEXT_FIELDS if name in response) if isinstance(text, str)), "")

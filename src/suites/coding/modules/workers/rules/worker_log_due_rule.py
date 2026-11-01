@@ -28,6 +28,6 @@ class WorkerLogDueRule(DriverRule):
         if worktree is None:
             return RuleAnswer.allowed()
         proofs = self.queries.query(Proof).filter(worktree_id=worktree.id).newest().page(1, 1).rows
-        latest = proofs[0].created_at if proofs else worktree.created_at
+        latest = proofs[0].creation_timestamp() if proofs else worktree.creation_timestamp()
         minutes = int(latest.elapsed_seconds(hook.timestamp) / MINUTE_SECONDS)
         return RuleAnswer.with_nudges(WORKER_LOG_DUE.nudge(minutes=minutes)) if minutes >= LOG_DUE_MINUTES else RuleAnswer.allowed()

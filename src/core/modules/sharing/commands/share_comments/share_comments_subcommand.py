@@ -22,7 +22,7 @@ class ShareCommentsSubcommand(ReadSubcommand[RowList]):
 
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         comments = self.queries.query(ShareComment).filter(share_link_id=arguments.link_id).oldest().all_rows()
-        return RowList([{"id": row.id, "visitor_name": row.visitor_name, "text": row.text, "created_at": row.created_at.text} for row in comments])
+        return RowList([{"id": row.id, "visitor_name": row.visitor_name, "text": row.text, "created_at": row.creation_timestamp().text} for row in comments])
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, RowList):

@@ -2,6 +2,7 @@ from core.base.clock import Clock
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
+from core.base.driver.nudge import Nudge
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.waits.models.enums.wait_state import WaitState
@@ -23,7 +24,7 @@ class LongWaitRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         now = self.clock.timestamp()
-        nudges = []
+        nudges: list[Nudge] = []
         for wait in self.queries.query(Wait).filter(agent_id=hook.agent_id, state=WaitState.OPEN).all_rows():
             minutes = int(wait.opened_at.elapsed_seconds(now) / MINUTE_SECONDS)
             if minutes >= LONG_WAIT_MINUTES:

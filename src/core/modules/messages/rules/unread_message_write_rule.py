@@ -29,9 +29,10 @@ class UnreadMessageWriteRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         unread = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).oldest().all_rows()
         delivered = [message for message in unread if message.delivered_at is not None]
-        if not delivered:
+        first_delivered_at = next((message.delivered_at for message in delivered if message.delivered_at is not None), None)
+        if first_delivered_at is None:
             return RuleAnswer.allowed()
-        remaining_calls = ALLOWED_TOOL_CALL_COUNT - self.hook_calls.tool_call_count(hook.agent_id, delivered[0].delivered_at)
+        remaining_calls = ALLOWED_TOOL_CALL_COUNT - self.hook_calls.tool_call_count(hook.agent_id, first_delivered_at)
         if remaining_calls <= 0:
             tool = hook.event.tool
             return RuleAnswer.refused(UNREAD_REFUSAL.nudge(count=len(delivered))) if tool is not None and tool.is_writing_files() else RuleAnswer.allowed()

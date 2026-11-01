@@ -26,4 +26,4 @@ class WorkerPointsSubcommand(ReadSubcommand[WorkerPointList]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, WorkerPointList):
-            output.write(f"{len(value.json()['points'])} points", value.json())
+            output.write(f"{len(value.points())} points", value.json())

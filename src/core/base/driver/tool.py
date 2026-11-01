@@ -31,7 +31,7 @@ class Tool:
         if category not in ToolType:
             raise HookEventError(f"a tool's category is one of {', '.join(ToolType)}, not {category!r}")
         return cls(text(fields, "name"), ToolType(category), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
-                   DiffCount.parsed(diff) if diff is not None else None, mappings(fields, "diff_rows"))
+                   DiffCount.parsed(diff) if diff is not None else None, mappings(fields.get("diff_rows"), "diff_rows"))
 
     @property
     def is_journal_line(self) -> bool:

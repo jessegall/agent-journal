@@ -3,6 +3,7 @@ from argparse import ArgumentParser, Namespace
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.base.type_guards import is_tuple
 from core.modules.developer.support.hook_numbers_file import HookNumber, HookNumbersFile
 
 
@@ -23,6 +24,6 @@ class HookNumbersSubcommand(ReadSubcommand[tuple[HookNumber, ...]]):
         return tuple(sorted(rows, key=lambda row: -row.slowest_ms) if arguments.slowest else sorted(rows, key=lambda row: row.hook))
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, tuple):
+        if is_tuple(value):
             rows = [row for row in value if isinstance(row, HookNumber)]
             output.write("\n".join(f"{row.hook}: {row.count} at {row.total_ms // max(row.count, 1)} ms, slowest {row.slowest_ms} ms" for row in rows) or "nothing counted yet", {"rows": [row.json() for row in rows]})

@@ -26,7 +26,7 @@ class RunTitleRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         running = tuple(process.id for process in self.processes.agent(hook.agent_id).running().all_rows())
         titled = [output for output in self.queries.query(Output).matching(Among("process_id", running)).all_rows() if output.title] if running else []
-        same = defaultdict(list)
+        same: defaultdict[str, list[str]] = defaultdict(list)
         for output in titled:
             same[output.title].append(str(output.process_id))
         shared = [SHARED_TITLE.nudge(outputs=", ".join(numbers), title=title) for title, numbers in same.items() if len(numbers) > 1]
