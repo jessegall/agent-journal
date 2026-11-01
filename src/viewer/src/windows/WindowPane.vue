@@ -1,6 +1,7 @@
 <script setup>
 import {computed, h, ref, watch} from "vue";
 import {windowPermissions} from "./allowancePrompts.js";
+import EmptyState from "../kit/EmptyState.vue";
 import DocumentWindow from "./DocumentWindow.vue";
 import FrameWindow from "./FrameWindow.vue";
 import PageWindow from "./PageWindow.vue";
@@ -55,7 +56,10 @@ watch(
 </script>
 
 <template>
-    <template v-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">
+    <template v-if="entry?.place === 'agent' && agent === null">
+        <EmptyState title="No agent is running here" data-window-no-agent />
+    </template>
+    <template v-else-if="entry && entry.loading === 'component' && !entry.allowed && !access?.component_trusted">
         <WindowHost :name="name" :subscriptions="subscriptions" :environment="environment" :unavailable-reason="trustReason" />
     </template>
     <template v-else-if="entry && entry.loading === 'component'">

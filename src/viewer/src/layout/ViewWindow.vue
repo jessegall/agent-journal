@@ -24,7 +24,12 @@ const props = defineProps({
 const {catalogue, subscriptions, shellLine, prompts, stop, face} = startWindows(props);
 const {dock} = useViewTab(props.float);
 const environments = ref([]);
+const mainAgent = ref(null);
+const agentAsked = ref(false);
 onMounted(async () => {
+    const usage = await shellLine(["usage", "show"]);
+    mainAgent.value = usage.ok ? (usage.value.agents.find((row) => row.role === "main")?.id ?? null) : null;
+    agentAsked.value = true;
     if (!props.standalone) return;
     const answer = await shellLine(["environment", "list"]);
     environments.value = answer.ok ? answer.value.rows : [];
@@ -58,7 +63,9 @@ watchEffect(() => {
                         </Btn>
                     </div>
                 </template>
-                <WindowPane :name="view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :prompts="prompts" :shell-read="shellLine" />
+                <template v-if="agentAsked">
+                    <WindowPane :name="view" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="mainAgent" :prompts="prompts" :shell-read="shellLine" />
+                </template>
             </div>
             <ResourcePanel :read="shellLine" />
         </template>
