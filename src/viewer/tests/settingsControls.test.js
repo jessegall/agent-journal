@@ -44,6 +44,13 @@ test("a changed setting has a dot and a reset that sets its default", async () =
     expect(ran).toContainEqual(["setting", "set", "shop.fast", "on"]);
 });
 
+test("a setting off only because its group is off does not count as changed", async () => {
+    const window = context({"setting tree": page([row("shop.held", {type: "flag", value: false, shown: "off", source: "group shop.all is off"})])});
+    const element = await mounted(SettingsTree, window);
+    expect(element.querySelector("[data-setting-changed]")).toBeNull();
+    expect(element.querySelector("[data-setting-reset]")).toBeNull();
+});
+
 test("slash focuses the search and escape clears it", async () => {
     const {element} = await drawn();
     const search = element.querySelector("input[type=search]");

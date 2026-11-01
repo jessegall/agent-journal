@@ -17,8 +17,9 @@ const isGroup = computed(() => props.row.type === "group");
 const scopeFlag = computed(() => (props.row.scope === "project" ? ["--project"] : []));
 const refusal = ref("");
 const typed = ref("");
-const DEFAULT_SOURCE = "default";
-const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && props.row.source !== DEFAULT_SOURCE && props.row.default !== null && props.row.default !== undefined);
+const CHANGED_SOURCES = new Set(["environment", "project"]);
+const isChanged = computed(() => CHANGED_SOURCES.has(props.row.source));
+const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && isChanged.value && props.row.default !== null && props.row.default !== undefined);
 const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
 
 async function saveValue(text) {
@@ -66,7 +67,7 @@ function savedSecret() {
     <template v-else>
         <div class="setting-value" :data-setting="row.key">
             <div class="setting-head">
-                <template v-if="row.source !== DEFAULT_SOURCE">
+                <template v-if="isChanged">
                     <span class="setting-dot" data-setting-changed title="Changed from the default" />
                 </template>
                 <label class="setting-label" :for="row.key">{{ row.title }}</label>

@@ -3,14 +3,14 @@ import {computed, onMounted, onUnmounted, ref} from "vue";
 import {Segmented, Skeleton, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 
-const DEFAULT_SOURCE = "default";
+const CHANGED_SOURCES = new Set(["environment", "project"]);
 const TYPING = "input,textarea,select,[contenteditable]";
 const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
 const query = ref("");
 const filter = ref("all");
 const field = ref(null);
 const listed = computed(() => rows.value.filter((row) => !row.key.endsWith(".*")));
-const isChanged = (row) => row.type !== "group" && row.source !== DEFAULT_SOURCE;
+const isChanged = (row) => row.type !== "group" && CHANGED_SOURCES.has(row.source);
 const isOff = (row) => row.value === false;
 const FILTERS = {all: () => true, changed: isChanged, off: isOff};
 const filters = computed(() => [
