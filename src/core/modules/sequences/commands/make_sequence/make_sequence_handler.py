@@ -14,4 +14,4 @@ class MakeSequenceHandler(Handler[MakeSequence, Sequence]):
         self.repository = repository
 
     def handle(self, command: MakeSequence, context: Context) -> Sequence:
-        return self.repository.save(Sequence(creator_id=context.actor.id, title=command.title, steps=tuple(command.steps)), context)
+        return self.repository.save(Sequence(creator_id=context.actor.id, title=command.title, steps=tuple(command.steps), triggers=command.triggers, step_guards=command.step_guards), context)

@@ -1,3 +1,6 @@
+import json
+import shlex
+
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -70,3 +73,89 @@ def test_sequence_runs_lists_the_runs_still_going_with_their_step(new_story):
     story.run("sequence follow", actor=story.agent)
     story.run("sequence next", actor=story.agent)
     story.expect_text("sequence-run list", "nothing found", actor=story.agent)
+
+
+def triggered_story(new_story, *triggers: dict, guards: list[dict] | None = None):
+    story = new_story(fixture=UserJoined)
+    line = f'sequence make "Release" --steps "Run the suite | Tag the release" --triggers {shlex.quote(json.dumps(triggers))} --step-guards {shlex.quote(json.dumps(guards or []))}'
+    story.expect_text(line, "sequence 1: Release", actor=story.user)
+    return story
+
+
+def post_tool(name: str, category: str, files: tuple[str, ...] = (), rows: tuple[dict, ...] = ()):
+    return HookSamples.sample("post_tool_use", {"name": name, "category": category, "files": list(files), "shell": None, "diff": None, "diff_rows": list(rows)})
+
+
+def running(story) -> bool:
+    return "Release" in story.run("sequence-run list", actor=story.user).output_text or '"sequence_id": 1' in story.run("sequence-run list --json", actor=story.user).output_text
+
+
+def test_words_in_a_prompt_start_a_sequence_and_tell_the_agent(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
+    assert any("sequence 1, Release, started" in line for line in story.hook("s-1", HookSamples.prompt("Please GIVE ME AN UPDATE now")).lines)
+    assert running(story)
+
+
+def test_other_words_start_nothing(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "give me an update"})
+    story.hook("s-1", HookSamples.prompt("carry on"))
+    assert not running(story)
+
+
+def test_an_edited_file_a_glob_names_starts_a_sequence(new_story):
+    story = triggered_story(new_story, {"trigger_type": "file", "pattern": "src/*.py"})
+    story.hook("s-1", post_tool("Edit", "edit", ("docs/a.md",)))
+    assert not running(story)
+    story.hook("s-1", post_tool("Edit", "edit", ("src/cart.py",)))
+    assert running(story)
+
+
+def test_a_text_an_edit_adds_starts_a_sequence(new_story):
+    story = triggered_story(new_story, {"trigger_type": "file-text", "pattern": "*.py", "text": "TODO"})
+    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "del", "line": 1, "text": "TODO old"},)))
+    assert not running(story)
+    story.hook("s-1", post_tool("Edit", "edit", ("a.py",), ({"line_type": "add", "line": 1, "text": "# TODO new"},)))
+    assert running(story)
+
+
+def test_a_tool_used_starts_a_sequence(new_story):
+    story = triggered_story(new_story, {"trigger_type": "tool", "tool": "Edit", "pattern": "migrations/"})
+    story.hook("s-1", post_tool("Edit", "edit", ("src/a.py",)))
+    assert not running(story)
+    story.hook("s-1", post_tool("Edit", "edit", ("migrations/a.py",)))
+    assert running(story)
+
+
+def test_a_record_made_starts_a_sequence(new_story):
+    story = triggered_story(new_story, {"trigger_type": "row", "moment": "plan.create"})
+    story.run('plan make "The rebuild" --environment main', actor=story.user)
+    story.run_listeners()
+    assert running(story)
+
+
+def test_a_running_sequence_is_not_started_again(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "update"})
+    story.hook("s-1", HookSamples.prompt("update"))
+    assert not any("started by what just happened" in line for line in story.hook("s-1", HookSamples.prompt("update")).lines)
+
+
+def test_a_trigger_of_no_known_kind_a_bad_pattern_and_a_missing_field_are_refused(new_story):
+    story = new_story(fixture=UserJoined)
+    for trigger, reason in (({"trigger_type": "moon"}, "moon is no kind of trigger"), ({"trigger_type": "command", "pattern": "("}, "does not read"), ({"trigger_type": "phrase"}, "needs its text")):
+        story.expect_refusal(f'sequence make "Bad" --steps "one" --triggers {shlex.quote(json.dumps([trigger]))}', reason, actor=story.user)
+
+
+def test_a_sequence_with_triggers_says_it_starts_on_its_own(new_story):
+    story = triggered_story(new_story, {"trigger_type": "phrase", "text": "update"})
+    story.expect_text("sequence show 1", "starts on its own on 1 triggers", actor=story.user)
+
+
+def test_a_step_that_holds_edits_refuses_them_until_the_next_step(new_story):
+    story = triggered_story(new_story, guards=[{"file_edits_allowed": False, "allowed_commands": []}])
+    story.run("sequence run 1", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
+    story.expect_hook_refusal("s-1", HookSamples.edit("a.py"), "holds file edits")
+    story.run("sequence next", actor=story.agent)
+    story.run("sequence follow", actor=story.agent)
+    story.expect_hook_allowed("s-1", HookSamples.edit("a.py"))
+

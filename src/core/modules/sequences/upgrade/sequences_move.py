@@ -15,8 +15,8 @@ TABLE = "sequences"
 
 
 class SequencesMove(VersionFourMove):
-    """Carries version 4's sequences with their numbers, each step as its title and its instructions; their
-    triggers, edit holds and allowed commands, which version 5 does not carry, are counted."""
+    """Carries version 4's sequences with their numbers, each step as its title and its instructions, with their
+    triggers and each step's edit hold and allowed commands; a record's moment takes version 5's event name."""
 
     name = "sequences"
     reads = [TABLE]
@@ -29,12 +29,18 @@ class SequencesMove(VersionFourMove):
             if not steps:
                 report.skip(TABLE, row["id"], "it has no step")
                 continue
-            if json.loads(row["triggers"] or "[]"):
-                report.drop("sequence triggers", len(json.loads(row["triggers"])))
             report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row, steps, creators.actor_id(row["creator"]), context)))
         return report
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, steps: list[str], creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "steps": json.dumps(steps), "created_at": created,
-                                   "updated_at": row["updated_at"] or created})
+        return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "steps": json.dumps(steps), "triggers": json.dumps(self.triggers(row)), "step_guards": json.dumps(self.guards(row)),
+                                   "created_at": created, "updated_at": row["updated_at"] or created})
+
+    @staticmethod
+    def triggers(row: sqlite3.Row) -> list[dict]:
+        return [{**trigger, "moment": trigger["moment"].replace(".created", ".create")} if trigger.get("moment") else trigger for trigger in json.loads(row["triggers"] or "[]")]
+
+    @staticmethod
+    def guards(row: sqlite3.Row) -> list[dict]:
+        return [{"file_edits_allowed": fields.get("file_edits_allowed", True), "allowed_commands": fields.get("allowed_commands", [])} for fields in json.loads(row["steps"] or "[]")]

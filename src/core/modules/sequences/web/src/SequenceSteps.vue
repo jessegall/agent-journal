@@ -9,9 +9,24 @@ const draft = ref(null);
 const refusal = ref("");
 const inHand = computed(() => new Set(props.runs.map((run) => run.step_number)));
 const problem = computed(() => (draft.value?.some((step) => !step.trim()) ? "Every step needs its text." : ""));
+const guards = computed(() => JSON.parse(props.sequence.step_guards || "[]"));
+const guardsDraft = ref([]);
+const guardOf = (index) => guards.value[index] ?? {file_edits_allowed: true, allowed_commands: []};
+const guardWords = (index) => [guardOf(index).file_edits_allowed ? "File edits allowed" : "File edits wait", ...guardOf(index).allowed_commands].join(", ");
+
+function edit() {
+    draft.value = [...props.sequence.steps];
+    guardsDraft.value = props.sequence.steps.map((_, index) => ({file_edits_allowed: guardOf(index).file_edits_allowed, commands: guardOf(index).allowed_commands.join(", ")}));
+}
+
+function steps(next) {
+    draft.value = next;
+    guardsDraft.value = next.map((_, index) => guardsDraft.value[index] ?? {file_edits_allowed: true, commands: ""});
+}
 
 async function save() {
-    const answer = await context.run(["sequence", "edit", String(props.sequence.id), "--steps", ...draft.value.map((step) => step.trim())]);
+    const kept = guardsDraft.value.map((guard) => ({file_edits_allowed: guard.file_edits_allowed, allowed_commands: guard.commands.split(",").map((pattern) => pattern.trim()).filter(Boolean)}));
+    const answer = await context.run(["sequence", "edit", String(props.sequence.id), "--steps", ...draft.value.map((step) => step.trim()), "--step-guards", JSON.stringify(kept)]);
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) draft.value = null;
 }
@@ -23,23 +38,17 @@ async function save() {
             <span class="steps-title">Steps</span>
             <span class="steps-count">{{ (draft || sequence.steps).length }}</span>
             <template v-if="!draft">
-                <Btn small data-sequence-edit @click="draft = [...sequence.steps]"><Icon name="pencil" :size="12" /> Edit steps</Btn>
+                <Btn small data-sequence-edit @click="edit"><Icon name="pencil" :size="12" /> Edit steps</Btn>
             </template>
         </header>
         <template v-if="!draft">
             <ol class="track">
-                <li class="stop start">
-                    <span class="node"><Icon name="bolt" :size="11" /></span>
-                    <div class="stop-body">
-                        <span class="stop-title">Starts</span>
-                        <span class="stop-text">Only when you or the agent start it</span>
-                    </div>
-                </li>
                 <template v-for="(step, index) in sequence.steps" :key="index">
                     <li :class="['stop', {now: inHand.has(index + 1)}]">
                         <span class="node">{{ index + 1 }}</span>
                         <div class="stop-body">
                             <TextDisplay class="stop-text" :text="step" />
+                            <span class="stop-guard" data-step-guard>{{ guardWords(index) }}</span>
                             <template v-if="inHand.has(index + 1)">
                                 <span class="now-label">In progress</span>
                             </template>
@@ -53,7 +62,14 @@ async function save() {
             </ol>
         </template>
         <template v-else>
-            <StepCards :steps="draft" @steps="draft = $event" />
+            <StepCards :steps="draft" @steps="steps" />
+            <template v-for="(guard, index) in guardsDraft" :key="index">
+                <div class="guard" data-step-guard-edit>
+                    <span class="stop-guard">Step {{ index + 1 }}</span>
+                    <label class="guard-allow"><input v-model="guard.file_edits_allowed" type="checkbox" :data-guard-edits="index"> File edits allowed</label>
+                    <input v-model="guard.commands" class="guard-commands" placeholder="Commands still allowed, separated by commas" aria-label="Commands still allowed">
+                </div>
+            </template>
             <div class="editor-foot">
                 <Btn kind="primary" small :disabled="Boolean(problem)" data-sequence-save @click="save">Save steps</Btn>
                 <Btn small @click="draft = null">Cancel</Btn>
@@ -64,6 +80,32 @@ async function save() {
 </template>
 
 <style scoped>
+.stop-guard {
+    display: block;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.guard {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 6px 0;
+    font-size: 12.5px;
+}
+
+.guard-commands {
+    flex: 1;
+    min-width: 160px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: inherit;
+    font-size: 12px;
+}
+
 .steps-head {
     display: flex;
     gap: 8px;

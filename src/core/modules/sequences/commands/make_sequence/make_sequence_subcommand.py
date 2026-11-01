@@ -16,9 +16,11 @@ class MakeSequenceSubcommand(Subcommand[MakeSequence, Sequence]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("title")
         parser.add_argument("--steps", default="")
+        parser.add_argument("--triggers", default="[]")
+        parser.add_argument("--step-guards", default="[]")
 
     def command(self, arguments: Namespace, caller: Caller) -> MakeSequence:
-        return MakeSequence(arguments.title, tuple(step.strip() for step in arguments.steps.split("|") if step.strip()))
+        return MakeSequence(arguments.title, tuple(step.strip() for step in arguments.steps.split("|") if step.strip()), arguments.triggers, arguments.step_guards)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Sequence):

@@ -4,6 +4,8 @@ import {Btn, Dialog, Icon, ago, Skeleton, useRows, useWindow} from "@journal/win
 import NewSequence from "./NewSequence.vue";
 import SequenceRuns from "./SequenceRuns.vue";
 import SequenceSteps from "./SequenceSteps.vue";
+import SequenceTriggers from "./SequenceTriggers.vue";
+import {startWords} from "./sequenceTriggers.js";
 
 const context = useWindow();
 const {rows, failure, loaded} = useRows("sequence list", ["sequence.*"]);
@@ -50,7 +52,7 @@ async function remove() {
                 <button type="button" class="card" :data-row="row.id" @click="open(row)">
                     <span class="card-head"><Icon name="list" class="card-icon" /> Sequence {{ row.id }}<span class="card-age">{{ ago(row.created_at) }}</span></span>
                     <span class="card-title">{{ row.title }}</span>
-                    <span class="card-foot">{{ row.steps.length }} steps · {{ runningCount(row) ? `${runningCount(row)} running now` : "Only when you or the agent start it" }}</span>
+                    <span class="card-foot">{{ row.steps.length }} steps · {{ runningCount(row) ? `${runningCount(row)} running now` : startWords(JSON.parse(row.triggers || "[]"))[0] }}</span>
                 </button>
             </template>
         </div>
@@ -59,6 +61,7 @@ async function remove() {
         </template>
         <template v-if="opened">
             <Dialog :title="opened.title" tall @close="openedId = null">
+                <SequenceTriggers :sequence="opened" />
                 <SequenceSteps :sequence="opened" :runs="openedRuns" />
                 <SequenceRuns :runs="openedRuns" />
                 <template #foot>

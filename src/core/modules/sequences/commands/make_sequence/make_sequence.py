@@ -11,3 +11,5 @@ class MakeSequence(Command[Sequence]):
 
     title: str
     steps: Steps[str]
+    triggers: str = "[]"
+    step_guards: str = "[]"
