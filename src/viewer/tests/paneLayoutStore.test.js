@@ -166,3 +166,15 @@ test("switching builder, orchestrator and worker mid-save flushes each pending s
     await layouts.load({...KEY, driver: "coding.orchestrator"});
     expect(firstPane(layouts.layout.value).tabs[0]).toBe("messages.chat");
 });
+
+test("a change made while the layout loads is not saved over the person's layout", async () => {
+    const stored = server(layoutOf("messages.chat", "tasks.tasks"));
+    const {layouts} = store({stored});
+    const loading = layouts.load(KEY);
+    layouts.replace(layoutOf("tasks.tasks"));
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS * 2);
+    await loading;
+    await vi.advanceTimersByTimeAsync(SAVE_DELAY_MS * 2);
+    expect(stored.saves).toEqual([]);
+    expect(firstPane(layouts.layout.value).tabs).toEqual(["messages.chat", "tasks.tasks"]);
+});

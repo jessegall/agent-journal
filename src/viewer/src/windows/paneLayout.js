@@ -55,6 +55,7 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
     const born = ref({});
     const dying = ref({});
     let key = null;
+    let loading = null;
     let version = null;
     let pending = null;
 
@@ -82,11 +83,15 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         }
     }
 
+    // no layout is kept while one loads: a change to the empty layout would be saved over the person's own
     async function load(at) {
         await flush();
-        key = at;
+        key = null;
+        loading = at;
         const own = tab.read(tabKey(at));
         const found = await store.layout(at);
+        if (loading !== at) return;
+        key = at;
         version = found.version;
         layout.value = tidied(own && wellShaped(own) ? own : found.layout, entry);
     }
