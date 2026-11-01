@@ -34,7 +34,7 @@ test("the bars read the journal again every few seconds, so they follow the stat
     const {readFileSync} = await import("node:fs");
     const {resolve} = await import("node:path");
     const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(stage).toMatch(/setInterval\(\(\) => \(readAgent\(\), readFacts\(\)\), FACT_SECONDS \* 1000\)/);
+    expect(stage).toMatch(/setInterval\(readFacts, FACT_SECONDS \* 1000\)/);
 });
 
 test("the agent bar names the task the agent is working in, and nothing when it has none", () => {
