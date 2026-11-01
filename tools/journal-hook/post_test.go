@@ -264,3 +264,28 @@ func TestTheStopWindowEndsBeforeTheProgramsHookTimeoutWithAnAskToSpare(t *testin
 		t.Fatalf("a stop may take %s, past the hook timeout of 60 seconds", StopWindow+LimitFor("stop"))
 	}
 }
+
+func TestLimitInUsesTheWaitSetForAToolAndNothingElse(t *testing.T) {
+	root := t.TempDir()
+	runtime := filepath.Join(root, ".journal", "runtime")
+	if err := os.MkdirAll(runtime, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if limitIn(root, "pre_tool_use") != 5*time.Second {
+		t.Fatal("with no file a tool's hook waits the standard five seconds")
+	}
+	for text, want := range map[string]time.Duration{"12\n": 12 * time.Second, "nonsense": 5 * time.Second, "0": 5 * time.Second} {
+		if err := os.WriteFile(filepath.Join(runtime, "hook-wait-seconds"), []byte(text), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if got := limitIn(root, "pre_tool_use"); got != want {
+			t.Fatalf("%q gave %s, not %s", text, got, want)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(runtime, "hook-wait-seconds"), []byte("12"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if limitIn(root, "stop") != 10*time.Second {
+		t.Fatal("a stop keeps its own wait")
+	}
+}

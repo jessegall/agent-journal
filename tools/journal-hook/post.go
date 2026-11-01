@@ -40,6 +40,24 @@ func LimitFor(eventName string) time.Duration {
 	return 5 * time.Second
 }
 
+// limitIn is LimitFor with the wait the person set for a tool's hook, which the journal writes to a file, read here because
+// the hook decides how long to wait before it can ask the journal anything.
+func limitIn(root, eventName string) time.Duration {
+	standard := LimitFor(eventName)
+	if standard != 5*time.Second {
+		return standard
+	}
+	text, err := os.ReadFile(filepath.Join(root, ".journal", "runtime", "hook-wait-seconds"))
+	if err != nil {
+		return standard
+	}
+	seconds, err := strconv.Atoi(strings.TrimSpace(string(text)))
+	if err != nil || seconds < 1 {
+		return standard
+	}
+	return time.Duration(seconds) * time.Second
+}
+
 // delivery is one hook on its way to the journal: where it goes, who sends it, the prepared object, and the timing
 // main started.
 type delivery struct {

@@ -18,6 +18,10 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.rules.dispatch_law_rule import DispatchLawRule
 from core.modules.drivers.rules.long_output_rule import LongOutputRule
 from core.modules.drivers.overlays.paused_overlay import PausedOverlay
+from core.modules.drivers.listeners.bypass_log_listener import BypassLogListener
+from core.modules.drivers.commands.record_bypass_line.record_bypass_line_handler import RecordBypassLineHandler
+from core.modules.drivers.support.bypass_marks import BYPASS_MARKS
+from core.modules.drivers.listeners.hook_wait_file_listener import HookWaitFileListener
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_handler import AllowEssentialRuleHandler
@@ -76,12 +80,13 @@ class DriversModule(Module):
     models = [ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration]
-    handlers = [PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    handlers = [RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [AgentPauseSubcommand, AgentResumeSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [ResumeLineListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [BypassLogListener, HookWaitFileListener, ResumeLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
+    marks = BYPASS_MARKS
     driver_rules = [DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]

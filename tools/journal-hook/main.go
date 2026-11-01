@@ -53,7 +53,7 @@ func main() {
 	if err != nil {
 		os.Exit(0)
 	}
-	limit := LimitFor(prepared.Event)
+	limit := limitIn(root, prepared.Event)
 	status, answer := postedUntilAnswered(delivery{
 		root:        root,
 		program:     program,

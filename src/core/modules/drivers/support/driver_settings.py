@@ -7,9 +7,11 @@ MODULE_KEY = "journal.core.drivers"
 SUITE_SETTING = f"{MODULE_KEY}.suite"
 DAYS_SETTING = f"{MODULE_KEY}.hook-call-days"
 DRIVER_SETTINGS = f"{MODULE_KEY}.driver."
+HOOK_WAIT_SECONDS = f"{MODULE_KEY}.hook-wait-seconds"
 ALLOWANCE_SETTINGS = f"{MODULE_KEY}.essential."
 DRIVERS_SETTINGS = [
     SettingValue("suite", "Suite", "The suite of agents this environment works with.", SettingType.TEXT, default="", scope=SettingScope.ENVIRONMENT),
+    SettingValue("hook-wait-seconds", "Hook wait", "How many seconds a tool's hook waits for the journal before it goes through unchecked.", SettingType.NUMBER, default=5),
     SettingValue("hook-call-days", "Call record days", "How many days the journal keeps the record of each call from the agent program.", SettingType.NUMBER, default=30,
                  scope=SettingScope.PROJECT),
     SettingGroup("driver", "Drivers", "The driver each kind of agent works under in this environment.",

@@ -23,6 +23,14 @@ class JournalHome:
         return self.folder / "version-5.db"
 
     @property
+    def bypass_log(self) -> Path:
+        return self.folder / "runtime" / "bypass.log"
+
+    @property
+    def hook_wait_file(self) -> Path:
+        return self.folder / "runtime" / "hook-wait-seconds"
+
+    @property
     def error_log(self) -> Path:
         return self.folder / "runtime" / "errors.log"
 
