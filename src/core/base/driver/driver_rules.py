@@ -50,7 +50,7 @@ class DriverRules:
         for entry in added:
             if not self.switches.enabled(entry.name):
                 continue
-            if walk.is_silenced:
+            if walk.is_silenced and not entry.path.checked_class(DriverRule).always_runs:
                 walk.record_silenced(entry, "")
             elif walk.record(entry, "", self.outcome(entry, hook)):
                 return walk.answers()

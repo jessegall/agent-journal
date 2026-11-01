@@ -1,4 +1,4 @@
-from core.modules.reviews.commands.make_review_step import MakeReviewStep
+from core.modules.reviews.commands.make_review_step.make_review_step import MakeReviewStep
 from core.modules.reviews.models.enums.step_outcome import StepOutcome
 from core.modules.reviews.models.review_step import ReviewStep
 

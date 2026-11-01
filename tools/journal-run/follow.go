@@ -11,13 +11,13 @@ import (
 // Tracker reads a run's folder as the shell fills it: it shows what the agent sees as each part ends, reports each
 // part and the end through the journal client, and moves the run to the background past its limit.
 type Tracker struct {
-	Options        Options
-	Client         Client
-	Folder         Folder
-	Parts          int
-	LeadingJournal int
-	Reported       map[int]bool
-	Shown          int
+	Options     Options
+	Client      Client
+	Folder      Folder
+	Parts       int
+	LastJournal int
+	Reported    map[int]bool
+	Shown       int
 }
 
 func (tracker *Tracker) Run(stdout io.Writer) int {
@@ -37,9 +37,9 @@ func (tracker *Tracker) Run(stdout io.Writer) int {
 	}
 }
 
-// mayMove says whether the run may go to the background: never while a journal command at the head of the line runs.
+// mayMove says whether the run may go to the background: never before the line's last journal command has finished.
 func (tracker *Tracker) mayMove(started time.Time) bool {
-	for position := 1; position <= tracker.LeadingJournal; position++ {
+	for position := 1; position <= tracker.LastJournal; position++ {
 		if _, ended := tracker.Folder.Status(position); !ended {
 			return false
 		}
@@ -54,6 +54,9 @@ func (tracker *Tracker) Watch() {
 		if _, ended := tracker.Folder.Status(position); ended {
 			tracker.Reported[position] = true
 		}
+	}
+	if pid, recorded := tracker.Folder.Pid(); recorded {
+		go writeHeartbeats(tracker.Folder, pid, HeartbeatInterval)
 	}
 	for tracker.Folder.Exists() {
 		tracker.reportParts(io.Discard)

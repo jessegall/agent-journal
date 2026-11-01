@@ -21,4 +21,4 @@ class TaskStopRule(DriverRule):
         current = self.current_tasks.current(hook.agent_id)
         if current is None:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(f"{current.name}, is in hand: carry on, or log why it waits with journal task log {current.task.id} \"<why>\"")
+        return RuleAnswer.refused(f"{current.name}, is in hand: carry on, or block it with journal task block {current.task.id} --reason \"<why>\"")

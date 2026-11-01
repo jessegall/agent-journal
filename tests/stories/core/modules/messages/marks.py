@@ -1,9 +1,11 @@
+from core.base.command.bus import Bus
+from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.modules.chat.support.v4_looks import FILED, THOUGHT, expect_declared_appearance
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 import pytest
 
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
 from core.modules.messages.models.enums.message_mark_variant import MessageMarkVariant
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
@@ -21,7 +23,7 @@ def test_an_agents_message_is_one_bubble_and_makes_no_mark_of_its_words(new_stor
 
 def test_a_users_message_read_by_the_agent_shows_no_mark_in_the_chat_its_ticks_show_it(new_story):
     story = new_story(fixture=UnansweredMessage)
-    story.expect_success("message read 1", actor=story.agent)
+    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
     story.run_listeners()
     assert "Filed from your message" not in marks_text(story), marks_text(story)
 

@@ -58,7 +58,7 @@
         "Edit": "edit",
         "Glob": "search",
         "Grep": "search",
-        "Monitor": "shell",
+        "Monitor": "monitor",
         "MultiEdit": "edit",
         "NotebookEdit": "edit",
         "Read": "read",

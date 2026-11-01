@@ -2,7 +2,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
-from core.modules.docking.commands.make_dock import MakeDock
+from core.modules.docking.commands.make_dock.make_dock import MakeDock
 
 MODULE_NAME = "journal.core.docking"
 

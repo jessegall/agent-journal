@@ -1,7 +1,7 @@
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
 from core.base.command.bus import Bus
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, module_actor
 from tests.stories.core.support.fixtures import UserJoined
 

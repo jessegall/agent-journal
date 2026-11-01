@@ -38,7 +38,7 @@ func TestEachClaudeToolHasItsCategoryAndFiles(t *testing.T) {
 		files    []string
 	}{
 		{`{"tool_name":"Bash","tool_input":{"command":"ls"}}`, "shell", nil},
-		{`{"tool_name":"Monitor","tool_input":{"command":"tail -f log"}}`, "shell", nil},
+		{`{"tool_name":"Monitor","tool_input":{"command":"tail -f log"}}`, "monitor", nil},
 		{`{"tool_name":"Edit","tool_input":{"file_path":"a.go","old_string":"a","new_string":"b"}}`, "edit", []string{"a.go"}},
 		{`{"tool_name":"NotebookEdit","tool_input":{"notebook_path":"n.ipynb","new_source":"x"}}`, "edit", []string{"n.ipynb"}},
 		{`{"tool_name":"Write","tool_input":{"file_path":"b.md","content":"x"}}`, "write", []string{"b.md"}},

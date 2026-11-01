@@ -11,12 +11,12 @@ from core.modules.settings.models.setting import Setting
 from core.modules.settings.support.undeclared_setting_notes import UndeclaredSettingNotes
 from core.modules.settings.models.secret_setting import SecretSetting
 from core.modules.settings.migrations.m002_secret_settings import SecretSettingsTableMigration
-from core.modules.settings.commands.set_setting_handler import SetSettingHandler
-from core.modules.settings.commands.set_setting_subcommand import SetSettingSubcommand
-from core.modules.settings.commands.switch_setting_group_handler import SwitchSettingGroupHandler
-from core.modules.settings.commands.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
-from core.modules.settings.commands.setting_show_subcommand import SettingShowSubcommand
-from core.modules.settings.commands.setting_tree_subcommand import SettingTreeSubcommand
+from core.modules.settings.commands.set_setting.set_setting_handler import SetSettingHandler
+from core.modules.settings.commands.set_setting.set_setting_subcommand import SetSettingSubcommand
+from core.modules.settings.commands.switch_setting_group.switch_setting_group_handler import SwitchSettingGroupHandler
+from core.modules.settings.commands.switch_setting_group.switch_setting_group_subcommand import SwitchSettingGroupSubcommand
+from core.modules.settings.commands.setting_show.setting_show_subcommand import SettingShowSubcommand
+from core.modules.settings.commands.setting_tree.setting_tree_subcommand import SettingTreeSubcommand
 from core.modules.settings.support.settings_tree import SETTINGS_SETTINGS
 from core.modules.settings.upgrade.settings_move import SettingsMove
 

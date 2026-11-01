@@ -3,9 +3,9 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.updates.commands.install_release_handler import InstallReleaseHandler
-from core.modules.updates.commands.update_check_subcommand import UpdateCheckSubcommand
-from core.modules.updates.commands.update_install_subcommand import UpdateInstallSubcommand
+from core.modules.updates.commands.install_release.install_release_handler import InstallReleaseHandler
+from core.modules.updates.commands.update_check.update_check_subcommand import UpdateCheckSubcommand
+from core.modules.updates.commands.update_install.update_install_subcommand import UpdateInstallSubcommand
 from core.modules.updates.migrations.m001_releases import ReleasesTableMigration
 from core.modules.updates.models.enums.update_setting import UPDATE_SETTINGS
 from core.modules.updates.models.release import Release

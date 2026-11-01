@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.memories.commands.fade_memories import FadeMemories
+from core.modules.memories.commands.fade_memories.fade_memories import FadeMemories
 
 
 class CompactionFaderListener(CommitListener):

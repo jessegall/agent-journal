@@ -50,7 +50,7 @@ class ClaudeCodeProvider(Provider):
     refusals = {HookEventName.PRE_TOOL_USE: RefusalStyle.DENY, HookEventName.PROMPT: RefusalStyle.BLOCK, HookEventName.STOP: RefusalStyle.BLOCK}
     rewrites = {HookEventName.PRE_TOOL_USE: {"run_in_background": False}}
     refusal_output_tools = [ToolType.SHELL]
-    tool_categories = {"Bash": ToolType.SHELL, "Monitor": ToolType.SHELL, "Edit": ToolType.EDIT, "MultiEdit": ToolType.EDIT,
+    tool_categories = {"Bash": ToolType.SHELL, "Monitor": ToolType.MONITOR, "Edit": ToolType.EDIT, "MultiEdit": ToolType.EDIT,
                        "NotebookEdit": ToolType.EDIT, "Write": ToolType.NEW_FILE, "Read": ToolType.READ, "Grep": ToolType.SEARCH,
                        "Glob": ToolType.SEARCH, "Agent": ToolType.AGENT, "Task": ToolType.AGENT,
                        "AskUserQuestion": ToolType.QUESTION}

@@ -1,9 +1,9 @@
 from core.base.command.bus import Bus
-from core.modules.processes.commands.end_process import EndProcess
-from core.modules.processes.commands.end_process_part import EndProcessPart
-from core.modules.processes.commands.move_process import MoveProcess
-from core.modules.processes.commands.stop_process import StopProcess
-from core.modules.processes.commands.orphan_process import OrphanProcess
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.move_process.move_process import MoveProcess
+from core.modules.processes.commands.stop_process.stop_process import StopProcess
+from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from tests.stories.core.modules.processes.support.process_samples import BYTES_LONG, BYTES_SHORT, start_process
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

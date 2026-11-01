@@ -1,3 +1,4 @@
+from core.base.type_guards import is_mapping
 import json
 import os
 from pathlib import Path
@@ -17,7 +18,7 @@ class SessionFile:
             kept: object = json.loads(self.path.read_text())
         except ValueError:
             return {}
-        return {str(token): person for token, person in kept.items() if isinstance(person, int)} if isinstance(kept, dict) else {}
+        return {str(token): person for token, person in kept.items() if isinstance(person, int)} if is_mapping(kept) else {}
 
     def save(self, sessions: dict[str, int]) -> None:
         descriptor = os.open(self.path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)

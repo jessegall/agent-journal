@@ -4,7 +4,7 @@ from core.base.actor import Actor
 from core.base.chat.dock_declaration import DockDeclaration
 from core.base.command.bus import Bus
 from core.base.module.module import Module
-from core.modules.docking.commands.add_dock_item import AddDockItem
+from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.models.dock_item import DockItem
 from core.testing.story import Story
 

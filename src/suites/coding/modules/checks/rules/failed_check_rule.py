@@ -4,7 +4,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
-from suites.coding.modules.checks.commands.report_check import ReportCheck
+from suites.coding.modules.checks.commands.report_check.report_check import ReportCheck
 from suites.coding.modules.checks.queries.check_query import CheckQuery
 
 REPEAT_MINUTES = 60

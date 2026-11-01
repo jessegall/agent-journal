@@ -4,7 +4,7 @@ from typing import ClassVar
 from core.base.caller.caller import Caller
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
-from core.modules.documents.commands.close_text import CloseText
+from core.modules.documents.commands.close_text.close_text import CloseText
 from core.modules.documents.models.text_row import TextRow
 
 

@@ -3,10 +3,10 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.templates.commands.make_template_handler import MakeTemplateHandler
-from core.modules.templates.commands.make_template_subcommand import MakeTemplateSubcommand
-from core.modules.templates.commands.template_list_subcommand import TemplateListSubcommand
-from core.modules.templates.commands.template_show_subcommand import TemplateShowSubcommand
+from core.modules.templates.commands.make_template.make_template_handler import MakeTemplateHandler
+from core.modules.templates.commands.make_template.make_template_subcommand import MakeTemplateSubcommand
+from core.modules.templates.commands.template_list.template_list_subcommand import TemplateListSubcommand
+from core.modules.templates.commands.template_show.template_show_subcommand import TemplateShowSubcommand
 from core.modules.templates.migrations.m001_templates import TemplatesTableMigration
 from core.modules.templates.models.template import Template
 from core.modules.templates.seeders.templates_seeder import TemplatesSeeder

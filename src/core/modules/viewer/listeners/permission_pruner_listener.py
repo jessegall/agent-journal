@@ -3,7 +3,7 @@ from core.base.change.event_log import REGISTRY_SYNC_EVENT
 from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
-from core.modules.viewer.commands.prune_window_permissions import PruneWindowPermissions
+from core.modules.viewer.commands.prune_window_permissions.prune_window_permissions import PruneWindowPermissions
 
 
 class PermissionPrunerListener(CommitListener):

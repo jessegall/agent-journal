@@ -11,9 +11,9 @@ from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
-from core.modules.drivers.commands.prune_hook_calls import PruneHookCalls
+from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls
 from core.modules.environments.models.environment import Environment
-from core.modules.phone.commands.send_phone_notices import SendPhoneNotices
+from core.modules.phone.commands.send_phone_notices.send_phone_notices import SendPhoneNotices
 from server.round_work import RoundWork
 
 PRUNE_PERIOD = timedelta(days=1)

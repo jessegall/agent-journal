@@ -62,6 +62,7 @@ async function load() {
 
 watch(() => `${opened.value?.table}:${opened.value?.id}`, () => {
     row.value = null;
+    parts.value = {phases: [], logs: [], waits: []};
     failure.value = "";
     refusal.value = "";
     asking.value = null;

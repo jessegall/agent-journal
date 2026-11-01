@@ -3,10 +3,10 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.suggestions.commands.answer_suggestion_handler import AnswerSuggestionHandler
-from core.modules.suggestions.commands.answer_suggestion_subcommand import AnswerSuggestionSubcommand
-from core.modules.suggestions.commands.make_suggestions_handler import MakeSuggestionsHandler
-from core.modules.suggestions.commands.suggestion_list_subcommand import SuggestionListSubcommand
+from core.modules.suggestions.commands.answer_suggestion.answer_suggestion_handler import AnswerSuggestionHandler
+from core.modules.suggestions.commands.answer_suggestion.answer_suggestion_subcommand import AnswerSuggestionSubcommand
+from core.modules.suggestions.commands.make_suggestions.make_suggestions_handler import MakeSuggestionsHandler
+from core.modules.suggestions.commands.suggestion_list.suggestion_list_subcommand import SuggestionListSubcommand
 from core.modules.suggestions.listeners.suggestion_mark_listener import SuggestionMarkListener
 from core.modules.suggestions.migrations.m001_suggestions import SuggestionsTableMigration
 from core.modules.suggestions.models.suggestion import Suggestion

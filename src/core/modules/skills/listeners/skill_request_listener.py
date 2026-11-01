@@ -1,5 +1,5 @@
 from core.base.change.logged_event import LoggedEvent
-from core.modules.skills.commands.require_skill import RequireSkill
+from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.models.skill_request import SkillRequest
 

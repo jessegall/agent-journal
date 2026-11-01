@@ -1,0 +1,23 @@
+{
+    "$schema": "../rule.schema.json",
+    "engine": "python",
+    "find": {
+        "select": "type-declaration",
+        "where": [
+            {
+                "fileMatches": "(^|/)src/(suites|core/modules)/[^/]+/(modules/[^/]+/)?commands/[^/]+\\.py$"
+            }
+        ],
+        "reject": [
+            {
+                "testCode": true
+            }
+        ]
+    },
+    "sin": {
+        "name": "command-file-loose-in-commands",
+        "description": "A class sits directly in a commands folder instead of in the folder of its command or in the support folder.",
+        "rule": "Each command has a folder of its own in its module: commands/<name>/<name>.py, <name>_handler.py and <name>_subcommand.py; a helper goes in commands/support/ or beside the one command it serves.",
+        "skill": "plain-code-words"
+    }
+}

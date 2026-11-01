@@ -12,7 +12,7 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.sharing.commands.make_share_link_handler import LINK_LIFETIME_DAYS
+from core.modules.sharing.commands.make_share_link.make_share_link_handler import LINK_LIFETIME_DAYS
 
 TABLE = "shares"
 ROW_MODELS = {"plans": "plan"}

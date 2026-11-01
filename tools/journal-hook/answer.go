@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -24,7 +22,7 @@ type Reply struct {
 // Answered prints the server's answer in the program's own shape and gives the exit code; a hook the server did not
 // answer goes through, and the agent is lineAnswer so on an event whose answer takes lines.
 func Answered(stdout, stderr io.Writer, program programs.Program, hookName, event string, status int, answer []byte, root string, limit time.Duration) int {
-	reply := Reply{Lines: []string{missedLine(root, limit)}}
+	reply := Reply{Lines: []string{missedLine(limit)}}
 	if status == http.StatusOK && json.Unmarshal(answer, &reply) != nil {
 		return 0
 	}
@@ -107,13 +105,7 @@ func jsonText(value any) string {
 	return string(text) + "\n"
 }
 
-// missedLine is the line hook.sh gives an agent whose hook went around the journal, with the panic watch asked for in
-// the journal's own repository.
-func missedLine(root string, limit time.Duration) string {
-	port, _ := os.ReadFile(filepath.Join(root, ".journal", "port"))
-	line := fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this went through unchecked. Investigate now: curl -s http://127.0.0.1:%s/journal/health should answer 200, and runtime/server.log in .journal says why it does not.", int(limit.Seconds()), strings.TrimSpace(string(port)))
-	if _, err := os.Stat(filepath.Join(root, "src", "journal", "hooks", "hook.sh")); err == nil {
-		line += " This is the journal's own repository: start the panic watch, a CronCreate job every 15 minutes that checks the health, restarts the journal with journal setup restart when it does not answer, and tells the user in one line."
-	}
-	return line
+// missedLine is the line given to an agent whose hook went around the journal.
+func missedLine(limit time.Duration) string {
+	return fmt.Sprintf("[journal] The journal did not answer within %d seconds, so this went through unchecked. Check it: curl -s --unix-socket .journal/server.sock http://journal/health should answer 200, and .journal/runtime/server.log says why it does not.", int(limit.Seconds()))
 }

@@ -5,7 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
-from core.modules.agents.commands.end_agent import EndAgent
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 

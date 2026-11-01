@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.tool_type import ToolType
 from core.base.skill.skill_digest import SkillDigest
-from core.modules.skills.commands.load_skill import LoadSkill
+from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.testing.hook_samples import HookSamples
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import BuilderStarted

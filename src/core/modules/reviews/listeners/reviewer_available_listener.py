@@ -2,7 +2,7 @@ from core.base.change.change import Change
 from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
-from core.modules.reviews.commands.assign_next_review import AssignNextReview
+from core.modules.reviews.commands.assign_next_review.assign_next_review import AssignNextReview
 from core.modules.reviews.models.reviewer import Reviewer
 
 IDLE_EVENTS = ("reviewer.create", "reviewer.finish")

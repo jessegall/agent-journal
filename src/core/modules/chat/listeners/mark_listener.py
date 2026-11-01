@@ -6,7 +6,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 
 
 class MarkListener(CommitListener):

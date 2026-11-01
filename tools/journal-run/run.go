@@ -54,7 +54,7 @@ func Run(options Options, client Client, stdout io.Writer) int {
 		parent := os.Getppid()
 		options.ShellAlive = func() bool { return os.Getppid() == parent }
 	}
-	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: len(parts), LeadingJournal: LeadingJournal(parts), Reported: map[int]bool{}}
+	tracker := Tracker{Options: options, Client: client, Folder: folder, Parts: len(parts), LastJournal: LastJournal(parts), Reported: map[int]bool{}}
 	return tracker.Run(stdout)
 }
 

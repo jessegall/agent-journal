@@ -12,10 +12,10 @@ from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
-from core.modules.agents.commands.bind_agent_session import BindAgentSession
-from core.modules.agents.commands.start_agent import StartAgent
+from core.modules.agents.commands.bind_agent_session.bind_agent_session import BindAgentSession
+from core.modules.agents.commands.start_agent.start_agent import StartAgent
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.drivers.commands.record_hook_call import RecordHookCall
+from core.modules.drivers.commands.record_hook_call.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
 from core.modules.settings.bindings.support.setting_values import SettingValues

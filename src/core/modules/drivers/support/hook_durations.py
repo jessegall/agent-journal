@@ -28,7 +28,8 @@ class HookDurations:
 
     def measured(self, event: HookEvent, environment_id: int, nudges: Sequence[str]) -> tuple[str, str]:
         """The text for the terminal, and the note for the agent, which is empty unless the hook went over its points."""
-        shown, note = [], ""
+        shown: list[str] = []
+        note = ""
         if self.timing.stamps and self.settings.value(HOOK_DURATIONS_SETTING, environment_id) is True:
             line, note = self.duration(event)
             shown.append(line)

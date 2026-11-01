@@ -30,7 +30,7 @@ class MemoryTypeChoice:
         return tuple(memory_type.name for memory_type in self.type_rows() if self.enabled(memory_type.name, environment_id))
 
     def type_rows(self) -> list[MemoryType]:
-        return [row for row in self.kept.of("memory_types", lambda: tuple(self.queries.query(MemoryType).all_rows())) if isinstance(row, MemoryType)]
+        return list(self.kept.of("memory_types", lambda: tuple(self.queries.query(MemoryType).all_rows())))
 
     def switch_rows(self) -> list[MemoryTypeSwitch]:
-        return [row for row in self.kept.of("memory_type_switches", lambda: tuple(self.queries.query(MemoryTypeSwitch).all_rows())) if isinstance(row, MemoryTypeSwitch)]
+        return list(self.kept.of("memory_type_switches", lambda: tuple(self.queries.query(MemoryTypeSwitch).all_rows())))

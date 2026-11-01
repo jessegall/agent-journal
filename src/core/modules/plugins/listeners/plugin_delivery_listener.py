@@ -9,9 +9,9 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.base.type_guards import is_mapping
 from core.modules.environments.models.environment import Environment
-from core.modules.plugins.commands.add_plugin_output import AddPluginOutput
-from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
-from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.commands.add_plugin_output.add_plugin_output import AddPluginOutput
+from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.models.plugin_delivery import PluginDelivery
 from core.modules.plugins.support.plugin_call import PluginCall

@@ -9,7 +9,7 @@ from suites.coding.drivers.builder.builder_driver import BuilderDriver
 from suites.coding.coding_suite import CodingSuite
 from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
-from suites.coding.commands.record_file_edit_handler import RecordFileEditHandler
+from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard

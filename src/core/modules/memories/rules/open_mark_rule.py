@@ -8,7 +8,7 @@ from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.support.mark_tracker import MarkTracker
 from core.modules.memories.support.memory_settings import MARKS_SETTING
 from core.modules.memories.rules.support.memory_lines import MemoryLines
-from core.modules.memories.commands.open_memory_mark import OpenMemoryMark
+from core.modules.memories.commands.open_memory_mark.open_memory_mark import OpenMemoryMark
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole
 

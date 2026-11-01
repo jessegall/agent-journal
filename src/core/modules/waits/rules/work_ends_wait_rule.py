@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.waits.commands.end_wait import EndWait
+from core.modules.waits.commands.end_wait.end_wait import EndWait
 
 
 class WorkEndsWaitRule(DriverRule):

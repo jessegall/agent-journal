@@ -10,6 +10,7 @@ PID_FILE = "pid"
 END_FILE = "end"
 HEARTBEAT_FILE = "heartbeat"
 READER_LINES_FILE = "reader.lines"
+TAIL_BYTES = 8192
 
 
 class OutputFolder:
@@ -85,6 +86,10 @@ class OutputFolder:
             passed += size
         return collected
 
+    def last_lines(self, process_id: int, count: int) -> list[str]:
+        total = sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())
+        return self.bytes_after(process_id, max(0, total - TAIL_BYTES)).decode(errors="replace").splitlines()[-count:]
+
     def reader_lines(self, process_id: int) -> list[str]:
         return self.text(process_id, READER_LINES_FILE).splitlines()
 
@@ -115,7 +120,7 @@ class OutputFolder:
 
     def text(self, process_id: int, name: str) -> str:
         path = self.home.folder / FOLDER_NAME / str(process_id) / name
-        return path.read_text() if path.exists() else ""
+        return path.read_text(errors="replace") if path.exists() else ""
 
     def number(self, process_id: int, name: str) -> int | None:
         text = self.text(process_id, name).strip()

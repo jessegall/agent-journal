@@ -4,7 +4,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
 from core.modules.memories.models.memory import Memory
-from core.modules.memories.commands.remove_memory import RemoveMemory
+from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.modules.memories.models.enums.memory_state import MemoryState
 
 ENDING_MOVES = ("task.close", "task.cancel")

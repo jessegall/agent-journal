@@ -95,6 +95,7 @@ async function readEnvironments() {
     environments.value = rowsOf(answer);
 }
 const facts = ref(NO_FACTS);
+const now = ref(Date.now());
 // the bars count what is still going, which a page of the newest rows would leave out
 const WHOLE_LIST = ["--limit", "500"];
 const AUTO_MODE = "journal.suites.coding.auto-mode";
@@ -127,8 +128,9 @@ const openCount = (key) => {
 async function readFacts() {
     if (!props.shellRead) return;
     readUsage();
-    const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list", ...WHOLE_LIST]), props.shellRead(["task", "list", ...WHOLE_LIST]), props.shellRead(["question", "list", ...WHOLE_LIST])]);
-    taskRows.value = rowsOf(tasks);
+    const [agents, startedTasks, openTasks, questions] = await Promise.all([props.shellRead(["agent", "list", ...WHOLE_LIST]), props.shellRead(["task", "list", "--state", "started", ...WHOLE_LIST]), props.shellRead(["task", "list", "--state", "open", ...WHOLE_LIST]), props.shellRead(["question", "list", ...WHOLE_LIST])]);
+    taskRows.value = [...rowsOf(startedTasks), ...rowsOf(openTasks)];
+    now.value = Date.now();
     facts.value = barFacts({agents: rowsOf(agents), tasks: taskRows.value, questions: rowsOf(questions)});
 }
 async function readAgent() {
@@ -228,7 +230,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
                 <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount" />
-                <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :auto="auto" @open="openCount" @toggle-auto="toggleAuto" />
+                <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :auto="auto" :now="now" @open="openCount" @toggle-auto="toggleAuto" />
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>

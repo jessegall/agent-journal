@@ -1,8 +1,8 @@
 from core.base.command.bus import Bus
 from core.base.registry.registry import Registry
 from core.base.database.database import Database
-from core.modules.skills.commands.load_skill import LoadSkill
-from core.modules.skills.commands.reset_skills import ResetSkills
+from core.modules.skills.commands.load_skill.load_skill import LoadSkill
+from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from tests.stories.core.modules.skills.agent_skills import GOOD
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

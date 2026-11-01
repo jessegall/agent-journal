@@ -1,7 +1,6 @@
 package main
 
 import (
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -15,18 +14,8 @@ func TestAnUnansweredClaudeToolUseIsToldTheJournalDidNotAnswerAndAStopGoesOnWith
 	var lineAnswer, stopAnswer strings.Builder
 	Answered(&lineAnswer, &strings.Builder{}, claude, "PreToolUse", "pre_tool_use", 0, nil, root, 5*time.Second)
 	Answered(&stopAnswer, &strings.Builder{}, claude, "Stop", "stop", 0, nil, root, 5*time.Second)
-	if !strings.Contains(lineAnswer.String(), "did not answer within 5 seconds") || !strings.Contains(lineAnswer.String(), "127.0.0.1:8431") || stopAnswer.String() != "" {
+	if !strings.Contains(lineAnswer.String(), "did not answer within 5 seconds") || !strings.Contains(lineAnswer.String(), "server.sock") || stopAnswer.String() != "" {
 		t.Errorf("printed %q and %q", lineAnswer.String(), stopAnswer.String())
-	}
-}
-
-func TestTheJournalsOwnRepositoryIsAskedForThePanicWatch(t *testing.T) {
-	root := project(t, "8431")
-	writeFile(t, filepath.Join(root, "src", "journal", "hooks", "hook.sh"), "#!/bin/sh\n")
-	var stdout strings.Builder
-	Answered(&stdout, &strings.Builder{}, programs.LoadTable("").Programs["claude"], "UserPromptSubmit", "prompt", 0, nil, root, 8*time.Second)
-	if !strings.Contains(stdout.String(), `"hookEventName":"UserPromptSubmit"`) || !strings.Contains(stdout.String(), "within 8 seconds") || !strings.Contains(stdout.String(), "start the panic watch") {
-		t.Errorf("printed %s", stdout.String())
 	}
 }
 
@@ -64,7 +53,7 @@ func TestLinesGoOnAnEventThatTakesThemAndAreDroppedElsewhere(t *testing.T) {
 }
 
 func TestAnUnansweredCodexHookTellsTheAgentToo(t *testing.T) {
-	stdout, _, code := shippedAnswer("codex", "SessionStart", "session_start", Reply{Lines: []string{missedLine(t.TempDir(), 3*time.Second)}})
+	stdout, _, code := shippedAnswer("codex", "SessionStart", "session_start", Reply{Lines: []string{missedLine(3*time.Second)}})
 	if code != 0 || !strings.Contains(stdout, "did not answer within 3 seconds") {
 		t.Fatalf("printed %q %d", stdout, code)
 	}

@@ -3,7 +3,7 @@ from core.base.change.event_pattern import EventPattern
 from core.base.change.logged_event import LoggedEvent
 from core.base.query.conditions.is_null import IsNull
 from core.modules.agents.models.agent import Agent
-from core.modules.skills.commands.require_skill import RequireSkill
+from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 
 

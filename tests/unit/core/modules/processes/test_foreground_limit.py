@@ -75,8 +75,8 @@ def test_a_journal_only_line_has_no_limit_to_move_at():
     assert limit().decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False)
 
 
-def test_a_journal_command_its_module_marks_goes_to_the_background_at_once():
-    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(15, True)
+def test_a_journal_line_never_goes_to_the_background():
+    assert limit(journal_commands=True).decide(1, line(part("journal", CommandCategory.JOURNAL), journal_shell=True)) == ForegroundRun(0, False)
 
 
 def test_a_test_run_and_a_build_go_to_the_background_at_once():

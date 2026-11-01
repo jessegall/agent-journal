@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
-from core.modules.agents.commands.end_agent import EndAgent
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall

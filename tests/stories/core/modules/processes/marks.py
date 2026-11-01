@@ -5,11 +5,12 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.registry.registry import Registry
-from core.modules.docking.commands.keep_dock_item import KeepDockItem
+from core.modules.docking.commands.keep_dock_item.keep_dock_item import KeepDockItem
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.modules.chat.support.mark_samples import mark_count
-from core.modules.processes.commands.move_process import MoveProcess
-from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, start_process, tick
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.move_process.move_process import MoveProcess
+from tests.stories.core.modules.processes.support.process_samples import end_run, install_runner, moved_run, start_process, tick
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -140,3 +141,27 @@ def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_
     folder.write_output(process.id, 1, "ran\n")
     assert folder.bytes_after(process.id, 0) == b"ran\n"
     assert folder.bytes_after(process.id, 2) == b"n\n"
+
+
+def test_output_that_is_not_utf8_still_ends_its_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "cat notes")
+    story.run_listeners()
+    (story.container.get(OutputFolder).home.folder / "processes" / str(process.id) / "1.out").write_bytes(b"caf\xe9\n")
+    story.container.get(Bus).run(EndProcess(process.id, 0, 5, 1), story.agent, environment_id=1)
+    story.run_listeners()
+    story.expect_text(MARKS, "process:1", "ended")
+
+
+def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "tail -f log")
+    story.tick("s-1")
+    story.run_listeners()
+    story.expect_absent("dock-item list", "processes.output")
+    story.advance(timedelta(seconds=6))
+    story.hook("s-1", HookSamples.stop())
+    story.hook("s-1", HookSamples.stop())
+    story.run_listeners()
+    story.expect_text("dock-item show 1", "state: docked")
+    story.expect_refusal("dock-item show 2", "no dock-item 2")

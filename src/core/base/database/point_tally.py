@@ -21,9 +21,9 @@ class Points:
     rows: int = 0
     writes: int = 0
     kilobytes: int = 0
-    tables: Counter[str] = field(default_factory=Counter)
-    statements: Counter[str] = field(default_factory=Counter)
-    written: Counter[str] = field(default_factory=Counter)
+    tables: Counter[str] = field(default_factory=lambda: Counter[str]())
+    statements: Counter[str] = field(default_factory=lambda: Counter[str]())
+    written: Counter[str] = field(default_factory=lambda: Counter[str]())
 
     @property
     def total(self) -> int:

@@ -70,10 +70,10 @@ func post(outgoing delivery, transport http.RoundTripper, firedTime time.Time) (
 	return status, answer
 }
 
-// StopWindow is how long a stop the journal does not answer is asked again before the hook gives up, and RetryPause is
-// how long it rests between two asks.
+// StopWindow is how long a stop the journal does not answer with 200 is asked again before the hook holds it, shorter
+// than the program's hook timeout by more than one ask, and RetryPause is how long it rests between two asks.
 var (
-	StopWindow = time.Minute
+	StopWindow = 40 * time.Second
 	RetryPause = time.Second
 )
 
@@ -82,12 +82,12 @@ func holdsStop(eventName string) bool {
 	return eventName == "stop" || eventName == "subagent_stop"
 }
 
-// postedUntilAnswered asks as post does; a stop the journal does not answer is asked again, resting between asks, until
+// postedUntilAnswered asks as post does; a stop the journal does not answer with 200 is asked again, resting between asks, until
 // the window has passed, so a journal that stalls for seconds still holds the stop instead of letting it through.
 func postedUntilAnswered(outgoing delivery, transport http.RoundTripper, firedTime time.Time, window, pause time.Duration) (int, []byte) {
 	began := time.Now()
 	status, answer := post(outgoing, transport, firedTime)
-	for status == 0 && holdsStop(outgoing.event) && time.Since(began) < window {
+	for status != http.StatusOK && holdsStop(outgoing.event) && time.Since(began) < window {
 		time.Sleep(pause)
 		status, answer = post(outgoing, transport, firedTime)
 	}
@@ -95,9 +95,8 @@ func postedUntilAnswered(outgoing delivery, transport http.RoundTripper, firedTi
 }
 
 // heldStop is the answer to a stop the journal never answered: the stop is held with the way to see why.
-func heldStop(root string) string {
-	port, _ := os.ReadFile(filepath.Join(root, ".journal", "port"))
-	reason := fmt.Sprintf("[journal] The journal did not answer this stop within a minute, so the stop is held. Check it: curl -s http://127.0.0.1:%s/journal/health should answer 200, and runtime/server.log in .journal says why it does not; restart it with journal setup restart, then stop again.", strings.TrimSpace(string(port)))
+func heldStop() string {
+	reason := "[journal] The journal did not answer this stop within 40 seconds, so the stop is held. Check it: curl -s --unix-socket .journal/server.sock http://journal/health should answer 200, and .journal/runtime/server.log says why it does not; then stop again."
 	return jsonText(map[string]any{"decision": "block", "reason": reason})
 }
 

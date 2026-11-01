@@ -3,10 +3,10 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.sharing.commands.make_share_link_handler import MakeShareLinkHandler
-from core.modules.sharing.commands.make_share_link_subcommand import MakeShareLinkSubcommand
-from core.modules.sharing.commands.revoke_share_link import RevokeShareLink
-from core.modules.sharing.commands.share_session_subcommand import ShareSessionSubcommand
+from core.modules.sharing.commands.make_share_link.make_share_link_handler import MakeShareLinkHandler
+from core.modules.sharing.commands.make_share_link.make_share_link_subcommand import MakeShareLinkSubcommand
+from core.modules.sharing.commands.revoke_share_link.revoke_share_link import RevokeShareLink
+from core.modules.sharing.commands.share_session.share_session_subcommand import ShareSessionSubcommand
 from core.modules.sharing.guards.share_link_row_guard import ShareLinkRowGuard
 from core.modules.sharing.migrations.m001_share_links import ShareLinksTableMigration
 from core.modules.sharing.seeders.sharing_seeder import SharingSeeder

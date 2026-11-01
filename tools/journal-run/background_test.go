@@ -51,13 +51,13 @@ func TestALimitOf0NeverMoves(t *testing.T) {
 	}
 }
 
-func TestAJournalCommandAtTheHeadOfALineFinishesBeforeTheRunMoves(t *testing.T) {
+func TestAJournalCommandInALineFinishesBeforeTheRunMoves(t *testing.T) {
 	bin := t.TempDir()
 	if err := os.WriteFile(bin+"/journal", []byte("#!/bin/sh\nsleep 1\necho answered\n"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", bin+":"+os.Getenv("PATH"))
-	setup := options(t, "journal task show 1; sleep 3")
+	setup := options(t, "echo first; journal task show 1; sleep 3")
 	setup.Background = true
 	output, _ := run(t, setup, newClient())
 	if !strings.Contains(output, "answered") || !strings.Contains(output, "moved to the background") {
@@ -69,4 +69,21 @@ func TestAFollowerEndsWhenItsFolderIsGone(t *testing.T) {
 	setup := options(t, "sleep 5")
 	tracker := Tracker{Options: setup, Client: newClient(), Folder: NewFolder(setup.Home, setup.Process), Parts: 1, Reported: map[int]bool{}}
 	bounded(t, 5*time.Second, tracker.Watch)
+}
+
+func TestAFollowerKeepsWritingTheHeartbeatOfARunThatMoved(t *testing.T) {
+	setup := options(t, "sleep 5")
+	folder := NewFolder(setup.Home, setup.Process)
+	if err := folder.Start(setup.Line, Parts(setup.Line), "true"); err != nil {
+		t.Fatal(err)
+	}
+	if err := folder.WritePid(os.Getpid()); err != nil {
+		t.Fatal(err)
+	}
+	tracker := Tracker{Options: setup, Client: newClient(), Folder: folder, Parts: 1, Reported: map[int]bool{}}
+	go tracker.Watch()
+	waitFor(t, 5*time.Second, "the heartbeat of the moved run", func() bool { return exists(folderOf(setup) + "/heartbeat") })
+	if err := folder.WriteEnd(0); err != nil {
+		t.Fatal(err)
+	}
 }

@@ -4,7 +4,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.modules.agents.commands.end_agent import EndAgent
+from core.modules.agents.commands.end_agent.end_agent import EndAgent
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
 from core.modules.drivers.models.enums.hook_answer import HookAnswer

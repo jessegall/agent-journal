@@ -8,7 +8,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.shell_line import ShellLine
-from core.modules.processes.commands.start_process import StartProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.support.foreground_limit import ForegroundLimit, ForegroundRun
 from core.modules.processes.support.runner_binary import RunnerBinary
@@ -26,6 +26,7 @@ class RunnerRewriteRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
     history = True
+    always_runs = True
 
     def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory) -> None:
         self.limits, self.runner, self.hook_history = limits, runner, hook_history

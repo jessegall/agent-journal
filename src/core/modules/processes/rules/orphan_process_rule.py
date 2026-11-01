@@ -3,9 +3,9 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.processes.commands.end_process import EndProcess
-from core.modules.processes.commands.end_process_part import EndProcessPart
-from core.modules.processes.commands.orphan_process import OrphanProcess
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.orphan_process.orphan_process import OrphanProcess
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery

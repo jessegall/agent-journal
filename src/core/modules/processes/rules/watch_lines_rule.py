@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.processes.commands.record_given_percent import RecordGivenPercent
+from core.modules.processes.commands.record_given_percent.record_given_percent import RecordGivenPercent
 from core.modules.processes.models.watch import Watch
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.queries.watch_query import WatchQuery

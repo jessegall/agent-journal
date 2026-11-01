@@ -20,7 +20,7 @@ def test_closing_the_task_in_hand_starts_the_most_urgent_open_one_for_the_same_a
 
 
 def test_cancelling_blocking_or_releasing_the_task_in_hand_starts_the_next_too(new_story):
-    for move in ('task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', "task release 1"):
+    for move in ('task cancel 1 --reason "not needed"', 'task block 1 --reason "waits for the price list"', 'task release 1 --reason "later"'):
         story = new_story(fixture=BuilderWithStartedTask)
         two_more(story)
         story.run(move, actor=story.agent)
@@ -42,3 +42,32 @@ def test_with_auto_mode_off_no_task_follows_the_one_that_left_the_hands(new_stor
     story.run('task close 1 --outcome "done"', actor=story.agent)
     story.run_listeners()
     assert "state: open" in started_holder(story, 3)
+
+
+def test_a_person_closing_a_task_gives_nothing_to_anyone_when_no_agent_held_it(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    two_more(story)
+    story.run('task release 1 --reason "later"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in started_holder(story, 3)
+    story.run('task make "An open one" --environment main', actor=story.agent)
+    story.run('task close 4 --outcome "not needed"', actor=story.user)
+    story.run_listeners()
+    assert "state: open" in started_holder(story, 2)
+
+
+def test_a_task_that_waits_on_an_open_task_is_not_given_next(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    two_more(story)
+    story.run("task depend 3 --on 2", actor=story.agent)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in started_holder(story, 2) and "state: open" in started_holder(story, 3)
+
+
+def test_a_released_task_is_not_given_back_at_once(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    story.run('task make "Fix the totals" --environment main', actor=story.agent)
+    story.run('task release 1 --reason "later"', actor=story.agent)
+    story.run_listeners()
+    assert "state: open" in started_holder(story, 1) and "state: started" in started_holder(story, 2)

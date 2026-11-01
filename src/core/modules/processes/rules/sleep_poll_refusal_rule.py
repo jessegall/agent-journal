@@ -37,5 +37,5 @@ class SleepPollRefusalRule(DriverRule):
     def watch_advice(self, hook: AgentHook) -> str:
         running = self.processes.agent(hook.agent_id).running().newest().page(1, 1).rows
         if running:
-            return f"watch process {running[0].id} with `journal output watch {running[0].id}`, or wait on it with `journal await \"<what>\" --until \"<script>\"`"
-        return "wait with `journal await \"<what>\" --until \"<script>\"`"
+            return f"watch process {running[0].id} with `journal output watch {running[0].id}`, or wait on it with `journal wait on \"<what>\" --target processes:{running[0].id}`"
+        return "wait on the row it is about with `journal wait on \"<what>\" --target <table>:<id>`"

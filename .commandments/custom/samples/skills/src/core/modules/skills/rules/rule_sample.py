@@ -1,5 +1,5 @@
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.skills.commands.require_skill import RequireSkill
+from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 
 
 # @sin architecture_layout_KindFoldersHoldTheirKindDetector

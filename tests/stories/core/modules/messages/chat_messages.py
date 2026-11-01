@@ -1,3 +1,5 @@
+from core.base.command.bus import Bus
+from core.modules.messages.commands.read_message.read_message import ReadMessage
 from tests.stories.core.support.fixtures import UnansweredMessage
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.fixtures import UserJoined
@@ -18,8 +20,9 @@ def test_a_message_is_sent_as_the_caller_in_the_callers_environment(new_story):
 
 def test_reading_a_message_marks_it_read_once(new_story):
     story = new_story(fixture=UnansweredMessage)
-    story.expect_success("message read 1", "read_at: 2026-10-31T09:00:00.000000+00:00", actor=story.agent)
-    story.expect_success("message read 1", "version: 2", actor=story.agent)
+    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
+    story.container.get(Bus).run(ReadMessage(1), story.agent, environment_id=1)
+    story.expect_success("message show 1", "read_at: 2026-10-31T09:00:00.000000+00:00", "version: 2", actor=story.agent)
 
 
 def test_a_reply_names_the_message_it_answers(new_story):

@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.documents.commands.record_mentions import RecordMentions
+from core.modules.documents.commands.record_mentions.record_mentions import RecordMentions
 from core.modules.documents.support.row_ref import RowRef
 from core.modules.documents.models.text_row import TextRow
 

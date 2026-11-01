@@ -10,6 +10,7 @@ from core.base.model.tables import Tables
 from core.base.query.queries import Queries
 from core.base.environment_names import EnvironmentNames
 from core.base.cli.make_subcommand import MakeSubcommand
+from core.base.cli.row_links import RowLinks
 from core.base.cli.show_subcommand import ShowSubcommand
 from core.base.cli.list_subcommand import ListSubcommand
 from core.base.cli.edit_subcommand import EditSubcommand
@@ -21,14 +22,14 @@ from core.base.cli.subcommand_columns import generic_base
 class DefaultSubcommands:
     """Builds the subcommands every model gets from its model, so a module writes only the ones that differ."""
 
-    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames) -> None:
-        self.tables, self.queries, self.environment_names = tables, queries, environment_names
+    def __init__(self, tables: Tables, queries: Queries, environment_names: EnvironmentNames, links: RowLinks) -> None:
+        self.tables, self.queries, self.environment_names, self.links = tables, queries, environment_names, links
 
     def make(self, model: type[Model]) -> MakeSubcommand:
         return MakeSubcommand(self.tables.table(model))
 
     def show(self, model: type[Model]) -> ShowSubcommand:
-        return ShowSubcommand(self.tables.table(model), self.queries)
+        return ShowSubcommand(self.tables.table(model), self.queries, self.links)
 
     def list(self, model: type[Model]) -> ListSubcommand:
         return ListSubcommand(self.tables.table(model), self.queries, self.environment_names)

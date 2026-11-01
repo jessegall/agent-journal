@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_event_name import HookEventName
-from core.modules.skills.commands.reset_skills import ResetSkills
+from core.modules.skills.commands.reset_skills.reset_skills import ResetSkills
 from core.modules.skills.listeners.skill_listener import SkillListener
 
 

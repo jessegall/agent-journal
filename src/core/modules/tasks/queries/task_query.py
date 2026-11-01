@@ -4,8 +4,15 @@ from core.base.database.database import Database
 from core.base.model.tables import Tables
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.query import Query
+from core.base.query.condition import Condition
+from core.base.query.conditions.subquery_match import SubqueryMatch
+from core.base.query.select import Select
+from core.modules.tasks.models.enums.task_priority import TaskPriority
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.open_dependency import OpenDependency
+
+URGENCY = {TaskPriority.HIGH: 0, TaskPriority.NORMAL: 1, TaskPriority.LOW: 2}
 
 
 class TaskQuery(Query[Task]):
@@ -28,4 +35,9 @@ class TaskQuery(Query[Task]):
 
     def open_tasks(self, environment_id: int) -> Self:
         return self.environment(environment_id).filter(state=TaskState.OPEN)
+
+    def next_open(self, environment_id: int, excluded_id: int | None, outside: Condition) -> Task | None:
+        waiting = SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
+        ready = self.open_tasks(environment_id).matching(waiting).matching(outside).all_rows()
+        return min((task for task in ready if task.id != excluded_id), key=lambda task: (URGENCY[task.priority], task.id), default=None)
 

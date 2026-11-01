@@ -4,9 +4,9 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.modules.memories.rules.support.hook_memories import HookMemories
-from core.modules.memories.commands.give_memories import GiveMemories
+from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.memories.rules.support.memory_lines import MemoryLines
-from core.modules.memories.commands.remove_memory import RemoveMemory
+from core.modules.memories.commands.remove_memory.remove_memory import RemoveMemory
 from core.base.agent_role import AgentRole
 
 DUE_REASON = "given at its due time"

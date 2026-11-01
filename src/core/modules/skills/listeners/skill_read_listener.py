@@ -2,7 +2,7 @@ from pathlib import PurePath
 
 from core.base.change.logged_event import LoggedEvent
 from core.base.skill.skill_declaration import SKILL_FILE
-from core.modules.skills.commands.load_skill import LoadSkill
+from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 
 

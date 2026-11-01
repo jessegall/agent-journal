@@ -13,7 +13,7 @@ def test_a_sessions_first_hook_starts_its_agent_and_gives_its_drivers_opening_li
 def test_a_subagents_first_hook_starts_a_subagent_row_under_its_agent(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     main = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
-    story.hook("s-1", HookSamples.stop().with_fields(subagent="sub-1"))
+    story.hook("s-1", HookSamples.session_start().with_fields(subagent="sub-1"))
     story.expect_text(f"agent list --parent {main.id} --role subagent", "sub-1")
 
 

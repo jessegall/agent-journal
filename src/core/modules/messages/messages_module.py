@@ -1,16 +1,17 @@
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
-from core.modules.messages.commands.read_message_handler import ReadMessageHandler
-from core.modules.messages.commands.tell_message_handler import TellMessageHandler
-from core.modules.messages.commands.send_message_handler import SendMessageHandler
+from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
+from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
+from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
 from core.modules.messages.migrations.m003_message_told import MessageToldMigration
-from core.modules.messages.commands.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
-from core.modules.messages.commands.reply_message_subcommand import ReplyMessageSubcommand
-from core.modules.messages.commands.send_message_subcommand import SendMessageSubcommand
+from core.modules.messages.rules.shown_message_read_rule import ShownMessageReadRule
+from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageStopRule
+from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
+from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -32,10 +33,10 @@ class MessagesModule(Module):
     moves = [MessagesMove]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageToldMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (SendMessageHandler, ReadMessageHandler, TellMessageHandler)
-    driver_rules = [MessageDeliveryRule, AgentTextRule]
-    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
+    handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler)
+    driver_rules = [MessageDeliveryRule, ShownMessageReadRule, UnreadMessageStopRule, AgentTextRule]
+    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand,)
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list", "agent list"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
     listeners = []

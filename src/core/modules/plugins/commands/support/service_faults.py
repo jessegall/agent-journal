@@ -2,8 +2,8 @@ from core.base.command.bus import Bus
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.environments.models.environment import Environment
-from core.modules.plugins.commands.clear_plugin_faults import ClearPluginFaults
-from core.modules.plugins.commands.record_plugin_fault import RecordPluginFault
+from core.modules.plugins.commands.clear_plugin_faults.clear_plugin_faults import ClearPluginFaults
+from core.modules.plugins.commands.record_plugin_fault.record_plugin_fault import RecordPluginFault
 from core.modules.plugins.models.plugin import Plugin
 from core.modules.plugins.support.service_fault import ServiceFault
 

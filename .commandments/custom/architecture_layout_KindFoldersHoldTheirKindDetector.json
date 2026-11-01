@@ -60,7 +60,16 @@
                     {
                         "all": [
                             {
-                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/commands/[^/]+\\.py$"
+                                "fileMatches": "(^|/)src/(suites|core/modules)/.+/commands/[^/]+/[^/]+\\.py$"
+                            },
+                            {
+                                "not": {
+                                    "any": [
+                                        {
+                                            "fileMatches": "/commands/support/"
+                                        }
+                                    ]
+                                }
                             },
                             {
                                 "not": {

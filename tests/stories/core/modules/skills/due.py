@@ -4,7 +4,7 @@ from core.base.registry.registry import Registry
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from core.modules.skills.commands.load_skill import LoadSkill
+from core.modules.skills.commands.load_skill.load_skill import LoadSkill
 from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.modules.skills.support.skill_samples import PATH
 from tests.stories.core.support.coding_fixtures import CodingEnvironment

@@ -4,7 +4,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from tests.stories.core.base.driver.support.fixtures import LeadStarted

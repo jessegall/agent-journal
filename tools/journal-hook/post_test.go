@@ -228,7 +228,7 @@ func TestAStopTheJournalNeverAnswersEndsWithoutAnswerAfterTheWindow(t *testing.T
 	if status != 0 || time.Since(started) < 50*time.Millisecond {
 		t.Fatalf("status %d after %s", status, time.Since(started))
 	}
-	if held := heldStop(root); !strings.Contains(held, `"decision":"block"`) || !strings.Contains(held, "did not answer") {
+	if held := heldStop(); !strings.Contains(held, `"decision":"block"`) || !strings.Contains(held, "did not answer") {
 		t.Fatalf("the held stop says %s", held)
 	}
 }
@@ -243,5 +243,24 @@ func TestAToolIsNotAskedAgainWhenTheJournalDoesNotAnswer(t *testing.T) {
 	postedUntilAnswered(sample(root, "pre_tool_use"), transport, time.Unix(1793395000, 0), time.Second, time.Millisecond)
 	if asked != 1 {
 		t.Fatalf("a tool was asked %d times", asked)
+	}
+}
+
+func TestAStopAnsweredWithAConflictIsAskedAgainUntilTheWindowEnds(t *testing.T) {
+	asks := 0
+	var transport fakeTransport = func(request *http.Request) (*http.Response, error) {
+		asks++
+		return answer(http.StatusConflict, "{}")(request)
+	}
+	root := project(t, "8431")
+	status, _ := postedUntilAnswered(delivery{root: root, program: "claude", event: "stop", limit: time.Second, timing: &timing.Timing{}}, transport, time.Now(), 30*time.Millisecond, 5*time.Millisecond)
+	if status == http.StatusOK || asks < 2 {
+		t.Fatalf("status %d after %d asks", status, asks)
+	}
+}
+
+func TestTheStopWindowEndsBeforeTheProgramsHookTimeoutWithAnAskToSpare(t *testing.T) {
+	if StopWindow+LimitFor("stop") >= 60*time.Second {
+		t.Fatalf("a stop may take %s, past the hook timeout of 60 seconds", StopWindow+LimitFor("stop"))
 	}
 }

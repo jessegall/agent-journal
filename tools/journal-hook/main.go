@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"time"
 
@@ -67,8 +68,8 @@ func main() {
 		limit:       limit,
 		timing:      requestTiming,
 	}, nil, time.Now(), StopWindow, RetryPause)
-	if status == 0 && holdsStop(prepared.Event) {
-		fmt.Fprint(os.Stdout, heldStop(root))
+	if status != http.StatusOK && holdsStop(prepared.Event) {
+		fmt.Fprint(os.Stdout, heldStop())
 		os.Exit(0)
 	}
 	os.Exit(Answered(os.Stdout, os.Stderr, context.Programs.Programs[program], hookName(body), prepared.Event, status, answer, root, limit))

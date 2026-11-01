@@ -4,8 +4,8 @@ from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
-from core.modules.usage.commands.statistic_list_subcommand import StatisticListSubcommand
-from core.modules.usage.commands.usage_show_subcommand import UsageShowSubcommand
+from core.modules.usage.commands.statistic_list.statistic_list_subcommand import StatisticListSubcommand
+from core.modules.usage.commands.usage_show.usage_show_subcommand import UsageShowSubcommand
 from core.modules.usage.migrations.m001_statistics import StatisticsTableMigration
 from core.modules.usage.models.statistic import Statistic
 from core.modules.usage.upgrade.statistics_move import StatisticsMove

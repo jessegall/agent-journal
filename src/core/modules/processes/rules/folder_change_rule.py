@@ -22,7 +22,6 @@ class FolderChangeRule(DriverRule):
             return RuleAnswer.allowed()
         folder = str(hook.event.raw.get("cwd", "")).rstrip("/")
         for part in shell.parts:
-            words = part.text.split()
-            if words[:1] == [CHANGE_WORD] and [word.rstrip("/").strip("'\"") for word in words[1:]] != [folder]:
+            if part.program == CHANGE_WORD and [argument.rstrip("/") for argument in part.arguments] != [folder]:
                 return RuleAnswer.refused(f"do not move with cd: you are in {folder or 'the project'}, so name paths from there; a tool takes its own folder, such as npm --prefix or vitest --root")
         return RuleAnswer.allowed()

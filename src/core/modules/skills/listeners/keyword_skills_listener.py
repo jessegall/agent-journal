@@ -3,7 +3,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.hook_keywords import text_keywords
 from core.modules.agents.models.agent import Agent
-from core.modules.skills.commands.require_skill import RequireSkill
+from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 
 NOTICE_OPENING = "["

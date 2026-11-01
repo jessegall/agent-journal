@@ -2,7 +2,7 @@ from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.fault_sink import FaultSink
 from core.base.module.module_actors import ModuleActors
-from core.modules.chat.commands.record_journal_fault import RecordJournalFault
+from core.modules.chat.commands.record_journal_fault.record_journal_fault import RecordJournalFault
 
 CHAT_MODULE = "journal.core.chat"
 FAULT_LISTENER = "listener chat.fault-mark"

@@ -3,7 +3,7 @@ from core.base.command.bus import Bus
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
-from core.modules.processes.commands.prune_outputs import PruneOutputs
+from core.modules.processes.commands.prune_outputs.prune_outputs import PruneOutputs
 from core.modules.processes.models.output import Output
 from core.modules.processes.models.process import Process
 

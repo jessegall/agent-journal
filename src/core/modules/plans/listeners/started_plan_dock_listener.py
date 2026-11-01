@@ -4,19 +4,19 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.docking.commands.add_dock_item import AddDockItem
-from core.modules.docking.commands.remove_dock_item import RemoveDockItem
+from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
+from core.modules.docking.commands.remove_dock_item.remove_dock_item import RemoveDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.plans.listeners.plan_move_mark_listener import PLANS_MODULE
 from core.modules.plans.models.enums.plan_dock_type import PlanDockType
 from core.modules.plans.models.plan import Plan
 
 ENDING_MOVES = ("close", "cancel")
-DOCKING_MOVES = {"ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
+DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "start": PlanDockType.STARTED, "unblock": PlanDockType.STARTED, "block": PlanDockType.PAUSED}
 
 
 class StartedPlanDockListener(CommitListener):
-    """A plan is docked above the chat as it stands: waiting for the user once ready, started, paused;
+    """A plan is docked above the chat as it stands: a draft once made, waiting for the user once ready, started, paused;
     it is undocked when approved or ended."""
 
     name = "plans.started-dock"
@@ -29,15 +29,14 @@ class StartedPlanDockListener(CommitListener):
         move = event.event.split(".")[1]
         plan = self.queries.query(Plan).find(event.row_id)
         actor = self.actors.actor(PLANS_MODULE)
-        context = {"cause_id": event.id, "environment_id": plan.environment_id}
         if move in ENDING_MOVES or move == "approve":
-            self.undock(plan, actor, context)
+            self.undock(plan, actor, event.id)
         if move in DOCKING_MOVES:
-            self.undock(plan, actor, context)
-            self.bus.run(AddDockItem(plan.environment_id, DOCKING_MOVES[move].value, "plan", plan.id), actor, **context)
+            self.undock(plan, actor, event.id)
+            self.bus.run(AddDockItem(plan.environment_id, DOCKING_MOVES[move].value, "plan", plan.id), actor, cause_id=event.id, environment_id=plan.environment_id)
 
-    def undock(self, plan: Plan, actor: Actor, context: dict[str, int]) -> None:
+    def undock(self, plan: Plan, actor: Actor, cause_id: int) -> None:
         for dock_type in PlanDockType:
             for item in self.items.type_items(dock_type.value).row_items("plan", plan.id).all_rows():
                 if item.state.value == "docked":
-                    self.bus.run(RemoveDockItem(item.id), actor, **context)
+                    self.bus.run(RemoveDockItem(item.id), actor, cause_id=cause_id, environment_id=plan.environment_id)

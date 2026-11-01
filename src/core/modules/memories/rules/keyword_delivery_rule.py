@@ -8,7 +8,7 @@ from core.modules.memories.models.enums.delivery_cause import DeliveryCause
 from core.base.driver.hook_keywords import hook_keywords
 from core.modules.memories.rules.support.hook_memories import HookMemories
 from core.modules.memories.models.keyword_memory import KeywordMemory
-from core.modules.memories.commands.give_memories import GiveMemories
+from core.modules.memories.commands.give_memories.give_memories import GiveMemories
 from core.modules.memories.rules.support.memory_lines import MemoryLines
 from core.modules.settings.bindings.support.setting_values import SettingValues
 from core.base.agent_role import AgentRole

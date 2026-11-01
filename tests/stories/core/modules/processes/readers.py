@@ -3,7 +3,7 @@ from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.database.database import Database
 from core.base.database.statement import Statement
-from core.modules.processes.commands.add_reader import AddReader
+from core.modules.processes.commands.add_reader.add_reader import AddReader
 from tests.stories.core.modules.processes.support.process_samples import ended_run
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 

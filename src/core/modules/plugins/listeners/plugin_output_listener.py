@@ -8,7 +8,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.plugins.models.enums.plugin_card_tone import PluginCardTone
 from core.modules.plugins.models.enums.plugin_mark_type import PluginMarkType
 from core.modules.plugins.models.plugin import Plugin
@@ -17,7 +17,7 @@ from core.modules.plugins.support.plugin_answer import PluginAnswer
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_manifest import PluginManifest
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
-from core.modules.skills.commands.request_skill import RequestSkill
+from core.modules.skills.commands.request_skill.request_skill import RequestSkill
 
 MODULE_NAME = "journal.core.plugins"
 MOST_COMMAND_LINES = 20

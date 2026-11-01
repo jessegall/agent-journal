@@ -2,6 +2,7 @@ import sqlite3
 import traceback
 from collections.abc import Mapping
 
+from core.base.type_guards import is_mapping
 from core.base.database.database import Database
 from core.base.driver.hook_event import HookEvent
 from core.base.driver.hook_reply import HookReply
@@ -18,7 +19,7 @@ from server.server_context import ServerContext
 
 
 def is_stop_body(data: object) -> bool:
-    if not isinstance(data, dict):
+    if not is_mapping(data):
         return False
     return str(data.get("event") or data.get("hook_event_name") or "").lower() == "stop"
 

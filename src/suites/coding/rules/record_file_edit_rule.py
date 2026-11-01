@@ -2,7 +2,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from suites.coding.commands.record_file_edit import RecordFileEdit
+from suites.coding.commands.record_file_edit.record_file_edit import RecordFileEdit
 
 
 class RecordFileEditRule(DriverRule):

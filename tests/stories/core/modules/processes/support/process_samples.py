@@ -6,11 +6,11 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from core.base.command.bus import Bus
 from core.base.driver.command_category import CommandCategory
-from core.modules.processes.commands.end_process import EndProcess
-from core.modules.processes.commands.end_process_part import EndProcessPart
-from core.modules.processes.commands.move_process import MoveProcess
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
+from core.modules.processes.commands.move_process.move_process import MoveProcess
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.modules.processes.commands.start_process import StartProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.output_folder import OutputFolder

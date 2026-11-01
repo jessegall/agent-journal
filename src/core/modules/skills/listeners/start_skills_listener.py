@@ -6,7 +6,7 @@ from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.hook_call import HookCall
-from core.modules.skills.commands.require_skill import RequireSkill
+from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.start_skills import StartSkills

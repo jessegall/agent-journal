@@ -6,11 +6,11 @@ from core.modules.waits.listeners.target_resolution_listener import TargetResolu
 from core.modules.waits.models.wait import Wait
 from core.modules.waits.listeners.impasse_mark_listener import ImpasseMarkListener
 from core.modules.waits.support.wait_marks import WAIT_MARKS
-from core.modules.waits.commands.end_wait import EndWait
-from core.modules.waits.commands.open_wait_subcommand import OpenWaitSubcommand
-from core.modules.waits.commands.open_wait_handler import OpenWaitHandler
-from core.modules.waits.commands.resume_wait import ResumeWait
-from core.modules.waits.commands.request_help_subcommand import RequestHelpSubcommand
+from core.modules.waits.commands.end_wait.end_wait import EndWait
+from core.modules.waits.commands.open_wait.open_wait_subcommand import OpenWaitSubcommand
+from core.modules.waits.commands.open_wait.open_wait_handler import OpenWaitHandler
+from core.modules.waits.commands.resume_wait.resume_wait import ResumeWait
+from core.modules.waits.commands.request_help.request_help_subcommand import RequestHelpSubcommand
 from core.modules.waits.models.wait_target import WaitTarget
 from core.modules.waits.overlays.wait_overlay import WaitOverlay
 from core.modules.waits.seeders.waits_seeder import WaitsSeeder

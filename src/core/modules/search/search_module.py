@@ -2,7 +2,7 @@ from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
-from core.modules.search.commands.search_find_subcommand import SearchFindSubcommand
+from core.modules.search.commands.search_find.search_find_subcommand import SearchFindSubcommand
 
 
 class SearchModule(Module):

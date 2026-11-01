@@ -5,7 +5,7 @@ import pytest
 
 from core.base.command.bus import Bus
 from core.base.refusal import Refusal
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.messages.models.enums.message_mark_type import MessageMarkType
 from core.modules.messages.models.enums.message_mark_variant import MessageMarkVariant
 from tests.stories.core.modules.chat.support.mark_samples import mark_count, marks_text, module_actor

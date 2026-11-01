@@ -7,7 +7,8 @@ const {rows: messages, failure, loaded, load, older, context} = useRows("message
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark list", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
-const {rows: latestCalls} = useRows("hook-call list --limit 10", ["hook_call.*"]);
+const {rows: latestCalls} = useRows("hook-call list --limit 25", ["hook_call.*"]);
+const {rows: mainAgents} = useRows("agent list --role main --limit 5", ["agent.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
 // a sent message shows at once as an echo, until its own row has been read: the echo is dropped when a message of the user with the same words has landed since
@@ -16,7 +17,8 @@ const rows = computed(() => interleaved([...messages.value, ...echoes.value], ma
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
 // the tool the agent last began, whichever it is, until the agent stops or a message of yours starts a new turn
 const runningTool = computed(() => {
-    const call = latestCalls.value.find((row) => ["pre_tool_use", "stop", "prompt", "session_start"].includes(row.hook));
+    const mains = new Set(mainAgents.value.map((row) => row.id));
+    const call = latestCalls.value.find((row) => mains.has(row.agent_id) && ["pre_tool_use", "stop", "prompt", "session_start"].includes(row.hook));
     return call?.hook === "pre_tool_use" ? [call.tool, call.summary].filter(Boolean).join(" ") : "";
 });
 const FOLD_AFTER_MS = 180;

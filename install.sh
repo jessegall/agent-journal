@@ -57,6 +57,11 @@ checksum() {
 }
 
 fall_back() {
+  # an upgrade has already moved the hooks of the programs the project has
+  if [ "$upgraded" = 1 ]; then
+    echo "$1, so the hooks stay as the upgrade wrote them"
+    exit 0
+  fi
   mkdir -p "$ROOT/.journal/hooks"
   cp "$SOURCE/install/hook.sh" "$ROOT/.journal/hooks/hook.sh"
   PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "sh \"$ROOT/.journal/hooks/hook.sh\""
@@ -116,8 +121,8 @@ if [ -z "${JOURNAL_RELEASE_URL:-}" ] && [ -f "$HERE/tools/go.work" ] && command 
     rm -f "$BIN/$program"
     go -C "$HERE/tools/$program" build -o "$BIN/$program" . || fail "go could not build $program from $HERE/tools/$program"
   done
-  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
-  echo "built journal, journal-hook and journal-run from $HERE/tools into $BIN; the hooks of Claude Code and Codex call $BIN/journal-hook"
+  PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+  echo "built journal, journal-hook and journal-run from $HERE/tools into $BIN; the hooks call $BIN/journal-hook"
   exit 0
 fi
 
@@ -158,5 +163,5 @@ else
   echo "the release has no $runner, so shell lines run as the agent wrote them"
 fi
 
-PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\""
-echo "the hooks of Claude Code and Codex call $BIN/journal-hook"
+PYTHONPATH="$SOURCE" "$python" -m install.hook_writer "$ROOT" "\"$BIN/journal-hook\"" "$upgraded"
+echo "the hooks call $BIN/journal-hook"

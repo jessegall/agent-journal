@@ -1,10 +1,10 @@
 from core.base.driver.command_category import CommandCategory
 from core.base.seed.demo import Demo
 from core.base.seed.seeder import Seeder
-from core.modules.processes.commands.end_process import EndProcess
-from core.modules.processes.commands.end_process_part import EndProcessPart
+from core.modules.processes.commands.end_process.end_process import EndProcess
+from core.modules.processes.commands.end_process_part.end_process_part import EndProcessPart
 from core.modules.processes.commands.support.part_spec import PartSpec
-from core.modules.processes.commands.start_process import StartProcess
+from core.modules.processes.commands.start_process.start_process import StartProcess
 from core.modules.processes.support.output_folder import OutputFolder
 
 REPORT = "collected 3 items\n... [100%]\n3 passed in 0.4s\n"

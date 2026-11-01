@@ -3,7 +3,7 @@ from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.docking.commands.add_dock_item import AddDockItem
+from core.modules.docking.commands.add_dock_item.add_dock_item import AddDockItem
 from core.modules.docking.queries.dock_item_query import DockItemQuery
 from core.modules.processes.listeners.process_end_mark_listener import MODULE_NAME
 from core.modules.processes.models.enums.process_dock_type import ProcessDockType

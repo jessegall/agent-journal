@@ -1,6 +1,6 @@
 from core.base.module.module import Module
-from core.modules.demo.commands.demo_seed_subcommand import DemoSeedSubcommand
-from core.modules.demo.commands.demo_start_subcommand import DemoStartSubcommand
+from core.modules.demo.commands.demo_seed.demo_seed_subcommand import DemoSeedSubcommand
+from core.modules.demo.commands.demo_start.demo_start_subcommand import DemoStartSubcommand
 
 
 class DemoModule(Module):

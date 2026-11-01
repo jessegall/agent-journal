@@ -1,5 +1,5 @@
 from core.base.command.bus import Bus
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from tests.stories.core.modules.chat.support.mark_samples import SAMPLE, SampleMarkType, SampleMarkVariant, mark_count, module_actor
 from tests.stories.core.support.fixtures import UserJoined
 

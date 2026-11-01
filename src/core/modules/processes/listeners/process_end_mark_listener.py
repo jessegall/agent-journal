@@ -6,7 +6,7 @@ from core.base.driver.command_category import CommandCategory
 from core.base.listener.commit_listener import CommitListener
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
-from core.modules.chat.commands.show_mark import ShowMark
+from core.modules.chat.commands.show_mark.show_mark import ShowMark
 from core.modules.chat.models.chat_mark import ChatMark
 from core.modules.chat.models.enums.chat_mark_state import ChatMarkState
 from core.modules.processes.models.enums.process_mark_type import ProcessMarkType
@@ -53,5 +53,4 @@ class ProcessEndMarkListener(CommitListener):
                      self.actors.actor(MODULE_NAME), cause_id=event.id, environment_id=process.environment_id)
 
     def last_lines(self, process: Process) -> str:
-        text = "".join(self.folder.output(process.id, position) for position in range(1, len(self.folder.part_texts(process.id)) + 1))
-        return "\n".join(text.splitlines()[-LAST_LINES:])
+        return "\n".join(self.folder.last_lines(process.id, LAST_LINES))
