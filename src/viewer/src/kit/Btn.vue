@@ -10,6 +10,7 @@ const props = defineProps({
     busy: Boolean,
     disabled: Boolean,
     fill: Boolean,
+    bordered: Boolean,
     href: {type: String, default: ""},
 });
 // a window a share link shows is only looked at, so its buttons do nothing
@@ -21,7 +22,7 @@ const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDO
         :is="href ? 'a' : 'button'"
         :type="href ? undefined : 'button'"
         :href="href || undefined"
-        :class="['btn', kind, {small, large, busy, fill}]"
+        :class="['btn', kind, {small, large, busy, fill, bordered}]"
         :aria-busy="busy"
         :disabled="idle"
     >
@@ -40,7 +41,7 @@ const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDO
     gap: 6px;
     height: 28px;
     padding: 0 11px;
-    border: 1px solid var(--border-2);
+    border: 1px solid transparent;
     border-radius: 7px;
     background: transparent;
     color: var(--text-2);
@@ -83,6 +84,10 @@ const idle = computed(() => props.busy || props.disabled || Boolean(inject(WINDO
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
+.btn.bordered {
+    border-color: var(--border-2);
+}
+
 .btn.primary {
     border-color: var(--accent);
     background: var(--accent-dim);

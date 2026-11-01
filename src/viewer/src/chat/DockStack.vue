@@ -4,7 +4,7 @@ import DockWrapper from "./DockWrapper.vue";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockedItems, groupedRuns, isLeaving, isRunItem, keptRuns} from "../domain/dockItems.js";
 
-// the items docked above the chat: a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
+// the items docked at the bottom of the chat, above the composer: a leaving item runs a countdown down its top edge, pointing at it holds it, and from three runs they share one row
 const props = defineProps({items: {type: Array, required: true}});
 const now = ref(Date.now() / 1000);
 const held = ref(new Set());

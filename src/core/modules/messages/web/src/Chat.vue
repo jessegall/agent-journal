@@ -46,7 +46,6 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 </div>
             </template>
         </div>
-        <DockStack :items="docked" />
         <div ref="scroller" class="history" @scroll="followScroll">
             <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No messages yet">
                 <template #default="{row}">
@@ -65,6 +64,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <button type="button" data-scroll-top :class="['scroll-top', {hidden: atTop}]" aria-label="Scroll to the top" @click="scrollToTop">
             <Icon name="up" :size="14" />
         </button>
+        <DockStack :items="docked" />
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
@@ -74,7 +74,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 <button type="button" data-attach class="composer-attach" disabled title="A message holds text only, so there is nothing to attach a file to; Dump files takes files" aria-label="Attach a file">
                     <Icon name="clip" :size="16" />
                 </button>
-                <Btn small data-dump-files @click="dumping = !dumping">Dump files</Btn>
+                <Btn small bordered data-dump-files @click="dumping = !dumping">Dump files</Btn>
                 <Btn kind="primary" small class="composer-send" :disabled="!text.trim()" @click="send">Send</Btn>
             </div>
         </form>

@@ -68,5 +68,12 @@
         "version4": "side-panels-right-v4.png",
         "version5": "side-panels-right-v5.png",
         "version5Does": "Same: an Activity panel on the right. Better: it is a window like any other, so it can also be split, moved or detached."
+    },
+    {
+        "name": "bottom",
+        "report": "Docks at the bottom and borderless buttons",
+        "version4": "bottom-v4.png",
+        "version5": "bottom-v5.png",
+        "version5Does": "Same: docked items sit under the chat history above the composer, and buttons draw no border except Open and Dump files. Better: nothing yet; version 5's sidebar still lacks version 4's grouped sections and count badges."
     }
 ]
