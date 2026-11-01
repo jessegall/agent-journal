@@ -11,7 +11,10 @@ from server.viewer.event_stream import EventStream
 from server.viewer.file_route import LIMIT_BYTES
 from server.viewer.events_request import EventsRequest
 from server.viewer.missing_module_file_error import MissingModuleFileError
+from server.viewer.line_answer import LineAnswer
+from server.viewer.line_route import REFUSED_CODE
 from server.viewer.viewer_line_request import ViewerLineRequest
+from server.viewer.viewer_lines_request import ViewerLinesRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.session_type import SessionType
 from server.viewer.module_file_caching import ModuleFileCaching
@@ -37,6 +40,7 @@ SHELL_ASSETS_ROUTE = "/viewer/assets/"
 VENDOR_ROUTE = "/viewer/vendor/"
 SHELL_PAGE = "index.html"
 LINE_ROUTE = "/api/line"
+LINES_ROUTE = "/api/lines"
 EVENTS_ROUTE = "/api/events"
 SHARE_COMMENTS_ROUTE = "/api/share/comments"
 WINDOWS_ROUTE = "/api/windows"
@@ -170,6 +174,9 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         if urlsplit(self.path).path == SHARE_COMMENTS_ROUTE:
             self.answer_share_comments(viewer, viewer.login.session(token), body)
             return
+        if urlsplit(self.path).path == LINES_ROUTE:
+            self.answer_lines(viewer, token, body)
+            return
         if urlsplit(self.path).path != LINE_ROUTE:
             self.answer(404, {"error": f"no route {self.path}"})
             return
@@ -209,6 +216,21 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store")
         self.end_headers()
         event_stream.follow(environment, request.cursor_id, self.stream_message, shared)
+
+    def answer_lines(self, viewer: ViewerServer, token: str, body: bytes | None) -> None:
+        try:
+            request = ViewerLinesRequest.parsed(json.loads(body or b"{}"))
+        except ViewerRequestError as error:
+            self.answer(400, {"error": str(error)})
+            return
+        session, person_id = viewer.login.session(token), viewer.login.person_id(token)
+        answers: list[dict[str, object]] = []
+        for line in request.lines:
+            try:
+                answers.append(asdict(viewer.routes.line_route.answer(line.window, line.line, person_id, line.environment, session.shared)))
+            except ShareRefusal as refusal:
+                answers.append(asdict(LineAnswer(REFUSED_CODE, error=refusal.reason)))
+        self.answer(200, {"answers": answers})
 
     def answer_share_comments(self, viewer: ViewerServer, session: ViewerSession, body: bytes | None) -> None:
         if session.share_id is None or not session.comments:

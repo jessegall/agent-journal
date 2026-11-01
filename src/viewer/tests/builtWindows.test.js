@@ -6,6 +6,7 @@ import WindowHost from "../src/windows/WindowHost.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import Tasks from "../../core/modules/tasks/web/dist/tasks.js";
 import Chat from "../../core/modules/messages/web/dist/chat.js";
+import {perLine} from "./support/windowContext.js";
 
 const ANSWERS = {
     "task board": {code: 0, value: {groups: [{state: "started", total: 1, rows: [{id: 2, title: "Ship the cart", state: "started"}]}, {state: "open", total: 1, rows: [{id: 1, title: "Fix the cart", state: "open"}]}]}},
@@ -16,10 +17,10 @@ const ANSWERS = {
 afterEach(() => vi.unstubAllGlobals());
 
 async function drawn(component, events) {
-    vi.stubGlobal("fetch", async (url, request) => {
+    vi.stubGlobal("fetch", perLine(async (url, request) => {
         const line = JSON.parse(request.body).line.slice(0, 2).join(" ");
         return {json: async () => ANSWERS[line] ?? {code: 1, error: `no answer for ${line}`}};
-    });
+    }));
     const element = document.createElement("div");
     document.body.appendChild(element);
     createApp(() => h(WindowHost, {name: "test.window", component, subscriptions: new WindowSubscriptions(), environment: "main", events})).mount(element);

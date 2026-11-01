@@ -1,5 +1,7 @@
+import json
+
 from tests.stories.core.support.fixtures import UserJoined
-from tests.stories.server.support.server_client import server_story
+from tests.stories.server.support.server_client import server_story, viewer_answer
 
 
 def test_a_line_that_names_no_window_is_refused(new_story):
@@ -25,3 +27,21 @@ def test_a_write_from_a_window_is_recorded_as_the_person_at_the_viewer(new_story
         cookie = story.expect_viewer_login(story.viewer_key("Ada"))
         body = {"window": "viewer.shell", "line": ["setting", "make", "viewer.window.shell.compact", "true"], "environment": "main"}
         story.expect_viewer_line(cookie, body, 200, f'"creator_id": {story.story.user.id}')
+
+
+def test_several_lines_in_one_request_are_answered_in_order_each_checked_on_its_own(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        body = {"lines": [{"window": "viewer.shell", "line": ["environment", "list"], "environment": "main"},
+                          {"window": "viewer.shell", "line": ["secret", "list"], "environment": "main"},
+                          {"window": "viewer.shell", "line": ["environment", "list", "--js"], "environment": "main"}]}
+        status, _, answer = viewer_answer(story.viewer_port(), "/api/lines", cookie, "", body)
+        answers = json.loads(answer)["answers"]
+        assert status == 200 and [one["code"] for one in answers] == [0, 1, 2], (status, answer)
+
+
+def test_a_lines_request_without_its_list_is_refused(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        cookie = story.expect_viewer_login(story.viewer_key("Ada"))
+        status, _, answer = viewer_answer(story.viewer_port(), "/api/lines", cookie, "", {"line": ["environment", "list"]})
+        assert status == 400 and "a list of lines" in answer, (status, answer)

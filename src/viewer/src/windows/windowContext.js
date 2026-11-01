@@ -1,3 +1,4 @@
+import {lineBatch} from "./lineBatch.js";
 import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
@@ -60,8 +61,7 @@ export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
 // gone never draws the answer
 export async function lineResult(window, line, environment, signal = undefined) {
     try {
-        const response = await transport.raw("/api/line", {signal, method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
-        const answer = await response.json();
+        const answer = await lineBatch.add({window, line: Array.isArray(line) ? line : lineWords(line), environment}, signal);
         if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {

@@ -5,6 +5,7 @@ import ShareFace from "../src/windows/ShareFace.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import Btn from "../src/kit/Btn.vue";
 import plans from "../../core/modules/plans/web/src/plans.js";
+import {perLine} from "./support/windowContext.js";
 
 const PHONE_WIDTH = 400;
 const WIDE_WIDTH = 1400;
@@ -109,7 +110,7 @@ test("a share page shows no visitor comments", async () => {
 });
 
 test("the plans window mounted as a share has no control that can be used", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})})));
     const controls = {render: () => h("div", [h(Btn, null, () => "Start"), h(plans)])};
     const element = document.createElement("div");
     document.body.append(element);
@@ -124,10 +125,10 @@ test("the plans window mounted as a share has no control that can be used", asyn
 
 test("the plans window mounted as a share reads the shared plan alone, never the plan list", async () => {
     const asked = [];
-    vi.stubGlobal("fetch", async (url, init) => {
+    vi.stubGlobal("fetch", perLine(async (url, init) => {
         asked.push(JSON.parse(init.body).line);
         return {json: async () => ({code: 0, value: {id: 1, title: "Version 5 core", state: "started"}, error: ""})};
-    });
+    }));
     const element = document.createElement("div");
     document.body.append(element);
     createApp(() => h(ShareFace, {session: SESSION, read: reads(), entry: ENTRY, subscriptions: new WindowSubscriptions(), load: async () => ({default: plans})})).mount(element);

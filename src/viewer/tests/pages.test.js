@@ -28,7 +28,7 @@ let layoutKeys;
 function wire() {
     current = {suite: "coding", drivers: "main: coding.builder, worker: coding.worker"};
     layoutKeys = [];
-    vi.stubGlobal("fetch", async (url, init) => {
+    vi.stubGlobal("fetch", perLine(async (url, init) => {
         const line = JSON.parse(init?.body || "{}").line || [];
         const flag = (name) => line[line.indexOf(name) + 1];
         let value = null;
@@ -37,7 +37,7 @@ function wire() {
         else if (line[0] === "viewer-layout" && line[1] === "current") layoutKeys.push(`${flag("--suite")}:${flag("--page")}:${flag("--driver")}`);
         else if (line[0] === "suite" && line[1] === "layout") value = {shape: SHAPES[`${current.suite}:${line[3]}:${flag("--driver")}`]};
         return {json: async () => (value ? {code: 0, value, error: ""} : {code: 1, value: null, error: line[2] === "99" ? JSON.stringify({refusal: "no agent 99", hint: "see journal agent list"}) : "none"})};
-    });
+    }));
 }
 
 async function mount(page, props = {}) {
@@ -47,7 +47,7 @@ async function mount(page, props = {}) {
     const element = document.createElement("div");
     document.body.append(element);
     createApp(() => h(page, {environment: "main", catalogue, events, ...props})).mount(element);
-    for (let round = 0; round < 10; round++) await new Promise((resolve) => setTimeout(resolve));
+    for (let round = 0; round < 40; round++) await new Promise((resolve) => setTimeout(resolve));
     return {element, heard: (event) => heard(event)};
 }
 
@@ -116,11 +116,11 @@ test("at phone width the home page stacks its panes and the agent page shows a p
 test("an agent window opened on the home page is given the main agent's id and an environment window is not", async () => {
     const line = (words) => words;
     const base = globalThis.fetch;
-    vi.stubGlobal("fetch", async (url, init) => {
+    vi.stubGlobal("fetch", perLine(async (url, init) => {
         const words = JSON.parse(init?.body || "{}").line || [];
         if (words[0] === "agent" && words[1] === "list") return {json: async () => ({code: 0, value: {rows: [{id: 3}]}, error: ""})};
         return base(url, init);
-    });
+    }));
     current = {suite: "coding", drivers: "main: coding.builder"};
     SHAPES["coding:home:coding.builder"] = {windows: ["messages.chat", "agents.terminal"], active: "messages.chat"};
     const {element} = await mount(HomePage);
@@ -199,11 +199,12 @@ test("the page never scrolls sideways at phone width", () => {
 });
 
 import EnvironmentPage from "../src/pages/EnvironmentPage.vue";
+import {perLine} from "./support/windowContext.js";
 
 async function environments(rows, search = "?agent=3") {
     const replaced = vi.fn();
     vi.stubGlobal("location", {replace: replaced});
-    vi.stubGlobal("fetch", async () => ({json: async () => (rows ? {code: 0, value: {rows}, error: ""} : {code: 1, value: null, error: "none"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => (rows ? {code: 0, value: {rows}, error: ""} : {code: 1, value: null, error: "none"})})));
     const element = document.createElement("div");
     createApp(() => h(EnvironmentPage, {search})).mount(element);
     for (let round = 0; round < 6; round++) await new Promise((resolve) => setTimeout(resolve));
@@ -249,7 +250,7 @@ test("the full screen button draws the expand icon, not the plain dot, and the p
 });
 
 test("a journal that cannot run the shell's lines says why above the page", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 2, value: null, error: "the journal's modules changed: journal module sync"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 2, value: null, error: "the journal's modules changed: journal module sync"})})));
     const {element} = await mount(HomePage);
     expect(element.querySelector(".home-problem").textContent).toContain("the journal's modules changed: journal module sync");
 });
@@ -285,7 +286,7 @@ test("a plain click on a sidebar page follows its address and opens no pane", as
 
 // a fresh journal has no suite chosen, so no layout is ever loaded; the page still has one, and a click on a window works
 test("on a fresh page with no suite chosen, a click on a closed window's button opens it instead of throwing", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 2, value: null, error: "no suite is chosen"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 2, value: null, error: "no suite is chosen"})})));
     const {element} = await mount(HomePage);
     await openAddBar(element);
     const button = element.querySelector(`[data-add-bar] [data-reopen="tasks.tasks"]`);

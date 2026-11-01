@@ -2,11 +2,12 @@ import {createApp, h, nextTick} from "vue";
 import {expect, test, vi} from "vitest";
 import ViewWindow from "../src/layout/ViewWindow.vue";
 import {WindowCatalogue} from "../src/windows/windowCatalogue.js";
+import {perLine} from "./support/windowContext.js";
 
 const board = {name: "notes.board", title: "Board", icon: "window", entry_url: "", line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true};
 
 test("a view window builds its own catalogue and event stream, draws its one window and docks back through the channel", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "refused"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
     const stream = vi.fn(() => () => {});
     const catalogue = new WindowCatalogue(async () => ({windows: [board]}));
     const element = document.createElement("div");
@@ -20,7 +21,7 @@ test("a view window builds its own catalogue and event stream, draws its one win
 });
 
 test("a window on a page of its own opens a row in the panel, as Home does", async () => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "refused"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
     window.location.hash = "#?open=plans:7";
     window.dispatchEvent(new HashChangeEvent("hashchange"));
     const catalogue = new WindowCatalogue(async () => ({windows: [board]}));
@@ -41,7 +42,7 @@ test("a window on a page of its own opens a row in the panel, as Home does", asy
 const terminal = {...board, name: "coding.terminal", title: "Terminal", place: "agent", line: "agent terminal"};
 
 async function pageOf(answer) {
-    vi.stubGlobal("fetch", async () => ({json: async () => answer}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => answer})));
     const catalogue = new WindowCatalogue(async () => ({windows: [terminal]}));
     const element = document.createElement("div");
     const app = createApp(() => h(ViewWindow, {environment: "main", view: "coding.terminal", float: 0, standalone: true, catalogue, events: () => () => {}}));

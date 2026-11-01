@@ -48,3 +48,11 @@ export function typeInto(input, text) {
     input.value = text;
     input.dispatchEvent(new Event("input"));
 }
+
+// a fetch stand-in that answers one line at a time, as the stubs of these tests were written, also for the lines the viewer sends together
+export const perLine = (answer) => async (url, init) => {
+    if (!String(url).endsWith("/api/lines")) return answer(url, init);
+    const answers = [];
+    for (const line of JSON.parse(init.body).lines) answers.push(await (await answer("/api/line", {...init, body: JSON.stringify(line)})).json());
+    return {ok: true, json: async () => ({answers})};
+};

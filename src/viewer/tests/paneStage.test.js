@@ -7,6 +7,7 @@ import {paneLayout} from "../src/windows/paneLayout.js";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {leaves} from "../src/domain/panes.js";
 import {windowContext} from "../src/windows/windowContext.js";
+import {perLine} from "./support/windowContext.js";
 
 const TITLES = {"a.chat": "Chat", "a.tasks": "Tasks", "a.notes": "Notes", "a.spare": "Spare", "messages.chat": "Chat"};
 const fake = (name) => ({name, title: TITLES[name], icon: "window", options: [], line: "task list", loading: "document", reads: [], runs: [], events: [], unavailable_reason: "", allowed: true});
@@ -79,7 +80,7 @@ async function dragTo(element, name, x, y, {drop = true} = {}) {
 }
 
 beforeEach(() => {
-    vi.stubGlobal("fetch", async () => ({json: async () => ({code: 1, value: null, error: "refused"})}));
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, value: null, error: "refused"})})));
     vi.stubGlobal("requestAnimationFrame", (run) => setTimeout(run, 0));
     measured();
 });
@@ -366,11 +367,11 @@ test("the offer answered Side by side splits the pane, and answered Add as tab j
 
 test("a tab shows its window's count line, runs again on one of the window's events, and shows the warm count marked", async () => {
     const answers = [{count: 3, warm: false}, {count: 4, warm: true}];
-    vi.stubGlobal("fetch", async (url, init) => {
+    vi.stubGlobal("fetch", perLine(async (url, init) => {
         const body = JSON.parse(init?.body || "{}");
         const counting = body.line?.join(" ") === "task count";
         return {json: async () => (counting ? {code: 0, value: answers.shift(), error: ""} : {code: 1, value: null, error: "refused"})};
-    });
+    }));
     const subscriptions = new WindowSubscriptions();
     const {element} = await stage({tabs: ["a.tasks"], active: "a.tasks"}, {offers: ["a.tasks"], extra: {count: "task count", events: ["task.*"]}, subscriptions});
     const number = () => tab(element, "a.tasks").querySelector(".pane-tab-n");

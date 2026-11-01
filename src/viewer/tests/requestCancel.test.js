@@ -3,16 +3,17 @@ import {afterEach, expect, test, vi} from "vitest";
 import WindowHost from "../src/windows/WindowHost.vue";
 import {WindowSubscriptions} from "../src/windows/windowSubscriptions.js";
 import {useWindow} from "../src/windows/windowContext.js";
+import {perLine} from "./support/windowContext.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
 // a fetch the test answers by hand, which fails with an abort when its request's signal fires, as a browser's does
 function slowFetch() {
     const waiting = [];
-    vi.stubGlobal("fetch", (url, request) => new Promise((resolve, reject) => {
+    vi.stubGlobal("fetch", perLine((url, request) => new Promise((resolve, reject) => {
         request.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
         waiting.push((value) => resolve({json: async () => ({code: 0, value, error: ""})}));
-    }));
+    })));
     return waiting;
 }
 
@@ -37,7 +38,7 @@ test("a window switched away while its request is slow never draws the old answe
     drawn.value = "";
     const waiting = slowFetch();
     const app = mounted();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve));
     app.unmount();
     await new Promise((resolve) => setTimeout(resolve));
     waiting.forEach((answer) => answer("old rows"));
@@ -49,7 +50,7 @@ test("a window still shown draws its answer", async () => {
     drawn.value = "";
     const waiting = slowFetch();
     mounted();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve));
     waiting.forEach((answer) => answer("rows"));
     await new Promise((resolve) => setTimeout(resolve));
     expect(drawn.value).toBe("rows rows");
@@ -57,12 +58,12 @@ test("a window still shown draws its answer", async () => {
 
 test("an answer that arrives after the window has ended is dropped even when the request was not cut off", async () => {
     drawn.value = "";
-    vi.stubGlobal("fetch", async () => {
+    vi.stubGlobal("fetch", perLine(async () => {
         await new Promise((resolve) => setTimeout(resolve, 10));
         return {json: async () => ({code: 0, value: "late", error: ""})};
-    });
+    }));
     const app = mounted();
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve));
     app.unmount();
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(drawn.value).toBe("failed cancelled");
