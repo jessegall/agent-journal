@@ -21,7 +21,7 @@ const runningCount = computed(() => props.rows.filter((row) => !row.ended_at).le
             <p class="agent-rows-note">{{ none }}</p>
         </template>
         <template v-else>
-            <p class="agent-rows-note" data-agent-rows-count>{{ runningCount }} running of {{ rows.length }}</p>
+            <p class="agent-rows-note" data-agent-rows-count>{{ runningCount }} running</p>
             <template v-for="row in ordered" :key="row.id">
                 <button type="button" class="agent-row" :data-agent-row="row.id" @click="peekRef(`agents:${row.id}`)">
                     <span class="agent-row-name">#{{ row.id }} {{ row.session }}</span>

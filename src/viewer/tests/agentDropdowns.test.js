@@ -15,7 +15,7 @@ test("the workers dropdown lists running workers first, counts them, and each op
     expect(rows.map((row) => row.dataset.agentRow)).toEqual(["5", "3"]);
     expect(rows[0].textContent).toContain("Running");
     expect(rows[1].textContent).toContain("Closed");
-    expect(element.querySelector("[data-agent-rows-count]").textContent).toBe("1 running of 2");
+    expect(element.querySelector("[data-agent-rows-count]").textContent).toBe("1 running");
     rows[0].click();
     expect(window.location.href).toContain("agents:5");
 });
