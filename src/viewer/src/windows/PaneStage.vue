@@ -26,6 +26,7 @@ import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
+import UpdateBand from "../shell/UpdateBand.vue";
 import {peekRef} from "../route.js";
 import {rememberedRef} from "./rememberedState.js";
 import {NO_FACTS} from "../domain/barFacts.js";
@@ -275,6 +276,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
+            <template v-if="shellRead">
+                <UpdateBand :run="shellRead" />
+            </template>
             <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" @open="openCount">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
