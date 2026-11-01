@@ -1,3 +1,4 @@
+import {transport} from "../api/transport.js";
 import {computed, shallowRef} from "vue";
 import {withFamilyOptions} from "./chatOptions.js";
 
@@ -51,12 +52,12 @@ export class WindowCatalogue {
 }
 
 export async function fetchWindowCatalogue(environment) {
-    const response = await fetch(`/api/windows?environment=${encodeURIComponent(environment)}`);
+    const response = await transport.raw(`/api/windows?environment=${encodeURIComponent(environment)}`);
     return await response.json();
 }
 
 export function followEvents(environment, heard) {
-    const source = new EventSource(`/api/events?environment=${encodeURIComponent(environment)}`);
+    const source = transport.stream(`/api/events?environment=${encodeURIComponent(environment)}`);
     source.onmessage = (message) => heard(JSON.parse(message.data));
     return () => source.close();
 }

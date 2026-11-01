@@ -9,7 +9,7 @@ test("the chat draws its docked items between the history and the composer", () 
     const chat = read("../../core/modules/messages/web/src/Chat.vue");
     const history = chat.indexOf('class="history"');
     const docks = chat.indexOf("<DockStack");
-    const composer = chat.indexOf('<form class="composer"');
+    const composer = chat.indexOf("<form :class=\"['composer'");
     expect(history).toBeGreaterThan(-1);
     expect(docks).toBeGreaterThan(history);
     expect(composer).toBeGreaterThan(docks);

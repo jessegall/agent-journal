@@ -1,4 +1,5 @@
 <script setup>
+import {transport} from "../api/transport.js";
 import {onMounted, ref} from "vue";
 
 // offers a phone notices once, on a tap: it asks for permission, subscribes with the journal's public key and hands the subscription to the journal
@@ -18,9 +19,9 @@ async function canOffer() {
 }
 
 async function subscribe() {
-    const key = (await (await fetch("/api/push")).json()).public_key;
+    const key = (await (await transport.raw("/api/push")).json()).public_key;
     const subscription = await registration.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: keyBytes(key)});
-    await fetch("/api/push", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(subscription.toJSON())});
+    await transport.raw("/api/push", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(subscription.toJSON())});
 }
 
 async function accept() {

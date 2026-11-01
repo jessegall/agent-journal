@@ -1,3 +1,4 @@
+import {transport} from "../api/transport.js";
 import {computed, ref} from "vue";
 import {matches} from "./windowSubscriptions.js";
 export {WINDOW_CONTEXT, useWindow} from "@journal/window-kit";
@@ -59,7 +60,7 @@ export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
 // gone never draws the answer
 export async function lineResult(window, line, environment, signal = undefined) {
     try {
-        const response = await fetch("/api/line", {signal, method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
+        const response = await transport.raw("/api/line", {signal, method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
         const answer = await response.json();
         if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
@@ -72,7 +73,7 @@ export async function lineResult(window, line, environment, signal = undefined) 
 // a file the person attached, sent to the journal to wait for the message that names it: answers {ok, value: its pending name}
 export async function uploaded(file, signal = undefined) {
     try {
-        const response = await fetch(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
+        const response = await transport.raw(`/api/files?name=${encodeURIComponent(file.name)}`, {signal, method: "POST", headers: {"Content-Type": "application/octet-stream"}, body: file});
         const answer = await response.json();
         if (signal?.aborted) return CANCELLED;
         return response.ok ? {ok: true, value: answer.file} : {ok: false, failure: "refused", error: answer.error ?? "the file was not taken"};

@@ -1,3 +1,4 @@
+import {transport} from "../api/transport.js";
 import {shallowRef} from "vue";
 import {readMarkDeclarations} from "../domain/markRegistry.js";
 import {AllowancePrompts} from "./allowancePrompts.js";
@@ -12,7 +13,7 @@ const PHONE_WORKER = "/viewer/phone-sw.js";
 export const shellReader = (environment) => (line) => lineResult(SHELL_WINDOW, line, environment);
 
 // who the cookie acts for, as GET /api/session answers it: its type (person, phone or share) and the person
-export const readSession = async () => (await fetch("/api/session")).json();
+export const readSession = async () => (await transport.raw("/api/session")).json();
 
 // what a page of windows needs to run: the catalogue, the shared subscriptions, the shell's own line and allowance
 // prompts, the face its session asks for once `opened` answers, the reason the journal cannot run the shell's lines when it

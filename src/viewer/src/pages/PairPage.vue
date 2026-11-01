@@ -1,4 +1,5 @@
 <script setup>
+import {transport} from "../api/transport.js";
 import {onMounted, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 
@@ -12,7 +13,7 @@ const typed = ref("");
 const failure = ref("");
 
 async function pair(code) {
-    const answer = await fetch("/viewer/pair", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({code: code.trim().toUpperCase()})});
+    const answer = await transport.raw("/viewer/pair", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({code: code.trim().toUpperCase()})});
     if (answer.ok) {
         props.opened();
         return;
