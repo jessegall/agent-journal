@@ -5,6 +5,7 @@ import {Btn, MenuItem, MenuLabel, MenuPanel, useWindow} from "@journal/window-ki
 const STATES = ["started", "open", "blocked", "testing", "completed", "cancelled"];
 const GROUPINGS = [
     {key: "state", label: "Status"},
+    {key: "plan", label: "Plan and phase"},
     {key: "none", label: "Nothing"},
 ];
 const SHOWN = [

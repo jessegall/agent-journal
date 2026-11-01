@@ -1,6 +1,7 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
+import {computed, onUnmounted, ref, watch} from "vue";
 import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
+import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the going groups and the count of the finished ones,
 // and each group pages on its own
@@ -49,12 +50,29 @@ async function more(group) {
 }
 
 const shownGroup = (group) => group.total && (props.states.length ? props.states.includes(group.state) : props.display.showDone || !FINISHED.has(group.state));
-const groups = computed(() => {
+const places = ref([]);
+const NOT_PLACED = "Not in a plan";
+const stateGroups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
     return board.value
         .filter(shownGroup)
         .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}));
 });
+// the tasks held, under the plan and phase each is placed in; the tasks of no plan come last
+const planGroups = computed(() => {
+    const labels = new Map(places.value.flatMap((place) => place.taskIds.map((id) => [id, place.label])));
+    const byLabel = new Map();
+    for (const row of stateGroups.value.flatMap(({tasks}) => tasks)) {
+        const label = labels.get(row.id) ?? NOT_PLACED;
+        byLabel.set(label, [...(byLabel.get(label) ?? []), row]);
+    }
+    const ordered = [...byLabel.keys()].sort((one, two) => (one === NOT_PLACED) - (two === NOT_PLACED) || one.localeCompare(two));
+    return ordered.map((label) => ({group: {state: label, label, total: byLabel.get(label).length, rows: byLabel.get(label)}, tasks: byLabel.get(label)}));
+});
+const groups = computed(() => (props.display.grouping === "plan" ? planGroups.value : stateGroups.value));
+watch(() => props.display.grouping, async (grouping) => {
+    if (grouping === "plan") places.value = await readPlanPlaces(context);
+}, {immediate: true});
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 const stopFollowing = context.follow(["task.*"], load);
@@ -81,8 +99,8 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
             </template>
             <template v-for="{group, tasks} in groups" :key="group.state">
                 <section class="tasks-group" :data-state="group.state">
-                    <template v-if="display.grouping === 'state'">
-                        <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
+                    <template v-if="display.grouping !== 'none'">
+                        <h3 class="tasks-group-head" data-group-head>{{ group.label ?? name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
                     </template>
                     <template v-for="row in tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">

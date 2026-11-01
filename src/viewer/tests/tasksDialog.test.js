@@ -177,3 +177,12 @@ test("grouping by nothing keeps show more and the finished groups", async () => 
     expect(shown.querySelector(".tasks-group-head")).toBeNull();
     expect(shown.querySelector('[data-more="completed"]')).not.toBeNull();
 });
+
+test("the plan places are read from the board and each outline", async () => {
+    const {readPlanPlaces} = await import("../../core/modules/tasks/web/src/planPlaces.js");
+    const read = async (line) => (line === "plan board"
+        ? {ok: true, value: {plans: [{id: 3, title: "Checkout"}]}}
+        : {ok: true, value: {phases: [{id: 7, title: "Payment", tasks: [{id: 40}]}]}});
+    expect(await readPlanPlaces({read})).toEqual([{phaseId: 7, label: "Plan 3: Checkout › Payment", taskIds: [40]}]);
+});
+

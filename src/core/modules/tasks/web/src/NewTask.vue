@@ -1,6 +1,7 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import {Btn, TaskStatusIcon, useWindow} from "@journal/window-kit";
+import {Btn, MenuItem, MenuPanel, TaskStatusIcon, useWindow} from "@journal/window-kit";
+import {readPlanPlaces} from "./planPlaces.js";
 
 // a new task being written, at the top of the list as version 4 had it
 const emit = defineEmits(["filed", "cancel"]);
@@ -15,7 +16,26 @@ async function file() {
     if (!ready.value) return;
     const answer = await context.run(["task", "make", title.value.trim(), ...(brief.value.trim() ? ["--brief", brief.value.trim()] : [])]);
     failure.value = answer.ok ? "" : answer.error;
-    if (answer.ok) emit("filed", answer.value.id);
+    if (!answer.ok) return;
+    if (place.value) {
+        const placed = await context.run(["phase", "place", String(answer.value.id), "--phase", String(place.value.phaseId)]);
+        failure.value = placed.ok ? "" : placed.error;
+    }
+    emit("filed", answer.value.id);
+}
+
+const place = ref(null);
+const places = ref([]);
+const anchor = ref(null);
+
+async function openPlaces(event) {
+    anchor.value = event.currentTarget;
+    places.value = await readPlanPlaces(context);
+}
+
+function pickPlace(picked) {
+    place.value = picked;
+    anchor.value = null;
 }
 
 const fileOnCommand = (event) => (event.metaKey || event.ctrlKey) && (event.preventDefault(), file());
@@ -34,6 +54,15 @@ onMounted(() => input.value.focus());
         </template>
         <div class="foot">
             <span class="hint">Enter to file it, Esc to cancel</span>
+            <Btn small data-task-place @click="openPlaces">{{ place ? place.label : "Place in a plan" }}</Btn>
+            <template v-if="anchor">
+                <MenuPanel :anchor="anchor" :min-width="260" @close="anchor = null">
+                    <MenuItem data-task-place-none @click="pickPlace(null)">Not in a plan</MenuItem>
+                    <template v-for="one in places" :key="one.phaseId">
+                        <MenuItem :data-task-place-phase="one.phaseId" @click="pickPlace(one)">{{ one.label }}</MenuItem>
+                    </template>
+                </MenuPanel>
+            </template>
             <Btn small @click="emit('cancel')">Cancel</Btn>
             <Btn small kind="primary" :disabled="!ready" data-file-task @click="file">File the task</Btn>
         </div>
