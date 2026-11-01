@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Btn, Skeleton, useRows, useWindow} from "@journal/window-kit";
+import {Dialog, Btn, Skeleton, useRows, useWindow} from "@journal/window-kit";
 
 // the plugins of this project: install one from a source, ask the agent to make one, and per plugin its switch, its settings and removing it, with or without its data
 const context = useWindow();
@@ -44,6 +44,15 @@ async function toggleSettings(row) {
 }
 
 const configure = (row, setting, value) => run(["plugin", "configure", row.name, setting.key, value]);
+
+const record = ref(null);
+const recordFailure = ref("");
+
+async function showRecord(row) {
+    const answer = await context.read(`plugin record ${row.name}`);
+    recordFailure.value = answer.ok ? "" : answer.error;
+    record.value = answer.ok ? answer.value : null;
+}
 </script>
 
 <template>
@@ -89,6 +98,7 @@ const configure = (row, setting, value) => run(["plugin", "configure", row.name,
                 </template>
                 <span class="plugin-moves">
                     <Btn small data-plugin-settings @click="toggleSettings(row)">Settings</Btn>
+                    <Btn small data-plugin-record @click="showRecord(row)">What it did</Btn>
                     <template v-if="removing === row.name">
                         <Btn small @click="removing = ''">Keep it</Btn>
                         <Btn small kind="danger" data-plugin-remove-keep @click="remove(row, false)">Remove, keep its data</Btn>
@@ -114,9 +124,39 @@ const configure = (row, setting, value) => run(["plugin", "configure", row.name,
             </div>
         </template>
     </div>
+    <template v-if="recordFailure">
+        <p class="plugin-fault" role="alert" data-plugin-record-failure>{{ recordFailure }}</p>
+    </template>
+    <template v-if="record">
+        <Dialog :title="`What ${record.name} did`" @close="record = null">
+            <div data-plugin-record-body>
+                <template v-if="record.last_fault">
+                    <p class="plugin-fault">Last fault, {{ record.fault_count }} in a row: {{ record.last_fault }}</p>
+                </template>
+                <template v-if="!record.outputs.length">
+                    <p class="plugin-note">It has done nothing yet.</p>
+                </template>
+                <template v-for="row in record.outputs" :key="row.id">
+                    <p class="plugin-output" data-plugin-output>{{ row.output }}</p>
+                </template>
+            </div>
+        </Dialog>
+    </template>
 </template>
 
 <style scoped>
+.plugin-output {
+    margin: 0 0 6px;
+    font-size: 13px;
+    white-space: pre-wrap;
+}
+
+.plugin-note {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 13px;
+}
+
 .plugin-tools {
     display: flex;
     gap: 8px;

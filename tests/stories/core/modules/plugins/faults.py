@@ -30,3 +30,11 @@ def test_a_failing_plugin_that_answers_again_shows_a_mark_that_it_answers(new_st
     story.run_listeners()
     story.expect_text("chat-mark list --environment 1", "Plugin sample answers again", actor=story.user)
     story.expect_absent("plugin list", "last fault", actor=story.user)
+
+
+def test_the_record_says_what_a_plugin_did_and_its_last_fault(new_story):
+    story = installed_story(new_story)
+    story.hook("s-1", BROKEN_SAMPLE)
+    story.run_listeners()
+    story.expect_text("plugin record sample", "last fault: it ended with code 3", actor=story.user)
+    story.expect_refusal("plugin record nobody", "no plugin is called nobody", actor=story.user)

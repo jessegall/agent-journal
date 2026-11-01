@@ -1,0 +1,38 @@
+from argparse import ArgumentParser, Namespace
+
+from core.base.caller.caller import Caller
+from core.base.query.queries import Queries
+from core.base.refusal import Refusal
+from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
+from core.modules.plugins.models.plugin import Plugin
+from core.modules.plugins.models.plugin_output import PluginOutput
+from core.modules.plugins.support.plugin_record import PluginRecord
+
+SHOWN_OUTPUT_COUNT = 50
+
+
+class PluginRecordSubcommand(ReadSubcommand[PluginRecord]):
+    """`journal plugin record <name>`: what a plugin did, its newest outputs and its last fault."""
+
+    cli_name = "plugin"
+    name = "record"
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("name")
+
+    def read(self, arguments: Namespace, caller: Caller) -> PluginRecord:
+        plugins = self.queries.query(Plugin).filter(name=arguments.name).page(1, 1).rows
+        if not plugins:
+            raise Refusal(f"no plugin is called {arguments.name}", "journal plugin list names them")
+        plugin = plugins[0]
+        outputs = self.queries.query(PluginOutput).filter(plugin_id=plugin.id).newest().page(1, SHOWN_OUTPUT_COUNT).rows
+        return PluginRecord(plugin.name, [{"id": row.id, "output": row.output, "created_at": row.created_at.text} for row in outputs], plugin.fault_count, plugin.last_fault)
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, PluginRecord):
+            lines = [str(row["output"]) for row in value.outputs]
+            output.write("\n".join([*lines, *([f"last fault: {value.last_fault}"] if value.last_fault else [])]) or "it has done nothing yet", value.json())

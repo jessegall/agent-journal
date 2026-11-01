@@ -73,3 +73,27 @@ test("a plugin's settings open and a change is saved", async () => {
     await settle();
     expect(ran).toContainEqual(["plugin", "configure", "sins", "depth", "5"]);
 });
+
+async function recordDrawn(answer) {
+    const window = context({"plugin record": answer, "plugin list": page([PLUGIN])});
+    const element = await mounted(PluginRows, window);
+    element.querySelector("[data-plugin-record]").click();
+    await settle();
+    return {element, window};
+}
+
+test("what a plugin did lists its outputs and its last fault", async () => {
+    const {window} = await recordDrawn({ok: true, value: {name: "sins", outputs: [{id: 1, output: "Judged 3 files"}], fault_count: 2, last_fault: "it timed out"}});
+    expect(window.reads).toContain("plugin record sins");
+    const body = document.querySelector("[data-plugin-record-body]");
+    expect(body.querySelector("[data-plugin-output]").textContent).toBe("Judged 3 files");
+    expect(body.textContent).toContain("it timed out");
+});
+
+test("a plugin that did nothing says so, and a refused read says why", async () => {
+    await recordDrawn({ok: true, value: {name: "sins", outputs: [], fault_count: 0, last_fault: ""}});
+    expect(document.querySelector("[data-plugin-record-body]").textContent).toContain("It has done nothing yet");
+    document.body.innerHTML = "";
+    const {element} = await recordDrawn({ok: false, error: "no plugin is called sins"});
+    expect(element.querySelector("[data-plugin-record-failure]").textContent).toContain("no plugin is called sins");
+});

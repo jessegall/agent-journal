@@ -17,6 +17,7 @@ from core.modules.plugins.commands.disable_plugin.disable_plugin_subcommand impo
 from core.modules.plugins.commands.enable_plugin.enable_plugin_subcommand import EnablePluginSubcommand
 from core.modules.plugins.commands.install_plugin.install_plugin_handler import InstallPluginHandler
 from core.modules.plugins.commands.install_plugin.install_plugin_subcommand import InstallPluginSubcommand
+from core.modules.plugins.commands.plugin_record.plugin_record_subcommand import PluginRecordSubcommand
 from core.modules.plugins.commands.plugin_list.plugin_list_subcommand import PluginListSubcommand
 from core.modules.plugins.commands.plugin_settings.plugin_settings_subcommand import PluginSettingsSubcommand
 from core.modules.plugins.commands.propose_plugin.propose_plugin_subcommand import ProposePluginSubcommand
@@ -57,7 +58,7 @@ class PluginsModule(Module):
               ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=BUILT)]
     moves = [PluginsMove]
-    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN, reads=["plugin list", "plugin settings"],
+    windows = [WindowDeclaration("plugins.plugins", "Plugins", "plugins.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN, reads=["plugin record", "plugin list", "plugin settings"],
                                  runs=["plugin enable", "plugin disable", "plugin install", "plugin remove", "plugin configure", "message send"], events=["plugin.*"])]
     migrations = [PluginsTablesMigration]
     handlers = [InstallPluginHandler, SwitchPluginHandler, ConfigurePluginHandler, RemovePluginHandler, DeliverPluginEventHandler, SwitchOffChangedPluginHandler,
@@ -70,5 +71,5 @@ class PluginsModule(Module):
     driver_rules = [PluginRule]
     marks = PLUGIN_MARKS
     listeners = [PluginDeliveryListener, PluginHealthMarkListener, PluginOutputListener, PluginQueueFileListener]
-    subcommands = (PluginListSubcommand, PluginSettingsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
+    subcommands = (PluginRecordSubcommand, PluginListSubcommand, PluginSettingsSubcommand, ProposePluginSubcommand, InstallPluginSubcommand, EnablePluginSubcommand,
                    DisablePluginSubcommand, ConfigurePluginSubcommand, RemovePluginSubcommand)
