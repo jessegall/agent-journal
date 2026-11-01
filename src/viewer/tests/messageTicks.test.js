@@ -42,7 +42,7 @@ test("a message offers reply and copy, and delete only while it is yours and unr
         createApp({render: () => h(MessageCard, {message})}).mount(element);
         return [...element.querySelectorAll("[data-message-action]")].map((button) => button.dataset.messageAction);
     };
-    expect(tools(user)).toEqual(["reply", "copy", "delete"]);
-    expect(tools({...user, read_at: "2026-11-01T05:01:00+00:00"})).toEqual(["reply", "copy"]);
-    expect(tools({...user, type: "agent"})).toEqual(["reply", "copy"]);
+    expect(tools(user)).toEqual(["react", "reply", "copy", "delete"]);
+    expect(tools({...user, read_at: "2026-11-01T05:01:00+00:00"})).toEqual(["react", "reply", "copy"]);
+    expect(tools({...user, type: "agent"})).toEqual(["react", "reply", "copy"]);
 });

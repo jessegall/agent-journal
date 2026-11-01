@@ -22,3 +22,4 @@ class Message(Model):
     delivered_at: Timestamp | None = None
     files: tuple[str, ...] = ()
     captions: str = "{}"
+    reactions: str = "[]"

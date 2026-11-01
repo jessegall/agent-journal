@@ -5,12 +5,13 @@ import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
 import {peekChip, peekRef} from "../src/route.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
+import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
 
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card
 const props = defineProps({message: {type: Object, required: true}, quote: {type: String, default: ""}});
-const emit = defineEmits(["reply", "delete"]);
+const emit = defineEmits(["reply", "delete", "react"]);
 const copied = ref(false);
 const bubble = ref(null);
 const deletable = computed(() => props.message.type === "user" && !props.message.read_at && !props.message.local);
@@ -34,6 +35,14 @@ const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIC
 const captions = computed(() => JSON.parse(props.message.captions || "{}"));
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name), title: captions.value[name] || name})));
 const time = computed(() => clock(new Date(props.message.created_at).getTime() / 1000 || props.message.created_at));
+
+const picking = ref(false);
+const reactions = computed(() => reactionGroups(props.message.reactions));
+
+function pick(face) {
+    picking.value = false;
+    emit("react", props.message, face);
+}
 </script>
 
 <template>
@@ -46,6 +55,7 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
                 <div v-html="html" />
             </div>
             <div class="message-tools" data-message-tools>
+                <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = !picking">React</button>
                 <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
                 <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
                 <template v-if="deletable">
@@ -53,6 +63,25 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
                 </template>
             </div>
         </div>
+        <template v-if="picking">
+            <div class="message-faces" data-message-faces>
+                <template v-for="face in FACES" :key="face">
+                    <button type="button" class="message-face" :title="`React ${face}`" :data-face="face" @click="pick(face)">{{ face }}</button>
+                </template>
+            </div>
+        </template>
+        <template v-if="reactions.length">
+            <div class="message-reactions" data-message-reactions>
+                <template v-for="reaction in reactions" :key="reaction.emoji">
+                    <button type="button" :class="['message-reaction', {mine: reaction.mine}]" :title="reaction.title" :data-reaction="reaction.emoji" @click="emit('react', message, reaction.emoji)">
+                        {{ reaction.emoji }}
+                        <template v-if="reaction.count > 1">
+                            <span class="message-reaction-count">{{ reaction.count }}</span>
+                        </template>
+                    </button>
+                </template>
+            </div>
+        </template>
         <template v-if="files.length">
             <div class="message-files" data-message-files>
                 <template v-for="file in files" :key="file.name">
@@ -75,6 +104,69 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 </template>
 
 <style scoped>
+.message-faces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 4px;
+    padding: 3px;
+    border: 1px solid var(--border-2);
+    border-radius: 10px;
+    background: var(--raised);
+}
+
+.message-face {
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    font-size: 15px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.message-face:hover {
+    background: var(--hover);
+}
+
+.message-reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.message-reaction {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    padding: 1px 6px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    background: transparent;
+    font-size: 12px;
+    line-height: 18px;
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+}
+
+.message-reaction:hover {
+    background: var(--hover);
+}
+
+.message-reaction.mine {
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    background: color-mix(in srgb, var(--accent) 16%, var(--raised));
+}
+
+.message-reaction-count {
+    color: var(--text-3);
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+}
+
 .message {
     display: flex;
     flex-direction: column;

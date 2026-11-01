@@ -1,3 +1,4 @@
+from core.modules.messages.support.message_reactions import MessageReactions
 from core.base.actor_type import ActorType
 from core.base.command.context import Context
 from core.base.command.handler import Handler
@@ -22,6 +23,8 @@ class SendMessageHandler(Handler[SendMessage, Message]):
         self.repository, self.files = repository, files
 
     def handle(self, command: SendMessage, context: Context) -> Message:
+        if command.parent_id is not None and context.actor.type is ActorType.AGENT and MessageReactions.is_emoji(command.text):
+            raise Refusal(f"a reply of only {command.text} is not posted", f'react instead: journal message react {command.parent_id} "{command.text}"')
         actor = context.actor
         if context.environment_id is None:
             raise Refusal("a message is sent in an environment", "name it with --environment")

@@ -1,5 +1,6 @@
 import re
 
+from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -10,6 +11,7 @@ from core.base.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
+from core.modules.messages.support.message_reactions import MessageReactions
 from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL
 
 ALLOWED_TOOL_CALL_COUNT = 10
@@ -43,4 +45,4 @@ class UnansweredMessageRule(DriverRule):
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
         agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
         read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].created_at.text if agent_messages else ""))
-        return tuple(read_messages.oldest().all_rows())
+        return tuple(message for message in read_messages.oldest().all_rows() if not MessageReactions.has_from(message, ActorType.AGENT.value))

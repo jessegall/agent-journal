@@ -23,4 +23,5 @@ class ChatMessage(ViewModel):
     read_at: Timestamp | None
     files: tuple[str, ...]
     captions: str
+    reactions: str
     created_at: Timestamp

@@ -100,3 +100,9 @@ def test_an_edit_of_a_code_file_reminds_of_plain_words_and_a_text_file_does_not(
     story = teaching_story(new_story)
     story.expect_absent_hook_line("s-1", HookSamples.edit("notes.txt"), "plain words")
     assert any("plain words" in line for line in story.hook("s-1", HookSamples.edit("cart.py")).lines)
+
+
+def test_an_agents_face_on_a_message_answers_it(new_story):
+    story, _ = read_story(new_story)
+    story.expect_text('message react 1 "👍"', "message 1: 👍", actor=story.agent)
+    story.expect_absent_hook_line("s-1", LOOK, "answer message 1")

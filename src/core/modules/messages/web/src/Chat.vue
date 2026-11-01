@@ -91,6 +91,11 @@ function startReply(message) {
     replying.value = message;
     focusComposer();
 }
+async function reactTo(message, face) {
+    const result = await context.run(["message", "react", String(message.id), face]);
+    sendFailure.value = result.ok ? "" : result.error;
+}
+
 async function removeMessage(message) {
     const result = await context.run(["message", "delete", String(message.id)]);
     sendFailure.value = result.ok ? "" : result.error;
@@ -253,7 +258,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                         <MarkHost :mark="row.row" />
                     </template>
                     <template v-else>
-                        <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" />
+                        <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" @react="reactTo" />
                     </template>
                 </template>
             </RowList>
