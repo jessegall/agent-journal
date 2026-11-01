@@ -1,3 +1,4 @@
+from core.modules.processes.models.enums.process_state import ProcessState
 from dataclasses import replace
 
 from core.base.command.bus import Bus
@@ -31,7 +32,7 @@ class EndProcessHandler(Handler[EndProcess, Process]):
             return ended
         self.bus.dispatch(ReadNewOutput(process.id, is_final=True), context)
         output = self.outputs.process(process.id).page(1, 1).rows[0]
-        if self.is_short(process, command):
+        if process.state is not ProcessState.BACKGROUND and self.is_short(process, command):
             self.repository.delete(output, context)
         else:
             self.repository.save(replace(output, byte_count=command.byte_count, line_count=command.line_count, ended_at=context.timestamp), context)
