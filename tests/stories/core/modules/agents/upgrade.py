@@ -16,3 +16,9 @@ def test_the_work_of_an_agent_names_its_new_actor(new_story):
 def test_an_agent_with_a_role_version_5_does_not_know_is_skipped_with_its_number_and_reason(new_story):
     story = upgraded_story(new_story)
     assert "skipped agents 2: role ghost-role" in story.upgrade_text and "s-2" not in story.run("agent list").output_text
+
+
+def test_a_version_4_agent_with_no_role_moves_as_a_main_session_and_its_question_moves_with_it(new_story):
+    story = upgraded_story(new_story)
+    story.expect_text("agent list --json", '"session": "s-early"', '"role": "main"')
+    story.expect_text("question show 4", "What did the early session ask?")

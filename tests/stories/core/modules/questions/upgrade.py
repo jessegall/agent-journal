@@ -10,7 +10,7 @@ def test_an_answered_question_moves_with_its_options_answer_and_asking_agent_fro
 def test_an_open_question_moves_open(new_story):
     story = upgraded_story(new_story)
     story.expect_success("question show 2", "question 2: Ship on Friday?", "state: open")
-    assert "questions: moved 2" in story.upgrade_text
+    assert "questions: moved 3" in story.upgrade_text
 
 
 def test_a_question_longer_than_version_5_allows_is_skipped_and_named(new_story):
