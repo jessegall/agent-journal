@@ -1,16 +1,28 @@
 <script setup>
-import {computed, ref} from "vue";
-import {Skeleton, useRows} from "@journal/window-kit";
+import {computed, onMounted, onUnmounted, ref} from "vue";
+import {Segmented, Skeleton, useRows} from "@journal/window-kit";
 import SettingNode from "./SettingNode.vue";
 
+const DEFAULT_SOURCE = "default";
+const TYPING = "input,textarea,select,[contenteditable]";
 const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
 const query = ref("");
+const filter = ref("all");
+const field = ref(null);
 const listed = computed(() => rows.value.filter((row) => !row.key.endsWith(".*")));
+const isChanged = (row) => row.type !== "group" && row.source !== DEFAULT_SOURCE;
+const isOff = (row) => row.value === false;
+const FILTERS = {all: () => true, changed: isChanged, off: isOff};
+const filters = computed(() => [
+    {key: "all", label: "All"},
+    {key: "changed", label: "Changed", title: "Settings you changed from their default", count: listed.value.filter(isChanged).length},
+    {key: "off", label: "Off", count: listed.value.filter(isOff).length},
+]);
 // a search keeps each setting whose title, description or key has the words, and the groups above it
 const shown = computed(() => {
     const wanted = query.value.trim().toLowerCase();
-    if (!wanted) return listed.value;
-    const hits = listed.value.filter((row) => [row.title, row.description, row.key].join(" ").toLowerCase().includes(wanted));
+    if (!wanted && filter.value === "all") return listed.value;
+    const hits = listed.value.filter((row) => FILTERS[filter.value](row) && [row.title, row.description, row.key].join(" ").toLowerCase().includes(wanted));
     const keys = new Set(hits.map((row) => row.key));
     for (const row of hits) {
         for (let up = listed.value.find((other) => other.key === row.parent); up; up = listed.value.find((other) => other.key === up.parent)) keys.add(up.key);
@@ -31,6 +43,14 @@ function jump(module) {
     document.querySelector(`[data-module="${module}"]`)?.scrollIntoView({block: "start"});
 }
 
+function slashFocus(event) {
+    if (event.key !== "/" || event.target.closest?.(TYPING)) return;
+    event.preventDefault();
+    field.value?.focus();
+}
+onMounted(() => window.addEventListener("keydown", slashFocus));
+onUnmounted(() => window.removeEventListener("keydown", slashFocus));
+
 async function saved(words) {
     const result = await context.run(words);
     if (result.ok) load();
@@ -40,9 +60,13 @@ async function saved(words) {
 
 <template>
     <div class="settings">
-        <label class="settings-search">
-            <input v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" />
-        </label>
+        <div class="settings-bar">
+            <label class="settings-search">
+                <input ref="field" v-model="query" class="settings-search-field" type="search" placeholder="Find a setting" aria-label="Find a setting" @keydown.esc="query = ''" />
+            </label>
+            <Segmented :options="filters" :value="filter" data-settings-filter @pick="filter = $event" />
+            <span class="settings-saved">Changes are saved as you make them</span>
+        </div>
         <template v-if="!loaded">
             <Skeleton shape="text" />
         </template>
@@ -77,6 +101,24 @@ async function saved(words) {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.settings-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.settings-search {
+    flex: 1;
+    min-width: 200px;
+    max-width: 360px;
+}
+
+.settings-saved {
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .settings-search-field {

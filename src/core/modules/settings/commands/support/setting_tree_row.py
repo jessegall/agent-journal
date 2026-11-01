@@ -24,9 +24,10 @@ class SettingTreeRow:
     agent_writable: bool
     choices: Sequence[str]
     toggleable: bool
+    default: object = None
 
     @classmethod
     def listed(cls, setting: CurrentSetting) -> "SettingTreeRow":
         entry = setting.entry
         return cls(entry.key, entry.module, entry.parent, entry.title, entry.description, entry.type, None if entry.secret else setting.value, SettingLines.shown(setting),
-                   setting.source, entry.secret, entry.scope, entry.agent_writable, tuple(entry.choices), entry.toggleable)
+                   setting.source, entry.secret, entry.scope, entry.agent_writable, tuple(entry.choices), entry.toggleable, None if entry.secret else entry.default)

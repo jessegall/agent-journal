@@ -17,6 +17,9 @@ const isGroup = computed(() => props.row.type === "group");
 const scopeFlag = computed(() => (props.row.scope === "project" ? ["--project"] : []));
 const refusal = ref("");
 const typed = ref("");
+const DEFAULT_SOURCE = "default";
+const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && props.row.source !== DEFAULT_SOURCE && props.row.default !== null && props.row.default !== undefined);
+const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
 
 async function saveValue(text) {
     const line = ["setting", "set", props.row.key, String(text), ...scopeFlag.value];
@@ -62,7 +65,15 @@ function savedSecret() {
     </template>
     <template v-else>
         <div class="setting-value" :data-setting="row.key">
-            <label class="setting-label" :for="row.key">{{ row.title }}</label>
+            <div class="setting-head">
+                <template v-if="row.source !== DEFAULT_SOURCE">
+                    <span class="setting-dot" data-setting-changed title="Changed from the default" />
+                </template>
+                <label class="setting-label" :for="row.key">{{ row.title }}</label>
+                <template v-if="resettable">
+                    <button type="button" class="setting-reset" data-setting-reset :title="`Back to the default: ${defaultWords}`" @click="saveValue(defaultWords)">Reset</button>
+                </template>
+            </div>
             <p class="setting-description">{{ row.description }}</p>
             <template v-if="row.secret">
                 <p class="setting-shown">{{ row.shown }}</p>
@@ -96,6 +107,36 @@ function savedSecret() {
 </template>
 
 <style scoped>
+.setting-head {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.setting-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.setting-reset {
+    margin-left: auto;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.setting-reset:hover {
+    background: var(--hover);
+    color: var(--text);
+}
+
 .setting-group {
     display: flex;
     flex-direction: column;
