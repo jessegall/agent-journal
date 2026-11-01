@@ -76,3 +76,15 @@ test("the information bar shows the allowance used, the context, the model and t
     element.querySelector("[data-fact='context']").click();
     expect(opened).toEqual(["context"]);
 });
+
+test("the agent bar names a paused agent, what waits on you, and opens workers and reviewers", () => {
+    const opened = [];
+    const element = mounted(AgentBar, {agent: {...MAIN, paused_at: "2026-11-01T10:00:00Z"}, helpers: 1, waiting: 2, workers: 3, onOpen: (name) => opened.push(name)});
+    expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
+    expect(element.querySelector("[data-workers]").textContent).toContain("3 workers");
+    element.querySelector("[data-agent-waiting]").click();
+    element.querySelector("[data-workers]").click();
+    element.querySelector("[data-reviewers]").click();
+    expect(opened).toEqual(["waiting", "workers", "reviewers"]);
+});
+

@@ -101,7 +101,7 @@ const facts = ref(NO_FACTS);
 const now = ref(Date.now());
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", usage: "usage.usage", context: "usage.context"};
+const COUNT_WINDOWS = {tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", workers: "agents.agents", reviewers: "reviews.reviewer", usage: "usage.usage", context: "usage.context"};
 const usage = ref({agents: [], windows: []});
 async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
@@ -295,7 +295,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             <template v-if="shellRead">
                 <UpdateBand :run="shellRead" />
             </template>
-            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :run="shellRead" @open="openCount" @changed="readFacts">
+            <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" :workers="usage.agents.filter((row) => row.role === 'worker').length" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>

@@ -31,7 +31,7 @@ async function mount({driver = "coding.builder", values = {}} = {}) {
     mounted.push(element);
     createApp({setup: () => () => h(WorkMode), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
     await settled();
-    return {element, runs};
+    return {element, runs, context};
 }
 
 test("the two modes show as version 4's segmented buttons, the current one on, and a pick chooses the driver", async () => {
@@ -64,3 +64,23 @@ test("the auto switch lives here and sets auto mode", async () => {
     await settled();
     expect(runs).toEqual(["setting set journal.suites.coding.auto-mode false --environment main"]);
 });
+
+test("a switch while the agent works asks first and can be kept", async () => {
+    const {element, runs, context} = await mount({driver: "coding.orchestrator"});
+    const read = context.read;
+    context.read = async (line) => (line.startsWith("usage bars") ? {ok: true, value: {task_id: 12, helpers: 0}} : read(line));
+    element.querySelectorAll(".segmented-option")[0].click();
+    await settled();
+    expect(runs).toEqual([]);
+    expect(element.querySelector("[data-mode-ask]").textContent).toContain("working on task 12");
+    element.querySelector("[data-mode-keep]").click();
+    await settled();
+    expect(element.querySelector("[data-mode-ask]")).toBeNull();
+    expect(runs).toEqual([]);
+    element.querySelectorAll(".segmented-option")[0].click();
+    await settled();
+    element.querySelector("[data-mode-switch]").click();
+    await settled();
+    expect(runs).toEqual(["driver choose coding.builder --environment main"]);
+});
+

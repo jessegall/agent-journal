@@ -70,6 +70,12 @@ watch(running, readChoices);
             <template v-for="one in groups" :key="one.key">
                 <Btn small :data-agent-control="one.key" @click="open($event, one.key)">{{ one.label }}</Btn>
             </template>
+            <template v-if="agent.paused_at">
+                <Btn small kind="primary" data-agent-resume title="Tells the agent to carry on where it stopped" @click="act(['agent', 'resume', String(agent.id)], 'The agent carries on')">Resume</Btn>
+            </template>
+            <template v-else>
+                <Btn small data-agent-pause title="The agent finishes the step it is on, then waits until you resume it" @click="act(['agent', 'pause', String(agent.id)], 'The agent is paused')">Pause</Btn>
+            </template>
             <template v-if="asking">
                 <span class="agent-ask" data-agent-stop-ask>Stop the agent? It stops what it is doing.</span>
                 <Btn small kind="primary" data-agent-stop-confirm @click="stop">Stop it</Btn>

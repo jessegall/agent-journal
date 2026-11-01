@@ -40,8 +40,21 @@ async function run(words) {
     return answer.ok;
 }
 
+const asking = ref(null);
+
+async function switchMode(key) {
+    asking.value = null;
+    if (await run(`driver choose ${key} --environment ${context.environment}`)) mode.value = key;
+}
+
+// a switch while the agent works asks first, so a stray click never changes it; none while it is idle
 async function pickMode(key) {
-    if (key !== mode.value && (await run(`driver choose ${key} --environment ${context.environment}`))) mode.value = key;
+    if (key === mode.value) return;
+    const bars = await context.read(`usage bars --environment ${context.environment}`);
+    const label = MODES.find((one) => one.key === key).label;
+    const question = !bars.ok ? "" : bars.value.task_id ? `Switch to ${label}? The agent is working on task ${bars.value.task_id}.` : bars.value.helpers ? `Switch to ${label}? The agent has ${bars.value.helpers} helpers out.` : "";
+    if (question) asking.value = {key, question};
+    else await switchMode(key);
 }
 
 const setSetting = (key, value) => run(`setting set ${key} ${value} --environment ${context.environment}`);
@@ -72,6 +85,15 @@ load();
     <span ref="root" class="agentset" data-work-mode>
         <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="toggleAuto" />
         <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
+        <template v-if="asking">
+            <div class="agentset-menu" role="dialog" aria-label="Switch the work mode" data-mode-ask>
+                <p class="agentset-ask">{{ asking.question }}</p>
+                <div class="agentset-ask-buttons">
+                    <button type="button" data-mode-keep @click="asking = null">Keep the mode</button>
+                    <button type="button" data-mode-switch @click="switchMode(asking.key)">Switch</button>
+                </div>
+            </div>
+        </template>
         <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="open = !open">
             <Icon name="caret" :size="12" />
         </button>
@@ -160,5 +182,16 @@ load();
     margin: 0;
     color: var(--danger);
     font-size: 12px;
+}
+
+.agentset-ask {
+    margin: 0 0 8px;
+    font-size: 13px;
+}
+
+.agentset-ask-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 </style>

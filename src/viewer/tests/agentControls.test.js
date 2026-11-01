@@ -63,3 +63,16 @@ test("with no agent it offers the programs to start, and a refusal says why", as
     expect(ran).toContain("agent launch claude");
     expect(element.querySelector("[data-agent-failure]").textContent).toBe("no launcher is running here");
 });
+
+test("a running agent is paused and a paused one resumed", async () => {
+    const {element, ran} = await drawn({id: 7, ended_at: null, paused_at: null});
+    element.querySelector("[data-agent-pause]").click();
+    await settle();
+    expect(ran).toContain("agent pause 7");
+    const paused = await drawn({id: 8, ended_at: null, paused_at: "2026-11-01T10:00:00Z"});
+    expect(paused.element.querySelector("[data-agent-pause]")).toBeNull();
+    paused.element.querySelector("[data-agent-resume]").click();
+    await settle();
+    expect(paused.ran).toContain("agent resume 8");
+});
+

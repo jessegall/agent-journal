@@ -49,7 +49,7 @@ class CodingModule(Module):
     subcommands = [ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
-                                 reads=["suite current", "setting show"], runs=["driver choose", "setting set"]),
+                                 reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
