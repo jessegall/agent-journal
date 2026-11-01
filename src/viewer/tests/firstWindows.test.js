@@ -10,6 +10,7 @@ import Transcript from "../../core/modules/agents/web/src/transcript.js";
 import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
 import FileEdits from "../../suites/coding/web/src/FileEdits.vue";
+import ProjectFiles from "../../suites/coding/web/src/ProjectFiles.vue";
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
 
 vi.stubGlobal("ResizeObserver", class {
@@ -169,3 +170,17 @@ test("a line typed in the terminal goes to the agent, and a refusal gives it bac
     expect(element.querySelector("[data-terminal-refusal]").textContent).toBe("no launcher is running here");
     expect(form.querySelector("input").value).toBe("ls -la");
 });
+
+test("the files window opens the file its address names", async () => {
+    window.history.pushState({}, "", "?page=coding.files&file=src/cart.py");
+    const shown = {...context({'project-file list ""': page([])}), read: async (line) => (line.startsWith("project-file show") ? {ok: true, value: {path: "src/cart.py", text: "TOTAL = 0"}} : page([]))};
+    const lines = [];
+    const reading = shown.read;
+    shown.read = async (line) => (lines.push(line), reading(line));
+    const element = await mounted(ProjectFiles, shown);
+    window.history.pushState({}, "", "?");
+    await settle();
+    expect(lines).toContain('project-file show "src/cart.py"');
+    expect(element.textContent).toContain("TOTAL = 0");
+});
+
