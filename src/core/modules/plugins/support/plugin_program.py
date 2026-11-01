@@ -2,6 +2,7 @@ import json
 import os
 import signal
 import subprocess
+from collections.abc import Mapping
 
 from core.base.journal_home import JournalHome
 from core.modules.plugins.support.plugin_answer import PluginAnswer
@@ -30,9 +31,8 @@ class PluginProgram:
 
     def run(self, call: PluginCall, limit_ms: int) -> PluginAnswer:
         manifest = call.manifest
-        folder, data = self.folders.code(manifest.name), self.folders.data(manifest.name)
-        data.mkdir(parents=True, exist_ok=True)
-        (data / SETTINGS_FILE).write_text(json.dumps(dict(call.settings)))
+        folder = self.folders.code(manifest.name)
+        self.write_settings(manifest.name, call.settings)
         line = json.dumps({"v": 1, "event": call.event.name, "at": call.timestamp.text, "environment": call.environment, "data": dict(call.event.data)})
         socket_services = [service.name for service in manifest.services if service.answers]
         if socket_services and (service_socket := PluginSocket(self.sockets.answers(manifest.name, socket_services[0]))).is_open():
@@ -65,6 +65,11 @@ class PluginProgram:
             for pipe in (process.stdin, process.stdout):
                 if pipe is not None:
                     pipe.close()
+
+    def write_settings(self, plugin_name: str, settings: Mapping[str, object]) -> None:
+        data = self.folders.data(plugin_name)
+        data.mkdir(parents=True, exist_ok=True)
+        (data / SETTINGS_FILE).write_text(json.dumps(dict(settings)))
 
     def environment(self, plugin_name: str, environment: str) -> dict[str, str]:
         passed = {variable: os.environ[variable] for variable in PASSED_VARIABLES if variable in os.environ}

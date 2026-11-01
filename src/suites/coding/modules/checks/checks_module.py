@@ -7,6 +7,7 @@ from suites.coding.modules.checks.commands.check_list_subcommand import CheckLis
 from suites.coding.modules.checks.commands.edit_check_handler import EditCheckHandler
 from suites.coding.modules.checks.commands.edit_check_subcommand import EditCheckSubcommand
 from suites.coding.modules.checks.commands.make_check_handler import MakeCheckHandler
+from suites.coding.modules.checks.commands.create_check_subcommand import CreateCheckSubcommand
 from suites.coding.modules.checks.commands.make_check_subcommand import MakeCheckSubcommand
 from suites.coding.modules.checks.commands.remove_check_handler import RemoveCheckHandler
 from suites.coding.modules.checks.commands.remove_check_subcommand import RemoveCheckSubcommand
@@ -35,7 +36,7 @@ class ChecksModule(Module):
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     migrations = [ChecksTableMigration]
     handlers = [MakeCheckHandler, EditCheckHandler, RunCheckHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
-    subcommands = (MakeCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
+    subcommands = (MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, DueCheckRule]
     windows = [WindowDeclaration("checks.checks", "Checks", "checks.js", WindowLoading.COMPONENT, icon=WindowIcon.CHECK,
                                  reads=["check list"], events=["check.*"])]

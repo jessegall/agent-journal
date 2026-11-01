@@ -2,6 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
+from core.base.actor import Actor
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.refusal import Refusal
@@ -21,10 +22,11 @@ from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
-    """Copies a plugin's folder into the journal once the programs it requires are found, runs its setup
-    steps there, a failing one leaving nothing behind, makes its data folder, saves the readers it ships
-    and saves it switched on with the settings its installed command answers; only the person installs,
-    and a name installed already is refused."""
+    """Copies a plugin's folder into the journal once the programs it requires are found and runs its setup
+    steps there, before the install's transaction opens so a step may write to the journal itself, a
+    failing one leaving nothing behind; then makes its data folder, saves the readers it ships and saves
+    it switched on with the settings its installed command answers. Only the person installs, and a name
+    installed already is refused."""
 
     command = InstallPlugin
 
@@ -32,13 +34,11 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
                  readers: PluginReaders) -> None:
         self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers = plugins, folders, skill_files, steps, repository, readers
 
-    def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
-        UserActorCheck.check(context, "installs")
-        manifest = PluginManifest.read(Path(command.source))
-        if self.plugins.is_installed(manifest.name):
-            raise Refusal(f"a plugin named {manifest.name} is installed already", f"journal plugin upgrade {manifest.name}")
+    def prepare(self, command: InstallPlugin, actor: Actor) -> None:
+        UserActorCheck.check_actor(actor, "installs")
+        manifest = self.uninstalled(command)
         if not command.confirmed:
-            return PluginInstall(manifest, command.source, False)
+            return
         folder = self.folders.code(manifest.name)
         self.steps.check_requirements(manifest, Path(command.source))
         shutil.copytree(command.source, folder, dirs_exist_ok=True)
@@ -47,6 +47,13 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
         except Refusal:
             shutil.rmtree(folder, ignore_errors=True)
             raise
+
+    def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
+        UserActorCheck.check(context, "installs")
+        manifest = self.uninstalled(command)
+        if not command.confirmed:
+            return PluginInstall(manifest, command.source, False)
+        folder = self.folders.code(manifest.name)
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
         self.readers.publish(folder, manifest.name, context)
@@ -57,3 +64,9 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             if key in declared:
                 self.repository.save(PluginSetting(plugin_id=plugin.id, creator_id=context.actor.id, key=key, value=json.dumps(value)), context)
         return PluginInstall(manifest, command.source, True)
+
+    def uninstalled(self, command: InstallPlugin) -> PluginManifest:
+        manifest = PluginManifest.read(Path(command.source))
+        if self.plugins.is_installed(manifest.name):
+            raise Refusal(f"a plugin named {manifest.name} is installed already", f"journal plugin upgrade {manifest.name}")
+        return manifest

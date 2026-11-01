@@ -23,9 +23,13 @@ class PluginInstallSteps:
                 raise Refusal(f"{requirement.name} is missing: {requirement.hint}", "install it, then install the plugin again")
 
     def run_setup(self, manifest: PluginManifest, folder: Path) -> None:
+        self.program.write_settings(manifest.name, {setting.key: setting.default for setting in manifest.settings})
         for step in manifest.setup_steps:
-            if self.shell(step.line, manifest.name, folder).returncode != 0:
-                raise Refusal(f"the setup step {step.name} failed", "fix what it needs and install the plugin again")
+            run = self.shell(step.line, manifest.name, folder)
+            if run.returncode != 0:
+                output_lines = [line for line in (run.stderr + run.stdout).splitlines() if line.strip()]
+                last_line = output_lines[-1] if output_lines else f"it ended with {run.returncode}"
+                raise Refusal(f"the setup step {step.name} failed: {last_line}", "fix what it needs and install the plugin again")
 
     def installed_settings(self, manifest: PluginManifest, folder: Path) -> dict[str, object]:
         if not manifest.installed_command:

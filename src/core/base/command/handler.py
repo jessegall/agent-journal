@@ -1,5 +1,6 @@
 from typing import ClassVar, Generic, TypeIs, TypeVar
 
+from core.base.actor import Actor
 from core.base.command.command import Command
 from core.base.command.context import Context
 
@@ -8,9 +9,14 @@ R = TypeVar("R", covariant=True)
 
 
 class Handler(Generic[C, R]):
-    """Carries out one type of command: reads what it needs through queries and saves through the repository."""
+    """Carries out one type of command: reads what it needs through queries and saves through the repository;
+    the work outside the database that must be done before its transaction opens, such as a program that
+    writes to the journal itself, is done in prepare."""
 
     command: ClassVar[type[Command[object]]]
+
+    def prepare(self, command: C, actor: Actor) -> None:
+        return None
 
     def handle(self, command: C, context: Context) -> R:
         raise NotImplementedError(f"{type(self).__name__} carries out nothing")
