@@ -25,7 +25,7 @@ const listed = computed(() => {
     return words ? cards.value.filter((card) => card.path.toLowerCase().includes(words)) : cards.value;
 });
 const sizing = computed(() => ({"--diff-size": SIZES[view.value.size][0], "--diff-line": SIZES[view.value.size][1]}));
-const foldedOf = (card) => folds.value[card.id] ?? (view.value.headers || (view.value.collapse && !Number(view.value.lines) && card.added + card.removed > BIG_LINE_COUNT));
+const foldedOf = (card) => folds.value[card.id] ?? (!card.rows.length || view.value.headers || (view.value.collapse && !Number(view.value.lines) && card.added + card.removed > BIG_LINE_COUNT));
 const fold = (card) => (folds.value = {...folds.value, [card.id]: !foldedOf(card)});
 const expand = () => (folds.value = Object.fromEntries(cards.value.map((card) => [card.id, false])));
 

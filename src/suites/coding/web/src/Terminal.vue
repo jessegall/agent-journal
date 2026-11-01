@@ -14,7 +14,7 @@ const input = ref(null);
 const body = ref(null);
 const opened = ref(new Set());
 
-const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && COMMAND_TOOLS.has(row.tool)).sort((one, two) => one.id - two.id));
+const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && COMMAND_TOOLS.has(row.tool) && row.summary).sort((one, two) => one.id - two.id));
 const markOf = (row) => (JOURNAL_LINE.test(row.summary) ? "#" : "$");
 
 function toggle(row) {

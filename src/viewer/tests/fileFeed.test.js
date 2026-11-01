@@ -63,3 +63,10 @@ test("the whole file button reads the file as it is now", async () => {
     expect(window.reads).toContain('project-file show "src/cart.py"');
     expect(element.textContent).toContain("second");
 });
+
+test("an edit kept before the changed lines were kept draws as its header alone", async () => {
+    const element = await mounted(FileFeed, context({"file-edit list": page([{...EDIT(1, "old.py"), rows: "[]"}])}, 2));
+    await settle();
+    expect(element.querySelector(".diff-card").classList.contains("folded")).toBe(true);
+});
+

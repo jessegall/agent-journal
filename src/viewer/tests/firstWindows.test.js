@@ -110,6 +110,7 @@ test("the terminal window lists its agent's commands in order, marks journal lin
         {id: 2, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "journal task list", refusal: ""},
         {id: 1, agent_id: 2, hook: "pre_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
         {id: 9, agent_id: 2, hook: "post_tool_use", tool: "Bash", summary: "pytest -q", refusal: ""},
+        {id: 10, agent_id: 2, hook: "pre_tool_use", tool: "Monitor", summary: "", refusal: ""},
         {id: 8, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])}, 2);
     const element = await mounted(Terminal, windowContext);
