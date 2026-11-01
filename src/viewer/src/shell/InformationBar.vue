@@ -2,7 +2,18 @@
 import {computed} from "vue";
 
 // the one line under the agent bar, as version 4's information bar drew it: the program, the state and how long the agent has run
-const props = defineProps({agent: {type: Object, default: null}, now: {type: Number, default: () => Date.now()}});
+const props = defineProps({
+    agent: {type: Object, default: null},
+    facts: {type: Object, default: () => ({helpers: 0, tasks: 0, waiting: 0})},
+    now: {type: Number, default: () => Date.now()},
+});
+const emit = defineEmits(["open"]);
+// each count opens the window that lists what it counts
+const COUNTS = [
+    {key: "tasks", title: "Open tasks", window: "tasks.tasks"},
+    {key: "waiting", title: "Questions waiting", window: "questions.questions"},
+    {key: "helpers", title: "Helpers running", window: "agents.subagents"},
+];
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const uptime = computed(() => {
     const started = props.agent?.process_started_at ? new Date(props.agent.process_started_at).getTime() : 0;
@@ -17,6 +28,11 @@ const uptime = computed(() => {
             <span>{{ agent.program }}</span>
             <span>{{ running ? "Working" : "Ended" }}</span>
             <span>{{ uptime }} up</span>
+            <template v-for="count in COUNTS" :key="count.key">
+                <button type="button" class="information-count" :data-count="count.key" :title="count.title" @click="emit('open', count.window)">
+                    {{ facts[count.key] }} <span class="information-count-name">{{ count.title.toLowerCase() }}</span>
+                </button>
+            </template>
         </template>
     </div>
 </template>
@@ -31,5 +47,19 @@ const uptime = computed(() => {
     border-bottom: 1px solid var(--border);
     color: var(--text-3);
     font-size: 12px;
+}
+.information-count {
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 5px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.information-count:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 </style>

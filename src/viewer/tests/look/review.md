@@ -46,3 +46,21 @@ Not compared one by one: the module windows other than chat, tasks and settings.
 
 Memories, notices, dumps, processes and sharing have no window of their own in version 5 (they draw in the chat, the settings and the activity panel), so there is no page of theirs to pair.
 Lines marked open differ from version 4 in content or toolbar that these windows do not draw yet.
+
+## The status bars (task 5490), pair bars-v4.png, bars-v5.png
+
+| # | Item | Difference | State |
+|---|------|------------|-------|
+| S1 | Agent state | Dot, Working or Ended, program, role and session | fixed (already drawn, kept) |
+| S2 | Helpers running | Version 4 shows a count in the status bar; version 5 draws "N helpers" there, opening Subagents | fixed |
+| S3 | Open tasks | Counted from the tasks not completed or cancelled, opening Tasks | fixed |
+| S4 | Questions waiting | Counted from the open questions, opening Questions | fixed |
+| S5 | Uptime | Minutes the agent process has run | fixed (already drawn, kept) |
+| S6 | Live | Both bars read the journal again every five seconds | fixed |
+| S7 | Work in hand (the task the agent holds) | No row ties the main agent to a task yet | no data; no task gives it yet |
+| S8 | Pause and stop buttons | No command pauses or stops an agent yet | no data; no task gives it yet |
+| S9 | Fitness chips (100, 0.59) | Version 5 keeps no fitness score | no data; no task gives it yet |
+| S10 | Mode (Builder, Orchestrator, Solo) | Version 5 has no mode setting | no data; no task gives it yet |
+| S11 | Context percentage and its bar | Version 5's agent row carries no context use | no data; no task gives it yet |
+| S12 | Model and effort (opus, high) | Version 5's agent row carries neither | no data; no task gives it yet |
+| S13 | Usage and limit countdown (11d 3h) | Version 5 reads no usage | no data; no task gives it yet |

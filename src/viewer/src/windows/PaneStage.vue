@@ -24,6 +24,7 @@ import PhoneBar from "./PhoneBar.vue";
 import PhoneNotify from "./PhoneNotify.vue";
 import AgentBar from "../shell/AgentBar.vue";
 import InformationBar from "../shell/InformationBar.vue";
+import {barFacts, NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
@@ -72,6 +73,8 @@ const SIDEBAR_FROM_WIDTH = 1100;
 const ACTIVITY_SECONDS = 4;
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH);
 let activityTimer = null;
+let factsTimer = null;
+const FACT_SECONDS = 5;
 async function readActivity() {
     const answer = activityOpen.value && props.shellRead ? await props.shellRead(["event", "list", "--limit", "30"]) : null;
     if (answer?.ok) events.value = rowsOf(answer);
@@ -83,6 +86,12 @@ function toggleActivity() {
 async function readEnvironments() {
     const answer = props.shellRead ? await props.shellRead(["environment", "list"]) : null;
     environments.value = rowsOf(answer);
+}
+const facts = ref(NO_FACTS);
+async function readFacts() {
+    if (!props.shellRead) return;
+    const [agents, tasks, questions] = await Promise.all([props.shellRead(["agent", "list"]), props.shellRead(["task", "list"]), props.shellRead(["question", "list"])]);
+    facts.value = barFacts({agents: rowsOf(agents), tasks: rowsOf(tasks), questions: rowsOf(questions)});
 }
 async function readAgent() {
     const answer = props.shellRead ? await props.shellRead(["agent", "list"]) : null;
@@ -113,11 +122,14 @@ onMounted(() => {
     presets?.load();
     readAgent();
     readEnvironments();
+    readFacts();
+    factsTimer = setInterval(() => (readAgent(), readFacts()), FACT_SECONDS * 1000);
     activityTimer = setInterval(readActivity, ACTIVITY_SECONDS * 1000);
     if (linkedRef()) openRef(linkedRef());
 });
 onUnmounted(() => {
     clearInterval(activityTimer);
+    clearInterval(factsTimer);
     window.removeEventListener("resize", measure);
     navigator.serviceWorker?.removeEventListener("message", heardWorker);
 });
@@ -176,8 +188,8 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" />
-                <AgentBar :agent="agentRow" />
-                <InformationBar :agent="agentRow" />
+                <AgentBar :agent="agentRow" :helpers="facts.helpers" @open="openView" />
+                <InformationBar :agent="agentRow" :facts="facts" @open="openView" />
             </template>
             <nav class="pane-stage-bar agent-bar">
                 <template v-for="window in barWindows().slice(0, room)" :key="window.name">
