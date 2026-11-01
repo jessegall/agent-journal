@@ -66,12 +66,16 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         route = urlsplit(self.path)
         key = parse_qs(route.query).get("key", [""])[0]
         if route.path == "/" and key:
+            kept_query = [pair for pair in parse_qsl(route.query) if pair[0] != "key"]
             try:
                 token = viewer.login.session_token(key)
             except UnknownLoginKeyError as error:
-                self.answer(401, {"error": str(error)})
+                if not self.cookie_token():
+                    self.answer(401, {"error": str(error)})
+                    return
+                self.answer_redirect(kept_query, {})
                 return
-            self.answer_session(token, [pair for pair in parse_qsl(route.query) if pair[0] != "key"])
+            self.answer_redirect(kept_query, {"Set-Cookie": f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/"})
             return
         if route.path.startswith(MODULES_ROUTE):
             module_name, _, path = route.path.removeprefix(MODULES_ROUTE).partition("/")
@@ -222,9 +226,10 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             return False
         return True
 
-    def answer_session(self, token: str, kept_query: list[tuple[str, str]]) -> None:
+    def answer_redirect(self, kept_query: list[tuple[str, str]], headers: dict[str, str]) -> None:
         self.send_response(303)
-        self.send_header("Set-Cookie", f"{COOKIE_NAME}={token}; HttpOnly; SameSite=Strict; Path=/")
+        for name, value in headers.items():
+            self.send_header(name, value)
         self.send_header("Location", f"{VIEWER_ROOT}?{urlencode(kept_query)}" if kept_query else VIEWER_ROOT)
         self.send_header("Content-Length", "0")
         self.end_headers()

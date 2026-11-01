@@ -16,6 +16,18 @@ def test_a_login_key_sets_a_cookie_once_and_is_spent(new_story):
         story.expect_viewer_status(f"/?key={key}", 401)
 
 
+def test_a_spent_login_key_opened_again_in_the_logged_in_browser_opens_the_viewer_with_the_query_kept(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        key = story.viewer_key("Ada")
+        cookie = story.expect_viewer_login(key)
+        story.expect_viewer_redirect(f"/?key={key}&environment=main", cookie, "/viewer/?environment=main")
+
+
+def test_an_unknown_login_key_with_no_session_cookie_is_still_refused(new_story):
+    with server_story(new_story(fixture=UserJoined)) as story:
+        story.expect_viewer_status("/?key=unknown", 401, cookie="journal_viewer=unknown")
+
+
 def test_a_login_redirect_keeps_the_query_the_person_opened_and_drops_the_key(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
         key = story.viewer_key("Ada")

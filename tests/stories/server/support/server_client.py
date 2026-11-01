@@ -95,7 +95,10 @@ class ServerStory:
         return cookie.split(";", 1)[0]
 
     def expect_viewer_login_to(self, key: str, query: str, location: str) -> None:
-        status, headers, _ = viewer_answer(self.viewer_port(), f"/?key={key}{query}", "", "")
+        self.expect_viewer_redirect(f"/?key={key}{query}", "", location)
+
+    def expect_viewer_redirect(self, path: str, cookie: str, location: str) -> None:
+        status, headers, _ = viewer_answer(self.viewer_port(), path, cookie, "")
         assert status == 303 and headers.get("Location") == location, (status, headers)
 
     def expect_viewer_status(self, path: str, status: int, cookie: str = "", host: str = "", text: str = "") -> None:
