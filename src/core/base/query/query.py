@@ -16,7 +16,7 @@ from core.base.query.unknown_column_error import UnknownColumnError
 
 
 M = TypeVar("M", bound=Model | ViewModel, covariant=True)
-PAGE_SIZE_ROWS = 50
+PAGE_SIZE_ROWS = 25
 class Query(Generic[M]):
     """Reads the rows of one model or view model: by key, by its own columns, in an order, one page at a time."""
 

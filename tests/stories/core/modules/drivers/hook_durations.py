@@ -60,3 +60,14 @@ def test_a_stop_hook_costs_the_database_less_than_the_50_points_a_hook_may_cost(
     line = terminal_line(story)
     points = int(line.split(" ms, ")[1].split(" points")[0])
     assert points < 50, line
+
+
+def test_the_agent_is_told_of_a_hook_only_when_it_costs_the_points_over_the_limit(new_story, monkeypatch):
+    story = new_story(fixture=BuilderWithUser)
+    story.run(f"setting switch {MASTER} on --project", actor=story.user)
+    timing = story.container.get(Timing)
+    timing.stamps[:] = Timing.started("go_start").stamps
+    assert not any("points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
+    monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_POINT_LIMIT", 1)
+    timing.stamps[:] = Timing.started("go_start").stamps
+    assert any("cost" in line and "points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
