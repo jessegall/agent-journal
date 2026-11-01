@@ -45,10 +45,14 @@ export function useHomeLayout(environment, shellLine, catalogue, {page = HOME, d
 
     async function load(at = shown) {
         shown = at;
-        await moveLegacyLayouts(shellLine, environment);
-        const run = await shellLine(["suite", "current", environment]);
-        if (!run.ok) return;
-        await store.load({environment, person: catalogue.person, suite: run.value.suite, page: at, driver: driver ?? mainDriver(run.value.drivers)});
+        try {
+            await moveLegacyLayouts(shellLine, environment);
+            const run = await shellLine(["suite", "current", environment]);
+            if (!run.ok) return;
+            await store.load({environment, person: catalogue.person, suite: run.value.suite, page: at, driver: driver ?? mainDriver(run.value.drivers)});
+        } finally {
+            store.settle();
+        }
     }
 
     function heard(event) {

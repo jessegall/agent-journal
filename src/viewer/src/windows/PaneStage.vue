@@ -327,7 +327,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             </InformationBar>
             </template>
         </template>
-        <template v-if="store.layout.value && !phone">
+        <template v-if="store.layout.value && !phone && store.ready?.value !== false">
             <PaneGrid ref="grid" :full="full" :stacked="narrow" :rank="chatFirst" :panes="store.panes.value" :splits="store.measured.value.splits" @resize="store.resize">
                 <template #pane="{id, pane, state}">
                     <PaneTabs
@@ -420,6 +420,9 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                     </template>
                 </template>
             </PaneGrid>
+        </template>
+        <template v-else-if="!phone && store.ready?.value === false">
+            <Skeleton shape="cards" />
         </template>
         <template v-if="floats && !phone">
             <DetachedWindows

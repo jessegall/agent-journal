@@ -40,3 +40,10 @@ test("a layout kept in the tab is drawn before the server answers", async () => 
     await loading;
     vi.unstubAllGlobals();
 });
+
+test("a layout is not ready until it is loaded, and a page that loads none is settled all the same", async () => {
+    const layout = paneLayout({saved: async () => null, defaults: async () => null, save: async () => ({ok: true}), tab: {read: () => null, write: () => {}}, entry: (name) => ({name, place: "environment"})});
+    expect(layout.ready.value).toBe(false);
+    layout.settle();
+    expect(layout.ready.value).toBe(true);
+});

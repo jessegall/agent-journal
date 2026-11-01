@@ -53,6 +53,8 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
     const store = new LayoutStore({saved, defaults, save});
     // a page has a layout from the first moment, an empty one until its own is loaded (a journal with no suite chosen never loads one)
     const layout = ref(fresh());
+    // false until the page's own layout, or the tab's copy of it, is known, so the stage draws a skeleton and never one wide pane that narrows
+    const ready = ref(false);
     const refusal = ref("");
     const born = ref({});
     const dying = ref({});
@@ -91,13 +93,19 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         key = null;
         loading = at;
         const own = tab.read(tabKey(at));
-        if (own && wellShaped(own)) layout.value = tidied(own, entry);
+        if (own && wellShaped(own)) {
+            layout.value = tidied(own, entry);
+            ready.value = true;
+        }
         const found = await store.layout(at);
         if (loading !== at) return;
         key = at;
         version = found.version;
         layout.value = tidied(own && wellShaped(own) ? own : found.layout, entry);
+        ready.value = true;
     }
+
+    const settle = () => (ready.value = true);
 
     function keep() {
         if (key === null) return;
@@ -153,5 +161,5 @@ export function paneLayout({saved, defaults, save, tab = sessionTab, entry}) {
         return [...live, ...closing].sort((a, b) => a.id - b.id);
     });
     const open = computed(() => opened(layout.value));
-    return {layout, refusal, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
+    return {layout, ready, settle, refusal, load, flush, apply, replace, activate, resize, gone, measured, panes, open};
 }
