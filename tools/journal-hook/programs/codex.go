@@ -26,6 +26,7 @@ func codexEvent(name string, body []byte, program Program, context Context) (eve
 	}
 	prepared.Tool = codexTool(read.ToolName, read.ToolInput, program, context)
 	prepared.Tool.Diff = codexDiff(prepared.Event, read, prepared.Tool)
+	prepared.Tool.DiffRows = codexRows(prepared.Event, read, prepared.Tool)
 	return prepared, false, nil
 }
 

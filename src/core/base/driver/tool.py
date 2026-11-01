@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.command_effect import CommandEffect
@@ -13,13 +14,14 @@ WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
 @dataclass(frozen=True)
 class Tool:
     """The tool a hook is about: its name, its category, the files it names, its shell line when it runs one, and
-    its diff when it edits or writes."""
+    its diff and the changed lines when it edits or writes."""
 
     name: str
     category: ToolType
     files: tuple[str, ...]
     shell: ShellLine | None
     diff: DiffCount | None
+    diff_rows: tuple[Mapping[str, object], ...] = ()
 
     @classmethod
     def parsed(cls, data: object) -> "Tool":
@@ -29,7 +31,7 @@ class Tool:
         if category not in ToolType:
             raise HookEventError(f"a tool's category is one of {', '.join(ToolType)}, not {category!r}")
         return cls(text(fields, "name"), ToolType(category), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
-                   DiffCount.parsed(diff) if diff is not None else None)
+                   DiffCount.parsed(diff) if diff is not None else None, tuple(fields.get("diff_rows") or ()))
 
     @property
     def is_journal_line(self) -> bool:

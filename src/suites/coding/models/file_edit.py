@@ -5,7 +5,7 @@ from core.base.model.model import Model
 
 @dataclass(frozen=True, kw_only=True)
 class FileEdit(Model):
-    """One file an agent edited or wrote: its path and the lines it added and removed."""
+    """One file an agent edited or wrote: its path, the lines it added and removed, and the changed lines themselves."""
 
     model_name = "file_edit"
     cli_name = "file-edit"
@@ -16,3 +16,5 @@ class FileEdit(Model):
     path: str
     added: int
     removed: int
+    rows: str = "[]"
+    edit_type: str = "edit"

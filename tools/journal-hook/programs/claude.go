@@ -16,6 +16,7 @@ func commonEvent(name string, body []byte, program Program, context Context) (ev
 	}
 	prepared.Tool = commonTool(read.ToolName, read.ToolInput.values, program, context.Classifier)
 	prepared.Tool.Diff = claudeDiff(prepared.Event, read, prepared.Tool)
+	prepared.Tool.DiffRows = claudeRows(prepared.Event, read, prepared.Tool)
 	return prepared, false, nil
 }
 

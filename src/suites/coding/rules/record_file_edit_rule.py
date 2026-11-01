@@ -17,4 +17,4 @@ class RecordFileEditRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.diff is None or not tool.is_writing_files():
             return RuleAnswer.allowed()
-        return RuleAnswer.allowed().running(RecordFileEdit(hook.agent_id, hook.environment_id, tool.diff))
+        return RuleAnswer.allowed().running(RecordFileEdit(hook.agent_id, hook.environment_id, tool.diff, tool.diff_rows))

@@ -12,6 +12,7 @@ from suites.coding.models.file_edit import FileEdit
 from suites.coding.upgrade.file_edits_move import FileEditsMove
 from suites.coding.commands.record_file_edit.record_file_edit_handler import RecordFileEditHandler
 from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
+from suites.coding.migrations.m002_file_edit_rows import FileEditRowsMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
@@ -27,7 +28,7 @@ from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.coding_settings import CODING_SETTINGS
 from suites.coding.listeners.auto_next_task_listener import AutoNextTaskListener
 
-FILE_EDIT_READS = ["file-edit list", "file-edit show"]
+FILE_EDIT_READS = ["file-edit list", "file-edit show", "project-file show"]
 
 
 class CodingModule(Module):
@@ -45,7 +46,7 @@ class CodingModule(Module):
     suites = [CodingSuite]
     drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
-    migrations = [FileEditsTableMigration]
+    migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule]
     listeners = [AutoNextTaskListener]
@@ -54,7 +55,7 @@ class CodingModule(Module):
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show", "usage bars"], runs=["driver choose", "setting set"]),
-               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
+               WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.file-edits", "File edits", "file-edits.js", WindowLoading.COMPONENT, icon=WindowIcon.COMMIT, reads=[*FILE_EDIT_READS, "agent list"],
                                  events=["file_edit.create"]),

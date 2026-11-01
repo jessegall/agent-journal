@@ -36,6 +36,16 @@ type Tool struct {
 	Shell    *ShellLine `json:"shell,omitempty"`
 	Files    []string   `json:"files"`
 	Diff     *DiffCount `json:"diff"`
+	DiffRows []DiffRow  `json:"diff_rows,omitempty"`
+}
+
+// DiffRow is one line of a tool's change: added, removed, unchanged or a stretch left out, with its number in the
+// file, 0 when the program did not say it, and how many lines a stretch left out hides.
+type DiffRow struct {
+	LineType string `json:"line_type"`
+	Line     int    `json:"line"`
+	Text     string `json:"text"`
+	Hidden   int    `json:"hidden,omitempty"`
 }
 
 type ShellLine struct {

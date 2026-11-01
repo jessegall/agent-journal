@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.command.command import Command
@@ -12,3 +13,4 @@ class RecordFileEdit(Command[FileEdit]):
     agent_id: int
     environment_id: int
     diff: DiffCount
+    rows: tuple[Mapping[str, object], ...] = ()

@@ -1,6 +1,7 @@
 package programs
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"strings"
 
@@ -65,6 +66,56 @@ func claudePatched(path string, response any, input map[string]any) *event.DiffC
 		count.LinesAdded, _ = edits.LineDiff("", content)
 	}
 	return count
+}
+
+// claudeRows are the lines of a tool's change after it ran, from the patch Claude hands back, or for a file it made the
+// lines it was given.
+func claudeRows(eventName string, read commonBody, tool *event.Tool) []event.DiffRow {
+	fields, isObject := read.ToolResponse.(map[string]any)
+	if eventName != "post_tool_use" || tool.Diff == nil || !isObject {
+		return nil
+	}
+	sections, _ := fields["structuredPatch"].([]any)
+	if len(sections) == 0 && !tool.Diff.Existed {
+		content, _ := read.ToolInput.values["content"].(string)
+		return edits.NewFileRows(content)
+	}
+	collected := make([]edits.Section, 0, len(sections))
+	for _, section := range sections {
+		hunk, _ := section.(map[string]any)
+		lines, _ := hunk["lines"].([]any)
+		texts := make([]string, 0, len(lines))
+		for _, line := range lines {
+			text, _ := line.(string)
+			texts = append(texts, text)
+		}
+		collected = append(collected, edits.Section{OldStart: wholeNumber(hunk["oldStart"]), NewStart: wholeNumber(hunk["newStart"]), Lines: texts})
+	}
+	return edits.SectionRows(collected)
+}
+
+func wholeNumber(value any) int {
+	switch number := value.(type) {
+	case float64:
+		return int(number)
+	case json.Number:
+		whole, _ := number.Int64()
+		return int(whole)
+	}
+	return 0
+}
+
+// codexRows are the lines of the first file an apply_patch changes.
+func codexRows(eventName string, read commonBody, tool *event.Tool) []event.DiffRow {
+	if eventName != "post_tool_use" || tool.Diff == nil || tool.Category != "edit" {
+		return nil
+	}
+	for _, text := range read.ToolInput.texts {
+		if edits.Patched(text, func(string) *string { return nil }) != nil {
+			return edits.PatchRows(text)
+		}
+	}
+	return nil
 }
 
 // replacements are an Edit's one replace or a MultiEdit's edits in their order.

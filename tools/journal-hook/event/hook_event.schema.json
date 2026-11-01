@@ -202,6 +202,12 @@
               "$ref": "#/$defs/diff"
             }
           ]
+        },
+        "diff_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diff_row"
+          }
         }
       },
       "allOf": [
@@ -399,6 +405,36 @@
           "minimum": 0
         },
         "lines_removed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "diff_row": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "line_type",
+        "line",
+        "text"
+      ],
+      "properties": {
+        "line_type": {
+          "enum": [
+            "add",
+            "del",
+            "ctx",
+            "fold"
+          ]
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "text": {
+          "type": "string"
+        },
+        "hidden": {
           "type": "integer",
           "minimum": 0
         }

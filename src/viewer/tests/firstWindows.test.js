@@ -1,4 +1,4 @@
-import {expect, test} from "vitest";
+import {expect, test, vi} from "vitest";
 import {context, drawn, mounted, page, settle} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import TaskList from "../../core/modules/tasks/web/src/tasks.js";
@@ -10,6 +10,12 @@ import HookCallList from "../../core/modules/drivers/web/src/HookCallList.vue";
 import FileFeed from "../../suites/coding/web/src/FileFeed.vue";
 import FileEdits from "../../suites/coding/web/src/FileEdits.vue";
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
+
+vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+
+    disconnect() {}
+});
 
 test("the chat window shows the environment's messages", async () => {
     expect(await drawn(Chat, context({"message feed": page([{id: 1, type: "user", text: "Ship the cart today"}])}))).toContain("Ship the cart today");
@@ -85,7 +91,7 @@ test("the hook calls window shows its agent's hook calls with their answers", as
 test("the file feed shows its agent's edits with their counts", async () => {
     const windowContext = context({"file-edit list": page([{id: 1, path: "src/cart.py", added: 3, removed: 1}])}, 2);
     const text = await drawn(FileFeed, windowContext);
-    expect(text).toContain("src/cart.py");
+    expect(text).toContain("cart.py");
     expect(text).toContain("+3");
     expect(windowContext.reads[0]).toContain("--agent 2");
 });
@@ -133,4 +139,3 @@ test("a line typed in the terminal goes to the agent, and a refusal gives it bac
     expect(element.querySelector("[data-terminal-refusal]").textContent).toBe("no launcher is running here");
     expect(form.querySelector("input").value).toBe("ls -la");
 });
-
