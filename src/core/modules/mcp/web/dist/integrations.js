@@ -1,5 +1,5 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-d2d030f47b41")) { const style = document.createElement("style"); style.id = "window-styles-d2d030f47b41"; style.textContent = ".failure[data-v-00cf0b96]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.heading[data-v-00cf0b96]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-00cf0b96]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-00cf0b96]{display:flex;align-items:baseline;gap:10px}.title[data-v-00cf0b96]{flex:1;font-weight:600}.standing[data-v-00cf0b96],.subject[data-v-00cf0b96],.key label[data-v-00cf0b96]{color:var(--text-3);font-size:12px}.key[data-v-00cf0b96]{display:flex;flex-direction:column;gap:4px}.key input[data-v-00cf0b96]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-00cf0b96]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
+if (!document.getElementById("window-styles-841095608dc9")) { const style = document.createElement("style"); style.id = "window-styles-841095608dc9"; style.textContent = ".failure[data-v-b5c8e526]{margin:0 0 8px;color:var(--bad, var(--text-2));font-size:12px}.heading[data-v-b5c8e526]{margin:12px 0 6px;color:var(--text-3);font-size:12px;font-weight:600}.server[data-v-b5c8e526]{display:flex;flex:1;flex-direction:column;gap:6px;font-size:13px}.head[data-v-b5c8e526]{display:flex;align-items:baseline;gap:10px}.title[data-v-b5c8e526]{flex:1;font-weight:600}.standing[data-v-b5c8e526],.subject[data-v-b5c8e526],.key label[data-v-b5c8e526]{color:var(--text-3);font-size:12px}.key[data-v-b5c8e526]{display:flex;flex-direction:column;gap:4px}.key input[data-v-b5c8e526]{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px}button[data-v-b5c8e526]{padding:2px 8px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:inherit;font-size:12px;cursor:pointer}\n"; document.head.appendChild(style); }
 import { reactive as C, computed as m, openBlock as v, createElementBlock as _, Fragment as x, toDisplayString as d, createCommentVNode as f, createElementVNode as t, createVNode as y, unref as l, withCtx as h, withModifiers as N, withDirectives as R, vModelText as V } from "vue";
 import { useRows as k, RowList as g } from "@journal/window-kit";
 const $ = (r, s) => {
@@ -90,7 +90,7 @@ const $ = (r, s) => {
       }, 8, ["rows", "failure", "loaded"])
     ], 64));
   }
-}, H = /* @__PURE__ */ $(z, [["__scopeId", "data-v-00cf0b96"]]);
+}, H = /* @__PURE__ */ $(z, [["__scopeId", "data-v-b5c8e526"]]);
 export {
   H as default
 };

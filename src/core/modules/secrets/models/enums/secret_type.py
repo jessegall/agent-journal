@@ -14,8 +14,8 @@ class SecretType(StrEnum):
     def lookup(cls, text: str) -> "SecretType":
         try:
             return cls(text.strip().lower())
-        except ValueError as unknown:
-            raise Refusal(f"a secret is one of {', '.join(kind.value for kind in cls)}, not {text!r}") from unknown
+        except ValueError as error:
+            raise Refusal(f"a secret is one of {', '.join(secret_type.value for secret_type in cls)}, not {text!r}") from error
 
-    def first_fields(self) -> tuple[tuple[str, bool], ...]:
-        return {SecretType.API_KEY: (("key", True),), SecretType.LOGIN: (("username", False), ("password", True))}.get(self, ())
+    def first_fields(self) -> list[tuple[str, bool]]:
+        return {SecretType.API_KEY: [("key", True)], SecretType.LOGIN: [("username", False), ("password", True)]}.get(self, [])

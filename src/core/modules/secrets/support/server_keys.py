@@ -27,4 +27,4 @@ class ServerKeys:
         self.write({name: value for name, value in self.all().items() if name != variable})
 
     def write(self, keys: dict[str, str]) -> None:
-        SecretValues.written(self.folder.made_file(KEYS_SUFFIX), json.dumps(keys, indent=2) + "\n")
+        SecretValues.write_file(self.folder.made_file(KEYS_SUFFIX), json.dumps(keys, indent=2) + "\n")

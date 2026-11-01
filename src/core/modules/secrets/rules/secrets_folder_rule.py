@@ -28,8 +28,8 @@ class SecretsFolderRule(DriverRule):
         tool = hook.event.tool
         if tool is None:
             return RuleAnswer.allowed()
-        named = " ".join((*tool.files, tool.shell.line if tool.shell is not None else "", json.dumps(dict(hook.event.tool_input()), default=str)))
-        if not any(spelling in named for spelling in self.spellings()):
+        tool_text = " ".join((*tool.files, tool.shell.line if tool.shell is not None else "", json.dumps(dict(hook.event.tool_input()), default=str)))
+        if not any(spelling in tool_text for spelling in self.spellings()):
             return RuleAnswer.allowed()
         return RuleAnswer.refused("the secrets folder is out of reach: give a secret to a program with journal secret run <n> -- <program>")
 

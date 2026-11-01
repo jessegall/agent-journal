@@ -20,7 +20,7 @@ class ProposeProgramHandler(Handler[ProposeProgram, SecretProgram]):
     def handle(self, command: ProposeProgram, context: Context) -> SecretProgram:
         secret = self.secrets.find(command.secret_id)
         if SecretPrograms.is_withheld(command.program):
-            raise Refusal(f"a secret is never given to {command.program}", "propose the program that uses it, named bare, such as curl or gh")
+            raise Refusal(f"a secret never goes to {command.program}", "propose the program that uses it, named bare, such as curl or gh")
         if command.program in (*secret.programs, *secret.proposed):
             return SecretProgram(secret, command.program, False)
         return SecretProgram(self.repository.save(secret.changed(proposed=(*secret.proposed, command.program)), context), command.program, True)

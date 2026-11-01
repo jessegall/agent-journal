@@ -42,13 +42,13 @@ class SecretValues:
         return set(path.read_text().split()) if path is not None and path.is_file() else set()
 
     def write(self, values: dict[str, str]) -> None:
-        self.written(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
+        self.write_file(self.folder.made_file(VALUES_SUFFIX), HEADER + "".join(f"{name}={json.dumps(value)}\n" for name, value in values.items()))
 
     def write_shown(self, names: set[str]) -> None:
-        self.written(self.folder.made_file(SHOWN_SUFFIX), "".join(f"{name}\n" for name in sorted(names)))
+        self.write_file(self.folder.made_file(SHOWN_SUFFIX), "".join(f"{name}\n" for name in sorted(names)))
 
     @staticmethod
-    def written(path: Path, text: str) -> None:
+    def write_file(path: Path, text: str) -> None:
         writing = path.with_name(f"{path.name}.writing")
         with os.fdopen(os.open(writing, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, FILE_MODE), "w") as output:
             output.write(text)

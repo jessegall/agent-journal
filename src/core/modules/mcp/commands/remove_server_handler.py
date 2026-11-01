@@ -17,7 +17,7 @@ class RemoveServerHandler(Handler[RemoveServer, McpServer]):
         self.servers, self.repository, self.configs, self.keys = servers, repository, configs, keys
 
     def handle(self, command: RemoveServer, context: Context) -> McpServer:
-        server = self.servers.named(command.name)
+        server = self.servers.find_name(command.name)
         self.repository.delete(server, context)
         if server.key_variable:
             self.keys.drop(server.key_variable)

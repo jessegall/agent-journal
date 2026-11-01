@@ -23,7 +23,7 @@ class AllowProgramHandler(Handler[AllowProgram, SecretProgram]):
         if context.actor.type is not ActorType.USER:
             raise Refusal("only the user allows a program for a secret", f"journal secret propose {secret.id} {command.program or '<program>'} asks them")
         if command.program and SecretPrograms.is_withheld(command.program):
-            raise Refusal(f"a secret is never given to {command.program}", "allow the program that uses it, named bare, such as curl or gh")
+            raise Refusal(f"a secret never goes to {command.program}", "allow the program that uses it, named bare, such as curl or gh")
         allowed = secret.with_program(command.program) if command.program else secret
         return SecretProgram(self.repository.save(allowed.changed(helpers=secret.helpers or command.helpers), context), command.program,
                              command.program not in secret.programs)

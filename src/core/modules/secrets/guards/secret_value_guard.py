@@ -26,6 +26,6 @@ class SecretValueGuard(Guard):
         if not guarded:
             return
         texts = [str(value) for value in vars(change.new_row).values() if isinstance(value, str | tuple)]
-        held = next((variable for value, variable in guarded.items() if any(value in text for text in texts)), None)
-        if held is not None:
-            raise Refusal(f"a row may not hold the value of {held}", "name the secret, never its value")
+        variable = next((variable for value, variable in guarded.items() if any(value in text for text in texts)), None)
+        if variable is not None:
+            raise Refusal(f"a row may not hold the value of {variable}", "name the secret, never its value")

@@ -31,8 +31,8 @@ class SecretRunOutcome:
 
 class SecretRun:
     """A secret given to one program the user allowed: found bare on a search path without the project, run in
-    the project with a throwaway home, nothing of the agent's environment and a limit of 120 seconds, given the
-    value on its input or in its variables, and its output returned with every value masked."""
+    the project with a throwaway home, nothing of the agent's environment and a limit of 120 seconds, given
+    the value on its input or in its variables, and its output returned with every value masked."""
 
     def __init__(self, home: JournalHome, folder: PrivateFolder, values: SecretValues) -> None:
         self.home, self.folder, self.values = home, folder, values
@@ -43,16 +43,16 @@ class SecretRun:
         missing = [field.name for field in secret.secret_fields() if field.variable not in stored]
         if missing:
             raise Refusal(f"secret {secret.id} has no value for {', '.join(missing)}", "the user fills it on the Secrets window")
-        named = {field.name: stored[field.variable] for field in secret.secret_fields()}
+        field_values = {field.name: stored[field.variable] for field in secret.secret_fields()}
         hidden = next((stored[field.variable] for field in secret.secret_fields() if field.hidden), "")
-        given = PLACEHOLDER.sub(lambda match: named.get(match[1], match[0]), template) if template else hidden
+        stdin_text = PLACEHOLDER.sub(lambda match: field_values.get(match[1], match[0]), template) if template else hidden
         variables = {field.variable: stored[field.variable] for field in secret.secret_fields()} if as_variables else {}
         runs = self.folder.made_folder() / RUNS_FOLDER
         runs.mkdir(mode=0o700, exist_ok=True)
         home = tempfile.mkdtemp(prefix="run-", dir=runs)
         try:
             environment = {"PATH": self.search_path(), "LANG": os.environ.get("LANG", "C.UTF-8"), **dict.fromkeys(HOME_VARIABLES, home), **variables}
-            finished = subprocess.run([program, *command[1:]], input=f"{given}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment,
+            finished = subprocess.run([program, *command[1:]], input=f"{stdin_text}\n".encode(), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=environment,
                                       cwd=self.home.project_folder, timeout=LIMIT_SECONDS)
         except subprocess.TimeoutExpired as late:
             raise Refusal(f"{command[0]} ran past {LIMIT_SECONDS} seconds and was stopped", "give a secret to a program that finishes sooner") from late
@@ -67,13 +67,13 @@ class SecretRun:
         if "/" in name:
             raise Refusal(f"name the program bare, as {Path(name).name}", "a path could be a file of anyone's making")
         if SecretPrograms.is_withheld(name):
-            raise Refusal(f"a secret is never given to {name}", "name the program that uses it, such as curl or gh")
+            raise Refusal(f"a secret never goes to {name}", "name the program that uses it, such as curl or gh")
         if name not in secret.programs:
             raise Refusal(f"secret {secret.id} may not go to {name}", f"journal secret propose {secret.id} {name}")
-        found = shutil.which(name, path=self.search_path())
-        if found is None:
+        program_path = shutil.which(name, path=self.search_path())
+        if program_path is None:
             raise Refusal(f"no program {name} on this machine")
-        return found
+        return program_path
 
     def search_path(self) -> str:
         project = self.home.project_folder

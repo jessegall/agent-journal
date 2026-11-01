@@ -32,5 +32,9 @@ class ClaudeServerFile:
     def entry(server: McpServer) -> dict[str, object]:
         reference = f"${{{server.key_variable}}}"
         if server.is_started:
-            return {"command": server.command, "args": list(server.args), **({"env": {server.key_variable: reference}} if server.needs_key else {})}
-        return {"type": server.transport, "url": server.url, **({"headers": {"Authorization": f"Bearer {reference}"}} if server.needs_key else {})}
+            return ClaudeServerFile.present(command=server.command, args=list(server.args), env={server.key_variable: reference} if server.needs_key else None)
+        return ClaudeServerFile.present(type=server.transport, url=server.url, headers={"Authorization": f"Bearer {reference}"} if server.needs_key else None)
+
+    @staticmethod
+    def present(**entry_fields: object) -> dict[str, object]:
+        return {name: value for name, value in entry_fields.items() if value is not None}

@@ -1,6 +1,6 @@
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
-from tests.stories.core.modules.secrets.support.private_home import OTHER_VALUE, VALUE, filled_story, private_folder
+from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 
 __all__ = ["private_folder"]
 
@@ -24,9 +24,9 @@ def test_stdin_sends_the_text_with_the_field_filled_in(new_story):
 
 
 def test_a_replaced_value_is_still_masked(new_story):
-    story = filled_story(new_story, f"secret fill 1 key {OTHER_VALUE}")
+    story = filled_story(new_story, f"secret fill 1 key {REPLACEMENT_VALUE}")
     outcome = story.run(f'secret run 1 --stdin "old {VALUE} new {{key}}" -- head -c 200', story.agent)
-    story.expect_rows(outcome.code == 0, VALUE not in outcome.output_text, OTHER_VALUE not in outcome.output_text, outcome.output_text.count(MASK) == 2)
+    story.expect_rows(outcome.code == 0, VALUE not in outcome.output_text, REPLACEMENT_VALUE not in outcome.output_text, outcome.output_text.count(MASK) == 2)
 
 
 def test_a_secret_is_found_by_its_title_and_an_unknown_one_is_refused(new_story):
@@ -51,7 +51,7 @@ def test_a_program_the_user_did_not_allow_is_refused_with_how_to_propose_it(new_
 
 def test_a_wrapper_is_refused_even_named_after_the_separator(new_story):
     story = filled_story(new_story)
-    story.expect_refusal("secret run 1 -- bash -c true", "a secret is never given to bash: name the program that uses it, such as curl or gh", actor=story.agent)
+    story.expect_refusal("secret run 1 -- bash -c true", "a secret never goes to bash: name the program that uses it, such as curl or gh", actor=story.agent)
 
 
 def test_a_program_named_by_its_path_is_refused_with_its_bare_name(new_story):

@@ -31,10 +31,10 @@ class Secret(Model):
         return tuple(SecretField.parsed(raw) for raw in self.fields)
 
     def field(self, name: str) -> SecretField:
-        found = next((field for field in self.secret_fields() if field.name == name), None)
-        if found is None:
+        secret_field = next((field for field in self.secret_fields() if field.name == name), None)
+        if secret_field is None:
             raise Refusal(f"secret {self.id} has no field {name}", f"its fields are {', '.join(field.name for field in self.secret_fields()) or 'none'}")
-        return found
+        return secret_field
 
     def is_waiting(self) -> bool:
         return any(field.name not in self.filled for field in self.secret_fields())

@@ -18,7 +18,7 @@ class GiveServerKeyHandler(Handler[GiveServerKey, McpServer]):
         self.servers, self.keys = servers, keys
 
     def handle(self, command: GiveServerKey, context: Context) -> McpServer:
-        server = self.servers.named(command.name)
+        server = self.servers.find_name(command.name)
         if not server.needs_key:
             raise Refusal(f"{server.name} {'signs in on its own and takes' if server.auth is ServerAuth.OAUTH else 'takes'} no key")
         if not command.key.strip():

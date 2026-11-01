@@ -6,7 +6,7 @@ from core.modules.secrets.support.private_folder import FOLDER_VARIABLE
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretAllowed
 
 VALUE = "tok-live-4f9a2c71"
-OTHER_VALUE = "tok-next-88d1e0b3"
+REPLACEMENT_VALUE = "tok-next-88d1e0b3"
 
 
 @pytest.fixture(autouse=True)

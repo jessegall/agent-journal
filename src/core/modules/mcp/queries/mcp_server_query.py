@@ -11,8 +11,8 @@ class McpServerQuery(Query[McpServer]):
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, McpServer)
 
-    def named(self, name: str) -> McpServer:
-        found = self.filter(name=name).page(1, 1).rows
-        if not found:
+    def find_name(self, name: str) -> McpServer:
+        rows = self.filter(name=name).page(1, 1).rows
+        if not rows:
             raise Refusal(f"no installed server is named {name}", "journal mcp list shows them")
-        return found[0]
+        return rows[0]

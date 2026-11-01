@@ -24,11 +24,11 @@ class CodexServerFile:
 
     def write(self, servers: Sequence[McpServer]) -> None:
         text = self.path.read_text() if self.path.is_file() else ""
-        before, _, rest = text.partition(BEGIN)
-        after = rest.partition(END)[2] if rest else ""
+        leading_text, _, block_text = text.partition(BEGIN)
+        trailing_text = block_text.partition(END)[2]
         block = "\n".join([BEGIN, *(self.table(server) for server in servers), END]) if servers else ""
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text("\n".join(part.strip("\n") for part in (before, block, after) if part.strip()) + "\n")
+        self.path.write_text("\n".join(part.strip("\n") for part in (leading_text, block, trailing_text) if part.strip()) + "\n")
 
     @staticmethod
     def table(server: McpServer) -> str:

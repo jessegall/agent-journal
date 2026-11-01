@@ -24,16 +24,16 @@ class McpCheckSubcommand(ReadSubcommand[Sequence[str]]):
         return None
 
     def read(self, arguments: Namespace, caller: Caller) -> Sequence[str]:
-        written = {str(CLAUDE_FILE): self.claude.names(), str(CODEX_FILE): self.codex.names()}
+        config_names = {str(CLAUDE_FILE): self.claude.names(), str(CODEX_FILE): self.codex.names()}
         lines: list[str] = []
         for server in self.servers.oldest().all_rows():
-            missing = [file for file, names in written.items() if server.name not in names]
+            missing = [file for file, names in config_names.items() if server.name not in names]
             if self.standing.standing(server) == NEEDS_KEY:
                 lines.append(f"{server.name}  needs its key: journal mcp key {server.name} <value>")
             elif missing:
                 lines.append(f"{server.name}  missing from {' and '.join(missing)}: journal mcp remove {server.name}, then journal mcp install {server.name}")
             else:
-                lines.append(f"{server.name}  written in {' and '.join(written)}")
+                lines.append(f"{server.name}  written in {' and '.join(config_names)}")
         return tuple(lines)
 
     def write_output(self, value: object, output: Output) -> None:

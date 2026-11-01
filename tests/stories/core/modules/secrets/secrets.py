@@ -1,6 +1,6 @@
 import stat
 
-from tests.stories.core.modules.secrets.support.private_home import OTHER_VALUE, VALUE, filled_story, private_folder, values_text
+from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder, values_text
 from tests.stories.core.modules.secrets.support.secret_fixtures import SecretMade
 from tests.stories.core.support.fixtures import UserJoined
 
@@ -26,7 +26,7 @@ def test_a_login_has_a_shown_username_and_a_hidden_password(new_story):
 
 def test_a_custom_secret_has_the_fields_it_names_and_one_without_fields_is_refused(new_story):
     story = new_story(fixture=UserJoined)
-    story.expect_refusal('secret make "Deploy" --kind custom', "a custom secret names its fields: --field <name>, once for each", actor=story.agent)
+    story.expect_refusal('secret make "Deploy" --kind custom', "a custom secret needs at least one field: --field <name>, once for each", actor=story.agent)
     story.expect_success('secret make "Deploy" --kind custom --field token --field host', actor=story.agent)
     story.expect_text("secret show 1", "token  DEPLOY_TOKEN  waiting for the user, hidden", "host  DEPLOY_HOST  waiting for the user, hidden", actor=story.agent)
 
@@ -68,8 +68,8 @@ def test_a_field_the_secret_lacks_is_refused_with_its_fields(new_story):
 
 
 def test_a_replaced_value_is_kept_retired_beside_the_new_one(new_story, private_folder):
-    story = filled_story(new_story, f"secret fill 1 key {OTHER_VALUE}")
-    story.expect_rows(VALUE in values_text(private_folder), OTHER_VALUE in values_text(private_folder), "RETIRED_GITHUB_KEY" in values_text(private_folder))
+    story = filled_story(new_story, f"secret fill 1 key {REPLACEMENT_VALUE}")
+    story.expect_rows(VALUE in values_text(private_folder), REPLACEMENT_VALUE in values_text(private_folder), "RETIRED_GITHUB_KEY" in values_text(private_folder))
 
 
 def test_a_value_the_agent_made_is_stored_from_its_file_which_is_deleted(new_story, private_folder, tmp_path):
@@ -109,9 +109,9 @@ def test_the_agent_proposes_a_program_and_the_user_allows_it(new_story):
 
 def test_a_wrapper_or_a_program_named_by_its_path_is_never_proposed(new_story):
     story = made_story(new_story)
-    story.expect_refusal("secret propose 1 bash", "a secret is never given to bash: propose the program that uses it, named bare, such as curl or gh", actor=story.agent)
-    story.expect_refusal("secret propose 1 /usr/bin/curl", "a secret is never given to /usr/bin/curl", actor=story.agent)
-    story.expect_refusal("secret allow 1 python3", "a secret is never given to python3", actor=story.user)
+    story.expect_refusal("secret propose 1 bash", "a secret never goes to bash: propose the program that uses it, named bare, such as curl or gh", actor=story.agent)
+    story.expect_refusal("secret propose 1 /usr/bin/curl", "a secret never goes to /usr/bin/curl", actor=story.agent)
+    story.expect_refusal("secret allow 1 python3", "a secret never goes to python3", actor=story.user)
 
 
 def test_only_the_user_allows_a_program(new_story):

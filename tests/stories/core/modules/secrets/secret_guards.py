@@ -2,12 +2,12 @@ from core.base.driver.command_category import CommandCategory
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
-from tests.stories.core.modules.secrets.support.private_home import OTHER_VALUE, VALUE, filled_story, private_folder
+from tests.stories.core.modules.secrets.support.private_home import REPLACEMENT_VALUE, VALUE, filled_story, private_folder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 __all__ = ["private_folder"]
 
-OUT_OF_REACH = "the secrets folder is out of reach: give a secret to a program with journal secret run <n> -- <program>"
+FOLDER_REFUSAL = "the secrets folder is out of reach: give a secret to a program with journal secret run <n> -- <program>"
 
 
 def read_sample(path: str):
@@ -21,17 +21,17 @@ def shell_sample(line: str):
 
 def test_a_tool_that_reads_a_file_in_the_secrets_folder_is_refused(new_story, private_folder):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", read_sample(str(private_folder / "project.env")), OUT_OF_REACH)
+    story.expect_hook_refusal("s-1", read_sample(str(private_folder / "project.env")), FOLDER_REFUSAL)
 
 
 def test_a_shell_line_naming_the_secrets_folder_by_another_spelling_is_refused(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", shell_sample("cat ~/.config/agent-journal/secrets/project.env"), OUT_OF_REACH)
+    story.expect_hook_refusal("s-1", shell_sample("cat ~/.config/agent-journal/secrets/project.env"), FOLDER_REFUSAL)
 
 
 def test_a_tool_naming_the_version_4_server_keys_folder_is_refused(new_story):
     story = new_story(fixture=BuilderStarted)
-    story.expect_hook_refusal("s-1", shell_sample("ls ~/.journal/keys"), OUT_OF_REACH)
+    story.expect_hook_refusal("s-1", shell_sample("ls ~/.journal/keys"), FOLDER_REFUSAL)
 
 
 def test_a_tool_on_any_other_file_goes_on(new_story):
@@ -46,7 +46,7 @@ def test_a_row_write_holding_a_secret_value_is_refused_with_the_variable_it_hold
 
 
 def test_a_row_write_holding_a_replaced_value_is_refused_too(new_story):
-    story = filled_story(new_story, f"secret fill 1 key {OTHER_VALUE}")
+    story = filled_story(new_story, f"secret fill 1 key {REPLACEMENT_VALUE}")
     story.expect_refusal(f'message send "the old key was {VALUE}" --environment main', "a row may not hold the value of", actor=story.agent)
 
 

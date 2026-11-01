@@ -20,10 +20,10 @@ class MakeSecretHandler(Handler[MakeSecret, Secret]):
         self.repository, self.bus = repository, bus
 
     def handle(self, command: MakeSecret, context: Context) -> Secret:
-        named = tuple((name, True) for name in command.field_names)
-        if command.secret_type is SecretType.CUSTOM and not named:
-            raise Refusal("a custom secret names its fields", "--field <name>, once for each")
-        fields = tuple(SecretField.made(command.title, name, hidden).stored() for name, hidden in (*command.secret_type.first_fields(), *named))
+        if command.secret_type is SecretType.CUSTOM and not command.field_names:
+            raise Refusal("a custom secret needs at least one field", "--field <name>, once for each")
+        field_specs = [*command.secret_type.first_fields(), *((field_name, True) for field_name in command.field_names)]
+        fields = tuple(SecretField.made(command.title, field_name, hidden).stored() for field_name, hidden in field_specs)
         secret = self.repository.save(Secret(creator_id=context.actor.id, title=command.title, brief=command.brief, secret_type=command.secret_type, fields=fields), context)
         if command.reason:
             asking = SendMessage(f"Please fill in the secret {secret.title} on the Secrets window, never in the chat: I need it {command.reason}.\n\nsecret {secret.id}")

@@ -17,8 +17,8 @@ class SecretQuery(Query[Secret]):
     def active(self) -> Self:
         return self.matching(IsNull("deleted_at"))
 
-    def named(self, text: str) -> Secret:
-        found = next((secret for secret in self.active().oldest().all_rows() if str(secret.id) == text or secret.title.lower() == text.lower()), None)
-        if found is None:
+    def find_title(self, text: str) -> Secret:
+        secret = next((row for row in self.active().oldest().all_rows() if str(row.id) == text or row.title.lower() == text.lower()), None)
+        if secret is None:
             raise Refusal(f"no secret is numbered or titled {text!r}", "journal secret list shows them")
-        return found
+        return secret

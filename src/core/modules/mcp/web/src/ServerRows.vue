@@ -24,7 +24,9 @@ async function giveKey(row) {
 </script>
 
 <template>
-    <p v-if="failure" class="failure">{{ failure }}</p>
+    <template v-if="failure">
+        <p class="failure">{{ failure }}</p>
+    </template>
     <h3 class="heading">Installed</h3>
     <RowList :rows="installed.rows.value" :failure="installed.failure.value" :loaded="installed.loaded.value" empty="No servers installed">
         <template #default="{row}">
@@ -34,11 +36,13 @@ async function giveKey(row) {
                     <span class="standing">{{ row.standing }}</span>
                     <button type="button" @click="installed.act(['mcp', 'remove', row.name])">Remove</button>
                 </div>
-                <form v-if="row.standing === 'needs its key'" class="key" @submit.prevent="giveKey(row)">
-                    <label :for="`key-${row.name}`">{{ row.key_variable }}</label>
-                    <input :id="`key-${row.name}`" v-model="typed[row.name]" type="password" autocomplete="off" placeholder="Paste the key">
-                    <button type="submit">Save</button>
-                </form>
+                <template v-if="row.standing === 'needs its key'">
+                    <form class="key" @submit.prevent="giveKey(row)">
+                        <label :for="`key-${row.name}`">{{ row.key_variable }}</label>
+                        <input :id="`key-${row.name}`" v-model="typed[row.name]" type="password" autocomplete="off" placeholder="Paste the key">
+                        <button type="submit">Save</button>
+                    </form>
+                </template>
             </div>
         </template>
     </RowList>

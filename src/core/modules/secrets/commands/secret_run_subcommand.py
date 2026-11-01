@@ -15,9 +15,9 @@ SEPARATOR = "--"
 
 
 class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
-    """`journal secret run <n or title> [--stdin "<text with {field}>"] [--env] -- <program> <arguments>`: the secret
-    given to a program the user allowed, and what it printed with every value masked; a helper of the main agent
-    gets it only when the user lets helpers have it."""
+    """`journal secret run <n or title> [--stdin "<text with {field}>"] [--env] -- <program> <arguments>`: the
+    secret given to a program the user allowed, and what it printed with every value masked; a helper of the
+    main agent gets it only when the user lets helpers have it."""
 
     cli_name = "secret"
     name = "run"
@@ -35,7 +35,7 @@ class SecretRunSubcommand(ReadSubcommand[SecretRunOutcome]):
         deleted = [row for row in self.secrets.all_rows() if str(row.id) == arguments.secret and row.deleted_at is not None]
         if deleted:
             raise Refusal(f"secret {deleted[0].id} is deleted", f"journal secret restore {deleted[0].id} brings it back")
-        secret = self.secrets.named(arguments.secret)
+        secret = self.secrets.find_title(arguments.secret)
         if not secret.helpers and caller.actor.type is ActorType.AGENT and self.queries.query(Agent).find(caller.actor.id).role is not AgentRole.MAIN:
             raise Refusal(f"secret {secret.id} is the main agent's alone", "the user lets helpers have it on the Secrets window")
         return self.runner.run(secret, [word for word in arguments.command if word != SEPARATOR], arguments.stdin, arguments.env)

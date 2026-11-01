@@ -3,7 +3,7 @@ from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.secrets.support.server_keys import ServerKeys
 
 NEEDS_KEY = "needs its key"
-SIGNS_IN = "signs in on its own"
+OAUTH_SIGNING = "signs in on its own"
 READY = "ready"
 
 
@@ -16,4 +16,4 @@ class ServerStanding:
     def standing(self, server: McpServer) -> str:
         if server.needs_key and not self.keys.has(server.key_variable):
             return NEEDS_KEY
-        return SIGNS_IN if server.auth is ServerAuth.OAUTH else READY
+        return OAUTH_SIGNING if server.auth is ServerAuth.OAUTH else READY

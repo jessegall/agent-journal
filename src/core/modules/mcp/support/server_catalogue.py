@@ -26,7 +26,7 @@ class ServerCatalogue:
         return SUGGESTIONS
 
     def suggestion(self, name: str) -> ServerSuggestion:
-        found = next((suggestion for suggestion in SUGGESTIONS if suggestion.name == name), None)
-        if found is None:
+        suggestion = next((entry for entry in SUGGESTIONS if entry.name == name), None)
+        if suggestion is None:
             raise Refusal(f"no suggested server is named {name}", "journal mcp suggested lists them")
-        return found
+        return suggestion

@@ -17,7 +17,9 @@ async function fill(row, field) {
 </script>
 
 <template>
-    <p v-if="actionFailure" class="failure">{{ actionFailure }}</p>
+    <template v-if="actionFailure">
+        <p class="failure">{{ actionFailure }}</p>
+    </template>
     <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No secrets yet">
         <template #default="{row}">
             <div class="secret" :data-row="row.id">
@@ -25,20 +27,26 @@ async function fill(row, field) {
                     <span class="title">{{ row.title }}</span>
                     <span class="kind">{{ row.secret_type }}</span>
                 </div>
-                <p v-if="row.brief" class="brief">{{ row.brief }}</p>
-                <form v-for="field in row.fields" :key="field.name" class="field" @submit.prevent="fill(row, field)">
-                    <label :for="key(row, field)">{{ field.name }}</label>
-                    <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
-                           :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
-                    <button type="submit">Save</button>
-                </form>
+                <template v-if="row.brief">
+                    <p class="brief">{{ row.brief }}</p>
+                </template>
+                <template v-for="field in row.fields" :key="field.name">
+                    <form class="field" @submit.prevent="fill(row, field)">
+                        <label :for="key(row, field)">{{ field.name }}</label>
+                        <input :id="key(row, field)" v-model="typed[key(row, field)]" :type="field.hidden ? 'password' : 'text'" autocomplete="off"
+                               :placeholder="isFilled(row, field) ? 'Filled; type to replace it' : 'Type the value'">
+                        <button type="submit">Save</button>
+                    </form>
+                </template>
                 <div class="programs">
                     <span class="label">Programs</span>
                     <span>{{ row.programs.length ? row.programs.join(", ") : "None allowed yet" }}</span>
-                    <button v-for="program in row.proposed" :key="program" type="button" @click="act(['secret', 'allow', String(row.id), program])">
-                        Allow {{ program }}
-                    </button>
-                    <button v-if="!row.helpers" type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
+                    <template v-for="program in row.proposed" :key="program">
+                        <button type="button" @click="act(['secret', 'allow', String(row.id), program])">Allow {{ program }}</button>
+                    </template>
+                    <template v-if="!row.helpers">
+                        <button type="button" @click="act(['secret', 'allow', String(row.id), '--helpers'])">Let helpers use it</button>
+                    </template>
                 </div>
             </div>
         </template>

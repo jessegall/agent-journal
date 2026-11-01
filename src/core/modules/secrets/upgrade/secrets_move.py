@@ -16,9 +16,9 @@ BROWSER_LOGIN = "browser login"
 
 
 class SecretsMove(VersionFourMove):
-    """Carries version 4's secrets with their numbers, fields, filled fields, programs and deletion; a browser
-    login waits for after the switch and is skipped. The values file stays where version 4 wrote it, named by the
-    same project id, and is read as it is."""
+    """Carries version 4's secrets with their numbers, fields, filled fields, programs and deletion; a
+    browser login waits for after the switch and is skipped. The values file stays where version 4 wrote it,
+    named by the same project id, and is read as it is."""
 
     name = "secrets"
     reads = [TABLE]
