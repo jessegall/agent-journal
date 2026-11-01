@@ -27,6 +27,10 @@ class JournalHome:
         return self.folder / "runtime" / "bypass.log"
 
     @property
+    def newest_release_file(self) -> Path:
+        return self.folder / "runtime" / "newest-release.json"
+
+    @property
     def hook_wait_file(self) -> Path:
         return self.folder / "runtime" / "hook-wait-seconds"
 

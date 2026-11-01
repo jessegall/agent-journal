@@ -10,6 +10,7 @@ from core.base.deadline import Deadline
 from core.base.journal_container import opened_container, synced_container
 from core.base.journal_home import JournalHome
 from core.base.listener.commit_listener_runner import CommitListenerRunner
+from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.registry.stale_registry_error import StaleRegistryError
 from core.base.caller.caller import Caller
 from core.base.timing import Timing
@@ -24,6 +25,7 @@ class LineRun:
 
     def __init__(self, home: JournalHome, busy_timeout_seconds: float = BUSY_TIMEOUT_SECONDS, listener_runner: CommitListenerRunner | None = None) -> None:
         self.home, self.busy_timeout_seconds, self.listener_runner = home, busy_timeout_seconds, listener_runner
+        self.fingerprint = CodeFingerprint()
 
     def run(self, argv: list[str], request: CallerRequest, stream: TextIO, deadline: Deadline | None = None,
             timing: Timing | None = None) -> int:
@@ -56,6 +58,7 @@ class LineRun:
 
     def synced(self, deadline: Deadline | None, timing: Timing | None) -> Container:
         container = synced_container(self.home)
+        container.bind(CodeFingerprint, self.fingerprint)
         remaining_seconds = deadline.remaining_seconds() if deadline else None
         container.get(Database).set_busy_timeout(self.busy_timeout_seconds if remaining_seconds is None else remaining_seconds)
         if deadline is not None:

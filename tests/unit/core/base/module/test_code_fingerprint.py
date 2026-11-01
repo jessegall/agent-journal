@@ -35,3 +35,14 @@ def test_a_file_that_is_not_python_never_changes_the_text(tmp_path):
 def test_a_missing_folder_or_a_broken_link_gives_a_text_and_never_raises(tmp_path):
     os.symlink(tmp_path / "gone.py", tmp_path / "link.py")
     assert CodeFingerprint().folder_text([tmp_path, tmp_path / "absent"])
+
+
+def test_a_second_fingerprint_of_the_same_folders_walks_them_no_more_and_a_new_file_is_still_seen(tmp_path):
+    (tmp_path / "a.py").write_text("x = 1\n")
+    fingerprint = CodeFingerprint()
+    first = fingerprint.folder_text([tmp_path])
+    listing = fingerprint.listings[(tmp_path,)]
+    assert fingerprint.folder_text([tmp_path]) == first
+    assert fingerprint.listings[(tmp_path,)] is listing
+    (tmp_path / "b.py").write_text("y = 2\n")
+    assert fingerprint.folder_text([tmp_path]) != first

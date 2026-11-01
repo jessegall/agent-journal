@@ -14,6 +14,7 @@ from server.viewer.missing_module_file_error import MissingModuleFileError
 from server.viewer.viewer_line_request import ViewerLineRequest
 from server.viewer.pair_request import PairRequest
 from server.viewer.session_type import SessionType
+from server.viewer.module_file_caching import ModuleFileCaching
 from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_session import ViewerSession
 from server.viewer.shared_row import SharedRow
@@ -248,11 +249,19 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(404, {"error": str(error)})
             return
         content = module_file.content.replace(b"</head>", head_mark + b"</head>", 1) if head_mark else module_file.content
+        caching = ModuleFileCaching.of(self.path, content)
+        if status == 200 and not headers and caching.is_unchanged(self.headers.get("If-None-Match")):
+            self.send_response(304)
+            self.send_header("ETag", caching.etag)
+            self.send_header("Cache-Control", caching.cache_control)
+            self.end_headers()
+            return
         self.send_response(status)
         self.send_header("Content-Type", module_file.content_type)
         self.send_header("Content-Length", str(len(content)))
         self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Cache-Control", "no-cache")
+        self.send_header("Cache-Control", caching.cache_control)
+        self.send_header("ETag", caching.etag)
         self.send_header("Access-Control-Allow-Origin", "*")
         if module_file.frame:
             self.send_header("Content-Security-Policy", FRAME_POLICY.format(listener=f"http://{viewer.host}"))

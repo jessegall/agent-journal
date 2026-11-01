@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import json
 
 from core.modules.updates.support.release_notes import PAGE_SIZE
@@ -23,6 +25,8 @@ def test_a_newer_release_is_found_by_its_checksum(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
     story.expect_success("update install", actor=story.user)
     published(tmp_path / "release", "release two")
+    story.expect_text("update check", "up to date: this journal runs the newest release", actor=story.agent)
+    story.advance(timedelta(hours=1, minutes=1))
     story.expect_text("update check", "a newer release is out: journal update install puts it in", actor=story.agent)
 
 
@@ -55,8 +59,8 @@ def test_the_updates_window_checks_and_lists_the_installed_releases(new_story, t
 class GithubReleases(ReleaseSource):
     """A release source at a GitHub address that answers from a list a story sets, and records what it was asked."""
 
-    def __init__(self, settings, rows: list[dict]) -> None:
-        super().__init__(settings)
+    def __init__(self, settings, home, clock, rows: list[dict]) -> None:
+        super().__init__(settings, home, clock)
         self.rows, self.asked = rows, []
 
     def address(self) -> str:
@@ -73,7 +77,7 @@ def note_row(tag: str) -> dict:
 
 def test_the_notes_of_a_github_release_say_what_changed_and_a_full_page_has_older_ones(new_story, tmp_path):
     story = released_story(new_story, tmp_path / "release")
-    source = GithubReleases(story.container.get(ReleaseSource).settings, [note_row(f"v{n}") for n in range(PAGE_SIZE)])
+    source = GithubReleases(story.container.get(ReleaseSource).settings, story.container.get(ReleaseSource).home, story.container.get(ReleaseSource).clock, [note_row(f"v{n}") for n in range(PAGE_SIZE)])
     story.container.bind(ReleaseSource, source)
     answer = json.loads(story.run("update notes --page 2 --json", actor=story.user).output_text)
     assert answer["notes"][0] == {"tag": "v0", "text": "changes of v0", "published_at": "2026-10-01T10:00:00Z"} and not answer["is_last_page"]
@@ -91,3 +95,16 @@ def test_the_check_names_the_newest_release_for_the_update_button(new_story, tmp
     story = released_story(new_story, tmp_path / "release")
     assert "tag" in json.loads(story.run("update check --json", actor=story.user).output_text)
 
+
+def test_a_check_asked_again_within_the_hour_makes_no_second_network_read_and_an_install_reads_fresh(new_story, tmp_path):
+    story = released_story(new_story, tmp_path / "release")
+    source = story.container.get(ReleaseSource)
+    reads = []
+    original = source.fetched_newest
+    source.fetched_newest = lambda address: (reads.append(address), original(address))[1]
+    story.container.bind(ReleaseSource, source)
+    story.expect_text("update check", "release", actor=story.agent)
+    story.expect_text("update check", "release", actor=story.agent)
+    assert len(reads) == 1, reads
+    story.expect_success("update install", actor=story.user)
+    assert len(reads) == 2, reads
