@@ -27,6 +27,7 @@ import InformationBar from "../shell/InformationBar.vue";
 import WindowDropdown from "./WindowDropdown.vue";
 import ResourcePanel from "../resource/ResourcePanel.vue";
 import {peekRef} from "../route.js";
+import {rememberedRef} from "./rememberedState.js";
 import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import Skeleton from "../kit/Skeleton.vue";
