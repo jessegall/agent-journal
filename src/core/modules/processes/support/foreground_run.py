@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
+
 
 @dataclass(frozen=True)
 class ForegroundRun:
@@ -10,3 +12,4 @@ class ForegroundRun:
     background: bool
     reader_id: int | None = None
     aliases: tuple[str, ...] = ()
+    category: CommandCategory | None = None

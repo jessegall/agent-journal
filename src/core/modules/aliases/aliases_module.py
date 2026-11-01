@@ -9,6 +9,7 @@ from core.modules.aliases.commands.remove_alias.remove_alias_handler import Remo
 from core.modules.aliases.commands.remove_alias.remove_alias_subcommand import RemoveAliasSubcommand
 from core.modules.aliases.listeners.plugin_aliases_listener import PluginAliasesListener
 from core.modules.aliases.migrations.m001_aliases import AliasesTableMigration
+from core.modules.aliases.migrations.m002_alias_category import AliasCategoryMigration
 from core.modules.aliases.models.alias import Alias
 from core.modules.aliases.queries.alias_query import AliasQuery
 from core.modules.aliases.seeders.aliases_seeder import AliasesSeeder
@@ -23,7 +24,7 @@ class AliasesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [AliasesTableMigration]
+    migrations = [AliasesTableMigration, AliasCategoryMigration]
     moves = [AliasesMove]
     handlers = [AddAliasHandler, EditAliasHandler, RemoveAliasHandler]
     subcommands = (AddAliasSubcommand, EditAliasSubcommand, RemoveAliasSubcommand)

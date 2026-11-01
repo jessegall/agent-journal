@@ -26,10 +26,12 @@ class ForegroundLimit:
         alias_runs = self.background.alias_runs(shell)
         if shell.is_journal_line and not alias_runs:
             return ForegroundRun(0, False)
-        categories = frozenset(part.classification.category for part in shell.parts)
+        declared = self.background.declared_category(shell)
+        categories = {part.classification.category for part in shell.parts}
+        categories.update(category for category in [declared] if category is not None)
         is_long = bool(categories & BACKGROUND_CATEGORIES) or self.has_moved_run(environment_id, shell.line)
         reader_id = next((options.reader_id for options in alias_runs if options.reader_id is not None), None)
-        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell))
+        return ForegroundRun(self.seconds_allowed(environment_id), self.background.includes(shell) or is_long, reader_id, self.background.alias_names(shell), declared)
 
     def has_moved_run(self, environment_id: int, line: str) -> bool:
         return self.processes.environment(environment_id).line(line).moved().exists()

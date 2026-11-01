@@ -1,6 +1,7 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.driver.command_category import CommandCategory
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.modules.aliases.commands.add_alias.add_alias import AddAlias
@@ -9,7 +10,7 @@ from core.modules.aliases.models.alias import Alias
 
 class AddAliasSubcommand(Subcommand[AddAlias, Alias]):
     """`journal alias add <name> "<line>" [--reader <name>] [--about <text>] [--env NAME=value ...]
-    [--background] [--workers]`."""
+    [--background] [--workers] [--category "test run"]`."""
 
     cli_name = "alias"
     name = "add"
@@ -22,9 +23,11 @@ class AddAliasSubcommand(Subcommand[AddAlias, Alias]):
         parser.add_argument("--env", nargs="*", default=[])
         parser.add_argument("--background", action="store_true")
         parser.add_argument("--workers", action="store_true")
+        parser.add_argument("--category", choices=[category.value for category in CommandCategory])
 
     def command(self, arguments: Namespace, caller: Caller) -> AddAlias:
-        return AddAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, tuple(arguments.env), arguments.background, arguments.workers)
+        return AddAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, tuple(arguments.env), arguments.background, arguments.workers,
+                        CommandCategory(arguments.category) if arguments.category else None)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Alias):

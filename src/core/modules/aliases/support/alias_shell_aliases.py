@@ -26,4 +26,4 @@ class AliasShellAliases(ShellAliases):
 
     def options(self, name: str) -> AliasOptions | None:
         rows = self.aliases.with_name(name).page(1, 1).rows if name not in self.names.command_names() else ()
-        return AliasOptions(rows[0].background, rows[0].reader_id) if rows else None
+        return AliasOptions(rows[0].background, rows[0].reader_id, rows[0].category) if rows else None

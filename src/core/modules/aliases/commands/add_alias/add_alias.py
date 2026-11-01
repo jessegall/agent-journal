@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
+from core.base.driver.command_category import CommandCategory
 from core.modules.aliases.models.alias import Alias
 
 
@@ -15,3 +16,4 @@ class AddAlias(Command[Alias]):
     variables: tuple[str, ...]
     background: bool
     worker_access: bool
+    category: CommandCategory | None = None

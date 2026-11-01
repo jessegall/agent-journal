@@ -28,4 +28,4 @@ class StartProcess(Command[Process]):
     def build(cls, hook: AgentHook, shell: ShellLine, run: ForegroundRun) -> "StartProcess":
         folder = hook.event.raw.get("cwd")
         parts = tuple(PartSpec(part.text, part.program, part.pipe_target is not None) for part in shell.parts)
-        return cls(hook.agent_id, None, shell.line, folder if isinstance(folder, str) else "", "", shell.category, run.seconds, parts, run.reader_id)
+        return cls(hook.agent_id, None, shell.line, folder if isinstance(folder, str) else "", "", run.category or shell.category, run.seconds, parts, run.reader_id)

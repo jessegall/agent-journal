@@ -47,3 +47,13 @@ def test_the_main_agent_is_not_held(new_story):
     story, session = worker_story(new_story)
     start_process(story, "pytest -q", category=CommandCategory.TEST_RUN)
     assert "only one test run" not in story.hook("s-1", TESTS).refusal
+
+
+def test_a_test_run_behind_an_alias_that_declares_it_holds_the_turn_both_ways(new_story):
+    story, session = worker_story(new_story)
+    story.expect_success('alias add checks-run "pytest -q" --workers --category "test run"', 'alias checks-run added: journal checks-run [args] runs pytest -q', actor=story.agent)
+    story.expect_text("alias show 1", "category: test run", actor=story.agent)
+    aliased = HookSamples.shell("journal checks-run", ShellPart("journal", CommandCategory.JOURNAL, ["checks-run"]))
+    start_process(story, "pytest -q", category=CommandCategory.TEST_RUN)
+    story.expect_hook_refusal(session, aliased, "only one test run goes at a time")
+    story.expect_hook_refusal(session, TESTS, "only one test run goes at a time")

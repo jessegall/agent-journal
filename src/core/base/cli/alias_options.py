@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
+
 
 @dataclass(frozen=True)
 class AliasOptions:
@@ -8,3 +10,4 @@ class AliasOptions:
 
     background: bool
     reader_id: int | None
+    category: CommandCategory | None = None

@@ -1,5 +1,6 @@
 from core.base.cli.alias_options import AliasOptions
 from core.base.cli.shell_aliases import ShellAliases
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.shell_line import ShellLine
 
 JOURNAL = "journal"
@@ -21,3 +22,6 @@ class BackgroundCommands:
     def alias_runs(self, shell: ShellLine) -> list[AliasOptions]:
         runs = [self.aliases.options(part.arguments[0]) for part in shell.parts if part.program == JOURNAL and part.arguments]
         return [options for options in runs if options is not None]
+
+    def declared_category(self, shell: ShellLine) -> CommandCategory | None:
+        return next((options.category for options in self.alias_runs(shell) if options.category is not None), None)
