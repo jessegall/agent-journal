@@ -64,5 +64,5 @@ def test_the_coding_suite_lays_out_a_phone_with_the_chat_first_and_the_file_feed
 
 def test_the_coding_suite_offers_the_questions_windows_its_phone_shows(new_story):
     window = window_story(new_story)
-    window.expect_window_allowed("questions.waiting", "wait list")
+    window.expect_window_allowed("questions.waiting", "wait waiting")
     window.expect_window_allowed("questions.questions", "question list")

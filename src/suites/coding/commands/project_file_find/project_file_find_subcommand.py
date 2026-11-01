@@ -27,4 +27,4 @@ class ProjectFileFindSubcommand(ReadSubcommand[ProjectFileRows]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ProjectFileRows):
-            output.write("\\n".join(str(row["id"]) for row in value.rows) or "nothing found", value.json())
+            output.write("\n".join(str(row["id"]) for row in value.rows) or "nothing found", value.json())
