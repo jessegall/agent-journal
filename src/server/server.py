@@ -33,6 +33,7 @@ from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_login import ViewerLogin
 from server.viewer.viewer_routes import ViewerRoutes
 from server.request_handler import RequestHandler
+from server.server_backup import ServerBackup
 from server.server_files import ServerFiles
 
 SECOND_SERVER_CODE = 0
@@ -41,6 +42,7 @@ TUNNEL_CHECK_SECONDS = 30.0
 SERVICES_CHECK_SECONDS = 30.0
 HEALTH_CHECK_SECONDS = 60.0
 TICK_PERIOD_SECONDS = 60.0
+BACKUP_CHECK_SECONDS = 60.0
 CHECK_PERIOD_SECONDS = 60.0
 
 # How long a request may be answered on code that has changed since the last check of its files.
@@ -81,6 +83,8 @@ def main(argv: list[str]) -> int:
                                      "plugin services")
     health_thread = ListenerThread(plugin_services.check_health, lambda error: files.log_line(f"the plugin services' health could not be checked: {error}"),
                                    HEALTH_CHECK_SECONDS, "plugin health")
+    backup = ServerBackup(home)
+    backup_thread = ListenerThread(backup.follow, lambda error: files.log_line(f"the database could not be copied: {error}"), BACKUP_CHECK_SECONDS, "database copies")
     server = JournalServer(str(files.socket), RequestHandler, ServerContext(home, code_version, files, Timestamp(datetime.now(timezone.utc)), listener_thread, hook_database, viewer, tunnel))
     files.restrict_socket()
     files.write_pid()
@@ -96,11 +100,13 @@ def main(argv: list[str]) -> int:
     services_thread.wake()
     services_thread.start()
     health_thread.start()
+    backup_thread.wake()
+    backup_thread.start()
     try:
         server.serve_requests()
         server.drain(DRAIN_LIMIT_SECONDS)
     finally:
-        threads = (health_thread, services_thread, tunnel_thread, check_thread, ticker, listener_thread)
+        threads = (backup_thread, health_thread, services_thread, tunnel_thread, check_thread, ticker, listener_thread)
         for thread in threads:
             thread.signal_stop()
         plugin_services.close()
