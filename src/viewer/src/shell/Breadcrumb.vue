@@ -11,6 +11,8 @@ defineProps({environment: {type: String, required: true}, page: {type: String, d
         <span class="crumb">{{ environment }}</span>
         <span class="crumb-sep">/</span>
         <span class="crumb current">{{ page }}</span>
+        <span class="crumb-space" />
+        <slot />
     </nav>
 </template>
 
@@ -19,11 +21,15 @@ defineProps({environment: {type: String, required: true}, page: {type: String, d
     display: flex;
     align-items: center;
     gap: 8px;
-    min-height: 48px;
+    min-height: 40px;
     padding: 0 16px;
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
     font-size: 13px;
+}
+
+.crumb-space {
+    flex: 1;
 }
 
 .crumb-swatch {

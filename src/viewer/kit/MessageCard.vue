@@ -130,6 +130,10 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
     color: var(--text);
 }
 
+.message-card:has(.message-quote) {
+    min-width: min(180px, 100%);
+}
+
 .message-quote {
     display: -webkit-box;
     overflow: hidden;
