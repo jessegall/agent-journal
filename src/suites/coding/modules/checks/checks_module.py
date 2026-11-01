@@ -39,7 +39,7 @@ class ChecksModule(Module):
     name = "journal.suites.coding.checks"
     nudges = CHECK_NUDGES
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration]

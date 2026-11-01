@@ -1,3 +1,5 @@
+import json
+
 from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story
 
 
@@ -21,5 +23,15 @@ def test_a_check_with_no_title_is_skipped_and_the_wait_target_flag_is_counted_as
 
 def test_the_checks_moved_are_counted_and_a_second_run_moves_none(new_story):
     story = upgraded_story(new_story)
-    assert "journal.suites.coding.checks: moved 3, already moved 0" in story.upgrade_text
+    assert "journal.suites.coding.checks: moved 5, already moved 0" in story.upgrade_text
     assert repeated_upgrade(story).text == "nothing left to move"
+
+
+def test_a_check_that_blocks_a_task_moves_as_that_tasks_wait(new_story):
+    story = upgraded_story(new_story)
+    checks = json.loads(story.run("check list --json", actor=story.user).output_text)["rows"]
+    waiting = next(row for row in checks if row["title"] == "task 3 waits until this passes")
+    assert waiting["task_wait_id"] is not None and waiting["removed_at"] is None
+    assert not any(row["title"] == "task 1 waits until this passes" for row in checks)
+    story.expect_text("task show 3", "state: blocked", actor=story.user)
+
