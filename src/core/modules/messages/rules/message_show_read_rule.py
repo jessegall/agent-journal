@@ -7,10 +7,10 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.messages.commands.read_message.read_message import ReadMessage
 
 JOURNAL = "journal"
-MESSAGE_SHOW_COMMAND = ["message", "show"]
+MESSAGE_READ_WORDS = ["message", "show"]
 
 
-class ShownMessageReadRule(DriverRule):
+class MessageShowReadRule(DriverRule):
     """A message the main agent shows with journal message show is marked read."""
 
     name = "messages.shown-is-read"
@@ -24,4 +24,4 @@ class ShownMessageReadRule(DriverRule):
         return RuleAnswer.allowed().running(*(ReadMessage(int(number)) for number in shown)) if shown else RuleAnswer.allowed()
 
     def is_message_show(self, part: Part) -> bool:
-        return part.program == JOURNAL and list(part.arguments[:2]) == MESSAGE_SHOW_COMMAND and len(part.arguments) > 2 and part.arguments[2].isdigit()
+        return part.program == JOURNAL and list(part.arguments[:2]) == MESSAGE_READ_WORDS and len(part.arguments) > 2 and part.arguments[2].isdigit()

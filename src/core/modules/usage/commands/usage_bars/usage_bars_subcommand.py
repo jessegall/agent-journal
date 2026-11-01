@@ -19,7 +19,8 @@ PAGE_ROWS = 1
 
 
 class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
-    """`journal usage bars [--environment <name>]`: the counts and the current task the viewer's bars show, counted by the database."""
+    """`journal usage bars [--environment <name>]`: the counts and the current task the viewer's
+    bars show, counted by the database."""
 
     cli_name = "usage"
     name = "bars"

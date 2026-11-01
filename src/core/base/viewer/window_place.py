@@ -7,4 +7,4 @@ class WindowPlace(StrEnum):
     ENVIRONMENT = "environment"
     AGENT = "agent"
     DROPDOWN = "dropdown"
-    BAR = "bar"
+    HEADER = "bar"

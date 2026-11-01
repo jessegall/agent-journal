@@ -13,7 +13,7 @@ class StoredRowLinks(RowLinks):
 
     def lines(self, model_name: str, row_id: int) -> list[str]:
         links = self.queries.query(Link)
-        out = links.filter(source_model=model_name, source_id=row_id).newest().page(1, LINKS_SHOWN).rows
-        back = links.filter(target_model=model_name, target_id=row_id).newest().page(1, LINKS_SHOWN).rows
-        named = [*(f"  {link.target_id}:{link.target_model}" for link in out), *(f"  {link.source_id}:{link.source_model}" for link in back)]
-        return ["links:", *named] if named else []
+        outgoing_links = links.filter(source_model=model_name, source_id=row_id).newest().page(1, LINKS_SHOWN).rows
+        incoming_links = links.filter(target_model=model_name, target_id=row_id).newest().page(1, LINKS_SHOWN).rows
+        link_lines = [*(f"  {link.target_id}:{link.target_model}" for link in outgoing_links), *(f"  {link.source_id}:{link.source_model}" for link in incoming_links)]
+        return ["links:", *link_lines] if link_lines else []

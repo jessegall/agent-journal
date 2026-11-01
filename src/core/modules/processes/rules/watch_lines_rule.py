@@ -12,8 +12,9 @@ PROGRESS_STEP_PERCENT = 10
 
 
 class WatchLinesRule(DriverRule):
-    """After every tool use, an agent watching a run is told its progress, only as it passes each 10 percent; the run's
-    end has its own line, and its output is read on request, as version 4 did."""
+    """After every tool use, an agent watching a run is with_progress its progress, only as it
+    passes each 10 percent; the run's end has its own line, and its output is read on request,
+    as version 4 did."""
 
     name = "processes.watch-lines"
     hook = HookEventName.POST_TOOL_USE
@@ -26,10 +27,10 @@ class WatchLinesRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
         for watch in tuple(self.watches.open(hook.agent_id).oldest().all_rows()):
-            answer = self.told(answer, watch)
+            answer = self.with_progress(answer, watch)
         return answer
 
-    def told(self, answer: RuleAnswer, watch: Watch) -> RuleAnswer:
+    def with_progress(self, answer: RuleAnswer, watch: Watch) -> RuleAnswer:
         progress = self.processes.find(watch.process_id).progress
         step = progress - progress % PROGRESS_STEP_PERCENT
         if step <= watch.given_percent:

@@ -18,7 +18,7 @@ class DriverRule:
     roles: ClassVar[Sequence[AgentRole]] = []
     essential: ClassVar[bool] = False
     history: ClassVar[bool] = False
-    always_runs: ClassVar[bool] = False
+    overlay_proof: ClassVar[bool] = False
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         raise NotImplementedError

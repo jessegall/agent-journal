@@ -5,6 +5,7 @@ from core.modules.developer.support.developer_settings import DEVELOPER_SETTINGS
 class DeveloperModule(Module):
     """Adds the developer settings: one switch and the groups inside it, for working on the journal itself."""
 
+    move_reason = "it owns no tables"
     name = "journal.core.developer"
     seed_reason = "its settings are the person's own choice"
     requires_core = ">=5,<6"

@@ -22,14 +22,14 @@ OUTCOMES = {ProcessState.FINISHED: MarkOutcome.PASSED, ProcessState.FAILED: Mark
 PHRASES = {ProcessState.RUNNING: "Running", ProcessState.BACKGROUND: "In the background", ProcessState.FINISHED: "Ran", ProcessState.FAILED: "Failed",
          ProcessState.STOPPED: "Stopped", ProcessState.ORPHANED: "Lost"}
 ENDED = (ProcessState.FINISHED, ProcessState.FAILED, ProcessState.STOPPED, ProcessState.ORPHANED)
-MARKED_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
-MARKED_STATES = (ProcessState.BACKGROUND,)
+MARK_CATEGORIES = (CommandCategory.TEST_RUN, CommandCategory.BUILD, CommandCategory.CHECK, CommandCategory.PACKAGE)
 
 
 class ProcessEndMarkListener(CommitListener):
-    """A test run, a build, a check or a package shows one mark, and so does any run that moves to the
-    background; the mark is kept up to date in place by the key process:<id>: running, with the
-    reader's progress as its figure, moved to the background, then ended with its outcome. Other runs show none."""
+    """A test run, a build, a check or a package shows one mark, and so does any run that moves to
+    the background; the mark is kept up to date in place by the key process:<id>: running, with
+    the reader's progress as its figure, moved to the background, then ended with its outcome.
+    Other runs show none."""
 
     name = "processes.process-mark"
     event = "process.*"
@@ -41,7 +41,7 @@ class ProcessEndMarkListener(CommitListener):
         process = self.queries.query(Process).find(event.row_id)
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
-        if shown is None and process.category not in MARKED_CATEGORIES and process.state not in MARKED_STATES:
+        if shown is None and process.category not in MARK_CATEGORIES and process.state is not ProcessState.BACKGROUND:
             return
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return

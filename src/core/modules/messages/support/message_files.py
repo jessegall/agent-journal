@@ -9,9 +9,9 @@ PENDING_PATTERN = re.compile(r"^[0-9a-f]{16}/[^/\\]+$")
 
 
 class MessageFiles:
-    """The files sent with messages: an uploaded file waits in the pending folder under a token and its name, and
-    a message that names it takes it into the folder of the message's own number, where the agent and the viewer
-    read it."""
+    """The files sent with messages: an uploaded file waits in the pending folder under a token and
+    its name, and a message that names it takes it into the folder of the message's own number,
+    where the agent and the viewer read it."""
 
     def __init__(self, home: JournalHome) -> None:
         self.home = home

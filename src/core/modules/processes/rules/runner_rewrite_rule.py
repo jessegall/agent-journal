@@ -26,7 +26,7 @@ class RunnerRewriteRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
     history = True
-    always_runs = True
+    overlay_proof = True
 
     def __init__(self, limits: ForegroundLimit, runner: RunnerBinary, hook_history: HookHistory) -> None:
         self.limits, self.runner, self.hook_history = limits, runner, hook_history

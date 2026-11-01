@@ -5,7 +5,8 @@ from core.base.database.statement import Statement
 
 @dataclass(frozen=True)
 class IntervalPassed:
-    """Matches the checks that run on an interval and have never run, or whose interval has passed since they last ran."""
+    """Matches the checks that run on an interval and have never run, or whose interval has passed
+    since they last ran."""
 
     present: str
 

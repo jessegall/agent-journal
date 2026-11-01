@@ -37,7 +37,7 @@ class SettingReader:
         finally:
             self.cache = None
 
-    def forget(self) -> None:
+    def clear(self) -> None:
         if self.cache is not None:
             self.cache.clear()
 

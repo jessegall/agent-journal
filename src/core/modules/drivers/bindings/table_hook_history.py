@@ -14,7 +14,7 @@ class TableHookHistory(HookHistory):
         self.queries = queries
         self.kept: dict[RuleHistoryKey, RuleHistory | None] = {}
 
-    def forget(self) -> None:
+    def clear(self) -> None:
         self.kept.clear()
 
     def control_return(self, key: RuleHistoryKey) -> bool:

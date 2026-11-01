@@ -40,7 +40,7 @@ class CodingModule(Module):
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule]
     listeners = [AutoNextTaskListener]
-    windows = [WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.BAR,
+    windows = [WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show"], runs=["driver choose", "setting set"]),
                WindowDeclaration("coding.file-feed", "File feed", "file-feed.js", WindowLoading.COMPONENT, icon=WindowIcon.FILE, options=[ToggleOption("flush", "Flush")], place=WindowPlace.AGENT, reads=FILE_EDIT_READS,
                                  events=["file_edit.create"]),

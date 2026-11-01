@@ -15,12 +15,13 @@ from core.modules.processes.queries.process_query import ProcessQuery
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
-REMINDED_FOR = timedelta(minutes=30)
+REMINDER_PERIOD = timedelta(minutes=30)
 
 
 class UnreadOutputReminderRule(DriverRule):
-    """Tells an agent again in one line, every few tool uses, of the outputs of runs it moved to the background that it
-    has not read, for half an hour after each run ended and no longer."""
+    """Tells an agent again in one line, every few tool uses, of the outputs of runs it moved to
+    the background that it has not read, for half an hour after each run ended_runs and no
+    longer."""
 
     name = "processes.unread-output-reminder"
     hook = HookEventName.POST_TOOL_USE
@@ -32,8 +33,8 @@ class UnreadOutputReminderRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         spacing = self.settings.integer(ProcessSetting.UNREAD_OUTPUT_TOOL_USES, hook.environment_id)
-        ended = self.processes.agent(hook.agent_id).moved().ended().unread().matching(Greater("ended_at", Timestamp(hook.timestamp.value - REMINDED_FOR).text)).oldest().all_rows()
-        due = [process.id for process in ended if self.needs_reminder(hook, process, max(1, spacing))]
+        ended_runs = self.processes.agent(hook.agent_id).moved().ended().unread().matching(Greater("ended_at", Timestamp(hook.timestamp.value - REMINDER_PERIOD).text)).oldest().all_rows()
+        due = [process.id for process in ended_runs if self.needs_reminder(hook, process, max(1, spacing))]
         return RuleAnswer.with_lines(f"output {', '.join(map(str, due))} unread: journal output read {due[0]} --summary") if due else RuleAnswer.allowed()
 
     def needs_reminder(self, hook: AgentHook, process: Process, spacing: int) -> bool:

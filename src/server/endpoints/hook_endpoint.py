@@ -17,19 +17,21 @@ from server.hook.hook_database_busy_error import HookDatabaseBusyError
 from server.server_context import ServerContext
 
 
+STOP_NAME = "stop"
+
 
 def is_stop_body(data: object) -> bool:
     if not is_mapping(data):
         return False
-    return str(data.get("event") or data.get("hook_event_name") or "").lower() == "stop"
+    return STOP_NAME in (str(data.get("event")).lower(), str(data.get("hook_event_name")).lower())
 
 
 class HookEndpoint:
-    """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook route on a
-    synced journal over the connection the server's hooks share, waiting for another writer up to the hook
-    limit. A stale registry, a wait past the limit or a fault outside the rules lets the hook through with one
-    line, except a stop, which is refused, since a stop the journal cannot check may leave work open; a fault goes
-    to the server log."""
+    """Answers POST /hook: reads a hook's object, prepared or raw, and runs it through the hook
+    route on a synced journal over the connection the server's hooks share, waiting for another
+    writer up to the hook limit. A stale registry, a wait past the limit or a fault outside the
+    rules lets the hook through with one line, except a stop, which is refused, since a stop the
+    journal cannot check may leave work open; a fault goes to the server log."""
 
     def __init__(self, timing: Timing, context: ServerContext) -> None:
         self.timing, self.context = timing, context
@@ -40,7 +42,7 @@ class HookEndpoint:
                 self.timing.stamp("hook_locked")
                 return self.routed_answer(data, program, headers, database)
         except HookDatabaseBusyError as error:
-            return self.unchecked(data, str(error))
+            return self.unchecked(data, error)
         finally:
             self.timing.stamp("hook_answered")
             self.context.listener_thread.wake()
@@ -49,7 +51,7 @@ class HookEndpoint:
         try:
             container = synced_database_container(self.context.home, database)
         except StaleRegistryError as error:
-            return self.unchecked(data, str(error))
+            return self.unchecked(data, error)
         container.bind(Timing, self.timing)
         self.timing.stamp("hook_synced")
         event = self.event(data, program, headers, container.get(Providers))
@@ -60,7 +62,7 @@ class HookEndpoint:
             return route.answer(event)
         except sqlite3.OperationalError as error:
             if error.sqlite_errorcode == sqlite3.SQLITE_BUSY:
-                return self.unchecked(data, str(error))
+                return self.unchecked(data, error)
             return self.failure(data, error)
         except Exception as error:
             return self.failure(data, error)
@@ -80,7 +82,7 @@ class HookEndpoint:
             return HookReply(refusal=f"the journal failed on this stop and holds it: {type(error).__name__}: {error}")
         return HookReply.allowed(f"the journal failed on this hook and let it through: {type(error).__name__}: {error}")
 
-    def unchecked(self, data: object, reason: str) -> HookReply:
+    def unchecked(self, data: object, reason: Exception) -> HookReply:
         if is_stop_body(data):
             return HookReply(refusal=f"the journal could not check this stop and holds it: {reason}")
         return HookReply.allowed(f"the journal let this through unchecked: {reason}")

@@ -5,10 +5,11 @@ from core.modules.messages.commands.send_message.send_message_handler import Sen
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
-from core.modules.messages.migrations.m003_message_told import MessageToldMigration
+from core.modules.messages.migrations.m003_message_delivery import MessageDeliveryMigration
+from core.modules.messages.migrations.m004_message_delivered_at import MessageDeliveredAtMigration
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
-from core.modules.messages.rules.shown_message_read_rule import ShownMessageReadRule
+from core.modules.messages.rules.message_show_read_rule import MessageShowReadRule
 from core.modules.messages.rules.unread_message_stop_rule import UnreadMessageStopRule
 from core.modules.messages.commands.reply_message.reply_message_subcommand import ReplyMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_subcommand import SendMessageSubcommand
@@ -31,10 +32,10 @@ class MessagesModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageToldMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredAtMigration]
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler)
-    driver_rules = [MessageDeliveryRule, ShownMessageReadRule, UnreadMessageStopRule, AgentTextRule]
+    driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule]
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand,)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call list"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]

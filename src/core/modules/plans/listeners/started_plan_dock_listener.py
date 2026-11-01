@@ -16,8 +16,8 @@ DOCKING_MOVES = {"create": PlanDockType.DRAFT, "ready": PlanDockType.WAITING, "s
 
 
 class StartedPlanDockListener(CommitListener):
-    """A plan is docked above the chat as it stands: a draft once made, waiting for the user once ready, started, paused;
-    it is undocked when approved or ended."""
+    """A plan is docked above the chat as it stands: a draft once made, waiting for the user once
+    ready, started, paused; it is undocked when approved or ended."""
 
     name = "plans.started-dock"
     event = "plan.*"

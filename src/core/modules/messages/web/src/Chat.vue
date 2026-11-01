@@ -82,6 +82,7 @@ const removeAttached = (entry) => (attached.value = attached.value.filter((other
 const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
 
 const replying = ref(null);
+const composerQuote = computed(() => (editing.value ? `Editing message ${editing.value.id}` : `Reply to: ${replying.value?.text}`));
 const editing = ref(null);
 function startReply(message) {
     editing.value = null;
@@ -216,7 +217,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         </template>
         <template v-if="replying || editing">
             <p class="composer-quote" data-composer-quote>
-                <span class="composer-quote-text">{{ editing ? `Editing message ${editing.id}` : `Reply to: ${replying.text}` }}</span>
+                <span class="composer-quote-text">{{ composerQuote }}</span>
                 <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), leaveEdit()">×</button>
             </p>
         </template>

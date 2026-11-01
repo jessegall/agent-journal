@@ -16,9 +16,10 @@ ENVIRONMENT_COLUMN = "environment_id"
 
 
 class ListSubcommand(ReadSubcommand[Page[Model]]):
-    """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with a filter flag
-    for each enum column and each foreign key, named without its _id; --environment takes the environment's name,
-    as every other command does, or its number; --after-id and --before-id keep only the rows newer or older than an id."""
+    """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with
+    a filter flag for each enum column and each foreign key, environment_text without its _id;
+    --environment takes the environment's name, as every other command does, or its number;
+    --after-id and --before-id keep only the rows newer or older than an id."""
 
     name = "list"
 
@@ -38,8 +39,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
     def read(self, arguments: Namespace, caller: Caller) -> Page[Model]:
         values = {column: getattr(arguments, filter_flag(column).replace("-", "_")) for column in self.filter_columns()}
         if values.get(ENVIRONMENT_COLUMN) is not None:
-            named = str(values[ENVIRONMENT_COLUMN])
-            values[ENVIRONMENT_COLUMN] = int(named) if named.isdigit() else self.environment_names.environment_id(named)
+            environment_text = str(values[ENVIRONMENT_COLUMN])
+            values[ENVIRONMENT_COLUMN] = int(environment_text) if environment_text.isdigit() else self.environment_names.environment_id(environment_text)
         query = self.queries.query(self.table.model).filter(**{column: value for column, value in values.items() if value is not None})
         if arguments.after_id is not None:
             query = query.matching(Greater("id", arguments.after_id))

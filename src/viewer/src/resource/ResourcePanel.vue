@@ -4,6 +4,7 @@ import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Btn from "../kit/Btn.vue";
 import Skeleton from "../kit/Skeleton.vue";
+import SwitchCase from "../kit/SwitchCase.vue";
 import {cliOf, fieldsOf, movesOf, titleOf} from "../domain/resourceKinds.js";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
@@ -90,7 +91,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
                     <header class="head">
                         <template v-if="route.stack.length > 1">
-                            <button type="button" class="head-button" data-resource-back aria-label="Back to the row before" @click="unpeek">←</button>
+                            <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
                         </template>
                         <div class="names">
                             <p class="kind">{{ kind }} {{ opened.id }}<template v-if="row?.state"> · {{ row.state }}</template></p>
@@ -112,7 +113,8 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             <template v-if="html">
                                 <div class="md text" data-resource-text v-html="html" />
                             </template>
-                            <template v-if="kind === 'plan'">
+                            <SwitchCase :value="kind">
+                                <template #plan>
                                 <template v-for="phase in parts.phases" :key="phase.id">
                                     <section class="section" data-resource-phase>
                                         <h3>{{ phase.title }}</h3>
@@ -128,7 +130,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     </section>
                                 </template>
                             </template>
-                            <template v-else-if="kind === 'task'">
+                            <template #task>
                                 <template v-if="row.outcome || row.reason">
                                     <section class="section">
                                         <h3>{{ row.outcome ? "Outcome" : "Reason" }}</h3>
@@ -152,7 +154,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     </section>
                                 </template>
                             </template>
-                            <template v-else>
+                            <template #default>
                                 <section class="section" data-resource-fields>
                                     <template v-for="[name, value] in fields" :key="name">
                                         <p class="field-name">{{ name }}</p>
@@ -160,6 +162,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                     </template>
                                 </section>
                             </template>
+                            </SwitchCase>
                         </template>
                     </div>
                     <template v-if="moves.length">

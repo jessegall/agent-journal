@@ -14,7 +14,8 @@ DOCK_AFTER_SECONDS = 5
 
 
 class LongRunDockRule(DriverRule):
-    """A run of the agent's that has gone on for more than 5 seconds docks its output above the chat, once; a journal command never does."""
+    """A run of the agent's that has gone on for more than 5 seconds docks its output above the
+    chat, once; a journal command never does."""
 
     name = "processes.long-run-dock"
     hook = HookWildcard.ALL_HOOKS
@@ -26,12 +27,12 @@ class LongRunDockRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         running = tuple(self.processes.agent(hook.agent_id).running().all_rows())
-        due = [process for process in running if self.is_due(process, hook)]
+        due = [process for process in running if self.needs_dock(process, hook)]
         if not due:
             return RuleAnswer.allowed()
         return RuleAnswer.allowed().running(*(AddDockItem(process.environment_id, ProcessDockType.OUTPUT.value, "process", process.id) for process in due))
 
-    def is_due(self, process: Process, hook: AgentHook) -> bool:
+    def needs_dock(self, process: Process, hook: AgentHook) -> bool:
         if process.category is CommandCategory.JOURNAL or process.creation_timestamp().elapsed_seconds(hook.timestamp) <= DOCK_AFTER_SECONDS:
             return False
         return not self.items.type_items(ProcessDockType.OUTPUT.value).row_items("process", process.id).exists()

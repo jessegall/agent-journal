@@ -10,7 +10,8 @@ from core.modules.tasks.models.open_dependency import OpenDependency
 
 
 class NextPlanTasks:
-    """Finds a plan's next open task that waits on nothing, never past a checkpoint phase that still has an open task."""
+    """Finds a plan's next open task that waits on nothing, never past a checkpoint phase that
+    still has an open task."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
@@ -21,12 +22,12 @@ class NextPlanTasks:
         rows = free_tasks.ordered("phase_position", "position").page(1, 1).rows
         return rows[0].task_id if rows else None
 
-    def in_environment(self, environment_id: int) -> int | None:
+    def environment_task(self, environment_id: int) -> int | None:
         for plan in tuple(self.queries.query(Plan).filter(environment_id=environment_id, state=PlanState.STARTED).oldest().all_rows()):
             following = self.following(plan.id)
             if following is not None:
                 return following
         return None
 
-    def outside_plans(self) -> SubqueryMatch:
+    def plan_exclusion(self) -> SubqueryMatch:
         return SubqueryMatch("id", Select("phase_tasks").column("task_id"), negated=True)

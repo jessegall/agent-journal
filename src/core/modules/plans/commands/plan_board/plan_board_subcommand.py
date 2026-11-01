@@ -19,7 +19,9 @@ COUNT_PAGE_ROWS = 1
 
 
 class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
-    """`journal plan board [--environment <name>] [--closed] [--page <n>]`: a page of plan cards with their progress, open ones unless closed ones are asked for, and how many there are of each."""
+    """`journal plan board [--environment <name>] [--closed] [--page <n>]`: a page of plan cards
+    with their progress, open ones unless closed ones are asked for, and how many there are of
+    each."""
 
     cli_name = "plan"
     name = "board"

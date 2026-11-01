@@ -22,10 +22,11 @@ from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AgentHookRoute(HookRoute):
-    """Answers a hook as the agent that sent it: finds its open agent by session, then by the launch name it
-    was started under, saving the real session on it, or by the subagent the hook names, starts the main
-    agent at its session's first hook and a subagent at its first hook other than a stop, gives back the stored
-    answer of a hook sent twice, and lets through, without a record, a hook from an agent it does not know."""
+    """Answers a hook as the agent that sent it: finds its open agent by session, then by the
+    launch name it was started under, saving the real session on it, or by the subagent the hook
+    names, starts the main agent at its session's first hook and a subagent at its first hook
+    other than a stop, gives back the stored answer of a hook sent twice, and lets through,
+    without a record, a hook from an agent it does not know."""
 
     def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues) -> None:
         self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings

@@ -12,8 +12,8 @@ NESTING_LIMIT_LEVELS = 8
 
 
 class Database:
-    """The connection to the journal's database, with transactions that save everything or nothing, and a tally of the points
-    the work asks of it."""
+    """The connection to the journal's database, with transactions that save everything or nothing,
+    and a tally of the points the work asks of it."""
 
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
@@ -84,14 +84,14 @@ class Database:
         return rows
 
     def insert(self, statement: Statement) -> int:
-        self.tally.wrote(statement.sql)
+        self.tally.count_write(statement.sql)
         row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
         return row_id
 
     def update(self, statement: Statement) -> int:
-        self.tally.wrote(statement.sql)
+        self.tally.count_write(statement.sql)
         return statement.result(self.connection).rowcount
 
     def close(self) -> None:

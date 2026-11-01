@@ -16,8 +16,8 @@ BACKGROUND_CATEGORIES = frozenset((CommandCategory.TEST_RUN, CommandCategory.BUI
 
 @dataclass(frozen=True)
 class ForegroundRun:
-    """How long a line may run in the foreground, whether it goes to the background at once, and the reader an
-    alias it runs names."""
+    """How long a line may run in the foreground, whether it goes to the background at once, and
+    the reader an alias it runs names."""
 
     seconds: int
     background: bool
@@ -25,10 +25,10 @@ class ForegroundRun:
 
 
 class ForegroundLimit:
-    """How a shell line is run: no limit to move at for a line of journal commands, in the background at once
-    for an alias marked so, a test run, a build or a command whose last run went past the limit, else the seconds
-    the settings give, fewer while the user waits on a message; a line that runs an alias is a shell line, read by
-    the alias's reader."""
+    """How a shell line is run: no limit to move at for a line of journal commands, in the
+    background at once for an alias marked so, a test run, a build or a command whose last run
+    went past the limit, else the seconds the settings give, fewer while the user waits on a
+    message; a line that runs an alias is a shell line, read by the alias's reader."""
 
     def __init__(self, settings: ProcessSettings, background: BackgroundCommands, processes: ProcessQuery, queries: Queries) -> None:
         self.settings, self.background, self.processes, self.queries = settings, background, processes, queries

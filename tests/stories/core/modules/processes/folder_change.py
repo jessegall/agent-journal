@@ -5,7 +5,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
 MOVE = HookSamples.shell("cd build && ls", ShellPart("cd", CommandCategory.UNKNOWN, ["build"]), ShellPart("ls", CommandCategory.READ, []))
-STAY = HookSamples.shell("cd /work/main && ls", ShellPart("cd", CommandCategory.UNKNOWN, ["/work/main"]), ShellPart("ls", CommandCategory.READ, []))
+CURRENT_FOLDER_HOOK = HookSamples.shell("cd /work/main && ls", ShellPart("cd", CommandCategory.UNKNOWN, ["/work/main"]), ShellPart("ls", CommandCategory.READ, []))
 
 
 def test_an_agent_that_moves_with_cd_is_refused(new_story):
@@ -15,4 +15,4 @@ def test_an_agent_that_moves_with_cd_is_refused(new_story):
 
 def test_a_cd_into_the_folder_it_is_in_goes_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    story.expect_hook_allowed("s-1", STAY.with_fields(raw={"cwd": "/work/main"}))
+    story.expect_hook_allowed("s-1", CURRENT_FOLDER_HOOK.with_fields(raw={"cwd": "/work/main"}))

@@ -14,20 +14,21 @@ PORT_POLL_SECONDS = 0.1
 
 
 class ViewerListener(ThreadingHTTPServer):
-    """The viewer's HTTP listener on 127.0.0.1, beside the journal's socket, on the port it had before a restart, waiting
-    for the old server to let it go, or one the system picks when it stays taken; it answers only requests that carry the login cookie and name its
-    own address as their host."""
+    """The viewer's HTTP listener on 127.0.0.1, beside the journal's socket, on the port it had
+    before a restart, waiting for the old server to let it go, or one the system picks when it
+    stays taken; it answers only requests that carry the login cookie and name its own address
+    as their host."""
 
     daemon_threads = True
 
-    def __init__(self, login: ViewerLogin, routes: ViewerRoutes, remembered_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS) -> None:
-        give_up_at = time.monotonic() + port_wait_seconds
+    def __init__(self, login: ViewerLogin, routes: ViewerRoutes, last_port: int = 0, port_wait_seconds: float = PORT_WAIT_SECONDS) -> None:
+        deadline = time.monotonic() + port_wait_seconds
         while True:
             try:
-                super().__init__((VIEWER_ADDRESS, remembered_port), ViewerRequestHandler)
+                super().__init__((VIEWER_ADDRESS, last_port), ViewerRequestHandler)
                 break
             except OSError:
-                if time.monotonic() >= give_up_at:
+                if time.monotonic() >= deadline:
                     super().__init__((VIEWER_ADDRESS, 0), ViewerRequestHandler)
                     break
                 time.sleep(PORT_POLL_SECONDS)

@@ -8,7 +8,7 @@ from tests.stories.core.base.driver.support.hook_agents import hook_agent
 from tests.stories.core.base.driver.support.samples import SAMPLES
 
 
-SHOW = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
+READ_MESSAGE_HOOK = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
 
 
 def delivery_story(new_story):
@@ -25,7 +25,7 @@ def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks
     assert "[journal] new message 1: journal message show 1" in reply.lines
     assert not any("Fix the cart" in line for line in reply.lines)
     assert "read_at: None" in story.run("message show 1 ", actor=story.user).output_text or "read_at:" not in story.run("message show 1", actor=story.user).output_text
-    story.hook("s-1", SHOW)
+    story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_text("message show 1", "text: Fix the cart first", "read_at: 2026", actor=story.user)
 
 
@@ -55,5 +55,5 @@ def test_a_stop_is_refused_while_a_message_is_unread_and_goes_through_once_it_is
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.expect_hook_refusal("s-1", HookSamples.stop(), "message 1 is unread: journal message show 1")
-    story.hook("s-1", SHOW)
+    story.hook("s-1", READ_MESSAGE_HOOK)
     story.expect_hook_allowed("s-1", HookSamples.stop())

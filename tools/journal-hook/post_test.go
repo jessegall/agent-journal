@@ -207,17 +207,17 @@ func TestAGiveUpOnTheSocketAddsItsTimingToItsBypassLine(t *testing.T) {
 
 func TestAStopTheJournalDoesNotAnswerAtFirstIsAskedAgainUntilItDoes(t *testing.T) {
 	root := project(t, "8431")
-	asked := 0
+	askCount := 0
 	transport := fakeTransport(func(request *http.Request) (*http.Response, error) {
-		asked++
-		if asked < 3 {
+		askCount++
+		if askCount < 3 {
 			return nil, errors.New("connection refused")
 		}
 		return answer(200, `{"decision":"block"}`)(request)
 	})
 	status, answered := postedUntilAnswered(sample(root, "stop"), transport, time.Unix(1793395000, 0), time.Second, time.Millisecond)
-	if status != 200 || string(answered) != `{"decision":"block"}` || asked != 3 {
-		t.Fatalf("asked %d times, status %d answer %s", asked, status, answered)
+	if status != 200 || string(answered) != `{"decision":"block"}` || askCount != 3 {
+		t.Fatalf("askCount %d times, status %d answer %s", askCount, status, answered)
 	}
 }
 
@@ -228,21 +228,21 @@ func TestAStopTheJournalNeverAnswersEndsWithoutAnswerAfterTheWindow(t *testing.T
 	if status != 0 || time.Since(started) < 50*time.Millisecond {
 		t.Fatalf("status %d after %s", status, time.Since(started))
 	}
-	if held := heldStop(); !strings.Contains(held, `"decision":"block"`) || !strings.Contains(held, "did not answer") {
-		t.Fatalf("the held stop says %s", held)
+	if holdAnswer := heldStop(); !strings.Contains(holdAnswer, `"decision":"block"`) || !strings.Contains(holdAnswer, "did not answer") {
+		t.Fatalf("the holdAnswer stop says %s", holdAnswer)
 	}
 }
 
 func TestAToolIsNotAskedAgainWhenTheJournalDoesNotAnswer(t *testing.T) {
 	root := project(t, "8431")
-	asked := 0
+	askCount := 0
 	transport := fakeTransport(func(*http.Request) (*http.Response, error) {
-		asked++
+		askCount++
 		return nil, errors.New("connection refused")
 	})
 	postedUntilAnswered(sample(root, "pre_tool_use"), transport, time.Unix(1793395000, 0), time.Second, time.Millisecond)
-	if asked != 1 {
-		t.Fatalf("a tool was asked %d times", asked)
+	if askCount != 1 {
+		t.Fatalf("a tool was askCount %d times", askCount)
 	}
 }
 

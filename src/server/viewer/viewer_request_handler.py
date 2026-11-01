@@ -246,18 +246,18 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         name = parse_qs(urlsplit(self.path).query).get("name", [""])[0]
         self.answer(200, {"file": viewer.routes.file_route.upload(name, body)})
 
-    def answer_message_file(self, viewer: ViewerServer, rest: str) -> None:
-        number, _, name = rest.partition("/")
-        found = viewer.routes.file_route.download(int(number), name) if number.isdigit() and name else None
-        if found is None:
-            self.answer(404, {"error": f"no file {rest}"})
+    def answer_message_file(self, viewer: ViewerServer, file_path: str) -> None:
+        number, _, name = file_path.partition("/")
+        download = viewer.routes.file_route.download(int(number), name) if number.isdigit() and name else None
+        if download is None:
+            self.answer(404, {"error": f"no file {file_path}"})
             return
         self.send_response(200)
-        self.send_header("Content-Type", found.content_type)
-        self.send_header("Content-Length", str(len(found.data)))
+        self.send_header("Content-Type", download.content_type)
+        self.send_header("Content-Length", str(len(download.data)))
         self.send_header("X-Content-Type-Options", "nosniff")
         self.end_headers()
-        self.wfile.write(found.data)
+        self.wfile.write(download.data)
 
     def answer_redirect(self, kept_query: list[tuple[str, str]], headers: dict[str, str]) -> None:
         self.send_response(303)

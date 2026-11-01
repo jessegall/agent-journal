@@ -47,7 +47,7 @@ CHECK_PERIOD_SECONDS = 60.0
 CODE_RECHECK_SECONDS = 1.0
 
 
-def remembered_port(home: JournalHome) -> int:
+def last_port(home: JournalHome) -> int:
     text = home.viewer_port_file.read_text().strip() if home.viewer_port_file.is_file() else ""
     return int(text) if text.isdigit() else 0
 
@@ -69,7 +69,7 @@ def main(argv: list[str]) -> int:
     hook_database = HookDatabase(home)
     phones = PhoneSessions(home, listener_thread)
     login = ViewerLogin(phones, ShareSessions(phones.journal_output), SessionFile(home.viewer_sessions_file))
-    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), remembered_port(home))
+    viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
     check_round = JournalRound(home, "checks", CheckWork())

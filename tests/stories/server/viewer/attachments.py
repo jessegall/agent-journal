@@ -3,10 +3,10 @@ import json
 from tests.stories.core.support.fixtures import UserJoined
 from tests.stories.server.support.server_client import server_story
 
-PICTURE = b"\x89PNG\r\n\x1a\nthe cart picture"
+IMAGE_BYTES = b"\x89PNG\r\n\x1a\nthe cart picture"
 
 
-def uploaded(story, cookie: str, name: str = "cart.png", data: bytes = PICTURE) -> str:
+def uploaded(story, cookie: str, name: str = "cart.png", data: bytes = IMAGE_BYTES) -> str:
     status, body = story.viewer_upload(f"/api/files?name={name}", cookie, data)
     assert status == 200, (status, body)
     return json.loads(body)["file"]
@@ -19,12 +19,12 @@ def test_a_file_is_uploaded_sent_with_a_message_and_read_back_as_the_same_bytes(
         story.story.expect_success(f'message send "see this" --file {pending} --environment main', "text: see this", actor=story.story.user)
         story.story.expect_text("message show 1", "files:", "cart.png", actor=story.story.user)
         status, data, kind = story.viewer_download("/api/files/message/1/cart.png", cookie)
-        assert status == 200 and data == PICTURE and kind == "image/png", (status, kind)
+        assert status == 200 and data == IMAGE_BYTES and kind == "image/png", (status, kind)
 
 
 def test_a_file_is_taken_only_with_the_login_cookie(new_story):
     with server_story(new_story(fixture=UserJoined)) as story:
-        assert story.viewer_upload("/api/files?name=cart.png", "", PICTURE)[0] == 401
+        assert story.viewer_upload("/api/files?name=cart.png", "", IMAGE_BYTES)[0] == 401
         assert story.viewer_download("/api/files/message/1/cart.png", "")[0] == 401
 
 

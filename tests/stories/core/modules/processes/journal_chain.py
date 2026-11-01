@@ -54,7 +54,7 @@ def test_a_sleep_poll_followed_by_another_command_is_refused(new_story):
 
 def test_a_journal_command_piped_into_a_cutting_program_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task", piped_into=1)
+    piped = ShellPart("journal", CommandCategory.JOURNAL, ["task", "show", "1"], subcommand="task", pipe_target=1)
     grep = ShellPart("grep", CommandCategory.SEARCH, ["state"])
     story.expect_hook_refusal("s-1", HookSamples.shell("journal task show 1 && grep state", piped, grep), "do not cut a journal command with a pipe")
 

@@ -9,9 +9,9 @@ STOP_REFUSAL_COUNT = 5
 
 
 class RepeatedStopReleaseRule(DriverRule):
-    """A stop of a helper refused five times in a row goes through the next time, with a line asking it to report
-    what held it, so no rule and no overlay holds a helper for ever; the main agent is never released, since it
-    stops only when its tasks are done."""
+    """A stop of a helper refused five times in a row goes through the next time, with a line
+    asking it to report what held it, so no rule and no overlay holds a helper for ever; the
+    main agent is never released, since it stops only when its tasks are done."""
 
     name = "drivers.repeated-stop-release"
     hook = HookEventName.STOP

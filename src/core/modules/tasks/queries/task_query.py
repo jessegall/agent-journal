@@ -36,8 +36,8 @@ class TaskQuery(Query[Task]):
     def open_tasks(self, environment_id: int) -> Self:
         return self.environment(environment_id).filter(state=TaskState.OPEN)
 
-    def next_open(self, environment_id: int, excluded_id: int | None, outside: Condition) -> Task | None:
+    def next_open(self, environment_id: int, excluded_id: int | None, exclusion: Condition) -> Task | None:
         waiting = SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)
-        ready = self.open_tasks(environment_id).matching(waiting).matching(outside).all_rows()
-        return min((task for task in ready if task.id != excluded_id), key=lambda task: (URGENCY[task.priority], task.id), default=None)
+        free_tasks = self.open_tasks(environment_id).matching(waiting).matching(exclusion).all_rows()
+        return min((task for task in free_tasks if task.id != excluded_id), key=lambda task: (URGENCY[task.priority], task.id), default=None)
 

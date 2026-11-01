@@ -15,6 +15,6 @@ class PluginSettings:
         self.queries, self.kept = queries, kept
 
     def values(self, plugin: Plugin, manifest: PluginManifest) -> dict[str, object]:
-        rows = self.kept.of("plugin_settings", lambda: tuple(self.queries.query(PluginSetting).filter(plugin_id=plugin.id).all_rows()), "plugin_id = ?", [plugin.id])
+        rows = self.kept.read("plugin_settings", lambda: tuple(self.queries.query(PluginSetting).filter(plugin_id=plugin.id).all_rows()), "plugin_id = ?", [plugin.id])
         given = {row.key: json.loads(row.value) for row in rows}
         return {setting.key: given[setting.key] if setting.key in given else setting.default for setting in manifest.settings}

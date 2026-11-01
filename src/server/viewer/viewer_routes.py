@@ -15,9 +15,10 @@ from server.viewer.windows_route import WindowsRoute
 
 
 class ViewerRoutes:
-    """The routes of the viewer's listener behind its login: command lines, the event stream, module files,
-    the windows on offer, the chat marks and docked items modules declare, the skills, the files the chat carries, the session the
-    cookie opened, a share link's opening, and what waits on the person."""
+    """The routes of the viewer's listener behind its login: command lines, the event stream,
+    module files, the windows on offer, the chat marks and docked items modules declare, the
+    skills, the files the chat carries, the session the cookie opened, a share link's opening,
+    and what waits on the person."""
 
     def __init__(self, home: JournalHome, listener_thread: ListenerThread, login: ViewerLogin) -> None:
         self.line_route, self.event_stream = LineRoute(home, listener_thread), EventStream(home)

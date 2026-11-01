@@ -11,8 +11,9 @@ from suites.coding.modules.checks.queries.interval_passed import IntervalPassed
 
 
 class CheckQuery(Query[Check]):
-    """Reads checks: the ones not removed, those that run, those due to run and the failing ones the agent is due to be told
-    about, which the database picks and the rule never loads the rest of."""
+    """Reads checks: the ones not removed, those that run, those due to run and the failing ones
+    the agent is due to be told about, which the database picks and the rule unreported_rows
+    loads the rest of."""
 
     def __init__(self, database: Database, tables: Tables) -> None:
         super().__init__(database, tables, Check)
@@ -28,7 +29,7 @@ class CheckQuery(Query[Check]):
 
     def unreported(self, present: Timestamp, repeat_minutes: int) -> list[Check]:
         failing = self.matching(IsNull("removed_at")).filter(stopped=False, last_passed=False)
-        never = failing.matching(IsNull("reported_at")).oldest().all_rows()
+        unreported_rows = failing.matching(IsNull("reported_at")).oldest().all_rows()
         cutoff = Timestamp(present.value - timedelta(minutes=repeat_minutes))
-        again = failing.matching(Less("reported_at", cutoff.text)).oldest().all_rows()
-        return sorted([*never, *again], key=lambda check: check.id)
+        repeat_rows = failing.matching(Less("reported_at", cutoff.text)).oldest().all_rows()
+        return sorted([*unreported_rows, *repeat_rows], key=lambda check: check.id)

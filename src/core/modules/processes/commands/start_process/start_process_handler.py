@@ -36,4 +36,4 @@ class StartProcessHandler(Handler[StartProcess, Process]):
         return process
 
     def all_readers(self) -> tuple[Reader, ...]:
-        return self.kept.of("readers", lambda: tuple(self.readers.all_rows()))
+        return self.kept.read("readers", lambda: tuple(self.readers.all_rows()))

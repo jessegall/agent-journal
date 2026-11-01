@@ -16,5 +16,5 @@ class HookHistory:
     def row(self, key: RuleHistoryKey) -> object | None:
         return None
 
-    def forget(self) -> None:
+    def clear(self) -> None:
         return None

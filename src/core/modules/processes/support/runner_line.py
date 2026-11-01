@@ -6,9 +6,10 @@ SESSION_VARIABLE = "JOURNAL_AGENT_SESSION"
 
 
 class RunnerLine:
-    """The command the agent's tool runs in place of its own line: the runner, told its process, its limit and
-    whether it goes to the background, and the line itself quoted for the shell; the agent's session goes along in
-    the variable the journal reads, so a journal command in the line runs as that agent."""
+    """The command the agent's tool runs in place of its own line: the runner, told its process,
+    its limit and whether it goes to the background, and the line itself quoted for the shell;
+    the agent's session goes along in the variable the journal reads, so a journal command in
+    the line runs as that agent."""
 
     @staticmethod
     def build(runner: str, process_id: int, run: ForegroundRun, line: str, session: str) -> str:

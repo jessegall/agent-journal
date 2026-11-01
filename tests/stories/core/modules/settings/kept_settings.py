@@ -2,7 +2,7 @@ from core.base.database.database import Database
 from tests.stories.core.support.fixtures import UserJoined
 
 KEY = "journal.core.processes.foreground-seconds"
-SHOW = f"setting show {KEY}"
+SETTING_READ_LINE = f"setting show {KEY}"
 
 
 def settings_rows_read(story) -> int:
@@ -12,10 +12,10 @@ def settings_rows_read(story) -> int:
 def test_the_settings_are_read_once_and_again_only_when_one_changes(new_story):
     story = new_story(fixture=UserJoined)
     story.run(f"setting set {KEY} 20 --project", actor=story.user)
-    story.expect_success(SHOW, "value: 20", actor=story.user)
-    read_once = settings_rows_read(story)
-    story.expect_success(SHOW, "value: 20", actor=story.user)
-    assert settings_rows_read(story) == read_once
+    story.expect_success(SETTING_READ_LINE, "value: 20", actor=story.user)
+    first_read_rows = settings_rows_read(story)
+    story.expect_success(SETTING_READ_LINE, "value: 20", actor=story.user)
+    assert settings_rows_read(story) == first_read_rows
     story.run(f"setting set {KEY} 30 --project", actor=story.user)
-    story.expect_success(SHOW, "value: 30", actor=story.user)
-    assert settings_rows_read(story) > read_once
+    story.expect_success(SETTING_READ_LINE, "value: 30", actor=story.user)
+    assert settings_rows_read(story) > first_read_rows

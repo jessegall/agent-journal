@@ -24,14 +24,14 @@ class RuleHistoryWriter:
         for record in answers.rules:
             if record.history or record.outcome in ANSWERED_OUTCOMES:
                 self.write(agent_id, record, context)
-        self.history.forget()
+        self.history.clear()
 
     def write(self, agent_id: int, record: RuleRecord, context: Context) -> None:
         kept = self.history.row(RuleHistoryKey(agent_id, record.name, record.layer))
-        found = kept if isinstance(kept, RuleHistory) else None
-        current = found or RuleHistory(agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
+        stored_history = kept if isinstance(kept, RuleHistory) else None
+        current = stored_history or RuleHistory(agent_id=agent_id, creator_id=context.actor.id, rule=record.name, layer=record.layer)
         due_outcome = RuleDueOutcome.SILENCED if record.outcome == SILENCED else RuleDueOutcome.CONSULTED
         answer_at = context.timestamp if record.outcome in ANSWERED_OUTCOMES else current.last_answer_at
-        if found is not None and found.last_due_outcome == due_outcome and found.last_answer_at == answer_at:
+        if stored_history is not None and stored_history.last_due_outcome == due_outcome and stored_history.last_answer_at == answer_at:
             return
         self.repository.save(replace(current, last_due_outcome=due_outcome, last_answer_at=answer_at), context)

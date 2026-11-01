@@ -75,12 +75,12 @@ class Console:
 
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand, parser = self.line_parser.parser(argv)
-        printed = io.StringIO()
+        captured_output = io.StringIO()
         try:
-            with redirect_stdout(printed), redirect_stderr(printed):
+            with redirect_stdout(captured_output), redirect_stderr(captured_output):
                 arguments = parser.parse_args(argv[2:])
         except SystemExit as exit_request:
-            output.stream.write(printed.getvalue())
+            output.stream.write(captured_output.getvalue())
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
         if not isinstance(subcommand, Subcommand):
             subcommand.write_output(subcommand.read(arguments, caller), output)

@@ -68,7 +68,7 @@ def test_the_agent_is_told_of_a_hook_only_when_it_costs_the_points_over_the_limi
     timing = story.container.get(Timing)
     timing.stamps[:] = Timing.started("go_start").stamps
     assert not any("points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
-    monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_POINT_LIMIT", 1)
+    monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_LIMIT_POINTS", 1)
     timing.stamps[:] = Timing.started("go_start").stamps
     assert any("cost" in line and "points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
 

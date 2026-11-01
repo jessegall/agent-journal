@@ -7,14 +7,15 @@ from core.base.chat.mark_button import MarkButton
 
 @dataclass(frozen=True)
 class DockDeclaration:
-    """A type of item a module may dock above the chat: its type as a member of the module's own enum, its
-    icon and title, the buttons on its wrapper, the file of its body, its limits, the viewer kit
-    versions it was built for, the word on a badge after its title, and whether its body draws the title itself."""
+    """A type of item a module may dock above the chat: its type as a member of the module's own
+    enum, its icon and title, the buttons on its wrapper, the file of its body, its limits, the
+    viewer kit versions it was built for, the word on a badge after its title, and whether its
+    body draws the title itself."""
 
     type: StrEnum
     icon: str
     title: str
-    body: str
+    body: str = ""
     buttons: Sequence[MarkButton] = ()
     most: int = 1
     leaves_after_seconds: int = 0
