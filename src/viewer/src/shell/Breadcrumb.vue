@@ -1,7 +1,6 @@
 <script setup>
 // the path at the top of the page as version 4 drew it: the project's swatch, the project, the environment and the page
-defineProps({environment: {type: String, required: true}, page: {type: String, default: "Home"}, helpers: {type: Number, default: null}});
-defineEmits(["open"]);
+defineProps({environment: {type: String, required: true}, page: {type: String, default: "Home"}});
 </script>
 
 <template>
@@ -12,13 +11,6 @@ defineEmits(["open"]);
         <span class="crumb">{{ environment }}</span>
         <span class="crumb-sep">/</span>
         <span class="crumb current">{{ page }}</span>
-        <span class="crumb-space" />
-        <template v-if="helpers !== null">
-            <button type="button" class="crumb-helpers" data-helpers title="Helpers running" @click="$emit('open', 'helpers')">
-                {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
-            </button>
-        </template>
-        <slot />
     </nav>
 </template>
 
@@ -32,27 +24,6 @@ defineEmits(["open"]);
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
     font-size: 13px;
-}
-
-.crumb-space {
-    flex: 1;
-}
-
-.crumb-helpers {
-    padding: 3px 8px;
-    border: 0;
-    border-radius: 6px;
-    background: none;
-    color: var(--text-2);
-    font: inherit;
-    font-size: 12px;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.crumb-helpers:hover {
-    background: var(--hover);
-    color: var(--text);
 }
 
 .crumb-swatch {

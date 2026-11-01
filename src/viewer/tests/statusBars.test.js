@@ -1,7 +1,6 @@
 import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import AgentBar from "../src/shell/AgentBar.vue";
-import Breadcrumb from "../src/shell/Breadcrumb.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
 
 const mounted = (component, props) => {
@@ -22,13 +21,22 @@ test("the information bar shows the program, the state, the uptime and each coun
     expect(element.querySelector(`[data-count="tasks"]`).textContent).toContain("5");
 });
 
-test("the agent bar shows its state, and the breadcrumb row holds a helpers button asking to open the helpers", () => {
+test("the agent bar shows its state and a helpers button asking to open the helpers", () => {
     const opened = [];
-    const crumbs = mounted(Breadcrumb, {environment: "development", helpers: 1, onOpen: (name) => opened.push(name)});
-    expect(crumbs.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
-    crumbs.querySelector("[data-helpers]").click();
+    const element = mounted(AgentBar, {agent: MAIN, helpers: 1, onOpen: (name) => opened.push(name)});
+    expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
+    element.querySelector("[data-helpers]").click();
     expect(opened).toEqual(["helpers"]);
-    expect(mounted(AgentBar, {agent: MAIN}).textContent).toContain("Working");
+    expect(element.textContent).toContain("Working");
+});
+
+test("the top bar holds only the breadcrumb, the second the status and the mode bar, and the third the facts and the view controls", async () => {
+    const {readFileSync} = await import("node:fs");
+    const {resolve} = await import("node:path");
+    const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
+    expect(stage).toContain('<Breadcrumb :environment="environment" />');
+    expect(stage).toMatch(/<AgentBar[^>]*>[\s\S]*catalogue\.bars[\s\S]*<\/AgentBar>/);
+    expect(stage).toMatch(/<InformationBar[^>]*>[\s\S]*data-activity-toggle[\s\S]*data-fullscreen[\s\S]*LayoutPicker[\s\S]*<\/InformationBar>/);
 });
 
 test("a window's fade ends without holding a stacking context, so a dropdown in the top bars draws over the panes", async () => {
