@@ -1,13 +1,18 @@
 <script setup>
-defineProps({rows: {type: Array, required: true}});
+import {toRef} from "vue";
+import {ListTools, useListTools} from "@journal/window-kit";
+
+const props = defineProps({rows: {type: Array, required: true}});
 const emit = defineEmits(["open", "back"]);
+const tools = useListTools(toRef(props, "rows"), {title: (skill) => skill.folder});
 </script>
 
 <template>
     <div class="skills">
         <button type="button" class="skills-back" @click="emit('back')">Back</button>
+        <ListTools :tools="tools" placeholder="Search the skills" />
         <ul class="skills-catalogue">
-            <template v-for="skill in rows" :key="skill.folder">
+            <template v-for="skill in tools.shown.value" :key="skill.folder">
                 <li>
                     <button type="button" class="skill-entry" @click="emit('open', skill.folder)">
                         <span class="skill-name">{{ skill.folder }}</span>

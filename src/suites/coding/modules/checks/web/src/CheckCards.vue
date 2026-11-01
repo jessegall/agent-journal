@@ -1,8 +1,9 @@
 <script setup>
-import {Icon, Skeleton, useOpenRow, useRows, Btn, peekRef} from "@journal/window-kit";
+import {Icon, ListTools, Skeleton, useListTools, useOpenRow, useRows, Btn, peekRef} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("check list", ["check.*"]);
 const {opened, toggle} = useOpenRow();
+const tools = useListTools(rows, {title: (row) => row.title, isOpen: (row) => !row.stopped});
 </script>
 
 <template>
@@ -16,7 +17,8 @@ const {opened, toggle} = useOpenRow();
         <template v-else-if="loaded && !rows.length">
             <p class="cards-note">No checks yet</p>
         </template>
-        <template v-for="row in rows" :key="row.id">
+        <ListTools :tools="tools" placeholder="Search the checks" />
+        <template v-for="row in tools.shown.value" :key="row.id">
             <button type="button" :class="['card', {open: opened === row.id}]" :data-row="row.id" @click="toggle(row)">
                 <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
                 <span class="card-title">{{ row.title }}</span>

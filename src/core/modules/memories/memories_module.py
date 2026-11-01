@@ -1,5 +1,8 @@
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_icon import WindowIcon
+from core.base.viewer.window_loading import WindowLoading
 from core.base.module.module import Module
 from core.modules.memories.guards.agent_scope_guard import AgentScopeGuard
 from core.modules.memories.guards.keyword_scope_guard import KeywordScopeGuard
@@ -79,4 +82,5 @@ class MemoriesModule(Module):
     subcommands = [MakeMemorySubcommand, WeighMemoriesSubcommand, ReadMemorySubcommand, MemoryContextSubcommand, MemoryFadedSubcommand, SkipMemoryMarkSubcommand]
     marks = MEMORY_MARKS
     docks = MEMORY_DOCKS
+    windows = [WindowDeclaration("memories.memories", "Memories", "memories.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED, reads=["memory list"], runs=["memory make"], events=["memory.*"])]
     seeders = [MemoriesSeeder]

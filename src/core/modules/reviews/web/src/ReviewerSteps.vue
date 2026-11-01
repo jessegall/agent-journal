@@ -1,11 +1,12 @@
 <script setup>
 import {ref} from "vue";
-import {EmptyState, useWindow} from "@journal/window-kit";
+import {EmptyState, ListTools, useListTools, useWindow} from "@journal/window-kit";
 import {ago} from "./ago.js";
 
 const context = useWindow();
 const reviews = ref([]);
 const queued = ref(0);
+const tools = useListTools(reviews, {title: (review) => review.title});
 
 async function load() {
     const answer = await context.read("review board");
@@ -22,7 +23,8 @@ load();
         <template v-if="!reviews.length">
             <EmptyState title="No review yet">The reviewer shows here what it does with each worker's work: the review it starts, the tests it runs, each point passed or short, and the report it hands the agent.</EmptyState>
         </template>
-        <template v-for="review in reviews" :key="review.id">
+        <ListTools :tools="tools" placeholder="Search the reviews" />
+        <template v-for="review in tools.shown.value" :key="review.id">
             <section class="review">
                 <h3 class="review-title">{{ review.title }}</h3>
                 <ol class="steps">

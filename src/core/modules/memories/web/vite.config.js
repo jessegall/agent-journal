@@ -7,6 +7,7 @@ export default windowBuild({
     entries: {
         "memory-dock": here("./src/memory-dock.js"),
         "memory-round": here("./src/memory-round.js"),
+        "memories": here("./src/memories.js"),
     },
     outDir: here("./dist"),
 });

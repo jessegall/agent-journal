@@ -1,6 +1,6 @@
 <script setup>
 import {ref} from "vue";
-import {Skeleton, useWindow} from "@journal/window-kit";
+import {ListTools, Skeleton, useListTools, useWindow} from "@journal/window-kit";
 
 // dumps as version 4 drew them: a card for each with its title and brief, its items each with where the agent has got to
 // (new, noted, filed, failed), the note or summary the agent left, and what it filed the item into; one read brings them all
@@ -10,6 +10,7 @@ const cards = ref([]);
 const failure = ref("");
 const loaded = ref(false);
 const total = ref(0);
+const tools = useListTools(cards, {title: (card) => card.title || `Dump ${card.id}`, isOpen: (card) => !card.outcome});
 
 async function load() {
     const answer = await context.read("dump board");
@@ -40,7 +41,8 @@ load();
         <template v-else-if="!cards.length">
             <p class="dumps-note">No dumps</p>
         </template>
-        <template v-for="card in cards" :key="card.id">
+        <ListTools :tools="tools" placeholder="Search the dumps" />
+        <template v-for="card in tools.shown.value" :key="card.id">
             <section class="dump" :data-dump="card.id">
                 <h3 class="dump-title">{{ card.title || `Dump ${card.id}` }}</h3>
                 <p class="dump-brief">{{ card.outcome ? `Closed: ${card.outcome}` : card.brief }}</p>
