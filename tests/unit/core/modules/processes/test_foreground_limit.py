@@ -18,6 +18,9 @@ class Background:
     def includes(self, shell: ShellLine) -> bool:
         return self.journal_commands
 
+    def alias_runs(self, shell: ShellLine) -> list[object]:
+        return []
+
 
 class Rows:
     """Stands in for the process and message queries: whether the line went past the limit and whether a

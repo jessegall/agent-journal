@@ -18,4 +18,5 @@ class AddAliasHandler(Handler[AddAlias, Alias]):
     def handle(self, command: AddAlias, context: Context) -> Alias:
         self.names.check_free(command.name)
         return self.repository.save(Alias(creator_id=context.actor.id, name=command.name, line=command.line, reader_id=self.readers.reader_id(command.reader_name),
-                                          description=command.description, variables=command.variables, background=command.background), context)
+                                          description=command.description, variables=command.variables, background=command.background,
+                                          worker_access=command.worker_access), context)

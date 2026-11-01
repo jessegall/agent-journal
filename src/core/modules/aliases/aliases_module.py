@@ -20,7 +20,7 @@ class AliasesModule(Module):
 
     name = "journal.core.aliases"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.processes", "journal.core.plugins"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.processes", "journal.core.plugins"]
     models = [ModelDeclaration(Alias, query=AliasQuery, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [AliasesTableMigration]
     moves = [AliasesMove]

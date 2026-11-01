@@ -22,9 +22,12 @@ class EditAliasSubcommand(Subcommand[EditAlias, Alias]):
         running = parser.add_mutually_exclusive_group()
         running.add_argument("--background", dest="background", action="store_true", default=None)
         running.add_argument("--foreground", dest="background", action="store_false")
+        workers = parser.add_mutually_exclusive_group()
+        workers.add_argument("--workers", dest="worker_access", action="store_true", default=None)
+        workers.add_argument("--main-only", dest="worker_access", action="store_false")
 
     def command(self, arguments: Namespace, caller: Caller) -> EditAlias:
-        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background)
+        return EditAlias(arguments.alias_name, arguments.line, arguments.reader, arguments.about, arguments.background, arguments.worker_access)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, Alias):

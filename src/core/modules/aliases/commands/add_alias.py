@@ -14,3 +14,4 @@ class AddAlias(Command[Alias]):
     description: str
     variables: tuple[str, ...]
     background: bool
+    worker_access: bool

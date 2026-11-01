@@ -14,7 +14,7 @@ from core.modules.processes.support.reader_selection import ReaderSelection
 
 class StartProcessHandler(Handler[StartProcess, Process]):
     """Saves a running process, its parts, one for each command of the line in order, and the output it will
-    keep with the reader chosen for the line."""
+    keep with the reader the line's alias names, or else the one chosen for the line."""
 
     command = StartProcess
 
@@ -28,7 +28,7 @@ class StartProcessHandler(Handler[StartProcess, Process]):
                                                limit_seconds=command.limit_seconds), context)
         for position, part in enumerate(command.parts, 1):
             self.repository.save(ProcessPart(process_id=process.id, position=position, text=part.text, program=part.program, piped=part.piped), context)
-        reader = ReaderSelection.choose(tuple(self.readers.all_rows()), process)
+        reader = ReaderSelection.choose(tuple(self.readers.all_rows()), process) if command.reader_id is None else self.readers.find(command.reader_id)
         self.repository.save(Output(process_id=process.id, creator_id=context.actor.id, folder=self.folder.relative(process.id), reader_id=reader.id if reader is not None else None), context)
         self.folder.write_start(process.id, command.line, [part.text for part in command.parts])
         return process
