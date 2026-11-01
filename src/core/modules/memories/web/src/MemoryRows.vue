@@ -10,7 +10,7 @@ const TYPES = [
 
 // what the agents are told to remember: searched, and open or removed; a new one is written here and a row opens its panel
 const context = useWindow();
-const {rows, failure, loaded, load} = useRows("memory list", ["memory.*"]);
+const {rows, failure, loaded, load, older} = useRows("memory list", ["memory.*"], {incremental: true});
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "active"});
 const making = ref(false);
 const text = ref("");
@@ -43,7 +43,7 @@ async function make() {
             <p class="memories-refusal" role="alert" data-memory-refusal>{{ refusal }}</p>
         </template>
         <ListTools :tools="tools" placeholder="Search the memories" />
-        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No memories yet">
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" :older="older" empty="No memories yet">
             <template #default="{row}">
                 <button type="button" class="memory" :data-memory="row.id" @click="peekRef(`memories:${row.id}`)">
                     <span class="memory-text">{{ row.text }}</span>
