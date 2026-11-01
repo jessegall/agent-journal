@@ -78,3 +78,11 @@ def test_writing_a_file_or_sending_a_run_to_dev_null_gets_no_such_line(new_story
     silent = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], write_paths=["/dev/null"])
     reply = story.hook("s-1", HookSamples.shell("cat > notes.txt && pytest -q > /dev/null", writing, silent))
     assert not any("no reader sees it" in line for line in reply.lines)
+
+
+def test_a_test_run_cut_with_a_pipe_is_told_its_reader_sees_only_what_is_left(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    piped = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], pipe_target=1)
+    cut = ShellPart("tail", CommandCategory.READ, ["-5"])
+    reply = story.hook("s-1", HookSamples.shell("pytest -q && tail -5", piped, cut))
+    assert any(line.startswith("pytest is cut by a pipe") for line in reply.lines)

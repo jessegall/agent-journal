@@ -1,5 +1,8 @@
 from datetime import timedelta
 
+from core.base.command.bus import Bus
+from core.modules.processes.commands.read_new_output.read_new_output import ReadNewOutput
+
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -104,3 +107,43 @@ def test_an_output_left_unread_for_half_an_hour_is_no_longer_named(new_story):
     story.advance(timedelta(minutes=31))
     story.hook("s-1", NOTHING)
     assert [UNREAD in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
+
+
+def test_a_reader_that_picks_no_line_is_told_to_fix_its_pattern(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "NOTHING MATCHES THIS"', actor=story.agent)
+    process = moved_run(story, "./deploy.sh staging")
+    end_run(story, process, "uploading\nall done\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    assert any("reader deploys picked no line" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_reader_that_keeps_nearly_every_line_is_told_to_narrow_and_one_with_no_summary_to_add_one(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "step" --summary "NOTHING MATCHES THIS"', actor=story.agent)
+    process = moved_run(story, "./deploy.sh staging")
+    end_run(story, process, "".join(f"step {number}\n" for number in range(60)))
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    lines = lines_of(story, NOTHING)
+    assert any("reader deploys kept 60 of the 60 lines" in line for line in lines)
+    assert any("reader deploys found no summary" in line for line in lines)
+
+
+def test_a_run_printing_a_count_with_no_progress_pattern_is_told_to_add_one(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.run('reader add deploys --commands "./deploy*" --lines "step"', actor=story.agent)
+    process = moved_run(story, "./deploy.sh staging")
+    end_run(story, process, "step 3/9\nstep 9/9\n")
+    story.container.get(Bus).run(ReadNewOutput(process.id, True), story.agent, environment_id=1)
+    story.advance(timedelta(seconds=1))
+    assert any("prints a count its card draws no bar for" in line for line in lines_of(story, NOTHING))
+
+
+def test_a_run_that_prints_nothing_for_30_seconds_is_told_it_may_buffer(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "./deploy.sh staging")
+    assert not any("may buffer" in line for line in lines_of(story, NOTHING))
+    story.advance(timedelta(seconds=31))
+    assert any(f"output {process.id} has printed nothing for 30 seconds" in line for line in lines_of(story, NOTHING))

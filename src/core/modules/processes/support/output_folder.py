@@ -12,6 +12,7 @@ HEARTBEAT_FILE = "heartbeat"
 READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
 
+COUNT_LINES = 20
 
 class OutputFolder:
     """The one class that knows .journal/processes/<number>/: the line, the parts, each part's <position>.out
@@ -85,6 +86,9 @@ class OutputFolder:
                     collected += handle.read()
             passed += size
         return collected
+
+    def last_text(self, process_id: int) -> str:
+        return "\n".join(self.last_lines(process_id, COUNT_LINES))
 
     def last_lines(self, process_id: int, count: int) -> list[str]:
         total = sum(path.stat().st_size for path in self.output_paths(process_id) if path.exists())

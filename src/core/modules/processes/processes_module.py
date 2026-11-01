@@ -41,6 +41,7 @@ from core.modules.processes.commands.title_output.title_output_subcommand import
 from core.modules.processes.rules.journal_chain_rule import JournalChainRule
 from core.modules.processes.rules.journal_pipe_rule import JournalPipeRule
 from core.modules.processes.rules.redirected_run_rule import RedirectedRunRule
+from core.modules.processes.rules.silent_run_rule import SilentRunRule
 from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
 from core.modules.processes.rules.output_reader_rule import OutputReaderRule
 from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
@@ -100,7 +101,7 @@ class ProcessesModule(Module):
     handlers = [TitleOutputHandler, StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard]
-    driver_rules = [SleepPollRefusalRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
+    driver_rules = [SleepPollRefusalRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, UnreadOutputReminderRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
     listeners = [EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]

@@ -15,4 +15,11 @@ UNREAD_OUTPUT = NudgeDeclaration("processes.unread_output", NudgeType.INSTRUCTIO
 SLEEP_REFUSED = NudgeDeclaration("processes.sleep_refused", NudgeType.REFUSAL, 'a sleep with nothing to wait on is refused: {advice}')
 NAME_THE_RUN = NudgeDeclaration("processes.name_the_run", NudgeType.INSTRUCTION, 'output {process} is docked with its raw command as its title: name what it does with journal output title {process} "<what it does>", or give its reader a --title')
 
-PROCESS_NUDGES = [OUTPUT_ENDED, DRAFT_A_READER, USE_A_MONITOR, PROCESS_LOST, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, DO_NOT_MOVE, UNREAD_OUTPUT, SLEEP_REFUSED, NAME_THE_RUN]
+PIPED_RUN = NudgeDeclaration("processes.piped_run", NudgeType.INSTRUCTION, "{programs} is cut by a pipe, so its reader sees only what is left: run it without the pipe, then journal output read <n> --summary")
+SILENT_RUN = NudgeDeclaration("processes.silent_run", NudgeType.REMARK, "output {output} has printed nothing for {seconds} seconds, so it may buffer: run it with stdbuf -oL, python -u or its streaming flag")
+READER_MISSED = NudgeDeclaration("processes.reader_missed", NudgeType.INSTRUCTION, "reader {reader} picked no line of the {lines} that output {output} printed: fix its pattern with journal reader add {reader} --lines \"<the lines that matter>\"")
+READER_TOO_WIDE = NudgeDeclaration("processes.reader_too_wide", NudgeType.INSTRUCTION, "reader {reader} kept {kept} of the {lines} lines of output {output}, which reads no better than the output: narrow it with journal reader add {reader} --lines \"<the lines that matter>\"")
+READER_NO_SUMMARY = NudgeDeclaration("processes.reader_no_summary", NudgeType.INSTRUCTION, "reader {reader} found no summary in output {output}: give it one with journal reader add {reader} --summary \"<a pattern of the last line>\"")
+READER_NO_PROGRESS = NudgeDeclaration("processes.reader_no_progress", NudgeType.REMARK, "output {output} prints a count its card draws no bar for: give reader {reader} a --progress pattern such as \"\\[ *([0-9]+)%\\]\"")
+
+PROCESS_NUDGES = [PIPED_RUN, SILENT_RUN, READER_MISSED, READER_TOO_WIDE, READER_NO_SUMMARY, READER_NO_PROGRESS, OUTPUT_ENDED, DRAFT_A_READER, USE_A_MONITOR, PROCESS_LOST, OUTPUT_PROGRESS, CUT_JOURNAL_COMMAND, JOURNAL_COMMAND_LAST, REDIRECTED_RUN, RUNNER_MISSING, DO_NOT_MOVE, UNREAD_OUTPUT, SLEEP_REFUSED, NAME_THE_RUN]
