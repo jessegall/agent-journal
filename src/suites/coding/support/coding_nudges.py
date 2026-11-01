@@ -7,8 +7,8 @@ WORKER_GIT_BAN = NudgeDeclaration("coding.worker_runs_no_git", NudgeType.REFUSAL
 WORKER_COMMAND_TYPE = NudgeDeclaration("coding.worker_command_type", NudgeType.REFUSAL, 'a worker here runs no {category} command: {text}')
 BUILDER_SUBAGENT_BAN = NudgeDeclaration("coding.builder_sends_no_subagents", NudgeType.REFUSAL, 'the builder sends no subagents here: read and search yourself')
 TASK_ASSIGNMENT = NudgeDeclaration("coding.task_is_yours", NudgeType.REFUSAL, 'task {task} is yours now: {title}. {brief}')
-SUBAGENT_WRITE_BAN = NudgeDeclaration("coding.subagent_reads_only", NudgeType.REFUSAL, 'a subagent reads and searches only: the agent that sent it makes the change')
+SUBAGENT_EDIT_BAN = NudgeDeclaration("coding.subagent_reads_only", NudgeType.REFUSAL, 'a subagent reads and searches only: the agent that sent it makes the change')
 OPEN_TASKS_WAIT = NudgeDeclaration("coding.open_tasks_wait", NudgeType.REFUSAL, 'open tasks wait for a worker: {tasks}')
 
 WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.REMARK, "waiting for you: {items}; see journal task list, journal message unread, journal question list")
-CODING_NUDGES = [WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, BUILDER_SUBAGENT_BAN, TASK_ASSIGNMENT, SUBAGENT_WRITE_BAN, OPEN_TASKS_WAIT]
+CODING_NUDGES = [WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, BUILDER_SUBAGENT_BAN, TASK_ASSIGNMENT, SUBAGENT_EDIT_BAN, OPEN_TASKS_WAIT]

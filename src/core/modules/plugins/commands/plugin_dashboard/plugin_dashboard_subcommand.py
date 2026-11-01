@@ -36,12 +36,12 @@ class PluginDashboardSubcommand(ReadSubcommand[PluginDashboard]):
         if not saved.is_file():
             return PluginDashboard({"missing": f"{plugin.name} has written nothing on its dashboard yet."})
         try:
-            written: object = json.loads(saved.read_text())
+            dashboard: object = json.loads(saved.read_text())
         except json.JSONDecodeError:
             return PluginDashboard({"broken": f"{saved.name} is not valid JSON."})
-        if not is_mapping(written) or not all(key in written for key in ("start", "pages")):
+        if not is_mapping(dashboard) or not all(key in dashboard for key in ("start", "pages")):
             return PluginDashboard({"broken": f"{saved.name} does not state its start and pages."})
-        return PluginDashboard({"title": written["title"] if "title" in written else board.title, "start": written["start"], "pages": written["pages"]})
+        return PluginDashboard({"title": dashboard["title"] if "title" in dashboard else board.title, "start": dashboard["start"], "pages": dashboard["pages"]})
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, PluginDashboard):

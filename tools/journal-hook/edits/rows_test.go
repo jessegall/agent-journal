@@ -8,7 +8,7 @@ import (
 func TestSectionRowsNumberEachLineInItsOwnFile(t *testing.T) {
 	rows := SectionRows([]Section{{OldStart: 10, NewStart: 12, Lines: []string{" same", "-gone", "+new", "+more", " after"}}})
 	want := []struct {
-		kind string
+		category string
 		line int
 		text string
 	}{{"ctx", 12, "same"}, {"del", 11, "gone"}, {"add", 13, "new"}, {"add", 14, "more"}, {"ctx", 15, "after"}}
@@ -16,7 +16,7 @@ func TestSectionRowsNumberEachLineInItsOwnFile(t *testing.T) {
 		t.Fatalf("got %d rows", len(rows))
 	}
 	for index, row := range rows {
-		if row.LineType != want[index].kind || row.Line != want[index].line || row.Text != want[index].text {
+		if row.LineType != want[index].category || row.Line != want[index].line || row.Text != want[index].text {
 			t.Errorf("row %d is %+v", index, row)
 		}
 	}

@@ -11,8 +11,8 @@ KEY_BYTES = 32
 
 class ShareSessions:
     """The viewer's way to the sharing module: it finds the link a token belongs to, keeping nothing but the
-    digests of the keys given to browsers that sent the password, so a link opens again after a restart and ends
-    the moment it is revoked."""
+    digests of the keys given to browsers that sent the password, so a link opens again after a restart and
+    ends the moment it is revoked."""
 
     def __init__(self, journal_output: Callable[[list[str]], str]) -> None:
         self.journal_output = journal_output

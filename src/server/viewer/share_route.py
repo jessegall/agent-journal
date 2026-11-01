@@ -9,7 +9,7 @@ OPEN = 200
 PASSWORD_NEEDED = 401
 UNKNOWN = 404
 ENDED = 410
-PASSWORD_TRY_LIMIT = 429
+PASSWORD_TRY_LIMIT_STATUS = 429
 BASIC = "Basic "
 COOKIE_SEPARATOR = "."
 
@@ -36,7 +36,7 @@ class ShareRoute:
 
     def password_opening(self, token: str, authorization: str | None) -> ShareOpening:
         if self.tries.is_blocked(token):
-            return ShareOpening(PASSWORD_TRY_LIMIT)
+            return ShareOpening(PASSWORD_TRY_LIMIT_STATUS)
         password = self.password(authorization)
         if password is None:
             return ShareOpening(PASSWORD_NEEDED)

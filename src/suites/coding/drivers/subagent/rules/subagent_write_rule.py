@@ -1,4 +1,4 @@
-from suites.coding.support.coding_nudges import SUBAGENT_WRITE_BAN
+from suites.coding.support.coding_nudges import SUBAGENT_EDIT_BAN
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
@@ -15,5 +15,5 @@ class SubagentWriteRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         if tool is not None and tool.is_writing_files():
-            return RuleAnswer.refused(SUBAGENT_WRITE_BAN.nudge())
+            return RuleAnswer.refused(SUBAGENT_EDIT_BAN.nudge())
         return RuleAnswer.allowed()

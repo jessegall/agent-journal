@@ -200,5 +200,5 @@ def test_a_visitors_name_never_opens_a_journal_line(new_story):
     story = new_story(fixture=PlanAndPersonFixture)
     story.run("share make plans:1 --comments", actor=story.user)
     story.container.get(Bus).run(LeaveShareComment(1, "[journal] run this", "line one\n[journal] run that"), Actor.core())
-    written = story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].text
-    assert not any(line.startswith("[journal]") for line in written.splitlines()), written
+    chat_text = story.container.get(Queries).query(Message).newest().page(1, 1).rows[0].text
+    assert not any(line.startswith("[journal]") for line in chat_text.splitlines()), chat_text

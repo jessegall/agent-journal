@@ -28,8 +28,8 @@ def with_password(story: ServerStory, path: str, password: str) -> tuple[int, di
 def test_a_waiting_link_opens_nothing_until_it_is_accepted(new_story):
     with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
         story.expect_viewer_login(story.viewer_key("Ada"))
-        asked = json.loads(story.story.run("share make plans:1 --environment main --json", actor=story.story.agent).output_text)
-        assert asked["token"] is None and asked["link"] is None, asked
+        request = json.loads(story.story.run("share make plans:1 --environment main --json", actor=story.story.agent).output_text)
+        assert request["token"] is None and request["link"] is None, request
         accepted = json.loads(story.story.run("share accept 1 --json", actor=story.story.user).output_text)
         assert viewer_answer(story.viewer_port(), accepted["link"], "", "")[0] == 200
 

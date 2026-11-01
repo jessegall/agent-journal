@@ -18,7 +18,7 @@ from server.viewer.share_sessions import ShareSessions
 from server.viewer.viewer_session import ViewerSession
 from server.viewer.shared_row import SharedRow
 from server.viewer.share_refusal import ShareRefusal
-from server.viewer.share_route import OPEN, PASSWORD_NEEDED, PASSWORD_TRY_LIMIT
+from server.viewer.share_route import OPEN, PASSWORD_NEEDED, PASSWORD_TRY_LIMIT_STATUS
 from server.viewer.phone_module_error import PhoneModuleError
 from server.viewer.unknown_environment_error import UnknownEnvironmentError
 from server.viewer.unknown_login_key_error import UnknownLoginKeyError
@@ -233,7 +233,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        if status == PASSWORD_TRY_LIMIT:
+        if status == PASSWORD_TRY_LIMIT_STATUS:
             self.answer(status, {"error": "too many wrong passwords: try again later"})
             return
         kept = f"{SHARE_COOKIE_NAME}={opening.cookie}; HttpOnly; SameSite=Strict; Path=/"
