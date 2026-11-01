@@ -1,13 +1,13 @@
 <script setup>
-import {computed, onUnmounted, ref, watch} from "vue";
+import {computed, inject, onUnmounted, ref, watch} from "vue";
 import OutputLines from "../kit/OutputLines.vue";
 import ModuleBody from "../windows/ModuleBody.vue";
-import {api} from "../api/client.js";
-import {lineResult} from "../windows/windowContext.js";
+import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 
 // what an opened mark shows: its module's own body where the declaration names one, else version 4's lines, summary and output
 const props = defineProps({declaration: {type: Object, required: true}, mark: {type: Object, required: true}, shown: Boolean, head: {type: Object, default: null}});
 
+const context = inject(WINDOW_CONTEXT);
 const lines = computed(() => String(props.mark.lines || "").split("\n").filter(Boolean));
 const RUN_MODEL = "process";
 const POLL_MILLISECONDS = 2000;
@@ -16,7 +16,7 @@ const outputLoaded = ref(false);
 const outputFailure = ref("");
 const hasOutput = computed(() => props.mark.target_model === RUN_MODEL && Boolean(props.mark.target_id));
 async function readOutput() {
-    const answer = await lineResult("messages.chat", ["output", "peek", String(props.mark.target_id), "--all"], api.env());
+    const answer = await context.run(["output", "peek", String(props.mark.target_id), "--all"]);
     outputLoaded.value = true;
     outputFailure.value = answer.ok ? "" : answer.error;
     if (answer.ok) outputLines.value = answer.value.lines;

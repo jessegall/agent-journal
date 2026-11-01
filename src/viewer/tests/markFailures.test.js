@@ -4,6 +4,7 @@ import MarkButtons from "../src/chat/MarkButtons.vue";
 import MarkHost from "../src/chat/MarkHost.vue";
 import ModuleBody from "../src/windows/ModuleBody.vue";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
+import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {markLook} from "../src/domain/markLook.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
@@ -14,7 +15,7 @@ afterEach(() => app?.unmount());
 function drawn(component, props) {
     const element = document.createElement("div");
     document.body.appendChild(element);
-    app = createApp(() => h(component, props));
+    app = createApp(() => h(component, props)).provide(WINDOW_CONTEXT, {environment: "development"});
     app.mount(element);
     return element;
 }

@@ -1,16 +1,17 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
-import {api} from "../api/client.js";
+import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {pressable, pressButton} from "./markButtons.js";
 
 const props = defineProps({buttons: {type: Array, default: () => []}, mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
 const offered = computed(() => pressable(props.buttons, props.allowedRuns));
 const refusal = ref("");
+const context = inject(WINDOW_CONTEXT);
 
 // a button the server refuses shows the refusal beside it, until the next press
 async function press(button) {
-    const result = await pressButton(button, props.mark, api.env());
+    const result = await pressButton(button, props.mark, context.environment);
     refusal.value = result.ok ? "" : result.error;
 }
 </script>

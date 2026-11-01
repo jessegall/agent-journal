@@ -3,6 +3,7 @@ import {afterEach, expect, test, vi} from "vitest";
 import MarkButtons from "../src/chat/MarkButtons.vue";
 import OutputDock from "../../core/modules/processes/web/src/OutputDock.vue";
 import {ref} from "vue";
+import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {context, mounted, settle} from "./support/windowContext.js";
 
 vi.mock("../src/route.js", async (importOriginal) => ({...(await importOriginal()), go: vi.fn(), peekRef: vi.fn()}));
@@ -17,7 +18,7 @@ function pressed(button) {
     vi.stubGlobal("fetch", async (url, init) => (lines.push(JSON.parse(init.body).line), {json: async () => ({code: 0, value: null, error: ""})}));
     const element = document.createElement("div");
     document.body.append(element);
-    createApp(() => h(MarkButtons, {buttons: [button], mark: {target_id: 3}})).mount(element);
+    createApp(() => h(MarkButtons, {buttons: [button], mark: {target_id: 3}})).provide(WINDOW_CONTEXT, {environment: "development"}).mount(element);
     element.querySelector("button").click();
     return lines;
 }

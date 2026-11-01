@@ -1,5 +1,5 @@
 <script setup>
-import {computed, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import Btn from "../kit/Btn.vue";
 import ChatDock from "../kit/ChatDock.vue";
 import CloseButton from "../kit/CloseButton.vue";
@@ -7,7 +7,7 @@ import DockLeave from "./DockLeave.vue";
 import FoldSign from "../kit/FoldSign.vue";
 import Icon from "../kit/Icon.vue";
 import MarkBody from "./MarkBody.vue";
-import {api} from "../api/client.js";
+import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {dockDeclaration} from "../domain/dockRegistry.js";
 import {dockLook} from "../domain/dockLook.js";
 import {pressButton} from "./markButtons.js";
@@ -19,7 +19,8 @@ const props = defineProps({item: {type: Object, required: true}, folded: Boolean
 const declaration = computed(() => dockDeclaration(props.item.type));
 const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
-const press = (button) => (button.action === "open" ? peekRef(`${props.item.target_model}:${props.item.target_id}`) : pressButton(button, props.item, api.env()));
+const context = inject(WINDOW_CONTEXT);
+const press = (button) => (button.action === "open" ? peekRef(`${props.item.target_model}:${props.item.target_id}`) : pressButton(button, props.item, context.environment));
 const buttons = computed(() => look.value.buttons.filter((button) => button.action !== "undock"));
 const undock = computed(() => look.value.buttons.find((button) => button.action === "undock"));
 </script>
