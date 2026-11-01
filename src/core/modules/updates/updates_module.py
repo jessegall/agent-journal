@@ -25,5 +25,5 @@ class UpdatesModule(Module):
     migrations = [ReleasesTableMigration]
     handlers = [InstallReleaseHandler]
     subcommands = (UpdateCheckSubcommand, UpdateInstallSubcommand)
-    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, icon=WindowIcon.UPDATE,
+    windows = [WindowDeclaration("updates.updates", "Updates", "updates.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.UPDATE,
                                  reads=["update check", "release list"], runs=["update install"], events=["release.*"])]

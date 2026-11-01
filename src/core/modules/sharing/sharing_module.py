@@ -28,5 +28,5 @@ class SharingModule(Module):
     handlers = [MakeShareLinkHandler]
     moves = [ShareMove]
     seeders = [SharingSeeder]
-    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, icon=WindowIcon.SHARE,
+    windows = [WindowDeclaration("sharing.shares", "Shares", "shares.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.SHARE,
                                  reads=["share list"], runs=["share make", "share revoke"])]

@@ -23,4 +23,4 @@ class TunnelModule(Module):
     tunnels = [NoTunnel]
     guards = [TunnelServiceGuard]
     subcommands = [TunnelStatusSubcommand]
-    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, icon=WindowIcon.SHARE, reads=["tunnel status"])]
+    windows = [WindowDeclaration("tunnel.tunnel", "Tunnel", "tunnel.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.SHARE, reads=["tunnel status"])]

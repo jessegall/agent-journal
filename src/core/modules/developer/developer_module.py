@@ -19,4 +19,4 @@ class DeveloperModule(Module):
     settings = DEVELOPER_SETTINGS
     handlers = [ResetHookNumbersHandler]
     subcommands = [HookNumbersSubcommand, ResetHookNumbersSubcommand]
-    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"])]
+    windows = [WindowDeclaration("developer.numbers", "Numbers", "numbers.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FITNESS, reads=["developer numbers"], runs=["developer reset-numbers"])]

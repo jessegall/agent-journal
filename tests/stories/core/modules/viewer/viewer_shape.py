@@ -12,6 +12,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
+NOT_OFFERED_WINDOWS = {"viewer.shell", "processes.output", "reviews.reviewer"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 
@@ -58,4 +59,15 @@ def test_the_shell_declares_each_line_it_reads():
     viewer = next(window for window in ViewerModule.windows if window.name == "viewer.shell")
     declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
     missing = {f"{noun} {verb}" for path in source_files(VIEWER / "src") for noun, verb in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
+    assert not missing, sorted(missing)
+
+
+def test_the_coding_suite_offers_every_window_a_module_declares():
+    declared = set()
+    for folder in module_folders():
+        dotted = ".".join(folder.relative_to(ROOT / "src").parts)
+        module_file = importlib.import_module(f"{dotted}.{folder.name}_module")
+        declared |= {window.name for name, value in vars(module_file).items() if name.endswith("Module") and getattr(value, "__module__", "") == module_file.__name__ for window in value.windows}
+    text = (ROOT / "src/suites/coding/coding_suite.py").read_text()
+    missing = {name for name in declared if f'"{name}"' not in text} - NOT_OFFERED_WINDOWS
     assert not missing, sorted(missing)
