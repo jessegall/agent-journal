@@ -83,7 +83,7 @@ const prompt = () => (props.prompts?.current.value?.window === props.name ? prop
 
 <style scoped>
 .window {
-    animation: window-fade 0.25s ease both;
+    animation: window-fade 0.25s ease backwards;
 }
 
 @keyframes window-fade {

@@ -202,24 +202,22 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         </template>
         <template v-else>
             <template v-if="shellRead">
-                <Breadcrumb :environment="environment" />
+                <Breadcrumb :environment="environment" :helpers="facts.helpers" @open="openCount">
+                    <template v-for="window in catalogue.bars.value" :key="window.name">
+                        <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
+                    </template>
+                    <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
+                    <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
+                        <Icon name="wide" :size="13" />
+                    </Btn>
+                    <template v-if="presets">
+                        <LayoutPicker :list="presets" />
+                    </template>
+                </Breadcrumb>
                 <template v-if="openDropdown">
                     <WindowDropdown :name="openDropdown" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" @close="openDropdown = null" />
                 </template>
-            <AgentBar :agent="agentRow" :task="currentTask" :helpers="facts.helpers" @open="openCount">
-                <template v-for="window in catalogue.bars.value" :key="window.name">
-                    <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
-                </template>
-                <template v-if="shellRead">
-                    <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
-                </template>
-                <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
-                    <Icon name="wide" :size="13" />
-                </Btn>
-                <template v-if="presets">
-                    <LayoutPicker :list="presets" />
-                </template>
-            </AgentBar>
+            <AgentBar :agent="agentRow" :task="currentTask" />
             <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :now="now" @open="openCount" />
             </template>
         </template>

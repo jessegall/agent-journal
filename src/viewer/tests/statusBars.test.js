@@ -1,6 +1,7 @@
 import {createApp, h} from "vue";
 import {expect, test} from "vitest";
 import AgentBar from "../src/shell/AgentBar.vue";
+import Breadcrumb from "../src/shell/Breadcrumb.vue";
 import InformationBar from "../src/shell/InformationBar.vue";
 
 const mounted = (component, props) => {
@@ -21,13 +22,20 @@ test("the information bar shows the program, the state, the uptime and each coun
     expect(element.querySelector(`[data-count="tasks"]`).textContent).toContain("5");
 });
 
-test("the agent bar shows its state and a helpers button asking to open the helpers", () => {
+test("the agent bar shows its state, and the breadcrumb row holds a helpers button asking to open the helpers", () => {
     const opened = [];
-    const element = mounted(AgentBar, {agent: MAIN, helpers: 1, onOpen: (name) => opened.push(name)});
-    expect(element.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
-    element.querySelector("[data-helpers]").click();
+    const crumbs = mounted(Breadcrumb, {environment: "development", helpers: 1, onOpen: (name) => opened.push(name)});
+    expect(crumbs.querySelector("[data-helpers]").textContent.trim()).toBe("1 helper");
+    crumbs.querySelector("[data-helpers]").click();
     expect(opened).toEqual(["helpers"]);
-    expect(element.textContent).toContain("Working");
+    expect(mounted(AgentBar, {agent: MAIN}).textContent).toContain("Working");
+});
+
+test("a window's fade ends without holding a stacking context, so a dropdown in the top bars draws over the panes", async () => {
+    const {readFileSync} = await import("node:fs");
+    const {resolve} = await import("node:path");
+    const host = readFileSync(resolve(__dirname, "../src/windows/WindowHost.vue"), "utf8");
+    expect(host).toContain("animation: window-fade 0.25s ease backwards;");
 });
 
 test("the bars read the journal again every few seconds, so they follow the state as it changes", async () => {
