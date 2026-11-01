@@ -31,4 +31,10 @@ const TASK_MOVES = {
 };
 
 // what a person can do to a row in its state; a move with a flag asks for its words first
-export const movesOf = (kind, row) => ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? [];
+const questionMoves = (row) => (row?.state !== "open" ? [] : [
+    ...(row.options ?? []).map((option) => ({word: "answer", label: option === row.recommended ? `${option} (recommended)` : option, flag: "--answer", said: option, main: option === row.recommended})),
+    {word: "answer", label: "Write an answer", flag: "--answer", ask: "Your answer"},
+    {word: "close", label: "Close"},
+]);
+
+export const movesOf = (kind, row) => (kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);

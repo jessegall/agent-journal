@@ -105,3 +105,12 @@ test("the browser's back and forward walk the rows opened", async () => {
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
 });
+
+test("a question opens with its text and a button for each option, and a pick answers it", async () => {
+    const lines = [];
+    await opened("#?open=questions:4", answering({"question show 4": {ok: true, value: {id: 4, title: "Which one?", text: "Which one should go first?", state: "open", options: ["Cart", "Totals"], recommended: "Cart"}}}, lines));
+    expect(shown().querySelector("[data-resource-text]").textContent).toContain("Which one should go first?");
+    shown().querySelector(`[data-move="answer"]`).click();
+    await later();
+    expect(lines).toContainEqual(["question", "answer", "4", "--answer", "Cart"]);
+});

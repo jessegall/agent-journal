@@ -24,7 +24,7 @@ let reading = 0;
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
-const text = computed(() => row.value?.body || row.value?.brief || "");
+const text = computed(() => row.value?.body || row.value?.brief || (kind.value === "question" ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
 const moves = computed(() => movesOf(kind.value, row.value));
 const fields = computed(() => fieldsOf(row.value));
@@ -76,7 +76,7 @@ async function run(move, said = "") {
     await load();
 }
 
-const press = (move) => (move.flag ? ((asking.value = move), (words.value = "")) : run(move));
+const press = (move) => (move.said ? run(move, move.said) : move.flag ? ((asking.value = move), (words.value = "")) : run(move));
 const send = () => words.value.trim() && run(asking.value, words.value.trim());
 const close = () => opening([]);
 const closeOnEscape = (event) => event.key === "Escape" && opened.value && !asking.value && unpeek();

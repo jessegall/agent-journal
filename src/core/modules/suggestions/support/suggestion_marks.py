@@ -1,3 +1,4 @@
+from core.base.chat.mark_button import MarkButton
 from core.base.chat.mark_click import MarkClick
 from core.base.chat.mark_declaration import MarkDeclaration
 from core.base.chat.mark_family import MarkFamily
@@ -7,4 +8,7 @@ from core.modules.suggestions.models.enums.suggestion_mark_variant import Sugges
 
 SUGGESTIONS_FAMILY = MarkFamily("suggestions.suggestions", "Suggestions", "bulb", MarkGroup.JOURNAL)
 
-SUGGESTION_MARKS = [MarkDeclaration(SuggestionMarkType.SUGGESTION, SuggestionMarkVariant, SUGGESTIONS_FAMILY, "Suggestion", "bulb", click=MarkClick.OPEN_ROW, process=True)]
+ACCEPT = MarkButton("tick", "Accept", "suggestion answer {row_id} accepted")
+DECLINE = MarkButton("close", "No, and do not suggest it again", "suggestion answer {row_id} declined")
+
+SUGGESTION_MARKS = [MarkDeclaration(SuggestionMarkType.SUGGESTION, SuggestionMarkVariant, SUGGESTIONS_FAMILY, "Suggestion", "bulb", click=MarkClick.OPEN_ROW, process=True, buttons=[ACCEPT, DECLINE])]
