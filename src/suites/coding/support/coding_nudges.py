@@ -10,5 +10,6 @@ TASK_ASSIGNMENT = NudgeDeclaration("coding.task_is_yours", NudgeType.REFUSAL, 't
 SUBAGENT_EDIT_BAN = NudgeDeclaration("coding.subagent_reads_only", NudgeType.REFUSAL, 'a subagent reads and searches only: the agent that sent it makes the change')
 OPEN_TASKS_WAIT = NudgeDeclaration("coding.open_tasks_wait", NudgeType.REFUSAL, 'open tasks wait for a worker: {tasks}')
 
+INTRODUCE_YOURSELF = NudgeDeclaration("coding.introduce_yourself", NudgeType.INSTRUCTION, "introduce yourself in the chat in one or two lines, then ask what to do unless the user has already asked")
 WAITING_ITEMS = NudgeDeclaration("coding.waiting_items", NudgeType.REMARK, "waiting for you: {items}; see journal task list, journal message unread, journal question list")
-CODING_NUDGES = [WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, BUILDER_SUBAGENT_BAN, TASK_ASSIGNMENT, SUBAGENT_EDIT_BAN, OPEN_TASKS_WAIT]
+CODING_NUDGES = [INTRODUCE_YOURSELF, WAITING_ITEMS, WORKER_TASK_STARTED, WORKER_TASK_UNSTARTED, WORKER_GIT_BAN, WORKER_COMMAND_TYPE, BUILDER_SUBAGENT_BAN, TASK_ASSIGNMENT, SUBAGENT_EDIT_BAN, OPEN_TASKS_WAIT]

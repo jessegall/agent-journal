@@ -33,12 +33,20 @@ class WorkerResume:
         worktree = self.worktrees.worker_worktree(worker.id)
         lines = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.WAITING).oldest().all_rows()
         job = next((line for line in lines if line.source in RESUMING_SOURCES), None)
-        if worktree is None or worker.ended_at is None or job is None or self.is_job_delivering(worker, worker.ended_at):
+        if worktree is None or worker.ended_at is None or self.is_job_delivering(worker, worker.ended_at):
+            return
+        job = job or self.lost_job(worker, worker.ended_at)
+        if job is None:
             return
         environment = self.queries.query(Environment).find(worktree.environment_id)
         if self.launcher.hand(worker, environment, self.worker_command.resumed(worker, worktree, environment, job.text)):
-            self.bus.run(EnterAgentLine(job.id), Actor(actor_id, ActorType.AGENT), environment_id=worktree.environment_id)
+            if job.state is AgentLineState.WAITING:
+                self.bus.run(EnterAgentLine(job.id), Actor(actor_id, ActorType.AGENT), environment_id=worktree.environment_id)
 
     def is_job_delivering(self, worker: Agent, ended_at: Timestamp) -> bool:
         start = max(ended_at.text, Timestamp(self.clock.timestamp().value - timedelta(seconds=JOB_DELIVERY_SECONDS)).text)
         return self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", start)).exists()
+
+    def lost_job(self, worker: Agent, ended_at: Timestamp) -> AgentLine | None:
+        entered = self.queries.query(AgentLine).filter(agent_id=worker.id, state=AgentLineState.ENTERED).matching(Greater("updated_at", ended_at.text)).newest().all_rows()
+        return next((line for line in entered if line.source in RESUMING_SOURCES), None)

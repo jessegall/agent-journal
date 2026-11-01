@@ -2,7 +2,10 @@ from core.base.actor import Actor
 from core.base.actor_type import ActorType
 from datetime import timedelta
 
+from core.base.query.queries import Queries
+from core.modules.agents.models.agent import Agent
 from core.testing.hook_samples import HookSamples
+from suites.coding.modules.workers.support.worker_resume import WorkerResume
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
@@ -243,3 +246,19 @@ def test_a_worker_a_person_stops_stays_stopped_with_its_job_waiting(new_story):
     story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
     launcher.server.close()
 
+
+def test_a_job_whose_program_died_at_once_is_handed_again_by_the_next_trigger(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    story.advance(timedelta(seconds=5))
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET), answer=b"started\n", request_count=2)
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    story.expect_rows(len(launcher.requests) == 1)
+    story.advance(timedelta(minutes=3))
+    story.container.get(WorkerResume).resume(story.container.get(Queries).query(Agent).find(worker.id), story.agent.id)
+    launcher.thread.join(10)
+    story.expect_rows(len(launcher.requests) == 2)
+    assert any("Add the tax as well" in word for word in launcher.requests[1]["command"]), launcher.requests[1]

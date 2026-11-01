@@ -22,6 +22,7 @@ from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand imp
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
 from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
+from suites.coding.rules.introduction_rule import IntroductionRule
 from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
@@ -48,7 +49,7 @@ class CodingModule(Module):
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
-    driver_rules = [RecordFileEditRule, WaitingItemsRule]
+    driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
     listeners = [AutoNextTaskListener]
     subcommands = [GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),

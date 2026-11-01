@@ -1,4 +1,7 @@
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
 from core.testing.hook_samples import HookSamples
+from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderStarted, BuilderWithOpenTask, CodingEnvironment
 
@@ -49,3 +52,18 @@ def test_a_builder_starting_is_told_what_waits_for_it(new_story):
 def test_a_builder_with_nothing_waiting_is_told_nothing_about_it(new_story):
     story = new_story(fixture=CodingEnvironment)
     story.expect_absent_hook_line("s-1", HookSamples.session_start(), "waiting for you")
+
+
+def test_a_builder_the_journal_started_is_told_to_introduce_itself(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    launcher = FakeLauncher(story.home.socket("launcher"))
+    user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_text("agent launch claude --environment main", "started agent", actor=user)
+    launcher.thread.join(timeout=5)
+    name = launcher.requests[0]["session"]
+    story.expect_hook_allowed(name, HookSamples.session_start().with_fields(launch=name), "introduce yourself in the chat")
+
+
+def test_a_builder_the_user_started_by_hand_is_not_told_to_introduce_itself(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_absent_hook_line("s-1", HookSamples.session_start(), "introduce yourself")
