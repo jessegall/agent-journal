@@ -30,6 +30,7 @@ class AgentHookRoute(HookRoute):
         self.bus, self.queries, self.errors, self.durations = bus, queries, errors, durations
 
     def answer(self, event: HookEvent) -> HookReply:
+        self.durations.begin()
         stored_calls = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
         if stored_calls:
             return HookReply.stored(stored_calls[0])

@@ -2,6 +2,7 @@ import sqlite3
 from contextlib import contextmanager
 
 from core.base.database.nesting_error import NestingError
+from core.base.database.point_tally import PointTally
 from core.base.database.statement import Statement
 from core.base.journal_home import JournalHome
 
@@ -11,11 +12,13 @@ NESTING_LIMIT_LEVELS = 8
 
 
 class Database:
-    """The connection to the journal's database, with transactions that save everything or nothing."""
+    """The connection to the journal's database, with transactions that save everything or nothing, and a tally of the points
+    the work asks of it."""
 
     def __init__(self, connection: sqlite3.Connection) -> None:
         self.connection = connection
         self.nested: list[str] = []
+        self.tally = PointTally()
 
     @classmethod
     def opened(cls, home: JournalHome) -> "Database":
@@ -76,15 +79,19 @@ class Database:
             self.nested.pop()
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
-        return statement.result(self.connection).fetchall()
+        rows = statement.result(self.connection).fetchall()
+        self.tally.loaded(rows)
+        return rows
 
     def insert(self, statement: Statement) -> int:
+        self.tally.wrote()
         row_id = statement.result(self.connection).lastrowid
         if row_id is None:
             raise sqlite3.InterfaceError(f"the insert gave no row id: {statement.sql}")
         return row_id
 
     def update(self, statement: Statement) -> int:
+        self.tally.wrote()
         return statement.result(self.connection).rowcount
 
     def close(self) -> None:

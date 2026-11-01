@@ -6,6 +6,8 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.model.model import Model
 from core.base.model.table import Table
 from core.base.page import Page
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.less import Less
 from core.base.query.queries import Queries
 from core.base.query.query import PAGE_SIZE_ROWS
 from core.base.cli.subcommand_columns import FOREIGN_KEY_SUFFIX, parser_argument
@@ -16,7 +18,7 @@ ENVIRONMENT_COLUMN = "environment_id"
 class ListSubcommand(ReadSubcommand[Page[Model]]):
     """The `list` subcommand the core builds for a model: rows newest first, a page at a time, with a filter flag
     for each enum column and each foreign key, named without its _id; --environment takes the environment's name,
-    as every other command does, or its number."""
+    as every other command does, or its number; --after-id and --before-id keep only the rows newer or older than an id."""
 
     name = "list"
 
@@ -28,6 +30,8 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
         parser.add_argument("--page", type=int, default=1)
         parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
         parser.add_argument("--oldest", action="store_true")
+        parser.add_argument("--after-id", type=int, default=None)
+        parser.add_argument("--before-id", type=int, default=None)
         for column in self.filter_columns():
             parser_argument(parser, f"--{filter_flag(column)}", str if column == ENVIRONMENT_COLUMN else self.table.types[column])
 
@@ -37,6 +41,10 @@ class ListSubcommand(ReadSubcommand[Page[Model]]):
             named = str(values[ENVIRONMENT_COLUMN])
             values[ENVIRONMENT_COLUMN] = int(named) if named.isdigit() else self.environment_names.environment_id(named)
         query = self.queries.query(self.table.model).filter(**{column: value for column, value in values.items() if value is not None})
+        if arguments.after_id is not None:
+            query = query.matching(Greater("id", arguments.after_id))
+        if arguments.before_id is not None:
+            query = query.matching(Less("id", arguments.before_id))
         return (query.oldest() if arguments.oldest else query.newest()).page(arguments.page, arguments.limit)
 
     def filter_columns(self) -> tuple[str, ...]:

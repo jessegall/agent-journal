@@ -3,17 +3,20 @@ import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
-const {rows: messages, failure, loaded, load, context} = useRows("message list", ["message.*"]);
+const {rows: messages, failure, loaded, load, older, context} = useRows("message list", ["message.*"], {incremental: true});
 const {rows: allMarks} = useRows("chat-mark list", ["chat_mark.*"]);
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const {rows: latestCalls} = useRows("hook-call list --limit 1", ["hook_call.*"]);
 const marks = computed(() => shownMarks(allMarks.value, markDeclaration, (key) => context.option(key).value));
 const outgoing = ref([]);
-const rows = computed(() => interleaved([...messages.value, ...outgoing.value], marks.value));
+// a sent message shows at once as an echo, until its own row has been read: the echo is dropped when a message of the user with the same words has landed since
+const echoes = computed(() => outgoing.value.filter((echo) => !messages.value.some((row) => row.type === "user" && row.text === echo.text && Date.parse(row.created_at) >= echo.created_at - ECHO_SLACK_MS)));
+const rows = computed(() => interleaved([...messages.value, ...echoes.value], marks.value));
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
 const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? latestCalls.value[0].tool : ""));
 const FOLD_AFTER_MS = 180;
+const ECHO_SLACK_MS = 2000;
 const FOOT_PIXELS = 40;
 const chat = ref(null);
 const docksOpen = ref(true);
@@ -83,14 +86,27 @@ async function send() {
     focusComposer();
     const result = await context.run(["message", "send", line, ...files]);
     if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached);
-    await load();
     outgoing.value = outgoing.value.filter((other) => other !== echo);
+    await load();
 }
 
 const sendOnEnter = (event) => !event.shiftKey && (event.preventDefault(), sendable.value && send());
 // the docked cards open when the chat is scrolled down to its foot and fold, a moment later, when it is scrolled up away from it
+let paging = false;
+// scrolled to the top, the page of older messages is read and added, and the view stays on the message it showed
+async function pageOlder() {
+    if (paging || !loaded.value) return;
+    paging = true;
+    const before = scroller.value.scrollHeight;
+    if (await older()) {
+        await nextTick();
+        scroller.value.scrollTop += scroller.value.scrollHeight - before;
+    }
+    paging = false;
+}
 function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
+    if (atTop.value && scroller.value) pageOlder();
     if (!scroller.value) return;
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
     atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS;
