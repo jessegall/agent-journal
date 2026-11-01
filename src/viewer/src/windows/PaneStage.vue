@@ -112,7 +112,7 @@ const facts = ref(NO_FACTS);
 const now = ref(Date.now());
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", workers: "agents.agents", reviewers: "reviews.reviewer", usage: "usage.usage", context: "usage.context"};
+const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", helpers: "agents.subagents", agents: "agents.agents", workers: "workers.workers", reviewers: "reviews.reviewers", usage: "usage.usage", context: "usage.context"};
 const usage = ref({agents: [], windows: []});
 async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
