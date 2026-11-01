@@ -114,3 +114,13 @@ def test_a_plain_command_moved_to_the_background_makes_a_mark(new_story):
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     story.expect_text(MARKS, "process:1", "background")
+
+
+def test_a_plain_command_that_ended_after_moving_to_the_background_ends_its_mark(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "tail -f log")
+    story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
+    story.run_listeners()
+    end_run(story, process, "done\n")
+    story.run_listeners()
+    story.expect_text("chat-mark list --environment 1 --state ended", "process:1")

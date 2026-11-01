@@ -38,10 +38,10 @@ class ProcessEndMarkListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         process = self.queries.query(Process).find(event.row_id)
-        if process.category not in MARKED_CATEGORIES and process.state not in MARKED_STATES:
-            return
         key = f"process:{process.id}"
         shown = next(self.queries.query(ChatMark).filter(environment_id=process.environment_id, key=key).all_rows(), None)
+        if shown is None and process.category not in MARKED_CATEGORIES and process.state not in MARKED_STATES:
+            return
         if shown is not None and shown.state is ChatMarkState.ENDED:
             return
         variant = ProcessMarkVariant(process.state.value)
