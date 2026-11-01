@@ -4,7 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"strings"
+	"time"
 )
 
 // The questions and the fixed answers of the boot menu.
@@ -24,6 +24,8 @@ const (
 	EnvironmentVariable  = "JOURNAL_ENV"
 	ActiveVariable       = "AGENT_JOURNAL_ACTIVE"
 	WorkerRole           = "worker"
+	MainRole             = "main"
+	ClaudeProgram        = "claude"
 )
 
 // Environment is one environment of the journal, with the suite it runs and whether a working session holds it.
@@ -39,6 +41,8 @@ type Environment struct {
 type Conversation struct {
 	Session string
 	Role    string
+	Title   string
+	Written time.Time
 }
 
 // Journal is what the boot menu reads from the journal and asks it to make.
@@ -229,17 +233,25 @@ func (menu *boot) conversation() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	options := []string{}
+	mains := []Conversation{}
 	for _, conversation := range conversations {
-		if conversation.Role != WorkerRole {
-			options = append(options, ConversationPrefix+conversation.Session)
+		if conversation.Role == MainRole || conversation.Role == "" {
+			mains = append(mains, conversation)
 		}
 	}
-	answer, err := menu.answer(Question{Title: ConversationQuestion, Options: append(options, FreshConversation)})
-	menu.choice.Session = strings.TrimPrefix(answer, ConversationPrefix)
-	if answer == FreshConversation {
-		menu.choice.Session = ""
+	if menu.request.Program == ClaudeProgram {
+		home, _ := os.UserHomeDir()
+		mains = ClaudeTranscripts{Home: home}.Titled(menu.choice.Folder, mains)
+	} else {
+		mains = limited(mains)
 	}
+	options, sessions, now := []string{}, map[string]string{}, time.Now()
+	for _, conversation := range mains {
+		label := conversation.Label(now)
+		options, sessions[label] = append(options, label), conversation.Session
+	}
+	answer, err := menu.answer(Question{Title: ConversationQuestion, Options: append(options, FreshConversation)})
+	menu.choice.Session = sessions[answer]
 	return true, err
 }
 
