@@ -64,3 +64,11 @@ Lines marked open differ from version 4 in content or toolbar that these windows
 | S11 | Context percentage and its bar | Version 5's agent row carries no context use | no data; no task gives it yet |
 | S12 | Model and effort (opus, high) | Version 5's agent row carries neither | no data; no task gives it yet |
 | S13 | Usage and limit countdown (11d 3h) | Version 5 reads no usage | no data; no task gives it yet |
+
+## Search window (task 5492), version 4 pair search-v4.png
+
+| # | Item | Difference | State |
+|---|------|------------|-------|
+| W1 | Search page | Version 4 has a search box, a model chip row, hit cards with their passage and a switch for agents' conversations; version 5's Search window (search.search) has a box, chips of the models in the last answer, hit rows opening the window of the row they name, the total and the no-hit line | built, tested in searchWindow.test.js |
+| W2 | Version 5 screenshot | The journal search find command and its base pieces (Model.search_fields, ContainsEvery) land in this branch only at the next rebase, so the demo cannot run the window yet; search-v5.png follows then | open until the rebase |
+| W3 | Also search the agents' conversations | Version 5's search reads rows only | no data; no task gives it yet |
