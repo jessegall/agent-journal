@@ -63,3 +63,18 @@ def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_stor
     story = install_runner(new_story(fixture=BuilderStarted))
     status = HookSamples.shell("journal output status 7", ShellPart("journal", CommandCategory.JOURNAL, ["output", "status", "7"], subcommand="output"))
     story.expect_hook_allowed("s-1", status, "set a Monitor that ends when .journal/processes/7/end exists")
+
+
+def test_a_test_run_sent_to_a_file_is_told_no_reader_sees_it(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    redirected = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], write_paths=["/tmp/results.txt"])
+    reply = story.hook("s-1", HookSamples.shell("pytest -q > /tmp/results.txt", redirected))
+    assert "pytest goes to a file, so no reader sees it: run it without the redirect, then journal output read <n> --summary" in reply.lines
+
+
+def test_writing_a_file_or_sending_a_run_to_dev_null_gets_no_such_line(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    writing = ShellPart("cat", CommandCategory.EDIT, [], write_paths=["notes.txt"])
+    silent = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], write_paths=["/dev/null"])
+    reply = story.hook("s-1", HookSamples.shell("cat > notes.txt && pytest -q > /dev/null", writing, silent))
+    assert not any("no reader sees it" in line for line in reply.lines)

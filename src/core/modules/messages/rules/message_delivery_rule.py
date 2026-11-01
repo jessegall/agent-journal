@@ -35,4 +35,4 @@ class MessageDeliveryRule(DriverRule):
 
     def lines(self, message: Message) -> list[str]:
         files = [f"  file {self.home.message_files(message.id) / name}" for name in message.files]
-        return [f"[journal] new message {message.id}: journal message show {message.id}", *files]
+        return [f"[journal] new message {message.id}: journal message read {message.id}", *files]

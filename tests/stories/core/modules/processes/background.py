@@ -40,25 +40,20 @@ def test_a_run_no_reader_reads_tells_the_agent_to_draft_one_once(new_story):
     assert not any("no reader reads" in line for line in lines_of(story, NOTHING))
 
 
+def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(new_story):
+    _, _, lines = ended_lines(new_story, "for i in 1 2 3; do ./deploy.sh; done", "uploading\n")
+    assert not any("no reader reads" in line for line in lines)
+
+
 def test_a_run_a_reader_reads_gets_no_advice(new_story):
     _, _, lines = ended_lines(new_story, "pytest -q")
     assert ENDED in lines
-    assert not any("no reader reads" in line or "sent its output" in line for line in lines)
+    assert not any("no reader reads" in line for line in lines)
 
 
 def test_a_run_that_printed_nothing_gets_no_advice(new_story):
     _, _, lines = ended_lines(new_story, "./deploy.sh staging", "")
     assert not any("no reader reads" in line for line in lines)
-
-
-def test_a_run_sent_to_a_file_is_told_that_no_reader_saw_it(new_story):
-    _, process, lines = ended_lines(new_story, "pytest -q > /tmp/results.txt 2>&1", "")
-    assert f"output {process.id} sent its output to a file, so no reader saw it: run it without the redirect and read it with journal output read {process.id}" in lines
-
-
-def test_a_run_sent_to_dev_null_is_not_told_that(new_story):
-    _, _, lines = ended_lines(new_story, "pytest -q > /dev/null")
-    assert not any("sent its output" in line for line in lines)
 
 
 def test_a_run_that_ended_in_the_foreground_is_not_told(new_story):

@@ -1,11 +1,10 @@
-import re
 from pathlib import PurePath
 
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.process import Process
 from core.modules.processes.queries.output_query import OutputQuery
 
-FILE_REDIRECT = re.compile(r"(?:^|\s)(?:\d|&)?>>?\s*(?!/dev/)[\w./~-]+")
+SHELL_WORDS = frozenset(("for", "while", "until", "if", "case", "{", "(", "cd", "export", "time"))
 
 
 class EndedOutputText:
@@ -23,12 +22,12 @@ class EndedOutputText:
         return (self.line(process), advice) if advice else (self.line(process),)
 
     def advice(self, process: Process) -> str:
-        if FILE_REDIRECT.search(process.line):
-            return f"output {process.id} sent its output to a file, so no reader saw it: run it without the redirect and read it with journal output read {process.id}"
         kept = self.outputs.process(process.id).page(1, 1).rows
         if not kept or kept[0].reader_id is not None or not kept[0].line_count:
             return ""
         first = process.line.split()[0]
+        if first in SHELL_WORDS:
+            return ""
         name = PurePath(first).name
         return f'no reader reads {name} yet: fill in journal reader add {name} --commands "{first}*" --lines "<the lines that matter>" from this run\'s output and run it'
 

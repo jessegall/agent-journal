@@ -1,5 +1,6 @@
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
 from core.modules.messages.commands.read_message.read_message_handler import ReadMessageHandler
+from core.modules.messages.commands.read_message.read_message_subcommand import ReadMessageSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
 from core.modules.messages.queries.message_query import MessageQuery
@@ -36,7 +37,7 @@ class MessagesModule(Module):
     guards = [OneReplyPerMessageGuard]
     handlers = (SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule]
-    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand,)
+    subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand)
     windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call list", "output peek"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
