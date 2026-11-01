@@ -78,7 +78,7 @@ class OutputFolder:
         passed, collected = 0, b""
         for path in self.output_paths(process_id):
             size = path.stat().st_size if path.exists() else 0
-            if passed + size > offset:
+            if size and passed + size > offset:
                 with path.open("rb") as handle:
                     handle.seek(max(0, offset - passed))
                     collected += handle.read()

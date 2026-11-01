@@ -49,3 +49,12 @@ def test_reading_the_output_ends_the_reminders(new_story):
     story.hook("s-1", NOTHING)
     story.run(f"output read {process.id} --summary", actor=story.agent)
     assert [ENDED in lines_of(story, AFTER) for _ in range(10)] == [False] * 10
+
+
+def test_an_output_left_unread_for_half_an_hour_is_no_longer_named(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "pytest -q")
+    end_run(story, process, TESTS_REPORT, exit_code=1)
+    story.advance(timedelta(minutes=31))
+    story.hook("s-1", NOTHING)
+    assert [ENDED in lines_of(story, AFTER) for _ in range(10)] == [False] * 10

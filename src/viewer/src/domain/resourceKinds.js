@@ -23,7 +23,7 @@ const PLAN_MOVES = {
 
 const TASK_MOVES = {
     open: [{word: "start", label: "Start", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?"}, CANCEL],
-    started: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?"}, {word: "release", label: "Release"}, CANCEL],
+    started: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?"}, CANCEL],
     testing: [{word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: true}, {word: "retest", label: "Back to work"}, CANCEL],
     blocked: [{word: "unblock", label: "Unblock", main: true}, CANCEL],
     completed: [{word: "reopen", label: "Reopen"}],

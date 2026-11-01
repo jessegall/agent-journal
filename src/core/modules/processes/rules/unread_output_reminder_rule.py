@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -5,6 +7,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.processes.models.enums.process_setting import ProcessSetting
 from core.modules.processes.models.process import Process
@@ -13,9 +16,12 @@ from core.modules.processes.support.ended_output_text import EndedOutputText
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
+REMINDED_FOR = timedelta(minutes=30)
+
+
 class UnreadOutputReminderRule(DriverRule):
     """Tells an agent again, every few tool uses, of an output of a run it moved to the background that it has
-    not read."""
+    not read, for half an hour after the run ended and no longer."""
 
     name = "processes.unread-output-reminder"
     hook = HookEventName.POST_TOOL_USE
@@ -27,7 +33,7 @@ class UnreadOutputReminderRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         spacing = self.settings.integer(ProcessSetting.UNREAD_OUTPUT_TOOL_USES, hook.environment_id)
-        ended = self.processes.agent(hook.agent_id).moved().ended().unread().oldest().all_rows()
+        ended = self.processes.agent(hook.agent_id).moved().ended().unread().matching(Greater("ended_at", Timestamp(hook.timestamp.value - REMINDED_FOR).text)).oldest().all_rows()
         return RuleAnswer.with_lines(*(self.text.line(process) for process in ended if self.needs_reminder(hook, process, max(1, spacing))))
 
     def needs_reminder(self, hook: AgentHook, process: Process, spacing: int) -> bool:

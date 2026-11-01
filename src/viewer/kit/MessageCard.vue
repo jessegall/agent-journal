@@ -72,6 +72,8 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 }
 
 .message-card {
+    min-width: 0;
+    max-width: 100%;
     padding: 9px 12px;
     border: 1px solid transparent;
     border-radius: 10px;
@@ -82,6 +84,12 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 .message[data-from="user"] .message-card {
     background: color-mix(in srgb, var(--accent) 17%, var(--bg));
+}
+
+.message-card :deep(pre) {
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 
 .message-card :deep(p) {

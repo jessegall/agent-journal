@@ -131,3 +131,12 @@ def test_a_mark_names_the_command_and_not_where_the_project_lives(new_story):
     start_process(story, "cd /work/main && make test /work/main/cart.py", category=CommandCategory.TEST_RUN)
     story.run_listeners()
     story.expect_text(MARKS, "make test cart.py")
+
+
+def test_a_part_that_never_ran_has_no_file_and_the_output_before_it_is_read_all_the_same(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make one && make two")
+    folder = story.container.get(OutputFolder)
+    folder.write_output(process.id, 1, "ran\n")
+    assert folder.bytes_after(process.id, 0) == b"ran\n"
+    assert folder.bytes_after(process.id, 2) == b"n\n"
