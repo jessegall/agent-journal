@@ -29,19 +29,17 @@ function recording(answers) {
 
 test("the waiting list shows each item with its label, its status and where it waits", async () => {
     const text = await drawn(Waiting, context({
-        "wait list": page([{id: 1, focus: "Which database?", state: "open", opened_at: new Date(Date.now() - 5 * 60000).toISOString()}, {id: 2, focus: "Old wait", state: "ended", opened_at: "2026-10-31T09:00:00+00:00"}]),
-        "wait-target list": page([{id: 1, wait_id: 1, row_table: "questions", row_id: 1}]),
+        "wait waiting": page([{id: 1, focus: "Which database?", state: "open", opened_at: new Date(Date.now() - 5 * 60000).toISOString(), targets: "questions:1"}]),
     }));
     expect(text).toContain("Which database?");
     expect(text).toContain("open");
     expect(text).toContain("questions:1");
     expect(text).toContain("5 min");
     expect(text).toContain("What the agent is waiting on");
-    expect(text).not.toContain("Old wait");
 });
 
 test("an empty waiting list shows an empty state", async () => {
-    expect(await drawn(Waiting, context({"wait list": page([]), "wait-target list": page([])}))).toContain("Nothing is waiting");
+    expect(await drawn(Waiting, context({"wait waiting": page([])}))).toContain("Nothing is waiting");
 });
 
 test("the questions list shows the recommended choice first and marked", async () => {
@@ -80,19 +78,4 @@ test("the close button closes the question", async () => {
 
 test("an empty questions list shows an empty state", async () => {
     expect(await drawn(Questions, context({"question list": page([])}))).toContain("No open questions");
-});
-
-test("the waiting list shows only the waits on the user, not the agent's own waits on a task", async () => {
-    const opened_at = new Date().toISOString();
-    const text = await drawn(Waiting, context({
-        "wait list": page([
-            {id: 1, focus: "Which database?", type: "rows", state: "open", opened_at},
-            {id: 2, focus: "The review", type: "rows", state: "open", opened_at},
-            {id: 3, focus: "The build server is down", type: "help_request", state: "open", opened_at},
-        ]),
-        "wait-target list": page([{id: 1, wait_id: 1, row_table: "questions", row_id: 1}, {id: 2, wait_id: 2, row_table: "tasks", row_id: 4}]),
-    }));
-    expect(text).toContain("Which database?");
-    expect(text).toContain("The build server is down");
-    expect(text).not.toContain("The review");
 });

@@ -1,0 +1,43 @@
+from argparse import ArgumentParser, Namespace
+from typing import ClassVar
+
+from core.base.caller.caller import Caller
+from core.base.cli.view_rows import ViewRows
+from core.base.model.view_model import ViewModel
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.less import Less
+from core.base.query.queries import Queries
+from core.base.query.query import PAGE_SIZE_ROWS
+from core.base.subcommand.output import Output
+from core.base.subcommand.read_subcommand import ReadSubcommand
+
+
+class ViewRowsSubcommand(ReadSubcommand[ViewRows]):
+    """The read of a window that lists a view: rows newest first, by id, only the columns of the view, for the
+    filters it names; --after-id and --before-id page by id."""
+
+    model: ClassVar[type[ViewModel]]
+    filters: ClassVar[tuple[str, ...]] = ()
+
+    def __init__(self, queries: Queries) -> None:
+        self.queries = queries
+
+    def arguments(self, parser: ArgumentParser) -> None:
+        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--after-id", type=int, default=None)
+        parser.add_argument("--before-id", type=int, default=None)
+        for column in self.filters:
+            parser.add_argument(f"--{column.replace('_', '-')}", type=int if column.endswith("_id") else str, default=None)
+
+    def read(self, arguments: Namespace, caller: Caller) -> ViewRows:
+        given = {column: getattr(arguments, column) for column in self.filters if getattr(arguments, column) is not None}
+        query = self.queries.query(self.model).filter(**given)
+        if arguments.after_id is not None:
+            query = query.matching(Greater("id", arguments.after_id))
+        if arguments.before_id is not None:
+            query = query.matching(Less("id", arguments.before_id))
+        return ViewRows(tuple(query.newest().page(1, arguments.limit).rows))
+
+    def write_output(self, value: object, output: Output) -> None:
+        if isinstance(value, ViewRows):
+            output.write("\n".join("  ".join(str(item) for item in row.json().values()) for row in value.rows) or "nothing found", value.json())

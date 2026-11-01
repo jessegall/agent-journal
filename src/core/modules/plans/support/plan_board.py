@@ -1,17 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-
-@dataclass(frozen=True)
-class PlanCard:
-    """A plan as the plans window draws it."""
-
-    id: int
-    title: str
-    state: str
-    task_count: int
-    completed_count: int
-    current_phase: int
+from core.modules.plans.models.plan_card import PlanCard
 
 
 @dataclass(frozen=True)
@@ -24,5 +14,5 @@ class PlanBoard:
 
     def json(self) -> Mapping[str, object]:
         return {"open_total": self.open_total, "closed_total": self.closed_total,
-                "plans": [{"id": plan.id, "title": plan.title, "state": plan.state, "task_count": plan.task_count, "completed_count": plan.completed_count, "current_phase": plan.current_phase}
+                "plans": [{"id": plan.id, "title": plan.title, "state": plan.state.value, "task_count": plan.task_count, "completed_count": plan.completed_count, "current_phase": plan.current_phase}
                           for plan in self.plans]}

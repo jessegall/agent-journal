@@ -12,11 +12,11 @@ import FileEdits from "../../suites/coding/web/src/FileEdits.vue";
 import Terminal from "../../suites/coding/web/src/Terminal.vue";
 
 test("the chat window shows the environment's messages", async () => {
-    expect(await drawn(Chat, context({"message list": page([{id: 1, type: "user", text: "Ship the cart today"}])}))).toContain("Ship the cart today");
+    expect(await drawn(Chat, context({"message feed": page([{id: 1, type: "user", text: "Ship the cart today"}])}))).toContain("Ship the cart today");
 });
 
 test("the chat names each day above its first row", async () => {
-    const element = await mounted(Chat, context({"message list": page([{id: 2, type: "user", text: "today", created_at: new Date().toISOString()}, {id: 1, type: "user", text: "long ago", created_at: "2020-03-02T10:00:00Z"}])}));
+    const element = await mounted(Chat, context({"message feed": page([{id: 2, type: "user", text: "today", created_at: new Date().toISOString()}, {id: 1, type: "user", text: "long ago", created_at: "2020-03-02T10:00:00Z"}])}));
     const lines = [...element.querySelectorAll("[data-day-line]")].map((line) => line.textContent);
     expect(lines).toHaveLength(2);
     expect(lines[0]).toContain("March 2020");
@@ -24,12 +24,12 @@ test("the chat names each day above its first row", async () => {
 });
 
 test("the chat's rows are a real list, with or without an arrival motion", async () => {
-    const element = await mounted(Chat, context({"message list": page([{id: 1, type: "user", text: "Ship the cart", created_at: "2020-03-02T10:00:00Z"}])}));
+    const element = await mounted(Chat, context({"message feed": page([{id: 1, type: "user", text: "Ship the cart", created_at: "2020-03-02T10:00:00Z"}])}));
     expect(element.querySelector(".row-list").tagName).toBe("UL");
 });
 
 test("a reply shows a band with what it answers on top of its bubble, or says it was earlier", async () => {
-    const element = await mounted(Chat, context({"message list": page([
+    const element = await mounted(Chat, context({"message feed": page([
         {id: 3, type: "agent", text: "On it", parent_id: 1, created_at: "2026-11-01T10:02:00Z"},
         {id: 2, type: "agent", text: "Which one?", parent_id: 99, created_at: "2026-11-01T10:01:00Z"},
         {id: 1, type: "user", text: "Fix the cart", created_at: "2026-11-01T10:00:00Z"},
@@ -41,7 +41,7 @@ test("a reply shows a band with what it answers on top of its bubble, or says it
 });
 
 test("the chat's pinned links shrink to a corner and come back", async () => {
-    const element = await mounted(Chat, context({"message list": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
+    const element = await mounted(Chat, context({"message feed": page([]), "notice list": page([{id: 1, title: "Ready to review", link: "https://example.test", label: "Open", created_at: "2020-03-02T10:00:00Z"}])}));
     expect(element.textContent).toContain("Ready to review");
     element.querySelector(".pins-toggle").click();
     await settle();
@@ -76,10 +76,10 @@ test("the subagents window reads only the subagents of its own agent", async () 
 });
 
 test("the hook calls window shows its agent's hook calls with their answers", async () => {
-    const windowContext = context({"hook-call list": page([{id: 9, hook: "pre_tool_use", tool: "Edit", summary: "src/cart.py", answer: "refused", refusal: "start a task first"}])}, 2);
+    const windowContext = context({"hook-call feed": page([{id: 9, hook: "pre_tool_use", tool: "Edit", summary: "src/cart.py", answer: "refused", refusal: "start a task first"}])}, 2);
     const text = await drawn(HookCallList, windowContext);
     expect(text).toContain("start a task first");
-    expect(windowContext.reads[0]).toContain("--agent 2");
+    expect(windowContext.reads[0]).toContain("--agent-id 2");
 });
 
 test("the file feed shows its agent's edits with their counts", async () => {

@@ -1,7 +1,7 @@
 <script setup>
 import {RowList, useRows, useWindow} from "@journal/window-kit";
 
-const {rows, failure, loaded} = useRows(`hook-call list --agent ${useWindow().agent}`, ["hook_call.create"]);
+const {rows, failure, loaded} = useRows(`hook-call feed --agent-id ${useWindow().agent}`, ["hook_call.create"], {incremental: true});
 </script>
 
 <template>

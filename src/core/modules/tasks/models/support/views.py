@@ -4,3 +4,5 @@ OPEN_DEPENDENCIES_SELECT = (
     " JOIN tasks ON tasks.id = task_dependencies.dependency_id"
     " WHERE tasks.closed_at IS NULL"
 )
+
+TASK_CARDS_SELECT = "SELECT id, environment_id, title, state, priority FROM tasks"

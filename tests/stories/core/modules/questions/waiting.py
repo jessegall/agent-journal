@@ -87,3 +87,16 @@ def test_a_refused_ask_leaves_no_wait(new_story):
 def test_the_codex_programs_own_question_tool_is_refused_with_the_journal_way(new_story):
     story = new_story(fixture=CodexBuilderStarted)
     story.expect_hook_refusal("s-1", CODEX_QUESTION_TOOL, "ask with journal question ask")
+
+
+def test_the_waiting_read_brings_the_wait_on_the_user_with_its_targets_and_nothing_else(new_story):
+    story = new_story(fixture=BuilderQuestion)
+    answer = story.run("wait waiting --json", actor=story.user).output_text
+    assert '"focus"' in answer and '"targets": "questions:1"' in answer
+    assert '"outcome"' not in answer and '"agent_id"' not in answer
+
+
+def test_an_answered_question_leaves_the_waiting_read(new_story):
+    story = new_story(fixture=BuilderQuestion)
+    story.run("question answer 1 --answer sqlite")
+    assert '"rows": []' in story.run("wait waiting --json", actor=story.user).output_text

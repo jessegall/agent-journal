@@ -13,12 +13,12 @@ const isRunning = () => run.value !== null && (run.value.state === "running" || 
 async function load() {
     outputId.value = outputId.value || (await context.setting("output", 0));
     if (!outputId.value) {
-        const listed = await context.read("process list --limit 1");
+        const listed = await context.read("process feed --limit 1");
         outputId.value = listed.ok && listed.value.rows.length ? listed.value.rows[0].id : 0;
     }
     if (!outputId.value) return;
-    const shown = await context.read(`process show ${outputId.value}`);
-    run.value = shown.ok ? shown.value : null;
+    const shown = await context.read(`process feed --id ${outputId.value}`);
+    run.value = shown.ok && shown.value.rows.length ? shown.value.rows[0] : null;
     const text = await context.read(`output peek ${outputId.value} ${isWhole.value ? "--all" : "--summary"}`);
     lines.value = text.ok ? text.value.lines : [text.error];
 }

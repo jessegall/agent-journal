@@ -39,7 +39,7 @@ class AgentsModule(Module):
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list"],
                                  events=["agent.*"]),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
-                                 reads=["agent transcript", "hook-call list"], events=["hook_call.create"])]
+                                 reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
     listeners = [SubagentMarkListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

@@ -2,24 +2,13 @@
 import {computed} from "vue";
 import {RowList, useRows} from "@journal/window-kit";
 
-const {rows: waits, failure, loaded} = useRows("wait list", ["wait.*", "question.*"]);
-const {rows: targets} = useRows("wait-target list", ["wait_target.*"]);
+const {rows: waits, failure, loaded} = useRows("wait waiting", ["wait.*"]);
 
 function waited(openedAt) {
     return `${Math.max(0, Math.round((Date.now() - Date.parse(openedAt)) / 60000))} min`;
 }
 
-function waitsOnUser(wait) {
-    return wait.type === "help_request" || targets.value.some((target) => target.wait_id === wait.id && target.row_table === "questions");
-}
-
-const rows = computed(() => waits.value.filter((wait) => wait.state === "open" && waitsOnUser(wait)).map((wait) => ({
-    id: wait.id,
-    label: wait.focus,
-    status: wait.state,
-    where: targets.value.filter((target) => target.wait_id === wait.id).map((target) => `${target.row_table}:${target.row_id}`).join(", "),
-    waited: waited(wait.opened_at),
-})));
+const rows = computed(() => waits.value.map((wait) => ({id: wait.id, label: wait.focus, status: wait.state, where: wait.targets, waited: waited(wait.opened_at)})));
 </script>
 
 <template>

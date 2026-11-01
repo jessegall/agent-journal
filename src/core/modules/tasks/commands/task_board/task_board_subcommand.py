@@ -2,12 +2,13 @@ from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
 from core.base.environment_names import EnvironmentNames
-from core.base.query.query import PAGE_SIZE_ROWS
+from core.base.query.query import PAGE_SIZE_ROWS, Query
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.tasks.models.enums.task_state import TaskState
-from core.modules.tasks.queries.task_query import TaskQuery
+from core.base.query.queries import Queries
+from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.support.task_board import TaskBoard, TaskGroup
 
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
@@ -23,8 +24,8 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
     cli_name = "task"
     name = "board"
 
-    def __init__(self, tasks: TaskQuery, environment_names: EnvironmentNames) -> None:
-        self.tasks, self.environment_names = tasks, environment_names
+    def __init__(self, queries: Queries, environment_names: EnvironmentNames) -> None:
+        self.queries, self.environment_names = queries, environment_names
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
@@ -38,12 +39,15 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         if arguments.state is not None:
             return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.page, PAGE_SIZE_ROWS)]))
         active_groups = tuple(self.group(environment_id, state, 1, PAGE_SIZE_ROWS) for state in ACTIVE_STATES)
-        finished = tuple(TaskGroup(state.value, self.tasks.environment(environment_id).filter(state=state).page(1, COUNT_PAGE_ROWS).total, ()) for state in FINISHED_STATES)
+        finished = tuple(TaskGroup(state.value, self.cards(environment_id, state).page(1, COUNT_PAGE_ROWS).total, ()) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
     def group(self, environment_id: int, state: TaskState, page: int, size: int) -> TaskGroup:
-        page_rows = self.tasks.environment(environment_id).filter(state=state).newest().page(page, size)
+        page_rows = self.cards(environment_id, state).newest().page(page, size)
         return TaskGroup(state.value, page_rows.total, tuple(page_rows.rows))
+
+    def cards(self, environment_id: int, state: TaskState) -> Query[TaskCard]:
+        return self.queries.query(TaskCard).filter(environment_id=environment_id, state=state)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, TaskBoard):

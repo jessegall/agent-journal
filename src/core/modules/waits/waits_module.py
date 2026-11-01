@@ -1,6 +1,9 @@
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.modules.waits.migrations.m001_waits import WaitsTablesMigration
+from core.modules.waits.migrations.m002_wait_target_wait_index import WaitTargetWaitIndexMigration
+from core.modules.waits.models.waiting_row import WaitingRow
+from core.modules.waits.commands.waiting_wait.waiting_wait_subcommand import WaitingWaitSubcommand
 from core.modules.waits.overlays.help_request_overlay import HelpRequestOverlay
 from core.modules.waits.listeners.target_resolution_listener import TargetResolutionListener
 from core.modules.waits.models.wait import Wait
@@ -25,9 +28,10 @@ class WaitsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.chat"]
     models = [ModelDeclaration(Wait, commands=[EndWait, ResumeWait], excluded_subcommands=["make"]), ModelDeclaration(WaitTarget, excluded_subcommands=["make", "edit"])]
-    migrations = [WaitsTablesMigration]
+    migrations = [WaitsTablesMigration, WaitTargetWaitIndexMigration]
+    views = [WaitingRow]
     handlers = [OpenWaitHandler]
-    subcommands = [OpenWaitSubcommand, RequestHelpSubcommand]
+    subcommands = [OpenWaitSubcommand, RequestHelpSubcommand, WaitingWaitSubcommand]
     listeners = [TargetResolutionListener, ImpasseMarkListener]
     marks = WAIT_MARKS
     overlays = [WaitOverlay, HelpRequestOverlay]

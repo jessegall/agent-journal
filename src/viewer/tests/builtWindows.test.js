@@ -9,8 +9,8 @@ import Chat from "../../core/modules/messages/web/dist/chat.js";
 
 const ANSWERS = {
     "task board": {code: 0, value: {groups: [{state: "started", total: 1, rows: [{id: 2, title: "Ship the cart", state: "started"}]}, {state: "open", total: 1, rows: [{id: 1, title: "Fix the cart", state: "open"}]}]}},
-    "message list": {code: 0, value: {rows: [{id: 1, type: "user", text: "Ship the cart today"}], page: 1, size: 50, total: 1}},
-    "chat-mark list": {code: 0, value: {rows: [{id: 1, type: "tasks.task", variant: "started", key: "task:1", text: "Task 1 started", state: "ended"}], page: 1, size: 50, total: 1}},
+    "message feed": {code: 0, value: {rows: [{id: 1, type: "user", text: "Ship the cart today"}], page: 1, size: 50, total: 1}},
+    "chat-mark main": {code: 0, value: {rows: [{id: 1, type: "tasks.task", variant: "started", key: "task:1", text: "Task 1 started", state: "ended"}], page: 1, size: 50, total: 1}},
 };
 
 afterEach(() => vi.unstubAllGlobals());

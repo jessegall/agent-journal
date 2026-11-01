@@ -18,7 +18,7 @@ def test_the_outputs_and_output_windows_are_component_windows_of_the_environment
 def test_the_windows_read_outputs_processes_and_the_text_of_an_output_with_no_allowance(new_story):
     window = window_story(new_story)
     for name in (OUTPUTS, OUTPUT):
-        for line in ("output list", "process list", "process show 1", "output peek 1 --summary", "output peek 1 --all"):
+        for line in ("process feed", "process feed --id 1", "output peek 1 --summary", "output peek 1 --all"):
             window.expect_window_allowed(name, line)
 
 

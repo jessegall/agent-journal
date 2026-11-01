@@ -1,5 +1,8 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
+from enum import StrEnum
 from typing import ClassVar
+
+from core.base.timestamp import Timestamp
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -10,3 +13,16 @@ class ViewModel:
     view: ClassVar[str]
     key: ClassVar[str]
     select: ClassVar[str]
+
+    def json(self) -> dict[str, object]:
+        return {field.name: json_value(getattr(self, field.name)) for field in fields(self)}
+
+
+def json_value(value: object) -> object:
+    if isinstance(value, Timestamp):
+        return value.text
+    if isinstance(value, StrEnum):
+        return value.value
+    if isinstance(value, tuple):
+        return [json_value(item) for item in value]
+    return value

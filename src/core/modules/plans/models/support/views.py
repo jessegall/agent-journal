@@ -14,3 +14,10 @@ PLAN_PROGRESS_SELECT = (
     " WHERE plan_tasks.plan_id = plans.id AND plan_tasks.closed_at IS NULL), 0) AS current_phase"
     " FROM plans"
 )
+
+PLAN_CARDS_SELECT = (
+    "SELECT plans.id, plans.environment_id, plans.title, plans.state,"
+    " plan_progress.task_count, plan_progress.completed_count, plan_progress.current_phase"
+    " FROM plans"
+    " JOIN plan_progress ON plan_progress.plan_id = plans.id"
+)

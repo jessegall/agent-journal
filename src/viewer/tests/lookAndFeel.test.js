@@ -49,7 +49,7 @@ function windowContext(answers) {
 }
 
 async function mountedChat(answers = {}) {
-    const context = windowContext({"message list": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark list": [MARK], "dock-item list": [REPORT_DOCK], "notice list": [], ...answers});
+    const context = windowContext({"message feed": [FIRST_MESSAGE, SECOND_MESSAGE], "chat-mark main": [MARK], "dock-item list": [REPORT_DOCK], "notice list": [], ...answers});
     const element = document.createElement("div");
     document.body.append(element);
     createApp({setup: () => () => h(Chat), provide: {[WINDOW_CONTEXT]: context}}).mount(element);
@@ -246,7 +246,7 @@ test("side panels: a left sidebar lists the suite's pages and the environments, 
 });
 
 test("composer: a reply names what it answers and goes as a reply, and the arrow up edits the newest unread message", async () => {
-    const element = await mountedChat({"message list": [{id: 4, type: "user", text: "Fix the cart", created_at: "2026-11-01T05:00:00+00:00"}]});
+    const element = await mountedChat({"message feed": [{id: 4, type: "user", text: "Fix the cart", created_at: "2026-11-01T05:00:00+00:00"}]});
     element.querySelector("[data-message-action='reply']").click();
     await settled();
     expect(element.querySelector("[data-composer-quote]").textContent).toContain("Fix the cart");

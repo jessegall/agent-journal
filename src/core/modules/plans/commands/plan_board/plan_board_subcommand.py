@@ -9,9 +9,8 @@ from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.plans.models.enums.plan_state import PlanState
-from core.modules.plans.models.plan import Plan
-from core.modules.plans.models.plan_progress import PlanProgress
-from core.modules.plans.support.plan_board import PlanBoard, PlanCard
+from core.modules.plans.models.plan_card import PlanCard
+from core.modules.plans.support.plan_board import PlanBoard
 
 CLOSED_STATES = (PlanState.COMPLETED, PlanState.CANCELLED)
 OPEN_STATES = tuple(state for state in PlanState if state not in CLOSED_STATES)
@@ -38,12 +37,9 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the board is shown for one environment", "name it with --environment")
-        plans = self.queries.query(Plan).filter(environment_id=environment_id)
+        plans = self.queries.query(PlanCard).filter(environment_id=environment_id)
         opened, closed = plans.matching(Among("state", OPEN_STATES)), plans.matching(Among("state", CLOSED_STATES))
-        rows = (closed if arguments.closed else opened).newest().page(arguments.page, PAGE_SIZE_ROWS).rows
-        progress = {row.plan_id: row for row in self.queries.query(PlanProgress).matching(Among("plan_id", tuple(plan.id for plan in rows))).all_rows()}
-        cards = tuple(PlanCard(plan.id, plan.title, plan.state.value, progress[plan.id].task_count if plan.id in progress else 0, progress[plan.id].completed_count if plan.id in progress else 0,
-                               progress[plan.id].current_phase if plan.id in progress else 0) for plan in rows)
+        cards = tuple((closed if arguments.closed else opened).newest().page(arguments.page, PAGE_SIZE_ROWS).rows)
         return PlanBoard(opened.page(1, COUNT_PAGE_ROWS).total, closed.page(1, COUNT_PAGE_ROWS).total, cards)
 
     def write_output(self, value: object, output: Output) -> None:

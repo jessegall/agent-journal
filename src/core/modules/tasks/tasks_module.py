@@ -16,6 +16,8 @@ from core.modules.tasks.rules.unlogged_write_rule import UnloggedWriteRule
 from core.modules.tasks.rules.log_request_rule import LogRequestRule
 from core.modules.tasks.migrations.m001_tasks import TasksTablesMigration
 from core.modules.tasks.migrations.m002_paused_tasks_blocked import PausedTasksBlockedMigration
+from core.modules.tasks.migrations.m003_task_state_index import TaskStateIndexMigration
+from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskReminderRule
 from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
 from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
@@ -48,13 +50,13 @@ class TasksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration]
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration]
     subcommands = (TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
-    views = [OpenDependency]
+    views = [OpenDependency, TaskCard]
     listeners = [DependencyRemoverListener, TaskMoveMarkListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS

@@ -2,7 +2,7 @@
 import {RowList, useRows, useWindow} from "@journal/window-kit";
 
 const context = useWindow();
-const {rows, failure, loaded} = useRows("process list", ["process.*", "output.*"]);
+const {rows, failure, loaded} = useRows("process feed", ["process.*", "output.*"]);
 
 const isRunning = (row) => row.state === "running" || row.state === "background";
 const stop = (row) => context.run(`output stop ${row.id}`);
