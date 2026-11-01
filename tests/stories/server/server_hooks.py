@@ -66,13 +66,13 @@ def test_a_hook_resent_under_its_firing_gets_its_stored_answer(new_story):
         story.expect_hook_answer("/hook", lead_stop("server-2"), 200, '"hook_call_id": 2')
 
 
-def test_a_hook_that_waits_past_its_limit_on_a_busy_database_is_let_through_with_one_line(new_story):
+def test_a_stop_that_waits_past_its_limit_on_a_busy_database_is_held(new_story):
     started = new_story(SAMPLES, fixture=LeadStarted)
     with server_story(started) as story:
         writer = sqlite3.connect(started.home.database, timeout=1)
         writer.execute("BEGIN IMMEDIATE")
         try:
-            story.expect_hook_answer("/hook", lead_stop("server-3"), 200, "the journal let this through unchecked")
+            story.expect_hook_answer("/hook", lead_stop("server-3"), 200, "the journal could not check this stop and holds it")
         finally:
             writer.rollback()
             writer.close()
@@ -84,9 +84,15 @@ def test_a_claude_stop_posted_as_a_prepared_object_is_refused_as_the_builder_dec
         story.story.expect_success(lines.SECOND_HOOK_CALL, "driver: coding.builder", "answer: refused")
 
 
-def test_a_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(new_story):
+def test_a_stop_that_waits_past_its_limit_for_another_hook_is_held(new_story):
     with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
-        story.expect_locked_hook_answer(lead_stop("server-4"), "another hook held the journal")
+        story.expect_locked_hook_answer(lead_stop("server-4"), "the journal could not check this stop and holds it")
+
+
+def test_a_tool_hook_that_waits_past_its_limit_for_another_hook_is_let_through_with_one_line(new_story):
+    with server_story(new_story(SAMPLES, fixture=LeadStarted)) as story:
+        body = dict(HookSamples.sample("post_tool_use").with_fields(session="s-1", environment="main", firing="server-6").body)
+        story.expect_locked_hook_answer(body, "another hook held the journal")
 
 
 
