@@ -1,5 +1,6 @@
 <script setup>
 import {computed} from "vue";
+import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
 
@@ -13,7 +14,12 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 <template>
     <article class="message" data-message :data-from="message.type" :data-ref="`message:${message.id}`">
         <div class="message-card md" v-html="html" />
-        <time class="message-time">{{ time }}</time>
+        <div class="message-foot">
+            <time class="message-time">{{ time }}</time>
+            <template v-if="message.type === 'user'">
+                <ReadTicks :message="message" />
+            </template>
+        </div>
     </article>
 </template>
 
@@ -70,8 +76,14 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
     white-space: nowrap;
 }
 
-.message-time {
+.message-foot {
+    display: flex;
+    gap: 4px;
+    align-items: center;
     margin: 0 2px;
+}
+
+.message-time {
     color: var(--text-4);
     font-size: 11px;
 }
