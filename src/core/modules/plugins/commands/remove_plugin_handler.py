@@ -7,20 +7,23 @@ from core.modules.plugins.commands.remove_plugin import RemovePlugin
 from core.modules.plugins.commands.support.user_actor_check import UserActorCheck
 from core.modules.plugins.queries.plugin_query import PluginQuery
 from core.modules.plugins.support.plugin_folders import PluginFolders
+from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class RemovePluginHandler(Handler[RemovePlugin, str]):
-    """Deletes a plugin's row and its code folder, and its data folder only with --purge; only the person removes."""
+    """Deletes a plugin's row, its readers and its code folder, and its data folder only with --purge; only
+    the person removes."""
 
     command = RemovePlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository) -> None:
-        self.plugins, self.folders, self.skill_files, self.repository = plugins, folders, skill_files, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, repository: Repository, readers: PluginReaders) -> None:
+        self.plugins, self.folders, self.skill_files, self.repository, self.readers = plugins, folders, skill_files, repository, readers
 
     def handle(self, command: RemovePlugin, context: Context) -> str:
         UserActorCheck.check(context, "removes")
         plugin = self.plugins.find_name(command.name)
+        self.readers.withdraw(plugin.name, context)
         self.repository.delete(plugin, context)
         self.skill_files.withdraw(plugin.name)
         shutil.rmtree(self.folders.code(plugin.name), ignore_errors=True)

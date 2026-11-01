@@ -7,9 +7,11 @@ from core.base.upgrade.source_row import SourceRow
 
 
 class VersionFourSource:
-    """A version 4 database opened read-only: its rows and its table names, and never a write."""
+    """A version 4 database opened read-only: its rows, its table names and the folder it lies in, and never a
+    write."""
 
     def __init__(self, path: Path) -> None:
+        self.folder = path.resolve().parent
         self.connection = sqlite3.connect(f"{path.resolve().as_uri()}?mode=ro", uri=True)
         self.connection.row_factory = SourceRow
         self.version_four = VersionFourTables(self.connection)

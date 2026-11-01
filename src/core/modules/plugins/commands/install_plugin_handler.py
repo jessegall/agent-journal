@@ -16,18 +16,21 @@ from core.modules.plugins.support.plugin_digest import PluginDigest
 from core.modules.plugins.support.plugin_folders import PluginFolders
 from core.modules.plugins.support.plugin_install_steps import PluginInstallSteps
 from core.modules.plugins.support.plugin_manifest import PluginManifest
+from core.modules.plugins.support.plugin_readers import PluginReaders
 from core.modules.plugins.support.plugin_skill_files import PluginSkillFiles
 
 
 class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
     """Copies a plugin's folder into the journal once the programs it requires are found, runs its setup
-    steps there, a failing one leaving nothing behind, makes its data folder and saves it switched on with the
-    settings its installed command answers; only the person installs, and a name installed already is refused."""
+    steps there, a failing one leaving nothing behind, makes its data folder, saves the readers it ships
+    and saves it switched on with the settings its installed command answers; only the person installs,
+    and a name installed already is refused."""
 
     command = InstallPlugin
 
-    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, steps: PluginInstallSteps, repository: Repository) -> None:
-        self.plugins, self.folders, self.skill_files, self.steps, self.repository = plugins, folders, skill_files, steps, repository
+    def __init__(self, plugins: PluginQuery, folders: PluginFolders, skill_files: PluginSkillFiles, steps: PluginInstallSteps, repository: Repository,
+                 readers: PluginReaders) -> None:
+        self.plugins, self.folders, self.skill_files, self.steps, self.repository, self.readers = plugins, folders, skill_files, steps, repository, readers
 
     def handle(self, command: InstallPlugin, context: Context) -> PluginInstall:
         UserActorCheck.check(context, "installs")
@@ -46,6 +49,7 @@ class InstallPluginHandler(Handler[InstallPlugin, PluginInstall]):
             raise
         self.folders.data(manifest.name).mkdir(parents=True, exist_ok=True)
         self.skill_files.publish(folder, manifest)
+        self.readers.publish(folder, manifest.name, context)
         plugin = self.repository.save(Plugin(creator_id=context.actor.id, name=manifest.name, title=manifest.title, source=command.source,
                                              release=manifest.version, files_digest=PluginDigest.digest(folder, manifest)), context)
         declared = {setting.key for setting in manifest.settings}

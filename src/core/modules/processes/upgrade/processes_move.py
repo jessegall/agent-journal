@@ -13,6 +13,7 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.state_walk import StateWalk
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
+from core.modules.processes.upgrade.reader_files_move import ReaderFilesMove
 from core.modules.processes.models.enums.output_state import OutputState
 from core.modules.processes.models.enums.process_state import ProcessState
 from core.modules.processes.models.lifecycles.output_lifecycle import OutputLifecycle
@@ -25,7 +26,8 @@ SHELL = "sh"
 class ProcessesMove(VersionFourMove):
     """Carries version 4's command outputs as processes with the output each kept, under the number they had, run
     by the agent whose session ran them and ended as they ended; an output whose folder is gone is pruned. The
-    readers' reports and suggestions of version 4 are dropped and counted."""
+    readers' reports and suggestions of version 4 are dropped and counted, and the readers it kept as files
+    become version 5 readers."""
 
     name = "processes"
     reads = [TABLE]
@@ -44,6 +46,7 @@ class ProcessesMove(VersionFourMove):
             report.count("processes", map.transfer(TABLE, row["id"], "processes", insert))
         for table in self.drops:
             report.drop(table, source.count(table))
+        ReaderFilesMove().move(source.folder, rows, report, context)
         return report
 
     def insert(self, rows: RowInsert, row: sqlite3.Row, agent_id: int, creator_id: int, environment_id: int | None, context: MoveContext) -> int:
