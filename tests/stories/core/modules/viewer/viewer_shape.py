@@ -2,12 +2,16 @@ import importlib
 import re
 from pathlib import Path
 
+from core.modules.viewer.commands.support.window_lines import WINDOW_SETTING_LINES
+from core.modules.viewer.viewer_module import ViewerModule
+
 ROOT = Path(__file__).resolve().parents[5]
 VIEWER = ROOT / "src/viewer"
 MODULE_ROOTS = (ROOT / "src/core/modules", ROOT / "src/suites/coding/modules")
 BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "buildWindows.js", "frameBridgeClient.js"}
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
+SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 
@@ -48,3 +52,10 @@ def test_a_window_declares_each_line_it_reads_or_runs():
             missing += [f"{path.name} reads {line}" for line in READ_LINE.findall(text) if line not in reads]
             missing += [f"{path.name} runs {noun} {verb}" for noun, verb in RUN_LINE.findall(text) if f"{noun} {verb}" not in runs]
     assert not missing, "\n".join(missing)
+
+
+def test_the_shell_declares_each_line_it_reads():
+    viewer = next(window for window in ViewerModule.windows if window.name == "viewer.shell")
+    declared = {*viewer.reads, *viewer.runs, *WINDOW_SETTING_LINES}
+    missing = {f"{noun} {verb}" for path in source_files(VIEWER / "src") for noun, verb in SHELL_LINE.findall(path.read_text(errors="ignore"))} - declared
+    assert not missing, sorted(missing)
