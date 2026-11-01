@@ -42,4 +42,4 @@ export function applyColorScheme(key, sheets = document.styleSheets, root = docu
 
 export const followColorScheme = () => watchEffect(() => applyColorScheme(colorScheme.value));
 
-export const pageTitle = (environment) => (environment ? `agent-journal · ${environment}` : "agent-journal");
+export const pageTitle = (environment, project = "agent-journal") => (environment ? `${project} · ${environment}` : project);

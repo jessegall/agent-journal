@@ -39,7 +39,7 @@ test("the top bar holds the breadcrumb, the activity and the full screen buttons
     const {readFileSync} = await import("node:fs");
     const {resolve} = await import("node:path");
     const stage = readFileSync(resolve(__dirname, "../src/windows/PaneStage.vue"), "utf8");
-    expect(stage).toMatch(/<Breadcrumb[^>]*>[\s\S]*data-activity-toggle[\s\S]*data-fullscreen[\s\S]*<\/Breadcrumb>/);
+    expect(stage).toMatch(/<Breadcrumb[^>]*>[\s\S]*data-top-search[\s\S]*data-top-bell[\s\S]*data-activity-toggle[\s\S]*data-fullscreen[\s\S]*<\/Breadcrumb>/);
     expect(stage).toMatch(/<AgentBar[^>]*>[\s\S]*catalogue\.bars[\s\S]*<\/AgentBar>/);
     expect(stage).toMatch(/<InformationBar[^>]*>[\s\S]*LayoutPicker[\s\S]*<\/InformationBar>/);
 });

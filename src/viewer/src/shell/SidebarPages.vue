@@ -12,6 +12,7 @@ const props = defineProps({
     windows: {type: Array, default: () => []},
     environments: {type: Array, default: () => []},
     current: {type: String, default: ""},
+    project: {type: String, default: "agent-journal"},
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},
 });
@@ -44,7 +45,7 @@ function fold(key) {
     <aside class="sidebar" data-sidebar>
         <div class="sidebar-head">
             <span class="sidebar-logo">A</span>
-            <span class="sidebar-name">agent-journal</span>
+            <span class="sidebar-name">{{ project }}</span>
         </div>
         <div class="sidebar-scroll">
             <button type="button" class="fold-head" data-fold="environment" @click="fold('environment')">

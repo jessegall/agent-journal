@@ -1,12 +1,12 @@
 <script setup>
 // the path at the top of the page as version 4 drew it: the project's swatch, the project, the environment and the page
-defineProps({environment: {type: String, required: true}, page: {type: String, default: "Home"}});
+defineProps({environment: {type: String, required: true}, project: {type: String, default: "agent-journal"}, page: {type: String, default: "Home"}});
 </script>
 
 <template>
     <nav class="breadcrumb" data-breadcrumb aria-label="Where you are">
         <span class="crumb-swatch" />
-        <span class="crumb">agent-journal</span>
+        <a class="crumb crumb-link" data-crumb-project href="./">{{ project }}</a>
         <span class="crumb-sep">/</span>
         <span class="crumb">{{ environment }}</span>
         <span class="crumb-sep">/</span>
@@ -26,6 +26,15 @@ defineProps({environment: {type: String, required: true}, page: {type: String, d
     border-bottom: 1px solid var(--border);
     color: var(--text-2);
     font-size: 13px;
+}
+
+.crumb-link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.crumb-link:hover {
+    color: var(--text);
 }
 
 .crumb-space {

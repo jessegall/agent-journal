@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref, watch} from "vue";
+import {computed, onMounted, onUnmounted, ref, watch, watchEffect} from "vue";
 import LayoutPicker from "../agents/LayoutPicker.vue";
 import {useLayoutPresets} from "./layoutPresets.js";
 import Btn from "../kit/Btn.vue";
@@ -14,7 +14,6 @@ import PaneGrid from "../panes/PaneGrid.vue";
 import SplitOffer from "../panes/SplitOffer.vue";
 import PaneTour from "../panes/PaneTour.vue";
 import {usePaneGuide} from "../composables/paneGuide.js";
-import {rememberedRef} from "./rememberedState.js";
 import {followFullscreen} from "../platform/fullscreen.js";
 import {store as shell} from "../state/store.js";
 import {leaves} from "../domain/panes.js";
@@ -32,7 +31,7 @@ import {NO_FACTS} from "../domain/barFacts.js";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import QuickMenu from "../shell/QuickMenu.vue";
-import {colorScheme, nextColorScheme, SCHEMES} from "./colorScheme.js";
+import {colorScheme, nextColorScheme, pageTitle, SCHEMES} from "./colorScheme.js";
 import {shellKeyAction} from "./shellKeys.js";
 import SidebarPages from "../shell/SidebarPages.vue";
 import ActivityPanel from "../shell/ActivityPanel.vue";
@@ -75,7 +74,10 @@ shell.wide = wideKept.value;
 watch(() => shell.wide, (wide) => (wideKept.value = wide));
 const SIDEBAR_FROM_WIDTH = 1100;
 const ACTIVITY_SECONDS = 4;
-const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH);
+const sideHidden = rememberedRef("shell.side-hidden", false);
+const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
+const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || "agent-journal");
+watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
 let activityTimer = null;
 let factsTimer = null;
 const FACT_SECONDS = 5;
@@ -223,7 +225,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" @open="openView" />
+            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" @open="openView" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">
@@ -249,7 +251,15 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         </template>
         <template v-else>
             <template v-if="shellRead">
-                <Breadcrumb :environment="environment">
+                <Breadcrumb :environment="environment" :project="project">
+                    <Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="sideHidden = !sideHidden"><Icon name="list" :size="13" /></Btn>
+                    <Btn kind="icon" data-top-search aria-label="Search" title="Search" @click="openView('search.search')"><Icon name="search" :size="13" /></Btn>
+                    <Btn kind="icon" class="top-bell" data-top-bell aria-label="Waiting on you" title="Waiting on you" @click="openCount('waiting')">
+                        <Icon name="bell" :size="13" />
+                        <template v-if="facts.waiting">
+                            <span class="top-bell-count" data-top-bell-count>{{ facts.waiting }}</span>
+                        </template>
+                    </Btn>
                     <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
                     <Btn kind="icon" data-fullscreen aria-label="Full screen" title="Full screen" @click="shell.wide = !shell.wide">
                         <Icon name="wide" :size="13" />
@@ -395,6 +405,23 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     flex: 1;
     flex-direction: column;
     min-height: 0;
+}
+
+.top-bell {
+    position: relative;
+}
+
+.top-bell-count {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 13px;
+    border-radius: 7px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 9px;
+    line-height: 13px;
+    text-align: center;
 }
 
 .pane-add {

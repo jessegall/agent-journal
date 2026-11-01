@@ -34,7 +34,7 @@ test("the sidebar has a header, a fold per module, counts and a foot, and the pa
     expect(sidebar).toContain("fold-head");
     expect(sidebar).toContain("item-count");
     expect(sidebar).toContain("sidebar-foot");
-    expect(read("../src/windows/PaneStage.vue")).toMatch(/<Breadcrumb :environment="environment">/);
+    expect(read("../src/windows/PaneStage.vue")).toMatch(/<Breadcrumb :environment="environment" :project="project">/);
     expect(read("../src/shell/Breadcrumb.vue")).toContain("data-breadcrumb");
 });
 
