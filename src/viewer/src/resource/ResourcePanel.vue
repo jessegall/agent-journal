@@ -2,10 +2,11 @@
 import {computed, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
-import Btn from "../kit/Btn.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import SwitchCase from "../kit/SwitchCase.vue";
-import {cliOf, fieldsOf, movesOf, titleOf} from "../domain/resourceKinds.js";
+import TaskInspector from "../tasks/TaskInspector.vue";
+import RowMoves from "./RowMoves.vue";
+import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 
 // the inspector: the row the address opens, over the page, as version 4's side panel drew it; each opened row stacks on the one before
 const props = defineProps({read: {type: Function, required: true}});
@@ -13,12 +14,8 @@ const props = defineProps({read: {type: Function, required: true}});
 const opened = computed(() => route.value.open);
 const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
-const parts = ref({phases: [], logs: [], waits: []});
+const phases = ref([]);
 const failure = ref("");
-const refusal = ref("");
-const asking = ref(null);
-const words = ref("");
-const rowsOf = (answer) => (answer?.ok ? answer.value?.rows ?? [] : []);
 let reading = 0;
 
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
@@ -26,60 +23,29 @@ const wide = computed(() => LONG_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (kind.value === "question" ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
-const moves = computed(() => movesOf(kind.value, row.value));
 const fields = computed(() => fieldsOf(row.value));
-
-async function planParts(id) {
-    const answer = await props.read(["plan", "outline", String(id)]);
-    return answer.ok ? answer.value.phases : [];
-}
-
-async function taskParts(id) {
-    const [logs, waits] = await Promise.all([
-        props.read(["task-log", "list", "--task", String(id), "--oldest", "--limit", "100"]),
-        props.read(["task-dependency", "list", "--task", String(id), "--limit", "100"]),
-    ]);
-    return {logs: rowsOf(logs), waits: rowsOf(waits)};
-}
 
 async function load() {
     const open = opened.value;
     const turn = ++reading;
-    if (!open) return void (row.value = null);
+    row.value = null;
+    phases.value = [];
+    failure.value = "";
+    if (!open || cliOf(open.table) === "task") return;
     const name = cliOf(open.table);
     const answer = await props.read([name, "show", String(open.id)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
-    const shown = answer.ok ? answer.value : null;
-    row.value = shown;
-    const more = !shown ? {} : name === "plan" ? {phases: await planParts(open.id)} : name === "task" ? await taskParts(open.id) : {};
-    if (turn !== reading) return;
-    parts.value = {phases: [], logs: [], waits: [], ...more};
+    row.value = answer.ok ? answer.value : null;
+    if (name !== "plan" || !answer.ok) return;
+    const outline = await props.read(["plan", "outline", String(open.id)]);
+    if (turn === reading && outline.ok) phases.value = outline.value.phases;
 }
 
-watch(() => `${opened.value?.table}:${opened.value?.id}`, () => {
-    row.value = null;
-    parts.value = {phases: [], logs: [], waits: []};
-    failure.value = "";
-    refusal.value = "";
-    asking.value = null;
-    load();
-}, {immediate: true});
+watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
 
-async function run(move, said = "") {
-    const line = [kind.value, move.word, String(opened.value.id), ...(move.flag ? [move.flag, said] : [])];
-    const answer = await props.read(line);
-    refusal.value = answer.ok ? "" : answer.error;
-    if (!answer.ok) return;
-    asking.value = null;
-    words.value = "";
-    await load();
-}
-
-const press = (move) => (move.said ? run(move, move.said) : move.flag ? ((asking.value = move), (words.value = "")) : run(move));
-const send = () => words.value.trim() && run(asking.value, words.value.trim());
 const close = () => opening([]);
-const closeOnEscape = (event) => event.key === "Escape" && opened.value && !asking.value && unpeek();
+const closeOnEscape = (event) => event.key === "Escape" && opened.value && unpeek();
 window.addEventListener("keydown", closeOnEscape);
 onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
 </script>
@@ -89,6 +55,10 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
         <Transition name="side" appear>
             <div v-if="opened" class="veil" @click.self="close">
                 <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
+                    <template v-if="kind === 'task'">
+                        <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                    </template>
+                    <template v-else>
                     <header class="head">
                         <template v-if="route.stack.length > 1">
                             <button type="button" class="head-button" data-resource-back aria-label="Back" @click="unpeek">←</button>
@@ -115,7 +85,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </template>
                             <SwitchCase :value="kind">
                                 <template #plan>
-                                <template v-for="phase in parts.phases" :key="phase.id">
+                                <template v-for="phase in phases" :key="phase.id">
                                     <section class="section" data-resource-phase>
                                         <h3>{{ phase.title }}</h3>
                                         <template v-if="phase.goal">
@@ -126,30 +96,6 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                                                 <span class="line-title">{{ task.title }}</span>
                                                 <span class="note">{{ task.state }}</span>
                                             </button>
-                                        </template>
-                                    </section>
-                                </template>
-                            </template>
-                            <template #task>
-                                <template v-if="row.outcome || row.reason">
-                                    <section class="section">
-                                        <h3>{{ row.outcome ? "Outcome" : "Reason" }}</h3>
-                                        <p class="note">{{ row.outcome || row.reason }}</p>
-                                    </section>
-                                </template>
-                                <template v-if="parts.waits.length">
-                                    <section class="section" data-resource-waits>
-                                        <h3>Waits on</h3>
-                                        <template v-for="wait in parts.waits" :key="wait.id">
-                                            <button type="button" class="line" @click="peek('tasks', wait.dependency_id)">Task {{ wait.dependency_id }}</button>
-                                        </template>
-                                    </section>
-                                </template>
-                                <template v-if="parts.logs.length">
-                                    <section class="section" data-resource-logs>
-                                        <h3>Log</h3>
-                                        <template v-for="log in parts.logs" :key="log.id">
-                                            <p class="note">{{ log.line }}</p>
                                         </template>
                                     </section>
                                 </template>
@@ -165,26 +111,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             </SwitchCase>
                         </template>
                     </div>
-                    <template v-if="moves.length">
-                        <footer class="foot">
-                            <template v-if="refusal">
-                                <p class="failure" role="alert" data-resource-refusal>{{ refusal }}</p>
-                            </template>
-                            <template v-if="asking">
-                                <form class="ask" data-resource-ask @submit.prevent="send">
-                                    <input v-model="words" class="ask-input" :placeholder="asking.ask" :aria-label="asking.ask" />
-                                    <Btn small kind="primary" type="submit" :disabled="!words.trim()">{{ asking.label }}</Btn>
-                                    <Btn small kind="ghost" @click="asking = null">Back</Btn>
-                                </form>
-                            </template>
-                            <template v-else>
-                                <div class="moves">
-                                    <template v-for="move in moves" :key="move.word">
-                                        <Btn small :kind="move.main ? 'primary' : 'ghost'" :data-move="move.word" @click="press(move)">{{ move.label }}</Btn>
-                                    </template>
-                                </div>
-                            </template>
-                        </footer>
+                    <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
                     </template>
                 </aside>
             </div>
@@ -360,30 +287,6 @@ h3 {
     margin: 0;
     font-size: 13px;
     overflow-wrap: anywhere;
-}
-
-.foot {
-    padding: 10px 16px;
-    border-top: 1px solid var(--border);
-}
-
-.moves,
-.ask {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-
-.ask-input {
-    flex: 1;
-    min-width: 0;
-    padding: 5px 8px;
-    border: 1px solid var(--border-2);
-    border-radius: 6px;
-    background: var(--bg);
-    color: var(--text);
-    font: inherit;
-    font-size: 13px;
 }
 
 .failure {

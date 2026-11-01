@@ -2,6 +2,7 @@ from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 from core.modules.tasks.commands.block_task.block_task import BlockTask
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
+from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
 from core.modules.tasks.commands.close_task.close_task import CloseTask
@@ -46,7 +47,7 @@ class TasksModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration]
-    subcommands = (TaskBoardSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
+    subcommands = (TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler]
     moves = [TasksMove]
@@ -56,5 +57,6 @@ class TasksModule(Module):
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
-    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task list", "task show", "task-log list"], events=["task.*"])]
+    windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task list", "task show", "task inspect", "plan place", "task-log list"],
+                               runs=["task make", "task edit", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]

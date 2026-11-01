@@ -14,6 +14,7 @@ from core.modules.plans.commands.place_phase.place_phase_handler import PlacePha
 from core.modules.plans.commands.make_phase.make_phase_subcommand import MakePhaseSubcommand
 from core.modules.plans.commands.plan_board.plan_board_subcommand import PlanBoardSubcommand
 from core.modules.plans.commands.plan_outline.plan_outline_subcommand import PlanOutlineSubcommand
+from core.modules.plans.commands.plan_place.plan_place_subcommand import PlanPlaceSubcommand
 from core.modules.plans.commands.move_phase.move_phase_subcommand import MovePhaseSubcommand
 from core.modules.plans.commands.place_phase.place_phase_subcommand import PlacePhaseSubcommand
 from core.modules.plans.models.plan_progress import PlanProgress
@@ -48,7 +49,7 @@ class PlansModule(Module):
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
-    subcommands = (PlanBoardSubcommand, PlanOutlineSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = (PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]

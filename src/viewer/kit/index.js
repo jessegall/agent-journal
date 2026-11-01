@@ -34,3 +34,6 @@ export {withDayLines} from "../src/domain/dayLines.js";
 export {arrivalQueue, arriveAtOnce, depart} from "../src/chat/arrival.js";
 export {usePins} from "../src/chat/pins.js";
 export {default as PinsToggle} from "../src/chat/PinsToggle.vue";
+export {default as Dialog} from "../src/kit/Dialog.vue";
+export {default as TaskInspector} from "../src/tasks/TaskInspector.vue";
+export {default as TaskStatusIcon} from "../src/tasks/TaskStatusIcon.vue";

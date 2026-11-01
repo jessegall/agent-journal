@@ -36,7 +36,7 @@ afterEach(async () => {
 const PLAN = {
     "plan show 5": {ok: true, value: {id: 5, title: "Move the cart", brief: "Why the **cart** moves", state: "ready"}},
     "plan outline 5": {ok: true, value: {plan_id: 5, phases: [{id: 2, title: "First phase", goal: "The goal", tasks: [{id: 7, title: "Fix the totals", state: "open"}]}]}},
-    "task show 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "open"}},
+    "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "open", priority: "normal", waits: [], logs: []}},
     "plan approve 5": {ok: true, value: {}},
 };
 
@@ -72,8 +72,7 @@ test("a plan's moves follow its state and run its line, and the close button shu
 test("a task shows its log, and a move that needs words asks for them before it runs", async () => {
     const lines = [];
     await opened("#?open=tasks:7", answering({
-        "task show 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", brief: "The totals"}},
-        "task-log list --task 7 --oldest --limit 100": {ok: true, value: {rows: [{id: 1, line: "rounding found"}]}},
+        "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "started", priority: "normal", brief: "The totals", waits: [], logs: [{id: 1, line: "rounding found"}]}},
     }, lines));
     expect(shown().querySelector("[data-resource-logs]").textContent).toContain("rounding found");
     shown().querySelector("[data-move='close']").click();

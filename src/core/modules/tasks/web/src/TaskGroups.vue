@@ -6,7 +6,10 @@ import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
 // and each group pages on its own
 const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
+const props = defineProps({selectable: Boolean, selected: {type: Number, default: 0}});
+const emit = defineEmits(["select"]);
 const context = useWindow();
+const search = ref(null);
 const board = ref([]);
 const failure = ref("");
 const loaded = ref(false);
@@ -42,8 +45,10 @@ const groups = computed(() => {
         .filter(({group}) => group.total);
 });
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
+const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 context.follow(["task.*"], load);
 load();
+defineExpose({groups, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
@@ -55,7 +60,10 @@ load();
             <p class="tasks-note">{{ failure }}</p>
         </template>
         <template v-else>
-            <input v-model="query" class="tasks-search" type="search" placeholder="Search the tasks" aria-label="Search the tasks" />
+            <div class="tasks-tools">
+                <input ref="search" v-model="query" class="tasks-search" type="search" placeholder="Search the tasks" aria-label="Search the tasks" />
+                <slot name="tools" />
+            </div>
             <template v-if="!groups.length">
                 <p class="tasks-note">{{ query ? "No task matches" : "No tasks yet" }}</p>
             </template>
@@ -63,7 +71,7 @@ load();
                 <section class="tasks-group" :data-state="group.state">
                     <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
                     <template v-for="row in tasks" :key="row.id">
-                        <div class="task" :data-row="row.id" role="button" tabindex="0" @click="peekRef(`tasks:${row.id}`)" @keydown.enter="peekRef(`tasks:${row.id}`)">
+                        <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
                             <span :class="['task-mark', row.state]" />
                             <span class="task-id">{{ row.id }}</span>
                             <span class="task-title">{{ row.title }}</span>
@@ -105,7 +113,15 @@ load();
     gap: 14px;
 }
 
+.tasks-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .tasks-search {
+    flex: 1;
+    min-width: 0;
     max-width: 320px;
     padding: 6px 12px;
     border: 1px solid var(--border-2);
@@ -138,6 +154,10 @@ load();
 
 .task:hover {
     background: var(--hover);
+}
+
+.task.selected {
+    background: var(--raised);
 }
 
 .task-mark {

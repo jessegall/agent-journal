@@ -1,3 +1,3 @@
-import TaskGroups from "./TaskGroups.vue";
+import TasksWindow from "./TasksWindow.vue";
 
-export default TaskGroups;
+export default TasksWindow;
