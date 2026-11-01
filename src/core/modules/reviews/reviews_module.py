@@ -39,6 +39,9 @@ from core.modules.reviews.models.review_point import ReviewPoint
 from core.modules.reviews.queries.review_query import ReviewQuery
 from core.modules.reviews.support.review_settings import REVIEW_SETTINGS
 from core.modules.reviews.seeders.reviews_seeder import ReviewsSeeder
+from core.modules.reviews.models.reviewer_row import ReviewerRow
+from core.modules.reviews.commands.review_board.review_board_subcommand import ReviewBoardSubcommand
+from core.modules.reviews.commands.review_board.review_step_board_subcommand import ReviewStepBoardSubcommand
 
 
 class ReviewsModule(Module):
@@ -51,11 +54,12 @@ class ReviewsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings", "journal.core.chat"]
     models = (ModelDeclaration(Review, query=ReviewQuery, commands=(AssignReview, AbandonReview)), ModelDeclaration(ReviewPoint), ModelDeclaration(ReviewStep, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(Reviewer, query=ReviewerQuery, commands=(StartReviewer, EndReviewer), excluded_subcommands=["make", "edit", "delete"]))
     migrations = [ReviewsTablesMigration, ReviewersTableMigration, ReviewStepsTableMigration]
-    subcommands = (RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
+    views = [ReviewerRow]
+    subcommands = (ReviewBoardSubcommand, ReviewStepBoardSubcommand, RequestReviewSubcommand, RecordReviewSubcommand, AddReviewerSubcommand, RetireReviewerSubcommand, ReviewerListSubcommand)
     guards = [OneOpenReviewPerSubjectGuard, ReporterIsReviewerGuard, ReviewersEnabledGuard, ReviewersMostGuard]
     handlers = [RecordReviewHandler, AddReviewerHandler, RetireReviewerHandler, AssignNextReviewHandler]
     listeners = [ReviewQueuedListener, ReviewerAvailableListener, ReviewerEndedListener, ReviewStartedStepListener, ReviewReportedStepListener, ReviewStartedMarkListener, ReviewReportedMarkListener]
     marks = REVIEW_MARKS
     windows = [WindowDeclaration("reviews.reviewer", "Reviewer", "reviewer.js", WindowLoading.COMPONENT, icon=WindowIcon.REVIEW,
-                                 reads=["review list", "review show", "review-step list", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"])]
+                                 reads=["review board", "review-step board", "reviewer list"], events=["review.*", "review_step.*", "reviewer.*"])]
     seeders = [ReviewsSeeder]

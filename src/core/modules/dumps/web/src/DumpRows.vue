@@ -1,14 +1,32 @@
 <script setup>
-import {computed} from "vue";
-import {Skeleton, useRows} from "@journal/window-kit";
+import {ref} from "vue";
+import {Skeleton, useWindow} from "@journal/window-kit";
 
 // dumps as version 4 drew them: a card for each with its title and brief, its items each with where the agent has got to
-// (new, noted, filed, failed), the note or summary the agent left, and what it filed the item into
-const dumps = useRows("dump list", ["dump.*", "dump_item.*"]);
-const items = useRows("dump-item list", ["dump_item.*"]);
+// (new, noted, filed, failed), the note or summary the agent left, and what it filed the item into; one read brings them all
 const STATES = {new: "New", noted: "Noted", filed: "Filed", failed: "Failed"};
-const cards = computed(() => dumps.rows.value.map((dump) => ({dump, items: items.rows.value.filter((item) => item.dump_id === dump.id).sort((a, b) => a.position - b.position)})));
-const loaded = computed(() => dumps.loaded.value && items.loaded.value);
+const context = useWindow();
+const cards = ref([]);
+const failure = ref("");
+const loaded = ref(false);
+const total = ref(0);
+
+async function load() {
+    const answer = await context.read("dump board");
+    failure.value = answer.ok ? "" : answer.error;
+    cards.value = answer.ok ? answer.value.dumps : [];
+    total.value = answer.ok ? answer.value.total : 0;
+    loaded.value = true;
+}
+
+async function more() {
+    const answer = await context.read(`dump board --before ${Math.min(...cards.value.map((card) => card.id))}`);
+    if (!answer.ok) return void (failure.value = answer.error);
+    cards.value = [...cards.value, ...answer.value.dumps];
+}
+
+context.follow(["dump.*", "dump_item.*"], load);
+load();
 </script>
 
 <template>
@@ -16,16 +34,16 @@ const loaded = computed(() => dumps.loaded.value && items.loaded.value);
         <template v-if="!loaded">
             <Skeleton shape="cards" />
         </template>
-        <template v-else-if="dumps.failure.value">
-            <p class="dumps-note">{{ dumps.failure.value }}</p>
+        <template v-else-if="failure">
+            <p class="dumps-note">{{ failure }}</p>
         </template>
         <template v-else-if="!cards.length">
             <p class="dumps-note">No dumps</p>
         </template>
-        <template v-for="card in cards" :key="card.dump.id">
-            <section class="dump" :data-dump="card.dump.id">
-                <h3 class="dump-title">{{ card.dump.title || `Dump ${card.dump.id}` }}</h3>
-                <p class="dump-brief">{{ card.dump.outcome ? `Closed: ${card.dump.outcome}` : card.dump.brief }}</p>
+        <template v-for="card in cards" :key="card.id">
+            <section class="dump" :data-dump="card.id">
+                <h3 class="dump-title">{{ card.title || `Dump ${card.id}` }}</h3>
+                <p class="dump-brief">{{ card.outcome ? `Closed: ${card.outcome}` : card.brief }}</p>
                 <template v-for="item in card.items" :key="item.id">
                     <div class="item" :data-item="item.id" :data-state="item.state">
                         <span :class="['item-state', item.state]">{{ STATES[item.state] || item.state }}</span>
@@ -39,6 +57,9 @@ const loaded = computed(() => dumps.loaded.value && items.loaded.value);
                     </div>
                 </template>
             </section>
+        </template>
+        <template v-if="cards.length < total">
+            <button type="button" class="dumps-more" @click="more">Show more</button>
         </template>
     </div>
 </template>
@@ -64,6 +85,14 @@ const loaded = computed(() => dumps.loaded.value && items.loaded.value);
     margin: 0;
     font-size: 13px;
     font-weight: 500;
+}
+
+.dumps-more {
+    align-self: flex-start;
+    color: var(--text-3);
+    background: none;
+    border: 0;
+    cursor: pointer;
 }
 
 .dump-brief,

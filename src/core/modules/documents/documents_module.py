@@ -11,6 +11,7 @@ from core.modules.documents.commands.doc_close.doc_close_subcommand import DocCl
 from core.modules.documents.commands.doc_comments.doc_comments_subcommand import DocCommentsSubcommand
 from core.modules.documents.commands.doc_edit.doc_edit_subcommand import DocEditSubcommand
 from core.modules.documents.commands.doc_list.doc_list_subcommand import DocListSubcommand
+from core.modules.documents.commands.document_library.document_library_subcommand import DocumentLibrarySubcommand
 from core.modules.documents.commands.doc_make.doc_make_subcommand import DocMakeSubcommand
 from core.modules.documents.commands.doc_revision.doc_revision_subcommand import DocRevisionSubcommand
 from core.modules.documents.commands.doc_revisions.doc_revisions_subcommand import DocRevisionsSubcommand
@@ -33,6 +34,7 @@ from core.modules.documents.migrations.m001_documents import DocumentsTablesMigr
 from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
+from core.modules.documents.models.document_row import DocumentRow
 from core.base.cli.row_links import RowLinks
 from core.modules.documents.listeners.new_text_dock_listeners import NewDocDockListener, NewReportDockListener
 from core.modules.documents.models.link import Link
@@ -60,11 +62,12 @@ class DocumentsModule(Module):
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT,
-                                 reads=["doc list", "doc show", "report list", "report show"], events=["doc.*", "report.*"])]
+                                 reads=["document library", "doc show", "report show"], events=["doc.*", "report.*"])]
+    views = [DocumentRow]
     handlers = [MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
     listeners = [DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = [(RowLinks, StoredRowLinks)]
     subcommands = (DocMakeSubcommand, DocEditSubcommand, DocShowSubcommand, DocListSubcommand, DocCloseSubcommand, KeepRevisionSubcommand,
                    DocRevisionsSubcommand, DocRevisionSubcommand, ReportMakeSubcommand, ReportEditSubcommand, ReportShowSubcommand, ReportListSubcommand,
-                   ReportCloseSubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand)
+                   ReportCloseSubcommand, DocumentLibrarySubcommand, LinkListSubcommand, DocCommentsSubcommand, ReportCommentsSubcommand)
