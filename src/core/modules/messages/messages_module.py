@@ -35,7 +35,7 @@ class MessagesModule(Module):
     handlers = (SendMessageHandler, ReadMessageHandler, TellMessageHandler)
     driver_rules = [MessageDeliveryRule, AgentTextRule]
     subcommands = (SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand,)
-    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "notice close", "dump make"],
+    windows = [WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["message list", "message show", "chat-mark list", "chat-mark show", "dock-item list", "notice list", "hook-call list"], runs=["message send", "message reply", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"])]
     marks = MESSAGE_MARKS
     listeners = []

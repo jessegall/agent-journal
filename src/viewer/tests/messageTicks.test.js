@@ -35,3 +35,14 @@ test("a row named in a message is a link that opens it, and a reply links the me
     app.unmount();
     location.hash = "";
 });
+
+test("a message offers reply and copy, and delete only while it is yours and unread", () => {
+    const tools = (message) => {
+        const element = document.createElement("div");
+        createApp({render: () => h(MessageCard, {message})}).mount(element);
+        return [...element.querySelectorAll("[data-message-action]")].map((button) => button.dataset.messageAction);
+    };
+    expect(tools(user)).toEqual(["reply", "copy", "delete"]);
+    expect(tools({...user, read_at: "2026-11-01T05:01:00+00:00"})).toEqual(["reply", "copy"]);
+    expect(tools({...user, type: "agent"})).toEqual(["reply", "copy"]);
+});

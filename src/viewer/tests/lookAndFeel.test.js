@@ -242,3 +242,25 @@ test("side panels: a left sidebar lists the suite's pages and the environments, 
     expect(files).toContain("../src/shell/SidebarPages.vue");
     expect(files).toContain("../src/shell/ActivityPanel.vue");
 });
+
+test("composer: a reply names what it answers and goes as a reply, and the arrow up edits the newest unread message", async () => {
+    const element = await mountedChat({"message list": [{id: 4, type: "user", text: "Fix the cart", created_at: "2026-11-01T05:00:00+00:00"}]});
+    element.querySelector("[data-message-action='reply']").click();
+    await settled();
+    expect(element.querySelector("[data-composer-quote]").textContent).toContain("Fix the cart");
+    const box = element.querySelector(".composer-input");
+    box.value = "Done";
+    box.dispatchEvent(new Event("input"));
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
+    await settled();
+    expect(runs).toContainEqual(["message", "reply", "4", "Done"]);
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "ArrowUp"}));
+    await settled();
+    expect(box.value).toBe("Fix the cart");
+    expect(element.querySelector("[data-composer-quote]").textContent).toContain("Editing message 4");
+    box.value = "Fix the cart now";
+    box.dispatchEvent(new Event("input"));
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
+    await settled();
+    expect(runs).toContainEqual(["message", "edit", "4", "--text", "Fix the cart now"]);
+});

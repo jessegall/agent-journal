@@ -80,7 +80,41 @@ const dropped = (event) => {
 const removeAttached = (entry) => (attached.value = attached.value.filter((other) => other !== entry));
 const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
 
+const replying = ref(null);
+const editing = ref(null);
+function startReply(message) {
+    editing.value = null;
+    replying.value = message;
+    focusComposer();
+}
+async function removeMessage(message) {
+    const result = await context.run(["message", "delete", String(message.id)]);
+    sendFailure.value = result.ok ? "" : result.error;
+    load();
+}
+// the arrow up in an empty box brings back the newest message of yours the agent has not read, to change it; the arrow down or escape leaves it
+const lastUnread = () => messages.value.find((row) => row.type === "user" && !row.read_at);
+function editUp(event) {
+    if (text.value || !lastUnread()) return;
+    event.preventDefault();
+    editing.value = lastUnread();
+    replying.value = null;
+    text.value = editing.value.text;
+}
+function leaveEdit() {
+    if (!editing.value) return;
+    editing.value = null;
+    text.value = "";
+}
+async function saveEdit() {
+    const result = await context.run(["message", "edit", String(editing.value.id), "--text", text.value]);
+    sendFailure.value = result.ok ? "" : result.error;
+    if (result.ok) leaveEdit();
+    load();
+}
+
 async function send() {
+    if (editing.value) return saveEdit();
     const sent = {text: text.value, attached: attached.value};
     const files = sent.attached.flatMap((entry) => ["--file", entry.pending]);
     const line = sent.text || sent.attached.map((entry) => entry.name).join(", ");
@@ -90,7 +124,9 @@ async function send() {
     attached.value = [];
     sendFailure.value = "";
     focusComposer();
-    const result = await context.run(["message", "send", line, ...files]);
+    const answering = replying.value;
+    replying.value = null;
+    const result = await context.run(answering && !files.length ? ["message", "reply", String(answering.id), line] : ["message", "send", line, ...files]);
     if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached);
     outgoing.value = outgoing.value.filter((other) => other !== echo);
     await load();
@@ -159,7 +195,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                         <MarkHost :mark="row.row" />
                     </template>
                     <template v-else>
-                        <MessageCard :message="row.row" />
+                        <MessageCard :message="row.row" @reply="startReply" @delete="removeMessage" />
                     </template>
                 </template>
             </RowList>
@@ -174,6 +210,12 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
+        <template v-if="replying || editing">
+            <p class="composer-quote" data-composer-quote>
+                <span class="composer-quote-text">{{ editing ? `Editing message ${editing.id}` : `Reply to: ${replying.text}` }}</span>
+                <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), leaveEdit()">×</button>
+            </p>
+        </template>
         <form :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">
             <template v-if="attached.length">
                 <ul class="attached" data-attached>
@@ -186,7 +228,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                     </template>
                 </ul>
             </template>
-            <textarea ref="composerInput" v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @paste="pasted" />
+            <textarea ref="composerInput" v-model="text" class="composer-input" rows="3" placeholder="Message the agent" @keydown.enter="sendOnEnter" @keydown.up="editUp" @keydown.down="leaveEdit" @keydown.esc="leaveEdit" @paste="pasted" />
             <div class="composer-row">
                 <input ref="picker" type="file" multiple hidden data-file-input @change="picked">
                 <button type="button" data-attach class="composer-attach" title="Attach a file or an image" aria-label="Attach a file" @click="picker.click()">
@@ -333,6 +375,34 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
 
 .jump.hidden {
     visibility: hidden;
+}
+
+.composer-quote {
+    display: flex;
+    flex: none;
+    gap: 8px;
+    align-items: center;
+    margin: 0 0 6px;
+    padding: 4px 10px;
+    border-left: 2px solid var(--accent);
+    color: var(--text-3);
+    font-size: 12.5px;
+}
+
+.composer-quote-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.composer-quote-drop {
+    flex: none;
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    cursor: pointer;
 }
 
 .composer {

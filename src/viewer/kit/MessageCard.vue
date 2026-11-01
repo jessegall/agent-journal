@@ -1,5 +1,5 @@
 <script setup>
-import {computed} from "vue";
+import {computed, ref} from "vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
@@ -9,7 +9,16 @@ import "../src/text/all.js";
 // one message of the chat as version 4 drew it: a soft rounded card, the user's tinted and set to the right, the agent's to the left,
 // the text read as markdown (inline code, lists, bold), and the time under the card
 const props = defineProps({message: {type: Object, required: true}});
+const emit = defineEmits(["reply", "delete"]);
+const copied = ref(false);
+const deletable = computed(() => props.message.type === "user" && !props.message.read_at && !props.message.local);
+async function copy() {
+    await navigator.clipboard?.writeText(props.message.text ?? "");
+    copied.value = true;
+    setTimeout(() => (copied.value = false), COPIED_MS);
+}
 const html = computed(() => render(props.message.text ?? "", {env: ""}));
+const COPIED_MS = 1500;
 const IMAGE = /\.(png|jpe?g|gif|webp|svg|bmp)$/i;
 const addressOf = (name) => `/api/files/message/${props.message.id}/${encodeURIComponent(name)}`;
 const files = computed(() => (props.message.files ?? []).map((name) => ({name, address: addressOf(name), isImage: IMAGE.test(name)})));
@@ -21,7 +30,16 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
         <template v-if="message.parent_id">
             <button type="button" class="message-reply" data-message-reply @click="peekRef(`messages:${message.parent_id}`)">Reply to message {{ message.parent_id }}</button>
         </template>
-        <div class="message-card md" @click="peekChip" v-html="html" />
+        <div class="message-body">
+            <div class="message-card md" @click="peekChip" v-html="html" />
+            <div class="message-tools" data-message-tools>
+                <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
+                <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
+                <template v-if="deletable">
+                    <button type="button" class="message-tool" data-message-action="delete" title="Only while it is unread" @click="emit('delete', message)">Delete</button>
+                </template>
+            </div>
+        </div>
         <template v-if="files.length">
             <div class="message-files" data-message-files>
                 <template v-for="file in files" :key="file.name">
@@ -55,6 +73,49 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 .message[data-from="user"] {
     align-items: flex-end;
     margin-left: auto;
+}
+
+.message-body {
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+}
+
+.message-tools {
+    position: absolute;
+    top: -11px;
+    right: -6px;
+    display: flex;
+    gap: 1px;
+    padding: 1px;
+    border: 1px solid var(--border-2);
+    border-radius: 99px;
+    background: var(--raised);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+}
+
+.message-body:hover .message-tools,
+.message-tools:focus-within {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.message-tool {
+    padding: 1px 8px;
+    border: 0;
+    border-radius: 99px;
+    background: none;
+    color: var(--text-2);
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+}
+
+.message-tool:hover {
+    background: var(--hover);
+    color: var(--text);
 }
 
 .message-reply {
