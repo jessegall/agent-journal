@@ -39,14 +39,14 @@ class PlanTaskLineRule(DriverRule):
         line = TASK_END_LINE.search(shell.line) if shell is not None else None
         if line is None:
             return RuleAnswer.allowed()
-        task_id = int(line.group(1))
-        if self.queries.query(Task).find(task_id).state is TaskState.STARTED:
+        task = self.queries.query(Task).find(int(line.group(1)))
+        if task.state is TaskState.STARTED:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*self.plan_nudges(task_id), *self.next_task_nudges(hook.agent_id))
+        return RuleAnswer.with_nudges(*self.plan_nudges(task.id), *self.next_task_nudges(hook.agent_id, task))
 
-    def next_task_nudges(self, agent_id: int) -> list[Nudge]:
+    def next_task_nudges(self, agent_id: int, ended: Task) -> list[Nudge]:
         current = self.current_tasks.current(agent_id)
-        if current is None:
+        if current is None or current.task.updated_at.text < ended.updated_at.text:
             return []
         places = self.queries.query(PlanTask).filter(task_id=current.task.id).page(1, 1).rows
         place = f" in plan {places[0].plan_id}" if places else ""

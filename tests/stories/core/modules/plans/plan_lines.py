@@ -102,3 +102,14 @@ def test_a_new_main_session_is_told_it_took_over_and_a_session_again_is_not(new_
 def test_a_session_start_names_the_laws(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     assert "the laws L1 to L10 in AGENTS.md apply to you" in story.hook("s-1", HookSamples.session_start()).lines
+
+
+def test_blocking_another_task_does_not_repeat_the_task_already_in_hand(new_story):
+    story = plan_story(new_story)
+    story.expect_success("task start 1", "state: started", actor=story.agent)
+    story.run('task make "Other" --environment main')
+    story.advance(timedelta(seconds=1))
+    story.run('task block 3 --reason "needs a key"')
+    line = "journal task block 3"
+    sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="task")).with_fields(event="post_tool_use")
+    story.expect_absent_hook_line("s-1", sample, "is in hand")
