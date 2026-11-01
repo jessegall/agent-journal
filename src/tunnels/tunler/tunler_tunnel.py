@@ -20,27 +20,32 @@ class TunlerTunnel(Tunnel):
         self.opened_at: Timestamp | None = None
         self.problem = ""
 
+    def place(self) -> str:
+        return self.settings.text(SUBDOMAIN_SETTING, None)
+
     def open(self, port: int) -> None:
-        subdomain = self.settings.text(SUBDOMAIN_SETTING, None)
-        status = self.client.status()
-        if not subdomain:
-            self.problem = f"name the subdomain with journal setting set {SUBDOMAIN_SETTING} <name> --project"
-        elif not status.installed:
-            self.problem = "tunler is not installed on this machine"
-        elif not status.authenticated:
-            self.problem = "this machine is not logged in to tunler: run tunler login"
-        else:
-            self.problem = ""
-            self.client.start(port, subdomain)
+        self.problem = self.obstacle()
+        if not self.problem:
+            self.client.start(port, self.place())
             self.opened_at = self.clock.timestamp()
+
+    def obstacle(self) -> str:
+        status = self.client.status()
+        if not self.place():
+            return f"name the subdomain with journal setting set {SUBDOMAIN_SETTING} <name> --project"
+        if not status.installed:
+            return "tunler is not installed on this machine"
+        if not status.authenticated:
+            return "this machine is not logged in to tunler: run tunler login"
+        return ""
 
     def address(self) -> str | None:
         return self.client.address() if self.state() is not TunnelState.DISCONNECTED else None
 
     def state(self) -> TunnelState:
-        if self.opened_at is None:
-            return TunnelState.DISCONNECTED
         state = self.client.state()
+        if self.opened_at is None:
+            return state
         if state is TunnelState.DISCONNECTED:
             self.problem = " ".join(("tunler stopped:", self.client.last_line())).strip().removesuffix(":")
             self.opened_at = None
@@ -51,7 +56,7 @@ class TunlerTunnel(Tunnel):
         return state
 
     def reason(self) -> str:
-        return self.problem
+        return self.problem or (self.obstacle() if self.client.state() is TunnelState.DISCONNECTED else "")
 
     def close(self) -> None:
         self.client.stop()

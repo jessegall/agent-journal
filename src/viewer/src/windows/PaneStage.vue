@@ -116,9 +116,15 @@ const openCount = (key) => {
     if (props.catalogue.dropdown(name)) openDropdown.value = openDropdown.value === name ? null : name;
     else openView(name);
 };
+const pairedPhones = ref([]);
+async function readPhones() {
+    const answer = await props.shellRead(["phone", "list"]);
+    if (answer.ok) pairedPhones.value = answer.value.rows.filter((row) => row.state === "paired");
+}
 async function readFacts() {
     if (!props.shellRead) return;
     readUsage();
+    readPhones();
     const answer = await props.shellRead(["usage", "bars"]);
     now.value = Date.now();
     if (answer.ok) facts.value = answer.value;
@@ -267,6 +273,12 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <Icon name="bell" :size="13" />
                         <template v-if="facts.waiting">
                             <span class="top-bell-count" data-top-bell-count>{{ facts.waiting }}</span>
+                        </template>
+                    </Btn>
+                    <Btn kind="icon" class="top-bell" data-top-phone aria-label="Phones" :title="pairedPhones.length ? `${pairedPhones[0].name} is connected` : 'Connect your phone'" @click="openView('phone.phones')">
+                        <Icon name="phone" :size="13" />
+                        <template v-if="pairedPhones.length">
+                            <span class="top-phone-dot" data-top-phone-dot />
                         </template>
                     </Btn>
                     <Btn kind="icon" data-activity-toggle aria-label="Activity" title="Activity" @click="toggleActivity"><Icon name="activity" :size="13" /></Btn>
@@ -432,6 +444,16 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 
 .top-bell {
     position: relative;
+}
+
+.top-phone-dot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ok, var(--accent));
 }
 
 .top-bell-count {

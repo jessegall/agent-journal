@@ -3,7 +3,7 @@ import {join} from "node:path";
 import {fileURLToPath} from "node:url";
 import {build} from "vite";
 
-const MODULE_FOLDERS = [fileURLToPath(new URL("../../core", import.meta.url)), fileURLToPath(new URL("../../suites", import.meta.url))];
+const MODULE_FOLDERS = [fileURLToPath(new URL("../../core", import.meta.url)), fileURLToPath(new URL("../../suites", import.meta.url)), fileURLToPath(new URL("../../tunnels", import.meta.url))];
 const SKIPPED = new Set(["node_modules", "dist", "__pycache__"]);
 
 // every module's window build in the core and the suites, each a web/vite.config.js written with windowBuild

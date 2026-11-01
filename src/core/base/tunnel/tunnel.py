@@ -10,6 +10,9 @@ class Tunnel:
     name: ClassVar[str]
     title: ClassVar[str]
 
+    def place(self) -> str:
+        return ""
+
     def open(self, port: int) -> None:
         raise NotImplementedError
 

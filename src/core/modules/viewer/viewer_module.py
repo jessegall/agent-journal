@@ -36,7 +36,7 @@ from core.modules.viewer.upgrade.viewer_move import ViewerMove
 
 SHELL_RUNS = ["task edit", "question answer", "question close", "setting make", "setting set", "plan ready", "plan approve", "plan start", "plan block", "plan unblock", "plan close", "plan cancel", "task start", "task block", "task unblock",
               "task retest", "task close", "task cancel", "task reopen", "environment make", "update install", "viewer-layout save", "window allow", "person-preset save", "person-preset rename", "person-preset remove"]
-SHELL_READS = ["update check", "task inspect", "plan place", "plan inspect", "plan timeline", "review list", "environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
+SHELL_READS = ["phone list", "update check", "task inspect", "plan place", "plan inspect", "plan timeline", "review list", "environment list", "environment show", "agent list", "agent show", "setting list", "setting show", "viewer-layout current",
                "window permissions", "suite current", "suite layout", "suite presets", "person-preset list", "event list", "task list", "question list", "usage show", "usage bars", "plan show", "plan outline", "plan board", "task board", "phase list", "phase-task list", "task show", "task-log list", "task-dependency list",
                "doc show", "report show", "question show", "suggestion show", "message show", "memory show", "process show", "output show", "review show", "sequence show",
                "template show", "dump show", "skill show"]
