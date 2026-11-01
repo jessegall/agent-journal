@@ -17,6 +17,7 @@ const props = defineProps({
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},
     run: {type: Function, default: null},
+    mini: Boolean,
 });
 const emit = defineEmits(["open"]);
 const drafting = ref(false);
@@ -47,7 +48,7 @@ function fold(key) {
 </script>
 
 <template>
-    <aside class="sidebar" data-sidebar>
+    <aside :class="['sidebar', {mini}]" data-sidebar>
         <div class="sidebar-head">
             <span class="sidebar-logo">A</span>
             <span class="sidebar-name">{{ project }}</span>
@@ -57,7 +58,7 @@ function fold(key) {
                 Environment<Icon :name="folded.has('environment') ? 'right' : 'down'" :size="12" />
             </button>
             <template v-if="!folded.has('environment')">
-                <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" />Home</a>
+                <a :class="['item', {active: !open}]" :href="`?environment=${current}`"><Icon name="home" :size="14" /><span class="item-title">Home</span></a>
             </template>
             <template v-if="!windows.length">
                 <Skeleton shape="rows" />
@@ -68,7 +69,7 @@ function fold(key) {
                 </button>
                 <template v-if="!folded.has(section.module)">
                     <template v-for="window in section.windows" :key="window.name">
-                        <a :class="['item', {active: window.name === open}]" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
+                        <a :class="['item', {active: window.name === open}]" :title="window.title" :href="pageOf(window.name)" :data-sidebar-window="window.name" :aria-disabled="Boolean(window.unavailable_reason)" @click="go($event, window)">
                             <MarkIcon :name="window.icon || 'window'" /><span class="item-title">{{ window.title }}</span>
                             <template v-if="counts[window.name]">
                                 <span class="item-count">{{ counts[window.name] }}</span>
@@ -82,11 +83,11 @@ function fold(key) {
             </button>
             <template v-if="!folded.has('environments')">
                 <template v-if="run">
-                    <button type="button" class="item" data-new-environment @click="drafting = true"><Icon name="plus" :size="14" />New environment</button>
+                    <button type="button" class="item" data-new-environment @click="drafting = true"><Icon name="plus" :size="14" /><span class="item-title">New environment</span></button>
                 </template>
                 <template v-for="environment in environments" :key="environment.id">
                     <a :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
-                        <span class="dot" />{{ environment.name }}
+                        <span class="dot" /><span class="item-title">{{ environment.name }}</span>
                     </a>
                 </template>
             </template>
@@ -107,6 +108,28 @@ function fold(key) {
     min-height: 0;
     border-right: 1px solid var(--border);
     background: var(--side);
+}
+
+.sidebar.mini {
+    width: 52px;
+}
+
+.sidebar.mini .sidebar-name,
+.sidebar.mini .fold-head,
+.sidebar.mini .item-title,
+.sidebar.mini .item-count,
+.sidebar.mini .sidebar-foot {
+    display: none;
+}
+
+.sidebar.mini .sidebar-head {
+    justify-content: center;
+    padding: 14px 0;
+}
+
+.sidebar.mini .item {
+    justify-content: center;
+    padding-inline: 0;
 }
 
 .sidebar-head {

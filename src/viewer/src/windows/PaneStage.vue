@@ -31,6 +31,7 @@ import UpdateBand from "../shell/UpdateBand.vue";
 import {peekRef} from "../route.js";
 import {rememberedRef} from "./rememberedState.js";
 import {NO_FACTS} from "../domain/barFacts.js";
+import AwayCard from "../shell/AwayCard.vue";
 import Breadcrumb from "../shell/Breadcrumb.vue";
 import Skeleton from "../kit/Skeleton.vue";
 import QuickMenu from "../shell/QuickMenu.vue";
@@ -79,6 +80,13 @@ watch(() => shell.wide, (wide) => (wideKept.value = wide));
 const SIDEBAR_FROM_WIDTH = 1100;
 const ACTIVITY_SECONDS = 4;
 const sideHidden = rememberedRef("shell.side-hidden", false);
+const sideMini = rememberedRef("shell.side-mini", false);
+// the sidebar button goes from the whole sidebar to its icons, then to none, then back
+function stepSidebar() {
+    if (sideHidden.value) [sideHidden.value, sideMini.value] = [false, false];
+    else if (sideMini.value) sideHidden.value = true;
+    else sideMini.value = true;
+}
 const sidebarShown = computed(() => Boolean(props.shellRead) && !phone.value && width.value >= SIDEBAR_FROM_WIDTH && !sideHidden.value);
 const project = computed(() => environments.value?.find?.((row) => row.name === props.environment)?.folder?.split("/").pop() || "agent-journal");
 watchEffect(() => (document.title = pageTitle(props.environment, project.value)));
@@ -239,7 +247,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" @open="openView" />
+            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" :mini="sideMini" @open="openView" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">
@@ -267,7 +275,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-else>
             <template v-if="shellRead">
                 <Breadcrumb :environment="environment" :project="project">
-                    <Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="sideHidden = !sideHidden"><Icon name="list" :size="13" /></Btn>
+                    <Btn kind="icon" data-top-side aria-label="Show or hide the sidebar" title="Show or hide the sidebar" @click="stepSidebar"><Icon name="list" :size="13" /></Btn>
                     <Btn kind="icon" data-top-search aria-label="Search" title="Search" @click="openView('search.search')"><Icon name="search" :size="13" /></Btn>
                     <Btn kind="icon" class="top-bell" data-top-bell aria-label="Waiting on you" title="Waiting on you" @click="openCount('waiting')">
                         <Icon name="bell" :size="13" />
@@ -294,6 +302,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
             </template>
             <template v-if="shellRead">
                 <UpdateBand :run="shellRead" />
+                <AwayCard :run="shellRead" />
             </template>
             <AgentBar :agent="agentRow" :loading="!agentKnown" :task="currentTask" :helpers="facts.helpers" :waiting="facts.waiting" :workers="usage.agents.filter((row) => row.role === 'worker').length" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-for="window in catalogue.bars.value" :key="window.name">
