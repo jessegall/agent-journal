@@ -27,6 +27,10 @@ class JournalHome:
         return self.folder / "runtime" / "errors.log"
 
     @property
+    def costly_hooks_log(self) -> Path:
+        return self.folder / "runtime" / "costly-hooks.log"
+
+    @property
     def timing_log(self) -> Path:
         return self.folder / "runtime" / "timing.log"
 

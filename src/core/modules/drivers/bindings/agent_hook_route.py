@@ -18,6 +18,7 @@ from core.modules.drivers.models.hook_call import HookCall
 from core.modules.drivers.commands.record_hook_call import RecordHookCall
 from core.modules.drivers.support.hook_durations import HookDurations
 from core.modules.environments.models.environment import Environment
+from core.modules.settings.bindings.support.setting_values import SettingValues
 
 
 class AgentHookRoute(HookRoute):
@@ -26,11 +27,15 @@ class AgentHookRoute(HookRoute):
     agent at its session's first hook and a subagent at its first, gives back the stored answer of a hook
     sent twice, and lets through, without a record, a hook from an agent it does not know."""
 
-    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations) -> None:
-        self.bus, self.queries, self.errors, self.durations = bus, queries, errors, durations
+    def __init__(self, bus: Bus, queries: Queries, errors: ErrorLog, durations: HookDurations, settings: SettingValues) -> None:
+        self.bus, self.queries, self.errors, self.durations, self.settings = bus, queries, errors, durations, settings
 
     def answer(self, event: HookEvent) -> HookReply:
         self.durations.begin()
+        with self.settings.keep_rows():
+            return self.answered(event)
+
+    def answered(self, event: HookEvent) -> HookReply:
         stored_calls = self.queries.query(HookCall).filter(firing=event.firing).page(1, 1).rows
         if stored_calls:
             return HookReply.stored(stored_calls[0])

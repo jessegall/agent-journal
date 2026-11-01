@@ -80,7 +80,7 @@ class Database:
 
     def rows(self, statement: Statement) -> list[sqlite3.Row]:
         rows = statement.result(self.connection).fetchall()
-        self.tally.loaded(rows)
+        self.tally.loaded(rows, statement.sql)
         return rows
 
     def insert(self, statement: Statement) -> int:

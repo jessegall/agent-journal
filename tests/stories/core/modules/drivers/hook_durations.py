@@ -52,3 +52,11 @@ def test_switching_the_developer_switch_off_turns_off_the_hooks_group_with_it(ne
     story.run(f"setting switch {MASTER} off --project", actor=story.user)
     story.expect_success(f"setting show {HOOKS}.terminal-durations", "value: off", actor=story.user)
     assert terminal_line(story) == ""
+
+
+def test_a_stop_hook_costs_the_database_less_than_the_25_points_a_hook_may_cost(new_story):
+    story = new_story(fixture=BuilderWithUser)
+    story.run(f"setting switch {MASTER} on --project", actor=story.user)
+    line = terminal_line(story)
+    points = int(line.split(" ms, ")[1].split(" points")[0])
+    assert points < 25, line

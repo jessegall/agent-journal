@@ -54,6 +54,7 @@ class PluginRule(DriverRule):
         lines: list[str] = []
         commands: list[Command[object]] = []
         events = PluginEventNames().events(hook)
+        values: dict[int, dict[str, object]] = {}
         for plugin in self.plugins.enabled_ones():
             manifest = PluginManifest.read(self.folders.code(plugin.name))
             if PluginDigest.digest(self.folders.code(plugin.name), manifest) != plugin.files_digest:
@@ -66,7 +67,7 @@ class PluginRule(DriverRule):
                 if event.name not in manifest.window_names():
                     commands.append(DeliverPluginEvent(plugin.id, hook.environment_id, hook.agent_id, event.name, json.dumps(dict(event.data))))
                     continue
-                refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands)
+                refusal = self.refusal_text(hook, plugin, manifest, event, lines, commands, values)
                 if refusal:
                     return RuleAnswer(refusal=refusal, lines=tuple(lines), commands=tuple(commands))
         return RuleAnswer(lines=tuple(lines), commands=tuple(commands))
@@ -85,8 +86,11 @@ class PluginRule(DriverRule):
     def reaches(hook: AgentHook, manifest: PluginManifest, event: str) -> bool:
         return hook.role is AgentRole.MAIN or manifest.reaches_workers(event)
 
-    def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]]) -> str:
-        call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, self.settings.values(plugin, manifest))
+    def refusal_text(self, hook: AgentHook, plugin: Plugin, manifest: PluginManifest, event: PluginEvent, lines: list[str], commands: list[Command[object]],
+                     values: dict[int, dict[str, object]]) -> str:
+        if plugin.id not in values:
+            values[plugin.id] = self.settings.values(plugin, manifest)
+        call = PluginCall(manifest, event, hook.event.environment, hook.timestamp, values[plugin.id])
         try:
             answer = self.program.run(call, manifest.window_ms(event.name, self.setting_values.number(CEILING_SETTING, hook.environment_id)))
         except PluginLateError:

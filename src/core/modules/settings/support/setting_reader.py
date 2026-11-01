@@ -20,7 +20,7 @@ StoredValue = str | int | float | bool | list[object] | None
 class SettingReader:
     """The one reader of settings: off when a toggleable group above is switched off, else the value for the
     environment, else for the project, else the declared default; a secret is read from its own table. Inside
-    keep_rows(), each row is read once and kept, for a stretch in which nothing writes a setting."""
+    keep_rows(), each row is read once and kept, until a setting is written."""
 
     def __init__(self, setting_rows: SettingRows, declared: SettingCatalogue) -> None:
         self.setting_rows, self.declared = setting_rows, declared
@@ -28,11 +28,18 @@ class SettingReader:
 
     @contextmanager
     def keep_rows(self) -> Generator[None]:
+        if self.cache is not None:
+            yield
+            return
         self.cache = {}
         try:
             yield
         finally:
             self.cache = None
+
+    def forget(self) -> None:
+        if self.cache is not None:
+            self.cache.clear()
 
     def current(self, key: str, environment_id: int | None) -> CurrentSetting:
         entry = self.declared.entry(key)

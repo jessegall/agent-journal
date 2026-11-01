@@ -3,6 +3,7 @@ import time
 from core.base.database.database import Database
 from core.base.database.point_tally import Points
 from core.base.driver.hook_event import HookEvent
+from core.base.journal_home import JournalHome
 from core.base.timing import Timing
 from core.modules.drivers.support.driver_settings import HOOK_DURATIONS_SETTING
 from core.modules.settings.bindings.support.setting_values import SettingValues
@@ -13,10 +14,10 @@ HOOK_POINT_LIMIT = 25
 class HookDurations:
     """The line that shows in the terminal how long a hook took, from the first stamp of its request to now, and the
     points it cost the database, while the developer switch, the hooks group inside it and the durations setting are
-    all on; a hook that cost 25 points or more says so."""
+    all on; a hook that cost 25 points or more says so and is written to runtime/costly-hooks.log."""
 
-    def __init__(self, timing: Timing, settings: SettingValues, database: Database) -> None:
-        self.timing, self.settings, self.database = timing, settings, database
+    def __init__(self, timing: Timing, settings: SettingValues, database: Database, home: JournalHome) -> None:
+        self.timing, self.settings, self.database, self.home = timing, settings, database, home
         self.begun = Points()
 
     def begin(self) -> None:
@@ -28,4 +29,9 @@ class HookDurations:
         milliseconds = (time.time_ns() // 1000 - self.timing.stamps[0][1]) // 1000
         points = self.database.tally.points().since(self.begun)
         over = f", over the {HOOK_POINT_LIMIT} a hook may cost" if points.total >= HOOK_POINT_LIMIT else ""
-        return f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()}){over}"
+        line = f"hook {event.event.value} {milliseconds} ms, {points.total} points ({points.line()}){over}"
+        if over:
+            self.home.costly_hooks_log.parent.mkdir(parents=True, exist_ok=True)
+            with self.home.costly_hooks_log.open("a") as log:
+                log.write(f"{line}\n")
+        return line
