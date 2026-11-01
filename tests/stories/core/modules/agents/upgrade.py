@@ -1,3 +1,5 @@
+import json
+
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
@@ -32,6 +34,19 @@ def test_a_session_that_made_rows_but_has_no_version_4_agent_row_moves_as_an_end
     assert "4 sessions that made rows but had no version 4 agent row moved as ended agents" in story.upgrade_text
 
 
-def test_a_worker_session_with_no_agent_row_moves_as_an_ended_worker(new_story):
+def test_a_worker_session_with_no_agent_row_moves_as_an_ended_worker_with_the_program_it_was_sent_with(new_story):
     story = upgraded_story(new_story)
-    story.expect_text("agent list --json", '"session": "s-3"', '"role": "worker"')
+    worker = next(agent for agent in json.loads(story.run("agent list --json").output_text)["rows"] if agent["session"] == "s-3")
+    assert worker["role"] == "worker" and worker["program"] == "claude", worker
+
+
+def test_a_main_session_with_no_agent_row_takes_the_program_of_its_subagents(new_story):
+    story = upgraded_story(new_story)
+    main = next(agent for agent in json.loads(story.run("agent list --json").output_text)["rows"] if agent["session"] == "s-gone")
+    assert main["role"] == "main" and main["program"] == "codex", main
+
+
+def test_a_session_with_no_agent_row_that_wrote_in_two_environments_moves_into_the_one_of_its_first_row(new_story):
+    story = upgraded_story(new_story)
+    main = next(agent for agent in json.loads(story.run("agent list --json").output_text)["rows"] if agent["session"] == "s-gone")
+    assert main["environment_id"] == 1, main

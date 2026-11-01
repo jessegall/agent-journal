@@ -251,3 +251,12 @@ def test_a_link_stays_open_when_the_server_restarts(new_story):
         visitor = opened(story, share)
     with server_story(journal) as story:
         story.expect_viewer_status("/api/session", 200, visitor, text='"type": "share"')
+
+
+def test_a_spent_login_link_opened_with_only_a_share_cookie_is_refused(new_story):
+    with server_story(new_story(fixture=PlanAndPersonFixture)) as story:
+        _, share = shared_link(story)
+        visitor = opened(story, share)
+        key = story.viewer_key("Ada")
+        story.expect_viewer_login(key)
+        story.expect_viewer_status(f"/?key={key}", 401, visitor)

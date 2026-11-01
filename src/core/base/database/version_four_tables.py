@@ -30,7 +30,8 @@ class VersionFourTables:
         if not tables:
             return []
         spans = " UNION ALL ".join(f'SELECT creator, environment_id, created_at FROM "{table}" WHERE creator LIKE ? AND environment_id > 0' for table in tables)
-        return self.connection.execute(f"SELECT creator, environment_id, min(created_at) AS first_at, max(created_at) AS last_at FROM ({spans}) GROUP BY creator ORDER BY first_at",
+        spans_with_end = f"SELECT creator, environment_id, created_at, max(created_at) OVER (PARTITION BY creator) AS last_at FROM ({spans})"
+        return self.connection.execute(f"SELECT creator, environment_id, min(created_at) AS first_at, last_at FROM ({spans_with_end}) GROUP BY creator ORDER BY first_at",
                                        tuple(f"{creator_type}:%" for _ in tables)).fetchall()
 
     def columns(self, table: str) -> set[str]:

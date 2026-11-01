@@ -1,4 +1,5 @@
 import sqlite3
+from collections import Counter
 
 from core.base.actor import CORE_ACTOR_ID
 from core.base.actor_type import ActorType
@@ -16,7 +17,6 @@ TABLE = "agents"
 ENDED = "ended"
 SEPARATOR = ":"
 HELPERS = "sent_agents"
-FIRST_PROGRAM = "claude"
 
 
 class AgentsMove(VersionFourMove):
@@ -24,8 +24,8 @@ class AgentsMove(VersionFourMove):
     environment, as an agent whose number is its new actor's; a session that ended stays an ended
     agent so the rows it made keep their owner. An early session that has no role was a main session
     and moves as one. A session that made rows but has no agent row moves ended, as the helper version 4
-    sent it as, or as a main session, since version 4 handed a main row on to the next session; its program
-    is Claude Code, the one version 4 was built for. An agent with no session is dropped and counted, one
+    sent it as with that helper's program, or as a main session, since version 4 handed a main row on to the
+    next session, with its subagents' program or the one most version 4 agents ran. An agent with no session is dropped and counted, one
     with a role version 5 does not know is skipped and told."""
 
     name = "agents"
@@ -46,28 +46,36 @@ class AgentsMove(VersionFourMove):
                 ended = (row["updated_at"] or created) if row["state"] == ENDED else None
                 report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, lambda: self.insert(rows, row["session"], row["environment_id"], row["provider"], role,
                                                                                          creators.actor_id(row["creator"]), created, row["updated_at"] or created, ended)))
-        self.move_missing_sessions(source, rows, map, report)
+        self.move_missing_sessions(source, rows, map, report, roles)
         return report
 
-    def move_missing_sessions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, report: MoveReport) -> None:
-        sessions = {row["session"] for row in source.rows(TABLE)}
-        helper_roles = {row["session"]: self.helper_role(row["helper_type"]) for row in source.rows(HELPERS) if row["session"]}
-        missing_spans = [span for span in source.creator_spans(AGENT) if self.is_main_session(self.session(span)) and self.session(span) not in sessions
-                   and map.new_id("environments", span["environment_id"]) is not None]
-        for span in missing_spans:
-            role = helper_roles.get(self.session(span), AgentRole.MAIN.value)
-            self.insert(rows, self.session(span), span["environment_id"], FIRST_PROGRAM, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
+    def move_missing_sessions(self, source: VersionFourSource, rows: RowInsert, map: MoveMap, report: MoveReport, roles: list[str]) -> None:
+        agent_rows = source.rows(TABLE)
+        sessions = {row["session"] for row in agent_rows}
+        helpers = {row["session"]: row for row in source.rows(HELPERS) if row["session"]}
+        subagent_programs = {row["session"].partition(SEPARATOR)[0]: row["provider"] for row in agent_rows if row["session"] and self.is_subagent_session(row["session"])}
+        commonest = Counter(row["provider"] for row in agent_rows).most_common(1)
+        common_program = commonest[0][0] if commonest else None
+        moved = 0
+        for span in source.creator_spans(AGENT):
+            session = self.session(span)
+            if not session or self.is_subagent_session(session) or session in sessions or map.new_id("environments", span["environment_id"]) is None:
+                continue
+            helper = helpers.get(session)
+            role = helper["helper_type"] if helper else AgentRole.MAIN.value
+            program = helper["provider"] if helper else subagent_programs.get(session, common_program)
+            if role not in roles or not program:
+                report.note(f"session {session} made rows but had no agent row, no known role and program: its rows name the core")
+                continue
+            self.insert(rows, session, span["environment_id"], program, role, CORE_ACTOR_ID, span["first_at"], span["last_at"], span["last_at"])
             report.count(TABLE, True)
-        if missing_spans:
-            report.note(f"{len(missing_spans)} sessions that made rows but had no version 4 agent row moved as ended agents")
+            moved += 1
+        if moved:
+            report.note(f"{moved} sessions that made rows but had no version 4 agent row moved as ended agents")
 
     @staticmethod
-    def helper_role(helper_type: str | None) -> str:
-        return helper_type if helper_type in (AgentRole.WORKER.value, AgentRole.REVIEWER.value, AgentRole.VERIFIER.value) else AgentRole.WORKER.value
-
-    @staticmethod
-    def is_main_session(session: str) -> bool:
-        return bool(session) and SEPARATOR not in session
+    def is_subagent_session(session: str) -> bool:
+        return SEPARATOR in session
 
     @staticmethod
     def session(span: sqlite3.Row) -> str:

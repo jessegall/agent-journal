@@ -70,7 +70,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             try:
                 token = viewer.login.session_token(key)
             except UnknownLoginKeyError as error:
-                if not self.cookie_token():
+                if not self.session_cookie(COOKIE_NAME):
                     self.answer(401, {"error": str(error)})
                     return
                 self.answer_redirect(kept_query, {})
@@ -256,8 +256,11 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(payload)
 
     def cookie_token(self) -> str:
+        return self.session_cookie(COOKIE_NAME, SHARE_COOKIE_NAME)
+
+    def session_cookie(self, *names: str) -> str:
         cookie, login = SimpleCookie(self.headers.get("Cookie", "")), self.viewer().login
-        tokens = [cookie[name].value for name in (COOKIE_NAME, SHARE_COOKIE_NAME) if name in cookie]
+        tokens = [cookie[name].value for name in names if name in cookie]
         return next((token for token in tokens if login.has_session(token)), "")
 
     def viewer(self) -> ViewerServer:

@@ -58,6 +58,17 @@ TABLES = (
     f"CREATE TABLE checks ({COMMON}, title TEXT, command TEXT, interval INTEGER, last_passed INTEGER, last_output TEXT, last_run_at TEXT, brief TEXT, last_duration REAL,"
     " last_report TEXT, progress TEXT, last_fault TEXT, wait_target INTEGER, is_retired INTEGER, failure_reported_at REAL, last_stopped INTEGER)",
     f"CREATE TABLE reader_suggestions ({COMMON}, part TEXT, suggested_at REAL)",
+    f"CREATE TABLE collections ({COMMON})",
+    f"CREATE TABLE entries ({COMMON})",
+    f"CREATE TABLE journal_versions ({COMMON})",
+    f"CREATE TABLE library_items ({COMMON})",
+    f"CREATE TABLE mcp_servers ({COMMON})",
+    f"CREATE TABLE migrated_rows ({COMMON})",
+    f"CREATE TABLE release_messages ({COMMON})",
+    f"CREATE TABLE secrets ({COMMON})",
+    f"CREATE TABLE state_transitions ({COMMON})",
+    f"CREATE TABLE test_turns ({COMMON})",
+    f"CREATE TABLE version3_migrations ({COMMON})",
 )
 STAMP = "2026-09-01T10:00:00+00:00"
 USER = "user:1"
@@ -66,9 +77,11 @@ SHARE_TOKEN = "648b92de-9235-4709-a2f3-33d968a3a4bf"
 ROWS = (
     ("users", "(name, email, created_at)", ("Jesse", "jesse@example.org", STAMP)),
     ("environments", "(name, branch, key, created_at, creator)", ("main", "development", "key-main", STAMP, "system:")),
+    ("environments", "(name, branch, key, created_at, creator)", ("side", "development", "key-side", STAMP, "system:")),
     ("agents", "(environment_id, session, provider, state, role, created_at, creator)", (1, "s-1", "claude", "idle", "main", STAMP, "system:")),
     ("agents", "(environment_id, session, provider, state, role, created_at, creator)", (1, "s-2", "claude", "idle", "ghost-role", STAMP, "system:")),
     ("agents", "(environment_id, session, provider, state, created_at, creator)", (1, "s-early", "claude", "ended", STAMP, "system:")),
+    ("agents", "(environment_id, session, provider, state, role, created_at, creator)", (1, "s-gone:sub-1", "codex", "ended", "subagent", STAMP, "system:")),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "memories.keyword-limit", "4", STAMP, USER)),
     ("settings", "(environment_id, key, value, created_at, creator)", (None, "no.such.key", "1", STAMP, USER)),
     ("tasks", "(environment_id, title, brief, priority, state, created_at, creator)", (1, "Fix the cart", "the total is wrong", 2, "open", STAMP, USER)),
@@ -111,6 +124,7 @@ ROWS = (
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "Why? " * 120, "[]", "", "", STAMP, "agent:s-1")),
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "What did the early session ask?", "[]", "", "", STAMP, "agent:s-early")),
     ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (1, "What did the session with no row ask?", "[]", "", "", STAMP, "agent:s-gone")),
+    ("questions", "(environment_id, text, options, answer, recommended, created_at, creator)", (2, "What did the session ask later elsewhere?", "[]", "", "", JANUARY_2036, "agent:s-gone")),
     ("shares", "(environment_id, token, expires_at, approved, comments, views, created_at, creator)", (1, SHARE_TOKEN, JANUARY_2036, 1, 0, 3, STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("shares:1", "plans:3", "shares", STAMP, USER)),
     ("shares", "(environment_id, token, expires_at, approved, comments, views, stopped_at, created_at, creator)", (1, "stopped-token", JANUARY_2036, 1, 0, 0, STAMP, STAMP, USER)),
@@ -136,6 +150,7 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("messages:1", "docs:1", "comments_on", STAMP, USER)),
     ("links", "(source, target, link_type, created_at, creator)", ("reports:1", "tasks:77", "about", STAMP, USER)),
     ("rules", "(text, reason, keywords, trigger, condition, created_at, creator)", ("Always keep totals in cents", "rounding errors", '["totals"]', "", "{}", STAMP, USER)),
+    ("rules", "(text, reason, keywords, trigger, condition, created_at, creator)", ("A long project rule. " * 25, "it is long", "[]", "", "{}", STAMP, USER)),
     ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "Run the cart tests before a commit", '["commit"]', None, "", "{}", STAMP, USER)),
     ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "A long reminder. " * 30, "[]", None, "", "{}", STAMP, USER)),
     ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, summary, created_at, updated_at, creator)",

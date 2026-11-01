@@ -1,3 +1,4 @@
+import json
 import re
 
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
@@ -49,7 +50,7 @@ def test_a_long_reminder_moves_whole_into_a_document_and_nothing_is_cut_or_skipp
     story = upgraded_story(new_story)
     memories = story.run("memory list --json").output_text
     assert "A long reminder. A long reminder." in memories and "whole text in doc" in memories
-    assert "2 memory texts longer than 400 characters moved whole into documents" in story.upgrade_text
+    assert "3 memory texts longer than 400 characters moved whole into documents" in story.upgrade_text
     assert "cut to" not in story.upgrade_text and "skipped reminders" not in story.upgrade_text
 
 
@@ -58,3 +59,11 @@ def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_t
     memories = story.run("memory list --json").output_text
     assert "Always keep totals in cents" in memories and "Run the cart tests before a commit" in memories
     assert '"type": "rule"' in memories and '"type": "reminder"' in memories
+
+
+def test_a_long_project_wide_rule_moves_into_a_document_of_no_environment(new_story):
+    story = upgraded_story(new_story)
+    rule = next(memory for memory in json.loads(story.run("memory list --json").output_text)["rows"] if memory["text"].startswith("A long project rule."))
+    document = re.search(r"whole text in doc (\d+)", rule["text"])
+    assert document, rule
+    assert json.loads(story.run(f"doc show {document.group(1)} --json").output_text)["environment_id"] is None

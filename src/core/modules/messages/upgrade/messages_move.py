@@ -1,9 +1,9 @@
 import json
 import sqlite3
 
+from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.agent_sessions import AgentSessions
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -30,7 +30,7 @@ class MessagesMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows, sessions = MoveReport(), CreatorResolver(target, map), RowInsert(target), AgentSessions(target)
+        report, creators, rows, sessions = MoveReport(), CreatorResolver(target, map), RowInsert(target), ActorTable(target)
         message_ids = {row["id"] for row in source.rows(TABLE) if not self.card_type(row["data"]) and row["author"] in TYPES}
         for row in source.rows(TABLE):
             card_type = self.card_type(row["data"])
@@ -57,9 +57,9 @@ class MessagesMove(VersionFourMove):
     def parent_id(self, row: sqlite3.Row, message_ids: set[int], map: MoveMap) -> int | None:
         return map.new_id(TABLE, row["reply_target"]) if row["reply_target"] in message_ids else None
 
-    def insert(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, sessions: AgentSessions, parent: int | None, context: MoveContext) -> int:
+    def insert(self, rows: RowInsert, row: sqlite3.Row, creators: CreatorResolver, sessions: ActorTable, parent: int | None, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        agent = sessions.agent_id(row["session"]) if row["author"] == MessageType.AGENT.value and row["session"] else None
+        agent = sessions.agent_actor_id(row["session"]) if row["author"] == MessageType.AGENT.value and row["session"] else None
         return rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent, "parent_id": parent,
                                    "creator_id": creators.actor_id(row["creator"]), "type": TYPES[row["author"]].value, "text": row["text"] or "",
                                    "read_at": row["read_at"], "created_at": created, "updated_at": row["updated_at"] or created})

@@ -1,6 +1,7 @@
 import sqlite3
 
 from core.base.database.row_insert import RowInsert
+from core.modules.documents.upgrade.document_environment import DocumentEnvironment
 
 TABLE = "docs"
 TITLE_START_CHARACTERS = 80
@@ -18,7 +19,7 @@ class WholeTextDocuments:
         text: str = row["text"]
         if len(text) <= self.limit_characters:
             return text
-        document_id = self.rows.insert(TABLE, {"environment_id": environment_id, "creator_id": creator_id, "title": text[:TITLE_START_CHARACTERS].strip(),
+        document_id = self.rows.insert(TABLE, {"environment_id": DocumentEnvironment.id(environment_id), "creator_id": creator_id, "title": text[:TITLE_START_CHARACTERS].strip(),
                                                "abstract": f"The whole text of a version 4 {self.model_name}, longer than version 5 holds", "body": text,
                                                "created_at": created, "updated_at": row["updated_at"] or created})
         self.document_ids.append(document_id)

@@ -1,9 +1,9 @@
 import sqlite3
 from functools import partial
 
+from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.agent_sessions import AgentSessions
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -26,12 +26,12 @@ class FileEditsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions = AgentSessions(target)
+        sessions = ActorTable(target)
         for row in source.rows(TABLE):
             if not row["session"]:
                 report.drop("edits made by no agent", 1)
                 continue
-            agent_id = sessions.agent_id(row["session"])
+            agent_id = sessions.agent_actor_id(row["session"])
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that made it did not move")
                 continue

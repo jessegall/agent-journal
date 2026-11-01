@@ -2,10 +2,10 @@ import sqlite3
 from functools import partial
 from pathlib import Path
 
+from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
 from core.base.driver.command_category import CommandCategory
-from core.base.upgrade.agent_sessions import AgentSessions
 from core.base.upgrade.creator_resolver import CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -34,9 +34,9 @@ class ProcessesMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions = AgentSessions(target)
+        sessions = ActorTable(target)
         for row in source.rows(TABLE):
-            agent_id = sessions.agent_id(row["session"]) if row["session"] else None
+            agent_id = sessions.agent_actor_id(row["session"]) if row["session"] else None
             if agent_id is None or map.new_id("environments", row["environment_id"]) is None:
                 report.skip(TABLE, row["id"], "the agent that ran it or its environment did not move")
                 continue

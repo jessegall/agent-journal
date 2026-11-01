@@ -2,9 +2,9 @@ import json
 import sqlite3
 from functools import partial
 
+from core.base.database.actor_table import ActorTable
 from core.base.database.database import Database
 from core.base.database.row_insert import RowInsert
-from core.base.upgrade.agent_sessions import AgentSessions
 from core.base.upgrade.creator_resolver import AGENT, CreatorResolver
 from core.base.upgrade.move_context import MoveContext
 from core.base.upgrade.move_map import MoveMap
@@ -32,10 +32,10 @@ class QuestionsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions, documents = AgentSessions(target), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
+        sessions, documents = ActorTable(target), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
-            agent_id = sessions.agent_id(session) if actor_type == AGENT else None
+            agent_id = sessions.agent_actor_id(session) if actor_type == AGENT else None
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that asked it did not move")
                 continue

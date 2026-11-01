@@ -13,6 +13,7 @@ from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
 from core.modules.documents.models.enums.link_type import LinkType
+from core.modules.documents.upgrade.document_environment import DocumentEnvironment
 from core.modules.documents.support.row_ref import RowRef
 
 TEXT_TABLES = ("docs", "reports")
@@ -20,7 +21,6 @@ REVISIONS = "doc_revisions"
 REVISION_LINK_TYPE = "revision_of"
 LINK_TYPES = tuple(link_type.value for link_type in LinkType)
 LINK_END_MODELS = {"docs": "doc", "reports": "report", "tasks": "task", "plans": "plan", "messages": "message", "questions": "question"}
-PROJECT_ENVIRONMENT = 0
 
 
 class DocumentsMove(VersionFourMove):
@@ -66,8 +66,7 @@ class DocumentsMove(VersionFourMove):
 
     def insert_text(self, rows: RowInsert, table: str, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        environment_id = None if row["environment_id"] in (None, PROJECT_ENVIRONMENT) else row["environment_id"]
-        return rows.insert(table, {"id": row["id"], "environment_id": environment_id, "creator_id": creator_id, "title": row["title"], "abstract": row["abstract"],
+        return rows.insert(table, {"id": row["id"], "environment_id": DocumentEnvironment.id(row["environment_id"]), "creator_id": creator_id, "title": row["title"], "abstract": row["abstract"],
                                    "body": row["body"] or "", "close_reason": row["settled_reason"] or "", "created_at": created, "updated_at": row["updated_at"] or created})
 
     def insert_revision(self, rows: RowInsert, row: sqlite3.Row, doc_id: int, creator_id: int, context: MoveContext) -> int:
