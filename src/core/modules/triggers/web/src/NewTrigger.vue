@@ -39,13 +39,15 @@ async function create() {
 <template>
     <Dialog title="New trigger" @close="emit('close')">
         <div class="new-trigger">
-            <Segmented :options="KINDS" :value="kind" @pick="kind = $event" />
+            <div class="kind">
+                <Segmented :options="KINDS" :value="kind" @pick="kind = $event" />
+            </div>
             <template v-if="kind === 'words'">
                 <div class="examples">
                     <span class="label">Start with an example</span>
                     <div class="example-list">
                         <template v-for="example in EXAMPLES" :key="example.name">
-                            <Btn small @click="startFrom(example)">{{ example.name }}</Btn>
+                            <Btn small bordered @click="startFrom(example)">{{ example.name }}</Btn>
                         </template>
                     </div>
                 </div>
@@ -78,6 +80,10 @@ async function create() {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.kind {
+    display: flex;
 }
 
 .examples,
