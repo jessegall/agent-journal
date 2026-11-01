@@ -1,20 +1,34 @@
 import {onMounted, onUnmounted, watch} from "vue";
 
+const WIDE_BLOCKS = "img,pre,table";
+
 // how wide a bubble needs to be: its longest line and its padding, none when nothing was measured
 export function fittedWidth(lines, padding) {
     if (!lines.length) return 0;
     return Math.ceil(Math.max(...lines.map((line) => line.right)) - Math.min(...lines.map((line) => line.left)) + padding);
 }
 
+// the boxes of the bubble's words alone: a range over the whole bubble would also give each paragraph's full-width box
+function textLines(bubble) {
+    const lines = [];
+    const words = document.createTreeWalker(bubble, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    while (words.nextNode()) {
+        if (words.currentNode.parentElement.closest(".message-quote")) continue;
+        range.selectNodeContents(words.currentNode);
+        lines.push(...range.getClientRects());
+    }
+    return lines;
+}
+
 // a bubble not laid out yet, in a hidden tab, is measured when the watcher sees its chat take a width
 function fit(bubble) {
     bubble.style.width = "";
     if (!bubble.offsetWidth) return;
-    const range = document.createRange();
-    range.selectNodeContents(bubble);
+    if (bubble.querySelector(WIDE_BLOCKS)) return;
     const style = getComputedStyle(bubble);
     const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-    const width = fittedWidth([...range.getClientRects()], padding || 0);
+    const width = fittedWidth(textLines(bubble), padding || 0);
     if (width && width < bubble.offsetWidth) bubble.style.width = `${width}px`;
 }
 

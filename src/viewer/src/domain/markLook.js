@@ -28,7 +28,7 @@ export function markLook(mark, declaration) {
         // only a mark that follows a process ends with a verdict; an event the journal records is a quiet line with no tick
         ended: Boolean(kind.process) && mark.state === "ended",
         active: Boolean(kind.process) && mark.state === "shown",
-        time: mark.created_at,
+        time: Date.parse(mark.created_at) / 1000,
         action: opens ? ACTIONS[opens](mark) : "",
         handlers: opens ? {onAct: () => OPENERS[opens](mark)} : {},
     };

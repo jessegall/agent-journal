@@ -1,6 +1,6 @@
 <script setup>
 import {onUnmounted, ref} from "vue";
-import {Icon, Segmented, Switch, useWindow} from "@journal/window-kit";
+import {Icon, Segmented, Switch, useOutside, useWindow} from "@journal/window-kit";
 
 // the coding suite's part of the top bar, as version 4's status bar drew it: the auto switch, the two work modes and the settings behind them
 const AUTO_MODE = "journal.suites.coding.auto-mode";
@@ -16,6 +16,8 @@ const auto = ref(true);
 const dispatches = ref(true);
 const limit = ref(2);
 const open = ref(false);
+const root = ref(null);
+useOutside(root, () => (open.value = false));
 const failure = ref("");
 
 const settingValue = async (key) => {
@@ -64,7 +66,7 @@ load();
 </script>
 
 <template>
-    <span class="agentset" data-work-mode>
+    <span ref="root" class="agentset" data-work-mode>
         <Switch :on="auto" word="Auto" title="Auto mode: the agent is given the next open task when it stops or leaves its task" data-auto-toggle @change="toggleAuto" />
         <Segmented class="agentset-mode" :options="MODES" :value="mode" @pick="pickMode" />
         <button type="button" class="agentset-settings" data-work-settings title="Work mode settings" :aria-expanded="open" @click.stop="open = !open">

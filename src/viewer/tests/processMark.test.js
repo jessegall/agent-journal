@@ -2,6 +2,7 @@ import {afterEach, expect, test, vi} from "vitest";
 import {createApp, h, nextTick} from "vue";
 import MarkHost from "../src/chat/MarkHost.vue";
 import {loadMarkDeclarations} from "../src/domain/markRegistry.js";
+import {markLook} from "../src/domain/markLook.js";
 import {lineResult, WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 
 const mounted = [];
@@ -46,6 +47,11 @@ test("a process mark whose output cannot be read says why, not that it printed n
     await settled();
     expect(element.textContent).toContain("output 7 was pruned");
     expect(element.textContent).not.toContain("printed nothing");
+});
+
+test("a mark's hover names its time, read from the row's date", () => {
+    const look = markLook({id: 4, type: "processes.command", text: "Ran make", created_at: "2026-11-01T10:00:00Z"}, null);
+    expect(look.time).toBe(Date.parse("2026-11-01T10:00:00Z") / 1000);
 });
 
 test("a mark declared full width draws as a line across the chat", async () => {

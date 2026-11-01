@@ -57,6 +57,7 @@ const measure = () => {
     narrow.value = window.innerWidth < PHONE_WIDTH;
     width.value = window.innerWidth;
 };
+const MENU_PARTS = ".pane-menu,.pane-add,.pane-add-button,.pane-menu-button,[data-pane-tour]";
 const adding = ref(null);
 const agentRow = ref(null);
 // the rows a list read gave, none when it failed or answered something else
@@ -164,6 +165,13 @@ const guide = usePaneGuide(props.environment, {
     close: () => (menu.value = null),
 });
 followFullscreen();
+const closeMenusOutside = (event) => {
+    if (event.target.closest?.(MENU_PARTS)) return;
+    menu.value = null;
+    adding.value = null;
+};
+window.addEventListener("click", closeMenusOutside);
+onUnmounted(() => window.removeEventListener("click", closeMenusOutside));
 const groups = () => props.catalogue.group(closedWindows.value);
 const addWindow = (id, name) => {
     openIn(id, name);
