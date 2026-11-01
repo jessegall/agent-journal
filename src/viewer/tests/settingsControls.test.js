@@ -91,3 +91,38 @@ test("removing an environment asks first, and a refusal says why", async () => {
     expect(ran).toContainEqual(["environment", "delete", "2"]);
     expect(element.querySelector("[data-environment='staging'] [data-environment-refusal]").textContent).toBe("it has tasks");
 });
+
+async function drawnWith(rows) {
+    const ran = [];
+    const window = context({"setting tree": page(rows)});
+    window.run = async (line) => (ran.push(line), {ok: true, value: {}});
+    return {element: await mounted(SettingsTree, window), ran};
+}
+
+test("a number whose key names its unit shows the unit", async () => {
+    const {element} = await drawnWith([row("shop.wait-minutes"), row("shop.size")]);
+    expect(element.querySelector('[data-setting="shop.wait-minutes"] [data-setting-unit]').textContent).toBe("minutes");
+    expect(element.querySelector('[data-setting="shop.size"] [data-setting-unit]')).toBeNull();
+});
+
+test("a list is edited one on each line and saved with commas", async () => {
+    const {element, ran} = await drawnWith([row("shop.names", {type: "list", value: ["a", "b"], shown: "a, b"})]);
+    const box = element.querySelector("[data-setting-list]");
+    expect(box.value).toBe("a\nb");
+    box.value = "a\nb\n\nc";
+    box.dispatchEvent(new Event("change"));
+    await settle();
+    expect(ran[0]).toEqual(expect.arrayContaining(["setting", "set", "shop.names", "a,b,c"]));
+});
+
+test("the nav marks the first module, and the one scrolled to the top", async () => {
+    const {element} = await drawnWith([row("shop.size"), row("till.size", {module: "till"})]);
+    expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("shop");
+    const sections = element.querySelector("[data-settings-sections]");
+    sections.getBoundingClientRect = () => ({top: 100});
+    element.querySelector('[data-module="shop"]').getBoundingClientRect = () => ({top: -300});
+    element.querySelector('[data-module="till"]').getBoundingClientRect = () => ({top: 105});
+    sections.dispatchEvent(new Event("scroll"));
+    await settle();
+    expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("till");
+});

@@ -18,6 +18,11 @@ const scopeFlag = computed(() => (props.row.scope === "project" ? ["--project"] 
 const refusal = ref("");
 const typed = ref("");
 const CHANGED_SOURCES = new Set(["environment", "project"]);
+const UNITS = {seconds: "seconds", minutes: "minutes", hours: "hours", days: "days", bytes: "bytes", characters: "characters", percent: "%"};
+// a quantity's key names its unit, so the field can say it
+const unit = computed(() => (props.row.type === "number" ? UNITS[props.row.key.split(/[-_.]/).at(-1)] ?? "" : ""));
+const isList = computed(() => props.row.type === "list" || props.row.type === "number list");
+const listText = computed(() => String(props.row.shown ?? "").split(",").map((item) => item.trim()).filter(Boolean).join("\n"));
 const isChanged = computed(() => CHANGED_SOURCES.has(props.row.source));
 const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && isChanged.value && props.row.default !== null && props.row.default !== undefined);
 const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
@@ -36,6 +41,10 @@ async function switchGroup() {
 
 function changed(event) {
     saveValue(event.target.value);
+}
+
+function listChanged(event) {
+    saveValue(event.target.value.split("\n").map((item) => item.trim()).filter(Boolean).join(","));
 }
 
 function savedSecret() {
@@ -90,15 +99,23 @@ function savedSecret() {
                     </template>
                 </div>
             </template>
+            <template v-else-if="isList">
+                <textarea :id="row.key" class="setting-field setting-list" rows="3" :value="listText" :disabled="readOnly" placeholder="One on each line" data-setting-list @change="listChanged" />
+            </template>
             <template v-else>
-                <input
-                    :id="row.key"
-                    class="setting-field"
-                    :type="row.type === 'number' ? 'number' : 'text'"
-                    :value="row.type === 'list' || row.type === 'number list' ? row.shown : row.value"
-                    :disabled="readOnly"
-                    @change="changed"
-                />
+                <div class="setting-input">
+                    <input
+                        :id="row.key"
+                        class="setting-field"
+                        :type="row.type === 'number' ? 'number' : 'text'"
+                        :value="row.value"
+                        :disabled="readOnly"
+                        @change="changed"
+                    />
+                    <template v-if="unit">
+                        <span class="setting-unit" data-setting-unit>{{ unit }}</span>
+                    </template>
+                </div>
             </template>
             <template v-if="refusal">
                 <p class="setting-refusal">{{ refusal }}</p>
@@ -108,6 +125,22 @@ function savedSecret() {
 </template>
 
 <style scoped>
+.setting-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.setting-unit {
+    flex: none;
+    color: var(--text-3);
+    font-size: 12px;
+}
+
+.setting-list {
+    resize: vertical;
+}
+
 .setting-head {
     display: flex;
     gap: 6px;
