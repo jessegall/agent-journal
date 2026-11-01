@@ -55,6 +55,15 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		return ErrorCode
 	}
 	defer log.Close()
+	if link, err := journal.Run("viewer"); err == nil {
+		link = strings.TrimSpace(link)
+		fmt.Fprintln(stdout, launch.HeaderBar(choice.Environment, agentID, link))
+		if line := launch.OpenViewer(link, launch.StartDetached); line != "" {
+			fmt.Fprintln(stderr, line)
+		}
+	} else {
+		fmt.Fprintln(stderr, "the viewer link could not be asked: "+err.Error())
+	}
 	arguments, err := journal.ProgramCommand(request.Program, choice, launchName)
 	if err != nil {
 		fmt.Fprintln(stderr, err)
