@@ -11,7 +11,12 @@ const firstLine = (prompt) => prompt.split("\n")[0];
 
 function next(row) {
     const at = nextRun(row.cron);
-    return at ? `next at ${at.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"})}` : "not due again";
+    return at ? `next at ${at.toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit"})}` : "not due in the next 8 days";
+}
+
+function words(row) {
+    const schedule = scheduleWords(row.cron);
+    return row.is_recurring || schedule.startsWith("once") ? schedule : `${schedule}, once`;
 }
 
 async function stop(row) {
@@ -31,7 +36,7 @@ async function stop(row) {
                 <div class="agent-job" :data-job="row.job_id">
                     <div class="agent-job-text">
                         <b>{{ firstLine(row.prompt) }}</b>
-                        <span>{{ scheduleWords(row.cron) }}{{ row.is_recurring ? "" : ", once" }} · {{ next(row) }}</span>
+                        <span>{{ words(row) }} · {{ next(row) }}</span>
                     </div>
                     <Btn small :disabled="Boolean(row.stop_asked_at)" data-job-stop @click="stop(row)">{{ row.stop_asked_at ? "Stopping" : "Stop" }}</Btn>
                 </div>
