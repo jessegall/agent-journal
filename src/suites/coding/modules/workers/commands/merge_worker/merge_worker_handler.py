@@ -15,8 +15,7 @@ from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import W
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.merge_checks import MergeChecks
-
-SOURCE = "workers.merge-clash"
+from suites.coding.modules.workers.support.worker_job import MERGE_CLASH_SOURCE
 
 
 class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
@@ -59,5 +58,5 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         self.repository.save(task.moved(TaskLifecycle.retest), context)
         line = (f"the rebase of your work onto {worktree.base_branch} clashed on {', '.join(conflicts)}: change them so they fit {worktree.base_branch},"
                 f" then deliver again with journal worker deliver")
-        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=SOURCE), context)
+        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=MERGE_CLASH_SOURCE), context)
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

@@ -12,6 +12,7 @@ from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
+from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_handler import AllowEssentialRuleHandler
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_subcommand import AllowEssentialRuleSubcommand
 from core.modules.drivers.bindings.driver_change_filter import DriverChangeFilter
@@ -64,7 +65,7 @@ class DriversModule(Module):
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
     dependencies = ["journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    models = [ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration]
     handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]

@@ -26,5 +26,5 @@ class EndedWorkerListener(SaveListener):
         if new.role != AgentRole.WORKER or new.parent_id is None:
             return
         for task in self.tasks.holder(new.id).started().all_rows():
-            line = f"task {task.id} is still started under worker {new.id}: journal worker release {new.id} \"<why>\""
+            line = f"task {task.id} is still started under worker {new.id}: journal worker send {new.id} \"<job>\" to carry on, or journal worker release {new.id} \"<why>\""
             self.repository.save(AgentLine(agent_id=new.parent_id, creator_id=change.actor.id, text=line, source=SOURCE), change.context)

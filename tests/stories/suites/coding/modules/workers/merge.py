@@ -1,3 +1,6 @@
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
+from core.base.journal_home import LAUNCHER_SOCKET
+from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
 from datetime import timedelta
 
 from tests.stories.core.support import story_lines as lines
@@ -107,3 +110,46 @@ def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_ch
     story.expect_success(lines.TASK_DETAILS, "state: testing")
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
+
+
+def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
+    story.run_listeners()
+    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    assert "--resume" in launcher.requests[-1]["command"]
+    assert any("clashed on cart.py" in word for word in launcher.requests[-1]["command"])
+    story.expect_text(f"agent-line list --agent {worker.id}", "entered")
+
+
+def test_a_delivered_worker_sent_a_job_has_its_task_back_in_hand_and_a_running_one_reads_it_at_its_next_hook(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_text(f'worker send {worker.id} "Add the tax as well"', f"worker {worker.id} takes the job", actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
+    story.expect_success("worker-worktree show 1", "state: cut")
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax as well", "waiting")
+
+
+def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.run(f'worker send {worker.id} "Add the tax as well"', actor=story.agent)
+    story.run_listeners()
+    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    assert "--resume" in launcher.requests[-1]["command"]
+
+
+def test_a_worker_with_no_worktree_is_not_sent_a_job(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    story.expect_refusal('worker send 99 "Add the tax"', "worker 99 has no worktree", actor=story.agent)

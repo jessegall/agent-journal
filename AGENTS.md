@@ -37,11 +37,11 @@ A worker that reported takes its next job with `journal worker send <n> "<job>"`
 
 **L9 - A subagent only reads; work that writes goes to a worker or stays with you.**
 A subagent works in your own checkout, so what it writes is written next to your edits, unrecorded. Reading, searching, reviewing and
-designing go to a subagent; a job that changes a file goes to a worker (`journal worker dispatch`, naming what it changes with `--changes`, with `--worktree` for code).
+designing go to a subagent; a job that changes a file goes to a worker (`journal worker dispatch <task>`, the task's brief is its whole prompt).
 
 **L10 - A worker's work is merged only once each point of its task's brief has a proof you checked.**
-Read each proof with `journal task show <n>`, check it with `journal worker check <worker> <point>` or send it back with
-`--short "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
+Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
+`journal proof short <n> "<what is missing>"`, and take the work in with `journal worker merge <worker>`, never by hand.
 
 ## How you work with the journal
 

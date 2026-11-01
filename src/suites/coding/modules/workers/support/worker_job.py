@@ -1,0 +1,3 @@
+WORKER_JOB_SOURCE = "workers.worker-job"
+MERGE_CLASH_SOURCE = "workers.merge-clash"
+RESUMING_SOURCES = (WORKER_JOB_SOURCE, MERGE_CLASH_SOURCE)
