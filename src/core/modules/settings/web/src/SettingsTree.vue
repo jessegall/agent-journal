@@ -55,8 +55,8 @@ function jump(module) {
 }
 
 // the nav marks the module at the top of the scrolled list
-function scrolled() {
-    const top = sections.value?.getBoundingClientRect().top ?? 0;
+function scrolled(event) {
+    const top = event.target.getBoundingClientRect?.().top ?? 0;
     const passed = [...(sections.value?.querySelectorAll("[data-module]") ?? [])].filter((section) => section.getBoundingClientRect().top <= top + SPY_MARGIN);
     current.value = passed.at(-1)?.dataset.module ?? modules.value[0] ?? "";
 }
@@ -99,13 +99,13 @@ async function saved(words) {
         <template v-else-if="loaded && !rows.length">
             <p class="settings-empty">No module declares a setting.</p>
         </template>
-        <div class="settings-body">
+        <div class="settings-body" @scroll.capture.passive="scrolled">
             <nav class="settings-nav" aria-label="Modules">
                 <template v-for="module in modules" :key="module">
                     <button type="button" :class="['settings-nav-item', {current: module === (current || modules[0])}]" :data-jump="module" @click="jump(module)">{{ heading(module) }}</button>
                 </template>
             </nav>
-            <div ref="sections" class="settings-sections" data-settings-sections @scroll.passive="scrolled">
+            <div ref="sections" class="settings-sections" data-settings-sections>
                 <template v-for="module in modules" :key="module">
                     <section class="settings-module" :data-module="module">
                         <h3 class="settings-module-heading">{{ heading(module) }}</h3>
