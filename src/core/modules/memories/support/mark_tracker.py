@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 
 from core.base.driver.hook_event_name import HookEventName
+from core.base.query.conditions.greater import Greater
+from core.base.query.conditions.minimum import Minimum
 from core.base.query.queries import Queries
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.memories.models.enums.mark_state import MarkState
@@ -24,6 +26,6 @@ class MarkTracker:
             return None
         compactions = self.queries.query(HookCall).filter(agent_id=agent_id, hook=HookEventName.COMPACT).descending("id").page(1, 1).rows
         compaction_text = next((call.created_at.text for call in compactions if call.created_at is not None), "")
-        passed_percents = [mark.percent for mark in self.queries.query(MemoryMark).filter(agent_id=agent_id).all_rows() if mark.opened_at.text > compaction_text]
         highest = max(passed)
-        return None if any(percent_reached >= highest for percent_reached in passed_percents) else highest
+        reached = self.queries.query(MemoryMark).filter(agent_id=agent_id).matching(Greater("opened_at", compaction_text)).matching(Minimum("percent", highest))
+        return None if reached.exists() else highest

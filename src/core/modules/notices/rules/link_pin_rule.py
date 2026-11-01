@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from core.base.agent_role import AgentRole
 from core.base.clock import Clock
@@ -6,7 +7,10 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.query.conditions.among import Among
+from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
+from core.base.timestamp import Timestamp
 from core.base.type_guards import is_mapping
 from core.modules.notices.models.notice import Notice
 from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
@@ -34,14 +38,13 @@ class LinkPinRule(DriverRule):
         tool = hook.event.tool
         if tool is None or tool.shell is None:
             return RuleAnswer.allowed()
-        notices = list(self.queries.query(Notice).filter(environment_id=hook.environment_id).all_rows())
-        if PIN_CLAIM.search(tool.shell.line) and not any(notice.created_at is not None and notice.created_at.elapsed_seconds(self.clock.timestamp()) <= CLAIM_WINDOW_SECONDS for notice in notices):
+        notices = self.queries.query(Notice).filter(environment_id=hook.environment_id)
+        if PIN_CLAIM.search(tool.shell.line) and not notices.matching(Greater("created_at", Timestamp(self.clock.timestamp().value - timedelta(seconds=CLAIM_WINDOW_SECONDS)).text)).exists():
             return RuleAnswer.with_nudges(UNPINNED_CLAIM.nudge())
         response = hook.event.raw.get("tool_response")
         output = response.get(OUTPUT_FIELD) if is_mapping(response) else None
         if not isinstance(output, str):
             return RuleAnswer.allowed()
-        pinned = {str(notice.link).rstrip("/") for notice in notices}
         loose = [url.rstrip(".,;:") for url in LINK.findall(output) if not LOCAL_ADDRESS.match(url)]
-        unpinned = [url for url in dict.fromkeys(loose) if url.rstrip("/") not in pinned]
+        unpinned = [url for url in dict.fromkeys(loose) if not notices.matching(Among("link", (url.rstrip("/"), f"{url.rstrip('/')}/"))).exists()]
         return RuleAnswer.with_nudges(LINK_PIN_REQUEST.nudge(url=unpinned[0])) if unpinned else RuleAnswer.allowed()

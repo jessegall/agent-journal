@@ -26,6 +26,7 @@ def filled(story) -> None:
 def test_every_kind_of_hook_costs_the_database_under_the_points_a_hook_may_cost_on_a_filled_journal(new_story):
     story = new_story(fixture=BuilderWithUser)
     filled(story)
+    story.hook("s-1", HookSamples.prompt("Carry on"))
     database = story.container.get(Database)
     over = {}
     for name, sample in SAMPLES.items():
