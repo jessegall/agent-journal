@@ -37,6 +37,7 @@ from core.modules.drivers.models.nudge_record import NudgeRecord
 from core.modules.drivers.migrations.m004_nudge_records import NudgeRecordsMigration
 from core.modules.drivers.commands.nudge_list.nudge_list_subcommand import NudgeListSubcommand
 from core.modules.drivers.rules.opening_lines_rule import OpeningLinesRule
+from core.modules.drivers.rules.takeover_rule import TakeoverRule
 from core.modules.drivers.rules.repeated_stop_release_rule import RepeatedStopReleaseRule
 from core.modules.drivers.models.rule_history import RuleHistory
 from core.modules.drivers.rules.session_end_rule import SessionEndRule
@@ -71,7 +72,7 @@ class DriversModule(Module):
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
-    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule]
+    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

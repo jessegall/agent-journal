@@ -32,3 +32,20 @@ def test_a_builder_sends_subagents_only_while_its_setting_allows(new_story):
     story.expect_hook_allowed("s-1", HookSamples.subagent())
     story.run("setting make journal.suites.coding.builder-sends-subagents false")
     story.expect_hook_refusal("s-1", HookSamples.subagent(), "the builder sends no subagents here")
+
+
+def test_a_builder_given_a_task_is_told_its_brief(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.run('task make "Fix the tax" --brief "Round it at the end" --environment main')
+    story.expect_hook_refusal("s-1", HookSamples.stop(), "Fix the tax. Round it at the end")
+
+
+def test_a_builder_starting_is_told_what_waits_for_it(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.run('task make "Fix the tax" --environment main')
+    story.expect_hook_allowed("s-1", HookSamples.session_start(), "waiting for you: 1 open tasks; see journal task list, journal message unread, journal question list")
+
+
+def test_a_builder_with_nothing_waiting_is_told_nothing_about_it(new_story):
+    story = new_story(fixture=CodingEnvironment)
+    story.expect_absent_hook_line("s-1", HookSamples.session_start(), "waiting for you")

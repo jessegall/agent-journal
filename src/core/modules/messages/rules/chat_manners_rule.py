@@ -9,16 +9,16 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.messages.support.message_nudges import BLANK_LINES, NO_EM_DASHES, NO_SHOP_TALK, SAY_YOU
+from core.modules.messages.support.message_nudges import PARAGRAPH_REMARK, EM_DASH_REMARK, SHOP_TALK_REMARK, THIRD_PERSON_REMARK
 
-LONG_PARAGRAPH_CHARACTERS = 400
+LONG_TEXT_CHARACTERS = 400
 SENTENCE_COUNT = 3
 SENTENCE_END = ". "
 PARAGRAPH_BREAK = "\n\n"
-PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
-    (re.compile(r"\bjournal (task|plan|message|question|memory|rule|reminder|sequence|worker|check|skill) [a-z]+\b|\[journal\]", re.I), NO_SHOP_TALK),
-    (re.compile(r"\bthe user\b", re.I), SAY_YOU),
-    (re.compile(r"—.*—", re.S), NO_EM_DASHES),
+REMARK_PATTERNS: tuple[tuple[re.Pattern[str], NudgeDeclaration], ...] = (
+    (re.compile(r"\bjournal (task|plan|message|question|memory|rule|reminder|sequence|worker|check|skill) [a-z]+\b|\[journal\]", re.I), SHOP_TALK_REMARK),
+    (re.compile(r"\bthe user\b", re.I), THIRD_PERSON_REMARK),
+    (re.compile(r"—.*—", re.S), EM_DASH_REMARK),
 )
 
 
@@ -39,6 +39,7 @@ class ChatMannersRule(DriverRule):
         if not rows:
             return RuleAnswer.allowed()
         text = rows[0].text.strip()
-        remarks = [declaration.nudge() for pattern, declaration in PATTERNS if pattern.search(text)]
-        runs_together = len(text) >= LONG_PARAGRAPH_CHARACTERS and PARAGRAPH_BREAK not in text and text.count(SENTENCE_END) >= SENTENCE_COUNT
-        return RuleAnswer.with_nudges(*remarks, *((BLANK_LINES.nudge(),) if runs_together else ()))
+        declarations = [declaration for pattern, declaration in REMARK_PATTERNS if pattern.search(text)]
+        if len(text) >= LONG_TEXT_CHARACTERS and PARAGRAPH_BREAK not in text and text.count(SENTENCE_END) >= SENTENCE_COUNT:
+            declarations.append(PARAGRAPH_REMARK)
+        return RuleAnswer.with_nudges(*(declaration.nudge() for declaration in declarations))

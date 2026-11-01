@@ -22,7 +22,7 @@ LOOK = HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, []))
 def teaching_story(new_story):
     story = new_story(SAMPLES, fixture=SampleSuiteChoice)
     story.user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
-    hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
     return story
 
 

@@ -36,7 +36,10 @@ from core.modules.plans.upgrade.plans_move import PlansMove
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.rules.plan_state_rule import PlanStateRule
+from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
 from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
+from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
 
 PLAN_COMMANDS = (BlockPlan, CancelPlan)
@@ -47,7 +50,7 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
@@ -59,6 +62,8 @@ class PlansModule(Module):
     listeners = (ForgetPlaceListener, PhaseRenumberingListener, CancelOpenPlanTasksListener,
                  NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
+    nudges = PLAN_NUDGES
+    driver_rules = [PlanTaskLineRule, PlanStateRule]
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]

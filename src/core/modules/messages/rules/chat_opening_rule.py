@@ -3,11 +3,11 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.messages.support.message_nudges import DISCRETION, JOURNAL_LINE
+from core.modules.messages.support.message_nudges import JOURNAL_DISCRETION, JOURNAL_LAWS, JOURNAL_LINE_NOTE
 
 
 class ChatOpeningRule(DriverRule):
-    """A main agent's session start tells it what a journal line is and to keep the journal out of the chat."""
+    """A main agent's session start tells it what a journal line is, to keep the journal out of the chat, and that the laws apply."""
 
     name = "messages.chat-opening"
     hook = HookEventName.SESSION_START
@@ -15,4 +15,4 @@ class ChatOpeningRule(DriverRule):
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.with_nudges(JOURNAL_LINE.nudge(), DISCRETION.nudge())
+        return RuleAnswer.with_nudges(JOURNAL_LINE_NOTE.nudge(), JOURNAL_DISCRETION.nudge(), JOURNAL_LAWS.nudge())

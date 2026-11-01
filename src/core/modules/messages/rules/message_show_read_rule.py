@@ -1,5 +1,5 @@
 from core.base.driver.nudge import Nudge
-from core.modules.messages.support.message_nudges import ACT_ON_MESSAGES, REPLY_COMMAND, TAG_THE_IMAGE
+from core.modules.messages.support.message_nudges import MESSAGE_ADVICE, REPLY_COMMAND, IMAGE_TAG_REQUEST
 import re
 from pathlib import PurePath
 
@@ -49,9 +49,9 @@ class MessageShowReadRule(DriverRule):
             commands = {message.id: READ_COMMAND for message in unread}
         read = [message for message in unread if commands[message.id] == READ_COMMAND]
         images = [nudge for message in read for nudge in self.image_nudges(message)]
-        return RuleAnswer.with_nudges(*((ACT_ON_MESSAGES.nudge(), REPLY_COMMAND.nudge(), *images) if read else ())).running(*(ReadMessage(message.id) for message in unread))
+        return RuleAnswer.with_nudges(*((MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images) if read else ())).running(*(ReadMessage(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:
         captions = MessageCaptions.of(message)
-        return [TAG_THE_IMAGE.nudge(message=message.id, path=self.home.message_files(message.id) / name, name=name)
+        return [IMAGE_TAG_REQUEST.nudge(message=message.id, path=self.home.message_files(message.id) / name, name=name)
                 for name in message.files if PurePath(name).suffix.lower() in IMAGE_SUFFIXES and name not in captions]

@@ -15,6 +15,7 @@ from suites.coding.migrations.m001_file_edits import FileEditsTableMigration
 from suites.coding.drivers.orchestrator.orchestrator_driver import OrchestratorDriver
 from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import OrchestratorStartGuard
 from suites.coding.rules.record_file_edit_rule import RecordFileEditRule
+from suites.coding.rules.waiting_items_rule import WaitingItemsRule
 from suites.coding.drivers.subagent.subagent_driver import SubagentDriver
 from suites.coding.drivers.worker.worker_driver import WorkerDriver
 from suites.coding.coding_settings import CODING_SETTINGS
@@ -40,7 +41,7 @@ class CodingModule(Module):
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration]
     handlers = [RecordFileEditHandler]
-    driver_rules = [RecordFileEditRule]
+    driver_rules = [RecordFileEditRule, WaitingItemsRule]
     listeners = [AutoNextTaskListener]
     windows = [WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
                                  reads=["suite current", "setting show"], runs=["driver choose", "setting set"]),

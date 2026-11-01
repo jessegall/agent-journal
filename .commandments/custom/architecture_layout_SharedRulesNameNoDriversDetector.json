@@ -26,6 +26,18 @@
         "reject": [
             {
                 "testCode": true
+            },
+            {
+                "descendant": {
+                    "all": [
+                        {
+                            "is": "literal"
+                        },
+                        {
+                            "textMatches": "^[\"']?\\*[\"']?$"
+                        }
+                    ]
+                }
             }
         ]
     },

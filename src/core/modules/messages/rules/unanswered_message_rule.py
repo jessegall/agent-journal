@@ -10,10 +10,10 @@ from core.base.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 from core.modules.messages.models.enums.message_type import MessageType
 from core.modules.messages.models.message import Message
-from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_HELD
+from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL
 
-TOOL_CALLS_ALLOWED = 10
-COUNTDOWN_CALLS = 3
+ALLOWED_TOOL_CALL_COUNT = 10
+COUNTDOWN_CALL_COUNT = 3
 REPLY_LINE = re.compile(r"(?:^|-- '|&& |; )journal message ")
 
 
@@ -34,13 +34,13 @@ class UnansweredMessageRule(DriverRule):
         tool = hook.event.tool
         if not unanswered or (tool is not None and tool.shell is not None and REPLY_LINE.search(tool.shell.line)):
             return RuleAnswer.allowed()
-        numbers = ", ".join(str(message.id) for message in unanswered)
-        calls_left = TOOL_CALLS_ALLOWED - self.hook_calls.tool_call_count(hook.agent_id, unanswered[0].read_at)
-        if calls_left <= 0:
-            return RuleAnswer.refused(UNANSWERED_HELD.nudge(messages=numbers, message=unanswered[0].id))
-        return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(messages=numbers, count=calls_left) if calls_left <= COUNTDOWN_CALLS else UNANSWERED.nudge(messages=numbers))
+        message_numbers = ", ".join(str(message.id) for message in unanswered)
+        remaining_calls = ALLOWED_TOOL_CALL_COUNT - self.hook_calls.tool_call_count(hook.agent_id, unanswered[0].read_at)
+        if remaining_calls <= 0:
+            return RuleAnswer.refused(UNANSWERED_REFUSAL.nudge(messages=message_numbers, message=unanswered[0].id))
+        return RuleAnswer.with_nudges(UNANSWERED_COUNTDOWN.nudge(messages=message_numbers, count=remaining_calls) if remaining_calls <= COUNTDOWN_CALL_COUNT else UNANSWERED.nudge(messages=message_numbers))
 
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
-        replies = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
-        read = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", replies[0].created_at.text if replies else ""))
-        return tuple(read.oldest().all_rows())
+        agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
+        read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].created_at.text if agent_messages else ""))
+        return tuple(read_messages.oldest().all_rows())

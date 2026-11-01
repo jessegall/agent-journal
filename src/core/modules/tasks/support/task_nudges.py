@@ -9,4 +9,5 @@ TASK_AT_STOP = NudgeDeclaration("tasks.task_at_stop", NudgeType.REFUSAL, '{name}
 UNLOGGED_WRITES = NudgeDeclaration("tasks.unlogged_writes", NudgeType.REFUSAL, '{writes} writes since you logged {name}: writes wait for journal task log {task} "<what was done>"')
 INACTIVE_TASK = NudgeDeclaration("tasks.inactive_task", NudgeType.INSTRUCTION, 'nothing has happened for {minutes} minutes: carry on with {name}, or log why it waits', once_per_turn=False)
 
-TASK_NUDGES = [BACK_TO_TASK, BLOCKED_TASKS, TASK_IN_HAND, LOG_REQUEST, TASK_AT_STOP, UNLOGGED_WRITES, INACTIVE_TASK]
+MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.REMARK, 'log what the summary missed: journal task log {task} "<what>"')
+TASK_NUDGES = [MISSED_LOG, BACK_TO_TASK, BLOCKED_TASKS, TASK_IN_HAND, LOG_REQUEST, TASK_AT_STOP, UNLOGGED_WRITES, INACTIVE_TASK]
