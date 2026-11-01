@@ -37,6 +37,15 @@ class SecretValues:
         self.write({**current, **retired, variable: value})
         self.write_shown(self.shown() - {variable} if hidden else self.shown() | {variable})
 
+    def retire(self, variable: str, epoch_seconds: int) -> None:
+        current = self.values()
+        if variable not in current:
+            return
+        value = current.pop(variable)
+        retired = {f"{RETIRED_PREFIX}{variable}{RETIRED_TIME_MARK}{epoch_seconds}": value} if value and variable not in self.shown() else {}
+        self.write({**current, **retired})
+        self.write_shown(self.shown() - {variable})
+
     def shown(self) -> set[str]:
         path = self.folder.file(SHOWN_SUFFIX)
         return set(path.read_text().split()) if path is not None and path.is_file() else set()

@@ -28,7 +28,7 @@ class McpModule(Module):
     name = "journal.core.mcp"
     seed_reason = "a server is installed by the person, with their own accounts"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.secrets"]
+    dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.secrets"]
     models = [ModelDeclaration(McpServer, query=McpServerQuery, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]

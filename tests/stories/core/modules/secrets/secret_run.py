@@ -1,3 +1,4 @@
+from core.modules.secrets.support.secret_values import SecretValues
 from tests.stories.core.support.fixtures import UserJoined
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
@@ -87,6 +88,23 @@ def test_a_helper_is_refused_until_the_user_lets_helpers_have_the_secret(new_sto
 def test_a_program_that_fails_gives_its_output_and_its_exit_code(new_story):
     story = filled_story(new_story)
     story.expect_text("secret run 1 -- head -c 8 /no/such/file", "head ended with exit code 1", actor=story.agent)
+
+
+def test_only_a_person_removes_a_field_and_its_value_stays_only_to_be_masked(new_story):
+    story = filled_story(new_story)
+    values = story.container.get(SecretValues)
+    story.expect_refusal("secret update 1 --remove-field key", "only a person removes a field", actor=story.agent)
+    story.expect_rows("GITHUB_KEY" in values.values())
+    story.expect_success("secret update 1 --remove-field key", actor=story.user)
+    story.expect_rows("GITHUB_KEY" not in values.values(), VALUE in values.hidden_values())
+
+
+def test_a_shown_value_goes_with_its_field(new_story):
+    story = filled_story(new_story)
+    values = story.container.get(SecretValues)
+    values.put("GITHUB_NAME", "ada", False, 1)
+    values.retire("GITHUB_NAME", 2)
+    story.expect_rows("ada" not in values.values().values(), "GITHUB_NAME" not in values.shown())
 
 
 def test_a_secret_gains_and_loses_a_field_and_a_deleted_one_is_listed(new_story):
