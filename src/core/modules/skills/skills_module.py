@@ -51,6 +51,6 @@ class SkillsModule(Module):
     listeners = [SkillReadListener, CompactionResetListener, StartSkillsListener, SkillEventListener, SkillLoadedMarkListener, KeywordSkillsListener, SkillRequestListener]
     marks = SKILL_MARKS
     driver_rules = [SkillReadFirstRule, UnreadSkillStopRule, CommandSkillRule]
-    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
+    windows = [WindowDeclaration("skills.skills", "Skills", "skills.js", WindowLoading.COMPONENT, group="project", place=WindowPlace.AGENT, icon=WindowIcon.SKILL,
                                  reads=["agent-skill list", "skill list", "skill show"], events=["agent_skill.*"])]
     seeders = [SkillsSeeder]

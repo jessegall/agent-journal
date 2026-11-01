@@ -3,6 +3,7 @@ import {rememberedRef} from "../windows/rememberedState.js";
 import {computed, ref} from "vue";
 import Icon from "../kit/Icon.vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import NewEnvironment from "./NewEnvironment.vue";
 import Skeleton from "../kit/Skeleton.vue";
 
 // the left sidebar as version 4 drew it: a header with the project's mark, then Home and the windows the suite offers in one
@@ -15,12 +16,16 @@ const props = defineProps({
     project: {type: String, default: "agent-journal"},
     counts: {type: Object, default: () => ({})},
     open: {type: String, default: ""},
+    run: {type: Function, default: null},
 });
 const emit = defineEmits(["open"]);
+const drafting = ref(false);
+const openEnvironment = (name) => (window.location.search = `?environment=${encodeURIComponent(name)}`);
 const foldedNames = rememberedRef("sidebar-folded", []);
 const folded = computed(() => new Set(foldedNames.value));
-// every window stands in one group for now, in the order the suite lists them
-const sections = computed(() => (props.windows.length ? [{module: "windows", title: "Windows", windows: props.windows}] : []));
+// the windows in their groups, each in the order the suite lists them
+const GROUPS = [{module: "windows", title: "Windows", group: ""}, {module: "project", title: "Project", group: "project"}];
+const sections = computed(() => GROUPS.map(({group, ...section}) => ({...section, windows: props.windows.filter((window) => (window.group || "") === group)})).filter((section) => section.windows.length));
 
 // each window has its own address; a plain click on the home page opens it in a pane, any other click follows the address
 const pageOf = (name) => `?environment=${encodeURIComponent(props.current)}&page=${encodeURIComponent(name)}`;
@@ -76,6 +81,9 @@ function fold(key) {
                 Environments<Icon :name="folded.has('environments') ? 'right' : 'down'" :size="12" />
             </button>
             <template v-if="!folded.has('environments')">
+                <template v-if="run">
+                    <button type="button" class="item" data-new-environment @click="drafting = true"><Icon name="plus" :size="14" />New environment</button>
+                </template>
                 <template v-for="environment in environments" :key="environment.id">
                     <a :class="['item', {active: environment.name === current}]" :data-environment="environment.name" :href="`?environment=${environment.name}`">
                         <span class="dot" />{{ environment.name }}
@@ -84,6 +92,9 @@ function fold(key) {
             </template>
         </div>
         <p class="sidebar-foot">Agent journal</p>
+        <template v-if="drafting">
+            <NewEnvironment :run="run" @close="drafting = false" @made="openEnvironment" />
+        </template>
     </aside>
 </template>
 

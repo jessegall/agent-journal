@@ -50,5 +50,5 @@ class SecretsModule(Module):
                    SecretShowSubcommand, SecretRunSubcommand, SecretProposeSubcommand, SecretAllowSubcommand, SecretDeleteSubcommand, SecretRestoreSubcommand)
     guards = [SecretValueGuard]
     driver_rules = [SecretsFolderRule]
-    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, icon=WindowIcon.HASH,
+    windows = [WindowDeclaration("secrets.secrets", "Secrets", "secrets.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.HASH,
                                  reads=["secret list", "secret show"], runs=["secret fill", "secret allow", "secret make", "secret update", "secret delete", "secret restore"], events=["secret.*"])]

@@ -38,6 +38,7 @@ class WindowDeclaration:
     options: Sequence[ToggleOption | ChoiceOption] = ()
     count: str = ""
     shared_reads: Sequence[str] = ()
+    group: str = ""
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)

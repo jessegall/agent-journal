@@ -26,5 +26,5 @@ class TemplatesModule(Module):
     handlers = [MakeTemplateHandler]
     subcommands = (MakeTemplateSubcommand, TemplateShowSubcommand, TemplateListSubcommand)
     seeders = [TemplatesSeeder]
-    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, icon=WindowIcon.FILED,
+    windows = [WindowDeclaration("templates.templates", "Templates", "templates.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILED,
                                  reads=["template list", "template show"], events=["template.*"])]

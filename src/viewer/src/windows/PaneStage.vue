@@ -231,7 +231,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
 <template>
     <div class="stage-frame">
         <template v-if="sidebarShown">
-            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" @open="openView" />
+            <SidebarPages :project="project" :windows="catalogue.windows.value" :environments="environments" :current="environment" :counts="counts" :run="shellRead" @open="openView" />
         </template>
     <div class="pane-stage" @keydown="keyed">
         <template v-if="phone">

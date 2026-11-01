@@ -27,3 +27,4 @@ class WindowEntry:
     options: Sequence[Mapping[str, object]]
     count: str
     shared_reads: Sequence[str] = ()
+    group: str = ""

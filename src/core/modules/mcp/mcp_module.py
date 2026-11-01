@@ -32,5 +32,5 @@ class McpModule(Module):
     moves = [McpServersMove]
     handlers = [InstallServerHandler, GiveServerKeyHandler, RemoveServerHandler]
     subcommands = (McpListSubcommand, McpSuggestedSubcommand, McpInstallSubcommand, McpKeySubcommand, McpRemoveSubcommand, McpCheckSubcommand)
-    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, icon=WindowIcon.PLUGIN,
+    windows = [WindowDeclaration("mcp.integrations", "Integrations", "integrations.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PLUGIN,
                                  reads=["mcp list", "mcp suggested"], runs=["mcp install", "mcp key", "mcp remove"])]

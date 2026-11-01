@@ -52,7 +52,7 @@ class PhoneModule(Module):
                              secret=True, scope=SettingScope.PROJECT),
                 SettingValue("push-public-key", "Push public key", "The public half of the key pair, which a phone subscribes to notices with.", SettingType.TEXT,
                              secret=True, scope=SettingScope.PROJECT)]
-    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, icon=WindowIcon.PHONE,
+    windows = [WindowDeclaration("phone.phones", "Phones", "phones.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.PHONE,
                                  reads=["phone list"], runs=["phone pair", "phone unpair"], events=["phone.*"])]
     seeders = [PhoneSeeder]
     moves = [PhoneMove]
