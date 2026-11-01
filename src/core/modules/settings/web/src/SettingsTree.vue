@@ -56,7 +56,8 @@ function jump(module) {
 
 // the nav marks the module at the top of the scrolled list
 function scrolled(event) {
-    const top = event.target.getBoundingClientRect?.().top ?? 0;
+    if (!event.target.contains?.(sections.value)) return;
+    const top = event.target.getBoundingClientRect().top;
     const passed = [...(sections.value?.querySelectorAll("[data-module]") ?? [])].filter((section) => section.getBoundingClientRect().top <= top + SPY_MARGIN);
     current.value = passed.at(-1)?.dataset.module ?? modules.value[0] ?? "";
 }
@@ -66,8 +67,14 @@ function slashFocus(event) {
     event.preventDefault();
     field.value?.focus();
 }
-onMounted(() => window.addEventListener("keydown", slashFocus));
-onUnmounted(() => window.removeEventListener("keydown", slashFocus));
+onMounted(() => {
+    window.addEventListener("keydown", slashFocus);
+    document.addEventListener("scroll", scrolled, {capture: true, passive: true});
+});
+onUnmounted(() => {
+    window.removeEventListener("keydown", slashFocus);
+    document.removeEventListener("scroll", scrolled, {capture: true});
+});
 
 async function saved(words) {
     const result = await context.run(words);
@@ -99,7 +106,7 @@ async function saved(words) {
         <template v-else-if="loaded && !rows.length">
             <p class="settings-empty">No module declares a setting.</p>
         </template>
-        <div class="settings-body" @scroll.capture.passive="scrolled">
+        <div class="settings-body">
             <nav class="settings-nav" aria-label="Modules">
                 <template v-for="module in modules" :key="module">
                     <button type="button" :class="['settings-nav-item', {current: module === (current || modules[0])}]" :data-jump="module" @click="jump(module)">{{ heading(module) }}</button>

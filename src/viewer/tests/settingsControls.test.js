@@ -118,6 +118,7 @@ test("a list is edited one on each line and saved with commas", async () => {
 test("the nav marks the first module, and the one scrolled to the top", async () => {
     const {element} = await drawnWith([row("shop.size"), row("till.size", {module: "till"})]);
     expect(element.querySelector(".settings-nav-item.current").dataset.jump).toBe("shop");
+    document.body.append(element);
     const sections = element.querySelector("[data-settings-sections]");
     sections.getBoundingClientRect = () => ({top: 100});
     element.querySelector('[data-module="shop"]').getBoundingClientRect = () => ({top: -300});
