@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, onUnmounted, ref} from "vue";
+import {computed, nextTick, onMounted, onUnmounted, ref, watch} from "vue";
 import DumpForm from "./DumpForm.vue";
 import {Btn, DockStack, Icon, MarkHost, MessageCard, RowList, markDeclaration, fetchDockDeclarations, fetchMarkDeclarations, interleaved, shownMarks, useRows, SHORT_CHAT, dockOpening} from "@journal/window-kit";
 
@@ -13,10 +13,12 @@ const rows = computed(() => interleaved(messages.value, marks.value));
 // the tool the agent has in hand: the newest hook call is the start of a tool, which no later call has ended
 const runningTool = computed(() => (latestCalls.value[0]?.hook === "pre_tool_use" ? latestCalls.value[0].tool : ""));
 const FOLD_AFTER_MS = 180;
+const FOOT_PIXELS = 40;
 const chat = ref(null);
 const docksOpen = ref(true);
 const short = ref(false);
 let lastTop = 0;
+let atFoot = true;
 let folding = 0;
 let sizeWatch = null;
 onMounted(() => {
@@ -49,6 +51,7 @@ function followScroll() {
     atTop.value = !scroller.value || scroller.value.scrollTop < 8;
     if (!scroller.value) return;
     const {scrollTop, scrollHeight, clientHeight} = scroller.value;
+    atFoot = scrollHeight - scrollTop - clientHeight < FOOT_PIXELS;
     const opening = dockOpening({top: scrollTop, before: lastTop, height: scrollHeight, shown: clientHeight});
     lastTop = scrollTop;
     if (opening === null) return;
@@ -56,6 +59,11 @@ function followScroll() {
     if (opening) docksOpen.value = true;
     else folding = setTimeout(() => (docksOpen.value = false), FOLD_AFTER_MS);
 }
+// the newest message and mark are at the foot: a chat that was at its foot stays there as rows land, one scrolled up is left where it is
+watch([rows, loaded], async () => {
+    await nextTick();
+    if (atFoot && scroller.value) scroller.value.scrollTop = scroller.value.scrollHeight;
+});
 const scrollToTop = () => scroller.value?.scrollTo({top: 0, behavior: "smooth"});
 const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#open=${notice.link}`);
 </script>
