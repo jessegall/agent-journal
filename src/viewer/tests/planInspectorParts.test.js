@@ -1,0 +1,67 @@
+import {createApp, h, nextTick} from "vue";
+import {afterEach, expect, test} from "vitest";
+import PlanInspector from "../src/resource/PlanInspector.vue";
+import PlanReviews from "../src/resource/PlanReviews.vue";
+import PlanTimeline from "../src/resource/PlanTimeline.vue";
+
+afterEach(() => (document.body.innerHTML = ""));
+
+const settle = async () => {
+    for (let round = 0; round < 4; round++) await nextTick();
+    await new Promise((resolve) => setTimeout(resolve));
+};
+
+async function drawn(component, answer, props = {}) {
+    const element = document.createElement("div");
+    createApp({render: () => h(component, {id: 3, read: async () => answer, ...props})}).mount(element);
+    await settle();
+    return element;
+}
+
+const moment = (kind, task_id, text = "") => ({time: "2026-11-01T10:00:00Z", kind, task_id, title: `Task ${task_id}`, text});
+
+test("the timeline shows each moment with its word, opens the task, and says what it wrote", async () => {
+    const picked = [];
+    const element = await drawn(PlanTimeline, {ok: true, value: {moments: [moment("completed", 7, "It works"), moment("made", 7)]}}, {onSelect: (id) => picked.push(id)});
+    const rows = element.querySelectorAll("[data-plan-moment]");
+    expect(rows.length).toBe(2);
+    expect(rows[0].textContent).toContain("Finished");
+    expect(rows[0].textContent).toContain("It works");
+    rows[0].querySelector("button").click();
+    expect(picked).toEqual([7]);
+});
+
+test("a plan with no moments says so, and a refused read says why", async () => {
+    expect((await drawn(PlanTimeline, {ok: true, value: {moments: []}})).textContent).toContain("Nothing has happened");
+    expect((await drawn(PlanTimeline, {ok: false, error: "no such plan"})).textContent).toContain("no such plan");
+});
+
+test("review rounds show the plan's reviews only, with their reports", async () => {
+    const rows = [{id: 1, subject_model: "plan", state: "reported", report: "Phase two is too large"}, {id: 2, subject_model: "task", state: "queued", report: ""}];
+    const element = await drawn(PlanReviews, {ok: true, value: {rows}});
+    expect(element.querySelectorAll("[data-plan-review]").length).toBe(1);
+    expect(element.textContent).toContain("Round 1");
+    expect(element.textContent).toContain("Phase two is too large");
+});
+
+test("a plan with no reviews shows no rounds", async () => {
+    expect((await drawn(PlanReviews, {ok: true, value: {rows: []}})).querySelector("[data-plan-reviews]")).toBeNull();
+});
+
+test("the inspector tags a task a worker holds and switches to the timeline", async () => {
+    const lines = [];
+    const plan = {id: 3, title: "Cart", state: "started", total: 1, finished: 0, current_phase: 1, phases: [{id: 1, title: "Build", goal: "", checkpoint: false, tasks: [{id: 7, title: "Cart", state: "started", worker_id: 44}, {id: 8, title: "Tax", state: "open", worker_id: null}]}]};
+    const read = async (line) => {
+        lines.push(line[1]);
+        return line[1] === "inspect" ? {ok: true, value: plan} : line[1] === "timeline" ? {ok: true, value: {moments: [moment("made", 7)]}} : {ok: true, value: {rows: []}};
+    };
+    const element = document.createElement("div");
+    createApp({render: () => h(PlanInspector, {id: 3, read})}).directive("tip", {}).mount(element);
+    await settle();
+    expect(element.querySelectorAll("[data-plan-worker]").length).toBe(1);
+    expect(element.querySelector("[data-plan-worker]").textContent).toBe("Worker 44");
+    [...element.querySelectorAll("button")].find((button) => button.textContent.trim() === "Timeline").click();
+    await settle();
+    expect(lines).toContain("timeline");
+    expect(element.querySelector("[data-plan-timeline]")).not.toBeNull();
+});

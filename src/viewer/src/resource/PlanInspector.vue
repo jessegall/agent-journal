@@ -1,4 +1,7 @@
 <script setup>
+import PlanReviews from "./PlanReviews.vue";
+import PlanTimeline from "./PlanTimeline.vue";
+import Segmented from "../kit/Segmented.vue";
 import {computed, ref, watch} from "vue";
 import Btn from "../kit/Btn.vue";
 import CloseButton from "../kit/CloseButton.vue";
@@ -14,6 +17,11 @@ import RowMoves from "./RowMoves.vue";
 const CLOSED = new Set(["completed", "cancelled"]);
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, backed: Boolean});
 const emit = defineEmits(["close", "back", "select"]);
+const VIEWS = [
+    {key: "phases", label: "Phases"},
+    {key: "timeline", label: "Timeline"},
+];
+const view = ref("phases");
 const plan = ref(null);
 const failure = ref("");
 let reading = 0;
@@ -78,7 +86,13 @@ watch(() => props.id, () => {
                         </Folded>
                     </div>
                 </template>
-                <ol class="phases">
+                <div class="plan-views">
+                    <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+                </div>
+                <template v-if="view === 'timeline'">
+                    <PlanTimeline :id="id" :read="read" @select="emit('select', $event)" />
+                </template>
+                <ol v-show="view === 'phases'" class="phases">
                     <template v-for="(phase, index) in plan.phases" :key="phase.id">
                         <li :class="['phase', {current: index + 1 === plan.current_phase, done: isDone(phase)}]" data-resource-phase>
                             <div class="phead">
@@ -99,17 +113,37 @@ watch(() => props.id, () => {
                                     <Dot :kind="task.state" />
                                     <span class="row-id">#{{ task.id }}</span>
                                     <span class="row-title">{{ task.title }}</span>
+                                    <template v-if="task.worker_id">
+                                        <span class="holder" data-plan-worker>Worker {{ task.worker_id }}</span>
+                                    </template>
                                 </button>
                             </template>
                         </li>
                     </template>
                 </ol>
+                <PlanReviews :id="id" :read="read" />
             </template>
         </div>
     </article>
 </template>
 
 <style scoped>
+.plan-views {
+    display: flex;
+    margin: 16px 0 0;
+}
+
+.holder {
+    flex: none;
+    margin-left: auto;
+    padding: 0 7px;
+    border-radius: 99px;
+    background: var(--hover);
+    color: var(--text-3);
+    font-size: 11px;
+    line-height: 18px;
+}
+
 .plan-inspector {
     display: flex;
     flex: 1;

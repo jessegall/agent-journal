@@ -4,11 +4,12 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class OutlineTask:
-    """A task as a plan's outline shows it."""
+    """A task as a plan's outline shows it, with the worker that holds it when one does."""
 
     id: int
     title: str
     state: str
+    worker_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -22,7 +23,7 @@ class OutlinePhase:
     checkpoint: bool = False
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.id, "title": self.title, "goal": self.goal, "checkpoint": self.checkpoint, "tasks": [{"id": task.id, "title": task.title, "state": task.state} for task in self.tasks]}
+        return {"id": self.id, "title": self.title, "goal": self.goal, "checkpoint": self.checkpoint, "tasks": [{"id": task.id, "title": task.title, "state": task.state, "worker_id": task.worker_id} for task in self.tasks]}
 
 
 @dataclass(frozen=True)

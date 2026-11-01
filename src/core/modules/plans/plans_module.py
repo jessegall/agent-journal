@@ -36,6 +36,7 @@ from core.modules.plans.upgrade.plans_move import PlansMove
 from core.modules.plans.models.plan import Plan
 from core.modules.plans.listeners.plan_move_mark_listener import PlanMoveMarkListener
 from core.modules.plans.listeners.started_plan_dock_listener import StartedPlanDockListener
+from core.modules.plans.commands.plan_timeline.plan_timeline_subcommand import PlanTimelineSubcommand
 from core.modules.plans.rules.plan_order_rule import PlanOrderRule
 from core.modules.plans.rules.plan_state_rule import PlanStateRule
 from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
@@ -56,7 +57,7 @@ class PlansModule(Module):
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
-    subcommands = (PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = (PlanTimelineSubcommand, PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress, PlanCard]
     guards = [PhasePositionGuard, PlanCloseGuard]
@@ -66,7 +67,7 @@ class PlansModule(Module):
     nudges = PLAN_NUDGES
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
     docks = PLAN_DOCKS
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan timeline", "review list", "plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]
