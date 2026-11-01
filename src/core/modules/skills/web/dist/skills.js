@@ -99,7 +99,7 @@ const _ = (e, l) => {
 }, X = /* @__PURE__ */ _(U, [["__scopeId", "data-v-b646e030"]]), ee = {
   __name: "SkillRows",
   setup(e) {
-    const l = T(), { rows: o, failure: i, loaded: n } = V(`agent-skill list --agent ${l.agent}`, ["agent_skill.*"]), s = v("loaded"), a = v([]), r = v(null), w = v(""), y = { loaded: E, catalogue: G, text: X }, g = b(() => ({
+    const l = T(), { rows: o, failure: i, loaded: n } = V(l.agent ? `agent-skill list --agent ${l.agent}` : "agent-skill list", ["agent_skill.*"]), s = v("loaded"), a = v([]), r = v(null), w = v(""), g = { loaded: E, catalogue: G, text: X }, y = b(() => ({
       loaded: { rows: o.value, failure: i.value, answered: n.value, onOpen: m, onBrowse: h },
       catalogue: { rows: a.value, onOpen: m, onBack: f },
       text: { skill: r.value, failure: w.value, onBack: f }
@@ -115,7 +115,7 @@ const _ = (e, l) => {
       const d = await l.read(`skill show ${u}`);
       w.value = d.ok ? "" : d.error, r.value = d.ok ? d.value : null, s.value = "text";
     }
-    return (u, d) => (c(), N(O(y[s.value]), R(q(g.value)), null, 16));
+    return (u, d) => (c(), N(O(g[s.value]), R(q(y.value)), null, 16));
   }
 };
 export {

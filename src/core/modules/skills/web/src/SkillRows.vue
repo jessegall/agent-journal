@@ -6,7 +6,7 @@ import SkillCatalogue from "./SkillCatalogue.vue";
 import SkillText from "./SkillText.vue";
 
 const context = useWindow();
-const {rows: loaded, failure, loaded: answered} = useRows(`agent-skill list --agent ${context.agent}`, ["agent_skill.*"]);
+const {rows: loaded, failure, loaded: answered} = useRows(context.agent ? `agent-skill list --agent ${context.agent}` : "agent-skill list", ["agent_skill.*"]);
 const view = ref("loaded");
 const catalogue = ref([]);
 const opened = ref(null);
