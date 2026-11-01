@@ -1,13 +1,15 @@
 <script setup>
-import {RowList, useRows} from "@journal/window-kit";
+import {RowList, useListTools, ListTools, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded} = useRows("suggestion list", ["suggestion.*"]);
+const tools = useListTools(rows, {title: (row) => row.title});
 
 const answerText = (row) => (row.answer ? `Answer: ${row.answer}` : "Answer: none yet");
 </script>
 
 <template>
-    <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No suggestions yet">
+    <ListTools :tools="tools" placeholder="Search the suggestions" />
+    <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No suggestions yet">
         <template #default="{row}">
             <div class="suggestion" :data-row="row.id">
                 <span class="title">{{ row.title }}</span>

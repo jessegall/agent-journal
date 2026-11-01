@@ -1,8 +1,9 @@
 <script setup>
 import {ref} from "vue";
-import {RowList, useRows} from "@journal/window-kit";
+import {RowList, useListTools, ListTools, useRows} from "@journal/window-kit";
 
 const {rows, failure, loaded, load, context} = useRows("question list", ["question.*"]);
+const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
 const typed = ref({});
 const runFailure = ref("");
 
@@ -28,7 +29,8 @@ function choiceLabel(row, option) {
 
 <template>
     <div class="questions">
-        <RowList :rows="rows" :failure="failure" :loaded="loaded" empty="No open questions">
+        <ListTools :tools="tools" placeholder="Search the questions" />
+        <RowList :rows="tools.shown.value" :failure="failure" :loaded="loaded" empty="No open questions">
             <template #default="{row}">
                 <div class="question" :data-state="row.state">
                     <p class="question-text">{{ row.text }}</p>

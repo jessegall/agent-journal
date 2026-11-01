@@ -1,35 +1,41 @@
 /* @code-commandments-generated */
-if (!document.getElementById("window-styles-90a5605103c7")) { const style = document.createElement("style"); style.id = "window-styles-90a5605103c7"; style.textContent = ".suggestion[data-v-6c641fb2]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-6c641fb2]{flex:1}.answer[data-v-6c641fb2]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
-import { openBlock as l, createBlock as d, unref as t, withCtx as u, createElementVNode as i, toDisplayString as _ } from "vue";
-import { useRows as g, RowList as p } from "@journal/window-kit";
-const w = (e, o) => {
-  const s = e.__vccOpts || e;
-  for (const [n, a] of o)
-    s[n] = a;
-  return s;
-}, f = ["data-row"], m = { class: "title" }, h = { class: "answer" }, x = {
+if (!document.getElementById("window-styles-95931b8e742e")) { const style = document.createElement("style"); style.id = "window-styles-95931b8e742e"; style.textContent = ".suggestion[data-v-f4d06b4c]{display:flex;flex:1;align-items:baseline;gap:10px;font-size:13px}.title[data-v-f4d06b4c]{flex:1}.answer[data-v-f4d06b4c]{color:var(--text-3);font-size:12px}\n"; document.head.appendChild(style); }
+import { openBlock as _, createElementBlock as g, Fragment as p, createVNode as i, unref as t, withCtx as w, createElementVNode as c, toDisplayString as u } from "vue";
+import { useRows as f, useListTools as m, ListTools as h, RowList as v } from "@journal/window-kit";
+const x = (n, a) => {
+  const e = n.__vccOpts || n;
+  for (const [l, o] of a)
+    e[l] = o;
+  return e;
+}, y = ["data-row"], R = { class: "title" }, S = { class: "answer" }, k = {
   __name: "SuggestionRows",
-  setup(e) {
-    const { rows: o, failure: s, loaded: n } = g("suggestion list", ["suggestion.*"]), a = (r) => r.answer ? `Answer: ${r.answer}` : "Answer: none yet";
-    return (r, y) => (l(), d(t(p), {
-      rows: t(o),
-      failure: t(s),
-      loaded: t(n),
-      empty: "No suggestions yet"
-    }, {
-      default: u(({ row: c }) => [
-        i("div", {
-          class: "suggestion",
-          "data-row": c.id
-        }, [
-          i("span", m, _(c.title), 1),
-          i("span", h, _(a(c)), 1)
-        ], 8, f)
-      ]),
-      _: 1
-    }, 8, ["rows", "failure", "loaded"]));
+  setup(n) {
+    const { rows: a, failure: e, loaded: l } = f("suggestion list", ["suggestion.*"]), o = m(a, { title: (s) => s.title }), d = (s) => s.answer ? `Answer: ${s.answer}` : "Answer: none yet";
+    return (s, L) => (_(), g(p, null, [
+      i(t(h), {
+        tools: t(o),
+        placeholder: "Search the suggestions"
+      }, null, 8, ["tools"]),
+      i(t(v), {
+        rows: t(o).shown.value,
+        failure: t(e),
+        loaded: t(l),
+        empty: "No suggestions yet"
+      }, {
+        default: w(({ row: r }) => [
+          c("div", {
+            class: "suggestion",
+            "data-row": r.id
+          }, [
+            c("span", R, u(r.title), 1),
+            c("span", S, u(d(r)), 1)
+          ], 8, y)
+        ]),
+        _: 1
+      }, 8, ["rows", "failure", "loaded"])
+    ], 64));
   }
-}, k = /* @__PURE__ */ w(x, [["__scopeId", "data-v-6c641fb2"]]);
+}, A = /* @__PURE__ */ x(k, [["__scopeId", "data-v-f4d06b4c"]]);
 export {
-  k as default
+  A as default
 };
