@@ -695,8 +695,8 @@ const oa = ["stroke-width", "innerHTML"], Ce = {
 }, ma = /* @__PURE__ */ X(pa, [["__scopeId", "data-v-6dc92808"]]);
 function ga(e) {
   if (!e) return "";
-  const t = Math.max(0, Date.now() / 1e3 - e);
-  return t < 60 ? "now" : t < 3600 ? `${Math.floor(t / 60)}m` : t < 86400 ? `${Math.floor(t / 3600)}h` : `${Math.floor(t / 86400)}d`;
+  const t = typeof e == "string" ? Date.parse(e) / 1e3 : e, n = Math.max(0, Date.now() / 1e3 - t);
+  return n < 60 ? "now" : n < 3600 ? `${Math.floor(n / 60)}m` : n < 86400 ? `${Math.floor(n / 3600)}h` : `${Math.floor(n / 86400)}d`;
 }
 function En(e) {
   const t = ga(e);
