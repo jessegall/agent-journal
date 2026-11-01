@@ -14,6 +14,7 @@ from core.modules.plans.commands.place_phase.place_phase_handler import PlacePha
 from core.modules.plans.commands.make_phase.make_phase_subcommand import MakePhaseSubcommand
 from core.modules.plans.commands.plan_board.plan_board_subcommand import PlanBoardSubcommand
 from core.modules.plans.commands.plan_outline.plan_outline_subcommand import PlanOutlineSubcommand
+from core.modules.plans.commands.plan_inspect.plan_inspect_subcommand import PlanInspectSubcommand
 from core.modules.plans.commands.plan_place.plan_place_subcommand import PlanPlaceSubcommand
 from core.modules.plans.commands.move_phase.move_phase_subcommand import MovePhaseSubcommand
 from core.modules.plans.commands.place_phase.place_phase_subcommand import PlacePhaseSubcommand
@@ -49,7 +50,7 @@ class PlansModule(Module):
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)
     moves = [PlansMove]
-    subcommands = (PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
+    subcommands = (PlanBoardSubcommand, PlanOutlineSubcommand, PlanPlaceSubcommand, PlanInspectSubcommand, MakePhaseSubcommand, MovePhaseSubcommand,
                    PlacePhaseSubcommand, PlanProgressSubcommand)
     views = [PlanTask, PlanProgress]
     guards = [PhasePositionGuard, PlanCloseGuard]
@@ -57,7 +58,7 @@ class PlansModule(Module):
                  NextPlanTaskStarterListener, PlanMoveMarkListener, StartedPlanDockListener)
     marks = PLAN_MARKS
     docks = PLAN_DOCKS
-    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "phase list", "phase show"],
+    windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
                                  events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

@@ -19,9 +19,10 @@ class OutlinePhase:
     title: str
     goal: str
     tasks: tuple[OutlineTask, ...]
+    checkpoint: bool = False
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.id, "title": self.title, "goal": self.goal, "tasks": [{"id": task.id, "title": task.title, "state": task.state} for task in self.tasks]}
+        return {"id": self.id, "title": self.title, "goal": self.goal, "checkpoint": self.checkpoint, "tasks": [{"id": task.id, "title": task.title, "state": task.state} for task in self.tasks]}
 
 
 @dataclass(frozen=True)

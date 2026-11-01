@@ -49,6 +49,18 @@ def test_a_task_in_no_plan_has_no_place(new_story):
     assert json.loads(story.run("plan place 1 --json", actor=story.user).output_text)["plan_id"] == 0
 
 
+def test_the_plan_inspector_reads_a_plan_with_its_phases_and_how_far_it_has_come_in_one_answer(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('plan make "Checkout" --environment main --brief "Why it moves"', actor=story.agent)
+    story.run('phase make --plan 1 "First"', actor=story.agent)
+    story.run('task make "Fix the cart" --environment main', actor=story.agent)
+    story.run("phase place 1 --phase 1", actor=story.agent)
+    answer = json.loads(story.run("plan inspect 1 --json", actor=story.user).output_text)
+    assert (answer["title"], answer["brief"], answer["state"], answer["total"], answer["finished"], answer["current_phase"]) == ("Checkout", "Why it moves", "draft", 1, 0, 0)
+    assert answer["phases"][0]["title"] == "First"
+    assert answer["phases"][0]["tasks"][0]["title"] == "Fix the cart"
+
+
 def test_the_tasks_window_and_the_shell_may_read_and_change_a_task(new_story):
     window = WindowStory(new_story(fixture=UserJoined))
     window.expect_window_allowed("tasks.tasks", "task inspect 1")
@@ -58,4 +70,5 @@ def test_the_tasks_window_and_the_shell_may_read_and_change_a_task(new_story):
     window.expect_window_allowed("tasks.tasks", "task start 1")
     window.expect_window_allowed("viewer.shell", "task inspect 1")
     window.expect_window_allowed("viewer.shell", "plan place 1")
+    window.expect_window_allowed("viewer.shell", "plan inspect 1")
     window.expect_window_allowed("viewer.shell", "task edit 1 --priority high")

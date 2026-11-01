@@ -4,6 +4,10 @@ import ResourcePanel from "../src/resource/ResourcePanel.vue";
 import {cliOf, movesOf} from "../src/domain/resourceKinds.js";
 
 const later = () => new Promise((resolve) => setTimeout(resolve, 30));
+globalThis.ResizeObserver ??= class {
+    observe() {}
+    disconnect() {}
+};
 const shown = () => document.body.querySelector("[data-resource-panel]");
 let app = null;
 
@@ -34,8 +38,7 @@ afterEach(async () => {
 });
 
 const PLAN = {
-    "plan show 5": {ok: true, value: {id: 5, title: "Move the cart", brief: "Why the **cart** moves", state: "ready"}},
-    "plan outline 5": {ok: true, value: {plan_id: 5, phases: [{id: 2, title: "First phase", goal: "The goal", tasks: [{id: 7, title: "Fix the totals", state: "open"}]}]}},
+    "plan inspect 5": {ok: true, value: {id: 5, title: "Move the cart", brief: "Why the **cart** moves", state: "ready", reason: "", total: 1, finished: 0, current_phase: 0, phases: [{id: 2, title: "First phase", goal: "The goal", checkpoint: false, tasks: [{id: 7, title: "Fix the totals", state: "open"}]}]}},
     "task inspect 7": {ok: true, value: {id: 7, title: "Fix the totals", state: "open", priority: "normal", waits: [], logs: []}},
     "plan approve 5": {ok: true, value: {}},
 };
@@ -55,6 +58,21 @@ test("a plan opens with its document, its phases and its tasks, and a task opens
     shown().querySelector("[data-resource-back]").click();
     await later();
     expect(shown().querySelector("[data-resource-title]").textContent).toBe("Move the cart");
+});
+
+test("a plan shows how far it has come, the phase it is in and which phases are finished", async () => {
+    await opened("#?open=plans:6", answering({"plan inspect 6": {ok: true, value: {id: 6, title: "Move the cart", brief: "", state: "started", reason: "", total: 3, finished: 1, current_phase: 2, phases: [
+        {id: 1, title: "First", goal: "", checkpoint: false, tasks: [{id: 1, title: "One", state: "completed"}]},
+        {id: 2, title: "Second", goal: "They pass", checkpoint: true, tasks: [{id: 2, title: "Two", state: "started"}, {id: 3, title: "Three", state: "open"}]},
+    ]}}}));
+    expect(shown().querySelector("[data-plan-status]").textContent).toContain("phase 2 of 2");
+    expect(shown().querySelector("[data-plan-progress]").textContent).toContain("1 of 3 done");
+    const [first, second] = shown().querySelectorAll("[data-resource-phase]");
+    expect(first.classList.contains("done")).toBe(true);
+    expect(first.querySelector(".row").classList.contains("completed")).toBe(true);
+    expect(second.classList.contains("current")).toBe(true);
+    expect(second.textContent).toContain("checkpoint");
+    expect(second.textContent).toContain("0/2");
 });
 
 test("a plan's moves follow its state and run its line, and the close button shuts the panel", async () => {

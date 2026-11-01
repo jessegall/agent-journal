@@ -4,7 +4,7 @@ import Btn from "../kit/Btn.vue";
 import {movesOf} from "../domain/resourceKinds.js";
 
 // what a person can do to a row in its state, as buttons along the foot of its panel; a move that needs words asks for them first
-const props = defineProps({kind: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, default: null}, read: {type: Function, required: true}});
+const props = defineProps({kind: {type: String, required: true}, id: {type: Number, required: true}, row: {type: Object, default: null}, read: {type: Function, required: true}, inline: Boolean});
 const emit = defineEmits(["done"]);
 const moves = computed(() => movesOf(props.kind, props.row));
 const refusal = ref("");
@@ -32,7 +32,7 @@ defineExpose({moves, press});
 
 <template>
     <template v-if="moves.length">
-        <footer class="foot">
+        <footer :class="['foot', {inline}]">
             <template v-if="refusal">
                 <p class="refusal" role="alert" data-resource-refusal>{{ refusal }}</p>
             </template>
@@ -60,6 +60,13 @@ defineExpose({moves, press});
     padding: 10px 16px;
     border-top: 1px solid var(--border);
     background: var(--raised);
+}
+
+.foot.inline {
+    margin: 8px 0 16px;
+    padding: 0;
+    border: 0;
+    background: none;
 }
 
 .moves,

@@ -3,8 +3,8 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
-import SwitchCase from "../kit/SwitchCase.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
+import PlanInspector from "./PlanInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
 
@@ -14,11 +14,11 @@ const props = defineProps({read: {type: Function, required: true}});
 const opened = computed(() => route.value.open);
 const kind = computed(() => (opened.value ? cliOf(opened.value.table) : ""));
 const row = ref(null);
-const phases = ref([]);
 const failure = ref("");
 let reading = 0;
 
 const LONG_KINDS = new Set(["plan", "doc", "report"]);
+const OWN_INSPECTORS = new Set(["task", "plan"]);
 const wide = computed(() => LONG_KINDS.has(kind.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (kind.value === "question" ? row.value?.text : "") || "");
@@ -29,17 +29,13 @@ async function load() {
     const open = opened.value;
     const turn = ++reading;
     row.value = null;
-    phases.value = [];
     failure.value = "";
-    if (!open || cliOf(open.table) === "task") return;
+    if (!open || OWN_INSPECTORS.has(cliOf(open.table))) return;
     const name = cliOf(open.table);
     const answer = await props.read([name, "show", String(open.id)]);
     if (turn !== reading) return;
     failure.value = answer.ok ? "" : answer.error;
     row.value = answer.ok ? answer.value : null;
-    if (name !== "plan" || !answer.ok) return;
-    const outline = await props.read(["plan", "outline", String(open.id)]);
-    if (turn === reading && outline.ok) phases.value = outline.value.phases;
 }
 
 watch(() => `${opened.value?.table}:${opened.value?.id}`, load, {immediate: true});
@@ -57,6 +53,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                 <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
                     <template v-if="kind === 'task'">
                         <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                    </template>
+                    <template v-else-if="kind === 'plan'">
+                        <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
                     </template>
                     <template v-else>
                     <header class="head">
@@ -83,32 +82,12 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                             <template v-if="html">
                                 <div class="md text" data-resource-text v-html="html" />
                             </template>
-                            <SwitchCase :value="kind">
-                                <template #plan>
-                                <template v-for="phase in phases" :key="phase.id">
-                                    <section class="section" data-resource-phase>
-                                        <h3>{{ phase.title }}</h3>
-                                        <template v-if="phase.goal">
-                                            <p class="note">{{ phase.goal }}</p>
-                                        </template>
-                                        <template v-for="task in phase.tasks" :key="task.id">
-                                            <button type="button" class="line" data-resource-task @click="peek('tasks', task.id)">
-                                                <span class="line-title">{{ task.title }}</span>
-                                                <span class="note">{{ task.state }}</span>
-                                            </button>
-                                        </template>
-                                    </section>
+                            <section class="section" data-resource-fields>
+                                <template v-for="[name, value] in fields" :key="name">
+                                    <p class="field-name">{{ name }}</p>
+                                    <p class="field-value">{{ value }}</p>
                                 </template>
-                            </template>
-                            <template #default>
-                                <section class="section" data-resource-fields>
-                                    <template v-for="[name, value] in fields" :key="name">
-                                        <p class="field-name">{{ name }}</p>
-                                        <p class="field-value">{{ value }}</p>
-                                    </template>
-                                </section>
-                            </template>
-                            </SwitchCase>
+                            </section>
                         </template>
                     </div>
                     <RowMoves :kind="kind" :id="opened.id" :row="row" :read="read" @done="load" />
