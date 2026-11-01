@@ -33,7 +33,9 @@ def test_a_stop_during_a_running_request_lets_it_finish_while_an_idle_connection
         server.request_stop()
         draining = threading.Thread(target=lambda: server.drain(DRAIN_SECONDS))
         draining.start()
-        assert idle.sock is not None and idle.sock.recv(1) == b"", "the idle connection was not closed"
+        assert idle.sock is not None
+        idle.sock.settimeout(WAIT_SECONDS)
+        assert idle.sock.recv(1) == b"", "the idle connection was not closed"
         released.set()
         draining.join(WAIT_SECONDS)
         runner.join(WAIT_SECONDS)

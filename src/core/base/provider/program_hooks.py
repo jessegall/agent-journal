@@ -29,9 +29,7 @@ class ProgramHooks:
 
     def write(self, runner: str, root: Path) -> None:
         settings = self.settings()
-        stored_hooks = settings.get("hooks")
-        hooks: dict[str, list[object]] = {str(event): [block for block in blocks if not self.is_journals(block)] for event, blocks in stored_hooks.items()
-                                          if is_list(blocks)} if is_mapping(stored_hooks) else {}
+        hooks = self.without_journals(settings)
         for event in self.events:
             hooks.setdefault(event, []).append({"matcher": "", "hooks": [{"type": "command", "command": f'{runner} {self.program} "{root}"', "timeout": self.timeout_seconds,
                                                                      **self.entry_fields}]})
@@ -46,6 +44,13 @@ class ProgramHooks:
     def settings(self) -> dict[object, object]:
         loaded: object = json.loads(self.path.read_text() or "{}") if self.path.is_file() else {}
         return dict(loaded) if is_mapping(loaded) else {}
+
+    @staticmethod
+    def without_journals(settings: Mapping[object, object]) -> dict[str, list[object]]:
+        """The hooks a settings object holds, event by event, without the blocks that are the journal's."""
+        stored_hooks = settings.get("hooks")
+        return {str(event): [block for block in blocks if not ProgramHooks.is_journals(block)] for event, blocks in stored_hooks.items()
+                if is_list(blocks)} if is_mapping(stored_hooks) else {}
 
     @staticmethod
     def is_journals(block: object) -> bool:

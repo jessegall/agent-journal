@@ -49,9 +49,8 @@ class HookSwitch:
             self.without_journal_hooks(self.root / name)
         for name in restored:
             current, kept = self.settings(self.root / name), self.settings(self.saved / name)
-            current_hooks, kept_hooks = current.get("hooks"), kept.get("hooks")
-            hooks: dict[str, list[object]] = {str(event): [block for block in blocks if not ProgramHooks.is_journals(block)]
-                                              for event, blocks in (current_hooks.items() if is_mapping(current_hooks) else []) if is_list(blocks)}
+            kept_hooks = kept.get("hooks")
+            hooks = ProgramHooks.without_journals(current)
             for event, blocks in (kept_hooks.items() if is_mapping(kept_hooks) else []):
                 if is_list(blocks):
                     hooks.setdefault(str(event), []).extend(block for block in blocks if ProgramHooks.is_journals(block))
@@ -60,9 +59,7 @@ class HookSwitch:
 
     def without_journal_hooks(self, path: Path) -> None:
         current = self.settings(path)
-        stored = current.get("hooks")
-        hooks = {str(event): [block for block in blocks if not ProgramHooks.is_journals(block)] for event, blocks in (stored.items() if is_mapping(stored) else [])
-                 if is_list(blocks)}
+        hooks = ProgramHooks.without_journals(current)
         path.write_text(json.dumps({**current, "hooks": {event: blocks for event, blocks in hooks.items() if blocks}}, indent=2) + "\n")
 
     def runner(self) -> str:
