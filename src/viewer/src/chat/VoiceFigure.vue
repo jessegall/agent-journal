@@ -81,8 +81,9 @@ function stroll() {
     const {element, edge} = freeEdge();
     const far = cornerAt(edge, body.place.x - edge.left < edge.width / 2 ? "right" : "left", figure);
     const spot = freeSpot([{...far, view: null, on: element}], figure, body.place);
-    if (spot) perch = null;
-    return spot && setOff(spot);
+    const set = spot && setOff(spot);
+    if (set) perch = null;
+    return set;
 }
 
 // a climb onto a bubble in view, by the jump the trip has for the height
@@ -113,7 +114,7 @@ function fall(now) {
     const {airborne, landed} = airborneFrame(body.airborne, readFloors().floors, now, reducedMotion());
     body.airborne = airborne;
     if (airborne) body.at = placed(airborne);
-    else {
+    else if (landed) {
         body.place = landed.spot;
         strollAt = now + between(STROLL_SECONDS, Math.random) * 1000;
         rest();
@@ -138,6 +139,7 @@ function frame() {
     if (!player) return;
     const now = performance.now();
     if (body.airborne) {
+        if (reading) stopReading(now);
         fall(now);
         return draw(now);
     }
@@ -175,9 +177,14 @@ function draw(now) {
 
 const style = computed(() => ({transform: `translate(${body.at.x}px, ${body.at.y}px)`, width: `${SIZE}px`, height: `${SIZE}px`}));
 
+// each start takes a number; a start that finds a later one taken, or the figure stopped, while its files load gives up
+let started = 0;
+
 async function start() {
+    const mine = ++started;
     try {
         const [figure, {FigurePlayer}, {CLIPS}] = await Promise.all([loadVoiceFigure(props.voice), import("../figure/player.js"), import("../figure/figure.js")]);
+        if (mine !== started) return;
         clips = CLIPS;
         player = new FigurePlayer(figure, canvas.value);
         strollAt = performance.now() + between(STROLL_SECONDS, Math.random) * 1000;
@@ -190,8 +197,14 @@ async function start() {
 }
 
 function stop() {
+    started++;
     stopBody();
     body.here = false;
+    body.trip = null;
+    body.airborne = null;
+    perch = null;
+    reading = null;
+    glance = null;
     player = null;
 }
 

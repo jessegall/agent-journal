@@ -33,10 +33,10 @@ class MessageDeliveryRule(DriverRule):
         if not hook.event.accepts_lines:
             return RuleAnswer.allowed()
         undelivered = self.queries.query(Message).filter(environment_id=hook.environment_id, type=MessageType.USER).matching(IsNull("read_at")).matching(IsNull("delivered_at")).oldest()
-        messages = undelivered.page(1, LISTED_MESSAGES).rows
+        page = undelivered.page(1, LISTED_MESSAGES)
+        messages, waiting = page.rows, page.total
         if not messages:
             return RuleAnswer.allowed()
-        waiting = undelivered.count()
         heading = NEW_MESSAGE.nudge(message=messages[0].id) if waiting == 1 else NEW_MESSAGES.nudge(count=waiting)
         return RuleAnswer.with_nudges(heading, *(nudge for message in messages for nudge in self.file_nudges(message))).running(*(RecordMessageDelivery(message.id) for message in messages))
 

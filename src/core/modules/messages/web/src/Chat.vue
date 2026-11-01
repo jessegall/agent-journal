@@ -21,12 +21,15 @@ const figureVoice = computed(() => {
 });
 const runningTool = ref("");
 const heardAt = ref(Date.now() / 1000);
-// the faces the user has put on messages; a new one is answered by the figure
-const userFaces = computed(() => messages.value.reduce((total, row) => total + JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").length, 0));
+// a face the user puts on a message already in the chat is answered by the figure; faces on messages that page in are not
+const userFaceKeys = (row) => JSON.parse(row.reactions || "[]").filter((face) => face.actor_type === "user").map((face) => face.emoji);
 const facedAt = ref(0);
-watch(userFaces, (now, before) => {
-    if (now > before) facedAt.value = Date.now() / 1000;
-});
+let seenFaces = new Map();
+watch(messages, (rows) => {
+    const next = new Map(rows.map((row) => [row.id, userFaceKeys(row)]));
+    if (rows.some((row) => seenFaces.has(row.id) && userFaceKeys(row).some((emoji) => !seenFaces.get(row.id).includes(emoji)))) facedAt.value = Date.now() / 1000;
+    seenFaces = next;
+}, {immediate: true});
 async function readTool() {
     heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
