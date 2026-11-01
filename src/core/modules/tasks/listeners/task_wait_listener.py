@@ -29,7 +29,7 @@ class TaskWaitListener(SaveListener):
         if isinstance(row, Task) and row.state is not TaskState.BLOCKED:
             for wait in tuple(self.waits.open_waits(row.id).all_rows()):
                 self.repository.save(replace(wait, ended_at=change.context.timestamp), change.context)
-        if isinstance(row, TaskWait) or lifecycle is None or getattr(row, "state", None) in lifecycle.editable:
+        if isinstance(row, TaskWait) or lifecycle is None or (change.new_row is not None and getattr(row, "state", None) in lifecycle.editable):
             return
         target = f"{self.tables.table(type(row)).name}:{row.id}"
         for wait in tuple(self.queries.query(TaskWait).filter(target=target).matching(IsNull("ended_at")).all_rows()):

@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from core.testing.hook_samples import HookSamples
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import worker_session
 from core.base.journal_home import LAUNCHER_SOCKET
 from tests.stories.suites.coding.modules.workers.support.fake_launcher import FakeLauncher
@@ -153,3 +156,39 @@ def test_an_ended_worker_sent_a_job_resumes_its_session_with_the_job(new_story):
 def test_a_worker_with_no_worktree_is_not_sent_a_job(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     story.expect_refusal('worker send 99 "Add the tax"', "worker 99 has no worktree", actor=story.agent)
+
+
+def ended_worker(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    story.expect_success(f"agent end {worker.id}", actor=story.agent)
+    return story, repository, worker
+
+
+def test_a_resumed_worker_comes_back_as_a_worker_with_its_number(new_story):
+    story, _, worker = ended_worker(new_story)
+    session = worker_session(story, worker)
+    story.hook(session, HookSamples.session_start())
+    story.expect_success(f"agent show {worker.id}", "role: worker")
+    assert "ended_at:" not in story.run(f"agent show {worker.id}").output_text
+
+
+def test_with_no_launcher_a_job_stays_waiting_and_the_sender_is_told(new_story):
+    story, _, worker = ended_worker(new_story)
+    story.expect_text(f'worker send {worker.id} "Add the tax"', "needs the launcher", actor=story.agent)
+    story.run_listeners()
+    story.expect_text(f"agent-line list --agent {worker.id}", "Add the tax", "waiting")
+
+
+def test_two_jobs_close_together_start_the_worker_once(new_story):
+    story, repository, worker = ended_worker(new_story)
+    launcher = FakeLauncher(story.home.socket(LAUNCHER_SOCKET))
+    story.run(f'worker send {worker.id} "First job"', actor=story.agent)
+    story.run_listeners()
+    launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
+    story.advance(timedelta(seconds=1))
+    story.run(f'worker send {worker.id} "Second job"', actor=story.agent)
+    story.run_listeners()
+    assert len(launcher.requests) == 1
+    story.expect_text(f"agent-line list --agent {worker.id}", "Second job", "waiting")

@@ -1,3 +1,4 @@
+from core.base.leftover_process import LeftoverProcess
 import subprocess
 import time
 from datetime import timedelta
@@ -103,3 +104,24 @@ def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
     story.advance(timedelta(seconds=60))
     story.tick("s-1")
     story.expect_success("process show 1", "state: orphaned", actor=story.agent)
+
+
+def test_a_lost_run_whose_leader_died_still_has_its_children_killed(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    leader = subprocess.Popen(["sh", "-c", "sleep 60 & echo $!; exit 0"], stdout=subprocess.PIPE, text=True, start_new_session=True)
+    child_pid = int(leader.stdout.readline())
+    leader.wait()
+    leader.stdout.close()
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, leader.pid)
+        folder.beat(process.id, story.clock.timestamp())
+        story.advance(timedelta(seconds=100))
+        story.tick("s-1")
+        deadline = time.monotonic() + 5
+        while LeftoverProcess.command_line(child_pid) and time.monotonic() < deadline:
+            time.sleep(0.05)
+        assert not LeftoverProcess.command_line(child_pid), "the child of the dead leader is still alive"
+    finally:
+        subprocess.run(["kill", "-9", str(child_pid)], capture_output=True, check=False)

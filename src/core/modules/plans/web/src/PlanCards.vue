@@ -22,6 +22,7 @@ async function load() {
 }
 
 async function more() {
+    if (!board.value.plans.length) return;
     const asked = tab.value;
     const answer = await context.read(`${tabLine()} --before-id ${Math.min(...board.value.plans.map((plan) => plan.id))}`);
     if (asked !== tab.value) return;
@@ -68,7 +69,7 @@ load();
                     </div>
                 </template>
             </div>
-            <template v-if="shown.length < total">
+            <template v-if="shown.length && shown.length < total">
                 <Btn kind="text" data-plans-more @click="more">Show more</Btn>
             </template>
         </template>

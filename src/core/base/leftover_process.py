@@ -38,7 +38,7 @@ class LeftoverProcess:
     @staticmethod
     def command_line(pid: int) -> str:
         try:
-            return subprocess.run(["ps", "-o", "command=", "-p", str(pid)], capture_output=True, text=True, check=False, timeout=PS_TIMEOUT_SECONDS,
+            return subprocess.run(["ps", "-ww", "-o", "command=", "-p", str(pid)], capture_output=True, text=True, check=False, timeout=PS_TIMEOUT_SECONDS,
                                   env=PS_ENVIRONMENT).stdout.strip()
         except subprocess.TimeoutExpired:
             return ""

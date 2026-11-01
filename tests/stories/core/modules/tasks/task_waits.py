@@ -113,3 +113,23 @@ def test_a_finished_task_leaves_the_graph(new_story):
     story.run("task block 1 --on task:2")
     story.run('task cancel 2 --reason "no"')
     story.expect_text("task graph --environment main", "no task waits on another", actor=story.agent)
+
+
+def test_a_block_that_would_make_a_loop_is_refused(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.run("task block 1 --on task:2")
+    story.expect_refusal("task block 2 --on task:1", "would be a loop")
+
+
+def test_deleting_the_task_it_waits_on_opens_a_task(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.run("task block 1 --on task:2")
+    story.expect_success("task delete 2")
+    story.expect_success("task show 1", "state: open")
+
+
+def test_the_agent_is_told_when_a_wait_opens_a_task(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.run("task block 1 --on task:2")
+    story.run('task cancel 2 --reason "no"')
+    story.expect_text(f"agent-line list --agent {story.agent.id}", "task 1, Cart, is open again")

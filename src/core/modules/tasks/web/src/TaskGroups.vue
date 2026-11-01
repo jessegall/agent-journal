@@ -6,7 +6,6 @@ import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
 // and each group pages on its own
 const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
-const FLAT_STATE = "all";
 const props = defineProps({
     selectable: Boolean,
     selected: {type: Number, default: 0},
@@ -52,12 +51,9 @@ async function more(group) {
 const shownGroup = (group) => group.total && (props.states.length ? props.states.includes(group.state) : props.display.showDone || !FINISHED.has(group.state));
 const groups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
-    const shown = board.value
+    return board.value
         .filter(shownGroup)
         .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}));
-    if (props.display.grouping === "state") return shown;
-    const tasks = shown.flatMap((entry) => entry.tasks).sort((one, other) => other.id - one.id);
-    return tasks.length ? [{group: {state: FLAT_STATE, total: tasks.length, rows: tasks}, tasks}] : [];
 });
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
@@ -85,7 +81,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
             </template>
             <template v-for="{group, tasks} in groups" :key="group.state">
                 <section class="tasks-group" :data-state="group.state">
-                    <template v-if="group.state !== FLAT_STATE">
+                    <template v-if="display.grouping === 'state'">
                         <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
                     </template>
                     <template v-for="row in tasks" :key="row.id">

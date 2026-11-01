@@ -20,6 +20,8 @@ from core.modules.tasks.rules.support.current_tasks import CurrentTasks
 
 TASK_END_LINE = re.compile(r"(?:^|-- '|&& |; )journal task (?:close|cancel|block|release) (\d+)")
 UNFINISHED_STATES = (TaskState.OPEN, TaskState.STARTED, TaskState.BLOCKED, TaskState.TESTING)
+STUCK_STATES = (TaskState.OPEN, TaskState.BLOCKED)
+IN_HAND_STATES = (TaskState.STARTED, TaskState.TESTING)
 
 
 class PlanTaskLineRule(DriverRule):
@@ -36,13 +38,11 @@ class PlanTaskLineRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         shell = hook.event.tool.shell if hook.event.tool is not None else None
-        line = TASK_END_LINE.search(shell.line) if shell is not None else None
-        if line is None:
+        numbers = TASK_END_LINE.findall(shell.line) if shell is not None else []
+        ended = [task for task in (self.queries.query(Task).find(int(number)) for number in numbers) if task.state is not TaskState.STARTED]
+        if not ended:
             return RuleAnswer.allowed()
-        task = self.queries.query(Task).find(int(line.group(1)))
-        if task.state is TaskState.STARTED:
-            return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(*self.plan_nudges(task.id), *self.next_task_nudges(hook.agent_id, task))
+        return RuleAnswer.with_nudges(*(nudge for task in ended for nudge in self.plan_nudges(task.id)), *self.next_task_nudges(hook.agent_id, ended[-1]))
 
     def next_task_nudges(self, agent_id: int, ended: Task) -> list[Nudge]:
         current = self.current_tasks.current(agent_id)
@@ -61,9 +61,10 @@ class PlanTaskLineRule(DriverRule):
         if progress.completed_count >= progress.task_count:
             return [PLAN_FINISHED.nudge(plan=place.plan_id)]
         nudges = self.phase_nudges(place)
-        unfinished_count = self.unfinished("plan_id", place.plan_id).count()
-        if self.plan_tasks.following(place.plan_id) is None and unfinished_count:
-            nudges.append(PLAN_STALLED.nudge(plan=place.plan_id, count=unfinished_count))
+        stuck_count = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", STUCK_STATES)).count()
+        in_hand = self.queries.query(PlanTask).filter(plan_id=place.plan_id).matching(Among("state", IN_HAND_STATES)).exists()
+        if self.plan_tasks.following(place.plan_id) is None and stuck_count and not in_hand:
+            nudges.append(PLAN_STALLED.nudge(plan=place.plan_id, count=stuck_count))
         return nudges
 
     def phase_nudges(self, place: PlanTask) -> list[Nudge]:

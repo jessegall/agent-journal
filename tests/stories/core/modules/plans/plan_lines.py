@@ -113,3 +113,29 @@ def test_blocking_another_task_does_not_repeat_the_task_already_in_hand(new_stor
     line = "journal task block 3"
     sample = HookSamples.shell(line, ShellPart("journal", CommandCategory.JOURNAL, line.split()[1:], subcommand="task")).with_fields(event="post_tool_use")
     story.expect_absent_hook_line("s-1", sample, "is in hand")
+
+
+def test_a_plan_with_a_task_still_in_hand_is_not_stalled(new_story):
+    story = plan_story(new_story)
+    story.expect_success("task start 1", "state: started", actor=story.agent)
+    story.run('task make "Second" --environment main')
+    story.run("phase place 3 --phase 1")
+    story.expect_success("task start 3", "state: started", actor=story.agent)
+    lines = closed_lines(story, 1)
+    assert not any("no task can start" in line for line in lines), lines
+
+
+def test_a_plan_approved_with_no_tool_running_is_named_on_the_next_call(new_story):
+    story = new_story(SAMPLES, fixture=SampleSuiteChoice)
+    story.agent = hook_agent(story, story.hook("s-1", HookSamples.session_start()))
+    story.run('plan make "Cart plan" --environment main')
+    story.run('phase make --plan 1 "Build"')
+    story.run('task make "Cart" --environment main')
+    story.run("phase place 1 --phase 1")
+    story.run("plan ready 1")
+    story.hook("s-1", LOOK)
+    story.advance(timedelta(seconds=30))
+    story.run("plan approve 1")
+    story.advance(timedelta(seconds=30))
+    story.hook("s-1", HookSamples.shell("ls", ShellPart("ls", CommandCategory.READ, [])))
+    assert "plan 1 approved" in story.hook("s-1", LOOK).lines

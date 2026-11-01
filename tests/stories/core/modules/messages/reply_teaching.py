@@ -60,7 +60,7 @@ def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(new_stor
         story.hook("s-1", LOOK)
     story.expect_hook_refusal("s-1", LOOK, "answer message 1 first")
     story.expect_absent_hook_line("s-1", REPLY_LINE, "answer message 1 first")
-    story.run('message reply 1 "On it"', actor=story.agent)
+    story.run('message reply 1 "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", LOOK, "answer message 1")
 
 
@@ -80,7 +80,7 @@ def test_writes_wait_for_an_unread_message_after_twenty_calls_and_reading_goes_t
     story.expect_hook_refusal("s-1", HookSamples.edit("a.txt"), "1 unread messages: run journal message unread")
     story.expect_hook_allowed("s-1", LOOK)
     story.hook("s-1", READ_MESSAGE)
-    story.run('message reply 1 "On it"', actor=story.agent)
+    story.run('message reply 1 "On it" --environment main', actor=story.agent)
     assert not any("unread" in line for line in story.hook("s-1", HookSamples.edit("a.txt")).lines)
 
 
@@ -106,3 +106,19 @@ def test_an_agents_face_on_a_message_answers_it(new_story):
     story, _ = read_story(new_story)
     story.expect_text('message react 1 "👍"', "message 1: 👍", actor=story.agent)
     story.expect_absent_hook_line("s-1", LOOK, "answer message 1")
+
+
+def test_a_reply_written_before_its_message_is_marked_read_answers_it(new_story):
+    story = teaching_story(new_story)
+    story.run('message send "Fix the cart first" --environment main', actor=story.user)
+    story.hook("s-1", HookSamples.stop())
+    story.expect_success('message reply 1 "On it" --environment main', "parent_id: 1", actor=story.agent)
+    story.hook("s-1", READ_MESSAGE)
+    story.expect_absent_hook_line("s-1", LOOK, "answer message 1")
+
+
+def test_a_reply_line_by_any_path_goes_through_the_hold(new_story):
+    story, _ = read_story(new_story)
+    for _ in range(10):
+        story.hook("s-1", LOOK)
+    story.expect_absent_hook_line("s-1", journal_line(".journal/bin/journal message reply 1 done"), "answer message 1 first")

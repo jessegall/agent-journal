@@ -9,6 +9,7 @@ from core.base.repository.repository import Repository
 from core.modules.tasks.commands.block_task.block_task import BlockTask
 from core.modules.tasks.commands.wait_task.wait_task import WaitTask
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.models.task_wait import TaskWait
 
 TARGET_TABLES = {"task": "tasks", "question": "questions", "plan": "plans"}
@@ -36,6 +37,18 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, command=command.until_command, interval_minutes=command.interval_minutes), context)
         return self.queries.query(Task).find(task.id)
 
+    def waits_on(self, task_id: int, other_id: int) -> bool:
+        edges = tuple(self.queries.query(TaskEdge).all_rows())
+        seen, waiting = set(), [task_id]
+        while waiting:
+            current = waiting.pop()
+            if current == other_id:
+                return True
+            if current not in seen:
+                seen.add(current)
+                waiting += [edge.waits_on_id for edge in edges if edge.task_id == current]
+        return False
+
     def reason(self, command: WaitTask) -> str:
         words = [*(f"waits on {text.replace(':', ' ')}" for text in command.targets), *([f"waits until this passes: {command.until_command}"] if command.until_command else [])]
         return ", ".join(words)
@@ -47,6 +60,8 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
             raise Refusal(f"{text} names nothing to wait on", "write --on task:<n>, --on question:<n> or --on plan:<n>")
         if noun == "task" and int(row_id) == task_id:
             raise Refusal(f"task {task_id} cannot wait on itself", "name another task")
+        if noun == "task" and self.waits_on(int(row_id), task_id):
+            raise Refusal(f"task {row_id} waits on task {task_id} already, so this would be a loop", "end one of the two waits first")
         rows = self.database.rows(Statement(f"SELECT state FROM {table} WHERE id = ?", [int(row_id)]))
         if not rows:
             raise Refusal(f"{noun} {row_id} does not exist", "name a row that does")

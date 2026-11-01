@@ -8,7 +8,7 @@ from suites.coding.modules.checks.models.check import Check
 
 
 class TaskWaitPassListener(SaveListener):
-    """A check a task waits on that passes ends the wait, which opens the task when nothing else holds it."""
+    """A check a task waits on that passes, or is stopped or removed, ends the wait, which opens the task when nothing else holds it."""
 
     name = "checks.task-wait-pass"
     event = "check.update"
@@ -18,7 +18,7 @@ class TaskWaitPassListener(SaveListener):
 
     def handle(self, change: Change[Model]) -> None:
         check = change.row
-        if not isinstance(check, Check) or check.task_wait_id is None or check.last_passed is not True or check.removed_at is not None:
+        if not isinstance(check, Check) or check.task_wait_id is None or not (check.last_passed is True or check.stopped or check.removed_at is not None):
             return
         wait = self.queries.query(TaskWait).find(check.task_wait_id)
         if wait.ended_at is None:

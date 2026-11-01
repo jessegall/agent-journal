@@ -52,3 +52,12 @@ test("a plan answer for the tab left behind is dropped", async () => {
     expect(element.textContent).toContain("Open plan");
     expect(element.textContent).not.toContain("Closed plan");
 });
+
+test("show more on an empty plan list asks for nothing", async () => {
+    const reads = [];
+    const window = context({});
+    window.read = async (line) => (reads.push(line), {ok: true, value: {open_total: 3, closed_total: 0, plans: []}});
+    const element = await mounted(PlanCards, window);
+    expect(element.querySelector("[data-plans-more]")).toBeNull();
+    expect(reads.some((line) => line.includes("Infinity"))).toBe(false);
+});

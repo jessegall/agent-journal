@@ -44,3 +44,10 @@ def test_unblocking_by_hand_removes_the_check(new_story):
     story = waiting_story(new_story, "false")
     story.run("task unblock 1")
     story.expect_absent("check list", "Task 1 waits")
+
+
+def test_removing_a_tasks_check_opens_the_task(new_story):
+    story = waiting_story(new_story, "false")
+    run_due(story)
+    story.run("check remove 1")
+    story.expect_success("task show 1", "state: open")

@@ -167,3 +167,13 @@ test("the standing counts every task not done, whatever the filter shows", async
     await settle();
     expect(shown.querySelector("[data-tasks-standing]").textContent).toBe(before);
 });
+
+test("grouping by nothing keeps show more and the finished groups", async () => {
+    const {shown} = await dialog();
+    (await menuItem("[data-show-done]", "[data-menu-display]")).click();
+    await settle();
+    document.querySelector('[data-grouping="none"]').click();
+    await settle();
+    expect(shown.querySelector(".tasks-group-head")).toBeNull();
+    expect(shown.querySelector('[data-more="completed"]')).not.toBeNull();
+});

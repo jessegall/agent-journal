@@ -6,6 +6,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.greater import Greater
 from core.base.query.queries import Queries
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
@@ -16,7 +17,7 @@ from core.modules.messages.support.message_nudges import UNANSWERED, UNANSWERED_
 
 ALLOWED_TOOL_CALL_COUNT = 10
 COUNTDOWN_CALL_COUNT = 3
-REPLY_LINE = re.compile(r"(?:^|-- '|&& |; )journal message ")
+REPLY_LINE = re.compile(r"""(?:^|[\s/'"])journal message """)
 
 
 class UnansweredMessageRule(DriverRule):
@@ -45,4 +46,6 @@ class UnansweredMessageRule(DriverRule):
     def unanswered(self, environment_id: int) -> tuple[Message, ...]:
         agent_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).newest().page(1, 1).rows
         read_messages = self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.USER).matching(Greater("read_at", agent_messages[0].created_at.text if agent_messages else ""))
-        return tuple(message for message in read_messages.oldest().all_rows() if not MessageReactions.has_from(message, ActorType.AGENT.value))
+        candidates = tuple(read_messages.oldest().all_rows())
+        answered = {reply.parent_id for reply in self.queries.query(Message).filter(environment_id=environment_id, type=MessageType.AGENT).matching(Among("parent_id", tuple(message.id for message in candidates))).all_rows()} if candidates else set()
+        return tuple(message for message in candidates if message.id not in answered and not MessageReactions.has_from(message, ActorType.AGENT.value))
