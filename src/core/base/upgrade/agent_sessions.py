@@ -1,16 +1,12 @@
-from core.base.upgrade.move_map import MoveMap
-from core.base.upgrade.version_four_source import VersionFourSource
-
-AGENTS = "agents"
+from core.base.database.actor_table import ActorTable
+from core.base.database.database import Database
 
 
 class AgentSessions:
-    """The version 5 agent row behind a version 4 session, found through the agents move's map."""
+    """The version 5 agent row behind a version 4 session: the agent whose actor the agents move named for it."""
 
-    def __init__(self, source: VersionFourSource, map: MoveMap) -> None:
-        self.map = map
-        self.old_ids = {row["session"]: row["id"] for row in source.rows(AGENTS) if row["session"]}
+    def __init__(self, target: Database) -> None:
+        self.actors = ActorTable(target)
 
     def agent_id(self, session: str) -> int | None:
-        old_id = self.old_ids.get(session)
-        return self.map.new_id(AGENTS, old_id) if old_id is not None else None
+        return self.actors.agent_actor_id(session)

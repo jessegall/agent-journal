@@ -32,7 +32,7 @@ class QuestionsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions, documents = AgentSessions(source, map), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
+        sessions, documents = AgentSessions(target), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
             agent_id = sessions.agent_id(session) if actor_type == AGENT else None

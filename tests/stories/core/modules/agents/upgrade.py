@@ -22,3 +22,16 @@ def test_a_version_4_agent_with_no_role_moves_as_a_main_session_and_its_question
     story = upgraded_story(new_story)
     story.expect_text("agent list --json", '"session": "s-early"', '"role": "main"')
     story.expect_text("question show 4", "What did the early session ask?")
+
+
+def test_a_session_that_made_rows_but_has_no_version_4_agent_row_moves_as_an_ended_main_session_with_its_question(new_story):
+    story = upgraded_story(new_story)
+    story.expect_text("agent list --json", '"session": "s-gone"')
+    story.expect_text("question show 5", "What did the session with no row ask?")
+    assert "skipped questions 5" not in story.upgrade_text
+    assert "4 sessions that made rows but had no version 4 agent row moved as ended agents" in story.upgrade_text
+
+
+def test_a_worker_session_with_no_agent_row_moves_as_an_ended_worker(new_story):
+    story = upgraded_story(new_story)
+    story.expect_text("agent list --json", '"session": "s-3"', '"role": "worker"')

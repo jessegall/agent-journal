@@ -14,10 +14,10 @@ def test_a_failed_a_stopped_and_a_never_ended_command_output_keep_how_they_ended
     story.expect_success("process show 4", "state: stopped")
 
 
-def test_a_command_output_of_an_unknown_session_is_skipped_and_named(new_story):
+def test_a_command_output_of_a_session_with_no_version_4_agent_row_moves_with_that_sessions_ended_agent(new_story):
     story = upgraded_story(new_story)
-    assert "skipped command_outputs 5: the agent that ran it or its environment did not move" in story.upgrade_text
-    assert "processes: moved 4" in story.upgrade_text
+    assert "skipped command_outputs 5" not in story.upgrade_text
+    assert "processes: moved 5" in story.upgrade_text
 
 
 def test_the_readers_reports_and_suggestions_are_dropped_and_counted(new_story):

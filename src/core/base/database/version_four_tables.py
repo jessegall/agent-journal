@@ -2,6 +2,7 @@ import sqlite3
 from collections.abc import Sequence
 
 LINKS = "links"
+CREATOR_COLUMNS = {"creator", "environment_id", "created_at"}
 
 
 class VersionFourTables:
@@ -23,6 +24,17 @@ class VersionFourTables:
         if table not in self.names():
             return 0
         return int(self.connection.execute(f'SELECT count(*) FROM "{table}"').fetchone()[0])
+
+    def creator_spans(self, creator_type: str) -> list[sqlite3.Row]:
+        tables = [name for name in self.names() if CREATOR_COLUMNS <= self.columns(name)]
+        if not tables:
+            return []
+        spans = " UNION ALL ".join(f'SELECT creator, environment_id, created_at FROM "{table}" WHERE creator LIKE ? AND environment_id > 0' for table in tables)
+        return self.connection.execute(f"SELECT creator, environment_id, min(created_at) AS first_at, max(created_at) AS last_at FROM ({spans}) GROUP BY creator ORDER BY first_at",
+                                       tuple(f"{creator_type}:%" for _ in tables)).fetchall()
+
+    def columns(self, table: str) -> set[str]:
+        return {row["name"] for row in self.connection.execute(f'PRAGMA table_info("{table}")').fetchall()}
 
     def links(self, link_types: Sequence[str]) -> list[sqlite3.Row]:
         if LINKS not in self.names() or not link_types:

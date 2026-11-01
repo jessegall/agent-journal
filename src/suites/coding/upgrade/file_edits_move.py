@@ -26,7 +26,7 @@ class FileEditsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions = AgentSessions(source, map)
+        sessions = AgentSessions(target)
         for row in source.rows(TABLE):
             if not row["session"]:
                 report.drop("edits made by no agent", 1)

@@ -34,7 +34,7 @@ class ProcessesMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions = AgentSessions(source, map)
+        sessions = AgentSessions(target)
         for row in source.rows(TABLE):
             agent_id = sessions.agent_id(row["session"]) if row["session"] else None
             if agent_id is None or map.new_id("environments", row["environment_id"]) is None:

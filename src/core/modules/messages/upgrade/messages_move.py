@@ -30,7 +30,7 @@ class MessagesMove(VersionFourMove):
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        report, creators, rows, sessions = MoveReport(), CreatorResolver(target, map), RowInsert(target), AgentSessions(source, map)
+        report, creators, rows, sessions = MoveReport(), CreatorResolver(target, map), RowInsert(target), AgentSessions(target)
         message_ids = {row["id"] for row in source.rows(TABLE) if not self.card_type(row["data"]) and row["author"] in TYPES}
         for row in source.rows(TABLE):
             card_type = self.card_type(row["data"])
