@@ -60,7 +60,7 @@ class MemoriesModule(Module):
     requires_core = ">=5,<6"
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
-                    "journal.core.drivers"]
+                    "journal.core.drivers", "journal.core.documents"]
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]

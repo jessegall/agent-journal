@@ -32,7 +32,7 @@ class QuestionsModule(Module):
 
     name = "journal.core.questions"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration, AnswerMessageMigration]
     moves = [QuestionsMove]

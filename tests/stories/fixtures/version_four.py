@@ -136,6 +136,7 @@ ROWS = (
     ("links", "(source, target, link_type, created_at, creator)", ("reports:1", "tasks:77", "about", STAMP, USER)),
     ("rules", "(text, reason, keywords, trigger, condition, created_at, creator)", ("Always keep totals in cents", "rounding errors", '["totals"]', "", "{}", STAMP, USER)),
     ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "Run the cart tests before a commit", '["commit"]', None, "", "{}", STAMP, USER)),
+    ("reminders", "(environment_id, text, keywords, due_at, trigger, condition, created_at, creator)", (1, "A long reminder. " * 30, "[]", None, "", "{}", STAMP, USER)),
     ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, summary, created_at, updated_at, creator)",
      (1, "chain-1", "pytest tests", "s-1", "/gone/outputs/chain-1", "/work/cart", 0, 1, 0, 0, 1, "12 passed", STAMP, JANUARY_2026, "agent:s-1")),
     ("command_outputs", "(environment_id, chain, command, session, folder, ran_in, moved, ended, status, is_interrupted, is_read, created_at, creator)",

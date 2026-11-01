@@ -12,17 +12,19 @@ from core.base.upgrade.move_report import MoveReport
 from core.base.upgrade.state_walk import StateWalk
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_source import VersionFourSource
+from core.modules.documents.upgrade.whole_text_documents import WholeTextDocuments
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.lifecycles.question_lifecycle import QuestionLifecycle
+from core.modules.questions.models.question import TEXT_LIMIT_CHARACTERS
 
 TABLE = "questions"
-TEXT_LIMIT_CHARACTERS = 500
 
 
 class QuestionsMove(VersionFourMove):
     """Carries version 4's questions with their numbers, text, options, recommended choice and answer, asked by
     the agent whose session wrote them; an answered one is answered and the rest open. A question whose agent
-    did not move, or whose text is longer than version 5 allows, is skipped and told."""
+    did not move is skipped and told; a text longer than version 5 holds moves whole into a document, the question
+    keeping its start."""
 
     name = "questions"
     reads = [TABLE]
@@ -30,22 +32,22 @@ class QuestionsMove(VersionFourMove):
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
-        sessions = AgentSessions(source, map)
+        sessions, documents = AgentSessions(source, map), WholeTextDocuments(rows, TEXT_LIMIT_CHARACTERS, "question")
         for row in source.rows(TABLE):
             actor_type, _, session = (row["creator"] or "").partition(":")
             agent_id = sessions.agent_id(session) if actor_type == AGENT else None
             if agent_id is None:
                 report.skip(TABLE, row["id"], "the agent that asked it did not move")
                 continue
-            if len(row["text"]) > TEXT_LIMIT_CHARACTERS:
-                report.skip(TABLE, row["id"], f"its text is longer than {TEXT_LIMIT_CHARACTERS} characters")
-                continue
-            report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, row, agent_id, creators.actor_id(row["creator"]), context)))
+            report.count(TABLE, map.transfer(TABLE, row["id"], TABLE, partial(self.insert, rows, documents, row, agent_id, creators.actor_id(row["creator"]), context)))
+        if documents.document_ids:
+            report.note(documents.note())
         return report
 
-    def insert(self, rows: RowInsert, row: sqlite3.Row, agent_id: int, creator_id: int, context: MoveContext) -> int:
+    def insert(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, agent_id: int, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
-        question_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent_id, "creator_id": creator_id, "text": row["text"],
+        question_id = rows.insert(TABLE, {"id": row["id"], "environment_id": row["environment_id"], "agent_id": agent_id, "creator_id": creator_id,
+                                   "text": documents.fitting_text(row, row["environment_id"], creator_id, created),
                                    "options": json.dumps(json.loads(row["options"] or "[]")), "recommended": row["recommended"] or "", "answer": row["answer"] or "",
                                    "created_at": created, "updated_at": row["updated_at"] or created})
         for step in StateWalk(QuestionLifecycle).path(QuestionState.ANSWERED if row["answer"] else QuestionState.OPEN) or []:

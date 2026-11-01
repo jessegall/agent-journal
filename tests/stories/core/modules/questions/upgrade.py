@@ -1,3 +1,5 @@
+import re
+
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
@@ -10,9 +12,13 @@ def test_an_answered_question_moves_with_its_options_answer_and_asking_agent_fro
 def test_an_open_question_moves_open(new_story):
     story = upgraded_story(new_story)
     story.expect_success("question show 2", "question 2: Ship on Friday?", "state: open")
-    assert "questions: moved 3" in story.upgrade_text
+    assert "questions: moved 4" in story.upgrade_text
 
 
-def test_a_question_longer_than_version_5_allows_is_skipped_and_named(new_story):
+def test_a_question_longer_than_version_5_allows_moves_whole_into_a_document_and_keeps_its_start(new_story):
     story = upgraded_story(new_story)
-    assert "skipped questions 3: its text is longer than 500 characters" in story.upgrade_text
+    question = story.run("question show 3").output_text
+    document = re.search(r"whole text in doc (\d+)", question)
+    assert document and "skipped questions 3" not in story.upgrade_text, question
+    assert "1 question texts longer than 500 characters moved whole into documents" in story.upgrade_text
+    assert len(story.run(f"doc show {document.group(1)} --all").output_text) > 500

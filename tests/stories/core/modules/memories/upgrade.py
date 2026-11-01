@@ -1,3 +1,5 @@
+import re
+
 from tests.stories.core.base.upgrade.support.fixture_upgrade import upgraded_story
 
 
@@ -35,10 +37,21 @@ def test_the_new_memories_are_listed_nowhere_as_a_rule_or_reminder(new_story):
     assert "type: rule" not in story.run("memory list").output_text and "type: reminder" not in story.run("memory list").output_text
 
 
-def test_a_memory_longer_than_version_5_allows_is_cut_and_the_report_says_how_many_were_cut_and_how_many_characters_went(new_story):
+def test_a_memory_longer_than_version_5_allows_moves_whole_into_a_document_and_keeps_its_start_with_the_document_number(new_story):
     story = upgraded_story(new_story)
-    assert "1 memories were cut to 400 characters: 120 characters went" in story.upgrade_text
-    assert "rows" not in "".join(line for line in story.upgrade_text.splitlines() if "cut to 400" in line)
+    memory = story.run("memory show 6").output_text
+    document = re.search(r"whole text in doc (\d+)", memory)
+    assert "text: A long fact. A long fact." in memory and document, memory
+    assert ("A long fact. " * 40).strip() in story.run(f"doc show {document.group(1)} --all").output_text
+
+
+def test_a_long_reminder_moves_whole_into_a_document_and_nothing_is_cut_or_skipped(new_story):
+    story = upgraded_story(new_story)
+    memories = story.run("memory list --json").output_text
+    assert "A long reminder. A long reminder." in memories and "whole text in doc" in memories
+    assert "2 memory texts longer than 400 characters moved whole into documents" in story.upgrade_text
+    assert "cut to" not in story.upgrade_text and "skipped reminders" not in story.upgrade_text
+
 
 def test_a_version_4_rule_and_reminder_move_as_rule_and_reminder_memories_with_their_keywords(new_story):
     story = upgraded_story(new_story)
