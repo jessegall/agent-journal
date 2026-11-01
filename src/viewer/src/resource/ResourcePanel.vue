@@ -4,6 +4,7 @@ import {opening, peek, route, unpeek} from "../route.js";
 import {render} from "../text/index.js";
 import Skeleton from "../kit/Skeleton.vue";
 import TaskInspector from "../tasks/TaskInspector.vue";
+import AgentFacts from "./AgentFacts.vue";
 import PlanInspector from "./PlanInspector.vue";
 import RowMoves from "./RowMoves.vue";
 import {cliOf, fieldsOf, titleOf} from "../domain/resourceKinds.js";
@@ -81,6 +82,9 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
                         <template v-else>
                             <template v-if="html">
                                 <div class="md text" data-resource-text v-html="html" />
+                            </template>
+                            <template v-if="kind === 'agent'">
+                                <AgentFacts :id="opened.id" :read="read" />
                             </template>
                             <section class="section" data-resource-fields>
                                 <template v-for="[name, value] in fields" :key="name">

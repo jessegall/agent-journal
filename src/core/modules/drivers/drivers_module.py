@@ -10,7 +10,12 @@ from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 from core.modules.drivers.bindings.agent_hook_route import AgentHookRoute
+from core.modules.drivers.commands.pause_agent.agent_pause_subcommand import AgentPauseSubcommand
+from core.modules.drivers.commands.pause_agent.pause_agent_handler import PauseAgentHandler
+from core.modules.drivers.commands.resume_agent.agent_resume_subcommand import AgentResumeSubcommand
+from core.modules.drivers.commands.resume_agent.resume_agent_handler import ResumeAgentHandler
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.drivers.rules.paused_agent_rule import PausedAgentRule
 from core.modules.drivers.commands.deliver_agent_line.deliver_agent_line import DeliverAgentLine
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.commands.allow_essential_rule.allow_essential_rule_handler import AllowEssentialRuleHandler
@@ -68,12 +73,12 @@ class DriversModule(Module):
     models = [ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration]
-    handlers = [RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
-    subcommands = [NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
+    handlers = [PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    subcommands = [AgentPauseSubcommand, AgentResumeSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
     listeners = [NewDriverLinesListener, SubagentStopListener]
-    driver_rules = [RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
+    driver_rules = [PausedAgentRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),

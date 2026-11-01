@@ -19,6 +19,7 @@ from core.modules.agents.commands.start_agent.start_agent_handler import StartAg
 from core.modules.agents.commands.start_agent.start_agent_subcommand import StartAgentSubcommand
 from core.modules.agents.migrations.m001_agents import AgentsTableMigration
 from core.modules.agents.migrations.m002_agent_launch_row import AgentLaunchRowMigration
+from core.modules.agents.migrations.m003_agent_pause import AgentPauseMigration
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
@@ -42,7 +43,7 @@ class AgentsModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat"]
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     moves = [AgentsMove]
-    migrations = [AgentsTableMigration, AgentLaunchRowMigration]
+    migrations = [AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration]
     handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeInTerminalHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler]
     subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, AgentTypeSubcommand, AgentControlsSubcommand, AgentControlSubcommand, AgentProgramsSubcommand, AgentStopSubcommand, AgentLaunchSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]

@@ -37,4 +37,10 @@ const questionMoves = (row) => (row?.state !== "open" ? [] : [
     {word: "close", label: "Close"},
 ]);
 
-export const movesOf = (kind, row) => (kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);
+// what a person can do to an agent: hold it or let it carry on, and stop its program after asking
+const agentMoves = (row) => (!row || row.ended_at ? [] : [
+    row.paused_at ? {word: "resume", label: "Resume", main: true} : {word: "pause", label: "Pause"},
+    {word: "stop", label: "Stop", confirm: "Stop the agent? It stops what it is doing."},
+]);
+
+export const movesOf = (kind, row) => (kind === "agent" ? agentMoves(row) : kind === "question" ? questionMoves(row) : ({plan: PLAN_MOVES, task: TASK_MOVES})[kind]?.[row?.state] ?? []);

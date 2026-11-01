@@ -25,7 +25,7 @@ async function run(move, said = "") {
     emit("done");
 }
 
-const press = (move) => (move.said ? run(move, move.said) : move.flag ? ((asking.value = move), (words.value = "")) : run(move));
+const press = (move) => (move.confirm ? (asking.value = move) : move.said ? run(move, move.said) : move.flag ? ((asking.value = move), (words.value = "")) : run(move));
 const send = () => words.value.trim() && run(asking.value, words.value.trim());
 defineExpose({moves, press});
 </script>
@@ -36,7 +36,14 @@ defineExpose({moves, press});
             <template v-if="refusal">
                 <p class="refusal" role="alert" data-resource-refusal>{{ refusal }}</p>
             </template>
-            <template v-if="asking">
+            <template v-if="asking?.confirm">
+                <div class="ask" data-resource-confirm>
+                    <span class="ask-text">{{ asking.confirm }}</span>
+                    <Btn small kind="primary" data-resource-confirm-yes @click="run(asking)">{{ asking.label }}</Btn>
+                    <Btn small kind="ghost" @click="asking = null">Back</Btn>
+                </div>
+            </template>
+            <template v-else-if="asking">
                 <form class="ask" data-resource-ask @submit.prevent="send">
                     <input v-model="words" class="ask-input" :placeholder="asking.ask" :aria-label="asking.ask" @keydown.esc.stop="asking = null" />
                     <Btn small kind="primary" type="submit" :disabled="!words.trim()">{{ asking.label }}</Btn>
@@ -75,6 +82,12 @@ defineExpose({moves, press});
     flex-wrap: wrap;
     gap: 8px;
     align-items: center;
+}
+
+.ask-text {
+    flex: 1;
+    color: var(--text-2);
+    font-size: 12.5px;
 }
 
 .ask-input {

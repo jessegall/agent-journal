@@ -1,6 +1,6 @@
 <script setup>
 import {computed, ref} from "vue";
-import {RowList, Segmented, TextInput, useRows} from "@journal/window-kit";
+import {peekRef, RowList, Segmented, TextInput, useRows} from "@journal/window-kit";
 
 const SHOWS = [
     {key: "running", label: "Running"},
@@ -26,6 +26,7 @@ const emptyText = computed(() => (rows.value.length ? "Nothing matches" : props.
         </div>
         <RowList :rows="shown" :failure="failure" :loaded="loaded" :older="older" :empty="emptyText">
             <template #default="{row}">
+                <button type="button" class="open" :data-agent-open="row.id" @click="peekRef(`agents:${row.id}`)">Open</button>
                 <span class="id">#{{ row.id }}</span>
                 <span class="main">{{ row.session }}</span>
                 <span class="note">{{ row.program }} · {{ row.role }}</span>
@@ -41,6 +42,16 @@ const emptyText = computed(() => (rows.value.length ? "Nothing matches" : props.
     flex-direction: column;
     height: 100%;
     min-height: 0;
+}
+
+.open {
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-2);
+    font-size: 12px;
+    cursor: pointer;
 }
 
 .agents-bar {

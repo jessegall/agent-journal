@@ -7,4 +7,6 @@ OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.INSTRUCTION, '
 
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.INSTRUCTION, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
 
-DRIVER_NUDGES = [REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER]
+PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, "the user paused you: stop and wait; only journal commands run until you are resumed, and you answer the user in the chat as usual", once_per_turn=False)
+
+DRIVER_NUDGES = [REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL]
