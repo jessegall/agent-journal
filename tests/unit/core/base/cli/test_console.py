@@ -108,3 +108,11 @@ def test_an_abbreviated_flag_is_a_usage_error_and_the_full_flag_works(tmp_path):
     assert run(container, "item", "make", "Dune", "--env", "main")[0] == 2
     assert run(container, "item", "make", "Dune", "--skip", "items.paused-guard")[0] == 2
     assert run(container, "item", "make", "Dune", "--skip-guard", "items.paused-guard")[0] == 0
+
+
+def test_a_usage_error_and_the_help_are_written_to_the_answer_not_lost(tmp_path):
+    container = console(tmp_path)
+    code, text = run(container, "item", "make", "Dune", "--nope")
+    assert code == 2 and "unrecognized arguments: --nope" in text
+    code, text = run(container, "item", "make", "--help")
+    assert code == 0 and "usage:" in text

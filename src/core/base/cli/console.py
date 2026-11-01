@@ -1,3 +1,4 @@
+from contextlib import redirect_stderr, redirect_stdout
 from typing import TextIO
 
 from core.base.caller.caller_request import CallerRequest
@@ -74,7 +75,8 @@ class Console:
     def chosen_run(self, argv: list[str], caller: Caller, output: Output) -> int:
         subcommand, parser = self.line_parser.parser(argv)
         try:
-            arguments = parser.parse_args(argv[2:])
+            with redirect_stdout(output.stream), redirect_stderr(output.stream):
+                arguments = parser.parse_args(argv[2:])
         except SystemExit as exit_request:
             return SUCCESS_CODE if exit_request.code == 0 else USAGE_CODE
         if not isinstance(subcommand, Subcommand):
