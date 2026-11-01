@@ -220,3 +220,11 @@ def with_message_rows(path: Path, count: int) -> None:
                            [(f"message {index}", STAMP, USER) for index in range(count)])
     connection.commit()
     connection.close()
+
+
+def table_names(path: Path) -> list[str]:
+    connection = sqlite3.connect(path)
+    try:
+        return [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+    finally:
+        connection.close()
