@@ -24,6 +24,8 @@ export const ENV_HEADER = "X-Journal-Env";
 export const REQUEST_TIME_HEADER = "X-Journal-Request-At";
 
 // The journal's API: every path the viewer asks for is named here, under /journal, scoped to the environment by its header.
+const FIGURE_FOLDER = "/viewer/voices/figures/";
+
 export class ApiClient {
     constructor({env = () => route.value.env, base = ""} = {}) {
         this.env = env;
@@ -541,12 +543,17 @@ export class ApiClient {
         return this.post(this.here(`/skills/${encoded(name)}/moment`), {moment, on});
     }
 
-    voices() {
-        return this.get(this.here("/voices"));
+    // the figure files of the voices travel with the viewer: an index of each voice's file, the files, and the decoder they are packed for
+    voiceFigures() {
+        return transport.request("GET", FIGURE_FOLDER + "figures.json");
     }
 
-    chooseVoice(name) {
-        return this.post(this.here("/voices/choose"), {name});
+    voiceFigureUrl(file) {
+        return FIGURE_FOLDER + file;
+    }
+
+    figureDecoderUrl() {
+        return FIGURE_FOLDER + "draco/";
     }
 
     // the project's files
