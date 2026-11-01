@@ -10,10 +10,12 @@ const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 // through the host, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings
 export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], readOnly = false, shared = null}) {
     const recent = new Map();
+    // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
+    const requests = new AbortController();
     const read = (line) => {
         const last = recent.get(line);
         if (last && performance.now() - last.at < READ_COALESCE_MS) return last.answer;
-        const answer = lineResult(window, line, environment);
+        const answer = lineResult(window, line, environment, requests.signal);
         recent.set(line, {answer, at: performance.now()});
         return answer;
     };
@@ -26,7 +28,8 @@ export function windowContext({window, environment, agent, visible, permissions,
         readOnly,
         shared,
         read,
-        run: (line) => lineResult(window, line, environment),
+        run: (line) => lineResult(window, line, environment, requests.signal),
+        cancel: () => requests.abort(),
         follow: (patterns, heard) => subscriptions.follow(window, patterns.filter((pattern) => events.some((declared) => matches(declared, pattern))), heard, visible),
         open,
         face: document.documentElement.classList.contains("phone") ? "phone" : "person",
@@ -35,7 +38,7 @@ export function windowContext({window, environment, agent, visible, permissions,
             const answer = await read(`window setting ${window} ${key}`);
             return answer.ok ? answer.value.value : fallback;
         },
-        keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment),
+        keep: (key, value) => lineResult(window, ["window", "save-setting", window, key, JSON.stringify(value)], environment, requests.signal),
     };
 }
 
@@ -49,12 +52,18 @@ export function refusalWords(text) {
     }
 }
 
-export async function lineResult(window, line, environment) {
+export const CANCELLED = {ok: false, failure: "cancelled", error: ""};
+
+// a request cancelled by its signal answers CANCELLED, whether it was cut off or its answer came after, so a window that has
+// gone never draws the answer
+export async function lineResult(window, line, environment, signal = undefined) {
     try {
-        const response = await fetch("/api/line", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
+        const response = await fetch("/api/line", {signal, method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({window, line: Array.isArray(line) ? line : lineWords(line), environment})});
         const answer = await response.json();
+        if (signal?.aborted) return CANCELLED;
         return answer.code === 0 ? {ok: true, value: answer.value} : {ok: false, failure: FAILURES[answer.code] || "fault", error: refusalWords(answer.error)};
     } catch (error) {
+        if (signal?.aborted) return CANCELLED;
         return {ok: false, failure: "unreachable", error: String(error)};
     }
 }

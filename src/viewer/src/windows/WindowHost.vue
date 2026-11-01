@@ -29,7 +29,7 @@ function retry() {
     attempt.value++;
 }
 
-provide(WINDOW_CONTEXT, windowContext({
+const context = windowContext({
     window: props.name,
     environment: props.environment,
     agent: props.agent,
@@ -42,10 +42,14 @@ provide(WINDOW_CONTEXT, windowContext({
     readOnly: props.readOnly,
     shared: props.shared,
     open: (window, agent) => emit("open", window, agent),
-}));
+});
+provide(WINDOW_CONTEXT, context);
 
 watch(() => props.visible, (shown) => shown && props.subscriptions.shown(props.name));
-onUnmounted(() => props.subscriptions.stopAll(props.name));
+onUnmounted(() => {
+    context.cancel();
+    props.subscriptions.stopAll(props.name);
+});
 
 onErrorCaptured((error) => {
     failure.value = error instanceof Error ? error.message : String(error);

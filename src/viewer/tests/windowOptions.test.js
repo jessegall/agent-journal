@@ -19,7 +19,7 @@ const entry = (loading) => ({name: "notes.board", title: "Board", entry_url: "/m
 const shown = async (window, loading) => {
     const element = document.createElement("div");
     createApp(() => h(window, {entry: entry(loading), subscriptions: new WindowSubscriptions(), environment: "main", options: {hide: true}})).mount(element);
-    for (let round = 0; round < 10; round++) await new Promise((resolve) => setTimeout(resolve));
+    for (let round = 0; round < 200 && !element.querySelector(".host"); round++) await new Promise((resolve) => setTimeout(resolve, 5));
     return JSON.parse(element.querySelector(".host").textContent);
 };
 
