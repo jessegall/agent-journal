@@ -52,8 +52,8 @@ test("a dump is a card with each item, where the agent has got to with it and wh
 
 test("each group of tasks pages on its own, and a finished group shows only its count until asked", async () => {
     const window = context({
-        "task board --state open --page 2": {ok: true, value: {groups: [{state: "open", total: 2, rows: [{id: 2, title: "Second", state: "open", priority: "normal"}]}]}},
-        "task board --state completed --page 1": {ok: true, value: {groups: [{state: "completed", total: 1, rows: [{id: 3, title: "Done", state: "completed", priority: "normal"}]}]}},
+        "task board --state open --before-id 1": {ok: true, value: {groups: [{state: "open", total: 2, rows: [{id: 2, title: "Second", state: "open", priority: "normal"}]}]}},
+        "task board --state completed": {ok: true, value: {groups: [{state: "completed", total: 1, rows: [{id: 3, title: "Done", state: "completed", priority: "normal"}]}]}},
         "task board": {ok: true, value: {groups: [{state: "open", total: 2, rows: [{id: 1, title: "First", state: "open", priority: "normal"}]}, {state: "completed", total: 1, rows: []}]}},
     });
     const element = await mounted(TaskGroups, window);

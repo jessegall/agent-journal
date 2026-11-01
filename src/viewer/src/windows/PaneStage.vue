@@ -243,6 +243,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                             :visible="true"
                             :prompts="prompts"
                             :shell-read="shellRead"
+                            @remove="chosen = ''"
                         />
                     </div>
                 </section>

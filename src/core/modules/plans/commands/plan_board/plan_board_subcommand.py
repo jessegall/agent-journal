@@ -1,3 +1,4 @@
+from core.base.query.conditions.less import Less
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -31,7 +32,8 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("--environment")
         parser.add_argument("--closed", action="store_true")
-        parser.add_argument("--page", type=int, default=1)
+        parser.add_argument("--before-id", type=int, default=None, help="the plans older than this one")
+        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
 
     def read(self, arguments: Namespace, caller: Caller) -> PlanBoard:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
@@ -39,7 +41,9 @@ class PlanBoardSubcommand(ReadSubcommand[PlanBoard]):
             raise Refusal("the board is shown for one environment", "name it with --environment")
         plans = self.queries.query(PlanCard).filter(environment_id=environment_id)
         opened, closed = plans.matching(Among("state", OPEN_STATES)), plans.matching(Among("state", CLOSED_STATES))
-        cards = tuple((closed if arguments.closed else opened).newest().page(arguments.page, PAGE_SIZE_ROWS).rows)
+        shown = closed if arguments.closed else opened
+        older = shown.matching(Less("id", arguments.before_id)) if arguments.before_id is not None else shown
+        cards = tuple(older.newest().page(1, arguments.limit).rows)
         return PlanBoard(opened.page(1, COUNT_PAGE_ROWS).total, closed.page(1, COUNT_PAGE_ROWS).total, cards)
 
     def write_output(self, value: object, output: Output) -> None:

@@ -23,3 +23,14 @@ def test_the_board_holds_only_the_fields_a_card_draws_never_a_brief(new_story):
     story.run('task make "Fix the cart" --brief "Long words about the cart" --environment main', actor=story.agent)
     answer = story.run("task board --environment main --json", actor=story.user).output_text
     assert "Fix the cart" in answer and "Long words" not in answer
+
+
+def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
+    story = new_story(fixture=UserJoined)
+    for title in ("One", "Two", "Three"):
+        story.run(f'task make "{title}" --environment main', actor=story.user)
+    older = story.run("task board --environment main --state open --before-id 3 --limit 1 --json", actor=story.user).output_text
+    assert "Two" in older and "One" not in older and "Three" not in older
+    assert '"total": 3' in older or '"total":3' in older
+    held = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
+    assert "Three" in held and "Two" in held and "One" not in held

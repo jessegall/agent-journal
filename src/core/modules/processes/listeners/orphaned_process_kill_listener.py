@@ -20,4 +20,4 @@ class OrphanedProcessKillListener(SaveListener):
     def handle(self, change: Change[Model]) -> None:
         process = change.row
         if isinstance(process, Process) and change.move is not None and change.move.name == ORPHAN_MOVE:
-            self.group.stop(process.pid or self.folder.pid(process.id))
+            self.group.stop(process.pid or self.folder.pid(process.id), process.id)

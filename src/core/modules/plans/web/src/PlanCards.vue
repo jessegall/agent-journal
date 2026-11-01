@@ -4,30 +4,35 @@ import {Btn, Icon, Skeleton, peekRef, useWindow} from "@journal/window-kit";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
 const context = useWindow();
+const PAGE_ROWS = 25;
 const tab = ref("open");
 const board = ref({open_total: 0, closed_total: 0, plans: []});
 const failure = ref("");
 const loaded = ref(false);
-const page = ref(1);
-const line = (number) => `plan board${tab.value === "closed" ? " --closed" : ""}${number > 1 ? ` --page ${number}` : ""}`;
+const tabLine = () => `plan board${tab.value === "closed" ? " --closed" : ""}`;
 
 async function load() {
-    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : line(1));
+    const asked = tab.value;
+    const held = board.value.plans.length;
+    const answer = await context.read(context.shared ? `${context.shared.model} show ${context.shared.id}` : `${tabLine()}${held > PAGE_ROWS ? ` --limit ${held}` : ""}`);
+    if (asked !== tab.value) return;
     failure.value = answer.ok ? "" : answer.error;
     loaded.value = true;
-    page.value = 1;
     if (answer.ok) board.value = context.shared ? {open_total: 1, closed_total: 0, plans: [{task_count: 0, completed_count: 0, current_phase: 0, ...answer.value}]} : answer.value;
 }
 
 async function more() {
-    const answer = await context.read(line(page.value + 1));
+    const asked = tab.value;
+    const answer = await context.read(`${tabLine()} --before-id ${Math.min(...board.value.plans.map((plan) => plan.id))}`);
+    if (asked !== tab.value) return;
     if (!answer.ok) return void (failure.value = answer.error);
-    page.value += 1;
-    board.value = {...answer.value, plans: [...board.value.plans, ...answer.value.plans]};
+    const shown = new Set(board.value.plans.map((plan) => plan.id));
+    board.value = {...answer.value, plans: [...board.value.plans, ...answer.value.plans.filter((plan) => !shown.has(plan.id))]};
 }
 
 const choose = (name) => {
     tab.value = name;
+    board.value = {...board.value, plans: []};
     load();
 };
 const shown = computed(() => board.value.plans);

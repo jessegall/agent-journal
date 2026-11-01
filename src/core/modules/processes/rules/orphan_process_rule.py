@@ -15,10 +15,14 @@ from core.modules.processes.support.output_folder import OutputFolder
 from core.modules.processes.support.process_settings import ProcessSettings
 
 
+TICK_GAP_SECONDS = 150
+
+
 class OrphanProcessRule(DriverRule):
     """On each tick, a run of the agent whose shell has given no sign of life for longer than the limit is
     ended lost and the agent is told; a run whose folder holds an end the server never heard of is ended
-    from the folder."""
+    from the folder. The first tick after a long gap, a machine that slept, ends nothing lost, since no heartbeat
+    could have been written either."""
 
     name = "processes.orphan-process"
     hook = HookEventName.TICK
@@ -30,16 +34,17 @@ class OrphanProcessRule(DriverRule):
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         answer = RuleAnswer.allowed()
+        woke = self.folder.tick_gap_seconds(hook.agent_id, hook.timestamp) > TICK_GAP_SECONDS
         for process in tuple(self.processes.agent(hook.agent_id).running().oldest().all_rows()):
-            answer = self.checked(answer, hook, process)
+            answer = self.checked(answer, hook, process, woke)
         return answer
 
-    def checked(self, answer: RuleAnswer, hook: AgentHook, process: Process) -> RuleAnswer:
+    def checked(self, answer: RuleAnswer, hook: AgentHook, process: Process, woke: bool) -> RuleAnswer:
         code = self.folder.end(process.id)
         if code is not None:
             return answer.running(*self.parts_ended(process), self.ended(process, code))
         last_sign = self.folder.heartbeat(process.id) or process.created_at
-        if last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
+        if woke or last_sign is None or last_sign.elapsed_seconds(hook.timestamp) <= self.settings.integer(ProcessSetting.ORPHAN_SECONDS, hook.environment_id):
             return answer
         return RuleAnswer(refusal=answer.refusal, nudges=[*answer.nudges, PROCESS_LOST.nudge(process=process.id)], commands=[*answer.commands, OrphanProcess(process.id)])
 

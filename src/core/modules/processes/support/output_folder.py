@@ -65,6 +65,12 @@ class OutputFolder:
     def beat(self, process_id: int, timestamp: Timestamp) -> None:
         self.write(process_id, HEARTBEAT_FILE, timestamp.text)
 
+    def tick_gap_seconds(self, agent_id: int, timestamp: Timestamp) -> float:
+        path = self.home.folder / FOLDER_NAME / f"tick-{agent_id}"
+        before = path.read_text() if path.exists() else timestamp.text
+        path.write_text(timestamp.text)
+        return Timestamp.parsed(before).elapsed_seconds(timestamp)
+
     def heartbeat(self, process_id: int) -> Timestamp | None:
         text = self.text(process_id, HEARTBEAT_FILE).strip()
         return Timestamp.parsed(text) if text else None

@@ -13,7 +13,7 @@ const search = ref(null);
 const board = ref([]);
 const failure = ref("");
 const loaded = ref(false);
-const pages = ref({});
+const extended = ref(new Set());
 const query = ref("");
 
 async function load() {
@@ -23,19 +23,24 @@ async function load() {
     if (!answer.ok) return;
     if (context.shared) return void (board.value = [{state: answer.value.state, total: 1, rows: [answer.value]}]);
     const held = new Map(board.value.map((group) => [group.state, group]));
-    board.value = answer.value.groups.map((group) => {
-        const extra = pages.value[group.state] > (FINISHED.has(group.state) ? 0 : 1) ? held.get(group.state)?.rows ?? [] : [];
-        const first = new Set(group.rows.map((row) => row.id));
-        return {...group, rows: [...group.rows, ...extra.filter((row) => !first.has(row.id))]};
-    });
+    board.value = await Promise.all(answer.value.groups.map((group) => withHeldRows(group, held.get(group.state))));
+}
+
+// a group shown past its first page reads again as many rows as it shows, so a task that moved leaves it
+async function withHeldRows(group, held) {
+    if (!extended.value.has(group.state) || !held?.rows.length) return group;
+    const answer = await context.read(`task board --state ${group.state} --limit ${held.rows.length}`);
+    return answer.ok ? answer.value.groups[0] : group;
 }
 
 async function more(group) {
-    const page = (pages.value[group.state] ?? (FINISHED.has(group.state) ? 0 : 1)) + 1;
-    const answer = await context.read(`task board --state ${group.state} --page ${page}`);
+    const before = group.rows.length ? ` --before-id ${Math.min(...group.rows.map((row) => row.id))}` : "";
+    const answer = await context.read(`task board --state ${group.state}${before}`);
     if (!answer.ok) return void (failure.value = answer.error);
-    pages.value = {...pages.value, [group.state]: page};
-    group.rows = [...group.rows, ...answer.value.groups[0].rows];
+    extended.value = new Set([...extended.value, group.state]);
+    const current = board.value.find((held) => held.state === group.state);
+    const shown = new Set(current.rows.map((row) => row.id));
+    current.rows = [...current.rows, ...answer.value.groups[0].rows.filter((row) => !shown.has(row.id))];
 }
 
 const groups = computed(() => {

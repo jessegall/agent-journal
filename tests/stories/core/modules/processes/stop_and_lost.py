@@ -13,7 +13,7 @@ ORPHAN_LINE = "process 1 was lost: its shell is gone; journal output read 1 --su
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = start_process(story, "sleep 60")
-    group = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    group = subprocess.Popen(["sh", "-c", "sleep 60; true", "journal-run", f"processes/{process.id}/run.sh"], start_new_session=True)
     try:
         story.container.get(OutputFolder).write_pid(process.id, group.pid)
         story.run("wait on 'the sleep' --target processes:1", actor=story.agent)
@@ -45,7 +45,7 @@ def test_a_heartbeat_older_than_90_seconds_ends_the_run_lost_and_tells_the_agent
 def test_a_run_ended_lost_has_what_is_left_of_its_group_killed(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     process = moved_run(story, "make build")
-    group = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    group = subprocess.Popen(["sh", "-c", "sleep 60; true", "journal-run", f"processes/{process.id}/run.sh"], start_new_session=True)
     try:
         folder = story.container.get(OutputFolder)
         folder.write_pid(process.id, group.pid)
@@ -71,3 +71,35 @@ def test_an_end_in_the_folder_the_server_never_heard_of_is_taken_from_the_folder
     story.tick("s-1")
     story.expect_success("process show 1", "state: failed", "exit_code: 3", actor=story.agent)
     story.expect_text("process-part list --process 1", "failed")
+
+
+def test_a_pid_gone_to_another_program_is_not_killed(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    other = subprocess.Popen(["sleep", "60"], start_new_session=True)
+    try:
+        folder = story.container.get(OutputFolder)
+        folder.write_pid(process.id, other.pid)
+        folder.beat(process.id, story.clock.timestamp())
+        story.advance(timedelta(seconds=100))
+        story.tick("s-1")
+        story.expect_success("process show 1", "state: orphaned", actor=story.agent)
+        time.sleep(0.2)
+        assert other.poll() is None, "another program with the pid was killed"
+    finally:
+        other.kill()
+        other.wait()
+
+
+def test_the_first_tick_after_a_machine_slept_ends_nothing_lost(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = moved_run(story, "make build")
+    folder = story.container.get(OutputFolder)
+    folder.beat(process.id, story.clock.timestamp())
+    story.tick("s-1")
+    story.advance(timedelta(seconds=600))
+    story.tick("s-1")
+    story.expect_success("process show 1", "state: background", actor=story.agent)
+    story.advance(timedelta(seconds=60))
+    story.tick("s-1")
+    story.expect_success("process show 1", "state: orphaned", actor=story.agent)
