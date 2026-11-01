@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_event_error import HookEventError
-from core.base.driver.hook_fields import mapping, text, texts
+from core.base.driver.hook_fields import mapping, mappings, text, texts
 from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
 
@@ -31,7 +31,7 @@ class Tool:
         if category not in ToolType:
             raise HookEventError(f"a tool's category is one of {', '.join(ToolType)}, not {category!r}")
         return cls(text(fields, "name"), ToolType(category), texts(fields, "files"), ShellLine.parsed(shell) if shell is not None else None,
-                   DiffCount.parsed(diff) if diff is not None else None, tuple(fields.get("diff_rows") or ()))
+                   DiffCount.parsed(diff) if diff is not None else None, mappings(fields, "diff_rows"))
 
     @property
     def is_journal_line(self) -> bool:

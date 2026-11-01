@@ -261,7 +261,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
         <template v-if="phone">
             <template v-if="picked">
                 <section class="pane phone-pane">
-                    <div :class="['pane-body', {contained: pane.options?.width === 'contained'}]">
+                    <div class="pane-body">
                         <WindowPane
                             :key="picked"
                             :name="picked"

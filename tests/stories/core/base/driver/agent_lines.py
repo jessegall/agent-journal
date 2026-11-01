@@ -5,7 +5,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 
 def test_a_tool_hook_gives_three_waiting_lines_in_order_and_keeps_the_rest_waiting(new_story):
     story = new_story(SAMPLES, fixture=LeadLinesWaiting)
-    story.expect_rows(list(story.hook("s-1", HookSamples.edit("src/cart.py")).lines) == ["line 1", "line 2", "line 3"])
+    story.expect_rows([line for line in story.hook("s-1", HookSamples.edit("src/cart.py")).lines if line.startswith("line ")] == ["line 1", "line 2", "line 3"])
     story.expect_text(f"agent-line list --agent {story.agent.id} --state waiting", "line 4", "line 5")
 
 

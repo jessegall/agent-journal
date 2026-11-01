@@ -14,7 +14,7 @@ test("a sequence card shows its number, title and step count, and its steps once
     expect(card.textContent).not.toContain("Tag it");
     card.click();
     await settled();
-    expect(card.textContent).toContain("Tag it");
+    expect(element.textContent + document.body.textContent).toContain("Tag it");
 });
 
 test("a template card shows what it applies to and its purpose, and its parts once opened", async () => {

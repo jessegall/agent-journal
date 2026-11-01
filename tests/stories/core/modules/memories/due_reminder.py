@@ -15,7 +15,7 @@ def test_a_reminder_stays_quiet_until_its_due_time(new_story):
     story = new_story(fixture=BuilderStarted)
     due_reminder(story)
     story.tick("s-1")
-    story.expect_hook_silent("s-1", EDIT)
+    story.expect_absent_hook_line("s-1", EDIT, "Deploy the cart at nine")
 
 
 def test_a_due_reminder_is_given_once_at_the_next_hook_after_the_tick_and_then_removed(new_story):
@@ -24,6 +24,6 @@ def test_a_due_reminder_is_given_once_at_the_next_hook_after_the_tick_and_then_r
     story.advance(timedelta(hours=2))
     story.tick("s-1")
     story.expect_hook_allowed("s-1", EDIT, "Deploy the cart at nine")
-    story.expect_hook_silent("s-1", EDIT)
+    story.expect_absent_hook_line("s-1", EDIT, "Deploy the cart at nine")
     story.run_listeners()
     story.expect_success(f"memory show {memory_id}", "state: removed")

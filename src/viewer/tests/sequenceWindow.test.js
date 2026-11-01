@@ -52,7 +52,7 @@ test("the steps of a sequence are edited and saved", async () => {
     await settle();
     panel().querySelector("[data-sequence-save]").click();
     await settle();
-    expect(ran).toContainEqual(["sequence", "edit", "1", "--steps", "Tag it"]);
+    expect(ran).toContainEqual(["sequence", "edit", "1", "--steps", "Tag it", "--step-guards", JSON.stringify([{file_edits_allowed: true, allowed_commands: []}])]);
 });
 
 test("a run shows on the card and in the sequence with the step it is on", async () => {

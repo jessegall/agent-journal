@@ -6,7 +6,7 @@ from core.base.database.statement import Statement
 from core.base.registry.registry import Registry
 from core.base.subcommand.output import Output
 from core.base.subcommand.read_subcommand import ReadSubcommand
-from core.modules.drivers.support.nudge_board import NudgeRow
+from core.modules.drivers.support.nudge_row import NudgeRow
 
 SAID = Statement("SELECT key, SUM(said_count) AS said_count, MAX(last_said_at) AS last_said_at FROM nudge_records GROUP BY key")
 

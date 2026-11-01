@@ -49,7 +49,7 @@ class HookSamples:
 
     @staticmethod
     def subagent() -> HookSample:
-        return HookSamples.sample("pre_tool_use", {"name": "Agent", "category": ToolType.AGENT, "files": [], "diff": None})
+        return HookSamples.sample("pre_tool_use", {"name": "Agent", "category": ToolType.AGENT, "files": [], "diff": None}).with_fields(raw={"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted"}})
 
     @staticmethod
     def tick() -> HookSample:

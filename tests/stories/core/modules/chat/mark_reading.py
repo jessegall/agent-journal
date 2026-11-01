@@ -33,7 +33,7 @@ def test_a_mark_is_shown_by_its_id(new_story):
 def test_the_chat_window_reads_marks_and_follows_their_events(new_story):
     story = new_story(fixture=UserJoined)
     window = Registry.read(story.container.get(Database)).window("messages.chat")
-    assert {"chat-mark list", "chat-mark show"} <= set(window.reads) and "chat_mark.*" in window.events
+    assert {"chat-mark main", "chat-mark show"} <= set(window.reads) and "chat_mark.*" in window.events
 
 
 def test_a_long_chat_is_read_one_page_at_a_time_newest_first(new_story):

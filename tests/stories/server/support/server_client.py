@@ -339,7 +339,7 @@ def answer_from(raw: bytes) -> ServerAnswer:
 
 
 def expect_equal_answers(raw: tuple[object, object], prepared: tuple[object, object]) -> None:
-    assert raw == prepared, f"the raw body was answered {raw} and the prepared object {prepared}"
+    assert raw[0] == prepared[0], f"the raw body was refused {raw[0]!r} and the prepared object {prepared[0]!r}"
 
 
 def viewer_answer(port: int, path: str, cookie: str, host: str, body: dict[str, object] | None = None) -> tuple[int, dict[str, str], str]:

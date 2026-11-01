@@ -10,7 +10,7 @@ def test_the_final_text_block_of_an_agent_turn_becomes_a_chat_message_of_the_age
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.message_display("The totals are fixed."))
     assert "The totals are fixed." in messages_text(story)
-    story.expect_success("message list", f"1  {story.agent.id}  agent  The totals are fixed.  []  {{}}  []")
+    story.expect_success("message list", f"1  {story.agent.id}  agent  The totals are fixed.  []  {{}}  []  []")
 
 
 def test_the_same_display_hook_sent_twice_makes_one_message(new_story):

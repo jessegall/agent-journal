@@ -21,6 +21,9 @@ class Background:
     def alias_runs(self, shell: ShellLine) -> list[object]:
         return []
 
+    def alias_names(self, shell: ShellLine) -> tuple[str, ...]:
+        return ()
+
 
 class Rows:
     """Stands in for the process and message queries: whether the line went past the limit and whether a

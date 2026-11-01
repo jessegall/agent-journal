@@ -29,3 +29,10 @@ def mapping(value: object, name: str) -> Mapping[object, object]:
     if not is_mapping(value):
         raise HookEventError(f"{name} is an object, not {value!r}")
     return value
+
+
+def mappings(fields: Mapping[str, object], name: str) -> tuple[Mapping[str, object], ...]:
+    rows = fields.get(name)
+    if not is_list(rows):
+        return ()
+    return tuple(mapping(row, name) for row in rows)

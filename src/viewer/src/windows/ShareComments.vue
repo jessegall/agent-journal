@@ -1,5 +1,6 @@
 <script setup>
 import {onMounted, ref} from "vue";
+import {transport} from "../api/transport.js";
 import Btn from "../kit/Btn.vue";
 
 const ROUTE = "/api/share/comments";
@@ -18,11 +19,11 @@ async function take(answer) {
 }
 
 async function send() {
-    const sent = await take(await fetch(ROUTE, {method: "POST", body: JSON.stringify({name: name.value, text: text.value})}));
+    const sent = await take(await transport.raw(ROUTE, {method: "POST", body: JSON.stringify({name: name.value, text: text.value})}));
     if (sent) text.value = "";
 }
 
-onMounted(async () => take(await fetch(ROUTE)));
+onMounted(async () => take(await transport.raw(ROUTE)));
 </script>
 
 <template>

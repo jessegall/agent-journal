@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
-import {EmptyState, useRows, useWindow} from "@journal/window-kit";
+import {EmptyState, Skeleton, useRows, useWindow} from "@journal/window-kit";
 
 // the commands an agent ran, as version 4's terminal listed them, oldest above, each opening to its whole line, and a line typed here goes to its terminal
 const COMMAND_TOOLS = new Set(["Bash", "Monitor", "shell", "exec_command"]);
@@ -57,7 +57,10 @@ function focusInput(event) {
         <template v-if="failure">
             <p class="terminal-failure">{{ failure }}</p>
         </template>
-        <template v-else-if="loaded && !commands.length">
+        <template v-else-if="!loaded">
+            <Skeleton shape="text" />
+        </template>
+        <template v-else-if="!commands.length">
             <EmptyState title="No commands from this agent yet" />
         </template>
         <template v-else>
