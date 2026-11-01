@@ -109,3 +109,53 @@ test("a priority is changed from the inspector", async () => {
     await settle();
     expect(ran).toContainEqual(["task", "edit", "7", "--priority", "high"]);
 });
+
+async function menuItem(selector, trigger) {
+    document.querySelector(trigger).click();
+    await settle();
+    return document.querySelector(selector);
+}
+
+test("the filter menu narrows the list by status, shows a chip and clears", async () => {
+    const {shown} = await dialog();
+    (await menuItem('[data-filter-state="blocked"]', "[data-menu-filter]")).click();
+    await settle();
+    expect(document.querySelector("[data-task-filters]").textContent).toContain("Status: Blocked");
+    expect(shown.querySelector('section[data-state="open"]')).toBeNull();
+    document.querySelector("[data-clear-filters]").click();
+    await settle();
+    expect(document.querySelector("[data-task-filters]")).toBeNull();
+});
+
+test("the display menu hides the numbers, flattens the groups and shows completed tasks", async () => {
+    const {shown} = await dialog();
+    expect(shown.querySelector('section[data-state="completed"]')).toBeNull();
+    (await menuItem("[data-show-done]", "[data-menu-display]")).click();
+    await settle();
+    expect(shown.querySelector('section[data-state="completed"]')).not.toBeNull();
+    document.querySelector('[data-shown="number"]').click();
+    await settle();
+    expect(shown.querySelector(".task-id")).toBeNull();
+    document.querySelector('[data-grouping="none"]').click();
+    await settle();
+    expect(shown.querySelector(".tasks-group-head")).toBeNull();
+});
+
+test("the keys menu lists the keys", async () => {
+    await dialog();
+    document.querySelector("[data-menu-keys]").click();
+    await settle();
+    expect(document.body.textContent).toContain("List or graph");
+});
+
+test("deleting from the more menu asks a second time", async () => {
+    const {ran, shown} = await dialog();
+    shown.querySelector('[data-row="7"]').click();
+    await settle();
+    (await menuItem("[data-delete-task]", "[data-menu-more]")).click();
+    await settle();
+    expect(ran).not.toContainEqual(["task", "delete", "7"]);
+    document.querySelector("[data-delete-task]").click();
+    await settle();
+    expect(ran).toContainEqual(["task", "delete", "7"]);
+});

@@ -20,3 +20,4 @@ class TaskCard(ViewModel):
     title: str
     state: TaskState
     priority: TaskPriority
+    reason: str

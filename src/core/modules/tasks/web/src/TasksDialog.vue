@@ -1,8 +1,10 @@
 <script setup>
 import {computed, nextTick, onMounted, onUnmounted, ref} from "vue";
-import {Btn, Dialog, Icon, TaskInspector, useWindow} from "@journal/window-kit";
+import {Btn, Dialog, Icon, Segmented, TaskInspector, useWindow} from "@journal/window-kit";
 import NewTask from "./NewTask.vue";
+import TaskGraphView from "./TaskGraphView.vue";
 import TaskGroups from "./TaskGroups.vue";
+import TasksMenus from "./TasksMenus.vue";
 
 // the place to manage tasks, as version 4's dialog: the groups of tasks on the left, the one selected in the inspector on the right, and keys for all of it
 const TYPING = "input,textarea,select,[contenteditable],.menu-panel";
@@ -15,6 +17,26 @@ const selected = ref(0);
 const inspecting = ref(false);
 const drafting = ref(false);
 const changes = ref(0);
+const VIEWS = [
+    {key: "list", label: "List"},
+    {key: "graph", label: "Graph"},
+];
+const view = ref("list");
+const states = ref([]);
+const display = ref({grouping: "state", number: true, reason: false, showDone: false});
+const searched = computed(() => list.value?.query ?? "");
+const filtered = computed(() => view.value === "list" && Boolean(states.value.length || searched.value));
+const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
+
+function clearFilter() {
+    states.value = [];
+    if (list.value) list.value.query = "";
+}
+
+function deleted() {
+    inspecting.value = false;
+    selected.value = 0;
+}
 const stopFollowing = context.follow(["task.*"], () => (changes.value += 1));
 onUnmounted(() => stopFollowing?.());
 
@@ -49,7 +71,8 @@ const KEYS = {
     k: () => step(-1),
     Enter: () => selected.value && (inspecting.value = true),
     " ": () => selected.value && (inspecting.value = !inspecting.value),
-    c: () => (drafting.value = true),
+    c: () => ((view.value = "list"), (drafting.value = true)),
+    v: () => (view.value = view.value === "list" ? "graph" : "list"),
     s: () => inspecting.value && inspector.value?.openStatus(document.querySelector(".tasks-dialog [data-task-state]")),
     "/": () => list.value?.focusSearch(),
 };
@@ -84,18 +107,42 @@ onUnmounted(() => {
                 <h2>Tasks</h2>
                 <span class="standing" data-tasks-standing>{{ standing }}</span>
                 <span class="grow" />
+                <Segmented :options="VIEWS" :value="view" @pick="view = $event" />
+                <TasksMenus :states="states" :display="display" :selected="selected" @states="states = $event" @display="display = $event" @deleted="deleted" />
                 <Btn small title="New task (C)" data-new-task @click="drafting = true">
                     <Icon name="plus" :size="12" />
                     New task
                 </Btn>
                 <Btn small aria-label="Close the tasks (Esc)" data-tasks-close @click="open = false"><Icon name="close" :size="13" /></Btn>
             </header>
+            <template v-if="filtered">
+                <div class="filters" data-task-filters>
+                    <template v-if="states.length">
+                        <span class="chip">
+                            Status: {{ states.map(name).join(" or ") }}
+                            <button type="button" title="Remove this filter" aria-label="Remove this filter" @click="states = []">×</button>
+                        </span>
+                    </template>
+                    <template v-if="searched">
+                        <span class="chip">
+                            Search: “{{ searched }}”
+                            <button type="button" title="Clear the search" aria-label="Clear the search" @click="list.query = ''">×</button>
+                        </span>
+                    </template>
+                    <button type="button" class="clear" data-clear-filters @click="clearFilter">Clear all</button>
+                </div>
+            </template>
             <div class="tasks-body">
                 <div class="tasks-list">
                     <template v-if="drafting">
                         <NewTask @filed="filed" @cancel="drafting = false" />
                     </template>
-                    <TaskGroups ref="list" selectable :selected="selected" @select="select" />
+                    <template v-if="view === 'graph'">
+                        <TaskGraphView :selected="selected" @select="select" />
+                    </template>
+                    <div v-show="view === 'list'">
+                        <TaskGroups ref="list" selectable :selected="selected" :states="states" :display="display" @select="select" />
+                    </div>
                 </div>
                 <template v-if="inspecting && selected">
                     <TaskInspector ref="inspector" stepped :id="selected" :read="context.run" :changes="changes" @close="inspecting = false" @step="step" @select="select" />
@@ -106,6 +153,36 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    padding: 6px 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.chip {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 1px 4px 1px 8px;
+    border-radius: 99px;
+    background: var(--hover);
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.chip button,
+.clear {
+    border: 0;
+    background: none;
+    color: var(--text-3);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
 .tasks-dialog {
     position: relative;
     display: flex;

@@ -6,7 +6,13 @@ import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
 // and each group pages on its own
 const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
-const props = defineProps({selectable: Boolean, selected: {type: Number, default: 0}});
+const FLAT_STATE = "all";
+const props = defineProps({
+    selectable: Boolean,
+    selected: {type: Number, default: 0},
+    states: {type: Array, default: () => []},
+    display: {type: Object, default: () => ({grouping: "state", number: true, reason: false, showDone: true})},
+});
 const emit = defineEmits(["select"]);
 const context = useWindow();
 const search = ref(null);
@@ -43,18 +49,22 @@ async function more(group) {
     current.rows = [...current.rows, ...answer.value.groups[0].rows.filter((row) => !shown.has(row.id))];
 }
 
+const shownGroup = (group) => group.total && (props.states.length ? props.states.includes(group.state) : props.display.showDone || !FINISHED.has(group.state));
 const groups = computed(() => {
     const wanted = query.value.trim().toLowerCase();
-    return board.value
-        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}))
-        .filter(({group}) => group.total);
+    const shown = board.value
+        .filter(shownGroup)
+        .map((group) => ({group, tasks: group.rows.filter((row) => !wanted || `${row.title} ${row.id}`.toLowerCase().includes(wanted))}));
+    if (props.display.grouping === "state") return shown;
+    const tasks = shown.flatMap((entry) => entry.tasks).sort((one, other) => other.id - one.id);
+    return tasks.length ? [{group: {state: FLAT_STATE, total: tasks.length, rows: tasks}, tasks}] : [];
 });
 const name = (state) => state.slice(0, 1).toUpperCase() + state.slice(1);
 const pick = (id) => (props.selectable ? emit("select", id) : peekRef(`tasks:${id}`));
 const stopFollowing = context.follow(["task.*"], load);
 onUnmounted(() => stopFollowing?.());
 load();
-defineExpose({groups, focusSearch: () => search.value?.focus()});
+defineExpose({groups, query, focusSearch: () => search.value?.focus()});
 </script>
 
 <template>
@@ -75,12 +85,19 @@ defineExpose({groups, focusSearch: () => search.value?.focus()});
             </template>
             <template v-for="{group, tasks} in groups" :key="group.state">
                 <section class="tasks-group" :data-state="group.state">
-                    <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
+                    <template v-if="group.state !== FLAT_STATE">
+                        <h3 class="tasks-group-head">{{ name(group.state) }} <span class="tasks-count">{{ group.total }}</span></h3>
+                    </template>
                     <template v-for="row in tasks" :key="row.id">
                         <div :class="['task', {selected: selectable && row.id === selected}]" :data-row="row.id" role="button" tabindex="0" @click="pick(row.id)" @keydown.enter="pick(row.id)">
                             <span :class="['task-mark', row.state]" />
-                            <span class="task-id">{{ row.id }}</span>
+                            <template v-if="display.number">
+                                <span class="task-id">{{ row.id }}</span>
+                            </template>
                             <span class="task-title">{{ row.title }}</span>
+                            <template v-if="display.reason && row.reason">
+                                <span class="task-reason" data-task-reason>{{ row.reason }}</span>
+                            </template>
                             <template v-if="row.priority && row.priority !== 'normal'">
                                 <span class="task-priority">{{ row.priority }}</span>
                             </template>
@@ -96,6 +113,16 @@ defineExpose({groups, focusSearch: () => search.value?.focus()});
 </template>
 
 <style scoped>
+.task-reason {
+    overflow: hidden;
+    min-width: 0;
+    max-width: 40%;
+    color: var(--text-3);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .tasks-more {
     margin: 4px 0 0 8px;
     padding: 2px 8px;
