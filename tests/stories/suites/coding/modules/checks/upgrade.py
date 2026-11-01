@@ -1,5 +1,7 @@
 import json
 
+from core.base.query.queries import Queries
+from suites.coding.modules.checks.models.check import Check
 from tests.stories.core.base.upgrade.support.fixture_upgrade import repeated_upgrade, upgraded_story
 
 
@@ -23,7 +25,7 @@ def test_a_check_with_no_title_is_skipped_and_the_wait_target_flag_is_counted_as
 
 def test_the_checks_moved_are_counted_and_a_second_run_moves_none(new_story):
     story = upgraded_story(new_story)
-    assert "journal.suites.coding.checks: moved 5, already moved 0" in story.upgrade_text
+    assert "journal.suites.coding.checks: moved 6, already moved 0" in story.upgrade_text
     assert repeated_upgrade(story).text == "nothing left to move"
 
 
@@ -34,4 +36,10 @@ def test_a_check_that_blocks_a_task_moves_as_that_tasks_wait(new_story):
     assert waiting["task_wait_id"] is not None and waiting["removed_at"] is None
     assert not any(row["title"] == "task 1 waits until this passes" for row in checks)
     story.expect_text("task show 3", "state: blocked", actor=story.user)
+
+
+def test_a_retired_check_gives_a_blocked_task_no_wait_of_its_own(new_story):
+    story = upgraded_story(new_story)
+    retired = list(story.container.get(Queries).query(Check).filter(title="Task 3 waits until this passes").all_rows())
+    story.expect_rows(len(retired) == 1, retired[0].removed_at is not None, retired[0].task_wait_id is None)
 

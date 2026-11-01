@@ -66,7 +66,7 @@ class ChecksMove(VersionFourMove):
         reported = datetime.fromtimestamp(row["failure_reported_at"], timezone.utc).isoformat() if row["failure_reported_at"] else None
         passed = None if row["last_passed"] is None else int(bool(row["last_passed"]))
         interval = int(row["interval"]) if row["interval"] else 0
-        wait_id = rows.insert("task_waits", {"task_id": waiting.task_id, "creator_id": creator_id, "command": row["command"], "interval_minutes": interval, "created_at": created, "updated_at": updated}) if waiting.is_blocked else None
+        wait_id = rows.insert("task_waits", {"task_id": waiting.task_id, "creator_id": creator_id, "command": row["command"], "interval_minutes": interval, "created_at": created, "updated_at": updated}) if waiting.is_blocked and not row["is_retired"] else None
         removed_at = updated if row["is_retired"] or (waiting.is_named and not waiting.is_blocked) else None
         return rows.insert(TABLE, {"id": row["id"], "creator_id": creator_id, "title": row["title"], "command": row["command"], "brief": row["brief"] or "",
                                    "interval_minutes": interval, "last_passed": passed, "last_output": row["last_output"] or "",

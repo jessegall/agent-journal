@@ -215,6 +215,7 @@ ROWS = (
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("Old check", "", "true", 0, 1, STAMP, USER)),
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("", "", "true", 0, 0, STAMP, USER)),
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("task 3 waits until this passes", "", "test -f price-list.csv", 60, 0, STAMP, USER)),
+    ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("Task 3 waits until this passes", "", "test -f old-list.csv", 60, 1, STAMP, USER)),
     ("checks", "(title, brief, command, interval, is_retired, created_at, creator)", ("task 1 waits until this passes", "", "true", 60, 0, STAMP, USER)),
     ("secrets", SECRET_COLUMNS, ("Github", "gh api user", "api key", GITHUB_FIELDS, '["key"]', '["head"]', '["curl"]', 1, "", None, STAMP, USER)),
     ("secrets", SECRET_COLUMNS, ("AWS console", "", "login", AWS_FIELDS, "[]", "[]", "[]", 0, "", None, STAMP, USER)),
