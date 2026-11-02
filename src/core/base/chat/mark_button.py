@@ -10,6 +10,7 @@ class MarkButton:
     label: str
     runs: str
     primary: bool = False
+    variants: tuple[str, ...] = ()
 
     def listed(self) -> dict[str, str]:
         return asdict(self)

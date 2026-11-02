@@ -61,3 +61,18 @@ test("a docked process's card shows the run live: its state and the last lines o
     expect(head.querySelector(".output-dock-title").textContent).toBe("make build");
     expect([...element.querySelectorAll(".output-dock-lines li")].map((line) => line.textContent)).toEqual(["compiling the cart", "[ 40%]"]);
 });
+
+test("a button that names variants shows only on a mark of one of them", async () => {
+    const {default: MarkButtons} = await import("../src/chat/MarkButtons.vue");
+    const {createApp, h} = await import("vue");
+    const {WINDOW_CONTEXT} = await import("../src/windows/windowContext.js");
+    const drawn = (variant) => {
+        const element = document.createElement("div");
+        const app = createApp({render: () => h(MarkButtons, {mark: {variant, target_id: 1}, buttons: [{icon: "dock", label: "Dock", runs: "dock add", variants: ["running"]}, {icon: "close", label: "Open", runs: "x"}]})});
+        app.provide(WINDOW_CONTEXT, {environment: "main"});
+        app.mount(element);
+        return [...element.querySelectorAll("button")].map((button) => button.title);
+    };
+    expect(drawn("running")).toEqual(["Dock", "Open"]);
+    expect(drawn("finished")).toEqual(["Open"]);
+});

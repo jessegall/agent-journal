@@ -4,12 +4,13 @@ from core.base.command.command import Command
 from core.modules.documents.models.text_row import TextRow
 from core.modules.messages.models.message import Message
 from core.modules.plans.models.plan import Plan
+from core.modules.tasks.models.task import Task
 
 
 @dataclass(frozen=True)
 class CommentText(Command[Message]):
-    """Writes a comment on a document, a report or a plan: a message in the chat linked to the row it is about."""
+    """Writes a comment on a document, a report, a plan or a task: a message in the chat linked to the row it is about."""
 
-    text_model: type[TextRow] | type[Plan]
+    text_model: type[TextRow] | type[Plan] | type[Task]
     row_id: int
     text: str

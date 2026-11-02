@@ -5,7 +5,7 @@ import {WINDOW_CONTEXT} from "../windows/windowContext.js";
 import {pressable, pressButton} from "./markButtons.js";
 
 const props = defineProps({buttons: {type: Array, default: () => []}, mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
-const offered = computed(() => pressable(props.buttons, props.allowedRuns));
+const offered = computed(() => pressable(props.buttons, props.allowedRuns).filter((button) => !button.variants?.length || button.variants.includes(props.mark.variant)));
 const refusal = ref("");
 const context = inject(WINDOW_CONTEXT);
 

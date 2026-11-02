@@ -12,6 +12,9 @@ import RowMoves from "../resource/RowMoves.vue";
 import {updatedAt} from "../domain/row.js";
 import {ago} from "../format/time.js";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
+import CommentSide from "../resource/CommentSide.vue";
+import QuickCommentBar from "../kit/QuickCommentBar.vue";
+import {useTextComments} from "../composables/textComments.js";
 
 // one task as version 4's inspector drew it: where it stands, why it stopped, what it waits on, its brief and log, and what can be done to it
 const PRIORITIES = [
@@ -22,7 +25,7 @@ const PRIORITIES = [
 const FINISHED = new Set(["completed", "cancelled"]);
 const LONG_BRIEF = 180;
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, lone: Boolean, stepped: Boolean, backed: Boolean, changes: {type: Number, default: 0}});
-const emit = defineEmits(["close", "step", "select", "back"]);
+const emit = defineEmits(["close", "step", "select", "back", "comments"]);
 const task = ref(null);
 const place = ref(null);
 const failure = ref("");
@@ -30,6 +33,8 @@ const refusal = ref("");
 const briefWhole = ref(false);
 const menu = ref(null);
 const footer = ref(null);
+const textComments = useTextComments(() => (task.value ? {kind: "task", id: props.id, title: task.value.title} : {}), (line) => props.read(line));
+watch(textComments.open, (open) => emit("comments", open));
 let reading = 0;
 
 const iconOf = (state) => (FINISHED.has(state) ? "done" : state);
@@ -93,6 +98,7 @@ defineExpose({openStatus});
             <div class="body"><Skeleton /></div>
         </template>
         <template v-else>
+            <div class="body-row">
             <div :key="task.id" class="body">
                 <div class="stamp">Task {{ task.id }} · updated {{ ago(updatedAt(task)) || "just now" }}</div>
                 <h3 class="title" data-resource-title>{{ task.title }}</h3>
@@ -179,6 +185,11 @@ defineExpose({openStatus});
                     </section>
                 </template>
             </div>
+            <template v-if="textComments.open.value">
+                <CommentSide :comments="textComments.comments.value" :words="textComments.words" @close="textComments.open.value = false" />
+            </template>
+            </div>
+            <QuickCommentBar :send="textComments.send" :count="textComments.comments.value.length" @show="textComments.open.value = !textComments.open.value" />
         </template>
         <RowMoves ref="footer" kind="task" :id="id" :row="task" :read="read" @done="load" />
         <template v-if="menu">
@@ -200,6 +211,17 @@ defineExpose({openStatus});
     width: 440px;
     min-height: 0;
     border-left: 1px solid var(--border);
+}
+
+.body-row {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.body-row > .body {
+    flex: 1;
+    min-width: 0;
 }
 
 .task-inspector.lone {

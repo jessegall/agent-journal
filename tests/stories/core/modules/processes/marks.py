@@ -79,6 +79,15 @@ def test_the_mark_is_a_process_mark_that_opens_the_output_and_has_a_stop_and_a_d
     assert [(button["label"], button["runs"]) for button in mark.buttons] == [("Stop", "output stop {row_id}"), ("Dock", "dock add processes.output process {row_id}")]
 
 
+def test_a_finished_process_cannot_be_docked_and_stop_and_dock_are_only_for_a_running_one(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make done")
+    end_run(story, process, "a\n")
+    story.expect_refusal(f"dock add processes.output process {process.id} --environment main", "has ended, so it cannot be docked", actor=story.agent)
+    mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "processes.command")
+    assert [button["variants"] for button in mark.buttons] == [["running", "background"], ["running", "background"]]
+
+
 def test_a_watch_docks_the_output_and_it_leaves_10_seconds_after_its_process_ends_unless_kept(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     user = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)

@@ -10,7 +10,7 @@ def test_a_synced_mark_is_registered_with_every_field_it_declares(new_story):
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.module == "good")
     assert (mark.type, mark.module, mark.family, mark.family_title, mark.group, mark.colouring, list(mark.variants)) == ("good.note", "good", "notes", "Notes", "work", "group", ["plain"])
     assert (mark.label, mark.mark_icon, mark.click, mark.grouping, mark.group_label, mark.body) == ("Notes", "words", "unfold", "family", "{family}: {count} updates", "note.js")
-    assert (list(mark.buttons), mark.shown, mark.main, mark.process, mark.shipped, mark.unavailable_reason) == ([{"icon": "words", "label": "Open", "runs": "task edit {row_id}", "primary": False}], True, True, False, False, "")
+    assert (list(mark.buttons), mark.shown, mark.main, mark.process, mark.shipped, mark.unavailable_reason) == ([{"icon": "words", "label": "Open", "runs": "task edit {row_id}", "primary": False, "variants": []}], True, True, False, False, "")
 
 
 def test_a_synced_dock_is_registered_with_every_field_it_declares(new_story):

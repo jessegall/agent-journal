@@ -11,14 +11,15 @@ from core.modules.documents.models.link import Link
 from core.modules.documents.models.text_row import TextRow
 from core.modules.messages.models.message import Message
 from core.modules.plans.models.plan import Plan
+from core.modules.tasks.models.task import Task
 
 MESSAGE_MODEL = "message"
 
 
 class TextCommentsSubcommand(ReadSubcommand[TextComments]):
-    """`journal <doc, report or plan> comments <n>`: the messages the user wrote on it, oldest first."""
+    """`journal <doc, report, plan or task> comments <n>`: the messages the user wrote on it, oldest first."""
 
-    model: ClassVar[type[TextRow] | type[Plan]]
+    model: ClassVar[type[TextRow] | type[Plan] | type[Task]]
     name = "comments"
 
     def __init__(self, queries: Queries) -> None:

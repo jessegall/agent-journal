@@ -29,7 +29,8 @@ const OWN_INSPECTORS = new Set(["task", "plan"]);
 const TEXT_KINDS = new Set(["question", "memory"]);
 const commentable = computed(() => kind.value === "doc" || kind.value === "report");
 const textComments = useTextComments(() => (commentable.value && row.value ? {kind: kind.value, id: opened.value.id, title: row.value.title} : {}), (line) => props.read(line));
-const wide = computed(() => LONG_KINDS.has(kind.value));
+const taskComments = ref(false);
+const wide = computed(() => LONG_KINDS.has(kind.value) || (kind.value === "task" && taskComments.value));
 const title = computed(() => titleOf(kind.value, row.value, opened.value?.id));
 const text = computed(() => row.value?.body || row.value?.brief || (TEXT_KINDS.has(kind.value) ? row.value?.text : "") || "");
 const html = computed(() => (text.value ? render(text.value, {env: "", rowNames: false}) : ""));
@@ -62,7 +63,7 @@ onUnmounted(() => window.removeEventListener("keydown", closeOnEscape));
             <div v-if="opened" class="veil" @click.self="close">
                 <aside :class="['panel', {wide}]" role="dialog" :aria-label="title" data-resource-panel>
                     <template v-if="kind === 'task'">
-                        <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />
+                        <TaskInspector lone :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" @comments="taskComments = $event" />
                     </template>
                     <template v-else-if="kind === 'plan'">
                         <PlanInspector :backed="route.stack.length > 1" :id="opened.id" :read="read" @close="close" @back="unpeek" @select="(id) => peek('tasks', id)" />

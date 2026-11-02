@@ -107,14 +107,15 @@ def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(new_story):
     assert typing.typed == []
 
 
-def test_a_paused_agent_is_told_nothing_until_it_is_resumed(new_story):
+def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(new_story):
     story = delivery_story(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     story.run(f"agent pause {agent.id}", actor=story.user)
+    typing.typed.clear()
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert typing.typed == []
+    assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
 
 
 def test_with_no_terminal_the_line_waits_for_the_next_hook(new_story):

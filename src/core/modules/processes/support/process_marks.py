@@ -10,8 +10,9 @@ from core.modules.processes.models.enums.process_mark_type import ProcessMarkTyp
 from core.modules.processes.models.enums.process_mark_variant import ProcessMarkVariant
 
 COMMANDS_FAMILY = MarkFamily("processes.commands", "Commands", "terminal", MarkGroup.WORK, MarkColouring.OUTCOME)
-STOP = MarkButton("stop", "Stop", "output stop {row_id}")
-DOCK = MarkButton("dock", "Dock", "dock add processes.output process {row_id}")
+RUNNING_VARIANTS = (ProcessMarkVariant.RUNNING.value, ProcessMarkVariant.BACKGROUND.value)
+STOP = MarkButton("stop", "Stop", "output stop {row_id}", variants=RUNNING_VARIANTS)
+DOCK = MarkButton("dock", "Dock", "dock add processes.output process {row_id}", variants=RUNNING_VARIANTS)
 UNWATCH = MarkButton("close", "Stop watching", "output unwatch {row_id}")
 
 PROCESS_MARKS = [MarkDeclaration(ProcessMarkType.COMMAND, ProcessMarkVariant, COMMANDS_FAMILY, "Commands run", "terminal", click=MarkClick.OPEN_ROW, buttons=[STOP, DOCK], process=True)]

@@ -1,6 +1,7 @@
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from core.base.driver.command_category import CommandCategory
 from core.base.driver.command_effect import CommandEffect
 from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_event_error import HookEventError
@@ -9,6 +10,8 @@ from core.base.driver.shell_line import ShellLine
 from core.base.driver.tool_type import ToolType
 
 WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
+READING_CATEGORIES = (ToolType.READ, ToolType.SEARCH)
+READING_COMMANDS = (CommandCategory.READ, CommandCategory.SEARCH)
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,12 @@ class Tool:
     @property
     def is_journal_line(self) -> bool:
         return self.shell is not None and self.shell.is_journal_line
+
+    @property
+    def is_reading(self) -> bool:
+        if self.category in READING_CATEGORIES:
+            return True
+        return self.shell is not None and self.shell.category in READING_COMMANDS and not self.is_writing_files()
 
     def is_writing_files(self) -> bool:
         if self.category in WRITING_CATEGORIES:

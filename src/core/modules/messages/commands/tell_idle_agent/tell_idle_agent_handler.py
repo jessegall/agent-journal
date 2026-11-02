@@ -16,8 +16,8 @@ from core.modules.messages.support.message_nudges import NEW_MESSAGE
 
 
 class TellIdleAgentHandler(Handler[TellIdleAgent, Message | None]):
-    """An idle main agent sends no hook that could carry a message, so the first of the queue is typed to it; the
-    rest reach it by the hooks that follow, once it wakes."""
+    """An idle main agent, paused or not, sends no hook that could carry a message, so the first of the queue is typed
+    to it; the rest reach it by the hooks that follow, once it wakes."""
 
     command = TellIdleAgent
 
@@ -26,7 +26,7 @@ class TellIdleAgentHandler(Handler[TellIdleAgent, Message | None]):
 
     def handle(self, command: TellIdleAgent, context: Context) -> Message | None:
         agents = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
-        if not agents or agents[0].paused_at is not None or not self.hook_calls.is_idle(agents[0].id):
+        if not agents or not self.hook_calls.is_idle(agents[0].id):
             return None
         waiting = self.queries.query(Message).filter(environment_id=command.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().page(1, 1).rows
         if not waiting or waiting[0].delivered_at is not None:

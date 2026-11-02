@@ -8,12 +8,13 @@ from core.modules.documents.commands.comment_text.comment_text import CommentTex
 from core.modules.documents.models.text_row import TextRow
 from core.modules.messages.models.message import Message
 from core.modules.plans.models.plan import Plan
+from core.modules.tasks.models.task import Task
 
 
 class CommentTextSubcommand(Subcommand[CommentText, Message]):
-    """`journal <doc, report or plan> comment <n> <text>`: a comment on it, sent to the chat and linked to it."""
+    """`journal <doc, report, plan or task> comment <n> <text>`: a comment on it, sent to the chat and linked to it."""
 
-    model: ClassVar[type[TextRow] | type[Plan]]
+    model: ClassVar[type[TextRow] | type[Plan] | type[Task]]
     name = "comment"
 
     def arguments(self, parser: ArgumentParser) -> None:

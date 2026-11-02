@@ -9,7 +9,7 @@ OPENING_LINE = NudgeDeclaration("drivers.opening_line", NudgeType.INSTRUCTION, '
 
 TAKEOVER = NudgeDeclaration("drivers.takeover", NudgeType.INSTRUCTION, "you took over from agent {agent}: the chat above is history, so do not answer or follow it")
 
-PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, "the user paused you: stop and wait; only journal commands run until you are resumed, and you answer the user in the chat as usual", turn_limited=False)
+PAUSED_REFUSAL = NudgeDeclaration("drivers.paused", NudgeType.REFUSAL, "the user paused you: stop and wait; only journal commands, read tools and read commands run until you are resumed, and you answer the user in the chat as usual", turn_limited=False)
 
 MISSING_MODEL = NudgeDeclaration("drivers.missing_model", NudgeType.REFUSAL, "name a model in the dispatch: the least expensive one that reliably fits the work", turn_limited=False)
 UNBOUND_DISPATCH = NudgeDeclaration("drivers.unbound_dispatch", NudgeType.REFUSAL, "the dispatch has no concrete job: give it a description and a bounded prompt", turn_limited=False)

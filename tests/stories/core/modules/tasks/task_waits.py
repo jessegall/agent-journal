@@ -178,3 +178,10 @@ def test_environment_cards_count_running_agents_and_unfinished_tasks(new_story):
     story = new_story(fixture=TwoTasks)
     story.run('task cancel 2 --reason "no"')
     story.expect_text("environment cards --json", '"running_agent_count": 1', '"unfinished_task_count": 1', actor=story.agent)
+
+
+def test_a_comment_on_a_task_is_a_message_linked_to_it(new_story):
+    story = new_story(fixture=TwoTasks)
+    story.expect_text('task comment 1 "Check the rounding" --environment main', "comment written as message", actor=story.user)
+    story.expect_text("task comments 1", "Check the rounding", actor=story.user)
+    story.expect_refusal('task comment 1 " " --environment main', "give the comment's text", actor=story.user)

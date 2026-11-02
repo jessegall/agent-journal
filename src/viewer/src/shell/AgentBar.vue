@@ -28,12 +28,13 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             <template v-if="failure">
                 <span class="agent-failure" role="alert" data-agent-failure>{{ failure }}</span>
             </template>
-            <span class="agent-space" />
             <template v-if="running">
+                <span class="agent-divider" />
                 <Btn kind="icon" :class="['agent-pause', {paused}]" data-agent-pause :aria-label="paused ? 'Resume' : 'Pause'" :title="paused ? 'Resume: the agent carries on where it stopped' : 'Pause: only journal commands run until you resume it'" @click="toggle">
                     <Icon :name="paused ? 'resume' : 'pause'" />
                 </Btn>
             </template>
+            <span class="agent-space" />
             <button type="button" class="agent-helpers" data-helpers title="Helpers running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
             </button>
@@ -57,6 +58,13 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
     padding: 0 16px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
+}
+
+.agent-divider {
+    flex: none;
+    width: 1px;
+    height: 18px;
+    background: var(--border-2);
 }
 
 .agent-pause {

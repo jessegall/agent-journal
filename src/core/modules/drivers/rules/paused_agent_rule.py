@@ -6,14 +6,14 @@ from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
 
 
 class PausedAgentRule(DriverRule):
-    """A paused agent's tool calls are refused until it is resumed, except journal lines, so it can still
-    answer in the chat."""
+    """A paused agent's tool calls are refused until it is resumed, except journal lines, read tools and read
+    commands, so it can still look things up and answer in the chat."""
 
     name = "drivers.paused-agent"
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
-        if tool is not None and tool.is_journal_line:
+        if tool is not None and (tool.is_journal_line or tool.is_reading):
             return RuleAnswer.allowed()
         return RuleAnswer.refused(PAUSED_REFUSAL.nudge())

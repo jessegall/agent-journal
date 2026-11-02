@@ -10,14 +10,15 @@ from core.modules.agents.support.terminal_typing import TerminalTyping
 from core.modules.drivers.commands.enter_agent_line.enter_agent_line import EnterAgentLine
 from core.modules.drivers.models.agent_line import AgentLine
 
+PAUSE_SOURCE = "drivers.pause"
 RESUME_SOURCE = "drivers.resume"
 IDLE_MESSAGE_SOURCE = "messages.idle"
-TERMINAL_SOURCES = (RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
+TERMINAL_SOURCES = (PAUSE_SOURCE, RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
 
 class TypedLineListener(CommitListener):
     """Types a line for an agent that may be sitting idle and so sends no hook that could carry it: that it
-    was resumed, that a message waits, or that a task it waited on opened. With no terminal to type in, the
+    was paused or resumed, that a message waits, or that a task it waited on opened. With no terminal to type in, the
     line waits for its next hook."""
 
     name = "drivers.typed-line"
