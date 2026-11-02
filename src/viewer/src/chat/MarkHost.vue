@@ -51,6 +51,7 @@ const opened = ref(false);
 /* a mark drawn as a card takes the chat's width and keeps to the card's own limit */
 .thread-turn.whole-card {
     flex: 1;
+    align-items: stretch;
     align-self: stretch;
     min-width: 0;
     max-width: none;

@@ -70,6 +70,11 @@ def test_a_shell_loop_is_not_told_to_draft_a_reader_for_its_keyword(new_story):
     assert not any("no reader reads" in line for line in lines)
 
 
+def test_a_shell_running_a_script_is_not_told_to_draft_a_reader_for_the_shell(new_story):
+    _, _, lines = ended_lines(new_story, "bash install.sh", "registry: rewritten\n", category=CommandCategory.BUILD)
+    assert not any("no reader reads" in line for line in lines)
+
+
 def test_a_run_a_reader_reads_gets_no_advice(new_story):
     _, _, lines = ended_lines(new_story, "pytest -q")
     assert ENDED in lines
