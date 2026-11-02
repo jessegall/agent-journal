@@ -31,6 +31,20 @@ func TestARunPastTheLimitMovesToTheBackgroundAndExitsWithTheShellStillRunning(t 
 	}
 }
 
+func TestARunMovesToTheBackgroundAsSoonAsTheJournalAsksForIt(t *testing.T) {
+	setup := options(t, "sleep 3; echo late")
+	setup.LimitSeconds = 60
+	go func() {
+		waitFor(t, 2*time.Second, "the run's folder", func() bool { return exists(folderOf(setup) + "/run.sh") })
+		_ = os.WriteFile(folderOf(setup)+"/move", []byte("1"), 0o644)
+	}()
+	started := time.Now()
+	output, code := run(t, setup, newClient())
+	if code != 0 || time.Since(started) > 2500*time.Millisecond || !strings.Contains(output, "moved to the background") {
+		t.Fatalf("printed %q with code %d after %s", output, code, time.Since(started))
+	}
+}
+
 func TestAnAtOnceRunMovesBeforeItsFirstOutput(t *testing.T) {
 	setup := options(t, "sleep 2; echo late")
 	setup.Background = true

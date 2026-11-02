@@ -55,6 +55,12 @@ func (folder Folder) Status(position int) (int, bool) {
 
 func (folder Folder) End() (int, bool) { return folder.number("end") }
 
+// MoveAsked says the journal wants the run in the background now, because a message waits for its agent.
+func (folder Folder) MoveAsked() bool {
+	_, err := os.Stat(filepath.Join(folder.Path, "move"))
+	return err == nil
+}
+
 func (folder Folder) WriteEnd(code int) error {
 	return os.WriteFile(filepath.Join(folder.Path, "end"), []byte(strconv.Itoa(code)), 0o644)
 }
