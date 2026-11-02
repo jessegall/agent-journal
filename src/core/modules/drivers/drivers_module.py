@@ -70,6 +70,7 @@ from core.modules.drivers.support.block_conditions.agent_resumed import AgentRes
 from core.modules.drivers.support.block_conditions.required_command_closed import RequiredCommandClosed
 from core.modules.drivers.support.block_conditions.tool_uses import ToolUses
 from core.modules.drivers.commands.block_until.block_until_handler import BlockUntilHandler
+from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders_handler import PruneTempFoldersHandler
 from core.modules.drivers.commands.close_agent_block.close_agent_block_handler import CloseAgentBlockHandler
 from core.modules.drivers.migrations.m009_agent_blocks import AgentBlocksMigration
 from core.modules.drivers.models.agent_block import AgentBlock
@@ -110,7 +111,7 @@ class DriversModule(Module):
     models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(RequiredCommand, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
     migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration]
-    handlers = [RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, CloseRequiredCommandHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    handlers = [PruneTempFoldersHandler, RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, CloseRequiredCommandHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipRequiredCommandSubcommand, PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]

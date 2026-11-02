@@ -14,6 +14,7 @@ from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
 from core.modules.agents.models.agent import Agent
 from core.base.agent_role import AgentRole
+from core.modules.drivers.commands.prune_temp_folders.prune_temp_folders import PruneTempFolders
 from core.modules.drivers.commands.prune_hook_calls.prune_hook_calls import PruneHookCalls
 from core.modules.environments.models.environment import Environment
 from core.modules.developer.support.developer_settings import SLOW_TICKS_SETTING
@@ -37,7 +38,7 @@ class TickWork(RoundWork):
     writes its lines to their file and what it found on the output row, and wakes the listeners. Once a minute
     each open agent other than a subagent gets a tick hook through the hook route, so rules that keep time
     speak on their own, and the notices that wait on paired phones are pushed; once a day the old hook calls
-    are pruned. Reading the outputs over a quarter of a second says so in the chat, at most once a minute, when
+    are pruned and the temp folders of ended sessions removed. Reading the outputs over a quarter of a second says so in the chat, at most once a minute, when
     the developer option is on; a fault in that reading is logged and does not stop the minute's work."""
 
     def __init__(self, wake_listeners: Callable[[], None], seconds: Callable[[], float] = time.monotonic) -> None:
@@ -83,6 +84,7 @@ class TickWork(RoundWork):
                 route.answer(self.tick(agent, queries.query(Environment).find(agent.environment_id).name, clock_time))
         if self.pruned_at is None or self.pruned_at.elapsed_seconds(clock_time) >= PRUNE_PERIOD.total_seconds():
             container.get(Bus).run(PruneHookCalls(), Actor.core())
+            container.get(Bus).run(PruneTempFolders(), Actor.core())
             self.pruned_at = clock_time
         container.get(Bus).run(SendPhoneNotices(), Actor.core())
 

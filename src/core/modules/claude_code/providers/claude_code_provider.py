@@ -1,4 +1,6 @@
 import json
+import os
+import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
@@ -32,6 +34,7 @@ from core.modules.claude_code.providers.support.claude_peer_notes import ClaudeP
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
+TEMPORARY_FILES_FOLDER = Path("/tmp")
 TRANSCRIPT_AUTHORS = ("user", "assistant")
 
 
@@ -144,6 +147,12 @@ class ClaudeCodeProvider(Provider):
         window = fields.get("context_window") if is_mapping(fields) else None
         used = window.get("used_percentage") if is_mapping(window) else None
         return int(used) if isinstance(used, int | float) and not isinstance(used, bool) else None
+
+    def session_temp_folders(self, project: Path) -> Mapping[str, Path]:
+        prefix = re.sub(r"[/.]", "-", str(project.resolve()))
+        program_folder = TEMPORARY_FILES_FOLDER / f"claude-{os.getuid()}"
+        project_folders = [folder for folder in program_folder.iterdir() if folder.name.startswith(prefix)] if program_folder.is_dir() else []
+        return {session.name: session for folder in project_folders for session in folder.iterdir() if session.is_dir()}
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:

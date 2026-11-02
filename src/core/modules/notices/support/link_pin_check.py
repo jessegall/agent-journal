@@ -9,7 +9,7 @@ from core.base.query.conditions.greater import Greater
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.timestamp import Timestamp
-from core.base.type_guards import is_mapping
+from core.base.type_guards import is_list, is_mapping
 from core.modules.notices.models.notice import Notice
 from core.modules.notices.support.notice_nudges import LINK_PIN_REQUEST, UNPINNED_CLAIM
 
@@ -51,4 +51,4 @@ class LinkPinCheck:
             return value
         if is_mapping(value):
             return "\n".join(self.joined_text(item) for item in value.values())
-        return "\n".join(self.joined_text(item) for item in value) if isinstance(value, (list, tuple)) else ""
+        return "\n".join(self.joined_text(item) for item in value) if is_list(value) else ""
