@@ -1,3 +1,5 @@
+from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
+from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.setting.setting_scope import SettingScope
@@ -70,8 +72,8 @@ class DocumentsModule(Module):
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,
                                  reads=["document library", "doc show", "report show"], runs=["doc make", "report make"], events=["doc.*", "report.*"], shared_reads=["doc show id", "report show id"])]
     views = [DocumentRow]
-    handlers = [CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
-    listeners = [DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
+    handlers = [RecordSubjectLinkHandler, CommentTextHandler, MakeTextHandler, EditTextHandler, CloseTextHandler, KeepRevisionHandler, RecordMentionsHandler]
+    listeners = [ReplyLinkListener, DocMentionListener, ReportMentionListener, NewDocDockListener, NewReportDockListener]
     docks = TEXT_DOCKS
     bindings = [(RowLinks, StoredRowLinks)]
     subcommands = (CommentDocSubcommand, ReportCommentSubcommand, MakeDocSubcommand, EditDocSubcommand, DocShowSubcommand, DocListSubcommand, CloseDocSubcommand, KeepRevisionSubcommand,

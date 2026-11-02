@@ -3,6 +3,7 @@ import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
 import {computed, inject, ref} from "vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
 import Icon from "../src/kit/Icon.vue";
+import MarkIcon from "../src/kit/MarkIcon.vue";
 import ReadTicks from "../src/kit/ReadTicks.vue";
 import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
@@ -44,14 +45,20 @@ const time = computed(() => clock(new Date(props.message.created_at).getTime() /
 
 // the rows a person's message names, under it, as version 4's line of what it linked
 const context = inject(WINDOW_CONTEXT, null);
+const SUBJECT_LINK = "about";
+const CHIPS_BELOW = 3;
 const links = ref([]);
-const linksHtml = computed(() => (links.value.length ? render(`Linked ${links.value.join(", ")}`, {env: ""}) : ""));
+const linksOpen = ref(false);
+const linksHtml = computed(() => render(links.value.join(", "), {env: ""}));
+const linksCounted = computed(() => links.value.length >= CHIPS_BELOW);
+const linkCount = computed(() => `${links.value.length} linked ${links.value.every((name) => name.startsWith("task ")) ? "tasks" : "rows"}`);
 async function readLinks() {
     if (!fromPerson.value || !context?.read || props.message.local) return;
     const answer = await context.read(`link list --source message:${props.message.id}`);
-    if (answer.ok) links.value = (answer.value.rows ?? answer.value ?? []).map((link) => `${link.target_model} ${link.target_id}`);
+    if (answer.ok) links.value = (answer.value.rows ?? answer.value ?? []).filter((link) => link.link_type === SUBJECT_LINK).map((link) => `${link.target_model} ${link.target_id}`);
 }
 readLinks();
+context?.follow?.(["link.*"], readLinks);
 
 const picking = ref(false);
 const reactions = computed(() => reactionGroups(props.message.reactions));
@@ -120,8 +127,16 @@ function pick(face) {
                 </template>
             </div>
         </template>
-        <template v-if="linksHtml">
-            <div class="message-links md" data-message-links @click="peekChip" v-html="linksHtml" />
+        <template v-if="links.length">
+            <div class="message-links" data-message-links>
+                <MarkIcon class="message-links-icon" name="linked" />
+                <template v-if="linksCounted && !linksOpen">
+                    <button type="button" class="message-links-count" data-message-links-count @click="linksOpen = true">{{ linkCount }}</button>
+                </template>
+                <template v-else>
+                    <span class="md" data-message-links-rows @click="peekChip">Linked: <span class="message-links-rows" v-html="linksHtml" /></span>
+                </template>
+            </div>
         </template>
         <div class="message-foot">
             <time class="message-time">{{ time }}</time>
@@ -157,8 +172,32 @@ function pick(face) {
 }
 
 .message-links {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 7px;
+    padding: 2px 6px;
     color: var(--text-3);
     font-size: 11.5px;
+    line-height: 1.45;
+}
+
+.message-links-icon {
+    color: var(--group-work);
+}
+
+.message-links-count {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.message-links-rows :deep(p) {
+    display: inline;
 }
 
 .message-links :deep(p) {

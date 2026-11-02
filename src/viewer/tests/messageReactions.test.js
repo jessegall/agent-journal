@@ -63,7 +63,7 @@ test("a person's message shows the rows it linked, under it", async () => {
     const {WINDOW_CONTEXT} = await import("../kit/windowContextKey.js");
     const element = document.createElement("div");
     const app = createApp({render: () => h(MessageCard, {message: {id: 4, type: "user", text: "see report 1", reactions: "[]", created_at: "2026-11-02T10:00:00Z"}})});
-    app.provide(WINDOW_CONTEXT, {environment: "main", read: async () => ({ok: true, value: {rows: [{target_model: "report", target_id: 1}]}})});
+    app.provide(WINDOW_CONTEXT, {environment: "main", read: async () => ({ok: true, value: {rows: [{target_model: "report", target_id: 1, link_type: "about"}, {target_model: "plan", target_id: 2, link_type: "comments_on"}]}})});
     app.mount(element);
     await new Promise((resolve) => setTimeout(resolve));
     await nextTick();
