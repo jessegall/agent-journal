@@ -87,3 +87,10 @@ test("a list shows the skeleton in the shape it was given until its first read a
 test("a window drawn as a page of its own keeps a gutter around its content", () => {
     expect(read("../src/layout/ViewWindow.vue")).toMatch(/\.view-window\.standalone :deep\(\.window\) \{[^}]*padding: 16px 20px;/);
 });
+
+// task 5802: a dozen docks once took the whole chat, the history shrank to nothing and the Newest pill sat under the notices
+test("the docks at the foot of the chat scroll inside a share of its height", () => {
+    const chat = read("../../core/modules/messages/web/src/Chat.vue");
+    expect(chat).toMatch(/<div data-figure-chat-foot class="chat-foot">/);
+    expect(chat).toMatch(/\.chat-foot \{[^}]*max-height: 40%;[^}]*overflow-y: auto;/);
+});
