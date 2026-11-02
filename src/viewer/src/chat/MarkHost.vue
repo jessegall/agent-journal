@@ -11,9 +11,10 @@ import {markLook, STOPPED_VARIANTS} from "../domain/markLook.js";
 const OUTPUT_MODELS = new Set(["output", "process"]);
 const ENDED_STATE = "ended";
 const SETTLED_VARIANTS = new Set(["answered", "closed"]);
+const DOCK_LINE = "dock add";
 
 // one chat mark of any declared type, drawn by version 4's ChatMark from the type's declaration
-const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}});
+const props = defineProps({mark: {type: Object, required: true}, allowedRuns: {type: Array, default: null}, docked: Boolean});
 const declaration = computed(() => markDeclaration(props.mark.type));
 // a running run's mark reads its output row every two seconds, which the journal's clock keeps current
 const context = inject(WINDOW_CONTEXT, null);
@@ -27,11 +28,14 @@ usePoll(async () => {
 const look = computed(() => {
     const drawn = markLook(props.mark, declaration.value);
     const showsPercent = !drawn.figure || drawn.figure.endsWith("%");
-    return livePercent.value && isRunningRun.value && showsPercent ? {...drawn, figure: `${livePercent.value}%`, fraction: livePercent.value / 100} : drawn;
+    const live = livePercent.value && isRunningRun.value && showsPercent ? {...drawn, figure: `${livePercent.value}%`, fraction: livePercent.value / 100} : drawn;
+    return {...live, docked: props.docked};
 });
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
 const opens = computed(() => Boolean(props.mark.lines || (props.mark.detail && STOPPED_VARIANTS.has(props.mark.variant)) || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opened = ref(false);
+// a row in the dock has no Dock button left, and its mark steps back, as version 4's did
+const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filter((button) => !button.runs?.startsWith(DOCK_LINE)) : declaration.value?.buttons));
 </script>
 
 <template>
@@ -41,14 +45,14 @@ const opened = ref(false);
         </div>
     </template>
     <template v-else>
-        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width}]" :data-ref="`chat_mark:${mark.id}`">
+        <div :class="['thread-turn', 'card', {'full-width': declaration?.full_width, docked}]" :data-ref="`chat_mark:${mark.id}`">
             <span class="mark-row">
                 <ChatMark :mark="look" :open="opens ? opened : undefined" v-on="look.handlers" @click="opened = !opened">
                     <template v-if="opens" #default="{shown}">
                         <MarkBody :declaration="declaration || {}" :mark="mark" :shown="shown" />
                     </template>
                 </ChatMark>
-                <MarkButtons :buttons="declaration?.buttons" :mark="mark" :allowed-runs="allowedRuns" />
+                <MarkButtons :buttons="buttons" :mark="mark" :allowed-runs="allowedRuns" />
             </span>
         </div>
     </template>
@@ -104,6 +108,10 @@ const opened = ref(false);
     flex: 1;
     height: 1px;
     background: var(--border-2);
+}
+
+.thread-turn.card.docked {
+    opacity: 0.55;
 }
 
 /* an opened mark grows to the chat's whole width, past the share a folded line keeps */

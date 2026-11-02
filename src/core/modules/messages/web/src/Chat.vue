@@ -7,6 +7,7 @@ import {arrivalQueue, arriveAtOnce, Btn, depart, DockStack, FigureFloors, VoiceF
 const {rows: messages, failure, loaded, load, older, context} = useRows("message feed", ["message.*"], {incremental: true});
 const {rows: allMarks, older: olderMarks} = useRows("chat-mark main", ["chat_mark.*"], {incremental: true});
 const {rows: docked} = useRows("dock-item list", ["dock_item.*"]);
+const dockedRows = computed(() => new Set(docked.value.filter((item) => item.state === "docked").map((item) => `${item.target_model}:${item.target_id}`)));
 const {rows: notices, act: closeNotice} = useRows("notice list", ["notice.*"]);
 const openQuestion = ref(0);
 const releaseQuestions = openInChat("question", (id) => {
@@ -299,7 +300,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                             <p class="chat-day" data-day-line>{{ row.title }}</p>
                         </template>
                         <template #mark>
-                            <MarkHost :mark="row.row" />
+                            <MarkHost :mark="row.row" :docked="dockedRows.has(`${row.row.target_model}:${row.row.target_id}`)" />
                         </template>
                         <template #mark-group>
                             <MarkGroup :group="row" />
