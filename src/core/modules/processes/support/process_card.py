@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from core.modules.processes.support.process_card_json_record import ProcessCardJsonRecord
 from dataclasses import dataclass
 
 from core.modules.processes.models.output import Output
@@ -12,7 +12,7 @@ class ProcessCard:
     process: Process
     output: Output | None
 
-    def json(self) -> Mapping[str, object]:
+    def json(self) -> ProcessCardJsonRecord:
         process, output = self.process, self.output
         return {"id": process.id, "line": process.line, "state": process.state.value, "progress": process.progress, "created_at": process.created_at.text if process.created_at else None,
                 "ended_at": process.ended_at.text if process.ended_at else None, "title": output.title if output else "", "steps_passed": output.steps_passed if output else 0,

@@ -54,9 +54,9 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.newest().page(1, size).rows))
 
-    def finished_group(self, environment_id: int, state: TaskState, closed_before: str | None, size: int) -> TaskGroup:
+    def finished_group(self, environment_id: int, state: TaskState, closed_limit: str | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
-        rows = cards.matching(Less("closed_at", closed_before)) if closed_before is not None else cards
+        rows = cards.matching(Less("closed_at", closed_limit)) if closed_limit is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at").page(1, size).rows))
 
     def cards(self, environment_id: int, state: TaskState) -> Query[TaskCard]:

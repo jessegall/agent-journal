@@ -1,3 +1,4 @@
+from core.modules.plugins.commands.plugin_services.plugin_services_subcommand_row_record import PluginServicesSubcommandRowRecord
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
@@ -28,7 +29,7 @@ class PluginServicesSubcommand(ReadSubcommand[RowList]):
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         return RowList([self.row(plugin.name, service) for plugin in self.plugins.enabled_ones() for service in PluginManifest.read(self.folders.code(plugin.name)).services])
 
-    def row(self, plugin_name: str, service: ManifestService) -> dict[str, object]:
+    def row(self, plugin_name: str, service: ManifestService) -> PluginServicesSubcommandRowRecord:
         pid_file = self.sockets.pid(plugin_name, service.name)
         pid = int(pid_file.read_text()) if pid_file.is_file() else None
         program = str(self.folders.code(plugin_name) / service.command[0])

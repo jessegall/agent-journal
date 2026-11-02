@@ -26,7 +26,7 @@ TURN_HOOKS = (HookEventName.PRE_TOOL_USE, HookEventName.STOP, HookEventName.PROM
 class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
     """`journal usage tool [--environment <name>]`: the tool the main agent last began, empty once it has
     stopped or a new turn began, and then what it waits for: the runs it left going and the questions it
-    asked."""
+    open_questions."""
 
     cli_name = "usage"
     name = "tool"
@@ -47,7 +47,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         calls = self.queries.query(HookCall).filter(agent_id=mains[0].id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, calls[0].summary) if part))
-        return ToolFacts(waiting_for=" and ".join((*self.running_titles(mains[0].id), *self.questions_asked(environment_id))))
+        return ToolFacts(waiting_for=" and ".join((*self.running_titles(mains[0].id), *self.open_question_lines(environment_id))))
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)
@@ -56,11 +56,11 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         kept = self.outputs.process(process.id).page(1, 1).rows
         return kept[0].title if kept and kept[0].title else process.line
 
-    def questions_asked(self, environment_id: int) -> tuple[str, ...]:
-        asked = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
-        if asked.total > 1:
-            return (f"your answers to {asked.total} questions",)
-        return tuple(f"your answer to question {question.id}" for question in asked.rows)
+    def open_question_lines(self, environment_id: int) -> tuple[str, ...]:
+        open_questions = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).oldest().page(1, SHOWN_RUNS)
+        if open_questions.total > 1:
+            return (f"your answers to {open_questions.total} questions",)
+        return tuple(f"your answer to question {question.id}" for question in open_questions.rows)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):

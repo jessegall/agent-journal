@@ -4,7 +4,7 @@ from core.base.change.logged_event import LoggedEvent
 from core.base.command.bus import Bus
 from core.base.listener.commit_listener import CommitListener
 from core.base.query.queries import Queries
-from core.modules.messages.commands.tell_message_updated.tell_message_updated import TellMessageUpdated
+from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.models.enums.message_type import PERSON_MESSAGE_TYPES
 from core.modules.messages.models.message import Message
 
@@ -25,4 +25,4 @@ class ReadMessageEditListener(CommitListener):
             return
         message = self.queries.query(Message).find(event.row_id)
         if message.type in PERSON_MESSAGE_TYPES and message.read_at is not None:
-            self.bus.run(TellMessageUpdated(message.id, message.environment_id), Actor(event.actor_id, ActorType.USER), environment_id=message.environment_id)
+            self.bus.run(RecordMessageUpdatedLine(message.id, message.environment_id), Actor(event.actor_id, ActorType.USER), environment_id=message.environment_id)

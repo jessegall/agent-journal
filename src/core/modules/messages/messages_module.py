@@ -1,4 +1,4 @@
-from core.modules.messages.commands.tell_message_updated.tell_message_updated_handler import TellMessageUpdatedHandler
+from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
@@ -22,7 +22,7 @@ from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand imp
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
 from core.modules.messages.commands.react_message.react_message_subcommand import ReactMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
-from core.modules.messages.commands.tell_idle_agent.tell_idle_agent_handler import TellIdleAgentHandler
+from core.modules.messages.commands.record_idle_message_line.record_idle_message_line_handler import RecordIdleMessageLineHandler
 from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
 from core.modules.messages.listeners.idle_message_listener import IdleMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
@@ -69,7 +69,7 @@ class MessagesModule(Module):
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (TellMessageUpdatedHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, TellIdleAgentHandler)
+    handlers = (RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordIdleMessageLineHandler)
     driver_rules = [IdleMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),

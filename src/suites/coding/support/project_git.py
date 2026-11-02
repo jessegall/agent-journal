@@ -1,6 +1,8 @@
+from suites.coding.support.project_git_branch_record import ProjectGitBranchRecord
+from suites.coding.support.project_git_commit_record import ProjectGitCommitRecord
+from suites.coding.support.project_git_pull_record import ProjectGitPullRecord
 import shutil
 import subprocess
-from collections.abc import Mapping
 from pathlib import Path
 
 from core.base.query.queries import Queries
@@ -50,7 +52,7 @@ class ProjectGit:
         base = self.base(environment_id)
         return GitRows([self.branch(environment_id, line, current, base) for line in listed[skip:skip + limit]], skip + limit >= len(listed))
 
-    def branch(self, environment_id: int | None, line: str, current: str, base: str | None) -> Mapping[str, object]:
+    def branch(self, environment_id: int | None, line: str, current: str, base: str | None) -> ProjectGitBranchRecord:
         name, time, author, subject = line.split("\t", 3)
         missing, extra = self.git_output(environment_id, "rev-list", "--left-right", "--count", f"{base}...{name}").split() if base is not None and name != base else ("0", "0")
         return {"name": name, "current": name == current, "extra_commits": int(extra), "missing_commits": int(missing), "subject": subject, "author": author, "time": float(time)}
@@ -60,7 +62,7 @@ class ProjectGit:
         return GitRows([self.commit(line) for line in listed[:limit]], len(listed) <= limit)
 
     @staticmethod
-    def commit(line: str) -> Mapping[str, object]:
+    def commit(line: str) -> ProjectGitCommitRecord:
         sha, author, time, subject = line.split("\t", 3)
         return {"sha": sha, "subject": subject, "author": author, "time": float(time)}
 
@@ -71,7 +73,7 @@ class ProjectGit:
         return GitPullRows(False, ()) if listed is None else GitPullRows(True, tuple(self.pull(line) for line in listed.splitlines()))
 
     @staticmethod
-    def pull(line: str) -> Mapping[str, object]:
+    def pull(line: str) -> ProjectGitPullRecord:
         number, draft, review, checks, branch, author, url, title = line.split("\t", 7)
         states = [state.upper() for state in checks.split(",")] if checks else []
         failed = sum(1 for state in states if state in FAILED_CHECKS)

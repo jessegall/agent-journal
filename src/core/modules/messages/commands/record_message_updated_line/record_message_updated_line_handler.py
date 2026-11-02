@@ -8,21 +8,21 @@ from core.modules.agents.models.agent import Agent
 from core.modules.drivers.listeners.typed_line_listener import IDLE_MESSAGE_SOURCE
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
-from core.modules.messages.commands.tell_message_updated.tell_message_updated import TellMessageUpdated
+from core.modules.messages.commands.record_message_updated_line.record_message_updated_line import RecordMessageUpdatedLine
 from core.modules.messages.support.message_nudges import MESSAGE_UPDATED
 
 UPDATED_SOURCE = "messages.updated"
 
 
-class TellMessageUpdatedHandler(Handler[TellMessageUpdated, None]):
+class RecordMessageUpdatedLineHandler(Handler[RecordMessageUpdatedLine, None]):
     """Leaves the line for the main agent: typed when it sits idle, else carried by its next hook."""
 
-    command = TellMessageUpdated
+    command = RecordMessageUpdatedLine
 
     def __init__(self, queries: Queries, repository: Repository, hook_calls: HookCallQuery) -> None:
         self.queries, self.repository, self.hook_calls = queries, repository, hook_calls
 
-    def handle(self, command: TellMessageUpdated, context: Context) -> None:
+    def handle(self, command: RecordMessageUpdatedLine, context: Context) -> None:
         agents = self.queries.query(Agent).filter(environment_id=command.environment_id, role=AgentRole.MAIN).matching(IsNull("ended_at")).newest().page(1, 1).rows
         if not agents:
             return

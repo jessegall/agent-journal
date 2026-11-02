@@ -1,4 +1,4 @@
-from collections.abc import Mapping
+from core.modules.tasks.support.task_inspection_json_record import TaskInspectionJsonRecord
 from dataclasses import dataclass
 
 from core.modules.tasks.models.task import Task
@@ -15,7 +15,7 @@ class TaskInspection:
     logs: tuple[TaskLog, ...]
     openers: tuple[str, ...] = ()
 
-    def json(self) -> Mapping[str, object]:
+    def json(self) -> TaskInspectionJsonRecord:
         task = self.task
         return {"id": task.id, "title": task.title, "brief": task.brief, "state": task.state.value, "priority": task.priority, "reason": task.reason, "outcome": task.outcome,
                 "holder_id": task.holder_id, "created_at": task.creation_timestamp().text, "updated_at": task.update_timestamp().text,

@@ -1,5 +1,6 @@
+from core.modules.dumps.support.dump_board_json_record import DumpBoardJsonRecord
 import json
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.modules.dumps.models.dump_row import DumpRow
@@ -14,7 +15,7 @@ class DumpBoard:
     dumps: Sequence[DumpRow]
     items: Sequence[DumpRow]
 
-    def json(self) -> Mapping[str, object]:
+    def json(self) -> DumpBoardJsonRecord:
         return {"total": self.total,
                 "dumps": [{"id": dump.dump_id, "title": dump.title, "brief": dump.brief, "outcome": dump.outcome,
                            "items": [{"id": item.item_id, "text": item.text, "state": item.state, "note": item.note, "summary": item.summary, "refs": json.loads(item.refs)}

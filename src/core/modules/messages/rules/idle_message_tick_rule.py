@@ -3,7 +3,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.messages.commands.tell_idle_agent.tell_idle_agent import TellIdleAgent
+from core.modules.messages.commands.record_idle_message_line.record_idle_message_line import RecordIdleMessageLine
 
 
 class IdleMessageTickRule(DriverRule):
@@ -16,4 +16,4 @@ class IdleMessageTickRule(DriverRule):
     roles = [AgentRole.MAIN]
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        return RuleAnswer.allowed().running(TellIdleAgent(hook.environment_id))
+        return RuleAnswer.allowed().running(RecordIdleMessageLine(hook.environment_id))

@@ -1,4 +1,5 @@
-from collections.abc import Mapping, Sequence
+from core.modules.reviews.support.reviewer_board_json_record import ReviewerBoardJsonRecord
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from core.modules.reviews.models.reviewer_row import ReviewerRow
@@ -11,7 +12,7 @@ class ReviewerBoard:
 
     rows: Sequence[ReviewerRow]
 
-    def json(self) -> Mapping[str, object]:
+    def json(self) -> ReviewerBoardJsonRecord:
         reviews = [row for row in self.rows if row.kind == "review" and row.state == "reviewing"]
         return {"queued": sum(1 for row in self.rows if row.kind == "review" and row.state == "queued"),
                 "reviews": [{"id": review.review_id, "title": f"{review.subject_model} {review.subject_id}" if review.subject_model else f"Review {review.review_id}",

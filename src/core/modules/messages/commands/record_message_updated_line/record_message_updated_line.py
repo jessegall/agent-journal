@@ -4,7 +4,7 @@ from core.base.command.command import Command
 
 
 @dataclass(frozen=True)
-class TellMessageUpdated(Command[None]):
+class RecordMessageUpdatedLine(Command[None]):
     """Tells the main agent a person changed a message it has read."""
 
     message_id: int
