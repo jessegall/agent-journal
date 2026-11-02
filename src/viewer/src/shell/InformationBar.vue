@@ -59,7 +59,7 @@ const uptime = computed(() => {
             <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ !running ? "Ended" : controls.paused.value ? "Paused" : "Working" }}</span>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
-                    <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
+                    {{ allowance.title }} <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
                 </button>
             </template>
             <template v-if="context !== null">

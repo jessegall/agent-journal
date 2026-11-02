@@ -12,6 +12,13 @@ const mounted = (component, props) => {
 };
 const MAIN = {id: 1, role: "main", program: "claude", session: "s", process_started_at: null, ended_at: null};
 
+test("the allowance gauge names the window its percentage is of", () => {
+    const usage = {agents: [], windows: [{title: "7 days", used_percent: 17, reset_epoch_seconds: 1}]};
+    const fact = mounted(InformationBar, {agent: MAIN, usage}).querySelector('[data-fact="usage"]');
+    expect(fact.textContent).toContain("7 days");
+    expect(fact.textContent).toContain("17%");
+});
+
 test("the information bar holds no window counts, and its scheduled jobs open with an icon and a count", () => {
     const opened = [];
     const element = mounted(InformationBar, {agent: MAIN, jobs: 2, onOpen: (name) => opened.push(name)});
