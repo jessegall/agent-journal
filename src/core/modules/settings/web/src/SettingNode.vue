@@ -22,7 +22,7 @@ const UNITS = {seconds: "seconds", minutes: "minutes", hours: "hours", days: "da
 // a quantity's key names its unit, so the field can say it
 const unit = computed(() => (props.row.type === "number" ? UNITS[props.row.key.split(/[-_.]/).at(-1)] ?? "" : ""));
 const isList = computed(() => props.row.type === "list" || props.row.type === "number list");
-const listText = computed(() => String(props.row.shown ?? "").split(",").map((item) => item.trim()).filter(Boolean).join("\n"));
+const listText = computed(() => (props.row.value ? JSON.parse(props.row.value).join("\n") : ""));
 const isChanged = computed(() => CHANGED_SOURCES.has(props.row.source));
 const resettable = computed(() => !props.readOnly && !props.row.secret && !isGroup.value && isChanged.value && props.row.default !== null && props.row.default !== undefined);
 const defaultWords = computed(() => (typeof props.row.default === "boolean" ? (props.row.default ? "on" : "off") : Array.isArray(props.row.default) ? props.row.default.join(",") : String(props.row.default)));
@@ -44,7 +44,8 @@ function changed(event) {
 }
 
 function listChanged(event) {
-    saveValue(event.target.value.split("\n").map((item) => item.trim()).filter(Boolean).join(","));
+    const items = event.target.value.split("\n").map((item) => item.trim()).filter(Boolean);
+    saveValue(props.row.type === "list" ? JSON.stringify(items) : items.join(","));
 }
 
 function savedSecret() {
