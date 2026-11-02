@@ -2,6 +2,7 @@
 import {computed, ref} from "vue";
 import {Icon, ListTools, Skeleton, useListTools, useRows, Btn} from "@journal/window-kit";
 import CheckDialog from "./CheckDialog.vue";
+import CheckRunBar from "./CheckRunBar.vue";
 
 // a click on a card opens its dialog; a run shows at once and the server's answer settles it, a refusal naming why
 const {rows, failure, loaded, context} = useRows("check list", ["check.*"]);
@@ -40,6 +41,9 @@ async function run(row) {
                 <span class="card-head"><Icon name="check" class="card-icon" /> Check {{ row.id }}<span :class="['card-state', {failing: row.last_passed === false, passing: row.last_passed === true}]">{{ row.last_passed === true ? "Passing" : row.last_passed === false ? "Failing" : "Not run" }}</span></span>
                 <span class="card-title">{{ row.title }}</span>
                 <code class="card-detail">{{ row.command }}</code>
+                <template v-if="row.run_percent !== null && row.run_percent !== undefined">
+                    <CheckRunBar :percent="row.run_percent" />
+                </template>
                 <template v-if="!row.stopped">
                     <Btn small bordered class="card-run" data-check-card-run :disabled="runningIds.has(row.id)" @click.stop="run(row)">{{ runningIds.has(row.id) ? "Running" : "Run" }}</Btn>
                 </template>

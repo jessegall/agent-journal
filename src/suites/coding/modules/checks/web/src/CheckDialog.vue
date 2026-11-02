@@ -1,6 +1,7 @@
 <script setup>
 import {computed, ref} from "vue";
 import {Btn, Dialog, Segmented, ago, useReadLine, useWindow} from "@journal/window-kit";
+import CheckRunBar from "./CheckRunBar.vue";
 
 // one check opened: its latest output and its runs, picked at the top, and the button that runs it
 const VIEWS = [
@@ -35,6 +36,9 @@ readRuns();
             </template>
         </div>
         <code class="check-command">{{ row.command }}</code>
+        <template v-if="row.run_percent !== null && row.run_percent !== undefined">
+            <CheckRunBar :percent="row.run_percent" />
+        </template>
         <template v-if="failure">
             <p class="check-note">{{ failure }}</p>
         </template>

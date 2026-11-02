@@ -15,7 +15,9 @@ from suites.coding.modules.checks.commands.create_check.create_check_subcommand 
 from suites.coding.modules.checks.commands.make_check.make_check_subcommand import MakeCheckSubcommand
 from suites.coding.modules.checks.commands.remove_check.remove_check_handler import RemoveCheckHandler
 from suites.coding.modules.checks.commands.remove_check.remove_check_subcommand import RemoveCheckSubcommand
+from suites.coding.modules.checks.commands.record_check_progress.record_check_progress_handler import RecordCheckProgressHandler
 from suites.coding.modules.checks.commands.record_check_run.record_check_run_handler import RecordCheckRunHandler
+from suites.coding.modules.checks.listeners.ended_check_runs_listener import EndedCheckRunsListener
 from suites.coding.modules.checks.support.due_check_runs import DueCheckRuns
 from suites.coding.modules.checks.commands.run_check.run_check_subcommand import RunCheckSubcommand
 from suites.coding.modules.checks.commands.stop_check.stop_check_handler import StopCheckHandler
@@ -26,6 +28,7 @@ from suites.coding.modules.checks.listeners.task_wait_pass_listener import TaskW
 from suites.coding.modules.checks.migrations.m001_checks import ChecksTableMigration
 from suites.coding.modules.checks.migrations.m002_check_task_wait import CheckTaskWaitMigration
 from suites.coding.modules.checks.migrations.m003_check_hidden import CheckHiddenMigration
+from suites.coding.modules.checks.migrations.m004_check_run_percent import CheckRunPercentMigration
 from suites.coding.modules.checks.rules.broken_task_wait_rule import BrokenTaskWaitRule
 from suites.coding.modules.checks.models.check import Check
 from suites.coding.modules.checks.queries.check_query import CheckQuery
@@ -45,9 +48,9 @@ class ChecksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
-    listeners = [TaskWaitCheckListener, TaskWaitPassListener]
-    migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration]
-    handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
+    listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
+    migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]
+    handlers = [MakeCheckHandler, EditCheckHandler, RecordCheckRunHandler, RecordCheckProgressHandler, StopCheckHandler, RemoveCheckHandler, ReportCheckHandler]
     subcommands = (CheckRunsSubcommand, MakeCheckSubcommand, CreateCheckSubcommand, EditCheckSubcommand, RunCheckSubcommand, StopCheckSubcommand, RemoveCheckSubcommand, CheckListSubcommand)
     driver_rules = [FailedCheckRule, BrokenTaskWaitRule]
     bindings = [(PeriodicChecks, DueCheckRuns)]

@@ -32,6 +32,13 @@ test("a check card shows its title, verdict and how often it runs, and its comma
     expect(document.body.querySelector("[data-check-output]").textContent).toBe("two problems");
 });
 
+test("a running check shows a bar at its percent, and none once it ended", async () => {
+    const element = mounted(CheckCards, [{id: 1, title: "Lint", status: "running", interval_minutes: 0, command: "x", run_percent: 40}, {id: 2, title: "Types", status: "passed", interval_minutes: 0, command: "y", run_percent: null}]);
+    await settled();
+    expect(element.querySelector('[data-row="1"] [data-check-progress] span').style.width).toBe("40%");
+    expect(element.querySelector('[data-row="2"] [data-check-progress]')).toBeNull();
+});
+
 test("a window with no rows says so", async () => {
     const element = mounted(CheckCards, []);
     await settled();

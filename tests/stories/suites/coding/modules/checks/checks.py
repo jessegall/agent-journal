@@ -65,3 +65,10 @@ def test_a_stopped_check_is_not_run_by_hand(new_story):
     story.run('check make "Suite" --command "true" --every 0', actor=story.user)
     story.run("check stop 1", actor=story.user)
     story.expect_refusal("check run 1", "check 1 is stopped", actor=story.user)
+
+
+def test_a_check_that_ended_has_no_percent_left_on_its_row(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('check make "Suite" --command "echo 1/4"', actor=story.user)
+    story.run("check run 1", actor=story.user)
+    assert json.loads(story.run("check show 1 --json", actor=story.user).output_text)["run_percent"] is None

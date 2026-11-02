@@ -1,11 +1,13 @@
 from argparse import ArgumentParser, Namespace
 
 from core.base.caller.caller import Caller
+from core.base.command.bus import Bus
 from core.base.refusal import Refusal
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.checks.commands.record_check_run.record_check_run import RecordCheckRun
 from suites.coding.modules.checks.commands.support.check_lines import CheckLines
+from suites.coding.modules.checks.commands.support.check_progress import CheckProgress
 from suites.coding.modules.checks.commands.support.check_runner import CheckRunner
 from suites.coding.modules.checks.commands.support.kept_checks import KeptChecks
 from suites.coding.modules.checks.models.check import Check
@@ -18,8 +20,8 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
     cli_name = "check"
     name = "run"
 
-    def __init__(self, checks: KeptChecks, runner: CheckRunner) -> None:
-        self.checks, self.runner = checks, runner
+    def __init__(self, checks: KeptChecks, runner: CheckRunner, bus: Bus) -> None:
+        self.checks, self.runner, self.bus = checks, runner, bus
 
     def arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument("id", type=int)
@@ -28,7 +30,7 @@ class RunCheckSubcommand(Subcommand[RecordCheckRun, Check]):
         check = self.checks.find(arguments.id)
         if check.stopped:
             raise Refusal(f"check {check.id} is stopped", "journal check remove ends it")
-        outcome = self.runner.run(check.command)
+        outcome = self.runner.run(check.command, CheckProgress(self.bus, check.id).heard)
         return RecordCheckRun(check.id, outcome.passed, outcome.output)
 
     def write_output(self, value: object, output: Output) -> None:

@@ -18,5 +18,5 @@ class RecordCheckRunHandler(Handler[RecordCheckRun, Check]):
 
     def handle(self, command: RecordCheckRun, context: Context) -> Check:
         check = self.checks.find(command.check_id)
-        return self.repository.save(replace(check, last_passed=command.passed, last_output=command.output, last_run_at=context.timestamp,
+        return self.repository.save(replace(check, last_passed=command.passed, last_output=command.output, last_run_at=context.timestamp, run_percent=None,
                                             reported_at=None if command.passed else check.reported_at), context)
