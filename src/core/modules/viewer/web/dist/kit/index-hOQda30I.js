@@ -6272,8 +6272,8 @@ const ut = 8, E0 = /* @__PURE__ */ Object.assign({ inheritAttrs: !1 }, {
   cancelled: []
 }, T0 = {
   open: [{ word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)" }, He],
-  started: [{ word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)" }, He],
-  testing: [{ word: "close", label: "Close", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "retest", label: "Back to work" }, He],
+  started: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "block", label: "Block", flag: "--reason", ask: "What does it wait on?", opener: "What opens it: task:12, question:4 or plan:3 (optional)" }, He],
+  testing: [{ word: "close", label: "Complete", flag: "--outcome", ask: "What came of it?", main: !0 }, { word: "retest", label: "Back to work" }, He],
   blocked: [{ word: "unblock", label: "Unblock", main: !0 }, He],
   completed: [{ word: "reopen", label: "Reopen" }],
   cancelled: [{ word: "reopen", label: "Reopen" }]
@@ -8140,7 +8140,7 @@ const ev = /* @__PURE__ */ Zg(Qg), tv = ["width", "height", "viewBox"], nv = ["w
       }, null, 8, sv)
     ], 8, tv));
   }
-}, py = /* @__PURE__ */ J(av, [["__scopeId", "data-v-489f0852"]]), my = Jo(() => import("./VoiceFigure-Bf9vpz7j.js").then((e) => e.V)), gy = "1.0.0", vy = "3.5";
+}, py = /* @__PURE__ */ J(av, [["__scopeId", "data-v-489f0852"]]), my = Jo(() => import("./VoiceFigure-cJdAGejD.js").then((e) => e.V)), gy = "1.0.0", vy = "3.5";
 export {
   uv as $,
   Iv as A,

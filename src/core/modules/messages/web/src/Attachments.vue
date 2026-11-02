@@ -89,7 +89,7 @@ read(0);
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
-    padding: 12px 16px;
+    padding: 8px 12px;
 }
 
 .bar {
