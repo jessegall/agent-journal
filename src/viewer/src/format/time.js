@@ -1,8 +1,8 @@
 // at is epoch seconds or a row's ISO time
-export function age(at) {
+export function age(at, nowMilliseconds = Date.now()) {
     if (!at) return "";
     const seconds = typeof at === "string" ? Date.parse(at) / 1000 : at;
-    const s = Math.max(0, Date.now() / 1000 - seconds);
+    const s = Math.max(0, nowMilliseconds / 1000 - seconds);
     if (s < 60) return "now";
     if (s < 3600) return `${Math.floor(s / 60)}m`;
     if (s < 86400) return `${Math.floor(s / 3600)}h`;

@@ -1,12 +1,13 @@
 <script setup>
 import {computed} from "vue";
-import {age, peekRef} from "@journal/window-kit";
+import {age, peekRef, useNow} from "@journal/window-kit";
 
 // one agent as a card: what it is, how long it has run, the task it works on and its context and cost
 const ROLE_NAMES = {main: "Main agent", subagent: "Helper", worker: "Worker", reviewer: "Reviewer"};
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const roleName = computed(() => ROLE_NAMES[props.row.role] ?? props.row.role);
-const runTime = computed(() => (props.row.ended_at ? `Closed ${new Date(props.row.ended_at).toLocaleString()}` : `Running ${age(props.row.process_started_at || props.row.created_at)}`));
+const now = useNow();
+const runTime = computed(() => (props.row.ended_at ? `Closed ${new Date(props.row.ended_at).toLocaleString()}` : `Running ${age(props.row.process_started_at || props.row.created_at, now.value)}`));
 const usage = computed(() => {
     const parts = [];
     if (props.facts?.context_percent !== null && props.facts?.context_percent !== undefined) parts.push(`Context ${props.facts.context_percent}%`);

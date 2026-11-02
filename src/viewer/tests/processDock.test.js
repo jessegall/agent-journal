@@ -2,7 +2,7 @@ import {createApp, h} from "vue";
 import {afterEach, expect, test, vi} from "vitest";
 import MarkButtons from "../src/chat/MarkButtons.vue";
 import OutputDock from "../../core/modules/processes/web/src/OutputDock.vue";
-import {ref} from "vue";
+import {nextTick, ref} from "vue";
 import {WINDOW_CONTEXT} from "../src/windows/windowContext.js";
 import {context, mounted, settle} from "./support/windowContext.js";
 
@@ -79,4 +79,26 @@ test("a button that names variants shows only on a mark of one of them", async (
     };
     expect(drawn("running")).toEqual(["Dock", "Open"]);
     expect(drawn("finished")).toEqual(["Open"]);
+});
+
+test("a docked process's running time moves on with the clock, with no read", async () => {
+    vi.useFakeTimers({now: Date.parse("2026-11-02T10:00:10Z"), toFake: ["setInterval", "clearInterval", "Date"]});
+    try {
+        const reads = [];
+        const window = context({});
+        window.read = async (line) => (reads.push(line), {ok: true, value: {id: 3, state: "running", line: "make build", title: "", steps_passed: 0, steps_failed: 0, created_at: "2026-11-02T10:00:00Z"}});
+        const head = document.createElement("span");
+        document.body.append(head);
+        window.option = (key) => ref(key === "head" ? head : {id: 7, target_id: 3});
+        await mounted(OutputDock, window);
+        const shown = () => [...head.querySelectorAll(".output-dock-figure")].map((figure) => figure.textContent).join(" ");
+        expect(shown()).toContain("10s");
+        const readsBefore = reads.length;
+        vi.advanceTimersByTime(1000);
+        await nextTick();
+        expect(shown()).toContain("11s");
+        expect(reads.length).toBe(readsBefore);
+    } finally {
+        vi.useRealTimers();
+    }
 });

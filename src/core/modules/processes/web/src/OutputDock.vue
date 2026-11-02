@@ -1,6 +1,6 @@
 <script setup>
 import {computed, nextTick, ref, watch} from "vue";
-import {FoldSign, Icon, usePoll, useWindow} from "@journal/window-kit";
+import {FoldSign, Icon, useNow, usePoll, useWindow} from "@journal/window-kit";
 
 // the card of a docked process, as version 4's watched output drew it: in the head a mark for where the run stands, its command, how far it has come
 // and how long it has run; along the foot a thin bar; opened, its terminal output in a scrolling box that follows the end; read again every two seconds while the run is going
@@ -15,7 +15,7 @@ const lines = ref([]);
 const opened = ref(false);
 const terminal = ref(null);
 const FOLLOW_PIXELS = 24;
-const now = ref(Date.now());
+const now = useNow();
 
 const standing = computed(() => STANDINGS[run.value?.state] ?? "running");
 const isRunning = () => standing.value === "running";
@@ -36,7 +36,6 @@ const ranFor = computed(() => {
 async function load() {
     const id = item.value?.target_id;
     if (!id) return;
-    now.value = Date.now();
     const shown = await context.read(`process card ${id}`);
     run.value = shown.ok ? shown.value : null;
     if (!opened.value) return;
