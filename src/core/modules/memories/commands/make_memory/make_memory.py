@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from core.base.command.command import Command
-from core.base.timestamp import Timestamp
 from core.modules.memories.models.memory import Memory
 
 
@@ -15,6 +14,5 @@ class MakeMemory(Command[Memory]):
     weight: int | None = None
     keywords: tuple[str, ...] = ()
     task_id: int | None = None
-    due_at: Timestamp | None = None
     project: bool = False
     personal: bool = False

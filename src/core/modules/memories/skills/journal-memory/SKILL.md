@@ -9,7 +9,8 @@ What you keep in mind lasts only as long as you keep judging it worth keeping.
 
 - `journal memory make "<what to keep in mind>" --type fact --weight 7` keeps one, in one or two plain sentences. Every
   compaction lowers every weight by one, and at nought the memory is no longer shown.
-- `--task <n>` ties it to a task, `--due "<time>"` to a moment, `--keywords a,b` to words that bring it back.
+- `--task <n>` ties it to a task and `--keywords a,b` to words that bring it back. Something to be told at a time or on an
+  interval is a reminder, not a memory: `journal reminder make`.
 - `journal memory list` names every memory; `journal memory read <n>` reads one whole.
 - `journal memory weigh 3,7,9 5,8,2` gives each memory its own weight, in order; `journal memory weigh 3,7,9 5` gives
   them all one. Keep or raise a weight, never lower it to forget a stale detail.

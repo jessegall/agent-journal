@@ -33,7 +33,6 @@ from core.modules.memories.rules.open_mark_rule import OpenMarkRule
 from core.modules.memories.overlays.weighing_overlay import WeighingOverlay
 from core.modules.memories.rules.start_delivery_rule import StartDeliveryRule
 from core.modules.memories.rules.keyword_delivery_rule import KeywordDeliveryRule
-from core.modules.memories.rules.due_delivery_rule import DueDeliveryRule
 from core.modules.memories.commands.memory_context.memory_context_subcommand import MemoryContextSubcommand
 from core.modules.memories.commands.memory_faded.memory_faded_subcommand import MemoryFadedSubcommand
 from core.modules.memories.commands.make_memory.make_memory_handler import MakeMemoryHandler
@@ -78,7 +77,7 @@ class MemoriesModule(Module):
     views = [ActiveMemory, ContextMemory, KeywordMemory]
     guards = [TypeMakersGuard, TypeAvailabilityGuard, AgentScopeGuard, AgentWeightGuard, TypeChangeGuard, SwitchChangeGuard, KeywordScopeGuard]
     handlers = [MakeMemoryHandler, WeighMemoriesHandler, ReadMemoryHandler, FadeMemoriesHandler, GiveMemoriesHandler, OpenMemoryMarkHandler, SkipMemoryMarkHandler]
-    driver_rules = [StartDeliveryRule, KeywordDeliveryRule, DueDeliveryRule, OpenMarkRule]
+    driver_rules = [StartDeliveryRule, KeywordDeliveryRule, OpenMarkRule]
     overlays = [WeighingOverlay]
     listeners = [CompactionFaderListener, TaskMemoryRemoverListener, MarkCloserListener, MemoryMadeMarkListener, MemoryWeighedMarkListener,
                  MemoryRemovedMarkListener, MemoryFadedMarkListener, MemoryGivenMarkListener, CompactionMarkListener,

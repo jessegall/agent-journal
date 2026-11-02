@@ -57,16 +57,24 @@ class MemoriesMove(VersionFourMove):
                           report: MoveReport, context: MoveContext) -> None:
         for table, memory_type in ((RULES, "rule"), (REMINDERS, "reminder")):
             for row in source.rows(table):
+                if table == REMINDERS and row["due_at"]:
+                    report.count(table, map.transfer(table, row["id"], REMINDERS, partial(self.insert_timed_reminder, rows, row, creators.actor_id(row["creator"]), context)))
+                    continue
                 if row["trigger"] or (row["condition"] and row["condition"] != EMPTY_CONDITION):
                     report.note(f"{memory_type} {row['id']} had a trigger or a condition version 5 does not carry: it moved without it")
                 report.count(table, map.transfer(table, row["id"], TABLE, partial(self.insert_instruction, rows, documents, row, table, memory_type,
                                                                                  creators.actor_id(row["creator"]), context)))
 
+    def insert_timed_reminder(self, rows: RowInsert, row: sqlite3.Row, creator_id: int, context: MoveContext) -> int:
+        created = row["created_at"] or context.timestamp
+        return rows.insert(REMINDERS, {"environment_id": row["environment_id"], "creator_id": creator_id, "text": row["text"], "due_at": row["due_at"], "single_use": 1,
+                                             "created_at": created, "updated_at": row["updated_at"] or created})
+
     def insert_instruction(self, rows: RowInsert, documents: WholeTextDocuments, row: sqlite3.Row, table: str, memory_type: str, creator_id: int, context: MoveContext) -> int:
         created = row["created_at"] or context.timestamp
         memory_id = rows.insert(TABLE, {"environment_id": row["environment_id"] if table == REMINDERS else None, "creator_id": creator_id, "type": memory_type,
                                         "text": documents.fitting_text(row, row["environment_id"] if table == REMINDERS else None, creator_id, created),
-                                        "reason": row["reason"] if table == RULES else "", "due_at": row["due_at"] if table == REMINDERS else None,
+                                        "reason": row["reason"] if table == RULES else "",
                                         "created_at": created, "updated_at": row["updated_at"] or created})
         self.keep_words(rows, memory_id, creator_id, row["keywords"], created)
         return memory_id

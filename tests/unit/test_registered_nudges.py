@@ -15,7 +15,7 @@ ALLOWED_PLACEHOLDERS = frozenset({
     "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "writes", "items",
 })
 # whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
-FOREIGN_TEMPLATES = frozenset({"PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
+FOREIGN_TEMPLATES = frozenset({"REMINDER_LINE", "REMINDER_BLOCK", "PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})
 # a worker's job and the words a person or an agent sends it, passed on as file_names
 PASSED_ON_LINES = ("send_worker_handler.py", "short_proof_handler.py", "ended_worker_listener.py", "worker_resume.py", "merge_worker_handler.py",
                    "record_bypass_line_handler.py", "record_hook_call_handler.py", "new_driver_lines_listener.py")

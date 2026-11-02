@@ -25,7 +25,7 @@ class MakeMemoryHandler(Handler[MakeMemory, Memory]):
         memory = self.repository.save(Memory(environment_id=None if command.project else context.environment_id,
                                              agent_id=context.actor.id if command.personal else None, task_id=command.task_id,
                                              creator_id=context.actor.id, type=command.type, text=command.text,
-                                             weight=types[0].starting_weight if command.weight is None else command.weight, due_at=command.due_at), context)
+                                             weight=types[0].starting_weight if command.weight is None else command.weight), context)
         for word in command.keywords:
             self.repository.save(MemoryKeyword(memory_id=memory.id, creator_id=context.actor.id, word=word), context)
         return memory

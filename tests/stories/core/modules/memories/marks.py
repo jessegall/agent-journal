@@ -70,17 +70,6 @@ def test_a_memory_given_back_by_a_keyword_shows_a_reminded_mark(new_story):
     assert "Reminded the agent: The cart total is in cents" in marks_text(story), marks_text(story)
 
 
-def test_a_reminder_given_when_due_shows_a_reminded_mark(new_story):
-    story = new_story(fixture=BuilderStarted)
-    due = (story.clock.timestamp().value + timedelta(hours=1)).isoformat()
-    story.run(f'memory make "Deploy the cart at nine" --type reminder --due {due} --environment main', actor=story.agent)
-    story.advance(timedelta(hours=2))
-    story.tick("s-1")
-    story.expect_hook_allowed("s-1", CART_EDIT, "memory:1 applies now")
-    story.run_listeners()
-    assert "Reminded the agent: Deploy the cart at nine" in marks_text(story), marks_text(story)
-
-
 def test_a_compaction_shows_a_compacted_mark(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.sample("compact"))

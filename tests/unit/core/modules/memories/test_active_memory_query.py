@@ -42,12 +42,6 @@ def test_the_delivery_order_puts_rules_first_then_reminders_then_the_rest(tmp_pa
     assert ordered[0] == "project rule" and ordered[-1] == "environment fact"
 
 
-def test_a_memory_with_a_due_time_is_due_only_once_that_time_has_come(tmp_path):
-    journal, query = memories(tmp_path)
-    assert texts(query.due(Timestamp.parsed(NOW))) == []
-    assert texts(query.due(Timestamp.parsed(LATER))) == ["due reminder"]
-
-
 def test_only_fading_types_are_read_as_fading(tmp_path):
     journal, query = memories(tmp_path)
     assert sorted(texts(query.fading())) == ["environment fact", "second agent's fact"]

@@ -10,5 +10,8 @@ class BlockConditions:
     def __init__(self, finder: ModuleFinder) -> None:
         self.classes = {condition.name: condition for module in finder.modules() for condition in module.block_conditions}
 
+    def names(self) -> set[str]:
+        return set(self.classes)
+
     def built(self, name: str, text: str) -> BlockCondition:
         return self.classes.get(name, UnregisteredCondition).stored(text)

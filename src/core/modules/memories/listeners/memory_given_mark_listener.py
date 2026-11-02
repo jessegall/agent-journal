@@ -10,12 +10,12 @@ from core.modules.memories.models.enums.memory_mark_variant import MemoryMarkVar
 from core.modules.memories.models.memory import Memory
 from core.modules.memories.models.memory_delivery import MemoryDelivery
 
-REMINDING_CAUSES = (DeliveryCause.KEYWORD, DeliveryCause.DUE)
+REMINDING_CAUSES = [DeliveryCause.KEYWORD]
 RULE_TYPES = ("rule", "reminder")
 
 
 class MemoryGivenMarkListener(MemoryMarkListener):
-    """When a memory is given back to an agent by a keyword or because it fell due, or a rule or reminder
+    """When a memory is given back to an agent by a keyword, or a rule or reminder
     at any time, the chat shows that the agent was reminded, with the memory's words."""
 
     name = "memories.given-mark"
