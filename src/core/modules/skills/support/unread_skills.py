@@ -4,7 +4,7 @@ from core.modules.skills.models.enums.agent_skill_state import AgentSkillState
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 
 
-class SkillsToRead:
+class UnreadSkills:
     """The skills an agent must still read, oldest first, leaving out any the catalogue no longer holds."""
 
     def __init__(self, queries: Queries, catalogue: SkillCatalogue) -> None:

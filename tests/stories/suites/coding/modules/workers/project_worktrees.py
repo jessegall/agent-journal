@@ -39,10 +39,10 @@ def test_removing_a_worktree_holds_no_write_lock(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     folder = unfinished_worktree(story, repository_environment(story))
     database = story.container.get(Database)
-    withheld: list[bool] = []
-    monkeypatch.setattr(WorktreeGit, "remove_folder", lambda self, repository, path: withheld.append(database.has_transaction))
+    transaction_flags: list[bool] = []
+    monkeypatch.setattr(WorktreeGit, "remove_folder", lambda self, repository, path: transaction_flags.append(database.has_transaction))
     story.expect_success(f"project-worktree remove {folder} --environment main", actor=story.user)
-    story.expect_rows(withheld == [False])
+    story.expect_rows(transaction_flags == [False])
 
 
 def test_an_agent_cannot_remove_a_worktree(new_story):

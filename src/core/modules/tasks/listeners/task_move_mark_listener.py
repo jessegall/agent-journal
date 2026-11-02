@@ -4,7 +4,7 @@ from core.modules.tasks.models.enums.task_mark_type import TaskMarkType
 from core.modules.tasks.models.enums.task_mark_variant import TaskMarkVariant
 from core.modules.tasks.models.task import Task
 
-SHOWN_WORDS = {TaskMarkVariant.MADE: "created"}
+VARIANT_LABELS = {TaskMarkVariant.MADE: "created"}
 MOVE_VARIANTS = {"create": TaskMarkVariant.MADE, "start": TaskMarkVariant.STARTED, "close": TaskMarkVariant.CLOSED, "block": TaskMarkVariant.BLOCKED}
 
 
@@ -19,4 +19,4 @@ class TaskMoveMarkListener(MarkListener):
         variant = MOVE_VARIANTS.get(event.event.split(".")[1])
         if variant is not None:
             task = self.queries.query(Task).find(event.row_id)
-            self.show(event, TaskMarkType.TASK, variant, f"Task {task.id} {SHOWN_WORDS.get(variant, variant.value)}: {task.title}", task.environment_id, None, "task", task.id)
+            self.show(event, TaskMarkType.TASK, variant, f"Task {task.id} {VARIANT_LABELS.get(variant, variant.value)}: {task.title}", task.environment_id, None, "task", task.id)

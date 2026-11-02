@@ -1,26 +1,17 @@
 <script setup>
-import {computed, onUnmounted, ref} from "vue";
-import {useWindow} from "@journal/window-kit";
+import {computed} from "vue";
+import {usePoll, useReadLine, useWindow} from "@journal/window-kit";
 import {byAgent, byModel, dollars} from "./costBreakdown.js";
 
 // what the open sessions would cost through an API, as a total, for this session and for each model and agent that reported one
 const REFRESH_MILLISECONDS = 30000;
 const context = useWindow();
-const usage = ref(null);
-const failure = ref("");
+const {value: usage, failure, load} = useReadLine(() => "usage show");
 const agents = computed(() => usage.value?.agents ?? []);
 const own = computed(() => agents.value.find((agent) => agent.id === context.agent) ?? null);
 const total = computed(() => agents.value.reduce((sum, agent) => sum + (agent.cost_dollars || 0), 0));
 
-async function load() {
-    const result = await context.read("usage show");
-    usage.value = result.ok ? result.value : null;
-    failure.value = result.ok ? "" : result.error;
-}
-
-const timer = setInterval(load, REFRESH_MILLISECONDS);
-onUnmounted(() => clearInterval(timer));
-load();
+usePoll(load, () => true, REFRESH_MILLISECONDS);
 </script>
 
 <template>

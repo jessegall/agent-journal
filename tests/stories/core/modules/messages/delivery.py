@@ -87,9 +87,9 @@ def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run('message send "Hello" --environment main', actor=story.user)
     assert typing.typed == [(agent.id, "[journal] new message 1")]
-    woken = story.hook("s-1", HookSamples.prompt("[journal] new message 1")).lines
-    assert "new message 2" in woken
-    assert not any("new message 1" in line for line in woken)
+    delivered_lines = story.hook("s-1", HookSamples.prompt("[journal] new message 1")).lines
+    assert "new message 2" in delivered_lines
+    assert not any("new message 1" in line for line in delivered_lines)
 
 
 def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story):

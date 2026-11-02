@@ -35,8 +35,8 @@ def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
     older = story.run("task board --environment main --state open --before-id 3 --limit 1 --json", actor=story.user).output_text
     assert "Two" in older and "One" not in older and "Three" not in older
     assert '"total": 3' in older or '"total":3' in older
-    withheld = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
-    assert "Three" in withheld and "Two" in withheld and "One" not in withheld
+    board_text = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
+    assert "Three" in board_text and "Two" in board_text and "One" not in board_text
 
 
 def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_closed_last_and_pages_by_that_time(new_story):

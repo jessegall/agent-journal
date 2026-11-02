@@ -5,7 +5,7 @@ from core.modules.docking.models.dock_item import DockItem
 
 
 @dataclass(frozen=True)
-class UnkeepDockItem(Command[DockItem]):
+class ReleaseDockItem(Command[DockItem]):
     """Lets a kept docked item leave by itself again once its row ends."""
 
     item_id: int

@@ -4,7 +4,7 @@ from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.skills.support.skills_to_read import SkillsToRead
+from core.modules.skills.support.unread_skills import UnreadSkills
 from core.modules.skills.support.skill_requirement import SkillRequirement
 
 
@@ -16,9 +16,9 @@ class UnreadSkillStopRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, to_read: SkillsToRead, requirement: SkillRequirement) -> None:
-        self.to_read, self.requirement = to_read, requirement
+    def __init__(self, unread_skills: UnreadSkills, requirement: SkillRequirement) -> None:
+        self.unread_skills, self.requirement = unread_skills, requirement
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        names = self.to_read.names(hook.agent_id)
+        names = self.unread_skills.names(hook.agent_id)
         return RuleAnswer.refused(UNREAD_SKILLS.nudge(skills=', '.join(names))) if names and self.requirement.is_required else RuleAnswer.allowed()

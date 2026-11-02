@@ -7,21 +7,21 @@ from core.testing.hook_samples import HookSamples
 from server.booting_work import BootingWork
 from tests.stories.core.support.coding_fixtures import BuilderWithUser
 
-SAVE_CRITIC = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
+SAVE_PROFILE = 'profile save critic --description "Reads a change and says what is wrong" --body "Read the diff."'
 
 
 def agents_folder(story):
     return story.home.project_folder / ".claude" / "agents"
 
 
-def critic_saved(new_story):
+def saved_profile_story(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_success(SAVE_CRITIC, actor=story.user)
+    story.expect_success(SAVE_PROFILE, actor=story.user)
     return story
 
 
 def test_the_journal_writes_its_own_profiles_at_every_start_and_keeps_a_saved_one(new_story):
-    story = critic_saved(new_story)
+    story = saved_profile_story(new_story)
     (agents_folder(story) / "journal-gone.md").parent.mkdir(parents=True, exist_ok=True)
     (agents_folder(story) / "journal-gone.md").write_text("an old profile")
     story.container.get(ProfileFiles).publish()
@@ -55,8 +55,8 @@ def test_a_shipped_profile_takes_its_model_from_the_setting_unless_it_names_its_
 
 def test_a_saved_profile_is_listed_and_only_a_person_saves_one(new_story):
     story = new_story(fixture=BuilderWithUser)
-    story.expect_refusal(SAVE_CRITIC, "only a person saves a profile", actor=story.agent)
-    story.expect_success(SAVE_CRITIC, "saved critic in .claude/agents/critic.md", actor=story.user)
+    story.expect_refusal(SAVE_PROFILE, "only a person saves a profile", actor=story.agent)
+    story.expect_success(SAVE_PROFILE, "saved critic in .claude/agents/critic.md", actor=story.user)
     story.expect_text("profile list", "critic  subagent  -  used 0", actor=story.user)
 
 
@@ -68,15 +68,15 @@ def test_a_bad_name_a_bad_type_or_no_description_is_refused(new_story):
 
 
 def test_codex_gets_a_toml_only_where_it_has_a_folder(new_story):
-    story = critic_saved(new_story)
+    story = saved_profile_story(new_story)
     assert not (story.home.project_folder / ".codex" / "agents" / "critic.toml").exists()
     (story.home.project_folder / ".codex").mkdir()
-    story.expect_success(SAVE_CRITIC, actor=story.user)
+    story.expect_success(SAVE_PROFILE, actor=story.user)
     assert 'sandbox_mode = "read-only"' in (story.home.project_folder / ".codex" / "agents" / "critic.toml").read_text()
 
 
 def test_starting_a_subagent_under_a_profile_counts_its_use(new_story):
-    story = critic_saved(new_story)
+    story = saved_profile_story(new_story)
     start = HookSamples.subagent().with_raw({"tool_input": {"model": "haiku", "description": "Read the cart", "prompt": "Find where totals are counted", "subagent_type": "critic"}})
     story.hook("s-1", start)
     story.expect_text("profile list", "critic  subagent  -  used 1", actor=story.user)

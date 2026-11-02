@@ -11,9 +11,10 @@ REQUESTS_FILE = "hook-requests.json"
 
 
 class HookRequestLog:
-    """The last hooks as they were sent to the journal, kept in a file of the runtime folder while the developer
-    option is on, so a hook writes no row to log itself. The oldest drop off past the size the setting names. A
-    file that cannot be read or written costs the log its rows, never the hook its answer."""
+    """The last hooks as they were sent to the journal, kept in a file of the runtime folder while
+    the developer option is on, so a hook writes no row to log itself. The oldest drop off past the
+    size the setting names. A file that cannot be read or written costs the log its rows, never the
+    hook its answer."""
 
     def __init__(self, home: JournalHome, settings: SettingValues, clock: Clock) -> None:
         self.path = home.costly_hooks_log.parent / REQUESTS_FILE

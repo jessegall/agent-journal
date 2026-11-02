@@ -4,7 +4,7 @@ from core.base.database.statement import Statement
 
 
 @dataclass(frozen=True)
-class IsNotNull:
+class HasValue:
     """Matches rows whose column has a value."""
 
     column: str
