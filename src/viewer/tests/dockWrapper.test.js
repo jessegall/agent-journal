@@ -25,3 +25,12 @@ test("a card that draws its own head has no Open, its arrow unfolds it", () => {
     const actions = dockButtons({id: 5, target_model: "processes", target_id: 1}, {reads: ["process show"], draws_head: true, buttons: []}).map((b) => b.action);
     expect(actions).toEqual(["undock"]);
 });
+
+test("a card that leaves by itself has a pin that keeps it, and once kept an unpin that lets it leave", () => {
+    const leaving = {reads: ["process show"], draws_head: true, buttons: [], leaves_after_seconds: 5};
+    const running = {id: 5, target_model: "processes", target_id: 1, kept: false, leaves_at: null};
+    expect(dockButtons(running, leaving).map((b) => b.action)).toEqual(["keep", "undock"]);
+    expect(dockButtons(running, leaving)[0]).toMatchObject({label: "Pin", runs: "dock keep 5"});
+    expect(dockButtons({...running, kept: true}, leaving)[0]).toMatchObject({action: "unkeep", label: "Unpin", runs: "dock unkeep 5"});
+    expect(dockButtons(running, {...leaving, leaves_after_seconds: 0}).map((b) => b.action)).toEqual(["undock"]);
+});

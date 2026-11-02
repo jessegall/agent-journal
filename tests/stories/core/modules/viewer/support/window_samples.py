@@ -3,7 +3,9 @@ from core.base.driver.suite import Suite
 from core.base.guard.guard import Guard
 from core.base.model.model import Model
 from core.base.module.module import Module
+from core.base.viewer.auto_scroll import AutoScroll
 from core.base.viewer.layout_preset import LayoutPreset
+from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.layout_shape import split, tabs
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -48,7 +50,7 @@ class NotesModule(Module):
     windows = [WindowDeclaration("notes.board", "Notes board", "board.html", WindowLoading.FRAME, reads=["task list"], runs=["task start"]),
                WindowDeclaration("notes.summary", "Notes summary", "task list", WindowLoading.DOCUMENT, reads=["task list"]),
                WindowDeclaration("notes.planner", "Notes planner", "board.html", WindowLoading.FRAME, reads=["task list"], icon=WindowIcon.PLAN,
-                                 float_size=WindowSize(440, 380), count="task list",
+                                 float_size=WindowSize(440, 380), count="task list", auto_scroll=AutoScroll.TOP, tabs=[WindowTab("week", "Week", "task list", "total")],
                                  options=[ToggleOption("flush", "Flush"), ChoiceOption("range", "Range", (("week", "Week"), ("month", "Month")), "week")])]
 
 

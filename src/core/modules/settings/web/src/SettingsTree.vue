@@ -7,7 +7,6 @@ import SettingsEnvironments from "./SettingsEnvironments.vue";
 const CHANGED_SOURCES = new Set(["environment", "project"]);
 const TYPING = "input,textarea,select,[contenteditable]";
 const {rows, failure, loaded, load, context} = useRows("setting tree", ["setting.*"]);
-const SPY_MARGIN = 12;
 const TABS = [
     {key: "settings", label: "Settings"},
     {key: "environments", label: "Environments"},
@@ -46,21 +45,8 @@ function heading(module) {
     return name.slice(0, 1).toUpperCase() + name.slice(1);
 }
 
-const current = ref("");
-const sections = ref(null);
-
-function jump(module) {
-    current.value = module;
-    document.querySelector(`[data-module="${module}"]`)?.scrollIntoView({block: "start"});
-}
-
-// the nav marks the module at the top of the scrolled list
-function scrolled(event) {
-    if (!event.target.contains?.(sections.value)) return;
-    const top = event.target.getBoundingClientRect().top;
-    const passed = [...(sections.value?.querySelectorAll("[data-module]") ?? [])].filter((section) => section.getBoundingClientRect().top <= top + SPY_MARGIN);
-    current.value = passed.at(-1)?.dataset.module ?? modules.value[0] ?? "";
-}
+const chosen = ref("");
+const current = computed(() => (modules.value.includes(chosen.value) ? chosen.value : (modules.value[0] ?? "")));
 
 function slashFocus(event) {
     if (event.key !== "/" || event.target.closest?.(TYPING)) return;
@@ -69,11 +55,9 @@ function slashFocus(event) {
 }
 onMounted(() => {
     window.addEventListener("keydown", slashFocus);
-    document.addEventListener("scroll", scrolled, {capture: true, passive: true});
 });
 onUnmounted(() => {
     window.removeEventListener("keydown", slashFocus);
-    document.removeEventListener("scroll", scrolled, {capture: true});
 });
 
 async function saved(words) {
@@ -109,11 +93,11 @@ async function saved(words) {
         <div class="settings-body">
             <nav class="settings-nav" aria-label="Modules">
                 <template v-for="module in modules" :key="module">
-                    <button type="button" :class="['settings-nav-item', {current: module === (current || modules[0])}]" :data-jump="module" @click="jump(module)">{{ heading(module) }}</button>
+                    <button type="button" :class="['settings-nav-item', {current: module === current}]" :data-jump="module" @click="chosen = module">{{ heading(module) }}</button>
                 </template>
             </nav>
-            <div ref="sections" class="settings-sections" data-settings-sections>
-                <template v-for="module in modules" :key="module">
+            <div class="settings-sections" data-settings-sections>
+                <template v-for="module in modules.filter((name) => name === current)" :key="module">
                     <section class="settings-module" :data-module="module">
                         <h3 class="settings-module-heading">{{ heading(module) }}</h3>
                         <template v-for="row in tops.filter((top) => top.module === module)" :key="row.key">

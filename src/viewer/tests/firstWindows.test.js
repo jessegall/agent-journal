@@ -66,7 +66,8 @@ test("the tasks window shows each task's title and state", async () => {
 });
 
 test("the plans window shows each plan's title and state", async () => {
-    const text = await drawn(PlanList, context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}));
+    const window = {...context({"plan board": {ok: true, value: {open_total: 1, closed_total: 0, plans: [{id: 3, title: "Checkout", state: "started", task_count: 0, completed_count: 0, current_phase: 0}]}}}), tabs: [{key: "open", read: "plan board"}]};
+    const text = await drawn(PlanList, window);
     expect(text).toContain("Checkout");
     expect(text).toContain("started");
 });
@@ -116,7 +117,7 @@ test("the terminal window lists its agent's commands in order, marks journal lin
         {id: 10, agent_id: 2, hook: "pre_tool_use", tool: "Monitor", summary: "", refusal: ""},
         {id: 8, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])}, 2);
-    const element = await mounted(Terminal, windowContext);
+    const element = await mounted(Terminal, {...windowContext, option: () => ref("journal")});
     expect(windowContext.reads[0]).toBe("hook-call feed --agent-id 2");
     const rows = [...element.querySelectorAll("[data-terminal-command]")];
     expect(rows.map((row) => row.querySelector(".terminal-text").textContent)).toEqual(["pytest -q", "journal task list", "rm -rf build"]);
@@ -134,7 +135,7 @@ test("the terminal's detail level shows commands alone, the journal's lines too,
         {id: 3, agent_id: 2, hook: "pre_tool_use", tool: "Read", summary: "a.py", refusal: ""},
     ])};
     const shown = async (verbosity) => {
-        const windowContext = {...context(answers, 2), options: ref({verbosity})};
+        const windowContext = {...context(answers, 2), option: () => ref(verbosity)};
         const element = await mounted(Terminal, windowContext);
         return [...element.querySelectorAll("[data-terminal-command] .terminal-text")].map((row) => row.textContent);
     };

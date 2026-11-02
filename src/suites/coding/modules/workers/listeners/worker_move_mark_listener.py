@@ -8,17 +8,17 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 AGENTS_TABLE = "agents"
 MOVE_TEXTS = {
-    "worker_worktree.cut": (WorkerMarkVariant.STARTED, "started on {program}"),
-    "worker_worktree.advance": (WorkerMarkVariant.NEXT_TASK, "started on its next task"),
-    "worker_worktree.deliver": (WorkerMarkVariant.DELIVERED, "handed in its work"),
-    "worker_worktree.merge": (WorkerMarkVariant.MERGED, "work merged"),
-    "worker_worktree.abandon": (WorkerMarkVariant.RELEASED, "released"),
+    "worker_worktree.cut": (WorkerMarkVariant.STARTED, "started task {task}"),
+    "worker_worktree.advance": (WorkerMarkVariant.NEXT_TASK, "started task {task}"),
+    "worker_worktree.deliver": (WorkerMarkVariant.DELIVERED, "handed in task {task}"),
+    "worker_worktree.merge": (WorkerMarkVariant.MERGED, "had task {task} merged"),
+    "worker_worktree.abandon": (WorkerMarkVariant.RELEASED, "released task {task}"),
 }
 
 
 class WorkerMoveMarkListener(MarkListener):
-    """Each move of a worker shows as a mark in the chat, with its task on the second line and a click that opens the
-    worker."""
+    """Each move of a worker shows as a mark in the chat naming the task, with the program and the task's title and
+    brief shown on opening it, and a click that opens the worker."""
 
     name = "workers.move-mark"
     event = "worker_worktree.*"
@@ -31,4 +31,4 @@ class WorkerMoveMarkListener(MarkListener):
         agent = self.queries.query(Agent).find(worktree.agent_id)
         task = self.queries.query(Task).find(worktree.task_id)
         variant, move = MOVE_TEXTS[event.event]
-        self.show(event, WorkerMarkType.WORKER, variant, f"Worker {agent.id}: {move.format(program=agent.program)}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"Task {task.id}: {task.title}")
+        self.show(event, WorkerMarkType.WORKER, variant, f"Worker {agent.id} {move.format(task=task.id)}", worktree.environment_id, None, AGENTS_TABLE, agent.id, detail=f"On {agent.program}\n\nTask {task.id}: {task.title}\n\n{task.brief}")

@@ -6,7 +6,7 @@ from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
+from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
@@ -15,7 +15,6 @@ from suites.coding.modules.workers.support.main_agent import MainAgent
 from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 
-WAITING_STATES = (ProofState.SHOWN, ProofState.QUEUED, ProofState.RUNNING)
 
 
 class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
@@ -32,7 +31,7 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         self.repository.save(proof.moved(ProofLifecycle.check) if command.passed else proof.moved(ProofLifecycle.short, shortfall=command.output_note), context)
         worktree = self.queries.query(Worktree).find(proof.worktree_id)
         proofs = tuple(self.queries.query(Proof).filter(worktree_id=worktree.id).all_rows())
-        if any(row.state in WAITING_STATES for row in proofs):
+        if any(row.state in TEST_WAITING_STATES for row in proofs):
             return
         failed = [row for row in proofs if row.state is ProofState.SHORT]
         if failed:

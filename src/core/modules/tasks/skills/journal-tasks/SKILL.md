@@ -21,7 +21,7 @@ A task is one unit of work: open, started, then completed or cancelled. Declare 
 ## What comes next
 
 When your task closes, the journal starts the next one: a critical task first, then the tasks of a started plan, then
-the most urgent open task. With other tasks still in hand it takes you back to one of them.
+the most urgent open task. With other tasks still in hand it starts a critical task if one is open, and otherwise takes you back to one of them.
 
 ## Waiting
 

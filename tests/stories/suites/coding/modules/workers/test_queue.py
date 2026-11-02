@@ -65,6 +65,22 @@ def test_a_failed_test_goes_back_to_the_worker_and_its_next_delivery_runs_it_aga
     story.expect_text("proof show 1", "state: running", actor=story.agent)
 
 
+def test_a_proof_with_no_test_beside_a_passing_test_still_tells_the_main_agent(new_story, monkeypatch):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    started = recording_launch(monkeypatch)
+    repository = repository_environment(story)
+    story.expect_success('task edit 1 --brief "- the total\n- the tax"', actor=story.agent)
+    worker = Actor(story.new_row_id("worker dispatch 1", actor=story.agent), ActorType.AGENT)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success(PROOF, actor=worker)
+    story.expect_success('proof make 2 "cart.py:1, looked at it"', actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.run_listeners()
+    ended(story, started[0], 0)
+    story.expect_text(f"agent-line list --agent {story.agent.id}", f"the tests of worker:{worker.id} all pass", actor=story.agent)
+    assert "passed" in marks_text(story), marks_text(story)
+
+
 def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     started = recording_launch(monkeypatch)

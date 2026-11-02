@@ -28,4 +28,5 @@ class ChatMessage(ViewModel):
     flowchart_edges: str
     peer: str
     recipient: str
+    commented_row: str
     created_at: Timestamp

@@ -72,6 +72,18 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
+def test_delivering_with_conflict_markers_left_is_refused_and_puts_none_on_the_base_branch(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    base_tip = repository.tip(ENVIRONMENT_BRANCH)
+    story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
+    story.expect_refusal("worker deliver", "conflict markers remain in cart.py", actor=worker)
+    repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+
+
 def test_a_clash_only_on_built_files_merges_with_the_branchs_built_files(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)

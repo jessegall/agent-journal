@@ -30,6 +30,7 @@ from core.modules.plans.queries.plan_query import PlanQuery
 from core.modules.plans.support.plan_shared_rows import PlanSharedRows
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
+from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_loading import WindowLoading
 from core.base.module.model_declaration import ModelDeclaration
@@ -77,6 +78,7 @@ class PlansModule(Module):
     driver_rules = [PlanTaskLineRule, PlanStateRule, PlanOrderRule]
     docks = PLAN_DOCKS
     windows = [WindowDeclaration("plans.plans", "Plans", "plans.js", WindowLoading.COMPONENT, icon=WindowIcon.PLAN, reads=["plan board", "task list", "plan list", "plan show", "plan progress", "plan outline", "plan inspect", "phase list", "phase show"],
-                                 events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"])]
+                                 events=["plan.*", "phase.*", "task.*"], shared_reads=["plan show id", "plan progress plan_id", "phase list plan", "phase show id"],
+                                 tabs=[WindowTab("open", "Open", "plan board", "open_total"), WindowTab("closed", "Closed", "plan board --closed", "closed_total")])]
     shared_rows = [PlanSharedRows]
     seeders = [PlansSeeder]

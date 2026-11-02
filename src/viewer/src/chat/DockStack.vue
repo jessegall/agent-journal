@@ -64,7 +64,7 @@ function release(item) {
         </template>
         <template v-for="item in shared ? [] : runs" :key="item.id">
             <div @mouseenter="hold(item)" @mouseleave="release(item)">
-                <DockWrapper :item="item" :folded="foldedFor(item)" @fold="fold(item)" />
+                <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
             </div>
         </template>
         <template v-if="shared">

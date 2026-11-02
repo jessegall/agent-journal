@@ -24,7 +24,7 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story.run('proof make 1 "cart.py:1, the cart total story"', actor=worker)
     story.run("worker deliver", actor=worker)
     story.run_listeners()
-    assert f"Worker {worker.id}: started on" in marks_text(story) and f"Worker {worker.id}: started on its next task" in marks_text(story), marks_text(story)
+    assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
 
 
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):

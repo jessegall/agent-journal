@@ -54,7 +54,6 @@ from core.modules.processes.rules.journal_pipe_rule import JournalPipeRule
 from core.modules.processes.rules.redirected_run_rule import RedirectedRunRule
 from core.modules.processes.rules.silent_run_rule import SilentRunRule
 from core.modules.processes.rules.long_run_dock_rule import LongRunDockRule
-from core.modules.processes.rules.output_reader_rule import OutputReaderRule
 from core.modules.processes.rules.output_status_monitor_rule import OutputStatusMonitorRule
 from core.modules.processes.guards.ended_process_dock_guard import EndedProcessDockGuard
 from core.modules.processes.guards.run_owner_parts_guard import RunOwnerPartsGuard
@@ -94,6 +93,7 @@ from core.modules.processes.queries.watch_query import WatchQuery
 from core.modules.processes.models.support.process_setting import PROCESS_SETTINGS
 from core.modules.processes.seeders.processes_seeder import ProcessesSeeder
 from core.modules.processes.support.block_conditions.output_ended import OutputEnded
+from core.modules.processes.support.block_conditions.output_monitored import OutputMonitored
 from core.modules.processes.support.block_conditions.output_read import OutputRead
 
 WINDOW_READS = ["process card", "process show", "process feed", "output peek"]
@@ -110,7 +110,7 @@ class ProcessesModule(Module):
     skills = [SkillDeclaration("journal-shell", "Run shell commands through the journal and read what they printed; read it before reading an output, or writing a reader or an alias.",
                                keywords=("output", "reader", "alias"))]
     requires_core = ">=5,<6"
-    block_conditions = [OutputEnded, OutputRead]
+    block_conditions = [OutputEnded, OutputRead, OutputMonitored]
     settings = PROCESS_SETTINGS
     moves = [ProcessesMove]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.waits", "journal.core.messages", "journal.core.chat", "journal.core.docking"]
@@ -120,7 +120,7 @@ class ProcessesModule(Module):
     handlers = [TitleOutputHandler, StartProcessHandler, EndProcessPartHandler, EndProcessHandler, StopProcessHandler, AddReaderHandler, RemoveReaderHandler, ChooseDefaultReaderHandler, ReadOutputHandler, WatchOutputHandler, UnwatchOutputHandler, RecordGivenPercentHandler, PruneOutputsHandler, ReadNewOutputHandler]
     subcommands = [ProcessFeedSubcommand, ProcessCardSubcommand, TitleOutputSubcommand, StopProcessSubcommand, EndProcessSubcommand, EndProcessPartSubcommand, AddReaderSubcommand, RemoveReaderSubcommand, ChooseDefaultReaderSubcommand, ReadOutputSubcommand, ShowOutputStatusSubcommand, PeekOutputSubcommand, WatchOutputSubcommand, UnwatchOutputSubcommand]
     guards = [RunOwnerReportsGuard, RunOwnerPartsGuard, ReaderOwnerGuard, EndedProcessDockGuard]
-    driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule, OutputReaderRule]
+    driver_rules = [LeftoverRunRule, HandMadeMonitorRule, AliasSuggestionRule, ReaderHintRule, RunTitleRule, SleepPollRule, JournalChainRule, JournalPipeRule, RedirectedRunRule, SilentRunRule, OutputStatusMonitorRule, LongRunDockRule, FolderChangeRule, RunnerRewriteRule, EndedOutputLineRule, WatchLinesRule, OrphanProcessRule]
     listeners = [WaitingMessageRunListener, EndedAgentRunsListener, BackgroundRunWatchListener, EndedProcessWatchListener, OutputPruneListener, StoppedProcessOutputListener, OrphanedProcessKillListener, ProcessEndMarkListener, OutputDockListener]
     marks = PROCESS_MARKS
     bindings = [(WatchedRuns, MonitoredRuns)]

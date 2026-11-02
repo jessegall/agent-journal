@@ -14,10 +14,14 @@ export const SCHEMES = [
 
 export const colorScheme = ref(remembered(KEY, "system"));
 
+export function chooseColorScheme(key) {
+    colorScheme.value = key;
+    remember(KEY, key);
+}
+
 export function nextColorScheme() {
     const at = SCHEMES.findIndex((scheme) => scheme.key === colorScheme.value);
-    colorScheme.value = SCHEMES[(at + 1) % SCHEMES.length].key;
-    remember(KEY, colorScheme.value);
+    chooseColorScheme(SCHEMES[(at + 1) % SCHEMES.length].key);
 }
 
 // a stylesheet of another origin, such as a web font's, refuses to show its rules, and holds none of the theme's

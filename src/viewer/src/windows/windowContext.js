@@ -13,7 +13,7 @@ const WORD = /"([^"]*)"|'([^']*)'|(\S+)/g;
 
 // what every window is given: its name, environment, agent and page, whether it is shown, what it may run, its follows
 // through the host, whether it is only looked at, and the one row it is shown for (a share session), read and run, which never throw and answer {ok, value} or {ok, failure, error}, and its own settings, one of its pane's options written through setOption
-export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], page = null, setOption = () => {}, readOnly = false, shared = null}) {
+export function windowContext({window, environment, agent, visible, permissions, events = [], subscriptions, open, options = ref({}), declared = [], page = null, setOption = () => {}, autoScroll = "", tabs = [], readOnly = false, shared = null}) {
     const recent = new Map();
     // every request this window makes carries this signal, so the window ending (a tab switched, the page left) cancels them all
     const requests = new AbortController();
@@ -31,6 +31,8 @@ export function windowContext({window, environment, agent, visible, permissions,
         page,
         visible: computed(() => visible()),
         permissions,
+        autoScroll,
+        tabs,
         readOnly,
         shared,
         read,

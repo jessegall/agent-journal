@@ -17,6 +17,8 @@ const props = defineProps({
     unavailableReason: {type: String, default: ""},
     options: {type: Object, default: () => ({})},
     declared: {type: Array, default: () => []},
+    autoScroll: {type: String, default: ""},
+    tabs: {type: Array, default: () => []},
     readOnly: Boolean,
     shared: {type: Object, default: null},
 });
@@ -42,6 +44,8 @@ const context = windowContext({
     declared: props.declared,
     page: inject(PANE_PAGE, null),
     setOption: (key, value) => emit("option", key, value),
+    autoScroll: props.autoScroll,
+    tabs: props.tabs,
     readOnly: props.readOnly,
     shared: props.shared,
     open: (window, agent) => {

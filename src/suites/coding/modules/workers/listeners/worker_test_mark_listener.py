@@ -1,6 +1,6 @@
 from core.base.change.logged_event import LoggedEvent
 from core.modules.chat.listeners.mark_listener import MarkListener
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
+from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
 from suites.coding.modules.workers.models.enums.worker_mark_type import WorkerMarkType
 from suites.coding.modules.workers.models.enums.worker_mark_variant import WorkerMarkVariant
 from suites.coding.modules.workers.models.proof import Proof
@@ -8,7 +8,6 @@ from suites.coding.modules.workers.models.worktree import Worktree
 
 QUEUE_EVENT = "proof.queue"
 ENDED_EVENTS = ("proof.check", "proof.short")
-WAITING_STATES = (ProofState.SHOWN, ProofState.QUEUED, ProofState.RUNNING)
 
 
 class WorkerTestMarkListener(MarkListener):
@@ -30,7 +29,7 @@ class WorkerTestMarkListener(MarkListener):
         worker = worktree.agent_id
         if event.event == QUEUE_EVENT:
             self.mark(event, worktree, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
-        elif not any(row.state in WAITING_STATES for row in proofs):
+        elif not any(row.state in TEST_WAITING_STATES for row in proofs):
             failed = sum(row.state is ProofState.SHORT for row in proofs)
             self.mark(event, worktree, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed" if failed else f"Tests of worker {worker} passed", True)
 

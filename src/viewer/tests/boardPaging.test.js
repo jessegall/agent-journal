@@ -66,7 +66,7 @@ test("a plan answer for the tab left behind is dropped", async () => {
         if (line.includes("--closed")) return new Promise((resolve) => (answerClosed = () => resolve({ok: true, value: {open_total: 1, closed_total: 1, plans: [plan(2, "Closed plan")]}})));
         return {ok: true, value: {open_total: 1, closed_total: 1, plans: [plan(1, "Open plan")]}};
     });
-    const element = await mounted(PlanCards, window);
+    const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     element.querySelector('[data-tab="closed"]').click();
     await settle();
     element.querySelector('[data-tab="open"]').click();
@@ -81,7 +81,7 @@ test("show more on an empty plan list asks for nothing", async () => {
     const reads = [];
     const window = context({});
     window.read = async (line) => (reads.push(line), {ok: true, value: {open_total: 3, closed_total: 0, plans: []}});
-    const element = await mounted(PlanCards, window);
+    const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     expect(element.querySelector("[data-plans-more]")).toBeNull();
     expect(reads.some((line) => line.includes("Infinity"))).toBe(false);
 });
@@ -89,7 +89,7 @@ test("show more on an empty plan list asks for nothing", async () => {
 test("a plan card shows its state as a badge, and no phase once none is left", async () => {
     const finished = {...plan(4, "Done"), state: "approved", task_count: 3, completed_count: 3, current_phase: 0};
     const {window} = reader(() => ({ok: true, value: {open_total: 1, closed_total: 0, plans: [finished]}}));
-    const element = await mounted(PlanCards, window);
+    const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     await settle();
     expect(element.querySelector("[data-plan-state]").textContent).toBe("approved");
     expect(element.querySelector(".plan-foot").textContent).toBe("3 of 3 tasks done");
