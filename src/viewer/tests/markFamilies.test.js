@@ -27,7 +27,8 @@ test("a family hidden on the pane hides its marks and shows them again when swit
 test("the catalogue lists the chat window with the families' switches, so the pane keeps the choice across a reload", async () => {
     const catalogue = new WindowCatalogue(async () => ({windows: [{name: CHAT_WINDOW, options: []}, {name: "notes.board", options: []}]}), async () => declarations);
     await catalogue.load();
-    expect(catalogue.window(CHAT_WINDOW).options.map((option) => option.key)).toEqual(["show-memories.memories", "show-memories.reminders"]);
+    expect(catalogue.window(CHAT_WINDOW).options.map((option) => option.key)).toEqual(["show-preset", "show-memories.memories", "show-memories.reminders"]);
+    expect(catalogue.window(CHAT_WINDOW).options.find((option) => option.control === "preset").presets.map((preset) => preset.label)).toEqual(["Only chat", "Chat with context", "Every mark"]);
     expect(catalogue.window("notes.board").options).toEqual([]);
     expect(withFamilyOptions([], declarations)).toEqual([]);
 });
@@ -47,7 +48,7 @@ test("Only chat hides every family and Chat with context shows those shown by de
     expect(context.options).toEqual({"show-memories.memories": true, "show-memories.reminders": false, "show-memories.context": true});
     const option = (key) => context.options[key];
     expect(presetOfOptions(kinds, option)).toBe("context");
-    expect(presetOfOptions(kinds, () => undefined)).toBe("");
+    expect(presetOfOptions(kinds, () => undefined)).toBe("every");
 });
 
 test("main only for a group switches off its families without a main mark, and flipping it again switches them on", () => {

@@ -29,10 +29,12 @@ function families(declarations) {
 
 const options = (list, shown) => Object.fromEntries(list.map((family) => [familyKey(family.key), shown(family)]));
 
-// the presets of version 4's menu, each the pane options it sets: Only chat hides every family, Chat with context shows those shown by default
+// the presets of version 4's menu, each the pane options it sets: Only chat hides every family, Chat with context shows those shown by default,
+// Every mark shows them all
 export const familyPresets = (declarations) => [
     {key: "chat", label: "Only chat", icon: "chat", options: options(families(declarations), () => false)},
     {key: "context", label: "Chat with context", icon: "list", options: options(families(declarations), (family) => family.shown)},
+    {key: "every", label: "Every mark", icon: "list", options: options(families(declarations), () => true)},
 ];
 
 // the preset a pane's options match, or ""
