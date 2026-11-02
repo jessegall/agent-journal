@@ -31,11 +31,13 @@ class DocumentsMove(VersionFourMove):
 
     name = "documents"
     reads = [*TEXT_TABLES, REVISIONS]
-    drops = ["library_items"]
+    drops = ["library_items", "collections"]
     id_modules = ["journal.core.actors", "journal.core.environments", "journal.core.messages", "journal.core.tasks", "journal.core.plans"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
         report, creators, rows = MoveReport(), CreatorResolver(target, map), RowInsert(target)
+        for table in self.drops:
+            report.drop(table, source.count(table))
         for table in TEXT_TABLES:
             for row in source.rows(table):
                 report.count(table, map.transfer(table, row["id"], table, partial(self.insert_text, rows, table, row, creators.actor_id(row["creator"]), context)))

@@ -77,7 +77,7 @@ def main(argv: list[str]) -> int:
     viewer = ViewerListener(login, ViewerRoutes(home, listener_thread, login), last_port(home))
     home.viewer_port_file.write_text(str(viewer.port))
     ticker = ListenerThread(tick_round.run, tick_round.report, TICK_PERIOD_SECONDS, "ticker")
-    output_read_round = JournalRound(home, "output reads", OutputReadWork())
+    output_read_round = JournalRound(home, "output reads", OutputReadWork(listener_thread.wake))
     output_read_thread = ListenerThread(output_read_round.run, output_read_round.report, OUTPUT_READ_SECONDS, "output reads")
     check_round = JournalRound(home, "checks", CheckWork())
     check_thread = ListenerThread(check_round.run, check_round.report, CHECK_PERIOD_SECONDS, "checks")

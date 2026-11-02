@@ -8,7 +8,7 @@ from core.base.driver.block_until import BlockUntil
 
 
 class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
-    """Opens a block, or gives back the one with the same line that is open already."""
+    """Opens a block, or brings the open one with the same line up to date with its words."""
 
     command = BlockUntil
 
@@ -18,6 +18,6 @@ class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):
     def handle(self, command: BlockUntil, context: Context) -> AgentBlock:
         open_blocks = self.queries.query(AgentBlock).filter(agent_id=command.agent_id, nudge_key=command.nudge.key).matching(IsNull("closed_at")).page(1, 1).rows
         if open_blocks:
-            return open_blocks[0]
+            return self.repository.save(open_blocks[0].changed(nudge_text=command.nudge.text), context)
         return self.repository.save(AgentBlock(agent_id=command.agent_id, creator_id=context.actor.id, nudge_key=command.nudge.key, nudge_text=command.nudge.text,
                                                condition_name=command.condition.name, condition_text=command.condition.text), context)

@@ -24,4 +24,4 @@ class RequiredCommand(Model):
     @property
     def subject(self) -> str:
         command_parts = self.required_command.split()
-        return f"{command_parts[1]} {command_parts[-1]}"
+        return " ".join(dict.fromkeys((*command_parts[2:3], command_parts[1], command_parts[-1])))

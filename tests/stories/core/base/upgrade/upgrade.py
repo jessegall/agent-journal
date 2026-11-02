@@ -143,13 +143,13 @@ def test_after_a_good_upgrade_version_4s_files_are_in_version_4_with_the_backup_
     assert story.home.database.is_file()
 
 
-def test_a_table_whose_module_is_not_built_is_listed_as_waiting_and_stays_in_the_backup(new_story):
+def test_a_dropped_table_is_reported_and_stays_in_the_backup(new_story):
     from tests.stories.fixtures.version_four import version_four_fixture
 
     story = new_story()
     version_four_fixture(story.home.folder / "journal.db")
-    outcome = expect_upgrade(story, "not claimed: collections (1 rows); waits for its module and stays in the backup")
-    assert "old_reports (1 rows)" in outcome.text and "waits" not in next(line for line in outcome.text.splitlines() if "old_reports" in line)
+    outcome = expect_upgrade(story, "dropped collections: 1 rows")
+    assert "old_reports (1 rows)" in outcome.text
     assert sqlite3.connect(next((story.home.folder / "version-4").rglob("journal.db"))).execute("SELECT count(*) FROM collections").fetchone()[0] == 1
 
 

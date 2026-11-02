@@ -43,8 +43,8 @@ def test_the_tool_uses_count_down_and_the_last_three_say_so(new_story):
     hooks = spend(story, 5)
     countdown_lines = [[line for line in hook.lines if "due:" in line] for hook in hooks]
     assert [bool(lines) for lines in countdown_lines] == [False, False, True, True, True]
-    assert "output 1 due: 2 tool uses" in countdown_lines[2][0]
-    assert "output 1 due: 0 tool uses" in countdown_lines[4][0]
+    assert "title output 1 due: 2 tool uses" in countdown_lines[2][0]
+    assert "title output 1 due: 0 tool uses" in countdown_lines[4][0]
     assert not any(hook.refusal for hook in hooks)
 
 
@@ -52,7 +52,7 @@ def test_past_the_fifth_a_write_is_refused_with_the_line_and_how_to_skip(new_sto
     story, process = story_with_required_command(new_story)
     spend(story, 5)
     refusal = story.hook("s-1", EDIT_HOOK).refusal
-    assert f"output {process.id} is due" in refusal
+    assert f"title output {process.id} is due" in refusal
     assert "journal required-command skip 1 --reason" in refusal
 
 

@@ -1,5 +1,5 @@
 from core.base.module.module_finder import DEFAULT_MODULE_LISTS
-from install.upgrade_text import BOOKKEEPING_TABLES, WAITING_TABLES
+from install.upgrade_text import BOOKKEEPING_TABLES
 from tests.stories.fixtures.version_four import table_names, version_four_fixture, with_unknown_table
 
 UNCLAIMED_TABLE = "old_reports"
@@ -12,7 +12,7 @@ def claimed_tables() -> set[str]:
 
 
 def unaccounted(tables: list[str]) -> list[str]:
-    accounted = claimed_tables() | set(WAITING_TABLES) | set(BOOKKEEPING_TABLES) | {UNCLAIMED_TABLE}
+    accounted = claimed_tables() | set(BOOKKEEPING_TABLES) | {UNCLAIMED_TABLE}
     return [table for table in tables if table not in accounted]
 
 
@@ -24,7 +24,3 @@ def test_a_table_added_to_the_fixture_with_no_move_drop_or_waiting_entry_is_foun
     fixture = version_four_fixture(tmp_path / "journal.db", with_rows=False)
     with_unknown_table(fixture)
     assert unaccounted(table_names(fixture)) == [ADDED_TABLE]
-
-
-def test_no_table_is_both_moved_and_waiting():
-    assert claimed_tables() & set(WAITING_TABLES) == set()

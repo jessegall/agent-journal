@@ -14,4 +14,7 @@ class UpdatesMove(VersionFourMove):
     drops = ["release_messages"]
 
     def move(self, source: VersionFourSource, target: Database, map: MoveMap, context: MoveContext) -> MoveReport:
-        return MoveReport()
+        report = MoveReport()
+        for table in self.drops:
+            report.drop(table, source.count(table))
+        return report

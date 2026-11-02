@@ -1,9 +1,7 @@
 from core.base.upgrade.upgrade_report import UpgradeReport
 
-WAITING_TABLES = ("collections",)
 BOOKKEEPING_TABLES = ("entries", "state_transitions", "migrations", "migrated_rows", "version3_migrations", "journal_versions", "timings", "dashboard_rows")
 BOOKKEEPING_NOTE = "version 4's own records, kept in the backup"
-WAITING_NOTE = "waits for its module and stays in the backup"
 HEADER = "module  rows  left behind"
 UNCLAIMED_HEADING = "tables no module claims"
 CLEAN_CELL = "nothing"
@@ -27,8 +25,6 @@ class UpgradeText:
 
     @staticmethod
     def unclaimed_note(table: str) -> str:
-        if table in WAITING_TABLES:
-            return f"; {WAITING_NOTE}"
         return f"; {BOOKKEEPING_NOTE}" if table in BOOKKEEPING_TABLES else ""
 
     def lines(self) -> list[str]:

@@ -6,6 +6,8 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
 from core.base.agent_role import AgentRole
 from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
+from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
+from core.modules.tasks.support.block_conditions.task_stopped import TaskStopped
 
 UNLOGGED_WRITES_CEILING = 50
 
@@ -29,4 +31,4 @@ class UnloggedWriteRule(DriverRule):
         current, writes = counted
         if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, task=current.task.id), TaskLogged(current.task.id))
+        return RuleAnswer.blocked(hook, UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, task=current.task.id), AnyCondition(TaskLogged(current.task.id), TaskStopped(current.task.id)))

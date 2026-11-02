@@ -6,8 +6,10 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.base.query.queries import Queries
 from core.modules.sequences.queries.sequence_run_query import SequenceRunQuery
 from core.base.driver.conditions.ran_command import RanCommand
+from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
 
 FOLLOW_COMMAND = "journal sequence follow"
+ABANDON_COMMAND = "journal sequence abandon"
 
 
 class UntakenStepRule(DriverRule):
@@ -25,4 +27,4 @@ class UntakenStepRule(DriverRule):
         run = self.runs.current(hook.agent_id)
         if run is None or run.step_started:
             return RuleAnswer.allowed()
-        return RuleAnswer.blocked(hook, STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number), RanCommand(FOLLOW_COMMAND))
+        return RuleAnswer.blocked(hook, STEP_WAITS.nudge(sequence=run.sequence_id, step=run.step_number), AnyCondition(RanCommand(FOLLOW_COMMAND), RanCommand(ABANDON_COMMAND)))

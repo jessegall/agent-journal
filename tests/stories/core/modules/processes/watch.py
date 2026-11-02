@@ -76,5 +76,9 @@ def test_the_output_read_round_keeps_a_runs_progress_current_between_ticks(new_s
     story.run('reader add steps --commands "make*" --lines "FAILED" --progress "\\[ *([0-9]+)%\\]"', actor=story.agent)
     process_id = start_process(story, "make test").id
     story.container.get(OutputFolder).write_output(process_id, 1, "[ 42%]\n")
-    OutputReadWork().run(story.container)
+    woken = []
+    OutputReadWork(lambda: woken.append(True)).run(story.container)
     assert story.container.get(ProcessQuery).find(process_id).progress == 42
+    assert woken == [True]
+    OutputReadWork(lambda: woken.append(True)).run(story.container)
+    assert woken == [True]

@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from core.base.actor import Actor
 from core.base.command.bus import Bus
 from core.base.container import Container
@@ -9,10 +11,16 @@ from server.round_work import RoundWork
 
 class OutputReadWork(RoundWork):
     """The output read round, every few seconds: a running output that grew goes through its reader, so a run's
-    row and mark show its progress as it happens and not only at the minute's tick."""
+    row and mark show its progress as it happens and not only at the minute's tick. A read wakes the listeners,
+    which keep the run's chat mark up to date."""
+
+    def __init__(self, wake_listeners: Callable[[], None]) -> None:
+        self.wake_listeners = wake_listeners
 
     def run(self, container: Container) -> None:
         bus, grown = container.get(Bus), container.get(GrownOutputs)
-        for process in tuple(container.get(ProcessQuery).running().oldest().all_rows()):
-            if grown.has_new_bytes(process.id):
-                bus.run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
+        grown_runs = [process for process in tuple(container.get(ProcessQuery).running().oldest().all_rows()) if grown.has_new_bytes(process.id)]
+        for process in grown_runs:
+            bus.run(ReadNewOutput(process.id), Actor.core(), environment_id=process.environment_id)
+        if grown_runs:
+            self.wake_listeners()
