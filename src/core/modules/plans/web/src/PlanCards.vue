@@ -1,15 +1,15 @@
 <script setup>
 import {computed, ref} from "vue";
-import {Btn, Icon, Skeleton, peekRef, useWindow} from "@journal/window-kit";
+import {Btn, Icon, InnerTabs, Skeleton, peekRef, useWindow} from "@journal/window-kit";
 
 // plans as version 4 drew them: a card for each, the task count with a bar, the phase it is in, and tabs for the open and the closed; one read brings a tab's cards and both counts
 const context = useWindow();
 const PAGE_ROWS = 25;
-const tab = ref("open");
+const tab = ref(context.tabs?.[0]);
 const board = ref({open_total: 0, closed_total: 0, plans: []});
 const failure = ref("");
 const loaded = ref(false);
-const tabLine = () => `plan board${tab.value === "closed" ? " --closed" : ""}`;
+const tabLine = () => tab.value.read;
 
 async function load() {
     const asked = tab.value;
@@ -31,13 +31,13 @@ async function more() {
     board.value = {...answer.value, plans: [...board.value.plans, ...answer.value.plans.filter((plan) => !shown.has(plan.id))]};
 }
 
-const choose = (name) => {
-    tab.value = name;
+const choose = (chosen) => {
+    tab.value = chosen;
     board.value = {...board.value, plans: []};
     load();
 };
 const shown = computed(() => board.value.plans);
-const total = computed(() => (tab.value === "open" ? board.value.open_total : board.value.closed_total));
+const total = computed(() => board.value[tab.value?.count_field]);
 const share = (row) => (row.task_count ? Math.round((row.completed_count / row.task_count) * 100) : 0);
 context.follow(["plan.*", "phase.*", "task.*"], load);
 load();
@@ -52,12 +52,9 @@ load();
             <p class="plans-note">{{ failure }}</p>
         </template>
         <template v-else>
-            <div class="plans-tabs">
-                <Btn kind="text" :class="['plans-tab', {on: tab === 'open'}]" data-tab="open" @click="choose('open')">Open {{ board.open_total }}</Btn>
-                <Btn kind="text" :class="['plans-tab', {on: tab === 'closed'}]" data-tab="closed" @click="choose('closed')">Closed {{ board.closed_total }}</Btn>
-            </div>
+            <InnerTabs :active="tab" :answer="board" @choose="choose" />
             <template v-if="!shown.length">
-                <p class="plans-note">{{ tab === "open" ? "No open plans" : "No closed plans" }}</p>
+                <p class="plans-note">No {{ tab?.label.toLowerCase() }} plans</p>
             </template>
             <div class="plans-grid">
                 <template v-for="row in shown" :key="row.id">
@@ -81,29 +78,6 @@ load();
     display: flex;
     flex-direction: column;
     gap: 14px;
-}
-
-.plans-tabs {
-    display: flex;
-    gap: 14px;
-}
-
-.plans-tab {
-    padding: 0 0 4px;
-    border: 0;
-    border-bottom: 1px solid transparent;
-    background: none;
-    color: var(--text-3);
-    font: inherit;
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    cursor: pointer;
-}
-
-.plans-tab.on {
-    border-bottom-color: var(--accent);
-    color: var(--text);
 }
 
 .plans-grid {

@@ -94,11 +94,10 @@ def test_a_proof_with_no_test_still_waits_for_the_main_agents_check(new_story, m
     story.expect_text("proof show 1", "state: shown", actor=story.agent)
 
 
-def test_the_runner_is_told_the_journals_folder_because_the_worktree_has_none(new_story, monkeypatch):
+def test_a_worker_test_starts_through_the_runner_in_the_worktree(new_story, monkeypatch):
     story = new_story(fixture=OrchestratorWithOpenTask)
     calls = []
     monkeypatch.setattr("subprocess.Popen", lambda command, **options: calls.append((command, options)))
     story.container.get(WorkerTestLaunch).start(7, "pytest tests/cart.py", "/work/worktree", "s-1")
     command, options = calls[0]
     assert "--process 7" in command and "--background" in command and options["cwd"] == "/work/worktree"
-    assert options["env"]["JOURNAL_HOME"] == str(story.home.folder.resolve())

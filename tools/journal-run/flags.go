@@ -22,11 +22,30 @@ type Flags struct {
 	Aliases    []string
 }
 
-// Home is the journal's folder: the one a tracker was handed, else JOURNAL_HOME, else .journal here.
+// binFolder is where a journal keeps this program, inside the journal's folder.
+const binFolder = "bin"
+
+// binaryHome is the journal's folder a program installed in its bin folder belongs to, so a worker's worktree, which
+// has no journal of its own, still finds it.
+func binaryHome(program string) string {
+	folder := filepath.Dir(program)
+	if filepath.Base(folder) != binFolder {
+		return ""
+	}
+	return filepath.Dir(folder)
+}
+
+// Home is the journal's folder: the one a tracker was handed, else JOURNAL_HOME, else the one this program is installed
+// in, else .journal here.
 func (flags Flags) Home() string {
 	home := flags.Folder
 	if home == "" {
 		home = os.Getenv("JOURNAL_HOME")
+	}
+	if home == "" {
+		if program, err := os.Executable(); err == nil {
+			home = binaryHome(program)
+		}
 	}
 	if home == "" {
 		home = ".journal"

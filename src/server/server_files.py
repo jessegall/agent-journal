@@ -27,6 +27,7 @@ class ServerFiles:
         self.pid_file = home.folder / "server.pid"
         self.log = home.folder / "runtime" / "server.log"
         self.maintenance = home.folder / "maintenance"
+        self.run_lock = home.folder / "run-lock"
         self.tunnel_pid_file = home.folder / "tunnel.pid"
         self.lock_file: IO[str] | None = None
 
@@ -93,6 +94,12 @@ class ServerFiles:
 
     def clear_maintenance(self) -> None:
         self.maintenance.unlink(missing_ok=True)
+
+    def mark_run_lock(self) -> None:
+        self.run_lock.write_text(str(os.getpid()))
+
+    def clear_run_lock(self) -> None:
+        self.run_lock.unlink(missing_ok=True)
 
     def release_lock(self) -> None:
         if self.lock_file is not None:

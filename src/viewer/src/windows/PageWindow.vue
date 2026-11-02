@@ -54,6 +54,8 @@ watch(
             :prompts="prompts"
             :options="options"
             :declared="entry.options"
+            :auto-scroll="entry.auto_scroll"
+            :tabs="entry.tabs"
             :events="entry.events"
             :unavailable-reason="entry.unavailable_reason || loadFailure"
         />
