@@ -3,6 +3,7 @@ from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
@@ -40,7 +41,10 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
             self.main_agent.send_line(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, context)
 
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
-        self.repository.save(self.queries.query(Task).find(worktree.task_id).moved(TaskLifecycle.retest), context)
+        for task_id in sorted({row.task_id for row in failed}):
+            task = self.queries.query(Task).find(task_id)
+            if task.state is TaskState.TESTING:
+                self.repository.save(task.moved(TaskLifecycle.retest), context)
         self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         lines = "; ".join(f"{row.test_command} ({row.shortfall})" for row in failed)
         self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=WORKER_TESTS_FAILED.nudge(lines=lines).text, source=MERGE_CONFLICT_SOURCE), context)
