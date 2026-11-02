@@ -77,6 +77,8 @@ const dragging = ref(false);
 
 async function attach(files) {
     for (const file of files) {
+        // a message holds one file per name, so a second file of the same name is left out
+        if (attached.value.some((entry) => entry.name === file.name)) continue;
         const entry = {name: file.name, pending: "", failure: ""};
         attached.value = [...attached.value, entry];
         const result = await context.upload(file);
@@ -332,7 +334,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                 <template v-else>
                     <Btn small bordered class="composer-send" data-dump-files @click="dumping = !dumping">Dump files</Btn>
                 </template>
-                <template v-if="sendable && attached.length > 1">
+                <template v-if="sendable && attached.length > 1 && !text.trim()">
                     <Btn small bordered class="composer-send" data-dump-offer @click="dumping = true">Dump {{ attached.length }} files</Btn>
                 </template>
             </div>

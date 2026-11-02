@@ -28,6 +28,10 @@ test("the dock's action buttons and Dump files are the bordered ones", () => {
 });
 
 // task 5476: the sidebar and the breadcrumb as version 4 drew them
+test("docked cards stand a small gap apart", () => {
+    expect(read("../src/chat/DockStack.vue")).toMatch(/\.dock-stack \{[^}]*flex-direction: column;[^}]*gap: 6px;/);
+});
+
 test("the sidebar has a header, a fold per module, counts and a foot, and the page a breadcrumb", () => {
     const sidebar = read("../src/shell/SidebarPages.vue");
     expect(sidebar).toContain("sidebar-head");

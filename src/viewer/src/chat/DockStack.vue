@@ -36,17 +36,27 @@ function release(item) {
 </script>
 
 <template>
-    <template v-for="item in rows" :key="item.id">
-        <div @mouseenter="hold(item)" @mouseleave="release(item)">
-            <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
-        </div>
-    </template>
-    <template v-for="item in shared ? [] : runs" :key="item.id">
-        <div @mouseenter="hold(item)" @mouseleave="release(item)">
-            <DockWrapper :item="item" :folded="foldedFor(item)" @fold="fold(item)" />
-        </div>
-    </template>
-    <template v-if="shared">
-        <button type="button" class="dock-runs-row" title="Show each run as its own card" @click="opened = true">{{ runs.length }} runs</button>
-    </template>
+    <div class="dock-stack">
+        <template v-for="item in rows" :key="item.id">
+            <div @mouseenter="hold(item)" @mouseleave="release(item)">
+                <DockWrapper :item="item" :leaving="isLeaving(item) && !held.has(item.id)" :folded="foldedFor(item)" @fold="fold(item)" />
+            </div>
+        </template>
+        <template v-for="item in shared ? [] : runs" :key="item.id">
+            <div @mouseenter="hold(item)" @mouseleave="release(item)">
+                <DockWrapper :item="item" :folded="foldedFor(item)" @fold="fold(item)" />
+            </div>
+        </template>
+        <template v-if="shared">
+            <button type="button" class="dock-runs-row" title="Show each run as its own card" @click="opened = true">{{ runs.length }} runs</button>
+        </template>
+    </div>
 </template>
+
+<style scoped>
+.dock-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+</style>

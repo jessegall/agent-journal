@@ -29,10 +29,12 @@ const REPORT_FAMILY = {type: "report", icon: "report", title: "Report {row_id}: 
 let mounted = [];
 let lines;
 let runs;
+let uploads = [];
 
 function windowContext(answers) {
     lines = [];
     runs = [];
+    uploads = [];
     return {
         read: async (line) => {
             lines.push(line);
@@ -45,6 +47,10 @@ function windowContext(answers) {
         follow: () => {},
         option: () => ({value: true}),
         face: "person",
+        upload: async (file) => {
+            uploads.push(file.name);
+            return {ok: true, value: `pending-${file.name}`};
+        },
     };
 }
 
@@ -186,6 +192,39 @@ test("composer: the corner button is Dump files while the box is empty and Send 
     box.dispatchEvent(new Event("input"));
     await settled();
     expect(corner()).toEqual(["Dump files"]);
+});
+
+async function pasteFiles(element, names) {
+    const paste = new Event("paste", {bubbles: true, cancelable: true});
+    paste.clipboardData = {files: names.map((name) => new File(["x"], name))};
+    element.querySelector("textarea").dispatchEvent(paste);
+    await settled();
+}
+
+test("composer: the offer to dump several files shows only while the box holds no text", async () => {
+    const element = await mountedChat();
+    await pasteFiles(element, ["one.png", "two.png"]);
+    const offer = () => element.querySelector("[data-dump-offer]");
+    expect(offer()?.textContent.trim()).toBe("Dump 2 files");
+    const box = element.querySelector("textarea");
+    box.value = "Look at these";
+    box.dispatchEvent(new Event("input"));
+    await settled();
+    expect(offer()).toBeNull();
+    expect(element.querySelector("[data-send]")).not.toBeNull();
+    box.value = "";
+    box.dispatchEvent(new Event("input"));
+    await settled();
+    expect(offer()).not.toBeNull();
+});
+
+test("composer: a second file with the same name is left out, so one chip and one upload", async () => {
+    const element = await mountedChat();
+    await pasteFiles(element, ["same.png", "same.png"]);
+    expect(uploads).toEqual(["same.png"]);
+    await pasteFiles(element, ["same.png", "other.png"]);
+    expect(uploads).toEqual(["same.png", "other.png"]);
+    expect(element.querySelector("[data-send]")).not.toBeNull();
 });
 
 test("composer: Dump files opens a form where pasted paragraphs and dropped files become the parts of one dump made through dump make", async () => {
