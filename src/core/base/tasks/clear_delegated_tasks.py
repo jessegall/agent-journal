@@ -4,6 +4,6 @@ from core.base.command.command import Command
 
 @dataclass(frozen=True)
 class ClearDelegatedTasks(Command[None]):
-    """Takes every unfinished task away from the worker it was delegated to."""
+    """Takes the open and started tasks away from the worker they were delegated to."""
 
     agent_id: int

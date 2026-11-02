@@ -6,5 +6,5 @@ from core.modules.tasks.models.task import Task
 
 @dataclass(frozen=True)
 class DeliverTask(Command[Task]):
-    """A worker says its task is done: its worktree is committed and the task waits for its proofs to be
+    """A worker says all its tasks are done: its worktree is committed and they wait for their proofs to be
     checked."""

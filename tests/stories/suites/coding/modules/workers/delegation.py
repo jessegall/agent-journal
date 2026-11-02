@@ -22,7 +22,7 @@ def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.run('proof make 1 "cart.py:1, the cart total story"', actor=worker)
-    story.run("worker deliver", actor=worker)
+    story.run("worker next", actor=worker)
     story.run_listeners()
     assert f"Worker {worker.id} started task 1" in marks_text(story) and f"Worker {worker.id} started task 2" in marks_text(story), marks_text(story)
 
@@ -43,6 +43,24 @@ def test_a_comment_on_a_task_with_no_worker_tells_no_worker(new_story):
     assert "was also told" not in story.run(f"agent-line list --agent {story.agent.id}").output_text
 
 
+def test_a_worker_delivers_nothing_while_a_task_is_queued(new_story):
+    story, repository, worker = delegated_story(new_story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_refusal("worker deliver", "task 2 is still in your queue", actor=worker)
+    story.expect_text("task show 1", "state: started", actor=story.agent)
+
+
+def test_moving_to_the_next_task_hands_nothing_in_and_the_last_task_has_no_next(new_story):
+    story, repository, worker = delegated_story(new_story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success("worker next", actor=worker)
+    story.run_listeners()
+    assert "handed in" not in marks_text(story), marks_text(story)
+    story.expect_refusal("worker next", "task 2 is your last", actor=worker)
+
+
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):
     story, _, worker = delegated_story(new_story)
     story.expect_text("task show 1", "state: started", f"delegated_to: {worker.id}", actor=story.agent)
@@ -53,7 +71,7 @@ def test_delivering_starts_the_next_delegated_task_in_the_same_worktree(new_stor
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
-    story.expect_text("worker deliver", "your next task, task 2: Second job", "Do the second job", actor=worker)
+    story.expect_text("worker next", "your next task, task 2: Second job", "Do the second job", actor=worker)
     story.expect_text("task show 1", "state: testing", actor=story.agent)
     story.expect_text("task show 2", "state: started", f"holder_id: {worker.id}", actor=story.agent)
     story.expect_text("worker-worktree show 1", "state: cut", "task_id: 2", actor=story.agent)
@@ -63,11 +81,15 @@ def test_the_last_delivery_delivers_the_worktree_and_the_merge_closes_every_task
     story, repository, worker = delegated_story(new_story)
     repository.changed(worker.id, "cart.py", CART_CHANGE)
     story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
-    story.run("worker deliver", actor=worker)
+    story.run("worker next", actor=worker)
     repository.changed(worker.id, "cart.py", "TOTAL = 3\n")
     story.expect_success('proof make 1 "cart.py:1, the second story"', actor=worker)
     story.run("worker deliver", actor=worker)
     story.expect_text("worker-worktree show 1", "state: delivered", actor=story.agent)
+    story.expect_text("task show 1", "state: testing", actor=story.agent)
+    story.expect_text("task show 2", "state: testing", actor=story.agent)
+    story.run_listeners()
+    assert "handed in task 1, task 2" in marks_text(story), marks_text(story)
     story.run("proof check 1", actor=story.agent)
     story.run("proof check 2", actor=story.agent)
     repository.checkout(ENVIRONMENT_BRANCH)

@@ -25,8 +25,8 @@ const pressed = ref(new Set());
 const failure = ref("");
 async function press(button) {
     if (button.action === "open") return peekRef(`${props.item.target_model}:${props.item.target_id}`);
-    if (button.action !== "declared") return pressButton(button, props.item, context.environment);
-    pressed.value = new Set([...pressed.value, button.label]);
+    const isDeclared = button.action === "declared";
+    if (isDeclared) pressed.value = new Set([...pressed.value, button.label]);
     failure.value = "";
     const answer = await pressButton(button, props.item, context.environment);
     if (answer?.ok !== false) return;

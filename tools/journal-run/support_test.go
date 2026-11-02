@@ -11,15 +11,18 @@ import (
 
 // recordingClient stands in for the journal client: it records every line the runner reports.
 type recordingClient struct {
-	mutex     sync.Mutex
-	reachable bool
-	failing   bool
-	lines     []string
+	mutex      sync.Mutex
+	reachable  bool
+	restarting bool
+	failing    bool
+	lines      []string
 }
 
 func newClient() *recordingClient { return &recordingClient{reachable: true} }
 
 func (client *recordingClient) Reachable() bool { return client.reachable }
+
+func (client *recordingClient) Restarting() bool { return client.restarting }
 
 func (client *recordingClient) Run(arguments ...string) error {
 	client.mutex.Lock()

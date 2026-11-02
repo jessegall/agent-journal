@@ -1,63 +1,39 @@
 
-from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
-from core.modules.tasks.commands.start_task.start_task import StartTask
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
-from suites.coding.modules.workers.support.worktree_git import WorktreeGit
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
-from suites.coding.modules.workers.models.enums.proof_state import ProofState
 from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
-from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
-from suites.coding.modules.workers.models.worktree import Worktree
-from suites.coding.modules.workers.queries.proof_query import ProofQuery
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
-from suites.coding.modules.workers.support.brief_points import brief_point_count
+from suites.coding.modules.workers.support.worker_proof_queue import WorkerProofQueue
+from suites.coding.modules.workers.support.worker_task_commit import WorkerTaskCommit
 
 
 class DeliverTaskHandler(Handler[DeliverTask, Task]):
-    """Commits a worker's proved and changed worktree and moves its task to testing; the next task delegated to
-    it starts in the same worktree, and only the last one delivers the worktree."""
+    """Hands in all a worker's tasks together, which a queued task refuses: commits its worktree, moves every task it
+    holds started to testing, delivers the worktree and queues the tests of its proofs."""
 
     command = DeliverTask
 
-    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proofs: ProofQuery, repository: Repository, git: WorktreeGit, tasks: TaskQuery, bus: Bus) -> None:
-        self.queries, self.worktrees, self.proofs, self.repository, self.git = queries, worktrees, proofs, repository, git
-        self.tasks, self.bus = tasks, bus
+    def __init__(self, queries: Queries, worktrees: WorktreeQuery, proof_queue: WorkerProofQueue, repository: Repository, task_commit: WorkerTaskCommit, tasks: TaskQuery) -> None:
+        self.queries, self.worktrees, self.proof_queue, self.repository, self.task_commit, self.tasks = queries, worktrees, proof_queue, repository, task_commit, tasks
 
     def handle(self, command: DeliverTask, context: Context) -> Task:
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None or worktree.state is not WorktreeState.CUT:
             raise Refusal("only a worker with a started task delivers", "journal worker-worktree list shows the worktrees")
-        task = self.queries.query(Task).find(worktree.task_id)
-        proved = {proof.point for proof in self.proofs.worktree_proofs(worktree.id).all_rows() if proof.task_id == task.id}
-        unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
-        if unproved:
-            raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} \"<file:line, and the test that shows it>\"")
-        committed = self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
-        if not committed and not self.git.changed_files(worktree):
-            raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
-        delivered = self.repository.save(task.moved(TaskLifecycle.test), context)
         following = self.tasks.next_delegated(context.actor.id)
-        if following is None:
-            self.repository.save(worktree.moved(WorktreeLifecycle.deliver), context)
-            self.queue_tests(worktree, context)
-            return delivered
-        self.bus.dispatch(StartTask(following.id), context)
-        self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
-        return self.queries.query(Task).find(following.id)
-
-    def queue_tests(self, worktree: Worktree, context: Context) -> None:
-        for proof in tuple(self.proofs.worktree_proofs(worktree.id).oldest().all_rows()):
-            if not proof.test_command:
-                continue
-            if proof.state is ProofState.SHORT:
-                proof = self.repository.save(proof.revise(context.timestamp, context.actor, proof.text), context)
-            if proof.state is ProofState.SHOWN:
-                self.repository.save(proof.moved(ProofLifecycle.queue), context)
+        if following is not None:
+            raise Refusal(f"task {following.id} is still in your queue, and all your tasks are handed in together", "journal worker next")
+        self.task_commit.commit(worktree, self.queries.query(Task).find(worktree.task_id))
+        for started in tuple(self.tasks.holder(context.actor.id).started().all_rows()):
+            self.repository.save(started.moved(TaskLifecycle.test), context)
+        self.repository.save(worktree.moved(WorktreeLifecycle.deliver), context)
+        self.proof_queue.queue(worktree, context)
+        return self.queries.query(Task).find(worktree.task_id)

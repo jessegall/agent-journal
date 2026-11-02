@@ -151,11 +151,23 @@ const removeAttached = (entry) => (attached.value = attached.value.filter((other
 const sendable = computed(() => (text.value.trim() || attached.value.length) && attached.value.every((entry) => entry.pending));
 
 const replying = ref(null);
-const composerQuote = computed(() => (editing.value ? `Editing message ${editing.value.id}` : `Reply to: ${replying.value?.text}`));
+const commenting = ref(null);
+const composerQuote = computed(() => {
+    if (editing.value) return `Editing message ${editing.value.id}`;
+    return commenting.value ? `Comment on: ${commenting.value.text}` : `Reply to: ${replying.value?.text}`;
+});
 const editing = ref(null);
 function startReply(message) {
     editing.value = null;
+    commenting.value = null;
     replying.value = message;
+    focusComposer();
+}
+// a comment on a message goes through the composer as a reply does, under the word Comment
+function startComment(message) {
+    editing.value = null;
+    replying.value = null;
+    commenting.value = message;
     focusComposer();
 }
 async function reactTo(message, face) {
@@ -175,6 +187,7 @@ function editUp(event) {
     event.preventDefault();
     editing.value = lastOwn();
     replying.value = null;
+    commenting.value = null;
     text.value = editing.value.text;
 }
 function leaveEdit() {
@@ -199,6 +212,12 @@ async function saveEdit() {
     load();
 }
 
+// what the composer's words go as: a comment, a reply, or a new message; a message with files is always new
+function sentLine(answering, commented, line, files) {
+    if (commented && !files.length) return ["message", "comment", String(commented.id), line];
+    return answering && !files.length ? ["message", "reply", String(answering.id), line] : ["message", "send", line, ...files];
+}
+
 async function send() {
     takeFromBox();
     if (editing.value) return saveEdit();
@@ -216,9 +235,11 @@ async function send() {
     sendFailure.value = "";
     focusComposer();
     const answering = replying.value;
+    const commented = commenting.value;
     replying.value = null;
-    const result = await context.run(answering && !files.length ? ["message", "reply", String(answering.id), line] : ["message", "send", line, ...files]);
-    if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached);
+    commenting.value = null;
+    const result = await context.run(sentLine(answering, commented, line, files));
+    if (!result.ok) (sendFailure.value = result.error, text.value = sent.text, attached.value = sent.attached, commenting.value = commented);
     outgoing.value = outgoing.value.filter((other) => other !== echo);
     await load();
 }
@@ -344,7 +365,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
                             <MarkGroup :group="row" />
                         </template>
                         <template #default>
-                            <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @delete="removeMessage" @react="reactTo" />
+                            <MessageCard :message="row.row" :quote="quoteOf(row.row)" @reply="startReply" @comment="startComment" @delete="removeMessage" @react="reactTo" />
                         </template>
                     </SwitchCase>
                 </template>
@@ -368,10 +389,10 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
         <template v-if="dumping">
             <DumpForm :run="context.run" @made="dumping = false" @close="dumping = false" />
         </template>
-        <template v-if="replying || editing">
+        <template v-if="replying || commenting || editing">
             <p class="composer-quote" data-composer-quote>
                 <span class="composer-quote-text">{{ composerQuote }}</span>
-                <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), leaveEdit()">×</button>
+                <button type="button" class="composer-quote-drop" aria-label="Leave it" @click="(replying = null), (commenting = null), leaveEdit()">×</button>
             </p>
         </template>
         <form data-figure-home :class="['composer', {dragging}]" @submit.prevent="send" @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="dropped">

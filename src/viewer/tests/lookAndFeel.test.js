@@ -156,6 +156,17 @@ test("docked items: a declared button goes the moment it is pressed, and comes b
     expect(element.querySelector("[data-dock-failure]").textContent).toBe("only a person approves");
 });
 
+test("a refused close of a docked card says why on the card", async () => {
+    vi.stubGlobal("fetch", perLine(async () => ({json: async () => ({code: 1, error: "this card stays"})})));
+    const element = document.createElement("div");
+    createApp({setup: () => () => h(DockWrapper, {item: REPORT_DOCK}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    mounted.push(element);
+    await settled();
+    element.querySelector("[data-dock-action='undock']").click();
+    await settled();
+    expect(element.querySelector("[data-dock-failure]").textContent).toBe("this card stays");
+});
+
 // task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand
 test("docked cards fold when the chat is scrolled up, open at its foot, and a hand fold holds", async () => {
     const element = await mountedChat();
@@ -313,6 +324,20 @@ test("side panels: a left sidebar lists the suite's pages and the environments, 
     const files = Object.keys(import.meta.glob("../src/shell/*.vue"));
     expect(files).toContain("../src/shell/SidebarPages.vue");
     expect(files).toContain("../src/shell/ActivityPanel.vue");
+});
+
+test("composer: a comment on a message to a worker shows in the band under the word Comment and goes as a comment", async () => {
+    const element = await mountedChat({"message feed": [{id: 5, type: "peer", text: "Check the cart", recipient: "worker 12", created_at: "2026-11-01T05:00:00+00:00"}]});
+    element.querySelector("[data-growing-comment]").click();
+    await settled();
+    expect(element.querySelector("[data-composer-quote]").textContent).toContain("Comment on: Check the cart");
+    const box = element.querySelector(".composer-input");
+    box.value = "And the till";
+    box.dispatchEvent(new Event("input"));
+    box.dispatchEvent(new KeyboardEvent("keydown", {key: "Enter"}));
+    await settled();
+    expect(runs).toContainEqual(["message", "comment", "5", "And the till"]);
+    expect(element.querySelector("[data-composer-quote]")).toBeNull();
 });
 
 test("composer: a reply names what it answers and goes as a reply, and the arrow up edits the newest unread message", async () => {

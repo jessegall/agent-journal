@@ -1,30 +1,40 @@
+from dataclasses import replace
+
+from core.base.actor import Actor
+from core.base.actor_type import ActorType
+from core.base.command.bus import Bus
 from core.base.command.context import Context
 from core.base.command.handler import Handler
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
+from core.modules.tasks.commands.start_task.start_task import StartTask
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
+from core.modules.tasks.queries.task_query import TaskQuery
 from suites.coding.modules.workers.commands.queue_worker_tests.record_worker_test import RecordWorkerTest
 from suites.coding.modules.workers.models.enums.proof_state import TEST_WAITING_STATES, ProofState
+from suites.coding.modules.workers.models.enums.worktree_state import WorktreeState
 from suites.coding.modules.workers.models.lifecycles.proof_lifecycle import ProofLifecycle
 from suites.coding.modules.workers.models.lifecycles.worktree_lifecycle import WorktreeLifecycle
 from suites.coding.modules.workers.models.proof import Proof
 from suites.coding.modules.workers.models.worktree import Worktree
 from suites.coding.modules.workers.support.main_agent import MainAgent
-from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE
-from suites.coding.modules.workers.support.worker_nudges import WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
+from suites.coding.modules.workers.support.worker_job import MERGE_CONFLICT_SOURCE, WORKER_JOB_SOURCE
+from suites.coding.modules.workers.support.worker_nudges import WORKER_NEXT_TASK, WORKER_TESTS_FAILED, WORKER_TESTS_PASSED
 
 
 
 class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
     """Checks a proof whose test passed, or sends it back short with the run's output to read. When a worker's
-    last test has ended, failures go back to the worker, and all passed tells the main agent to merge."""
+    last test has ended, failures go back to the worker; all passed starts its next task, or, once handed in,
+    tells the main agent to merge."""
 
     command = RecordWorkerTest
 
-    def __init__(self, queries: Queries, repository: Repository, main_agent: MainAgent) -> None:
-        self.queries, self.repository, self.main_agent = queries, repository, main_agent
+    def __init__(self, queries: Queries, repository: Repository, main_agent: MainAgent, tasks: TaskQuery, bus: Bus) -> None:
+        self.queries, self.repository, self.main_agent, self.tasks, self.bus = queries, repository, main_agent, tasks, bus
 
     def handle(self, command: RecordWorkerTest, context: Context) -> None:
         proof = self.queries.query(Proof).find(command.proof_id)
@@ -36,11 +46,26 @@ class RecordWorkerTestHandler(Handler[RecordWorkerTest, None]):
         failed = [row for row in proofs if row.state is ProofState.SHORT]
         if failed:
             self.reopen_work(worktree, failed, context)
+        elif worktree.state is WorktreeState.CUT:
+            self.start_next(worktree, context)
         else:
             self.main_agent.send_line(worktree.environment_id, WORKER_TESTS_PASSED.nudge(worker=worktree.agent_id).text, context)
 
+    def start_next(self, worktree: Worktree, context: Context) -> None:
+        following = self.tasks.next_delegated(worktree.agent_id)
+        if following is None:
+            return
+        self.bus.dispatch(StartTask(following.id), replace(context, actor=Actor(worktree.agent_id, ActorType.AGENT)))
+        self.repository.save(worktree.moved(WorktreeLifecycle.advance, task_id=following.id), context)
+        line = WORKER_NEXT_TASK.nudge(task=following.id, job=f"{following.title}\n{following.brief}").text
+        self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=WORKER_JOB_SOURCE), context)
+
     def reopen_work(self, worktree: Worktree, failed: list[Proof], context: Context) -> None:
-        self.repository.save(self.queries.query(Task).find(worktree.task_id).moved(TaskLifecycle.retest), context)
-        self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
+        for task_id in sorted({row.task_id for row in failed}):
+            task = self.queries.query(Task).find(task_id)
+            if task.state is TaskState.TESTING:
+                self.repository.save(task.moved(TaskLifecycle.retest), context)
+        if worktree.state is WorktreeState.DELIVERED:
+            self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)
         lines = "; ".join(f"{row.test_command} ({row.shortfall})" for row in failed)
         self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=WORKER_TESTS_FAILED.nudge(lines=lines).text, source=MERGE_CONFLICT_SOURCE), context)

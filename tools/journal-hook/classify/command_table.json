@@ -2241,6 +2241,9 @@
    ]
   },
   "go": {
+   "value_flags": [
+    "-C"
+   ],
    "base": {
     "kind": "process",
     "effects": [],
