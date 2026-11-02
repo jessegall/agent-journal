@@ -38,7 +38,8 @@ class UsageAgentsSubcommand(ReadSubcommand[AgentFactsList]):
     def facts(self, agent: Agent) -> AgentFacts:
         status = self.files.status(agent.session)
         tasks = self.queries.query(Task).filter(holder_id=agent.id, state=TaskState.STARTED).newest().page(1, 1).rows
-        return AgentFacts(agent.id, status.model, status.context_percent, status.cost_dollars, tasks[0].id if tasks else None, tasks[0].title if tasks else "")
+        delegated = tuple({"id": task.id, "title": task.title, "state": task.state.value} for task in self.queries.query(Task).filter(delegated_to=agent.id).oldest().all_rows())
+        return AgentFacts(agent.id, status.model, status.context_percent, status.cost_dollars, tasks[0].id if tasks else None, tasks[0].title if tasks else "", delegated)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, AgentFactsList):

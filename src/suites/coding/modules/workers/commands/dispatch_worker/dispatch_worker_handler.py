@@ -31,8 +31,8 @@ WORKTREES_FOLDER = Path(".journal") / "worktrees"
 
 
 class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
-    """Starts a worker: its agent row, a worktree cut from the environment's branch, its task; a failure
-    undoes it."""
+    """Starts a worker: its agent row, a worktree cut from the environment's branch, its first task and the tasks
+    delegated after it; a failure undoes it."""
 
     command = DispatchWorker
 
@@ -43,8 +43,10 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
 
     def handle(self, command: DispatchWorker, context: Context) -> WorkerLaunch:
         task = self.queries.query(Task).find(command.task_id)
-        if task.state is not TaskState.OPEN:
-            raise Refusal(f"task {task.id} is {task.state.value}", "a worker is dispatched to an open task")
+        tasks = [task, *(self.queries.query(Task).find(task_id) for task_id in command.delegated_ids)]
+        for listed in tasks:
+            if listed.state is not TaskState.OPEN:
+                raise Refusal(f"task {listed.id} is {listed.state.value}", "a worker is dispatched to an open task")
         environment = self.queries.query(Environment).find(task.environment_id)
         worker_limit = self.settings.number(WORKER_LIMIT, environment.id)
         if len(self.worktrees.environment_worktrees(environment.id)) >= worker_limit:
@@ -66,6 +68,8 @@ class DispatchWorkerHandler(Handler[DispatchWorker, WorkerLaunch]):
             self.git.cut(environment.folder, worktree)
             self.bus.dispatch(PrepareWorktree(worktree.folder, environment.folder, environment.name, command.library_links, command.library_copies), worker_context)
             worktree = self.repository.save(worktree.cut(context.timestamp, context.actor, base_commit), worker_context)
+            for listed in tasks:
+                self.repository.save(replace(listed, delegated_to=worker.id), worker_context)
             self.bus.dispatch(StartTask(task.id), replace(worker_context, actor=Actor(worker.id, ActorType.AGENT)))
         except Exception:
             self.git.remove(environment.folder, worktree)

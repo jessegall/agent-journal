@@ -9,6 +9,8 @@ class ProofLifecycle(Lifecycle):
     editable = [ProofState.SHOWN]
     deletable = ()
 
-    check = Move("check", [ProofState.SHOWN], ProofState.CHECKED)
-    short = Move("short", [ProofState.SHOWN], ProofState.SHORT)
+    queue = Move("queue", [ProofState.SHOWN], ProofState.QUEUED)
+    run = Move("run", [ProofState.QUEUED], ProofState.RUNNING)
+    check = Move("check", [ProofState.SHOWN, ProofState.RUNNING], ProofState.CHECKED)
+    short = Move("short", [ProofState.SHOWN, ProofState.RUNNING], ProofState.SHORT)
     revise = Move("revise", [ProofState.SHORT], ProofState.SHOWN)

@@ -5,6 +5,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.environments.models.environment import Environment
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
@@ -38,14 +39,20 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if uncommitted:
             raise Refusal(f"the checkout of environment {environment.name} has uncommitted changes to {', '.join(uncommitted)}",
                           f"worker {worktree.agent_id} changes them too: commit or stash them, then merge again")
-        conflicts = self.git.rebase(worktree) if self.git.tip(environment.folder, worktree.base_branch) != worktree.base_commit else ()
+        self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+        conflicts = self.git.sync(worktree) if self.git.tip(environment.folder, worktree.base_branch) != worktree.base_commit else ()
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.agent_id}")
-        self.repository.save(task.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
+        for delivered in self.delivered_tasks(worktree, task):
+            self.repository.save(delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
         merged = self.repository.save(worktree.merge(context.timestamp, context.actor), context)
         self.git.remove(environment.folder, merged)
         return MergeOutcome(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
+
+    def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
+        delivered = tuple(self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows())
+        return [task, *(row for row in delivered if row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         self.checks.check_proofs(worktree)
@@ -57,7 +64,7 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
 
     def returned(self, worktree: Worktree, task: Task, conflicts: tuple[str, ...], context: Context) -> Worktree:
         self.repository.save(task.moved(TaskLifecycle.retest), context)
-        line = (f"the rebase of your work onto {worktree.base_branch} clashed on {', '.join(conflicts)}: change them so they fit {worktree.base_branch},"
+        line = (f"{worktree.base_branch} is merged into your worktree and clashes on {', '.join(conflicts)}: settle the conflict markers in those files,"
                 f" then deliver again with journal worker deliver")
         self.repository.save(AgentLine(agent_id=worktree.agent_id, creator_id=context.actor.id, text=line, source=MERGE_CONFLICT_SOURCE), context)
         return self.repository.save(worktree.moved(WorktreeLifecycle.rework), context)

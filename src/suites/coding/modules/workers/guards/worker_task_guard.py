@@ -22,4 +22,4 @@ class WorkerTaskGuard(Guard):
             return
         started_tasks = self.tasks.holder(change.actor.id).started().page(1, 1).rows
         if started_tasks and started_tasks[0].id != change.row.id:
-            raise Refusal(f"worker {change.actor.id} has task {started_tasks[0].id} started already", "a worker works on one task: deliver it first")
+            raise Refusal(f"worker {change.actor.id} has task {started_tasks[0].id} started already", "a worker works on one task at a time: deliver it first")

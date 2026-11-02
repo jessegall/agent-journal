@@ -10,6 +10,7 @@ class WorktreeLifecycle(Lifecycle):
     deletable = ()
 
     cut = Move("cut", [WorktreeState.NEW], WorktreeState.CUT)
+    advance = Move("advance", [WorktreeState.CUT], WorktreeState.CUT)
     deliver = Move("deliver", [WorktreeState.CUT], WorktreeState.DELIVERED)
     rework = Move("rework", [WorktreeState.DELIVERED], WorktreeState.CUT)
     merge = Move("merge", [WorktreeState.DELIVERED], WorktreeState.MERGED)

@@ -13,6 +13,7 @@ class AgentFacts:
     cost_dollars: float
     task_id: int | None
     task_title: str
+    delegated: tuple[Mapping[str, object], ...] = ()
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.agent_id, "model": self.model, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title}
+        return {"id": self.agent_id, "model": self.model, "context_percent": self.context_percent, "cost_dollars": self.cost_dollars, "task_id": self.task_id, "task_title": self.task_title, "delegated": list(self.delegated)}

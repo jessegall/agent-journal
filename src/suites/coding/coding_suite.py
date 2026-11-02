@@ -18,7 +18,7 @@ class CodingSuite(Suite):
     windows = ["messages.chat", "questions.waiting", "questions.questions", "tasks.tasks", "plans.plans", "agents.agents", "agents.subagents", "schedules.jobs", "memories.memories", "workers.workers", "reviews.reviewers", "agents.transcript", "drivers.hook-calls", "coding.file-feed",
                "coding.file-edits", "coding.files", "coding.git", "workers.worktrees", "workers.models", "messages.attachments", "coding.terminal", "processes.outputs", "search.search", "dumps.dumps", "secrets.secrets", "skills.skills", "mcp.integrations", "profiles.profiles", "transcriptions.transcriptions", "reminders.reminders", "sharing.shares", "tunnel.tunnel", "reviews.reviewer", "updates.updates", "developer.numbers", "developer.hook-requests", "drivers.nudges", "workers.points", "workers.todos", "documents.documents", "sequences.sequences", "templates.templates", "plugins.plugins", "suggestions.suggestions", "phone.phones", "settings.settings", "triggers.triggers", "checks.checks", "usage.fitness", "usage.load", "usage.usage", "usage.context", "coding.work-mode"]
     layouts = {
-        "home": split("row", 0.62, tabs("messages.chat"), tabs("tasks.tasks", "plans.plans", "agents.agents")),
+        "home": split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed")),
         "home@coding.orchestrator": split("row", 0.5, tabs("agents.agents", "coding.file-edits"),
                                           split("col", 0.5, tabs("tasks.tasks", "plans.plans"), tabs("messages.chat"))),
         "agent": split("row", 0.5, tabs("messages.chat"), tabs("coding.file-feed", "drivers.hook-calls", "agents.subagents", "coding.terminal")),
@@ -28,7 +28,7 @@ class CodingSuite(Suite):
     }
     presets = {
         "home": [
-            LayoutPreset("default", "Default", "Chat and side panels", split("row", 0.7, tabs("messages.chat"), tabs("tasks.tasks", "plans.plans"))),
+            LayoutPreset("default", "Default", "Chat and side panels", split("row", 0.5, tabs("messages.chat", "coding.terminal"), tabs("tasks.tasks", "plans.plans", "questions.questions", "coding.file-feed", active="coding.file-feed"))),
             LayoutPreset("developer", "Developer", "A layout for developers",
                          split("row", 0.62, tabs("messages.chat"), split("col", 0.74, tabs("coding.file-feed", "tasks.tasks"), tabs("coding.terminal")))),
             LayoutPreset("chat", "Chat only", "Only the chat", tabs("messages.chat")),

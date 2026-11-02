@@ -43,7 +43,7 @@ def test_a_worktree_with_a_proof_not_checked_is_refused_its_merge_naming_the_poi
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
 
-def test_a_base_branch_that_moved_without_a_clash_is_rebased_onto_and_merged(new_story):
+def test_a_base_branch_that_moved_without_a_clash_is_merged_in_and_merged(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -55,7 +55,7 @@ def test_a_base_branch_that_moved_without_a_clash_is_rebased_onto_and_merged(new
     repository.expect_file(ENVIRONMENT_BRANCH, "tax.py", "TAX = 21\n")
 
 
-def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker_with_the_files_and_aborts_the_rebase(new_story):
+def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker_with_the_files_and_conflict_markers(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -67,7 +67,7 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     story.expect_success(lines.TASK_DETAILS, "state: started", f"holder_id: {worker.id}")
     story.expect_success("worker-worktree show 1", "state: cut")
     story.expect_text(f"agent-line list --agent {worker.id}", "cart.py")
-    repository.expect_no_rebase(worker.id)
+    assert "<<<<<<<" in (repository.worktree_folder(worker.id) / "cart.py").read_text()
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
 
@@ -91,15 +91,28 @@ def test_a_clash_only_on_built_files_merges_with_the_branchs_built_files(new_sto
     repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, "built on the branch\n")
 
 
-def test_a_worker_whose_work_clashed_can_deliver_again_with_nothing_new_to_commit(new_story):
+def test_a_worker_settles_a_clash_and_its_next_merge_goes_through(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
     repository.checkout(ENVIRONMENT_BRANCH)
     repository.committed("cart.py", "TOTAL = 2\n", "Another total")
     story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
+    (repository.worktree_folder(worker.id) / "cart.py").write_text("TOTAL = 3\n")
     story.expect_success("worker deliver", actor=worker)
     story.expect_success("worker-worktree show 1", "state: delivered")
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", "TOTAL = 3\n")
+
+
+def test_a_job_for_a_worker_comes_on_the_latest_of_its_base_branch(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("tax.py", "TAX = 21\n", "The tax")
+    story.expect_success(f'worker send {worker.id} "one more thing"', actor=story.agent)
+    assert (repository.worktree_folder(worker.id) / "tax.py").read_text() == "TAX = 21\n"
 
 
 def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_each_hour_and_goes_through_once_it_is_back(new_story):
@@ -136,7 +149,7 @@ def test_a_merge_after_the_environments_branch_changed_is_refused(new_story):
     story.expect_success(lines.TASK_DETAILS, "state: testing")
 
 
-def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_changed_is_refused_naming_them_before_any_rebase(new_story):
+def test_a_merge_over_uncommitted_changes_in_the_checkout_to_files_the_worker_changed_is_refused_naming_them_before_any_merge(new_story):
     story = new_story(fixture=OrchestratorWithOpenTask)
     repository = repository_environment(story)
     worker = checked_worker(story, repository)
@@ -163,7 +176,7 @@ def test_a_clash_resumes_a_worker_that_has_ended_with_the_clash_as_its_job(new_s
     story.run_listeners()
     launcher.expect_worker(worker.id, worker_session(story, worker), repository.worktree_folder(worker.id))
     assert "--resume" in launcher.requests[-1]["command"]
-    assert any("clashed on cart.py" in word for word in launcher.requests[-1]["command"])
+    assert any("clashes on cart.py" in word for word in launcher.requests[-1]["command"])
     story.expect_text(f"agent-line list --agent {worker.id}", "entered")
 
 
