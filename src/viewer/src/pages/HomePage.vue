@@ -17,8 +17,8 @@ listeners.push(home.heard);
 // the main agent, whose id the agent windows opened on the home page are given
 const mainAgent = ref(null);
 onMounted(async () => {
-    const answer = await shellLine(["agent", "list", "--role", "main"]);
-    if (answer.ok && answer.value?.rows?.length) mainAgent.value = answer.value.rows[0].id;
+    const answer = await shellLine(["agent", "main"]);
+    if (answer.ok) mainAgent.value = answer.value.id;
 });
 onUnmounted(stop);
 opened.then((session) => home.load(sessionPage(session)));

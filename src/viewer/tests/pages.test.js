@@ -118,7 +118,7 @@ test("an agent window opened on the home page is given the main agent's id and a
     const base = globalThis.fetch;
     vi.stubGlobal("fetch", perLine(async (url, init) => {
         const words = JSON.parse(init?.body || "{}").line || [];
-        if (words[0] === "agent" && words[1] === "list") return {json: async () => ({code: 0, value: {rows: [{id: 3}]}, error: ""})};
+        if (words[0] === "agent" && words[1] === "main") return {json: async () => ({code: 0, value: {id: 3}, error: ""})};
         return base(url, init);
     }));
     current = {suite: "coding", drivers: "main: coding.builder"};
