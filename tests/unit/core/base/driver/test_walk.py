@@ -126,8 +126,8 @@ class RegainedHistory:
         return True
 
 
-def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, permanent: bool = False, essential: bool = False) -> DriverRuleEntry:
-    return DriverRuleEntry(name, DottedPath.class_path(rule_class), "stop", position, owner, (), (), permanent, essential)
+def rule(name: str, rule_class: type[DriverRule], position: int, owner: str, unsilenced: bool = False, essential: bool = False) -> DriverRuleEntry:
+    return DriverRuleEntry(name, DottedPath.class_path(rule_class), "stop", position, owner, (), (), unsilenced, essential)
 
 
 def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type[Overlay]] = (), off: Sequence[str] = (), history=None) -> list[tuple[str, str, str]]:
@@ -141,12 +141,12 @@ def outcomes(tmp_path, rules: Sequence[DriverRuleEntry], overlays: Sequence[type
 
 def test_essential_rules_and_limits_come_first_then_layers_newest_first_then_the_driver_rules(tmp_path):
     rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("o.new", AddsLine, 3, "samples.NewRun"),
-             rule("d.limit", Allows, 4, DRIVER, permanent=True), rule("drivers.essential", Allows, 5, "drivers", essential=True)]
+             rule("d.limit", Allows, 4, DRIVER, unsilenced=True), rule("drivers.essential", Allows, 5, "drivers", essential=True)]
     assert outcomes(tmp_path, rules, [NewRun]) == [("d.limit", "", "allowed"), ("drivers.essential", "", "allowed"), ("o.new", "sequence_run:2", "lines"), ("d.driver", "", "lines")]
 
 
 def test_an_exclusive_layer_passes_over_the_ordinary_rules_beneath_it_but_never_a_limit(tmp_path):
-    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.limit", AddsLine, 3, DRIVER, permanent=True)]
+    rules = [rule("d.driver", AddsLine, 1, DRIVER), rule("o.old", AddsLine, 2, "samples.OldWait"), rule("d.limit", AddsLine, 3, DRIVER, unsilenced=True)]
     assert outcomes(tmp_path, rules, [OldWait]) == [("d.limit", "", "lines"), ("o.old", "wait:1", "lines"), ("d.driver", "", "silenced")]
 
 
@@ -177,7 +177,7 @@ def test_an_ordinary_rule_that_lets_the_hook_through_at_once_is_recorded_as_rais
 
 
 def test_a_limit_that_lets_the_hook_through_at_once_ends_the_walk(tmp_path):
-    rules = [rule("d.limit", AllowsNow, 1, DRIVER, permanent=True), rule("d.second", AddsLine, 2, DRIVER)]
+    rules = [rule("d.limit", AllowsNow, 1, DRIVER, unsilenced=True), rule("d.second", AddsLine, 2, DRIVER)]
     assert outcomes(tmp_path, rules) == [("d.limit", "", "lines")]
 
 

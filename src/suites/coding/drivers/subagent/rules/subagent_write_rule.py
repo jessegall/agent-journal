@@ -10,6 +10,7 @@ class SubagentWriteRule(DriverRule):
     every overlay."""
 
     name = "coding.subagent-reads-only"
+    unsilenced = True
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:

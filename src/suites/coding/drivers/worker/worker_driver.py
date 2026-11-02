@@ -13,6 +13,5 @@ class WorkerDriver(Driver):
     name = "coding.worker"
     suite = CodingSuite
     role = AgentRole.WORKER
-    permanent_rules = [WorkerGitRule, WorkerCommandTypeRule]
-    rules = [WorkerTaskStartRule, WorkerStopRule]
+    rules = [WorkerGitRule, WorkerCommandTypeRule, WorkerTaskStartRule, WorkerStopRule]
     opening_lines = ["You are a worker: you do your one task in your worktree and deliver it with journal worker deliver; the journal handles git."]

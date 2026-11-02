@@ -1,4 +1,4 @@
-import {createApp, h} from "vue";
+import {createApp, h, nextTick, reactive} from "vue";
 import {expect, test} from "vitest";
 import AgentBar from "../src/shell/AgentBar.vue";
 import WindowDropdown from "../src/windows/WindowDropdown.vue";
@@ -131,3 +131,24 @@ test("the helpers dropdown holds every kind under its own header with a count", 
     expect([...element.querySelectorAll("[data-dropdown-group]")].map((head) => head.textContent.trim())).toEqual(["Subagents1", "Workers2", "Reviewers0"]);
 });
 
+test("the pause button shows paused at once, resume shows working, and a refusal puts it back", async () => {
+    const agent = reactive({...MAIN, id: 7, paused_at: null});
+    const ran = [];
+    let answer = {ok: true, value: {}};
+    const element = mounted(AgentBar, {agent, run: async (line) => (ran.push(line.join(" ")), answer)});
+    const button = element.querySelector("[data-agent-pause]");
+    button.click();
+    await nextTick();
+    expect(element.querySelector("[data-agent-word]").textContent).toBe("Paused");
+    await nextTick();
+    expect(ran).toEqual(["agent pause 7"]);
+    button.click();
+    await nextTick();
+    expect(element.querySelector("[data-agent-word]").textContent).toBe("Working");
+    expect(ran).toEqual(["agent pause 7", "agent resume 7"]);
+    answer = {ok: false, error: "no"};
+    button.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(element.querySelector("[data-agent-word]").textContent).toBe("Working");
+    expect(element.querySelector("[data-agent-failure]").textContent).toBe("no");
+});

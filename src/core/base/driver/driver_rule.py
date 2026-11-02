@@ -17,6 +17,7 @@ class DriverRule:
     drivers: ClassVar[Sequence[str]] = []
     roles: ClassVar[Sequence[AgentRole]] = []
     essential: ClassVar[bool] = False
+    unsilenced: ClassVar[bool] = False
     history: ClassVar[bool] = False
     overlay_proof: ClassVar[bool] = False
 

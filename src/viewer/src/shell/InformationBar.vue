@@ -55,7 +55,7 @@ const uptime = computed(() => {
 <template>
     <div class="information" data-information-bar>
         <template v-if="agent">
-            <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: pause, resume or stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
+            <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
             <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ !running ? "Ended" : controls.paused.value ? "Paused" : "Working" }}</span>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
@@ -104,12 +104,6 @@ const uptime = computed(() => {
                         <MenuItem @click="controls.asking.value = false">Keep it running</MenuItem>
                     </template>
                     <template v-else>
-                        <template v-if="controls.paused.value">
-                            <MenuItem data-agent-resume @click="closeMenu(), controls.resume()">Resume</MenuItem>
-                        </template>
-                        <template v-else>
-                            <MenuItem data-agent-pause @click="closeMenu(), controls.pause()">Pause</MenuItem>
-                        </template>
                         <MenuItem data-agent-stop @click="controls.asking.value = true">Stop</MenuItem>
                     </template>
                 </template>

@@ -88,29 +88,3 @@ test("with no agent it offers the programs to start, and a refusal says why", as
     expect(ran).toContain("agent launch claude");
     expect(element.querySelector("[data-agent-failure]").textContent).toBe("no launcher is running here");
 });
-
-test("pausing shows paused at once and resuming shows working, and a refusal puts the state back", async () => {
-    let release;
-    const gate = new Promise((resolve) => (release = resolve));
-    const {element, ran} = await drawn({id: 7, ended_at: null, paused_at: null, program: "claude", session: "s"}, null, gate);
-    element.querySelector('[data-fact="agent"]').click();
-    await settle();
-    document.querySelector("[data-agent-pause]").click();
-    await settle();
-    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Paused");
-    release();
-    await settle();
-    expect(ran).toContain("agent pause 7");
-    element.querySelector('[data-fact="agent"]').click();
-    await settle();
-    document.querySelector("[data-agent-resume]").click();
-    await settle();
-    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Working");
-    expect(ran).toContain("agent resume 7");
-    const refused = await drawn({id: 8, ended_at: null, paused_at: null, program: "claude", session: "s"}, "no");
-    refused.element.querySelector('[data-fact="agent"]').click();
-    await settle();
-    document.querySelector("[data-agent-pause]").click();
-    await settle();
-    expect(refused.element.querySelector('[data-fact="state"]').textContent).toContain("Working");
-});

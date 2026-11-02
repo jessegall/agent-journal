@@ -10,4 +10,4 @@ class SubagentDriver(Driver):
     name = "coding.subagent"
     suite = CodingSuite
     role = AgentRole.SUBAGENT
-    permanent_rules = [SubagentWriteRule]
+    rules = [SubagentWriteRule]

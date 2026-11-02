@@ -10,7 +10,7 @@ ANY_HOOK = "*"
 @dataclass(frozen=True)
 class DriverRuleEntry:
     """A registered driver rule: its name, class, hook and place, who declared it, the patterns and roles
-    an added rule names, and whether it is permanent or essential; a standing rule is one of those two, asked
+    an added rule names, and whether it is unsilenced or essential; a standing rule is one of those two, asked
     before every layer."""
 
     name: str
@@ -20,14 +20,14 @@ class DriverRuleEntry:
     owner: str
     drivers: Sequence[str] = ()
     roles: Sequence[str] = ()
-    permanent: bool = False
+    unsilenced: bool = False
     essential: bool = False
     history: bool = False
     claims_essential: bool = False
 
     @property
     def is_standing(self) -> bool:
-        return self.essential or self.permanent
+        return self.essential or self.unsilenced
 
     def covers_hook(self, hook_name: str) -> bool:
         return self.hook in (ANY_HOOK, hook_name)
@@ -38,5 +38,5 @@ class DriverRuleEntry:
         return DriverPatterns(self.drivers).covers(driver) and (not self.roles or role in self.roles)
 
     def is_driver_standing_rule(self, driver: str) -> bool:
-        return (self.essential and not self.permanent) or (self.permanent and self.owner == driver)
+        return (self.essential and not self.unsilenced) or (self.unsilenced and self.owner == driver)
 

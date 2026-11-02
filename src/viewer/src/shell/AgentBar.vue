@@ -1,11 +1,14 @@
 <script setup>
-import {computed} from "vue";
+import {computed, toRef} from "vue";
+import Btn from "../kit/Btn.vue";
+import Icon from "../kit/Icon.vue";
+import {useAgentPause} from "../composables/agentPause.js";
 
 // the agent the page is about, as version 4's agent bar drew it: whether it runs and the task it is working in
-const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, waiting: {type: Number, default: 0}, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}});
-const emit = defineEmits(["open"]);
+const props = defineProps({agent: {type: Object, default: null}, task: {type: Object, default: null}, loading: Boolean, waiting: {type: Number, default: 0}, workers: {type: Number, default: 0}, helpers: {type: Number, default: 0}, run: {type: Function, default: async () => ({ok: false, error: "nothing to ask"})}});
+const emit = defineEmits(["open", "changed"]);
+const {failure, paused, toggle} = useAgentPause(toRef(props, "agent"), props.run, () => emit("changed"));
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
-const paused = computed(() => running.value && Boolean(props.agent.paused_at));
 const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" : "Working"));
 </script>
 
@@ -22,7 +25,15 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
             <template v-if="task">
                 <span class="agent-task" data-agent-task :title="task.title">Task {{ task.id }}: {{ task.title }}</span>
             </template>
+            <template v-if="failure">
+                <span class="agent-failure" role="alert" data-agent-failure>{{ failure }}</span>
+            </template>
             <span class="agent-space" />
+            <template v-if="running">
+                <Btn kind="icon" :class="['agent-pause', {paused}]" data-agent-pause :aria-label="paused ? 'Resume' : 'Pause'" :title="paused ? 'Resume: the agent carries on where it stopped' : 'Pause: only journal commands run until you resume it'" @click="toggle">
+                    <Icon :name="paused ? 'resume' : 'pause'" />
+                </Btn>
+            </template>
             <button type="button" class="agent-helpers" data-helpers title="Helpers running: subagents, workers and reviewers" @click="emit('open', 'helpers', $event.currentTarget)">
                 {{ helpers }} {{ helpers === 1 ? "helper" : "helpers" }}
             </button>
@@ -46,6 +57,19 @@ const word = computed(() => (!running.value ? "Ended" : paused.value ? "Paused" 
     padding: 0 16px;
     border-bottom: 1px solid var(--border);
     font-size: 13px;
+}
+
+.agent-pause {
+    flex: none;
+}
+
+.agent-pause.paused {
+    color: var(--accent-text);
+}
+
+.agent-failure {
+    color: var(--danger);
+    font-size: 12px;
 }
 
 .dot.paused {

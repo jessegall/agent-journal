@@ -13,6 +13,7 @@ class WorkerCommandTypeRule(DriverRule):
     """A worker runs journal commands and only the command types the setting workers.command-types lists."""
 
     name = "workers.allowed-command-types"
+    unsilenced = True
     hook = HookEventName.PRE_TOOL_USE
 
     def __init__(self, settings: SettingValues) -> None:

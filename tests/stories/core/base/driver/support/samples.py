@@ -102,6 +102,7 @@ class RemovalRule(DriverRule):
     """The lead removes no folder with rm -rf."""
 
     name = "samples.removal-limit"
+    unsilenced = True
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
@@ -329,8 +330,7 @@ class Lead(Driver):
     name = LEAD
     suite = SampleSuite
     role = AgentRole.MAIN
-    permanent_rules = [RemovalRule]
-    rules = [StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite, ForegroundRun]
+    rules = [RemovalRule, StopLine, StopRefusal, ShellRewrite, SecondShellRewrite, NumberedRewrite, ForegroundRun]
     guards = [LeadLockGuard]
     opening_lines = ["You are the sample lead"]
 

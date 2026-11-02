@@ -36,17 +36,6 @@ export function useAgentControls(agent, run, changed) {
         return send(["agent", "control", String(agent.value.id), key, choice.value], () => (chosen.value = {...chosen.value, [key]: before}));
     };
 
-    const pause = () => {
-        agent.value.paused_at = new Date().toISOString();
-        return send(["agent", "pause", String(agent.value.id)], () => (agent.value.paused_at = null));
-    };
-
-    const resume = () => {
-        const before = agent.value.paused_at;
-        agent.value.paused_at = null;
-        return send(["agent", "resume", String(agent.value.id)], () => (agent.value.paused_at = before));
-    };
-
     const stop = () => {
         asking.value = false;
         agent.value.ended_at = new Date().toISOString();
@@ -57,5 +46,5 @@ export function useAgentControls(agent, run, changed) {
 
     onMounted(read);
     watch(running, read);
-    return {groups, programs, chosen, failure, asking, running, paused, choose, pause, resume, stop, start};
+    return {groups, programs, chosen, failure, asking, running, paused, choose, stop, start};
 }

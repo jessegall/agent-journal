@@ -43,7 +43,7 @@ def test_resume_types_that_it_may_carry_on(new_story):
     story.container.bind(TerminalTyping, typing)
     story.expect_success(f"agent pause {story.agent.id}", actor=story.user)
     story.expect_success(f"agent resume {story.agent.id}", actor=story.user)
-    story.expect_rows(typing.typed == [(story.agent.id, "the user resumed you: carry on where you stopped")])
+    story.expect_rows(typing.typed == [(story.agent.id, "[journal] the user resumed you: carry on where you stopped")])
 
 
 def test_resume_types_only_after_its_commit_and_the_line_is_not_said_twice(new_story):
