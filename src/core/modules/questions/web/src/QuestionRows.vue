@@ -4,7 +4,7 @@ import {Btn, RowList, TextInput, useListTools, ListTools, useRows, peekRef} from
 
 // the questions as version 4 asked them: a card with the options under each other, the recommended one tagged, and a box for an answer in the person's own words;
 // an answer shows the moment it is given and goes back if the server refuses it
-const {rows, failure, loaded, load, context} = useRows("question list", ["question.*"]);
+const {rows, failure, loaded, load, context} = useRows("question list --all", ["question.*"]);
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "open"});
 const typed = ref({});
 const settled = ref({});

@@ -9,8 +9,8 @@ from core.modules.questions.queries.question_query import QuestionQuery
 
 
 class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
-    """`journal question list`: the open questions of the caller's environment, each with its number, text and
-    choices."""
+    """`journal question list [--all]`: the open questions of the caller's environment, each with its number, text and
+    choices; with --all the answered and closed ones too, newest first."""
 
     cli_name = "question"
     name = "list"
@@ -19,13 +19,13 @@ class QuestionListSubcommand(ReadSubcommand[Page[Question]]):
         self.questions = questions
 
     def arguments(self, parser: ArgumentParser) -> None:
-        return None
+        parser.add_argument("--all", action="store_true")
 
     def read(self, arguments: Namespace, caller: Caller) -> Page[Question]:
-        query = self.questions.open_ones()
+        query = self.questions if arguments.all else self.questions.open_ones()
         if caller.environment_id is not None:
             query = query.environment(caller.environment_id)
-        return query.oldest().page()
+        return query.newest().page() if arguments.all else query.oldest().page()
 
     def write_output(self, value: object, output: Output) -> None:
         if not is_page(value):

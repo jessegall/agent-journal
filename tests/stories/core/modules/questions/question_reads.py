@@ -11,6 +11,11 @@ def test_an_answered_question_leaves_the_list(new_story):
     story.expect_success("question list", "no open questions")
 
 
+def test_all_lists_an_answered_question_too(new_story):
+    story = new_story(fixture=AnsweredQuestion)
+    story.expect_success("question list --all", "1  Which database?  [sqlite / postgres]")
+
+
 def test_show_says_an_open_question_is_not_answered_yet(new_story):
     story = new_story(fixture=OpenQuestion)
     story.expect_success("question show 1", "question 1: Which database?", "choices: sqlite / postgres", "answer: not answered yet")
