@@ -300,7 +300,7 @@ const tint = computed(() => ({
 }
 
 /* while a mark opens or closes (composables/markMotion.js) its contents fade out and stay out until it has its new size, so no text
-   wraps as it moves; its top row stays */
+   wraps as it moves; its top row stays, and its title stays on one line through every step */
 .mark > :not(.top, .mact, .bar) {
     transition: opacity 0.16s ease;
 }
@@ -319,8 +319,12 @@ const tint = computed(() => ({
     opacity: 0;
 }
 
+.mark.leaving .head,
+.mark.leaving .head :deep(.md),
 .mark.resizing .head,
-.mark.resizing .head :deep(.md) {
+.mark.resizing .head :deep(.md),
+.mark.entering .head,
+.mark.entering .head :deep(.md) {
     white-space: nowrap;
 }
 

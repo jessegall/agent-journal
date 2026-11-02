@@ -22,6 +22,7 @@ from core.modules.tasks.rules.wait_description_rule import WaitDescriptionRule
 from core.modules.tasks.commands.task_board.task_board_subcommand import TaskBoardSubcommand
 from core.modules.tasks.commands.task_inspect.task_inspect_subcommand import TaskInspectSubcommand
 from core.modules.tasks.commands.cancel_task.cancel_task import CancelTask
+from core.modules.tasks.commands.clear_delegated_tasks.clear_delegated_tasks_handler import ClearDelegatedTasksHandler
 from core.modules.tasks.commands.release_task.release_task import ReleaseTask
 from core.modules.tasks.commands.close_task.close_task import CloseTask
 from core.modules.tasks.commands.make_task_dependency.make_task_dependency_subcommand import MakeTaskDependencySubcommand
@@ -54,6 +55,7 @@ from core.modules.tasks.commands.task_comments.task_comments_subcommand import T
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.task_dependency import TaskDependency
 from core.modules.tasks.models.task_log import TaskLog
+from core.modules.tasks.listeners.task_edited_mark_listener import TaskEditedMarkListener
 from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
 from core.modules.tasks.support.task_marks import TASK_DOCKS, TASK_MARKS
 from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
@@ -80,11 +82,11 @@ class TasksModule(Module):
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration, TaskDelegationMigration]
     subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
-    handlers = [RemoveTaskDependencyHandler, WaitTaskHandler]
+    handlers = [ClearDelegatedTasksHandler, RemoveTaskDependencyHandler, WaitTaskHandler]
     moves = [TasksMove]
     guards = [NoDependencyLoopGuard, DependenciesClosedGuard]
     views = [OpenDependency, TaskCard, TaskEdge, EnvironmentCard]
-    listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
+    listeners = [DependencyRemoverListener, TaskEditedMarkListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
     driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]

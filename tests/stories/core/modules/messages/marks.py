@@ -48,3 +48,24 @@ def test_the_thought_mark_is_declared_as_version_4_showed_it(new_story):
 
 def test_the_filed_mark_is_declared_as_version_4_showed_it(new_story):
     expect_declared_appearance(new_story(fixture=UnansweredMessage), FILED)
+
+
+def test_a_message_edited_by_an_agent_shows_a_mark_that_opens_the_message(new_story):
+    story = new_story(fixture=UnansweredMessage)
+    story.expect_success('message edit 1 --text "Better words"', actor=story.agent)
+    story.run_listeners()
+    assert "Message 1 edited" in marks_text(story), marks_text(story)
+    assert "messages.edited  edited" in marks_text(story), marks_text(story)
+
+
+def test_a_message_edited_by_the_user_shows_no_edited_mark(new_story):
+    story = new_story(fixture=UnansweredMessage)
+    story.expect_success('message edit 1 --text "Better words"', actor=story.user)
+    story.run_listeners()
+    assert "edited" not in marks_text(story), marks_text(story)
+
+
+def test_a_message_sent_shows_no_edited_mark(new_story):
+    story = new_story(fixture=UnansweredMessage)
+    story.run_listeners()
+    assert "edited" not in marks_text(story), marks_text(story)

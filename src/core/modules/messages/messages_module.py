@@ -4,6 +4,7 @@ from core.modules.messages.commands.record_peer_message.record_peer_message_hand
 from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
 from core.modules.messages.rules.peer_message_rule import PeerMessageRule
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
+from core.modules.messages.listeners.message_edited_mark_listener import MessageEditedMarkListener
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
 from core.modules.messages.guards.one_reply_per_message_guard import OneReplyPerMessageGuard
@@ -22,6 +23,7 @@ from core.modules.messages.commands.tag_message.tag_message_subcommand import Ta
 from core.modules.messages.commands.unread_messages.unread_messages_subcommand import UnreadMessagesSubcommand
 from core.modules.messages.commands.record_message_delivery.record_message_delivery_handler import RecordMessageDeliveryHandler
 from core.modules.messages.commands.attachment_list.attachment_list_subcommand import AttachmentListSubcommand
+from core.modules.messages.commands.comment_message.comment_message_subcommand import CommentMessageSubcommand
 from core.modules.messages.commands.draw_flowchart.draw_flowchart_handler import DrawFlowchartHandler
 from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand import DrawFlowchartSubcommand
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
@@ -79,9 +81,9 @@ class MessagesModule(Module):
     guards = [OneReplyPerMessageGuard]
     handlers = (RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
     driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule, ReplyNoteRule]
-    subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
+    subcommands = (AttachmentListSubcommand, CommentMessageSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
-               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek", "output list"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
+               WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek", "output list"], runs=["message send", "message reply", "message comment", "message react", "message edit", "message delete", "notice close", "dump make"],
                                  events=["message.*", "chat_mark.*", "dock_item.*", "notice.*", "hook_call.*"],
                                  options=[ChoiceOption("figure", "Figure", [("none", "None"), ("butler", "Butler"), ("homie", "Homie"), ("coach", "Coach"), ("colleague", "Colleague"), ("squire", "Squire")], "none"),
                                           ToggleOption("floors", "Show floors")])]
@@ -90,5 +92,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
+    listeners = [MessageEditedMarkListener, ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
     seeders = [MessagesSeeder]

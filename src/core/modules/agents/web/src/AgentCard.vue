@@ -1,16 +1,12 @@
 <script setup>
 import {computed, ref} from "vue";
-import {age, Btn, Icon, MenuItem, MenuLabel, MenuPanel, peekRef, TaskStatusIcon, useNow} from "@journal/window-kit";
+import {age, Btn, Icon, peekRef, TaskStatusIcon, useNow} from "@journal/window-kit";
 
-// one agent as a calm two lines: the profile and given name with its time, then the provider, model and kind; a click opens the card on its
-// number, usage, Inspect and instruction, and a control on it opens the agent's tasks in a dropdown
+// one agent as a calm two lines: the profile and given name with its time, then the provider, model, kind and task count; a click opens the card on
+// its number, usage, Inspect, its tasks under the state names of the tasks window, and its instruction
 const FALLBACK_TITLES = {main: "Main agent", subagent: "Subagent", worker: "Worker", reviewer: "Reviewer"};
 const SHOWN_KINDS = new Set(["subagent", "worker", "reviewer"]);
-const TASK_SECTIONS = [
-    {label: "Working on", states: ["started", "testing"]},
-    {label: "Still queued", states: ["open", "blocked"]},
-    {label: "Completed", states: ["completed", "cancelled"]},
-];
+const TASK_STATES = ["started", "testing", "blocked", "open", "completed", "cancelled"];
 const props = defineProps({row: {type: Object, required: true}, facts: {type: Object, default: null}});
 const now = useNow();
 const title = computed(() => props.facts?.profile || FALLBACK_TITLES[props.row.role] || props.row.role);
@@ -26,15 +22,8 @@ const usage = computed(() => {
 const tasks = computed(() => props.facts?.tasks ?? []);
 const completedCount = computed(() => tasks.value.filter((task) => task.state === "completed").length);
 const taskCount = computed(() => `${completedCount.value} of ${tasks.value.length} ${tasks.value.length === 1 ? "task" : "tasks"}`);
-const sections = computed(() => TASK_SECTIONS.map((section) => ({...section, tasks: tasks.value.filter((task) => section.states.includes(task.state))})).filter((section) => section.tasks.length));
+const sections = computed(() => TASK_STATES.map((state) => ({state, label: state.slice(0, 1).toUpperCase() + state.slice(1), tasks: tasks.value.filter((task) => task.state === state)})).filter((section) => section.tasks.length));
 const opened = ref(false);
-const anchor = ref(null);
-const toggleTasks = (event) => (anchor.value = anchor.value ? null : event.currentTarget);
-
-function openTask(id) {
-    anchor.value = null;
-    peekRef(`tasks:${id}`);
-}
 </script>
 
 <template>
@@ -49,10 +38,7 @@ function openTask(id) {
         <span class="agent-line">
             <span class="agent-identity" data-agent-identity>{{ identity }}</span>
             <template v-if="tasks.length">
-                <button type="button" class="agent-tasks" data-agent-tasks :aria-expanded="Boolean(anchor)" @click.stop="toggleTasks">
-                    {{ taskCount }}
-                    <Icon name="caret" :size="12" />
-                </button>
+                <span class="agent-tasks" data-agent-tasks>{{ taskCount }}</span>
             </template>
         </span>
         <template v-if="opened">
@@ -61,25 +47,21 @@ function openTask(id) {
                     <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
                     <Btn small bordered data-agent-inspect @click="peekRef(`agents:${row.id}`)">Inspect</Btn>
                 </span>
+                <template v-for="section in sections" :key="section.state">
+                    <p class="agent-label" :data-agent-section="section.state">{{ section.label }} <span class="agent-section-count">{{ section.tasks.length }}</span></p>
+                    <template v-for="task in section.tasks" :key="task.id">
+                        <button type="button" class="agent-task" :data-agent-delegated="task.id" @click="peekRef(`tasks:${task.id}`)">
+                            <TaskStatusIcon :status="task.state" />
+                            <span class="agent-task-number">{{ task.id }}</span>
+                            <span class="agent-task-title">{{ task.title }}</span>
+                        </button>
+                    </template>
+                </template>
                 <template v-if="facts?.instruction">
                     <p class="agent-label">Instruction</p>
                     <div class="agent-instruction" data-agent-instruction>{{ facts.instruction }}</div>
                 </template>
             </div>
-        </template>
-        <template v-if="anchor">
-            <MenuPanel :anchor="anchor" align="end" :min-width="320" :max-width="440" data-agent-task-menu @click.stop @close="anchor = null">
-                <template v-for="section in sections" :key="section.label">
-                    <MenuLabel>{{ section.label }}</MenuLabel>
-                    <template v-for="task in section.tasks" :key="task.id">
-                        <MenuItem :data-agent-delegated="task.id" @click="openTask(task.id)">
-                            <TaskStatusIcon :state="task.state" />
-                            <span class="agent-task-number">{{ task.id }}</span>
-                            {{ task.title }}
-                        </MenuItem>
-                    </template>
-                </template>
-            </MenuPanel>
         </template>
     </div>
 </template>
@@ -97,7 +79,7 @@ function openTask(id) {
     cursor: pointer;
 }
 
-.agent-card:hover {
+.agent-card[aria-expanded="false"]:hover {
     background: var(--hover);
 }
 
@@ -192,28 +174,48 @@ function openTask(id) {
 }
 
 .agent-tasks {
-    display: inline-flex;
     flex: none;
-    gap: 4px;
+    color: var(--text-2);
+    font-size: 12px;
+}
+
+.agent-section-count {
+    margin-left: 2px;
+}
+
+.agent-task {
+    display: flex;
+    gap: 8px;
     align-items: center;
-    padding: 0;
+    min-width: 0;
+    padding: 3px 4px;
     border: 0;
+    border-radius: 4px;
     background: none;
     color: var(--text-2);
     font: inherit;
-    font-size: 12px;
+    font-size: 12.5px;
+    text-align: left;
     cursor: pointer;
 }
 
-.agent-tasks:hover {
+.agent-task:hover {
+    background: var(--hover);
     color: var(--text);
 }
 
 .agent-task-number {
     flex: none;
-    min-width: 34px;
     color: var(--text-3);
     font-variant-numeric: tabular-nums;
+}
+
+.agent-task-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .agent-more {

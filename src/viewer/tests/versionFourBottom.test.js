@@ -55,8 +55,8 @@ test("an icon button is a fixed small square, centred in its row", () => {
 });
 
 // task 5489: the pinned notices run edge to edge under the tab bar, out past the pane's padding
-test("the notices strip runs flush with the chat's sides and top", () => {
-    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/\.notices \{[^}]*margin: -8px -12px 0;/);
+test("the notices strip runs flush with the chat's sides, with no gap to the history below", () => {
+    expect(read("../../core/modules/messages/web/src/Chat.vue")).toMatch(/\.notices \{[^}]*margin: 0 -12px -8px;/);
 });
 
 // task 5489: one shared skeleton, shaped like what is loading, in every list and every window that is still loading

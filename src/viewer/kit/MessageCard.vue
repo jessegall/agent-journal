@@ -69,6 +69,12 @@ async function readLinks() {
 readLinks();
 context?.follow?.(["link.*"], readLinks);
 
+// a comment on a message between agents goes as every row's comment goes: a chat message naming it, linked to it; a refusal shows in the box
+async function commentOn(text) {
+    const answer = await context.run(["message", "comment", String(props.message.id), text]);
+    if (!answer.ok) throw new Error(answer.error);
+}
+
 const picking = ref(false);
 const reactions = computed(() => reactionGroups(props.message.reactions));
 
@@ -81,7 +87,7 @@ function pick(face) {
 <template>
     <template v-if="message.peer || message.recipient">
         <div class="message" data-message-between-agents :data-ref="`message:${message.id}`">
-            <GrowingCard :title="message.recipient ? `Message sent to ${message.recipient}` : `Message from ${message.peer}`" :text="message.text" :icon="message.recipient ? 'send' : 'reply'" :person="message.recipient || message.peer" :incoming="!message.recipient" />
+            <GrowingCard :title="message.recipient ? `Message sent to ${message.recipient}` : `Message from ${message.peer}`" :text="message.text" :icon="message.recipient ? 'send' : 'reply'" :person="message.recipient || message.peer" :incoming="!message.recipient" :send="commentOn" />
         </div>
     </template>
     <template v-else>

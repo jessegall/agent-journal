@@ -17,7 +17,7 @@ class TasksSeeder(Seeder):
         demo.run(f"task start {started}", main)
         demo.run(f'task log {started} "Found the cart total in cents"', main)
         demo.run(f'task log {started} "The tax is added twice in the summary"', main)
-        blocked = demo.new_id(f'task make "Price the shipping" {flag}', user)
+        blocked =demo.new_id(f'task make "Price the shipping" {flag}', user)
         demo.run(f'task block {blocked} --reason "waiting on the price list"', user)
         cancelled = demo.new_id(f'task make "Add a gift wrap option" {flag}', user)
         demo.run(f'task cancel {cancelled} --reason "not needed"', user)
