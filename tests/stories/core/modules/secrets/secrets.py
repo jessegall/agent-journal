@@ -31,6 +31,11 @@ def test_a_custom_secret_has_the_fields_it_names_and_one_without_fields_is_refus
     story.expect_text("secret show 1", "token  DEPLOY_TOKEN  waiting for the user, hidden", "host  DEPLOY_HOST  waiting for the user, hidden", actor=story.agent)
 
 
+def test_a_field_named_twice_is_refused(new_story):
+    story = new_story(fixture=UserJoined)
+    story.expect_refusal('secret make "Stripe" --field key', "this secret repeats a field: key, key", actor=story.agent)
+
+
 def test_an_unknown_kind_is_refused_with_the_kinds_there_are(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_refusal('secret make "Github" --kind token', "a secret is one of api key, login, custom, not 'token'", actor=story.agent)

@@ -23,6 +23,9 @@ class MakeSecretHandler(Handler[MakeSecret, Secret]):
         if command.secret_type is SecretType.CUSTOM and not command.field_names:
             raise Refusal("a custom secret needs at least one field", "--field <name>, once for each")
         field_specs = [*command.secret_type.first_fields(), *((field_name, True) for field_name in command.field_names)]
+        names = [field_name for field_name, _ in field_specs]
+        if len(set(names)) != len(names):
+            raise Refusal(f"this secret repeats a field: {', '.join(names)}", "leave out a field the kind of secret already has")
         fields = tuple(SecretField.made(command.title, field_name, hidden).stored() for field_name, hidden in field_specs)
         secret = self.repository.save(Secret(creator_id=context.actor.id, title=command.title, brief=command.brief, secret_type=command.secret_type, fields=fields), context)
         if command.reason:
