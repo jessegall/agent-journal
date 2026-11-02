@@ -8,9 +8,12 @@ const TYPES = [
     {key: "reminder", label: "Reminder"},
 ];
 
-// what the agents are told to remember: searched, and open or removed; a new one is written here and a row opens its panel
+const props = defineProps({environment: {type: String, default: ""}});
+const scope = props.environment ? ["--environment", props.environment] : [];
+
+// what the agents are told to remember, in one environment or in all: searched, and open or removed; a new one is written here and a row opens its panel
 const context = useWindow();
-const {rows, failure, loaded, load, older} = useRows("memory list", ["memory.*"], {incremental: true});
+const {rows, failure, loaded, load, older} = useRows(["memory list", ...scope].join(" "), ["memory.*"], {incremental: true});
 const tools = useListTools(rows, {title: (row) => row.text, isOpen: (row) => row.state === "active"});
 const making = ref(false);
 const text = ref("");
@@ -18,7 +21,7 @@ const type = ref("fact");
 const refusal = ref("");
 
 async function make() {
-    const answer = await context.run(["memory", "make", text.value.trim(), "--type", type.value]);
+    const answer = await context.run(["memory", "make", text.value.trim(), "--type", type.value, ...scope]);
     refusal.value = answer.ok ? "" : answer.error;
     if (!answer.ok) return;
     text.value = "";

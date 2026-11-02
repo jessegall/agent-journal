@@ -1,3 +1,3 @@
-import MemoryRows from "./MemoryRows.vue";
+import MemoriesPage from "./MemoriesPage.vue";
 
-export default MemoryRows;
+export default MemoriesPage;
