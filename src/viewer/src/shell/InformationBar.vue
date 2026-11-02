@@ -7,11 +7,11 @@ import MenuPanel from "../kit/MenuPanel.vue";
 import {useAgentControls} from "../composables/agentControls.js";
 import {providerName} from "../domain/agents.js";
 
-// the one line under the agent bar, as version 4's agent facts drew it: who the agent is, its state, the plan's allowance used, how full its
-// context is, its model and cost, how long it has run and each count; each fact asks to open what it tells of
+// the one line under the agent bar: who the agent is, its state, the plan's allowance used, how full its context is, its model and cost, how
+// long it has run, its scheduled jobs, and last how fit and how loaded it is; a window has no place here, only what opens a dropdown
 const props = defineProps({
     agent: {type: Object, default: null},
-    facts: {type: Object, default: () => ({helpers: 0, tasks: 0, waiting: 0})},
+    jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
     now: {type: Number, default: () => Date.now()},
     fitness: {type: Object, default: null},
@@ -38,11 +38,6 @@ const offers = (key) => controls.groups.value.some((one) => one.key === key);
 const model = computed(() => controls.chosen.value.model ?? status.value?.model ?? "");
 const effort = computed(() => controls.chosen.value.effort ?? status.value?.effort ?? "effort");
 const LOW_FITNESS = 75;
-const COUNTS = [
-    {key: "helpers", title: "Subagents and workers running", icon: "agents"},
-    {key: "tasks", title: "Open tasks", icon: "task"},
-    {key: "waiting", title: "Questions waiting", icon: "question"},
-];
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
 const allowance = computed(() => props.usage.windows?.[0] ?? null);
@@ -72,12 +67,6 @@ const uptime = computed(() => {
                     <Icon name="gauge" :size="12" /> <span class="gauge"><span :style="{width: `${context}%`}" /></span> {{ context }}%
                 </button>
             </template>
-            <template v-if="fitness">
-                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="How the agent is working: opens its measures" @click="emit('open', 'fitness')">
-                    Fitness {{ fitness.is_measured ? fitness.score : "–" }}
-                </button>
-                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Messages arriving against those answered" @click="emit('open', 'fitness')">Load {{ fitness.workload }}</button>
-            </template>
             <template v-if="model">
                 <button type="button" class="fact" data-fact="model" :title="`${model}: change the model`" @click="offers('model') ? openMenu($event, 'model') : null"><Icon name="model" :size="12" /> {{ model }}</button>
             </template>
@@ -90,19 +79,20 @@ const uptime = computed(() => {
             <template v-if="uptime">
                 <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
             </template>
-            <template v-for="count in COUNTS" :key="count.key">
-                <button type="button" :class="['fact', {none: !facts[count.key]}]" :data-count="count.key" :title="count.title" @click="emit('open', count.key)"><Icon :name="count.icon" :size="12" /> {{ facts[count.key] }}</button>
+            <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs')"><Icon name="clock" :size="12" /> {{ jobs }}</button>
+            <template v-if="fitness">
+                <button type="button" :class="['fact', 'fitness-fact', {low: fitness.is_measured && fitness.score < LOW_FITNESS}]" data-fact="fitness" title="Fitness, how the agent is working: opens its measures" @click="emit('open', 'fitness')">
+                    <Icon name="heart" :size="12" /> {{ fitness.is_measured ? fitness.score : "–" }}
+                </button>
+                <button type="button" :class="['fact', 'load-fact', fitness.workload_level]" data-fact="load" title="Load, messages arriving against those answered" @click="emit('open', 'fitness')"><Icon name="weight" :size="12" /> {{ fitness.workload }}</button>
             </template>
-                    </template>
+        </template>
         <template v-else-if="run">
             <button type="button" class="fact lead" data-agent-start @click="openMenu($event, 'start')"><Icon name="agents" :size="12" /> Start an agent</button>
         </template>
         <span class="space" />
         <template v-if="controls.failure.value">
             <span class="fact failure" role="alert" data-agent-failure :title="controls.failure.value">{{ controls.failure.value }}</span>
-        </template>
-        <template v-else-if="controls.told.value">
-            <span class="fact" data-agent-told>{{ controls.told.value }}</span>
         </template>
         <slot />
         <template v-if="anchor">

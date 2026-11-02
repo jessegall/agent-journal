@@ -174,6 +174,12 @@ func (journal CommandJournal) ProgramCommand(request Request, choice Choice, lau
 	return strings.Split(trimmed, "\n"), nil
 }
 
+// TellMenuAnswer shows in the chat what the launcher pressed on a menu in the agent's terminal; a journal that does not
+// answer loses the mark, never the press.
+func (journal CommandJournal) TellMenuAnswer(agentID int, question, said string) {
+	_, _ = journal.Run("agent", "menu-answer", strconv.Itoa(agentID), question, said)
+}
+
 // HookTrustLine is the one line a Codex launch prints when Codex does not trust the journal's hooks yet, or no longer.
 func HookTrustLine(trust string) string {
 	switch trust {

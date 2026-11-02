@@ -12,6 +12,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.modules.agents.models.agent import Agent
 from core.modules.questions.models.enums.question_state import QuestionState
 from core.modules.questions.models.question import Question
+from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.modules.usage.support.bar_facts import BarFacts
 
@@ -41,7 +42,8 @@ class UsageBarsSubcommand(ReadSubcommand[BarFacts]):
         waiting = self.queries.query(Question).filter(environment_id=environment_id, state=QuestionState.OPEN).page(1, PAGE_ROWS).total
         mains = agents.filter(role=AgentRole.MAIN).newest().page(1, PAGE_ROWS).rows
         started_tasks = self.tasks.holder(mains[0].id).started().newest().page(1, PAGE_ROWS).rows if mains else ()
-        return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "")
+        jobs = self.queries.query(ScheduledJob).filter(agent_id=mains[0].id).matching(IsNull("ended_at")).page(1, PAGE_ROWS).total if mains else 0
+        return BarFacts(helpers, tasks, waiting, started_tasks[0].id if started_tasks else None, started_tasks[0].title if started_tasks else "", jobs)
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, BarFacts):

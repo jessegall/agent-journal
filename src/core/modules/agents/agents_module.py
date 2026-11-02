@@ -23,6 +23,8 @@ from core.modules.agents.migrations.m003_agent_pause import AgentPauseMigration
 from core.modules.agents.models.agent import Agent
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
+from core.modules.agents.commands.show_menu_answer.show_menu_answer_handler import ShowMenuAnswerHandler
+from core.modules.agents.commands.show_menu_answer.show_menu_answer_subcommand import ShowMenuAnswerSubcommand
 from core.modules.agents.support.agent_marks import AGENT_MARKS
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.module.module import Module
@@ -44,8 +46,8 @@ class AgentsModule(Module):
     models = [ModelDeclaration(Agent, excluded_subcommands=["make"])]
     moves = [AgentsMove]
     migrations = [AgentsTableMigration, AgentLaunchRowMigration, AgentPauseMigration]
-    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler]
-    subcommands = [StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
+    handlers = [StartAgentHandler, EndAgentHandler, BindAgentSessionHandler, TypeTerminalLineHandler, ChooseAgentControlHandler, StopAgentHandler, LaunchAgentHandler, ShowMenuAnswerHandler]
+    subcommands = [ShowMenuAnswerSubcommand, StartAgentSubcommand, EndAgentSubcommand, AgentTranscriptSubcommand, AgentTerminalSubcommand, TypeTerminalLineSubcommand, AgentControlsSubcommand, ChooseAgentControlSubcommand, AgentProgramsSubcommand, StopAgentSubcommand, LaunchAgentSubcommand, ProgramCommandSubcommand, ProgramTrustSubcommand]
     bindings = [(CallerResolver, AgentCallerResolver)]
     windows = [WindowDeclaration("agents.agents", "Agents", "agents.js", WindowLoading.COMPONENT, icon=WindowIcon.WORKER, reads=["agent list", "agent show"], events=["agent.*"]),
                WindowDeclaration("agents.subagents", "Subagents", "subagents.js", WindowLoading.COMPONENT, icon=WindowIcon.SUBAGENT, place=WindowPlace.AGENT, reads=["agent list"],

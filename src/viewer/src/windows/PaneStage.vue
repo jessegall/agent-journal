@@ -320,7 +320,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
             </AgentBar>
-            <InformationBar :agent="agentRow" :facts="facts" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
+            <InformationBar :agent="agentRow" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-if="presets">
                         <LayoutPicker :list="presets" />
                     </template>

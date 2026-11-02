@@ -42,7 +42,7 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 		}
 	}
 	inputs := launch.NewTerminalInputs()
-	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs}, inputs); err == nil {
+	if listener, err := launch.Listen(socket.NamedPath(home, "launcher"), launch.ProcessStarter{Home: home, Inputs: inputs, Told: journal.TellMenuAnswer}, inputs); err == nil {
 		defer listener.Close()
 	}
 	launchName := "launch-" + strconv.FormatInt(time.Now().UnixNano(), 36)
@@ -77,9 +77,13 @@ func LaunchProgram(home string, argv []string, stdout, stderr io.Writer) int {
 	for name, value := range choice.Variables {
 		command.Env = append(command.Env, name+"="+value)
 	}
+	watcher := launch.NewMenuWatcher(inputs, agentID, func(question, said string) { journal.TellMenuAnswer(agentID, question, said) })
+	stopWatching := make(chan struct{})
+	defer close(stopWatching)
+	go watcher.Watch(stopWatching)
 	restoreProgram := terminal.Raw()
 	defer inputs.Close(agentID)
-	err = launch.RunInTerminal(command, inputs.Open(agentID, os.Stdin), stdout, log)
+	err = launch.RunInTerminal(command, inputs.Open(agentID, os.Stdin), stdout, io.MultiWriter(log, watcher))
 	restoreProgram()
 	if err != nil {
 		var exit *exec.ExitError

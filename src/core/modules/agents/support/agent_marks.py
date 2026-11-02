@@ -6,6 +6,8 @@ from core.modules.agents.models.enums.agent_mark_type import AgentMarkType
 from core.modules.agents.models.enums.agent_mark_variant import AgentMarkVariant
 
 SUBAGENTS_FAMILY = MarkFamily("agents.subagents", "Subagents", "subagent", MarkGroup.AGENT)
+MENUS_FAMILY = MarkFamily("agents.menus", "Terminal menus", "terminal", MarkGroup.JOURNAL)
 
 AGENT_MARKS = [MarkDeclaration(AgentMarkType.SUBAGENT, AgentMarkVariant, SUBAGENTS_FAMILY, "Subagent updates", "subagent", click=MarkClick.OPEN_ROW,
-                               group_label="{count} subagent updates")]
+                               group_label="{count} subagent updates"),
+               MarkDeclaration(AgentMarkType.MENU, AgentMarkVariant, MENUS_FAMILY, "A menu in the agent's terminal was answered", "terminal")]

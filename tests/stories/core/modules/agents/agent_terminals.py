@@ -21,6 +21,12 @@ def test_an_agents_terminal_lines_are_read_from_the_launchers_log_and_after_a_li
     story.expect_absent(f"agent terminal {story.agent.id} --after 2", "1  ready", "2  Reading cart.py")
 
 
+def test_a_menu_the_launcher_answered_shows_in_the_chat_with_what_it_pressed(new_story):
+    story = new_story(fixture=AgentStarted)
+    story.expect_text(f'agent menu-answer {story.agent.id} "Switch model?" "chose Yes"', "Switch model?")
+    story.expect_text("chat-mark list --environment 1", "agents.menu", 'A menu in the agent\'s terminal was answered: "Switch model?" The journal chose Yes.')
+
+
 def test_an_agent_the_launcher_never_ran_has_no_terminal_lines(new_story):
     story = new_story(fixture=AgentStarted)
     story.expect_success(f"agent terminal {story.agent.id}", "nothing found")

@@ -11,14 +11,28 @@ const mounted = (component, props) => {
 };
 const MAIN = {id: 1, role: "main", program: "claude", session: "s", process_started_at: null, ended_at: null};
 
-test("the information bar shows the program, the state, the uptime and each count, each asking to open what it counts", () => {
+test("the information bar holds no window counts, and its scheduled jobs open with an icon and a count", () => {
     const opened = [];
-    const element = mounted(InformationBar, {agent: MAIN, facts: {helpers: 2, tasks: 5, waiting: 1}, onOpen: (name) => opened.push(name)});
+    const element = mounted(InformationBar, {agent: MAIN, jobs: 2, onOpen: (name) => opened.push(name)});
     expect(element.textContent).toContain("Claude");
     expect(element.textContent).toContain("Working");
-    for (const key of ["tasks", "waiting", "helpers"]) element.querySelector(`[data-count="${key}"]`).click();
-    expect(opened).toEqual(["tasks", "waiting", "helpers"]);
-    expect(element.querySelector(`[data-count="tasks"]`).textContent).toContain("5");
+    expect(element.querySelector("[data-count]")).toBeNull();
+    const jobs = element.querySelector('[data-fact="jobs"]');
+    expect(jobs.textContent.trim()).toBe("2");
+    expect(jobs.querySelector("svg")).not.toBeNull();
+    jobs.click();
+    expect(opened).toEqual(["jobs"]);
+});
+
+test("fitness and load come last in the bar, each an icon and a number with no word", () => {
+    const element = mounted(InformationBar, {agent: MAIN, fitness: {is_measured: true, score: 90, workload: 0.5, workload_level: "ok"}});
+    const facts = [...element.querySelectorAll("[data-fact]")].map((fact) => fact.dataset.fact);
+    expect(facts.slice(-2)).toEqual(["fitness", "load"]);
+    for (const [name, number] of [["fitness", "90"], ["load", "0.5"]]) {
+        const fact = element.querySelector(`[data-fact="${name}"]`);
+        expect(fact.textContent.trim()).toBe(number);
+        expect(fact.querySelector("svg")).not.toBeNull();
+    }
 });
 
 test("the agent bar shows its state and a helpers button asking to open the helpers", () => {

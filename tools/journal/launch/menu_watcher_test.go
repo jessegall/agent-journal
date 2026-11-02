@@ -1,0 +1,206 @@
+package launch
+
+import (
+	"strings"
+	"testing"
+	"time"
+)
+
+const switchModelScreen = "\x1b[2K\x1b[1A\x1b[2K\x1b[G\x1b[38;2;255;193;7mSwitch model?\x1b[39m\r\n" +
+	"\x1b[2mYour next response will be slower and use more tokens\x1b[22m\r\n\r\n" +
+	"This conversation is cached for the current model.\r\n\r\n" +
+	"\x1b[38;5;153m❯ 1. Yes, switch to Opus 5.5\x1b[39m\r\n  2. No, go back\r\n"
+
+func TestAMenuIsReadFromTheTerminalsBytes(t *testing.T) {
+	menu := ReadTerminalMenu(switchModelScreen)
+	if menu == nil {
+		t.Fatal("the menu was not read")
+	}
+	if len(menu.Options) != 2 || !menu.Options[0].Cursor || menu.Options[0].Label != "Yes, switch to Opus 5.5" || menu.Options[1].Label != "No, go back" {
+		t.Fatalf("the options are %+v", menu.Options)
+	}
+	if !strings.Contains(menu.Question, "Switch model?") {
+		t.Fatalf("the question is %q", menu.Question)
+	}
+	if !menu.Foreign() || !menu.Confirming() {
+		t.Fatalf("the model question is the program's own and asks yes or no: %+v", menu)
+	}
+	if keys := menu.KeysFor(menu.Accepting()); keys != MenuKeyEnter {
+		t.Fatalf("the cursor stands on yes, so only Enter: %q", keys)
+	}
+}
+
+func TestANumberedListInTheAgentsTextIsNoMenu(t *testing.T) {
+	for _, screen := range []string{
+		"The steps are:\r\n1. Read the file\r\n2. Change it\r\n",
+		"> 1. quoted\r\n  2. lines\r\nmore text below\r\n",
+		"1. Read the file\r\n3. Change it\r\nEnter to select\r\n",
+	} {
+		if menu := ReadTerminalMenu(screen); menu != nil {
+			t.Fatalf("read a menu from %q: %+v", screen, menu)
+		}
+	}
+}
+
+func TestAFooterMakesAMenuWithoutACursorAndArrowsReachTheOptionTaken(t *testing.T) {
+	menu := ReadTerminalMenu("Pick one\r\n  1. Later\r\n❯ 2. Maybe\r\n  3. Yes\r\nEnter to select · Esc to cancel\r\n")
+	if menu == nil {
+		t.Fatal("the menu was not read")
+	}
+	if keys := menu.KeysFor(menu.Accepting()); keys != MenuKeyDown+MenuKeyEnter {
+		t.Fatalf("from Maybe down to Yes: %q", keys)
+	}
+	declining, _ := menu.Declining()
+	if keys := menu.KeysFor(declining); keys != MenuKeyUp+MenuKeyEnter {
+		t.Fatalf("from Maybe up to Later: %q", keys)
+	}
+}
+
+func TestAPermissionQuestionAndAListOfPastSessionsAreNotTheProgramsOwn(t *testing.T) {
+	for _, screen := range []string{
+		"Do you want to proceed?\r\n❯ 1. Yes\r\n  2. No\r\n",
+		"Resume a session\r\n❯ 1. Fix the cart\r\n  2. Add the tests\r\n",
+	} {
+		if menu := ReadTerminalMenu(screen); menu == nil || menu.Foreign() {
+			t.Fatalf("not left alone: %q", screen)
+		}
+	}
+}
+
+type watcherClock struct {
+	now     time.Time
+	keyedAt time.Time
+	typedAt time.Time
+	pressed []string
+}
+
+func watched(clock *watcherClock) *MenuWatcher {
+	return &MenuWatcher{
+		Now:     func() time.Time { return clock.now },
+		KeyedAt: func() time.Time { return clock.keyedAt },
+		TypedAt: func() time.Time { return clock.typedAt },
+		Press: func(keys string) bool {
+			clock.pressed = append(clock.pressed, keys)
+			return true
+		},
+	}
+}
+
+func newWatcherClock() *watcherClock {
+	return &watcherClock{now: time.Date(2026, 11, 2, 10, 0, 0, 0, time.UTC)}
+}
+
+func TestAMenuCausedByALineTheJournalTypedIsConfirmedOnceTheScreenIsStill(t *testing.T) {
+	clock := newWatcherClock()
+	clock.typedAt = clock.now.Add(-5 * time.Second)
+	watcher := watched(clock)
+	_, _ = watcher.Write([]byte(switchModelScreen))
+	if answer := watcher.Look(); answer != nil {
+		t.Fatalf("answered a menu still being drawn: %+v", answer)
+	}
+	clock.now = clock.now.Add(2 * time.Second)
+	answer := watcher.Look()
+	if answer == nil || answer.Keys != MenuKeyEnter || !strings.Contains(answer.Said, "Yes, switch to Opus 5.5") {
+		t.Fatalf("the answer is %+v", answer)
+	}
+	if again := watcher.Look(); again != nil || len(clock.pressed) != 1 {
+		t.Fatalf("answered twice: %+v %v", again, clock.pressed)
+	}
+}
+
+func TestTheSameMenuDrawnAgainLaterIsAnsweredAgain(t *testing.T) {
+	clock := newWatcherClock()
+	clock.typedAt = clock.now
+	watcher := watched(clock)
+	for round := 0; round < 2; round++ {
+		_, _ = watcher.Write([]byte(switchModelScreen))
+		_ = watcher.Look()
+		clock.now = clock.now.Add(2 * time.Second)
+		if watcher.Look() == nil {
+			t.Fatalf("round %d was not answered", round)
+		}
+		clock.typedAt = clock.now
+	}
+}
+
+func TestAYesOrNoMenuAfterKeysAtTheKeyboardIsConfirmedAndAnyOtherIsLeftToThePerson(t *testing.T) {
+	clock := newWatcherClock()
+	clock.keyedAt = clock.now.Add(-time.Second)
+	watcher := watched(clock)
+	_, _ = watcher.Write([]byte(switchModelScreen))
+	_ = watcher.Look()
+	clock.now = clock.now.Add(2 * time.Second)
+	if answer := watcher.Look(); answer == nil || answer.Keys != MenuKeyEnter {
+		t.Fatalf("what the person asked for was not confirmed: %+v", answer)
+	}
+	clock.keyedAt = clock.now
+	_, _ = watcher.Write([]byte("Choose a theme\r\n❯ 1. Dark\r\n  2. Light\r\n"))
+	_ = watcher.Look()
+	clock.now = clock.now.Add(2 * time.Second)
+	if answer := watcher.Look(); answer != nil {
+		t.Fatalf("a person's own menu was answered: %+v", answer)
+	}
+}
+
+func TestAMenuNothingAskedForIsDeclinedOrClosedAndTheTrustQuestionAccepted(t *testing.T) {
+	cases := []struct {
+		screen string
+		keys   string
+	}{
+		{"Enable the new thing?\r\n❯ 1. Yes\r\n  2. No\r\n", MenuKeyDown + MenuKeyEnter},
+		{"Choose a theme\r\n❯ 1. Dark\r\n  2. Light\r\n", MenuKeyEscape},
+		{"Do you trust the files in this folder?\r\n  1. No, exit\r\n❯ 2. Yes, proceed\r\n", MenuKeyEnter},
+	}
+	for _, each := range cases {
+		clock := newWatcherClock()
+		clock.keyedAt = clock.now.Add(-time.Hour)
+		clock.typedAt = clock.now.Add(-time.Hour)
+		watcher := watched(clock)
+		_, _ = watcher.Write([]byte(each.screen))
+		_ = watcher.Look()
+		clock.now = clock.now.Add(2 * time.Second)
+		if answer := watcher.Look(); answer == nil || answer.Keys != each.keys {
+			t.Fatalf("%q was answered %+v", each.screen, answer)
+		}
+	}
+}
+
+func TestAPermissionQuestionIsLeftAlone(t *testing.T) {
+	clock := newWatcherClock()
+	clock.typedAt = clock.now
+	watcher := watched(clock)
+	_, _ = watcher.Write([]byte("Do you want to proceed?\r\n❯ 1. Yes\r\n  2. No\r\n"))
+	_ = watcher.Look()
+	clock.now = clock.now.Add(2 * time.Second)
+	if answer := watcher.Look(); answer != nil {
+		t.Fatalf("a permission question was answered: %+v", answer)
+	}
+}
+
+func TestTerminalInputsRecordKeysAndTypedLinesAndPressKeys(t *testing.T) {
+	inputs := NewTerminalInputs()
+	reader := inputs.Open(7, strings.NewReader("a"))
+	buffer := make([]byte, 16)
+	if _, err := reader.Read(buffer); err != nil {
+		t.Fatal(err)
+	}
+	if inputs.KeyedAt(7).IsZero() {
+		t.Fatal("keys at the keyboard were not noted")
+	}
+	done := make(chan bool)
+	go func() { done <- inputs.PressKeys(7, MenuKeyDown+MenuKeyEnter) }()
+	pressed := ""
+	for !strings.HasSuffix(pressed, MenuKeyEnter) {
+		count, err := reader.Read(buffer)
+		if err != nil {
+			t.Fatal(err)
+		}
+		pressed += string(buffer[:count])
+	}
+	if !<-done || pressed != MenuKeyDown+MenuKeyEnter {
+		t.Fatalf("pressed %q", pressed)
+	}
+	if !inputs.TypedAt(7).IsZero() {
+		t.Fatal("keys the watcher pressed are no typed line")
+	}
+}

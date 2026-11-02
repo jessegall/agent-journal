@@ -47,7 +47,7 @@ test("the model and the effort are the facts of the bar, and each is chosen from
     await settle();
     expect(ran).toContain("agent control 7 model opus");
     expect(element.querySelector('[data-fact="model"]').textContent).toContain("Opus");
-    expect(element.querySelector("[data-agent-told]").textContent).toContain("Opus");
+    expect(element.textContent).not.toContain("was sent");
 });
 
 test("a chosen model shows before the server answers and goes back when it refuses", async () => {

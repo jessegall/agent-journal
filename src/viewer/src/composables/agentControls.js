@@ -6,7 +6,6 @@ export function useAgentControls(agent, run, changed) {
     const programs = ref([]);
     const chosen = ref({});
     const failure = ref("");
-    const told = ref("");
     const asking = ref(false);
     const running = computed(() => Boolean(agent.value) && !agent.value.ended_at);
     const paused = computed(() => running.value && Boolean(agent.value.paused_at));
@@ -21,14 +20,12 @@ export function useAgentControls(agent, run, changed) {
         programs.value = answer.ok ? answer.value.rows : [];
     }
 
-    async function send(line, word, undo = () => {}) {
+    async function send(line, undo = () => {}) {
         failure.value = "";
-        told.value = word;
         const answer = await run(line);
         if (!answer.ok) {
             undo();
             failure.value = answer.error;
-            told.value = "";
         }
         changed();
     }
@@ -36,29 +33,29 @@ export function useAgentControls(agent, run, changed) {
     const choose = (key, choice) => {
         const before = chosen.value[key];
         chosen.value = {...chosen.value, [key]: choice.label};
-        return send(["agent", "control", String(agent.value.id), key, choice.value], `${choice.label} was sent to the agent`, () => (chosen.value = {...chosen.value, [key]: before}));
+        return send(["agent", "control", String(agent.value.id), key, choice.value], () => (chosen.value = {...chosen.value, [key]: before}));
     };
 
     const pause = () => {
         agent.value.paused_at = new Date().toISOString();
-        return send(["agent", "pause", String(agent.value.id)], "The agent is paused", () => (agent.value.paused_at = null));
+        return send(["agent", "pause", String(agent.value.id)], () => (agent.value.paused_at = null));
     };
 
     const resume = () => {
         const before = agent.value.paused_at;
         agent.value.paused_at = null;
-        return send(["agent", "resume", String(agent.value.id)], "The agent carries on", () => (agent.value.paused_at = before));
+        return send(["agent", "resume", String(agent.value.id)], () => (agent.value.paused_at = before));
     };
 
     const stop = () => {
         asking.value = false;
         agent.value.ended_at = new Date().toISOString();
-        return send(["agent", "stop", String(agent.value.id)], "The agent is stopped", () => (agent.value.ended_at = null));
+        return send(["agent", "stop", String(agent.value.id)], () => (agent.value.ended_at = null));
     };
 
-    const start = (program) => send(["agent", "launch", program.name], `${program.title} is starting`);
+    const start = (program) => send(["agent", "launch", program.name]);
 
     onMounted(read);
     watch(running, read);
-    return {groups, programs, chosen, failure, told, asking, running, paused, choose, pause, resume, stop, start};
+    return {groups, programs, chosen, failure, asking, running, paused, choose, pause, resume, stop, start};
 }

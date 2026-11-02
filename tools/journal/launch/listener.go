@@ -50,6 +50,7 @@ type Starter interface {
 type ProcessStarter struct {
 	Home   string
 	Inputs *TerminalInputs
+	Told   func(agentID int, question, said string)
 }
 
 // Start starts the program and leaves it running.
@@ -64,10 +65,18 @@ func (starter ProcessStarter) Start(start ProgramStart) error {
 	if err != nil {
 		return err
 	}
+	watcher := NewMenuWatcher(starter.Inputs, start.AgentID, func(question, said string) {
+		if starter.Told != nil {
+			starter.Told(start.AgentID, question, said)
+		}
+	})
+	stop := make(chan struct{})
+	go watcher.Watch(stop)
 	go func() {
+		defer close(stop)
 		defer log.Close()
 		defer starter.Inputs.Close(start.AgentID)
-		_ = RunInTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, log)
+		_ = RunInTerminal(command, starter.Inputs.Open(start.AgentID, strings.NewReader("")), io.Discard, io.MultiWriter(log, watcher))
 	}()
 	return nil
 }

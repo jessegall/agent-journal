@@ -18,7 +18,7 @@ test("the bar shows the score and load, marks them when low or high, and opens t
     const {element, opened} = bar(FITNESS);
     await settled();
     const shown = element.querySelector('[data-fact="fitness"]');
-    expect(shown.textContent).toContain("Fitness 60");
+    expect(shown.textContent.trim()).toBe("60");
     expect(shown.classList.contains("low")).toBe(true);
     expect(element.querySelector('[data-fact="load"]').classList.contains("warn")).toBe(true);
     shown.click();
