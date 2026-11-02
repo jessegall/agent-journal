@@ -25,7 +25,8 @@ class NextPlanTaskStarterListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         places = self.queries.query(PlanTask).filter(task_id=event.row_id).page(1, 1).rows
-        if not places or self.queries.query(Plan).find(places[0].plan_id).state is not PlanState.STARTED or self.tasks.holder(event.actor_id).started().exists():
+        plan = self.queries.query(Plan).find(places[0].plan_id) if places else None
+        if plan is None or plan.state is not PlanState.STARTED or self.tasks.holder(event.actor_id).started().exists() or self.tasks.critical_open(plan.environment_id).exists():
             return
         following = self.next_tasks.following(places[0].plan_id)
         if following is not None:

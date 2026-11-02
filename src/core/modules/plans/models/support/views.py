@@ -1,6 +1,6 @@
 PLAN_TASKS_SELECT = (
     "SELECT phase_tasks.task_id, phases.plan_id, phase_tasks.phase_id, phases.position AS phase_position, phases.checkpoint,"
-    " phase_tasks.position, tasks.state, tasks.closed_at"
+    " phase_tasks.position, tasks.state, tasks.priority, tasks.closed_at"
     " FROM phase_tasks"
     " JOIN phases ON phases.id = phase_tasks.phase_id"
     " JOIN tasks ON tasks.id = phase_tasks.task_id"

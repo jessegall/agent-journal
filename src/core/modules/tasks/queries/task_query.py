@@ -10,6 +10,7 @@ from core.base.query.select import Select
 from core.modules.tasks.models.task import Task
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
+from core.modules.tasks.models.support.task_priority import CRITICAL_PRIORITY
 
 
 class TaskQuery(Query[Task]):
@@ -35,6 +36,9 @@ class TaskQuery(Query[Task]):
 
     def open_tasks(self, environment_id: int) -> Self:
         return self.environment(environment_id).filter(state=TaskState.OPEN)
+
+    def critical_open(self, environment_id: int) -> Self:
+        return self.environment(environment_id).filter(state=TaskState.OPEN, priority=CRITICAL_PRIORITY)
 
     def next_open(self, environment_id: int, excluded_id: int | None, exclusion: Condition) -> Task | None:
         waiting = SubqueryMatch("id", Select(OpenDependency.view).column("task_id"), negated=True)

@@ -1,3 +1,4 @@
+from core.base.query.conditions.among import Among
 from core.base.query.select import Select
 from core.base.query.conditions.subquery_match import SubqueryMatch
 from core.base.query.queries import Queries
@@ -7,20 +8,25 @@ from core.modules.plans.models.plan_task import PlanTask
 from core.modules.plans.listeners.support.checkpoint_limit import CheckpointLimit
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.open_dependency import OpenDependency
+UNFINISHED_STATES = tuple(state for state in TaskState if state not in (TaskState.COMPLETED, TaskState.CANCELLED))
 
 
 class NextPlanTasks:
-    """Finds a plan's next open task that waits on nothing, never past a checkpoint phase that
-    still has an open task."""
+    """Finds a plan's next open task that waits on nothing: only in its first phase with unfinished tasks, so a
+    phase is finished before the next, and within it by priority and then by id. A task that waits on another
+    does not hold its phase, since what it waits on may lie in a later one."""
 
     def __init__(self, queries: Queries) -> None:
         self.queries = queries
 
     def following(self, plan_id: int) -> int | None:
         waiting = SubqueryMatch("task_id", Select(OpenDependency.view).column("task_id"), negated=True)
-        free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, state=TaskState.OPEN).matching(waiting).matching(CheckpointLimit(plan_id))
-        rows = free_tasks.ordered("phase_position", "position").page(1, 1).rows
-        return rows[0].task_id if rows else None
+        unfinished = self.queries.query(PlanTask).filter(plan_id=plan_id).matching(Among("state", UNFINISHED_STATES)).matching(waiting).ordered("phase_position").page(1, 1).rows
+        if not unfinished:
+            return None
+        free_tasks = self.queries.query(PlanTask).filter(plan_id=plan_id, phase_position=unfinished[0].phase_position, state=TaskState.OPEN).matching(waiting).matching(CheckpointLimit(plan_id)).all_rows()
+        first = min(free_tasks, key=lambda place: (-place.priority, place.task_id), default=None)
+        return first.task_id if first is not None else None
 
     def environment_task(self, environment_id: int) -> int | None:
         for plan in tuple(self.queries.query(Plan).filter(environment_id=environment_id, state=PlanState.STARTED).oldest().all_rows()):

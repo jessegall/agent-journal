@@ -22,4 +22,5 @@ class PlanTask(ViewModel):
     checkpoint: bool
     position: int
     state: TaskState
+    priority: int
     closed_at: Timestamp | None = None

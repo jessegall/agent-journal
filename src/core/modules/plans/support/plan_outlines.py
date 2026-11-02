@@ -17,7 +17,7 @@ class PlanOutlines:
         self.queries = queries
 
     def outline(self, plan_id: int) -> PlanOutline:
-        places = tuple(self.queries.query(PlanTask).filter(plan_id=plan_id).ordered("phase_position", "position").all_rows())
+        places = tuple(sorted(self.queries.query(PlanTask).filter(plan_id=plan_id).all_rows(), key=lambda place: (place.phase_position, -place.priority, place.task_id)))
         tasks = {task.id: task for task in self.queries.query(Task).find_many([place.task_id for place in places])}
         phases = tuple(self.queries.query(Phase).filter(plan_id=plan_id).ordered("position").all_rows())
         holders = {task.holder_id for task in tasks.values() if task.holder_id is not None}
