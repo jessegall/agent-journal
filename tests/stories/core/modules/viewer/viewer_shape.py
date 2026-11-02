@@ -12,7 +12,7 @@ BUILD_ENTRIES = {"main.js", "index.js", "vite.config.js", "vitest.config.js", "b
 READ_LINE = re.compile(r"""(?:context\.read\(|useRows\()[`"']([a-z-]+ [a-z-]+)""")
 RUN_LINE = re.compile(r"""context\.run\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
 SHELL_LINE = re.compile(r"""\b(?:read|shellRead|shellLine)\(\[\s*"([a-z-]+)",\s*"([a-z-]+)\"""")
-HIDDEN_WINDOWS = {"viewer.shell", "processes.output"}
+HIDDEN_WINDOWS = {"questions.question", "viewer.shell", "processes.output"}
 SKIPPED_FOLDERS = {"node_modules", "dist", "__pycache__", "tests"}
 
 
