@@ -8,10 +8,11 @@ from core.base.agent_role import AgentRole
 
 
 class TaskSummaryLineRule(DriverRule):
-    """A session that starts again with a task in hand, after a compaction or a resume, is told the task
+    """A session that starts again with a task in hand, after a compaction, is told the task
     and its newest log line."""
 
     name = "tasks.session-start-summary"
+    first_start_only = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]

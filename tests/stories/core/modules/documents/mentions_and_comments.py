@@ -51,7 +51,7 @@ def test_a_person_s_comment_is_a_message_of_type_comment_naming_the_document_and
     shown = json.loads(story.run("message show 1 --json", actor=story.user).output_text)
     assert shown["type"] == "comment"
     assert shown["metadata"]["journal.core.messages"]["comment_on"] == {"model": "doc", "id": 1}
-    assert "[journal] new message 1: journal message read 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
+    assert "[journal] new message 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
 
 
 def test_an_agent_s_comment_stays_an_agent_message_and_is_not_told_back_to_it(new_story):

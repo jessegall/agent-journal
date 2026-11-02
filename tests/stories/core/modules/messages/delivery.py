@@ -38,7 +38,7 @@ def test_the_agent_is_told_the_number_of_a_new_message_and_only_reading_it_marks
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     reply = story.hook("s-1", HookSamples.stop())
-    assert "[journal] new message 1: journal message read 1" in reply.lines
+    assert "[journal] new message 1" in reply.lines
     assert not any("Fix the cart" in line for line in reply.lines)
     assert "read_at: None" in story.run("message show 1 ", actor=story.user).output_text or "read_at:" not in story.run("message show 1", actor=story.user).output_text
     story.hook("s-1", READ_MESSAGE_HOOK)
@@ -50,9 +50,9 @@ def test_a_backlog_of_six_messages_is_told_five_at_a_time_with_the_full_count(ne
     for number in range(6):
         story.run(f'message send "Message {number}" --environment main', actor=story.user)
     first = story.hook("s-1", HookSamples.stop())
-    assert "[journal] 6 new messages: journal message unread" in first.lines
+    assert "[journal] 6 new messages" in first.lines
     second = story.hook("s-1", HookSamples.stop())
-    assert "[journal] new message 6: journal message read 6" in second.lines
+    assert "[journal] new message 6" in second.lines
 
 
 class KeptTyping(TerminalTyping):
@@ -74,7 +74,7 @@ def test_a_message_to_an_agent_at_work_goes_by_its_next_hook_and_nothing_is_type
     story.container.bind(TerminalTyping, typing)
     story.run('message send "One more thing" --environment main', actor=story.user)
     assert typing.typed == []
-    assert "[journal] new message 1: journal message read 1" in story.hook("s-1", HookSamples.edit("cart.py")).lines
+    assert "[journal] new message 1" in story.hook("s-1", HookSamples.edit("cart.py")).lines
 
 
 def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_it_is_not_said_again(new_story):
@@ -84,9 +84,9 @@ def test_only_the_first_message_is_typed_to_an_agent_the_stop_hook_let_stop_and_
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     story.run('message send "Are you there" --environment main', actor=story.user)
     story.run('message send "Hello" --environment main', actor=story.user)
-    assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
-    woken = story.hook("s-1", HookSamples.prompt("[journal] new message 1: journal message read 1")).lines
-    assert "[journal] new message 2: journal message read 2" in woken
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
+    woken = story.hook("s-1", HookSamples.prompt("[journal] new message 1")).lines
+    assert "[journal] new message 2" in woken
     assert not any("new message 1" in line for line in woken)
 
 
@@ -95,7 +95,7 @@ def test_a_fresh_session_that_has_not_been_given_a_prompt_is_idle_too(new_story)
     typing = KeptTyping()
     story.container.bind(TerminalTyping, typing)
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert [line for _, line in typing.typed] == ["[journal] new message 1: journal message read 1"]
+    assert [line for _, line in typing.typed] == ["[journal] new message 1"]
 
 
 def test_a_refused_stop_is_not_idle_since_the_agent_goes_on(new_story):
@@ -116,7 +116,7 @@ def test_a_paused_agent_that_is_idle_is_typed_a_message_so_the_user_can_chat(new
     story.run(f"agent pause {agent.id}", actor=story.user)
     typing.typed.clear()
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
 
 
 def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(new_story):
@@ -126,7 +126,7 @@ def test_an_agent_waiting_on_a_question_is_woken_by_a_new_message(new_story):
     story.run('question ask "Which database?" --environment main', actor=story.agent)
     agent = hook_agent(story, story.hook("s-1", HookSamples.stop()))
     story.run('message send "Use sqlite" --environment main', actor=story.user)
-    assert typing.typed == [(agent.id, "[journal] new message 1: journal message read 1")]
+    assert typing.typed == [(agent.id, "[journal] new message 1")]
 
 
 def test_with_no_terminal_the_line_waits_for_the_next_hook(new_story):
@@ -134,7 +134,7 @@ def test_with_no_terminal_the_line_waits_for_the_next_hook(new_story):
     story.container.bind(TerminalTyping, KeptTyping(working=False))
     story.hook("s-1", HookSamples.stop())
     story.run('message send "Are you there" --environment main', actor=story.user)
-    assert "[journal] new message 1: journal message read 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
+    assert "[journal] new message 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
 
 
 def test_a_message_is_given_once(new_story):
@@ -267,7 +267,7 @@ def test_unread_prints_every_unread_message_and_marks_them_read(new_story):
     story.run('message send "Fix the cart" --environment main', actor=story.user)
     story.run('message send "And the totals" --environment main', actor=story.user)
     reply = story.hook("s-1", HookSamples.stop())
-    assert "[journal] 2 new messages: journal message unread" in reply.lines
+    assert "[journal] 2 new messages" in reply.lines
     text = story.run("message unread --environment main", actor=story.user).output_text
     assert "message 1:\nFix the cart" in text and "message 2:\nAnd the totals" in text
     lines = story.hook("s-1", UNREAD_MESSAGE_HOOK).lines

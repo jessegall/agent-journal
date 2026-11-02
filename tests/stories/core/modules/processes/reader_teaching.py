@@ -50,7 +50,7 @@ def test_reading_all_of_an_output_a_reader_reads_names_the_shorter_read(new_stor
     story.run('reader add tally --commands "make*" --lines "passed"')
     process = moved_run(story, "make test")
     end_run(story, process, "3 passed in 1s\n" + "x\n" * 300)
-    assert any(f"journal output read {process.id} --summary" in line for line in story.hook("s-1", posted(f"journal output read {process.id} --all")).lines)
+    assert any(f"reader tally already reads output {process.id}" in line for line in story.hook("s-1", posted(f"journal output read {process.id} --all")).lines)
     story.expect_absent_hook_line("s-1", posted(f"journal output read {process.id} --tail 5"), "already reads output")
 
 

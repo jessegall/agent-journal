@@ -8,6 +8,7 @@ from core.base.driver.hook_history import HookHistory
 from core.base.driver.rule_history_key import RuleHistoryKey
 from core.base.driver.layers import Layers
 from core.base.driver.overlay import Overlay
+from core.base.driver.rule_answer import RuleAnswer
 from core.base.driver.rule_answers import RuleAnswers
 from core.base.driver.rule_outcome import RuleOutcome
 from core.base.driver.walk import Walk
@@ -59,6 +60,8 @@ class DriverRules:
     def outcome(self, entry: DriverRuleEntry, hook: AgentHook) -> RuleOutcome:
         try:
             rule = self.container.get(entry.path.checked_class(DriverRule))
+            if rule.first_start_only and hook.event.is_resume:
+                return RuleOutcome.answered(RuleAnswer.allowed())
             control_return = rule.history and self.history.control_return(RuleHistoryKey(hook.agent_id, entry.name, hook.layer_ref))
             answer = rule.answer(replace(hook, control_return=control_return))
         except Exception as error:

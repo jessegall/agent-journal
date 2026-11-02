@@ -10,6 +10,7 @@ class IntroductionRule(DriverRule):
     """A main session the journal started, from its launcher, is told to introduce itself in the chat."""
 
     name = "coding.introduction"
+    first_start_only = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.*"]
     roles = [AgentRole.MAIN]

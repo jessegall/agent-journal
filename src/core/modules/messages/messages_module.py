@@ -78,6 +78,8 @@ class MessagesModule(Module):
                                           ToggleOption("floors", "Show floors")])]
     marks = MESSAGE_MARKS
     skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
-                               keywords=("flowchart", "flow chart", "diagram"), commands=tuple(["message"]))]
+                               keywords=("flowchart", "flow chart", "diagram")),
+              SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
+                               keywords=("message", "reply", "question"), commands=("message", "question"))]
     listeners = [ReadMessageEditListener, IdleMessageListener, AllowedStopListener]
     seeders = [MessagesSeeder]

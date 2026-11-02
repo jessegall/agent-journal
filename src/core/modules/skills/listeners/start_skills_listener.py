@@ -5,6 +5,7 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.module.module_actors import ModuleActors
 from core.base.query.queries import Queries
 from core.modules.agents.models.agent import Agent
+from core.modules.drivers.commands.record_hook_call.record_hook_call_handler import DRIVERS_MODULE
 from core.modules.drivers.models.hook_call import HookCall
 from core.modules.skills.commands.require_skill.require_skill import RequireSkill
 from core.modules.skills.listeners.skill_listener import SkillListener
@@ -28,6 +29,8 @@ class StartSkillsListener(SkillListener):
     def handle(self, event: LoggedEvent) -> None:
         call = self.call(event)
         if call.hook != HookEventName.SESSION_START or self.queries.query(Agent).find(call.agent_id).role not in START_ROLES:
+            return
+        if call.metadata.module_part(DRIVERS_MODULE).get("resumed"):
             return
         for skill in self.skills(call):
             self.run(event, RequireSkill(call.agent_id, skill))

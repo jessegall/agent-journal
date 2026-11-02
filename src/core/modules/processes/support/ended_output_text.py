@@ -28,7 +28,7 @@ class EndedOutputText:
         self.outputs, self.readers, self.folder, self.parts = outputs, readers, folder, parts
 
     def line(self, process: Process) -> str:
-        return f"output {process.id} ended: {self.summary(process) or self.outcome(process)}; journal output read {process.id} --summary"
+        return f"output {process.id} ended: {self.summary(process) or self.outcome(process)}"
 
     def nudges(self, process: Process) -> tuple[Nudge, ...]:
         advice = self.advice(process)

@@ -11,7 +11,7 @@ from tests.stories.core.support.coding_fixtures import CodingEnvironment
 
 DUE = f"{PATH}:DueSkillsModule"
 JOURNAL_TASK_LIST = HookSamples.shell("journal task list", ShellPart("journal", CommandCategory.JOURNAL, ["task", "list"]))
-DEFAULTS = ("journal", "journal-etiquette", "journal-messages")
+DEFAULTS = ("journal", "journal-etiquette")
 
 
 def environment(new_story):

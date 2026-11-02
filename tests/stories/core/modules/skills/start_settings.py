@@ -10,7 +10,7 @@ def skills(new_story) -> tuple:
     return story, story.container.get(StartSkills)
 
 
-def test_both_start_settings_default_to_the_journals_three_skills(new_story):
+def test_both_start_settings_default_to_the_journals_own_skills(new_story):
     story, start = skills(new_story)
     assert start.session_start(1) == DEFAULT_SKILLS and start.after_compaction(1) == DEFAULT_SKILLS
 

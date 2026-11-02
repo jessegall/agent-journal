@@ -8,7 +8,7 @@ from tests.stories.core.modules.processes.support.process_samples import install
 from core.modules.processes.support.output_folder import OutputFolder
 from tests.stories.core.support.coding_fixtures import BuilderStarted
 
-ORPHAN_LINE = "process 1 was lost: its shell is gone; journal output read 1 --summary"
+ORPHAN_LINE = "process 1 was lost: its shell is gone"
 
 
 def test_a_stop_kills_the_group_of_the_runner_and_ends_a_wait_on_the_process(new_story):

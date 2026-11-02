@@ -19,6 +19,7 @@ class WaitingItemsRule(DriverRule):
     """A main session's start names how many open tasks, unread messages and open questions wait for it."""
 
     name = "coding.waiting-items"
+    first_start_only = True
     hook = HookEventName.SESSION_START
     drivers = ["coding.*"]
     roles = [AgentRole.MAIN]

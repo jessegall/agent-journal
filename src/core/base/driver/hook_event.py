@@ -8,6 +8,8 @@ from core.base.driver.hook_fields import mapping, number, text
 from core.base.driver.tool import Tool
 
 HOOK_EVENT_VERSION = 2
+RESUME_SOURCE = "resume"
+SAME_PROGRAM_SOURCES = ("compact", "clear")
 REQUIRED_KEYS = ("version", "program", "event", "session", "firing", "fired_at_ms", "actor", "environment", "tool", "prompt", "raw", "accepts_lines", "launch")
 
 
@@ -56,6 +58,14 @@ class HookEvent:
                    number(fields, "fired_at_ms"), text(fields, "actor"), text(fields, "environment"), text(fields, "subagent"),
                    Tool.parsed(tool) if tool is not None else None, prompt, mapping(fields.get("raw", {}), "raw"), accepts_lines,
                    text(fields, "launch"))
+
+    @property
+    def is_resume(self) -> bool:
+        return self.raw.get("source") == RESUME_SOURCE
+
+    @property
+    def keeps_program(self) -> bool:
+        return self.raw.get("source") in SAME_PROGRAM_SOURCES
 
     def tool_input(self) -> Mapping[object, object]:
         return mapping(self.raw.get("tool_input", {}), "tool_input")

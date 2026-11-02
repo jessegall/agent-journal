@@ -6,7 +6,7 @@ from core.base.setting.setting_value import SettingValue
 MODULE_KEY = "journal.core.skills"
 SESSION_START_KEY = f"{MODULE_KEY}.session-start"
 AFTER_COMPACTION_KEY = f"{MODULE_KEY}.after-compaction"
-JOURNAL_SKILLS = ("journal", "journal-etiquette", "journal-messages")
+JOURNAL_SKILLS = ("journal", "journal-etiquette")
 SKILL_SETTINGS = [
     SettingValue("session-start", "Skills at the start", "The skills an agent reads when its session starts.", SettingType.LIST, default=JOURNAL_SKILLS),
     SettingValue("after-compaction", "Skills after a compaction", "The skills an agent reads again after its context is compacted.",
@@ -16,7 +16,7 @@ SKILL_SETTINGS = [
 
 class StartSkills:
     """The skills made due when a session starts and when it starts again after a compaction, as the two
-    settings name them for an environment, else for the project, else the journal's three, each only when a
+    settings name them for an environment, else for the project, else the journal's own, each only when a
     module declares it."""
 
     def __init__(self, values: SettingValues, registry: Registry) -> None:

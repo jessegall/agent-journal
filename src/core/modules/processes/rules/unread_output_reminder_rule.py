@@ -36,7 +36,7 @@ class UnreadOutputReminderRule(DriverRule):
         ended_runs = list(self.processes.agent(hook.agent_id).moved().ended().unread().matching(Greater("ended_at", Timestamp(hook.timestamp.value - REMINDER_PERIOD).text)).oldest().all_rows())
         if not ended_runs or (self.tool_uses(hook, ended_runs[-1]) + 1) % spacing:
             return RuleAnswer.allowed()
-        return RuleAnswer.with_nudges(UNREAD_OUTPUT.nudge(outputs=', '.join(str(process.id) for process in ended_runs), first=ended_runs[0].id))
+        return RuleAnswer.with_nudges(UNREAD_OUTPUT.nudge(outputs=', '.join(str(process.id) for process in ended_runs)))
 
     def tool_uses(self, hook: AgentHook, process: Process) -> int:
         return self.queries.query(HookCall).filter(agent_id=hook.agent_id, hook=HookEventName.POST_TOOL_USE).matching(Greater("created_at", process.ended_at.text)).count() if process.ended_at else 0

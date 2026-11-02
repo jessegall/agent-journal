@@ -20,6 +20,7 @@ class DriverRule:
     unsilenced: ClassVar[bool] = False
     history: ClassVar[bool] = False
     overlay_proof: ClassVar[bool] = False
+    first_start_only: ClassVar[bool] = False
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         raise NotImplementedError

@@ -16,8 +16,8 @@ from tests.stories.core.support.coding_fixtures import BuilderStarted
 NOTHING = HookSamples.shell("cat notes", ShellPart("cat", CommandCategory.READ, ["notes"]))
 AFTER = NOTHING.with_fields(event="post_tool_use")
 TESTS_REPORT = "collected 3 items\nFAILED tests/test_cart.py::test_total - assert 1 == 2\n2 failed, 1 passed in 0.4s\n"
-ENDED = "output 1 ended: 2 failed 1 passed; journal output read 1 --summary"
-UNREAD = "output 1 unread: journal output read 1 --summary"
+ENDED = "output 1 ended: 2 failed 1 passed"
+UNREAD = "output 1 unread"
 
 
 def lines_of(story, sample) -> list[str]:
@@ -114,7 +114,7 @@ def test_outputs_that_ended_apart_are_named_together_once_in_a_turn(new_story):
     story.advance(timedelta(seconds=1))
     story.hook("s-1", NOTHING)
     labelled = [line for _ in range(10) for line in lines_of(story, AFTER) if "unread" in line]
-    assert labelled == [f"output {first.id}, {second.id} unread: journal output read {first.id} --summary"]
+    assert labelled == [f"output {first.id}, {second.id} unread"]
 
 
 def test_reading_the_output_ends_the_reminders(new_story):

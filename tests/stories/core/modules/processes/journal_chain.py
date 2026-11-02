@@ -69,7 +69,7 @@ def test_a_test_run_sent_to_a_file_is_told_no_reader_sees_it(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     redirected = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], edited_paths=["/tmp/results.txt"])
     reply = story.hook("s-1", HookSamples.shell("pytest -q > /tmp/results.txt", redirected))
-    assert "pytest goes to a file, so no reader sees it: run it without the redirect, then journal output read <n> --summary" in reply.lines
+    assert "pytest goes to a file, so no reader sees it: run it without the redirect" in reply.lines
 
 
 def test_writing_a_file_or_sending_a_run_to_dev_null_gets_no_such_line(new_story):

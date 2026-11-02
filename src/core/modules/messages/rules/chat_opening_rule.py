@@ -11,6 +11,7 @@ class ChatOpeningRule(DriverRule):
     that the laws apply."""
 
     name = "messages.chat-opening"
+    first_start_only = True
     hook = HookEventName.SESSION_START
     drivers = ["*"]
     roles = [AgentRole.MAIN]
