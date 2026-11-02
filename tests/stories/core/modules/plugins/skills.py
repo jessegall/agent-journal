@@ -1,4 +1,5 @@
 from core.base.driver.command_category import CommandCategory
+from core.modules.skills.support.skill_requirement import SkillRequirement
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.plugins.hooks import LISTING_SAMPLE, installed_story
@@ -15,6 +16,7 @@ def test_an_installed_plugin_publishes_its_skills_marked_with_its_name(new_story
 
 def test_a_skill_a_plugins_answer_requires_holds_the_agents_next_tool_after_the_reply_until_it_is_read(new_story):
     story = installed_story(new_story)
+    story.container.bind(SkillRequirement, SkillRequirement())
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
     story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first")

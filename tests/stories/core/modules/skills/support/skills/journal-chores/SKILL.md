@@ -1,5 +1,5 @@
 ---
-name: journal-tasks
+name: journal-chores
 description: How to work a task
 ---
 

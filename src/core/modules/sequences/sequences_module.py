@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.sequences.support.sequence_nudges import SEQUENCE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -41,6 +42,7 @@ class SequencesModule(Module):
     nudges = SEQUENCE_NUDGES
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents"]
+    skills = [SkillDeclaration("journal-sequences", "Follow a sequence of steps one at a time; read it when a sequence is run or written", keywords=("sequence", "sequences"), commands=["sequence"])]
     models = [ModelDeclaration(Sequence, excluded_subcommands=BUILT), ModelDeclaration(SequenceRun, query=SequenceRunQuery, excluded_subcommands=RUN_BUILT)]
     migrations = [SequencesTablesMigration, SequenceTriggersMigration, TriggerEventMigration]
     moves = [SequencesMove]

@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plans.commands.block_plan.block_plan import BlockPlan
 from core.modules.plans.commands.cancel_plan.cancel_plan import CancelPlan
 from core.modules.plans.guards.phase_position_guard import PhasePositionGuard
@@ -59,6 +60,7 @@ class PlansModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [PlanApproved, PlanFinished]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
+    skills = [SkillDeclaration("journal-plans", "Build and follow a plan of ordered tasks; read it before the first plan command of a session, or when the user asks for a plan or a roadmap", keywords=("plan", "plans", "roadmap", "phases"), commands=("plan", "phase"))]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration, PlanStartTimeMigration]
     handlers = (MakePhaseHandler, MovePhaseHandler, PlacePhaseHandler)

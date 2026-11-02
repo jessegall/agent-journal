@@ -25,5 +25,5 @@ def test_a_changed_setting_is_used_by_the_next_start_and_leaves_the_other_alone(
 def test_an_environment_setting_wins_over_the_projects(new_story):
     story, _ = skills(new_story)
     story.run("setting make journal.core.skills.after-compaction '[\"journal\"]'")
-    story.run("setting make journal.core.skills.after-compaction '[\"journal-tasks\"]' --environment main")
-    assert story.container.get(StartSkills).after_compaction(1) == ["journal-tasks"]
+    story.run("setting make journal.core.skills.after-compaction '[\"journal-chores\"]' --environment main")
+    assert story.container.get(StartSkills).after_compaction(1) == ["journal-chores"]

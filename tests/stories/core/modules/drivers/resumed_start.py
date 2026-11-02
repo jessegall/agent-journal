@@ -31,6 +31,7 @@ def test_a_start_after_a_compaction_gets_the_memories(new_story):
 
 def test_a_resumed_session_makes_no_start_skill_due(new_story):
     story = new_story(fixture=BuilderStarted)
+    story.run_listeners()
     listed_rows = story.run(f"agent-skill list --agent {story.agent.id}", actor=story.agent).output_text
     story.hook("s-1", RESUME)
     story.run_listeners()

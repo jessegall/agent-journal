@@ -5,7 +5,7 @@ PATH = "tests.stories.core.modules.skills.support.skill_samples"
 DEPENDENCIES = ["journal.core.tasks"]
 
 NOTES = SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["task list"], events=["task.*"])
-TASKS = SkillDeclaration("journal-tasks", "How to work a task", keywords=["task"], commands=["task start"], events=["task.start"])
+TASKS = SkillDeclaration("journal-chores", "How to work a task", keywords=["task"], commands=["chore start"], events=["task.start"])
 
 
 class GoodSkillsModule(Module):
@@ -47,13 +47,12 @@ class PlanSkillsModule(Module):
     name = "planskills"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    skills = [SkillDeclaration("journal-plans", "How to follow a plan", keywords=["plan"])]
+    skills = [SkillDeclaration("journal-roadmaps", "How to follow a plan", keywords=["plan"])]
 
 
 class DueSkillsModule(Module):
     name = "dueskills"
     requires_core = ">=5,<6"
     dependencies = DEPENDENCIES
-    skills = [SkillDeclaration("journal", "The journal"), SkillDeclaration("journal-etiquette", "How to behave"),
-              SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["note"]),
-              SkillDeclaration("journal-tasks", "How to work a task", keywords=["tasks"], commands=["task"], events=["task.start"])]
+    skills = [SkillDeclaration("journal-notes", "How to take notes", keywords=["note"], commands=["note"]),
+              SkillDeclaration("journal-chores", "How to work a task", keywords=["tasks"], commands=["chore"], events=["task.start"])]

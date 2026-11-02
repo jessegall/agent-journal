@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.plugins.support.plugin_nudges import PLUGIN_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -63,6 +64,7 @@ class PluginsModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.chat", "journal.core.skills",
                     "journal.core.processes"]
+    skills = [SkillDeclaration("journal-plugins", "See what plugins do and propose one for the user to install; read it before the first plugin command of a session", keywords=("plugin", "plugins"), commands=["plugin"])]
     models = [ModelDeclaration(Plugin, query=PluginQuery, excluded_subcommands=BUILT), ModelDeclaration(PluginSetting, excluded_subcommands=BUILT),
               ModelDeclaration(PluginDelivery, excluded_subcommands=BUILT), ModelDeclaration(PluginOutput, excluded_subcommands=BUILT),
               ModelDeclaration(PluginQueueFile, excluded_subcommands=BUILT)]

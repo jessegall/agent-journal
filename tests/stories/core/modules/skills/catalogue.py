@@ -44,18 +44,18 @@ def test_a_skill_naming_an_event_no_model_has_is_refused_at_sync(new_story):
 
 def test_skill_write_puts_each_skill_in_both_program_folders(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
-    story.expect_success("skill write", "written: journal-notes", "written: journal-tasks")
+    story.expect_success("skill write", "written: journal-notes", "written: journal-chores")
     for program_folder in PROGRAM_FOLDERS:
         assert "Write a note for every decision." in skill_file(story, program_folder, "journal-notes").read_text()
-        assert "Start a task before you write." in skill_file(story, program_folder, "journal-tasks").read_text()
+        assert "Start a task before you write." in skill_file(story, program_folder, "journal-chores").read_text()
 
 
 def test_skill_write_rewrites_only_a_changed_file(new_story):
     story = story_with_skill_files(new_story)
-    unchanged, changed = skill_file(story, ".claude/skills", "journal-tasks"), skill_file(story, ".claude/skills", "journal-notes")
+    unchanged, changed = skill_file(story, ".claude/skills", "journal-chores"), skill_file(story, ".claude/skills", "journal-notes")
     os.utime(unchanged, ns=(1, 1))
     changed.write_text("an old text")
-    story.expect_success("skill write", "unchanged: journal-tasks", "written: journal-notes")
+    story.expect_success("skill write", "unchanged: journal-chores", "written: journal-notes")
     assert unchanged.stat().st_mtime_ns == 1
     assert "Write a note for every decision." in changed.read_text()
 
@@ -73,7 +73,7 @@ def test_skill_write_clears_the_journals_stale_folders_and_never_one_it_did_not_
 
 def test_skill_list_prints_each_folder_with_its_description(new_story):
     story = new_story(GOOD, fixture=MainEnvironment)
-    story.expect_success("skill list", "journal-notes  How to take notes", "journal-tasks  How to work a task")
+    story.expect_success("skill list", "journal-notes  How to take notes", "journal-chores  How to work a task")
 
 
 def test_skill_show_prints_the_text_and_digest_of_one_skill(new_story):

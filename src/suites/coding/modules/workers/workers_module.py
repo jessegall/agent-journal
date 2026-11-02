@@ -1,4 +1,5 @@
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_icon import WindowIcon
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -74,6 +75,7 @@ class WorkersModule(Module):
     requires_core = ">=5,<6"
     settings = WORKER_SETTINGS
     dependencies = ["journal.core.agents", "journal.core.tasks", "journal.core.environments", "journal.core.settings", "journal.core.drivers", "journal.core.plugins", "journal.core.processes"]
+    skills = [SkillDeclaration("journal-workers", "Send a worker to write a bounded job, check its proofs and merge its work; read it before dispatching one", keywords=("worker", "workers", "worktree"), commands=("worker", "proof"))]
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]

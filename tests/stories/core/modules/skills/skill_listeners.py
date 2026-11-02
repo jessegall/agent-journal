@@ -7,7 +7,7 @@ def test_a_read_of_a_skill_file_marks_it_loaded_with_the_digest_of_the_catalogue
     story = started(new_story)
     story.run(f"skill require {story.agent.id} journal-notes")
     read_of(story, NOTES_FILE)
-    story.expect_success("agent-skill show 1", "state: loaded", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
+    story.expect_success("agent-skill show 3", "state: loaded", f"digest: {SkillDigest.digest((story.home.project_folder / NOTES_FILE).read_text())}")
 
 
 def test_a_read_of_a_skill_not_made_due_loads_it_too(new_story):
@@ -19,7 +19,7 @@ def test_a_read_of_a_skill_not_made_due_loads_it_too(new_story):
 def test_a_read_of_any_other_file_loads_nothing(new_story):
     story = started(new_story)
     read_of(story, "README.md")
-    story.expect_refusal("agent-skill show 1", "no agent-skill 1")
+    story.expect_refusal("agent-skill show 3", "no agent-skill 3")
 
 
 def test_a_compaction_removes_the_loaded_rows_of_the_agent(new_story):

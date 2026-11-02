@@ -1,5 +1,5 @@
 ---
-name: journal-plans
+name: journal-roadmaps
 description: How to follow a plan
 ---
 

@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -36,6 +37,7 @@ class DumpsModule(Module):
     name = "journal.core.dumps"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.docking"]
+    skills = [SkillDeclaration("journal-dumps", "File what the user dropped in a dump by sorting the material by subject into rows of their own; read it when a dump arrives", keywords=("dump", "dumps", "dumped"), commands=["dump"])]
     models = [ModelDeclaration(Dump, excluded_subcommands=BUILT), ModelDeclaration(DumpItem, excluded_subcommands=BUILT)]
     migrations = [DumpsTablesMigration]
     moves = [DumpsMove]

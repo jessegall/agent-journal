@@ -1,5 +1,6 @@
 from suites.coding.modules.checks.commands.check_runs.check_runs_subcommand import CheckRunsSubcommand
 from suites.coding.modules.checks.support.check_nudges import CHECK_NUDGES
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -49,6 +50,7 @@ class ChecksModule(Module):
     requires_core = ">=5,<6"
     block_conditions = [CheckPassed]
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
+    skills = [SkillDeclaration("journal-checks", "Write and run scripts that pass or fail about the project; read it when a check is made, run or fails", keywords=("check", "checks"), commands=["check"])]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]
     migrations = [ChecksTableMigration, CheckTaskWaitMigration, CheckHiddenMigration, CheckRunPercentMigration]

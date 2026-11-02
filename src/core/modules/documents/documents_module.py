@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.documents.commands.record_subject_link.record_subject_link_handler import RecordSubjectLinkHandler
 from core.modules.documents.listeners.reply_link_listener import ReplyLinkListener
 from core.base.module.model_declaration import ModelDeclaration
@@ -62,6 +63,7 @@ class DocumentsModule(Module):
     name = "journal.core.documents"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.settings", "journal.core.messages", "journal.core.tasks", "journal.core.plans", "journal.core.docking"]
+    skills = [SkillDeclaration("journal-documents", "Write lasting knowledge as documents and what was checked as reports; read it before the first doc or report command of a session", keywords=("document", "documents", "report"), commands=("doc", "report"))]
     settings = [SettingValue("revision-minutes", "Revision minutes", "How long one person's edits of a document fold into one revision.", SettingType.NUMBER,
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=BUILT), ModelDeclaration(Report, excluded_subcommands=BUILT),

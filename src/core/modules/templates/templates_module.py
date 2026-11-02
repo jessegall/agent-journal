@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -20,6 +21,7 @@ class TemplatesModule(Module):
     name = "journal.core.templates"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors"]
+    skills = [SkillDeclaration("journal-templates", "Find and use a template for a task, a plan or a review; read it before the first template command of a session", keywords=("template", "templates"), commands=["template"])]
     models = [ModelDeclaration(Template, excluded_subcommands=["make", "edit", "show", "list"])]
     migrations = [TemplatesTableMigration]
     moves = [TemplatesMove]

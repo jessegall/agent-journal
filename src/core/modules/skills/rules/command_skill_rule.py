@@ -9,6 +9,7 @@ from core.modules.skills.support.block_conditions.skill_loaded import SkillLoade
 from core.modules.skills.support.agent_skill_rows import AgentSkillRows
 from core.modules.skills.support.skill_catalogue import SkillCatalogue
 from core.modules.skills.support.skill_files import SkillFiles
+from core.modules.skills.support.skill_requirement import SkillRequirement
 
 
 class CommandSkillRule(DriverRule):
@@ -20,14 +21,14 @@ class CommandSkillRule(DriverRule):
     drivers = ["*"]
     roles = [AgentRole.MAIN, AgentRole.WORKER]
 
-    def __init__(self, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles) -> None:
-        self.catalogue, self.rows, self.files = catalogue, rows, files
+    def __init__(self, catalogue: SkillCatalogue, rows: AgentSkillRows, files: SkillFiles, requirement: SkillRequirement) -> None:
+        self.catalogue, self.rows, self.files, self.requirement = catalogue, rows, files, requirement
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
         tool = hook.event.tool
         parts = tool.shell.parts if tool is not None and tool.shell is not None else ()
         covered = {part.subcommand or part.arguments[0] for part in parts if part.classification.category is CommandCategory.JOURNAL and part.arguments}
         missing = [skill for skill in self.catalogue.skills() if covered.intersection(skill.commands) and not self.rows.is_loaded(hook.agent_id, skill.folder, skill.digest)]
-        if not missing:
+        if not missing or not self.requirement.is_required:
             return RuleAnswer.allowed()
         return RuleAnswer.refused_with_block(hook, READ_SKILL_FIRST.nudge(path=self.files.relative(missing[0].folder)), SkillLoaded(missing[0].folder))

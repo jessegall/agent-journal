@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.secrets.support.secret_nudges import SECRET_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -44,6 +45,7 @@ class SecretsModule(Module):
     seed_reason = "a secret's value is typed by the person, never made up for a demo"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
+    skills = [SkillDeclaration("journal-secrets", "Use keys and logins without seeing them; read it when a task needs a key or a login", keywords=("secret", "secrets", "api key", "token", "password", "login"), commands=["secret"])]
     seeders = [SecretsSeeder]
     models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=BUILT)]
     migrations = [SecretsTableMigration]

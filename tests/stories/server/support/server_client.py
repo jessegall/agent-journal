@@ -19,6 +19,8 @@ from core.base.timestamp import Timestamp
 from core.base.timing import TIMING_HEADER, Timing
 from core.base.timing_log import TimingLog
 from core.testing.story import Story
+from core.base.query.queries import Queries
+from core.modules.skills.models.agent_skill import AgentSkill
 from core.base.module.code_fingerprint import CodeFingerprint
 from core.base.module.module_finder import ModuleFinder
 from server.code_version import CodeVersion
@@ -258,8 +260,16 @@ def expect_timing_lines(home: JournalHome, lines: list[tuple[str, list[str]]]) -
     assert [(line["request_id"], [name for name, _ in Timing.parsed(line["timing"]).stamps]) for line in log_lines] == lines, log_lines
 
 
+def without_start_skills(story: Story) -> None:
+    story.run("setting make journal.core.skills.session-start '[]'")
+    story.run_listeners()
+    for row in tuple(story.container.get(Queries).query(AgentSkill).all_rows()):
+        story.expect_success(f"agent-skill delete {row.id}")
+
+
 @contextmanager
 def server_story(story: Story, code_folders: CodeFolders | None = None, listener_thread_started: bool = True):
+    without_start_skills(story)
     with started_server(story.home, code_folders, listener_thread_started) as (socket_path, context):
         yield ServerStory(story, socket_path, context)
 

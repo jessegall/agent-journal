@@ -18,7 +18,7 @@ def current_digest(story, skill: str) -> str:
 def test_require_makes_a_skill_due_for_an_agent(new_story):
     story = started(new_story)
     story.expect_success(f"skill require {story.agent.id} journal-notes", "state: due", "skill: journal-notes")
-    story.expect_success(f"agent-skill list --agent {story.agent.id}", f"1  {story.agent.id}  journal-notes  due")
+    story.expect_success(f"agent-skill list --agent {story.agent.id}", f"3  {story.agent.id}  journal-notes  due")
 
 
 def test_require_of_a_skill_no_module_declares_is_refused(new_story):
@@ -51,7 +51,7 @@ def test_a_second_load_of_the_same_digest_changes_nothing(new_story):
 def test_reset_removes_the_loaded_rows_of_the_agent_and_keeps_the_due_ones(new_story):
     story = started(new_story)
     story.container.get(Bus).run(LoadSkill(story.agent.id, "journal-notes", "abc123"), story.agent)
-    story.run(f"skill require {story.agent.id} journal-tasks")
+    story.run(f"skill require {story.agent.id} journal-chores")
     story.container.get(Bus).run(ResetSkills(story.agent.id), story.agent)
     story.expect_refusal("agent-skill show 1", "no agent-skill 1")
     story.expect_success("agent-skill show 2", "state: due")

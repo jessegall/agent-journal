@@ -1,3 +1,4 @@
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.modules.memories.support.memory_nudges import MEMORY_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.viewer.window_declaration import WindowDeclaration
@@ -68,6 +69,7 @@ class MemoriesModule(Module):
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]
+    skills = [SkillDeclaration("journal-memory", "Keep what matters beyond the context window with weighted memories; read it before the first memory command of a session, or when the context reaches a mark", keywords=("memory", "memories", "remember"), commands=["memory"])]
     models = [ModelDeclaration(Memory, commands=[RemoveMemory], excluded_subcommands=["make"]), ModelDeclaration(MemoryType), ModelDeclaration(MemoryTypeSwitch), ModelDeclaration(MemoryKeyword),
               ModelDeclaration(MemoryDelivery, excluded_subcommands=["make", "edit", "delete"]),
               ModelDeclaration(MemoryMark, excluded_subcommands=["make", "edit", "delete", "weigh", "skip"])]
