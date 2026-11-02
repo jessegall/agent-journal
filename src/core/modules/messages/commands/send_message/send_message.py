@@ -12,4 +12,4 @@ class SendMessage(Command[Message]):
     text: str
     parent_id: int | None = None
     files: tuple[str, ...] = ()
-    comment_on: tuple[str, int] | None = None
+    commented_row: tuple[str, int] | None = None

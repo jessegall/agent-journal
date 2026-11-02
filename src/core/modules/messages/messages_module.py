@@ -22,9 +22,9 @@ from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand imp
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
 from core.modules.messages.commands.react_message.react_message_subcommand import ReactMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
-from core.modules.messages.commands.record_idle_message_line.record_idle_message_line_handler import RecordIdleMessageLineHandler
+from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line_handler import RecordWaitingMessageLineHandler
 from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
-from core.modules.messages.listeners.idle_message_listener import IdleMessageListener
+from core.modules.messages.listeners.waiting_message_listener import WaitingMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
@@ -33,7 +33,7 @@ from core.modules.messages.migrations.m004_message_delivered_at import MessageDe
 from core.modules.messages.rules.agent_text_rule import AgentTextRule
 from core.modules.messages.rules.message_delivery_rule import MessageDeliveryRule
 from core.modules.messages.rules.message_read_rule import MessageReadRule
-from core.modules.messages.rules.idle_message_tick_rule import IdleMessageTickRule
+from core.modules.messages.rules.waiting_message_tick_rule import WaitingMessageTickRule
 from core.modules.messages.rules.unread_message_show_rule import UnreadMessageShowRule
 from core.modules.messages.rules.chat_manners_rule import ChatMannersRule
 from core.modules.messages.rules.chat_opening_rule import ChatOpeningRule
@@ -69,8 +69,8 @@ class MessagesModule(Module):
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordIdleMessageLineHandler)
-    driver_rules = [IdleMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
+    handlers = (RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
+    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],
@@ -82,5 +82,5 @@ class MessagesModule(Module):
                                keywords=("flowchart", "flow chart", "diagram")),
               SkillDeclaration("journal-messages", "Read and answer the user's messages and ask the user questions; read it before the first message command of a session.",
                                keywords=("message", "reply", "question"), commands=("message", "question"))]
-    listeners = [ReadMessageEditListener, IdleMessageListener, AllowedStopListener]
+    listeners = [ReadMessageEditListener, WaitingMessageListener, AllowedStopListener]
     seeders = [MessagesSeeder]

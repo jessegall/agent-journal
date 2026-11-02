@@ -1,3 +1,4 @@
+from core.modules.schedules.migrations.m002_stop_requested import StopRequestedMigration
 from core.modules.schedules.support.schedule_nudges import SCHEDULE_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
 from core.base.module.module import Module
@@ -27,7 +28,7 @@ class SchedulesModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [ScheduledJobsTableMigration]
+    migrations = [ScheduledJobsTableMigration, StopRequestedMigration]
     handlers = [RecordScheduledJobHandler, EndScheduledJobHandler, StopScheduledJobHandler]
     subcommands = [ScheduledJobStateSubcommand, StopScheduledJobSubcommand]
     driver_rules = [ScheduledJobRule]

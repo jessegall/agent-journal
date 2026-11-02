@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class TaskStartedAtMigration(Migration):
+class TaskStartTimeMigration(Migration):
     """A task keeps when it was last started, which orders the tasks an agent holds."""
 
     number = 6

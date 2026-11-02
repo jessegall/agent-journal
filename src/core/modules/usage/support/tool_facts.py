@@ -7,4 +7,4 @@ class ToolFacts:
     none."""
 
     tool: str = ""
-    waiting_for: str = ""
+    wait_target: str = ""

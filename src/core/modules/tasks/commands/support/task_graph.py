@@ -13,4 +13,4 @@ class TaskGraph:
     edges: tuple[TaskEdge, ...]
 
     def json(self) -> Mapping[str, object]:
-        return {"tasks": [task.json() for task in self.tasks], "edges": [[edge.task_id, edge.waits_on_id] for edge in self.edges]}
+        return {"tasks": [task.json() for task in self.tasks], "edges": [[edge.task_id, edge.blocker_id] for edge in self.edges]}

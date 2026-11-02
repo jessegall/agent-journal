@@ -11,8 +11,8 @@ class NudgeRow:
     type: str
     text: str
     repeat_seconds: int
-    said_count: int
-    last_said_at: str
+    delivery_count: int
+    last_delivered_at: str
 
     def json(self) -> Mapping[str, object]:
-        return {"id": self.key, "key": self.key, "module": self.module, "type": self.type, "text": self.text, "repeat_seconds": self.repeat_seconds, "said_count": self.said_count, "last_said_at": self.last_said_at}
+        return {"id": self.key, "key": self.key, "module": self.module, "type": self.type, "text": self.text, "repeat_seconds": self.repeat_seconds, "delivery_count": self.delivery_count, "last_delivered_at": self.last_delivered_at}

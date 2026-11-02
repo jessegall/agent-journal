@@ -39,8 +39,8 @@ class HookCallQuery(Query[HookCall]):
         calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if not calls:
             return False
-        is_past_idle_limit = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
-        return is_past_idle_limit or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED)
+        is_silent = calls[0].creation_timestamp().elapsed_seconds(current_time) >= IDLE_LIMIT_SECONDS
+        return is_silent or (calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED)
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()

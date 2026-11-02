@@ -271,7 +271,7 @@ class ViewerRequestHandler(BaseHTTPRequestHandler):
             self.answer(404, {"error": str(error)})
             return
         content = module_file.content.replace(b"</head>", head_mark + b"</head>", 1) if head_mark else module_file.content
-        caching = ModuleFileCaching.for_file(self.path, content)
+        caching = ModuleFileCaching.built(self.path, content)
         if status == 200 and not headers and caching.is_unchanged(self.headers.get("If-None-Match")):
             self.send_response(304)
             self.send_header("ETag", caching.etag)

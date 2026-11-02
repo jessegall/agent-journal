@@ -50,7 +50,7 @@ def test_a_person_s_comment_is_a_message_of_type_comment_naming_the_document_and
     story.expect_text('doc comment 1 "Use cents everywhere" --environment main', "comment written as message", actor=story.user)
     shown = json.loads(story.run("message show 1 --json", actor=story.user).output_text)
     assert shown["type"] == "comment"
-    assert shown["metadata"]["journal.core.messages"]["comment_on"] == {"model": "doc", "id": 1}
+    assert shown["metadata"]["journal.core.messages"]["commented_row"] == {"model": "doc", "id": 1}
     assert "new message 1" in story.hook("s-1", HookSamples.prompt("Carry on")).lines
 
 

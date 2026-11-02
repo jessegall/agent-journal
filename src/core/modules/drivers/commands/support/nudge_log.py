@@ -27,7 +27,7 @@ class NudgeLog:
         return frozenset((nudge.key, nudge.text) for nudge in lines if self.is_withheld(agent_id, nudge, turn_start, timestamp))
 
     def is_withheld(self, agent_id: int, nudge: Nudge, turn_start: Timestamp | None, timestamp: Timestamp) -> bool:
-        delivered_at = self.record(agent_id, nudge).last_said_at
+        delivered_at = self.record(agent_id, nudge).last_delivered_at
         if delivered_at is None:
             return False
         if nudge.interval and not nudge.interval.has_passed(self.queries, agent_id, delivered_at, timestamp):
@@ -40,11 +40,11 @@ class NudgeLog:
 
     def record(self, agent_id: int, nudge: Nudge) -> NudgeRecord:
         rows = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key)
-        kept = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_said_at").page(1, 1).rows
+        kept = (rows if nudge.interval else rows.filter(text=nudge.text)).descending("last_delivered_at").page(1, 1).rows
         return kept[0] if kept else NudgeRecord(agent_id=agent_id, creator_id=0, key=nudge.key, text=nudge.text)
 
     def write(self, agent_id: int, answers: RuleAnswers, context: Context) -> None:
         for nudge in (*answers.delivered_nudges, *answers.refusal_nudges):
             matching_records = self.queries.query(NudgeRecord).filter(agent_id=agent_id, key=nudge.key, text=nudge.text).page(1, 1).rows
             current = matching_records[0] if matching_records else self.record(agent_id, nudge)
-            self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, said_count=current.said_count + 1, last_said_at=context.timestamp), context)
+            self.repository.save(replace(current, creator_id=context.actor.id, text=nudge.text, delivery_count=current.delivery_count + 1, last_delivered_at=context.timestamp), context)

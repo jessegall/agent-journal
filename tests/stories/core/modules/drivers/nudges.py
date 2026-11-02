@@ -61,7 +61,7 @@ def test_the_window_lists_every_nudge_with_how_often_it_was_said(new_story):
     window = WindowStory(story)
     window.expect_window_allowed("drivers.nudges", "nudge list")
     rows = json.loads(story.run("nudge list --json", actor=story.user).output_text)["rows"]
-    assert {"id": UNREAD_OUTPUT.key, "key": UNREAD_OUTPUT.key, "module": "journal.core.processes", "type": "instruction", "text": UNREAD_OUTPUT.text, "repeat_seconds": 0, "said_count": 0, "last_said_at": ""} in rows
+    assert {"id": UNREAD_OUTPUT.key, "key": UNREAD_OUTPUT.key, "module": "journal.core.processes", "type": "instruction", "text": UNREAD_OUTPUT.text, "repeat_seconds": 0, "delivery_count": 0, "last_delivered_at": ""} in rows
 
 
 def test_a_reminder_on_a_clock_is_said_again_in_the_same_turn():
@@ -83,4 +83,4 @@ def test_a_clock_nudge_going_back_to_an_older_text_keeps_one_row_for_that_text(n
     write(Nudge("sample.clock", NudgeType.INSTRUCTION, "second text", turn_limited=False))
     write(Nudge("sample.clock", NudgeType.INSTRUCTION, "first text", interval=Interval(Seconds(60)), turn_limited=False))
     rows = story.container.get(Queries).query(NudgeRecord).filter(agent_id=story.agent.id, key="sample.clock").all_rows()
-    assert sorted((row.text, row.said_count) for row in rows) == [("first text", 2), ("second text", 1)]
+    assert sorted((row.text, row.delivery_count) for row in rows) == [("first text", 2), ("second text", 1)]

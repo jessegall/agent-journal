@@ -17,7 +17,7 @@ class MessageText:
 
     @classmethod
     def built(cls, message: Message, links: RowLinks) -> "MessageText":
-        comment = message.metadata.module_part(MESSAGES_MODULE).get("comment_on")
+        comment = message.metadata.module_part(MESSAGES_MODULE).get("commented_row")
         commented_row = f"{comment['model']}:{comment['id']}" if is_mapping(comment) else None
         reply_lines = [f"reply on: message:{message.parent_id}"] if message.parent_id is not None else []
         comment_lines = [f"comment on: {commented_row}"] if commented_row else []

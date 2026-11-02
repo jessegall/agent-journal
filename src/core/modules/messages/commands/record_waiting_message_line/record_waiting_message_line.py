@@ -5,7 +5,7 @@ from core.modules.messages.models.message import Message
 
 
 @dataclass(frozen=True)
-class RecordIdleMessageLine(Command[Message | None]):
+class RecordWaitingMessageLine(Command[Message | None]):
     """Tells the environment's idle main agent of the first message waiting for it."""
 
     environment_id: int

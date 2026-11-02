@@ -10,4 +10,4 @@ class ShowMenuAnswer(Command[ChatMark]):
 
     agent_id: int
     question: str
-    said: str
+    answer: str

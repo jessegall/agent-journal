@@ -47,7 +47,7 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
         calls = self.queries.query(HookCall).filter(agent_id=mains[0].id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
         if calls and calls[0].hook == HookEventName.PRE_TOOL_USE:
             return ToolFacts(" ".join(part for part in (calls[0].tool, calls[0].summary) if part))
-        return ToolFacts(waiting_for=" and ".join((*self.running_titles(mains[0].id), *self.open_question_lines(environment_id))))
+        return ToolFacts(wait_target=" and ".join((*self.running_titles(mains[0].id), *self.open_question_lines(environment_id))))
 
     def running_titles(self, agent_id: int) -> tuple[str, ...]:
         return tuple(self.title(process) for process in self.processes.agent(agent_id).running().newest().page(1, SHOWN_RUNS).rows)
@@ -64,4 +64,4 @@ class UsageToolSubcommand(ReadSubcommand[ToolFacts]):
 
     def write_output(self, value: object, output: Output) -> None:
         if isinstance(value, ToolFacts):
-            output.write(value.tool or (f"waiting for {value.waiting_for}" if value.waiting_for else ""), {"tool": value.tool, "waiting_for": value.waiting_for})
+            output.write(value.tool or (f"waiting for {value.wait_target}" if value.wait_target else ""), {"tool": value.tool, "wait_target": value.wait_target})

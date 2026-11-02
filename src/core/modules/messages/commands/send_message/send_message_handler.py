@@ -34,9 +34,9 @@ class SendMessageHandler(Handler[SendMessage, Message]):
             raise Refusal("a message is sent in an environment", "name it with --environment")
         names = self.files.check(command.files)
         message_type = ACTOR_MESSAGE_TYPES.get(actor.type, MessageType.JOURNAL)
-        metadata = Metadata({MESSAGES_MODULE: {"comment_on": {"model": command.comment_on[0], "id": command.comment_on[1]}}}) if command.comment_on else Metadata()
+        metadata = Metadata({MESSAGES_MODULE: {"commented_row": {"model": command.commented_row[0], "id": command.commented_row[1]}}}) if command.commented_row else Metadata()
         message = Message(environment_id=environment_id, agent_id=actor.id if actor.type is ActorType.AGENT else None,
-                          parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.comment_on and message_type is MessageType.USER else message_type,
+                          parent_id=command.parent_id, creator_id=actor.id, type=MessageType.COMMENT if command.commented_row and message_type is MessageType.USER else message_type,
                           text=command.text, files=names, metadata=metadata)
         saved = self.repository.save(message, context)
         self.files.adopt(saved.id, command.files)

@@ -12,7 +12,7 @@ class CurrentTasks:
     def __init__(self, tasks: TaskQuery, queries: Queries) -> None:
         self.tasks, self.queries = tasks, queries
 
-    def held(self, agent_id: int) -> list[Task]:
+    def started_tasks(self, agent_id: int) -> list[Task]:
         return list(self.tasks.holder(agent_id).started().descending("started_at").all_rows())
 
     def current(self, agent_id: int) -> CurrentTask | None:

@@ -38,7 +38,7 @@ async function stop(row) {
                         <b>{{ firstLine(row.prompt) }}</b>
                         <span>{{ words(row) }} · {{ next(row) }}</span>
                     </div>
-                    <Btn small :disabled="Boolean(row.stop_asked_at)" data-job-stop @click="stop(row)">{{ row.stop_asked_at ? "Stopping" : "Stop" }}</Btn>
+                    <Btn small :disabled="Boolean(row.stop_requested_at)" data-job-stop @click="stop(row)">{{ row.stop_requested_at ? "Stopping" : "Stop" }}</Btn>
                 </div>
             </template>
         </RowList>

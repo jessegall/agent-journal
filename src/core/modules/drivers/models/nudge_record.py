@@ -15,5 +15,5 @@ class NudgeRecord(Model):
     creator_id: int
     key: str
     text: str
-    said_count: int = 0
-    last_said_at: Timestamp | None = None
+    delivery_count: int = 0
+    last_delivered_at: Timestamp | None = None

@@ -12,7 +12,7 @@ const {rows, failure, loaded} = useRows("nudge list", ["nudge_record.*"]);
                 <p class="nudge-head">
                     <span class="nudge-key">{{ row.key }}</span>
                     <span class="nudge-type" :data-type="row.type">{{ row.type }}</span>
-                    <span class="nudge-count">said {{ row.said_count }} {{ row.said_count === 1 ? "time" : "times" }}</span>
+                    <span class="nudge-count">said {{ row.delivery_count }} {{ row.delivery_count === 1 ? "time" : "times" }}</span>
                 </p>
                 <p class="nudge-text">{{ row.text }}</p>
             </div>

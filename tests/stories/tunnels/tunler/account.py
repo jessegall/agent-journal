@@ -32,11 +32,11 @@ def test_the_status_says_who_is_logged_in_where_and_whether_this_journal_uses_tu
     story, _ = account_story(new_story)
     status = answer(story, "tunler status")
     assert status["installed"] and status["authenticated"] and status["account"] == ACCOUNT and status["host"] == TUNLER_HOST
-    assert not status["in_use"] and status["subdomain"] == ""
+    assert not status["is_used"] and status["subdomain"] == ""
     story.expect_success(f"setting set {SUBDOMAIN_SETTING} cart-team --project", actor=story.user)
     story.expect_success(f"setting set {SERVICE_SETTING} tunler --project", actor=story.user)
     status = answer(story, "tunler status")
-    assert status["in_use"] and status["subdomain"] == "cart-team"
+    assert status["is_used"] and status["subdomain"] == "cart-team"
 
 
 def test_a_machine_without_tunler_says_so_and_a_refused_login_says_it_was_refused(new_story):

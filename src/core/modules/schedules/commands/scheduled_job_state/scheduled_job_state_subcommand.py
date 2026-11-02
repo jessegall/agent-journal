@@ -30,7 +30,7 @@ class ScheduledJobStateSubcommand(ReadSubcommand[RowList]):
     def read(self, arguments: Namespace, caller: Caller) -> RowList:
         oldest = self.clock.timestamp().value - timedelta(days=RECURRING_LIFETIME_DAYS)
         jobs = self.queries.query(ScheduledJob).filter(agent_id=arguments.agent).matching(IsNull("ended_at")).oldest().all_rows()
-        return RowList([{"id": job.id, "job_id": job.job_id, "cron": job.cron, "prompt": job.prompt, "is_recurring": job.is_recurring, "stop_asked_at": job.stop_asked_at.text if job.stop_asked_at else None}
+        return RowList([{"id": job.id, "job_id": job.job_id, "cron": job.cron, "prompt": job.prompt, "is_recurring": job.is_recurring, "stop_requested_at": job.stop_requested_at.text if job.stop_requested_at else None}
                         for job in jobs if not job.is_recurring or job.creation_timestamp().value > oldest])
 
     def write_output(self, value: object, output: Output) -> None:

@@ -26,5 +26,5 @@ class ShowMenuAnswerHandler(Handler[ShowMenuAnswer, ChatMark]):
 
     def handle(self, command: ShowMenuAnswer, context: Context) -> ChatMark:
         agent = self.queries.query(Agent).find(command.agent_id)
-        text = f'A menu in the agent\'s terminal was answered: "{command.question}" The journal {command.said}.'
+        text = f'A menu in the agent\'s terminal was answered: "{command.question}" The journal {command.answer}.'
         return self.bus.dispatch(ShowMark(agent.environment_id, AgentMarkType.MENU, AgentMarkVariant.ANSWERED, f"menu:{agent.id}:{context.timestamp.text}", text, agent_id=agent.id, outcome=MarkOutcome.PASSED, ended=True), replace(context, actor=self.actors.actor(MODULE_NAME)))

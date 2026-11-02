@@ -28,14 +28,14 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
 
     def handle(self, command: WaitTask, context: Context) -> Task:
         targets = tuple(self.target(text, command.task_id) for text in command.targets)
-        if not (command.reason.strip() or targets or command.until_command):
+        if not (command.reason.strip() or targets or command.wait_command):
             raise Refusal("say what it waits on", "--on task:<n>, --on question:<n> or --on plan:<n>, --until '<command>', or --reason '<words>'")
         reason = command.reason.strip() or command.wait_reason()
         task = self.bus.dispatch(BlockTask(command.task_id, reason), context)
         for target in targets:
             self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, target=target), context)
-        if command.until_command:
-            self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, command=command.until_command, interval_minutes=command.interval_minutes), context)
+        if command.wait_command:
+            self.repository.save(TaskWait(task_id=task.id, creator_id=context.actor.id, command=command.wait_command, interval_minutes=command.interval_minutes), context)
         return self.queries.query(Task).find(task.id)
 
     def reaches_task(self, task_id: int, target_id: int) -> bool:
@@ -48,7 +48,7 @@ class WaitTaskHandler(Handler[WaitTask, Task]):
                 return True
             if current not in visited:
                 visited.add(current)
-                waiting += [edge.waits_on_id for edge in edges if edge.task_id == current]
+                waiting += [edge.blocker_id for edge in edges if edge.task_id == current]
         return False
 
     def target(self, text: str, task_id: int) -> str:

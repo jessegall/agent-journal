@@ -20,7 +20,7 @@ from tests.stories.core.base.driver.support.samples import SAMPLES
 
 
 READ_MESSAGE_HOOK = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
-SHOW_MESSAGE_SAMPLE = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
+MESSAGE_SHOW_HOOK = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message"))
 
 
 def started_story(new_story):
@@ -215,7 +215,7 @@ def test_only_read_tells_the_agent_how_to_act_and_only_the_first_time(new_story)
 def test_the_agent_cannot_show_a_message_it_has_not_read_and_is_told_to_read_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
-    story.expect_hook_refusal("s-1", SHOW_MESSAGE_SAMPLE, "message 1 is unread, so it cannot be shown: journal message read 1")
+    story.expect_hook_refusal("s-1", MESSAGE_SHOW_HOOK, "message 1 is unread, so it cannot be shown: journal message read 1")
     assert "read_at: 2026" not in story.run("message show 1", actor=story.user).output_text
 
 
@@ -223,13 +223,13 @@ def test_the_agent_can_show_a_message_once_it_has_read_it(new_story):
     story = delivery_story(new_story)
     story.run('message send "Fix the cart first" --environment main', actor=story.user)
     story.hook("s-1", READ_MESSAGE_HOOK)
-    assert "is unread" not in story.hook("s-1", SHOW_MESSAGE_SAMPLE).refusal
+    assert "is unread" not in story.hook("s-1", MESSAGE_SHOW_HOOK).refusal
 
 
 def test_the_agent_can_show_its_own_message(new_story):
     story = delivery_story(new_story)
     story.run('message send "On it" --environment main', actor=story.agent)
-    assert "is unread" not in story.hook("s-1", SHOW_MESSAGE_SAMPLE).refusal
+    assert "is unread" not in story.hook("s-1", MESSAGE_SHOW_HOOK).refusal
 
 
 def test_a_reply_read_names_the_message_it_replies_on(new_story):

@@ -5,7 +5,7 @@ from core.base.command.bus import Bus
 from core.base.driver.hook_event_name import HookEventName
 from core.base.listener.commit_listener import CommitListener
 from core.modules.drivers.models.enums.hook_answer import HookAnswer
-from core.modules.messages.commands.record_idle_message_line.record_idle_message_line import RecordIdleMessageLine
+from core.modules.messages.commands.record_waiting_message_line.record_waiting_message_line import RecordWaitingMessageLine
 
 
 class AllowedStopListener(CommitListener):
@@ -19,4 +19,4 @@ class AllowedStopListener(CommitListener):
 
     def handle(self, event: LoggedEvent) -> None:
         if event.environment_id is not None and event.data["hook"][1] == HookEventName.STOP and event.data["answer"][1] == HookAnswer.ALLOWED:
-            self.bus.run(RecordIdleMessageLine(event.environment_id), Actor(event.actor_id, ActorType.AGENT), environment_id=event.environment_id)
+            self.bus.run(RecordWaitingMessageLine(event.environment_id), Actor(event.actor_id, ActorType.AGENT), environment_id=event.environment_id)

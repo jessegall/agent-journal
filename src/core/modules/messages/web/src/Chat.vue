@@ -49,7 +49,7 @@ async function readTool() {
     heardAt.value = Date.now() / 1000;
     const answer = await context.read("usage tool");
     runningTool.value = answer.ok ? answer.value.tool : "";
-    waitingFor.value = answer.ok ? answer.value.waiting_for : "";
+    waitingFor.value = answer.ok ? answer.value.wait_target : "";
 }
 context.follow(["hook_call.*", "dock_item.*"], readTool);
 readTool();

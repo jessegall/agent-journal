@@ -27,4 +27,4 @@ class StopScheduledJobHandler(Handler[StopScheduledJob, ScheduledJob]):
         if job.ended_at is not None:
             raise Refusal(f"job {job.job_id} has ended already")
         self.repository.save(AgentLine(agent_id=job.agent_id, creator_id=context.actor.id, text=JOB_STOPPED.nudge(job=job.job_id).text, source=LINE_SOURCE), context)
-        return self.repository.save(job.changed(stop_asked_at=context.timestamp), context)
+        return self.repository.save(job.changed(stop_requested_at=context.timestamp), context)

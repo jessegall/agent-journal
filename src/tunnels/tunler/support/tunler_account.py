@@ -14,8 +14,8 @@ class TunlerAccount:
     host: str | None
     command: str | None
     subdomain: str | None
-    in_use: bool
+    is_used: bool
 
     def json(self) -> Mapping[str, object]:
         return {"installed": self.installed, "authenticated": self.authenticated, "rejected": self.rejected, "account": self.account, "host": self.host,
-                "command": self.command, "subdomain": self.subdomain, "in_use": self.in_use}
+                "command": self.command, "subdomain": self.subdomain, "is_used": self.is_used}

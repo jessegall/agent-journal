@@ -16,7 +16,7 @@ COUNTDOWN_START_USES = 3
 
 
 class RequiredCommandRule(DriverRule):
-    """A line that named a command is owed: its command settles it, the tool uses count down, and past the
+    """A line that named a command is open_commands: its command settles it, the tool use_count count down, and past the
     fifth only reads and journal commands run, so the paying command and the skip always go through."""
 
     name = "drivers.nudge-required_commands"
@@ -32,15 +32,15 @@ class RequiredCommandRule(DriverRule):
         if not required_commands:
             return RuleAnswer.allowed()
         command = str(hook.event.tool_input().get("command", ""))
-        paid = [required_command for required_command in required_commands if required_command.required_command in command]
-        owed = [required_command for required_command in required_commands if required_command not in paid]
+        ran_commands = [required_command for required_command in required_commands if required_command.required_command in command]
+        open_commands = [required_command for required_command in required_commands if required_command not in ran_commands]
         tool = hook.event.tool
         allowed = tool is not None and (tool.is_journal_line or tool.is_reading)
-        for required_command in owed:
+        for required_command in open_commands:
             if self.tool_uses(required_command) >= TOOL_USES_GIVEN and not allowed:
                 return RuleAnswer.refused(REQUIRED_COMMAND_REFUSAL.nudge(subject=required_command.subject, required_command=required_command.id))
-        lines = [REQUIRED_COMMAND_COUNTDOWN.nudge(subject=required_command.subject, left=TOOL_USES_GIVEN - uses) for required_command in owed if COUNTDOWN_START_USES <= (uses := self.tool_uses(required_command) + 1) <= TOOL_USES_GIVEN]
-        return RuleAnswer.with_nudges(*lines).running(*(CloseRequiredCommand(required_command.id) for required_command in paid))
+        countdown_lines = [REQUIRED_COMMAND_COUNTDOWN.nudge(subject=required_command.subject, left=TOOL_USES_GIVEN - use_count) for required_command in open_commands if COUNTDOWN_START_USES <= (use_count := self.tool_uses(required_command) + 1) <= TOOL_USES_GIVEN]
+        return RuleAnswer.with_nudges(*countdown_lines).running(*(CloseRequiredCommand(required_command.id) for required_command in ran_commands))
 
     def tool_uses(self, required_command: RequiredCommand) -> int:
         return self.queries.query(HookCall).filter(agent_id=required_command.agent_id, hook=HookEventName.PRE_TOOL_USE).matching(Greater("id", required_command.opened_call_id)).count()

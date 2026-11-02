@@ -14,4 +14,4 @@ class TaskEdge(ViewModel):
     select = TASK_EDGES_SELECT
 
     task_id: int
-    waits_on_id: int
+    blocker_id: int

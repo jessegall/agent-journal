@@ -109,11 +109,11 @@ load();
             <template v-if="status.authenticated">
                 <section class="part">
                     <h3>This journal</h3>
-                    <p class="line" data-tunler-in-use>{{ status.in_use ? "Phones and share links reach this journal through tunler." : "This journal doesn't use tunler yet." }}</p>
+                    <p class="line" data-tunler-in-use>{{ status.is_used ? "Phones and share links reach this journal through tunler." : "This journal doesn't use tunler yet." }}</p>
                     <form class="row" data-tunler-use @submit.prevent="useTunler">
                         <input v-model="subdomain" placeholder="The name in front of the server's address" aria-label="Subdomain">
-                        <Btn small kind="primary" type="submit" :disabled="!subdomain.trim()">{{ status.in_use ? "Save" : "Use tunler" }}</Btn>
-                        <template v-if="status.in_use">
+                        <Btn small kind="primary" type="submit" :disabled="!subdomain.trim()">{{ status.is_used ? "Save" : "Use tunler" }}</Btn>
+                        <template v-if="status.is_used">
                             <Btn small data-tunler-stop @click="run(setting(SERVICE_SETTING, 'none'))">Stop using tunler</Btn>
                         </template>
                     </form>

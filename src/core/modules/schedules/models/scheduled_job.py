@@ -19,5 +19,5 @@ class ScheduledJob(Model):
     cron: str
     prompt: str
     is_recurring: bool = True
-    stop_asked_at: Timestamp | None = None
+    stop_requested_at: Timestamp | None = None
     ended_at: Timestamp | None = None

@@ -92,18 +92,18 @@ def test_a_block_nothing_opens_is_named_and_one_with_a_wait_is_not(new_story):
 def test_a_block_nothing_opens_is_named_again_after_five_closed_tasks_or_45_minutes_and_either_starts_both_again(new_story):
     story = new_story(fixture=TwoTasks)
     story.run('task block 2 --reason "needs a key"')
-    named = lambda: any("blocked with nothing to open them: 2:" in line for line in story.hook("s-1", posted("journal task list")).lines)
-    assert named()
+    has_block_line = lambda: any("blocked with nothing to open them: 2:" in line for line in story.hook("s-1", posted("journal task list")).lines)
+    assert has_block_line()
     for number in range(3, 8):
         story.expect_success(f'task make "job {number}" --brief "a job" --environment main')
         story.clock.advance(timedelta(seconds=1))
         story.expect_success(f"task start {number}", actor=story.agent)
         story.expect_success(f"task close {number} --outcome done", actor=story.agent)
-        assert named() == (number == 7), number
+        assert has_block_line() == (number == 7), number
     story.clock.advance(timedelta(seconds=2699))
-    assert not named()
+    assert not has_block_line()
     story.clock.advance(timedelta(seconds=1))
-    assert named()
+    assert has_block_line()
 
 
 def test_a_stop_does_not_refuse_over_a_task_that_opens_by_itself(new_story):

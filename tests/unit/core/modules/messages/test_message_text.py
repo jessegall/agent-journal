@@ -22,7 +22,7 @@ def message(**fields: object) -> Message:
 
 
 def comment_metadata(model: str, row_id: int) -> Metadata:
-    return Metadata({MESSAGES_MODULE: {"comment_on": {"model": model, "id": row_id}}})
+    return Metadata({MESSAGES_MODULE: {"commented_row": {"model": model, "id": row_id}}})
 
 
 def test_a_plain_message_is_only_its_words():

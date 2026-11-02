@@ -1,7 +1,7 @@
 from core.base.database.migration import Migration
 
 
-class RunsOfEndedAgentsMigration(Migration):
+class EndedAgentRunsMigration(Migration):
     """Runs left going by an agent that has ended are settled as lost."""
 
     number = 10

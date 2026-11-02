@@ -28,12 +28,12 @@ class NudgeListSubcommand(ReadSubcommand[tuple[NudgeRow, ...]]):
         counts: Counter[str] = Counter()
         latest: dict[str, str] = {}
         for record in self.queries.query(NudgeRecord).all_rows():
-            counts[record.key] += record.said_count
-            if record.last_said_at is not None:
-                latest[record.key] = max(latest.get(record.key, ""), record.last_said_at.text)
+            counts[record.key] += record.delivery_count
+            if record.last_delivered_at is not None:
+                latest[record.key] = max(latest.get(record.key, ""), record.last_delivered_at.text)
         return tuple(NudgeRow(entry.key, entry.module, entry.type, entry.text, entry.repeat_seconds, counts[entry.key], latest.get(entry.key, "")) for entry in self.registry.nudges)
 
     def write_output(self, value: object, output: Output) -> None:
         if is_tuple(value):
             rows = [row for row in value if isinstance(row, NudgeRow)]
-            output.write("\n".join(f"{row.key}: {row.type}, said {row.said_count} times" for row in rows), {"rows": [row.json() for row in rows]})
+            output.write("\n".join(f"{row.key}: {row.type}, said {row.delivery_count} times" for row in rows), {"rows": [row.json() for row in rows]})
