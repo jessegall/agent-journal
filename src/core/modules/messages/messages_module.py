@@ -55,6 +55,8 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.upgrade.messages_move import MessagesMove
 from core.modules.messages.support.message_marks import MESSAGE_MARKS
 from core.modules.messages.seeders.messages_seeder import MessagesSeeder
+from core.modules.messages.support.block_conditions.messages_read import MessagesRead
+from core.modules.messages.support.block_conditions.messages_answered import MessagesAnswered
 
 
 class MessagesModule(Module):
@@ -63,6 +65,7 @@ class MessagesModule(Module):
     name = "journal.core.messages"
     nudges = MESSAGE_NUDGES
     requires_core = ">=5,<6"
+    block_conditions = [MessagesRead, MessagesAnswered]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.chat", "journal.core.docking", "journal.core.notices", "journal.core.drivers", "journal.core.dumps"]
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]

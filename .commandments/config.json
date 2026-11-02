@@ -64,6 +64,7 @@
         "naming_GoUnitlessQuantityNameDetector",
         "syntax_OneElementTupleDetector",
         "architecture_chat_MarkShownByListenerDetector",
+        "architecture_drivers_BlocksThroughBlockUntilDetector",
         "architecture_chat_NoRawMarkTypeDetector",
         "architecture_chat_MarkEnumsInEnumsFolderDetector",
         "architecture_docking_DockOnlyByCommandDetector",

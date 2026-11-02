@@ -3,8 +3,8 @@ from core.base.command.handler import Handler
 from core.base.query.conditions.is_null import IsNull
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.drivers.commands.block_until.block_until import BlockUntil
 from core.modules.drivers.models.agent_block import AgentBlock
+from core.base.driver.block_until import BlockUntil
 
 
 class BlockUntilHandler(Handler[BlockUntil, AgentBlock]):

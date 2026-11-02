@@ -1,22 +1,17 @@
-from core.modules.memories.support.memory_nudges import WEIGH_FIRST
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
-from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
-
+from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
+from core.modules.memories.support.memory_nudges import WEIGH_FIRST
 
 
 class WeighFirstRule(DriverRule):
-    """While a memory mark is open, a write or a stop is refused with the way to weigh or skip; reads and
-    journal commands go through, so the commands that close the mark always run."""
+    """While a memory mark is open the agent is blocked, so it weighs, makes, corrects or removes a memory, or
+    skips with a reason."""
 
     name = "memories.weigh-first"
-    hook = HookWildcard.ALL_HOOKS
+    hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        writes = hook.hook_name == HookEventName.PRE_TOOL_USE and tool is not None and tool.is_writing_files()
-        if hook.hook_name != HookEventName.STOP and not writes:
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(WEIGH_FIRST.nudge())
+        return RuleAnswer.blocked(hook, WEIGH_FIRST.nudge(), MemoriesWeighed())

@@ -4,6 +4,7 @@ from core.base.driver.open_row import OpenRow
 from core.base.driver.overlay import Overlay
 from core.modules.memories.support.mark_tracker import MarkTracker
 from core.modules.memories.rules.weigh_first_rule import WeighFirstRule
+from core.modules.memories.rules.weigh_first_stop_rule import WeighFirstStopRule
 
 
 class WeighingOverlay(Overlay):
@@ -12,7 +13,7 @@ class WeighingOverlay(Overlay):
 
     name = "memories.weighing"
     exclusive = True
-    rules = [WeighFirstRule]
+    rules = [WeighFirstRule, WeighFirstStopRule]
 
     def __init__(self, marks: MarkTracker) -> None:
         self.marks = marks

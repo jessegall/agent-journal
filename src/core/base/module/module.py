@@ -29,6 +29,7 @@ from core.base.subcommand.read_subcommand import ReadSubcommand
 from core.base.query.shared_rows import SharedRows
 from core.base.setting.setting_node import SettingNode
 from core.base.tunnel.tunnel import Tunnel
+from core.base.driver.block_condition import BlockCondition
 
 ListenerClass = type[DeletionListener] | type[SaveListener] | type[CommitListener]
 SubcommandClass = type[Subcommand[Command[object], object]] | type[ReadSubcommand[object]]
@@ -62,6 +63,7 @@ class Module:
     driver_rules: ClassVar[Sequence[type[DriverRule]]] = ()
     windows: ClassVar[Sequence[WindowDeclaration]] = ()
     marks: ClassVar[Sequence[MarkDeclaration]] = ()
+    block_conditions: ClassVar[Sequence[type[BlockCondition]]] = ()
     nudges: ClassVar[Sequence[NudgeDeclaration]] = ()
     docks: ClassVar[Sequence[DockDeclaration]] = ()
     providers: ClassVar[Sequence[type[Provider]]] = ()

@@ -54,6 +54,7 @@ from core.modules.memories.models.active_memory import ActiveMemory
 from core.modules.memories.support.memory_marks import MEMORY_DOCKS, MEMORY_MARKS
 from core.modules.memories.support.memory_settings import MEMORY_SETTINGS
 from core.modules.memories.seeders.memories_seeder import MemoriesSeeder
+from core.modules.memories.support.block_conditions.memories_weighed import MemoriesWeighed
 
 
 class MemoriesModule(Module):
@@ -63,6 +64,7 @@ class MemoriesModule(Module):
     name = "journal.core.memories"
     nudges = MEMORY_NUDGES
     requires_core = ">=5,<6"
+    block_conditions = [MemoriesWeighed]
     settings = MEMORY_SETTINGS
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.settings", "journal.core.chat", "journal.core.docking",
                     "journal.core.drivers", "journal.core.documents"]

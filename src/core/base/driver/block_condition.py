@@ -1,17 +1,27 @@
-from typing import ClassVar
+from collections.abc import Sequence
+from typing import ClassVar, Self
 
-from core.base.driver.agent_hook import AgentHook
+from core.base.driver.block_check import BlockCheck
 
 
 class BlockCondition:
-    """What ends a block on an agent. A block outlives its process, so a condition is a class with its fields
-    as text, stored by its name and built again from them."""
+    """What ends a block on an agent. A block outlives its process, so a condition is a class stored by its name
+    and a text, given as one value or a list of them; each module registers the conditions it offers."""
 
     name: ClassVar[str]
 
-    @property
-    def text(self) -> str:
-        raise NotImplementedError
+    def __init__(self, subject: str | int | Sequence[int] = "") -> None:
+        self.text = str(subject) if isinstance(subject, (str, int)) else ",".join(str(item) for item in subject)
 
-    def is_true(self, hook: AgentHook) -> bool:
+    @classmethod
+    def stored(cls, text: str) -> Self:
+        condition = cls()
+        condition.text = text
+        return condition
+
+    @property
+    def numbers(self) -> Sequence[int]:
+        return [int(number) for number in self.text.split(",") if number]
+
+    def is_true(self, check: BlockCheck) -> bool:
         raise NotImplementedError

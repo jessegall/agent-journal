@@ -5,13 +5,14 @@ from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.tasks.rules.support.task_write_count import TaskWriteCount
 from core.base.agent_role import AgentRole
+from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 
 UNLOGGED_WRITES_CEILING = 50
 
 
 class UnloggedWriteRule(DriverRule):
-    """Once 50 writes have been made since the task in hand was last logged, every further write waits for
-    a log line; reads and journal commands go through."""
+    """Once 50 writes have been made since the task in hand was last logged, the agent is blocked until
+    the task gets a log line."""
 
     name = "tasks.log-before-more-writes"
     hook = HookEventName.PRE_TOOL_USE
@@ -28,4 +29,4 @@ class UnloggedWriteRule(DriverRule):
         current, writes = counted
         if writes < UNLOGGED_WRITES_CEILING:
             return RuleAnswer.allowed()
-        return RuleAnswer.refused(UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, task=current.task.id))
+        return RuleAnswer.blocked(hook, UNLOGGED_WRITES.nudge(writes=UNLOGGED_WRITES_CEILING, task=current.task.id), TaskLogged(current.task.id))

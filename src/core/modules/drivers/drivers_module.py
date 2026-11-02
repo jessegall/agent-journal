@@ -55,6 +55,14 @@ from core.modules.drivers.listeners.new_driver_lines_listener import NewDriverLi
 from core.modules.drivers.listeners.subagent_stop_listener import SubagentStopListener
 from core.modules.drivers.listeners.typed_line_listener import TypedLineListener
 from core.modules.drivers.commands.end_silent_helpers.end_silent_helpers_handler import EndSilentHelpersHandler
+from core.modules.drivers.support.block_conditions.all_conditions import AllConditions
+from core.modules.drivers.support.block_conditions.any_condition import AnyCondition
+from core.base.driver.conditions.ran_command import RanCommand
+from core.base.driver.conditions.read_file import ReadFile
+from core.base.driver.conditions.time_reached import TimeReached
+from core.modules.drivers.support.block_conditions.agent_resumed import AgentResumed
+from core.modules.drivers.support.block_conditions.required_command_closed import RequiredCommandClosed
+from core.modules.drivers.support.block_conditions.tool_uses import ToolUses
 from core.modules.drivers.commands.block_until.block_until_handler import BlockUntilHandler
 from core.modules.drivers.commands.close_agent_block.close_agent_block_handler import CloseAgentBlockHandler
 from core.modules.drivers.migrations.m009_agent_blocks import AgentBlocksMigration
@@ -103,6 +111,7 @@ class DriversModule(Module):
     listeners = [RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
     marks = BYPASS_MARKS
+    block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed, RequiredCommandClosed]
     driver_rules = [RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]

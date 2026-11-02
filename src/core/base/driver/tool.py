@@ -12,6 +12,7 @@ from core.base.driver.tool_type import ToolType
 WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
 READ_TOOL_TYPES = (ToolType.READ, ToolType.SEARCH)
 READ_COMMAND_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
+BLOCK_EXEMPT_CATEGORIES = (*READ_COMMAND_CATEGORIES, CommandCategory.JOURNAL)
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,14 @@ class Tool:
         if self.category in READ_TOOL_TYPES:
             return True
         return self.shell is not None and self.shell.category in READ_COMMAND_CATEGORIES and not self.is_writing_files()
+
+    @property
+    def block_exempt(self) -> bool:
+        if self.category in READ_TOOL_TYPES:
+            return True
+        if self.shell is None or self.shell.redirects or not self.shell.parts:
+            return False
+        return all(part.classification.category in BLOCK_EXEMPT_CATEGORIES for part in self.shell.parts)
 
     def is_writing_files(self) -> bool:
         if self.category in WRITING_CATEGORIES:

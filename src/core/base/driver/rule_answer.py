@@ -2,6 +2,9 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 
 from core.base.command.command import Command
+from core.base.driver.agent_hook import AgentHook
+from core.base.driver.block_condition import BlockCondition
+from core.base.driver.block_until import BlockUntil
 from core.base.driver.nudge import Nudge
 
 
@@ -37,6 +40,12 @@ class RuleAnswer:
     @classmethod
     def final_allowance(cls, *nudges: Nudge) -> "RuleAnswer":
         return cls(nudges=nudges, last=True)
+
+    @classmethod
+    def blocked(cls, hook: AgentHook, nudge: Nudge, condition: BlockCondition) -> "RuleAnswer":
+        tool = hook.event.tool
+        answer = cls.allowed() if tool is None or tool.block_exempt else cls.refused(nudge)
+        return answer.running(BlockUntil(hook.agent_id, nudge, condition))
 
     def running(self, *commands: Command[object]) -> "RuleAnswer":
         return replace(self, commands=[*self.commands, *commands])

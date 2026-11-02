@@ -35,6 +35,7 @@ from suites.coding.modules.checks.queries.check_query import CheckQuery
 from suites.coding.modules.checks.upgrade.checks_move import ChecksMove
 from suites.coding.modules.checks.seeders.checks_seeder import ChecksSeeder
 from suites.coding.modules.checks.rules.failed_check_rule import FailedCheckRule
+from suites.coding.modules.checks.support.block_conditions.check_passed import CheckPassed
 
 BUILT = ["make", "edit", "list", "delete"]
 
@@ -46,6 +47,7 @@ class ChecksModule(Module):
     name = "journal.suites.coding.checks"
     nudges = CHECK_NUDGES
     requires_core = ">=5,<6"
+    block_conditions = [CheckPassed]
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.drivers", "journal.core.tasks"]
     models = [ModelDeclaration(Check, query=CheckQuery, excluded_subcommands=BUILT)]
     listeners = [TaskWaitCheckListener, TaskWaitPassListener, EndedCheckRunsListener]

@@ -54,6 +54,10 @@ from core.modules.tasks.models.task_log import TaskLog
 from core.modules.tasks.listeners.task_move_mark_listener import TaskMoveMarkListener
 from core.modules.tasks.support.task_marks import TASK_DOCKS, TASK_MARKS
 from core.modules.tasks.seeders.tasks_seeder import TasksSeeder
+from core.modules.tasks.support.block_conditions.task_started import TaskStarted
+from core.modules.tasks.support.block_conditions.task_closed import TaskClosed
+from core.modules.tasks.support.block_conditions.started_task_exists import StartedTaskExists
+from core.modules.tasks.support.block_conditions.task_logged import TaskLogged
 
 TASK_COMMANDS = (BlockTask, CloseTask, CancelTask, ReleaseTask)
 
@@ -65,6 +69,7 @@ class TasksModule(Module):
     name = "journal.core.tasks"
     nudges = TASK_NUDGES
     requires_core = ">=5,<6"
+    block_conditions = [TaskStarted, TaskClosed, StartedTaskExists, TaskLogged]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
     migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartTimeMigration]

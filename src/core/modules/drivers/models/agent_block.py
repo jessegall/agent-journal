@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 
-from core.base.driver.block_condition import BlockCondition
-from core.base.driver.block_conditions import BlockConditions
 from core.base.model.model import Model
 from core.base.timestamp import Timestamp
 
@@ -21,7 +19,3 @@ class AgentBlock(Model):
     condition_name: str
     condition_text: str
     closed_at: Timestamp | None = None
-
-    @property
-    def condition(self) -> BlockCondition:
-        return BlockConditions.built(self.condition_name, self.condition_text)

@@ -17,7 +17,7 @@ def test_a_skill_a_plugins_answer_requires_holds_the_agents_next_tool_after_the_
     story = installed_story(new_story)
     story.hook("s-1", UPLOAD_SAMPLE)
     story.run_listeners()
-    story.expect_hook_refusal("s-1", LISTING_SAMPLE, "read this first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "read this first")
 
 
 def test_a_switched_off_plugin_takes_its_skills_away(new_story):

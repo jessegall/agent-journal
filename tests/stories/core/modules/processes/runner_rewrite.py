@@ -82,10 +82,12 @@ def test_without_the_runner_installed_lines_are_left_as_they_are_and_the_agent_i
     story.expect_refusal("process show 1", "no process 1")
 
 
-def test_an_open_memory_mark_silences_other_rules_but_a_line_still_goes_through_the_runner(new_story):
+def test_an_open_memory_mark_blocks_a_run_and_lets_a_read_through(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     story.container.get(Bus).run(OpenMemoryMark(story.agent.id, 50), story.agent, environment_id=1)
-    assert dict(story.hook("s-1", SERVER).updated_input) == {"command": runner_line(story, 1, "node serve.js")}
+    listing = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"]))
+    assert not story.hook("s-1", listing).refusal
+    assert story.hook("s-1", SERVER).refusal
 
 
 def test_a_line_that_only_reads_and_writes_files_runs_as_written_pipes_and_all_and_is_kept_as_no_output(new_story):

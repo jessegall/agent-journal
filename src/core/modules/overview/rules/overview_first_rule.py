@@ -2,9 +2,9 @@ from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
-from core.base.driver.ran_command import RanCommand
+from core.base.driver.block_until import BlockUntil
+from core.base.driver.conditions.ran_command import RanCommand
 from core.base.driver.rule_answer import RuleAnswer
-from core.modules.drivers.commands.block_until.block_until import BlockUntil
 from core.modules.overview.support.overview_first import OverviewFirst
 from core.modules.overview.support.overview_nudges import OVERVIEW_REFUSAL
 

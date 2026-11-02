@@ -45,6 +45,8 @@ from core.modules.plans.rules.plan_task_line_rule import PlanTaskLineRule
 from core.modules.plans.support.plan_marks import PLAN_DOCKS, PLAN_MARKS
 from core.modules.plans.support.plan_nudges import PLAN_NUDGES
 from core.modules.plans.seeders.plans_seeder import PlansSeeder
+from core.modules.plans.support.block_conditions.plan_approved import PlanApproved
+from core.modules.plans.support.block_conditions.plan_finished import PlanFinished
 
 PLAN_COMMANDS = (BlockPlan, CancelPlan)
 
@@ -54,6 +56,7 @@ class PlansModule(Module):
 
     name = "journal.core.plans"
     requires_core = ">=5,<6"
+    block_conditions = [PlanApproved, PlanFinished]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.tasks", "journal.core.chat", "journal.core.docking", "journal.core.drivers"]
     models = (ModelDeclaration(Plan, query=PlanQuery, commands=PLAN_COMMANDS), ModelDeclaration(Phase), ModelDeclaration(PhaseTask, excluded_subcommands=["make", "edit"]))
     migrations = [PlansTablesMigration, PausedPlansBlockedMigration, PlanStateIndexMigration]

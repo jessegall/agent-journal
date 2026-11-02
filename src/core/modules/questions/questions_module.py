@@ -28,6 +28,8 @@ from core.modules.questions.migrations.m002_answer_message import AnswerMessageM
 from core.modules.questions.models.question import Question
 from core.modules.questions.seeders.questions_seeder import QuestionsSeeder
 from core.modules.questions.upgrade.questions_move import QuestionsMove
+from core.modules.questions.support.block_conditions.question_answered import QuestionAnswered
+from core.modules.questions.support.block_conditions.questions_closed import QuestionsClosed
 
 
 class QuestionsModule(Module):
@@ -36,6 +38,7 @@ class QuestionsModule(Module):
     name = "journal.core.questions"
     nudges = QUESTION_NUDGES
     requires_core = ">=5,<6"
+    block_conditions = [QuestionAnswered, QuestionsClosed]
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages", "journal.core.waits", "journal.core.chat", "journal.core.documents"]
     models = [ModelDeclaration(Question, query=QuestionQuery, commands=(AnswerQuestion, CloseQuestion), excluded_subcommands=["make", "list", "show"])]
     migrations = [QuestionsTablesMigration, AnswerMessageMigration]

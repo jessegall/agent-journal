@@ -66,7 +66,7 @@ def test_tool_calls_wait_after_ten_and_a_reply_line_always_goes_through(new_stor
     story, _ = read_story(new_story)
     for _ in range(10):
         story.hook("s-1", VIEW_LINE)
-    story.expect_hook_refusal("s-1", VIEW_LINE, "answer message 1 first")
+    story.expect_hook_refusal("s-1", HookSamples.edit("src/cart.py"), "answer message 1 first")
     story.expect_absent_hook_line("s-1", REPLY_LINE, "answer message 1 first")
     story.run('message reply 1 "On it" --environment main', actor=story.agent)
     story.expect_absent_hook_line("s-1", VIEW_LINE, "answer message 1")

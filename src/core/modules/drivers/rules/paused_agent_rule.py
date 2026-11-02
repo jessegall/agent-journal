@@ -3,6 +3,7 @@ from core.base.driver.driver_rule import DriverRule
 from core.base.driver.hook_event_name import HookEventName
 from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.support.driver_nudges import PAUSED_REFUSAL
+from core.modules.drivers.support.block_conditions.agent_resumed import AgentResumed
 
 
 class PausedAgentRule(DriverRule):
@@ -13,7 +14,4 @@ class PausedAgentRule(DriverRule):
     hook = HookEventName.PRE_TOOL_USE
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        tool = hook.event.tool
-        if tool is not None and (tool.is_journal_line or tool.is_reading):
-            return RuleAnswer.allowed()
-        return RuleAnswer.refused(PAUSED_REFUSAL.nudge())
+        return RuleAnswer.blocked(hook, PAUSED_REFUSAL.nudge(), AgentResumed())
