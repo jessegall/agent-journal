@@ -12,12 +12,13 @@ from core.base.driver.rule_answer import RuleAnswer
 JOURNAL = "journal"
 LOOPS = ("until", "while", "for")
 SHORT_CATEGORIES = (CommandCategory.JOURNAL, CommandCategory.READ, CommandCategory.SEARCH, CommandCategory.EDIT)
+QUOTED = re.compile(r'\'[^\']*\'|"(?:\\.|[^"\\])*"')
 JOURNAL_COMMAND = re.compile(rf"(^|[;(|&]\s*|\bdo\s+|\buntil\s+|\bwhile\s+|\bthen\s+){JOURNAL}\s+[a-z]")
 
 
 class JournalChainRule(DriverRule):
     """Refuses a journal command after a command that may run long, such as a test or a build, or inside a
-    loop."""
+    loop; a word inside quotes is text, never a command."""
 
     name = "processes.journal-chain"
     hook = HookEventName.PRE_TOOL_USE
@@ -36,4 +37,4 @@ class JournalChainRule(DriverRule):
         return RuleAnswer.allowed()
 
     def is_journal_loop(self, part: Part) -> bool:
-        return part.program in LOOPS and JOURNAL_COMMAND.search(part.text) is not None
+        return part.program in LOOPS and JOURNAL_COMMAND.search(QUOTED.sub('""', part.text)) is not None
