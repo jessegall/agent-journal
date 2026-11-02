@@ -12,7 +12,7 @@ NUDGE_LIST_NAMES = re.compile(r"NUDGES$")
 ALLOWED_PLACEHOLDERS = frozenset({
     "agent", "branch", "category", "check", "count", "required_command", "dump", "emoji", "environment", "folder", "job", "kept", "left", "lines", "memory", "message",
     "messages", "minutes", "name", "other", "outcome", "output", "outputs", "percent", "phase", "place", "plan", "process", "programs", "proofs", "question",
-    "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "url", "wait", "worker", "writes", "items",
+    "path", "reader", "result", "seconds", "sequence", "shape", "skills", "state", "step", "subject", "task", "tasks", "transcription", "url", "wait", "worker", "writes", "items",
 })
 # whole lines that come from outside the journal's own words: a plugin's, a trigger the user wrote, a driver's declared opening, a rule's failure
 FOREIGN_TEMPLATES = frozenset({"PLUGIN_LINE", "PLUGIN_REFUSAL", "TRIGGER_LINE", "TRIGGER_DENIES", "OPENING_LINE", "RULE_FAILED"})

@@ -17,6 +17,7 @@ class ServerSuggestion:
     url: str = ""
     key_variable: str = ""
     auth: ServerAuth = ServerAuth.NONE
+    has_transcripts: bool = False
 
     @property
     def admission(self) -> str:

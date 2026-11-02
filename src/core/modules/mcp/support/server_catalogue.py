@@ -9,7 +9,7 @@ SUGGESTIONS = (
                      key_variable="GITHUB_PERSONAL_ACCESS_TOKEN", auth=ServerAuth.KEY),
     ServerSuggestion("sentry", "Sentry", "Errors and traces from Sentry.", transport=HTTP, url="https://mcp.sentry.dev/mcp", auth=ServerAuth.OAUTH),
     ServerSuggestion("wispr-flow", "Wispr Flow", "Meetings, notes and transcripts from Wispr Flow.", transport=HTTP, url="https://api.wisprflow.ai/connect/mcp",
-                     auth=ServerAuth.OAUTH),
+                     auth=ServerAuth.OAUTH, has_transcripts=True),
     ServerSuggestion("notion", "Notion", "Pages and databases in Notion.", transport=HTTP, url="https://mcp.notion.com/mcp", auth=ServerAuth.OAUTH),
     ServerSuggestion("slack", "Slack", "Channels and messages in Slack.", command="npx", args=("-y", "@modelcontextprotocol/server-slack"),
                      key_variable="SLACK_BOT_TOKEN", auth=ServerAuth.KEY),
@@ -24,6 +24,9 @@ class ServerCatalogue:
 
     def all(self) -> tuple[ServerSuggestion, ...]:
         return SUGGESTIONS
+
+    def with_transcripts(self) -> tuple[ServerSuggestion, ...]:
+        return tuple(entry for entry in SUGGESTIONS if entry.has_transcripts)
 
     def suggestion(self, name: str) -> ServerSuggestion:
         suggestion = next((entry for entry in SUGGESTIONS if entry.name == name), None)

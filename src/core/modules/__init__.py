@@ -37,7 +37,8 @@ from core.modules.dumps.dumps_module import DumpsModule
 from core.modules.secrets.secrets_module import SecretsModule
 from core.modules.mcp.mcp_module import McpModule
 from core.modules.profiles.profiles_module import ProfilesModule
+from core.modules.transcriptions.transcriptions_module import TranscriptionsModule
 from core.modules.usage.usage_module import UsageModule
 from core.modules.updates.updates_module import UpdatesModule
 
-DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, UpdatesModule, OverviewModule)
+DEFAULT_MODULES = (ActorsModule, EnvironmentsModule, AgentsModule, SettingsModule, DeveloperModule, DriversModule, TasksModule, PlansModule, SkillsModule, MessagesModule, ChatModule, DemoModule, DockingModule, MemoriesModule, ProcessesModule, QuestionsModule, ReviewsModule, PhoneModule, SharingModule, TunnelModule, DocumentsModule, SequencesModule, TriggersModule, SchedulesModule, TemplatesModule, NoticesModule, SuggestionsModule, DumpsModule, PluginsModule, AliasesModule, SearchModule, WaitsModule, ViewerModule, SecretsModule, ClaudeCodeModule, CodexModule, McpModule, UsageModule, ProfilesModule, TranscriptionsModule, UpdatesModule, OverviewModule)
