@@ -23,7 +23,6 @@ test("the information bar holds no window counts, and its scheduled jobs open wi
     const opened = [];
     const element = mounted(InformationBar, {agent: MAIN, jobs: 2, onOpen: (name) => opened.push(name)});
     expect(element.textContent).toContain("Claude");
-    expect(element.textContent).toContain("Working");
     expect(element.querySelector("[data-count]")).toBeNull();
     const jobs = element.querySelector('[data-fact="jobs"]');
     expect(jobs.textContent.trim()).toBe("2");
@@ -151,4 +150,11 @@ test("the pause button shows paused at once, resume shows working, and a refusal
     await new Promise((resolve) => setTimeout(resolve));
     expect(element.querySelector("[data-agent-word]").textContent).toBe("Working");
     expect(element.querySelector("[data-agent-failure]").textContent).toBe("no");
+});
+
+test("the bar shows the branch, says nothing of working, and shows the effort level", () => {
+    const element = mounted(InformationBar, {agent: MAIN, branch: "version-5", usage: {agents: [{id: 1, effort: "high"}], windows: []}});
+    expect(element.querySelector('[data-fact="branch"]').textContent).toContain("version-5");
+    expect(element.querySelector('[data-fact="state"]')).toBeNull();
+    expect(element.textContent).not.toContain("Working");
 });

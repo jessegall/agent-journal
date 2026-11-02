@@ -13,6 +13,7 @@ const props = defineProps({
     agent: {type: Object, default: null},
     jobs: {type: Number, default: 0},
     usage: {type: Object, default: () => ({agents: [], windows: []})},
+    branch: {type: String, default: ""},
     now: {type: Number, default: () => Date.now()},
     fitness: {type: Object, default: null},
     run: {type: Function, default: null},
@@ -36,7 +37,7 @@ function closeMenu() {
 
 const offers = (key) => controls.groups.value.some((one) => one.key === key);
 const model = computed(() => controls.chosen.value.model ?? status.value?.model ?? "");
-const effort = computed(() => controls.chosen.value.effort ?? status.value?.effort ?? "effort");
+const effort = computed(() => controls.chosen.value.effort ?? status.value?.effort ?? "");
 const LOW_FITNESS = 75;
 const running = computed(() => Boolean(props.agent) && !props.agent.ended_at);
 const status = computed(() => props.usage.agents?.find((row) => row.id === props.agent?.id) ?? null);
@@ -56,7 +57,6 @@ const uptime = computed(() => {
     <div class="information" data-information-bar>
         <template v-if="agent">
             <button type="button" class="fact lead" data-fact="agent" :title="`Session ${agent.session}: stop it`" @click="openMenu($event, 'agent')"><Icon name="agents" :size="12" /> {{ providerName(agent.program) }}</button>
-            <span class="fact" data-fact="state"><Icon name="activity" :size="12" /> {{ !running ? "Ended" : controls.paused.value ? "Paused" : "Working" }}</span>
             <template v-if="used !== null">
                 <button type="button" class="fact" data-fact="usage" :title="`${used}% of the plan's ${allowance.title} allowance used`" @click="emit('open', 'usage', $event.currentTarget)">
                     {{ allowance.title }} <span class="gauge usage"><span :style="{width: `${used}%`}" /></span> {{ used }}%
@@ -78,6 +78,9 @@ const uptime = computed(() => {
             </template>
             <template v-if="uptime">
                 <span class="fact" data-fact="uptime" title="How long this session has run"><Icon name="reminders" :size="12" /> {{ uptime }}</span>
+            </template>
+            <template v-if="branch">
+                <span class="fact" data-fact="branch" title="Current branch"><Icon name="branch" :size="12" /> {{ branch }}</span>
             </template>
             <button type="button" :class="['fact', {none: !jobs}]" data-fact="jobs" title="Jobs the agent scheduled for itself" @click="emit('open', 'jobs', $event.currentTarget)"><Icon name="clock" :size="12" /> {{ jobs }}</button>
             <template v-if="fitness">

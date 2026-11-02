@@ -1,3 +1,5 @@
+import json
+
 from core.base.driver.command_category import CommandCategory
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
@@ -83,3 +85,9 @@ def test_a_session_says_when_it_was_last_compacted(new_story):
     story.expect_text("usage show --environment main --json", '"last_compacted_at": null', actor=story.user)
     story.hook("s-1", HookSamples.sample("compact"))
     story.expect_text("usage show --environment main --json", '"last_compacted_at": "2026', actor=story.user)
+
+
+def test_the_usage_names_the_effort_the_session_reported(new_story):
+    story = new_story(fixture=UserJoined)
+    save_status_file(story, "s-1", {"model": {"display_name": "Opus"}, "effort": {"level": "high"}})
+    assert json.loads(story.run("usage show --environment main --json", actor=story.user).output_text)["agents"][0]["effort"] == "high"

@@ -110,6 +110,8 @@ def loaded(value_type: type, value: object) -> Any:
         return value_type(value)
     if value_type is bool:
         return bool(value)
+    if value_type is not int and issubclass(value_type, int) and isinstance(value, int):
+        return value_type(value)
     if value_type is tuple and isinstance(value, str):
         return tuple(json.loads(value))
     return value

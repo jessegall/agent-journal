@@ -16,7 +16,7 @@ def test_the_inspector_reads_a_task_with_what_it_waits_on_and_its_log_in_one_ans
     story.run('task log 1 "Found the rounding"', actor=story.agent)
     story.run('task log 1 "Wrote the test"', actor=story.agent)
     answer = inspected(story, 1)
-    assert (answer["title"], answer["brief"], answer["state"], answer["priority"]) == ("Fix the cart", "The total adds up", "open", "normal")
+    assert (answer["title"], answer["brief"], answer["state"], answer["priority"]) == ("Fix the cart", "The total adds up", "open", 200)
     assert answer["waits"] == [{"id": 2, "title": "Fix the totals", "state": "open"}]
     assert [log["line"] for log in answer["logs"]] == ["Found the rounding", "Wrote the test"]
 

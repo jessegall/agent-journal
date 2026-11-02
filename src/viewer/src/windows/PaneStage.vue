@@ -117,6 +117,11 @@ const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "q
 const HELPER_WINDOWS = [{name: "agents.subagents", role: "subagent"}, {name: "workers.workers", role: "worker"}, {name: "reviews.reviewers", role: "reviewer"}];
 const usage = ref({agents: [], windows: []});
 const fitness = ref(null);
+const branch = ref("");
+async function readBranch() {
+    const answer = props.shellRead ? await props.shellRead(["git-overview", "current"]) : null;
+    branch.value = answer?.ok ? answer.value.branch : "";
+}
 async function readUsage() {
     const answer = props.shellRead ? await props.shellRead(["usage", "show"]) : null;
     if (!answer?.ok) return;
@@ -153,6 +158,7 @@ async function readPhones() {
 async function readFacts() {
     if (!props.shellRead) return;
     readUsage();
+    readBranch();
     readPhones();
     const answer = await props.shellRead(["usage", "bars"]);
     now.value = Date.now();
@@ -330,7 +336,7 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
                         <WindowPane bar :name="window.name" :catalogue="catalogue" :subscriptions="subscriptions" :environment="environment" :agent="agentRow?.id ?? null" :prompts="prompts" :shell-read="shellRead" />
                     </template>
             </AgentBar>
-            <InformationBar :agent="agentRow" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
+            <InformationBar :agent="agentRow" :branch="branch" :jobs="facts.jobs" :usage="usage" :fitness="fitness" :now="now" :run="shellRead" @open="openCount" @changed="readFacts">
                     <template v-if="presets">
                         <LayoutPicker :list="presets" />
                     </template>

@@ -107,7 +107,7 @@ test("a priority is changed from the inspector", async () => {
     await settle();
     [...shown.querySelectorAll("[data-task-priority] button")].find((button) => button.textContent.trim() === "High").click();
     await settle();
-    expect(ran).toContainEqual(["task", "edit", "7", "--priority", "high"]);
+    expect(ran).toContainEqual(["task", "edit", "7", "--priority", "300"]);
 });
 
 async function menuItem(selector, trigger) {

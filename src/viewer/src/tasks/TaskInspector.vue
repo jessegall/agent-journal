@@ -12,16 +12,13 @@ import RowMoves from "../resource/RowMoves.vue";
 import {updatedAt} from "../domain/row.js";
 import {ago} from "../format/time.js";
 import TaskStatusIcon from "./TaskStatusIcon.vue";
+import {PRIORITY_LEVELS} from "../domain/taskPriority.js";
 import CommentSide from "../resource/CommentSide.vue";
 import QuickCommentBar from "../kit/QuickCommentBar.vue";
 import {useTextComments} from "../composables/textComments.js";
 
 // one task as version 4's inspector drew it: where it stands, why it stopped, what it waits on, its brief and log, and what can be done to it
-const PRIORITIES = [
-    {key: "low", label: "Low"},
-    {key: "normal", label: "Normal"},
-    {key: "high", label: "High"},
-];
+const PRIORITIES = PRIORITY_LEVELS.map(({key, label}) => ({key: String(key), label}));
 const FINISHED = new Set(["completed", "cancelled"]);
 const LONG_BRIEF = 180;
 const props = defineProps({id: {type: Number, required: true}, read: {type: Function, required: true}, lone: Boolean, stepped: Boolean, backed: Boolean, changes: {type: Number, default: 0}});
@@ -63,9 +60,12 @@ watch(() => props.id, () => {
 watch(() => props.changes, load);
 
 async function setPriority(priority) {
+    const before = task.value.priority;
+    task.value.priority = Number(priority);
     const answer = await props.read(["task", "edit", String(props.id), "--priority", priority]);
     refusal.value = answer.ok ? "" : answer.error;
     if (answer.ok) return load();
+    task.value.priority = before;
 }
 
 function pick(move) {
@@ -142,7 +142,7 @@ defineExpose({openStatus});
                     <template v-if="!FINISHED.has(task.state)">
                         <div class="fact wide">
                             <span class="fact-label">Priority</span>
-                            <Segmented :options="PRIORITIES" :value="task.priority" data-task-priority @pick="setPriority" />
+                            <Segmented :options="PRIORITIES" :value="String(task.priority)" data-task-priority @pick="setPriority" />
                             <template v-if="refusal">
                                 <p class="refusal" role="alert" data-task-refusal>{{ refusal }}</p>
                             </template>

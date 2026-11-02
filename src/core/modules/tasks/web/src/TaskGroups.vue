@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onUnmounted, ref, watch} from "vue";
-import {Icon, Skeleton, peekRef, useWindow} from "@journal/window-kit";
+import {Icon, PriorityIcon, Skeleton, peekRef, priorityLabel, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
 // tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
@@ -140,9 +140,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
                             <template v-if="display.reason && row.reason">
                                 <span class="task-reason" data-task-reason>{{ row.reason }}</span>
                             </template>
-                            <template v-if="row.priority && row.priority !== 'normal'">
-                                <span class="task-priority">{{ row.priority }}</span>
-                            </template>
+                            <span :title="`Priority: ${priorityLabel(row.priority)}`" data-task-priority><PriorityIcon :value="row.priority" /></span>
                         </div>
                     </template>
                     <template v-if="!folded.has(group.state) && group.rows.length < group.total">
@@ -301,7 +299,6 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     min-width: 0;
 }
 
-.task-priority,
 .tasks-note {
     margin: 0;
     color: var(--text-3);

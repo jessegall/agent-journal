@@ -13,4 +13,4 @@ class TaskGroup:
     rows: tuple[TaskCard, ...]
 
     def json(self) -> Mapping[str, object]:
-        return {"state": self.state, "total": self.total, "rows": [{"id": task.id, "title": task.title, "state": task.state.value, "priority": task.priority.value, "closed_at": task.closed_at} for task in self.rows]}
+        return {"state": self.state, "total": self.total, "rows": [{"id": task.id, "title": task.title, "state": task.state.value, "priority": task.priority, "closed_at": task.closed_at} for task in self.rows]}

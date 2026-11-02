@@ -11,7 +11,7 @@ from core.base.upgrade.state_walk import StateWalk
 from core.base.upgrade.version_four_move import VersionFourMove
 from core.base.upgrade.version_four_ref import VersionFourRef
 from core.base.upgrade.version_four_source import VersionFourSource
-from core.modules.tasks.models.enums.task_priority import TaskPriority
+from core.modules.tasks.models.task_priority import NORMAL_PRIORITY
 from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import TITLE_LIMIT_CHARACTERS
@@ -20,13 +20,12 @@ TABLE = "tasks"
 FORMER_NAMES = {"parked": TaskState.BLOCKED, "paused": TaskState.BLOCKED, "done": TaskState.COMPLETED, "delegated": TaskState.STARTED}
 STATES = {member.value: member for member in TaskState}
 CLOSED = (TaskState.COMPLETED, TaskState.CANCELLED)
-HIGH_PRIORITY, LOW_PRIORITY = 3, 1
 MISSING_HOLDER_REASON = "its holder was not found"
 
 
 class TasksMove(VersionFourMove):
     """Carries version 4's tasks with their numbers: the state by its name or its former name (paused and
-    parked are blocked), the priority number as low, normal or high, a title cut to 80 characters with the
+    parked are blocked), the priority number doubled, since version 4 spaced its levels at 50, a title cut to 80 characters with the
     whole of it put first in the brief, the pause or block reason as the reason, and the agent that held it.
     A started task whose holder did not move is blocked, with the reason that its holder was not found.
     Their log lines go to task_logs and the links of type depends to task_dependencies, a link that would
@@ -54,10 +53,8 @@ class TasksMove(VersionFourMove):
             return None
         return FORMER_NAMES.get(name) or STATES.get(name)
 
-    def priority(self, number: int | None) -> str:
-        if number is not None and number >= HIGH_PRIORITY:
-            return TaskPriority.HIGH.value
-        return TaskPriority.LOW.value if number is not None and number <= LOW_PRIORITY else TaskPriority.NORMAL.value
+    def priority(self, number: int | None) -> int:
+        return int(NORMAL_PRIORITY) if number is None else number * 2
 
     def holders(self, source: VersionFourSource, map: MoveMap) -> dict[int, int]:
         holders: dict[int, int] = {}

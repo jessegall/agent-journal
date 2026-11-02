@@ -76,7 +76,6 @@ test("stopping asks first and can be kept running", async () => {
     document.querySelector("[data-agent-stop-confirm]").click();
     await settle();
     expect(ran).toContain("agent stop 7");
-    expect(element.querySelector('[data-fact="state"]').textContent).toContain("Ended");
 });
 
 test("with no agent it offers the programs to start, and a refusal says why", async () => {

@@ -10,6 +10,7 @@ from core.modules.tasks.models.task_edge import TaskEdge
 from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskSubcommand
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
+from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
@@ -64,7 +65,7 @@ class TasksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration]
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration]
     subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler, WaitTaskHandler]

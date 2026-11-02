@@ -18,6 +18,7 @@ from suites.coding.drivers.orchestrator.guards.orchestrator_start_guard import O
 from suites.coding.commands.project_file_find.project_file_find_subcommand import ProjectFileFindSubcommand
 from suites.coding.commands.git_overview_branches.git_overview_branches_subcommand import GitOverviewBranchesSubcommand
 from suites.coding.commands.git_overview_commits.git_overview_commits_subcommand import GitOverviewCommitsSubcommand
+from suites.coding.commands.git_overview_current.git_overview_current_subcommand import GitOverviewCurrentSubcommand
 from suites.coding.commands.git_overview_pulls.git_overview_pulls_subcommand import GitOverviewPullsSubcommand
 from suites.coding.commands.project_file_list.project_file_list_subcommand import ProjectFileListSubcommand
 from suites.coding.commands.project_file_show.project_file_show_subcommand import ProjectFileShowSubcommand
@@ -51,7 +52,7 @@ class CodingModule(Module):
     handlers = [RecordFileEditHandler]
     driver_rules = [RecordFileEditRule, WaitingItemsRule, IntroductionRule]
     listeners = [AutoNextTaskListener]
-    subcommands = [GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
+    subcommands = [GitOverviewCurrentSubcommand, GitOverviewBranchesSubcommand, GitOverviewCommitsSubcommand, GitOverviewPullsSubcommand, ProjectFileListSubcommand, ProjectFileFindSubcommand, ProjectFileShowSubcommand]
     windows = [WindowDeclaration("coding.git", "Git", "git.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.BRANCH, reads=["git-overview branches", "git-overview commits", "git-overview pulls"]),
                WindowDeclaration("coding.files", "Files", "files.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILE, reads=["project-file list", "project-file find", "project-file show"]),
                WindowDeclaration("coding.work-mode", "Work mode", "work-mode.js", WindowLoading.COMPONENT, icon=WindowIcon.WINDOW, place=WindowPlace.HEADER,
