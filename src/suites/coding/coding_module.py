@@ -1,5 +1,6 @@
 from suites.coding.support.coding_nudges import CODING_NUDGES
 from core.base.module.model_declaration import ModelDeclaration
+from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.module.module import Module
 from core.base.viewer.window_declaration import WindowDeclaration
 from core.base.viewer.choice_option import ChoiceOption
@@ -48,6 +49,7 @@ class CodingModule(Module):
     guards = [OrchestratorStartGuard]
     suites = [CodingSuite]
     drivers = [BuilderDriver, OrchestratorDriver, SubagentDriver, WorkerDriver]
+    skills = [SkillDeclaration("journal-work-modes", "Work as the builder or the orchestrator, the two modes of the coding suite; read it when your mode, auto mode or the worker limit comes up", keywords=("builder", "orchestrator", "auto mode", "work mode"))]
     models = [ModelDeclaration(FileEdit, excluded_subcommands=["make", "edit"])]
     migrations = [FileEditsTableMigration, FileEditRowsMigration]
     handlers = [RecordFileEditHandler]
@@ -64,4 +66,4 @@ class CodingModule(Module):
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, place=WindowPlace.AGENT,
                                  reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.create"],
-                                 options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "journal")])]
+                                 options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]

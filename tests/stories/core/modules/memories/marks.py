@@ -23,7 +23,7 @@ def shown_after_commit(story, line: str, text: str, actor=None) -> None:
 
 def test_a_memory_made_shows_its_mark_after_the_commit(new_story):
     story = new_story(fixture=BuilderStarted)
-    shown_after_commit(story, FACT, "Memory 1 made")
+    shown_after_commit(story, FACT, "Memory 1 created")
 
 
 def test_a_memory_weighed_to_a_new_weight_shows_the_new_weight(new_story):

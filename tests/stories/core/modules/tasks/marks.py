@@ -65,4 +65,6 @@ def test_a_task_made_shows_a_mark_that_opens_the_task(new_story):
     story = new_story(fixture=BuilderWithOpenTask)
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "tasks.task")
-    assert "Task 1 made" in marks_text(story) and mark.click == "open row", marks_text(story)
+    assert "Task 1 created" in marks_text(story) and mark.click == "open row", marks_text(story)
+    assert "Task 1 made" not in marks_text(story), marks_text(story)
+    assert "tasks.task  made" in marks_text(story), marks_text(story)

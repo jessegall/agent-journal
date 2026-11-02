@@ -12,6 +12,12 @@ def test_an_agent_that_edits_a_file_leaves_a_file_edit_with_its_path_and_counts(
     story.expect_success("file-edit show 1", "path: src/cart.py", "added: 3", "removed: 1", f"agent_id: {story.agent.id}")
 
 
+def test_an_edit_outside_the_project_leaves_no_file_edit(new_story):
+    story = new_story(fixture=BuilderStarted)
+    story.hook("s-1", HookSamples.edit("/private/tmp/claude-501/scratch.py", 3, 1).with_fields(event="post_tool_use"))
+    story.expect_success("file-edit list", "nothing found")
+
+
 def test_an_edit_the_agent_is_about_to_make_leaves_no_file_edit(new_story):
     story = new_story(fixture=BuilderStarted)
     story.hook("s-1", HookSamples.edit("src/cart.py", 3, 1))
@@ -51,8 +57,6 @@ def test_a_path_inside_the_environments_folder_is_kept_from_that_folder(new_stor
     story = new_story(fixture=BuilderStarted)
     folder = json.loads(story.run("environment show 1 --json", actor=story.agent).output_text)["folder"]
     story.hook("s-1", HookSamples.edit(f"{folder}/src/cart.py", 1, 0).with_fields(event="post_tool_use"))
-    story.hook("s-1", HookSamples.edit("/elsewhere/cart.py", 1, 0).with_fields(event="post_tool_use"))
     story.run_listeners()
     assert json.loads(story.run("file-edit show 1 --json", actor=story.agent).output_text)["path"] == "src/cart.py"
-    assert json.loads(story.run("file-edit show 2 --json", actor=story.agent).output_text)["path"] == "/elsewhere/cart.py"
 

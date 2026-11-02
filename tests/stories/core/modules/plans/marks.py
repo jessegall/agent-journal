@@ -68,7 +68,7 @@ def test_a_plan_made_shows_a_mark_that_opens_the_plan(new_story):
     story.run(lines.NEW_PLAN)
     story.run_listeners()
     mark = next(entry for entry in Registry.read(story.container.get(Database)).marks if entry.type == "plans.plan")
-    assert "Plan 1 made" in marks_text(story) and mark.click == "open row", marks_text(story)
+    assert "Plan 1 created" in marks_text(story) and mark.click == "open row", marks_text(story)
 
 
 def test_a_plan_card_follows_where_the_plan_stands(new_story):

@@ -50,6 +50,13 @@ def test_a_loop_that_only_names_a_path_with_journal_in_it_goes_on_through_the_ru
     assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
 
 
+def test_a_loop_whose_commit_message_holds_the_words_journal_agent_stays_allowed(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    line = 'for f in a b; do git commit -m "fix it; journal agent main now do journal agent main" $f; done'
+    reply = story.hook("s-1", HookSamples.shell(line, ShellPart("for", CommandCategory.PROCESS, ["f"])))
+    assert dict(reply.updated_input) == {"command": runner_line(story, 1, line)}
+
+
 def test_a_sleep_poll_followed_by_another_command_is_refused(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     loop = ShellPart("until", CommandCategory.PROCESS, ["pgrep"])

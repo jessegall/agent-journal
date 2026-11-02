@@ -2,6 +2,7 @@ from core.base.query.conditions.is_null import IsNull
 from core.modules.tasks.queries.task_query import TaskQuery
 from core.base.actor import Actor
 from core.base.actor_type import ActorType
+from tests.stories.core.modules.chat.support.mark_samples import marks_text
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
 from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
@@ -13,6 +14,15 @@ def delegated_story(new_story):
     story.run('task make "Second job" --brief "Do the second job" --environment main', actor=story.agent)
     worker = Actor(story.new_row_id("worker dispatch 1 2", actor=story.agent), ActorType.AGENT)
     return story, repository, worker
+
+
+def test_a_workers_moves_show_as_marks_in_the_chat(new_story):
+    story, repository, worker = delegated_story(new_story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    story.run('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.run("worker deliver", actor=worker)
+    story.run_listeners()
+    assert f"Worker {worker.id}: started on" in marks_text(story) and f"Worker {worker.id}: started on its next task" in marks_text(story), marks_text(story)
 
 
 def test_several_tasks_go_to_one_worker_and_only_the_first_starts(new_story):

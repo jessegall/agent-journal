@@ -97,7 +97,7 @@ defineExpose({expand});
     position: relative;
     z-index: 3;
     flex: none;
-    padding: 0 32px 16px;
+    padding: 0 12px 12px;
     background: var(--bg);
 }
 
@@ -207,7 +207,7 @@ defineExpose({expand});
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding: 12px;
+    padding: 8px;
     animation: rise 0.18s var(--ease);
 }
 
@@ -226,7 +226,7 @@ defineExpose({expand});
 textarea {
     width: 100%;
     box-sizing: border-box;
-    padding: 10px 12px;
+    padding: 8px 10px;
     border: 1px solid var(--border-2);
     border-radius: 8px;
     background: var(--bg);
@@ -256,7 +256,7 @@ textarea:focus {
 
 @media (max-width: 700px) {
     .comment-bar {
-        padding: 0 10px 10px;
+        padding: 0 8px 8px;
     }
 }
 </style>

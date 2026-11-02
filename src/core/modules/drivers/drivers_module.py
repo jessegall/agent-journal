@@ -1,3 +1,9 @@
+from core.modules.drivers.commands.record_subagent_dispatch.record_subagent_dispatch_handler import RecordSubagentDispatchHandler
+from core.modules.drivers.listeners.dispatch_mark_listener import DispatchMarkListener
+from core.modules.drivers.migrations.m010_subagent_dispatches import SubagentDispatchesMigration
+from core.modules.drivers.models.subagent_dispatch import SubagentDispatch
+from core.modules.drivers.support.dispatch_marks import DISPATCH_MARKS
+from core.modules.drivers.rules.dispatch_mark_rule import DispatchMarkRule
 from core.modules.drivers.commands.close_required_command.close_required_command_handler import CloseRequiredCommandHandler
 from core.modules.drivers.commands.skip_required_command.skip_required_command_subcommand import SkipRequiredCommandSubcommand
 from core.modules.drivers.listeners.required_command_skip_mark_listener import RequiredCommandSkipMarkListener
@@ -100,19 +106,19 @@ class DriversModule(Module):
     move_reason = "version 4 kept hook records in its own bookkeeping tables, which stay in the backup"
     requires_core = ">=5,<6"
     settings = DRIVERS_SETTINGS
-    dependencies = ["journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
-    models = [ModelDeclaration(RequiredCommand, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
+    dependencies = ["journal.core.chat", "journal.core.developer", "journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.settings"]
+    models = [ModelDeclaration(SubagentDispatch, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(RequiredCommand, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(AgentBlock, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(NudgeRecord, excluded_subcommands=["make", "edit", "delete"]), ModelDeclaration(HookCall, query=HookCallQuery, excluded_subcommands=["make", "edit", "delete", "show"]), ModelDeclaration(AgentLine, commands=[DeliverAgentLine, EnterAgentLine]), ModelDeclaration(RuleHistory, excluded_subcommands=["make", "edit"])]
     views = [HookCallRow]
-    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration]
-    handlers = [BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, CloseRequiredCommandHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
+    migrations = [DriversTablesMigration, HookCallUpdatedInputMigration, HookCallHookIndexMigration, NudgeRecordsMigration, NudgeDebtsMigration, RequiredCommandsMigration, NudgeRecordDeliveryMigration, RequiredCommandTypeMigration, AgentBlocksMigration, SubagentDispatchesMigration]
+    handlers = [RecordSubagentDispatchHandler, BlockUntilHandler, CloseAgentBlockHandler, EndSilentHelpersHandler, CloseRequiredCommandHandler, RecordBypassLineHandler, PauseAgentHandler, ResumeAgentHandler, RecordHookCallHandler, PruneHookCallsHandler, ChooseSuiteHandler, ChooseDriverHandler, AllowEssentialRuleHandler]
     subcommands = [SkipRequiredCommandSubcommand, PauseAgentSubcommand, ResumeAgentSubcommand, NudgeListSubcommand, HookCallFeedSubcommand, HookCallShowSubcommand, PruneHookCallsSubcommand, ChooseSuiteSubcommand, SuiteCurrentSubcommand, SuiteListSubcommand, SuiteShowSubcommand, SuiteLayoutSubcommand, SuitePresetsSubcommand, ChooseDriverSubcommand, DriverShowSubcommand,
                    AllowEssentialRuleSubcommand]
     guards = [DriverSettingGuard]
-    listeners = [RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
+    listeners = [DispatchMarkListener, RequiredCommandSkipMarkListener, BypassLogListener, HookWaitFileListener, TypedLineListener, NewDriverLinesListener, SubagentStopListener]
     overlays = [PausedOverlay]
-    marks = BYPASS_MARKS
+    marks = [*BYPASS_MARKS, *DISPATCH_MARKS]
     block_conditions = [RanCommand, ReadFile, TimeReached, AnyCondition, AllConditions, ToolUses, AgentResumed, RequiredCommandClosed]
-    driver_rules = [RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
+    driver_rules = [DispatchMarkRule, RequiredCommandRule, DispatchLawRule, LongOutputRule, RepeatedStopReleaseRule, SessionEndRule, OpeningLinesRule, MissingProcessRule, SilentHelperRule, AgentBlockRule, TakeoverRule]
     bindings = [(HookHistory, TableHookHistory), (HookRoute, AgentHookRoute), (ChangeFilter, DriverChangeFilter),
                 (EssentialAllowances, SettingEssentialAllowances)]
     windows = [WindowDeclaration("drivers.nudges", "Nudges", "nudges.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.RULE, reads=["nudge list", "nudge-record list"], events=["nudge_record.*"]),
