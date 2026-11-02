@@ -12,7 +12,7 @@ PROCESS_MISSING = NudgeDeclaration("processes.process_lost", NudgeType.REMARK, '
 OUTPUT_PROGRESS = NudgeDeclaration("processes.output_progress", NudgeType.REMARK, 'output {output}: {percent}%')
 CUT_JOURNAL_COMMAND = NudgeDeclaration("processes.cut_journal_command", NudgeType.REFUSAL, 'do not cut a journal command with a pipe: use its flags, such as journal output read N --lines A-B')
 JOURNAL_COMMAND_LAST = NudgeDeclaration("processes.journal_command_last", NudgeType.REFUSAL, 'a journal command may not follow a long command or run in a loop: run it on its own line')
-REDIRECTED_RUN = NudgeDeclaration("processes.redirected_run", NudgeType.INSTRUCTION, '{programs} goes to a file, so no reader sees it: run it without the redirect', required_command="")
+REDIRECTED_RUN = NudgeDeclaration("processes.redirected_run", NudgeType.INSTRUCTION, '{programs} goes to a file, so no reader sees it: run it without the redirect, and read it by its output number', required_command="")
 RUNNER_MISSING = NudgeDeclaration("processes.runner_missing", NudgeType.REMARK, 'journal-run is not installed in {folder}: your shell lines run as written and are not kept')
 MOVE_BAN = NudgeDeclaration("processes.do_not_move", NudgeType.REFUSAL, 'do not move with cd: you are in {folder}; use paths, or a tool flag such as npm --prefix')
 OUTPUT_RUNNING = NudgeDeclaration("processes.output_running", NudgeType.REMARK, 'output {output}: running')

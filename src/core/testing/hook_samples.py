@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from core.base.driver.tool_type import ToolType
 from core.testing.hook_sample import HookSample
 from core.testing.shell_part import ShellPart
@@ -42,11 +44,11 @@ class HookSamples:
         return HookSamples.tool_use("Edit", ToolType.EDIT, [path], diff)
 
     @staticmethod
-    def shell(line: str, *parts: ShellPart) -> HookSample:
+    def shell(line: str, *parts: ShellPart, redirects: Sequence[str] = ()) -> HookSample:
         texts = [text.strip() for text in line.split("&&")]
         prepared = [part.prepared(text) for part, text in zip(parts, texts, strict=True)]
         joined = [{**part, "joined_by": "&&"} if index < len(prepared) - 1 else part for index, part in enumerate(prepared)]
-        shell = {"line": line, "parts": joined, "redirects": [], "category": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
+        shell = {"line": line, "parts": joined, "redirects": list(redirects), "category": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
                  "parse_error": ""}
         return HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell)
 

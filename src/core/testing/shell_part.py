@@ -15,11 +15,11 @@ class ShellPart:
     subcommand: str | None = None
     effects: Sequence[CommandEffect] = field(default_factory=lambda: [CommandEffect.READS_FILES])
     pipe_target: int | None = None
-    edited_paths: Sequence[str] = ()
+    output_paths: Sequence[str] = ()
 
     def prepared(self, text: str) -> dict[str, object]:
         fields: dict[str, object] = {"text": text, "program": self.program, "arguments": list(self.arguments),
                                      "classification": {"category": self.category, "effects": list(self.effects)}}
-        fields = {**fields, "edited_paths": list(self.edited_paths)} if self.edited_paths else fields
+        fields = {**fields, "write_paths": list(self.output_paths)} if self.output_paths else fields
         fields = fields if self.pipe_target is None else {**fields, "piped_into": self.pipe_target}
         return fields if self.subcommand is None else {**fields, "subcommand": self.subcommand}

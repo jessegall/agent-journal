@@ -1,4 +1,8 @@
+import json
+from pathlib import Path
+
 from core.base.driver.command_category import CommandCategory
+from core.base.driver.part import Part
 from core.testing.hook_samples import HookSamples
 from core.testing.shell_part import ShellPart
 from tests.stories.core.modules.processes.support.process_samples import install_runner, runner_line
@@ -65,19 +69,39 @@ def test_asking_for_a_runs_status_is_answered_with_how_to_set_a_monitor(new_stor
     story.expect_hook_allowed("s-1", status, "set a Monitor on the command journal output monitor 7")
 
 
-def test_a_test_run_sent_to_a_file_is_told_no_reader_sees_it(new_story):
-    story = install_runner(new_story(fixture=BuilderStarted))
-    redirected = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], edited_paths=["/tmp/results.txt"])
-    reply = story.hook("s-1", HookSamples.shell("pytest -q > /tmp/results.txt", redirected))
-    assert "pytest goes to a file, so no reader sees it: run it without the redirect" in reply.lines
+REDIRECT_REFUSAL = "pytest goes to a file, so no reader sees it: run it without the redirect, and read it by its output number"
 
 
-def test_writing_a_file_or_sending_a_run_to_dev_null_gets_no_such_line(new_story):
+def test_a_test_run_sent_to_a_file_or_to_dev_null_is_refused_as_a_whole_tool_call(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    writing = ShellPart("cat", CommandCategory.EDIT, [], edited_paths=["notes.txt"])
-    silent = ShellPart("pytest", CommandCategory.TEST_RUN, ["-q"], edited_paths=["/dev/null"])
-    reply = story.hook("s-1", HookSamples.shell("cat > notes.txt && pytest -q > /dev/null", writing, silent))
-    assert not any("no reader sees it" in line for line in reply.lines)
+    for line, redirect in (("pytest -q > /tmp/results.txt", "> /tmp/results.txt"), ("pytest -q >> /tmp/results.txt", ">> /tmp/results.txt"), ("pytest -q &> /tmp/results.txt", "&> /tmp/results.txt"), ("pytest -q > /dev/null", "> /dev/null")):
+        story.expect_hook_refusal("s-1", HookSamples.shell(line, TESTS_PART, redirects=[redirect]), REDIRECT_REFUSAL)
+
+
+def test_a_test_run_inside_a_group_sent_to_a_file_is_refused(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_hook_refusal("s-1", HookSamples.shell("{ pytest -q; } > /tmp/results.txt", TESTS_PART, redirects=["> /tmp/results.txt"]), REDIRECT_REFUSAL)
+
+
+def test_a_redirect_in_another_part_of_the_chain_does_not_refuse_the_run(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    writing = ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"])
+    run = TESTS_PART
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat > notes.txt && pytest -q", writing, run, redirects=["> notes.txt"]))
+
+
+def test_a_run_keeping_its_standard_output_or_a_command_that_is_no_run_stays_allowed(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    for redirect in ("2>&1", "2> /tmp/errors.txt", "2>/dev/null"):
+        story.expect_hook_allowed("s-1", HookSamples.shell(f"pytest -q {redirect}", TESTS_PART, redirects=[redirect]))
+    story.expect_hook_allowed("s-1", HookSamples.shell("cat > notes.txt", ShellPart("cat", CommandCategory.EDIT, [], output_paths=["notes.txt"]), redirects=["> notes.txt"]))
+
+
+def test_a_parts_write_paths_are_read_from_the_field_the_hook_client_sends():
+    schema = json.loads((Path(__file__).parents[5] / "tools/journal-hook/event/hook_event.schema.json").read_text())
+    assert '"write_paths"' in json.dumps(schema)
+    part = {"text": "cat > notes.txt", "program": "cat", "arguments": [], "classification": {"category": CommandCategory.EDIT.value, "effects": []}, "write_paths": ["notes.txt"]}
+    assert list(Part.parsed(part).output_paths) == ["notes.txt"]
 
 
 def test_a_test_run_cut_with_a_pipe_is_told_its_reader_sees_only_what_is_left(new_story):

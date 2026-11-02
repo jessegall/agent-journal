@@ -27,5 +27,5 @@ class Part:
         if pipe_target is not None and not isinstance(pipe_target, int):
             raise HookEventError(f"piped_into is a part's number, not {pipe_target!r}")
         return cls(text(fields, "text"), text(fields, "program"), text(fields, "subcommand"), texts(fields, "arguments"),
-                   Classification.parsed(fields.get("classification")), texts(fields, "read_paths"), texts(fields, "edited_paths"),
+                   Classification.parsed(fields.get("classification")), texts(fields, "read_paths"), texts(fields, "write_paths"),
                    text(fields, "joined_by"), pipe_target)
