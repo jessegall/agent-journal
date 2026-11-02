@@ -21,3 +21,4 @@ class TaskCard(ViewModel):
     state: TaskState
     priority: TaskPriority
     reason: str
+    closed_at: str | None

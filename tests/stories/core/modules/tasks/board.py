@@ -1,14 +1,17 @@
+import json
+from datetime import timedelta
+
 from tests.stories.core.support.fixtures import UserJoined
 
 
-def test_the_board_brings_each_going_group_in_one_answer_and_only_the_count_of_the_finished(new_story):
+def test_the_board_brings_the_first_page_of_every_group_in_one_answer(new_story):
     story = new_story(fixture=UserJoined)
     story.run('task make "Fix the cart" --environment main', actor=story.agent)
     story.run('task make "Fix the totals" --environment main', actor=story.agent)
     story.run('task cancel 2 --reason "not needed"', actor=story.agent)
     story.expect_text("task board --environment main", "open: 1", "cancelled: 1", actor=story.user)
     answer = story.run("task board --environment main --json", actor=story.user).output_text
-    assert "Fix the cart" in answer and "Fix the totals" not in answer
+    assert "Fix the cart" in answer and "Fix the totals" in answer
 
 
 def test_one_state_can_be_read_a_page_at_a_time(new_story):
@@ -34,3 +37,17 @@ def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
     assert '"total": 3' in older or '"total":3' in older
     withheld = story.run("task board --environment main --state open --limit 2 --json", actor=story.user).output_text
     assert "Three" in withheld and "Two" in withheld and "One" not in withheld
+
+
+def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_closed_last_and_pages_by_that_time(new_story):
+    story = new_story(fixture=UserJoined)
+    for number in (1, 2, 3):
+        story.run(f'task make "Task {number}" --environment main', actor=story.user)
+    for number in (2, 3, 1):
+        story.advance(timedelta(seconds=1))
+        story.expect_success(f'task cancel {number} --reason "not needed"', actor=story.user)
+    groups = json.loads(story.run("task board --environment main --json", actor=story.user).output_text)["groups"]
+    cancelled = next(group for group in groups if group["state"] == "cancelled")
+    assert [row["id"] for row in cancelled["rows"]] == [1, 3, 2]
+    page = json.loads(story.run(f"task board --environment main --state cancelled --before-closed-at {cancelled['rows'][0]['closed_at']} --json", actor=story.user).output_text)["groups"][0]
+    assert [row["id"] for row in page["rows"]] == [3, 2]

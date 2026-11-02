@@ -15,13 +15,13 @@ from core.modules.tasks.support.task_group import TaskGroup
 
 ACTIVE_STATES = (TaskState.STARTED, TaskState.TESTING, TaskState.BLOCKED, TaskState.OPEN)
 FINISHED_STATES = (TaskState.COMPLETED, TaskState.CANCELLED)
-COUNT_PAGE_ROWS = 1
+FINISHED_PAGE_ROWS = 10
 
 
 class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
-    """`journal task board [--environment <name>] [--state <state> --before-id <n> --limit <n>]`: the first page of
-    each active_groups state and the count of each finished one in one answer, or one more page
-    of one state."""
+    """`journal task board [--environment <name>] [--state <state> --before-id <n> --before-closed-at <time> --limit <n>]`:
+    the first page of every state in one answer, or one more page of one state. A finished state runs from the
+    task closed last and pages by that time; any other from the newest task, by its number."""
 
     cli_name = "task"
     name = "board"
@@ -33,22 +33,30 @@ class TaskBoardSubcommand(ReadSubcommand[TaskBoard]):
         parser.add_argument("--environment")
         parser.add_argument("--state", type=TaskState)
         parser.add_argument("--before-id", type=int, default=None, help="the rows older than this one")
-        parser.add_argument("--limit", type=int, default=PAGE_SIZE_ROWS)
+        parser.add_argument("--before-closed-at", default=None, help="the finished rows closed before this time")
+        parser.add_argument("--limit", type=int, default=None)
 
     def read(self, arguments: Namespace, caller: Caller) -> TaskBoard:
         environment_id = self.environment_names.environment_id(arguments.environment) if arguments.environment else caller.environment_id
         if environment_id is None:
             raise Refusal("the board is shown for one environment", "name it with --environment")
         if arguments.state is not None:
-            return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit)]))
+            if arguments.state in FINISHED_STATES:
+                return TaskBoard(tuple([self.finished_group(environment_id, arguments.state, arguments.before_closed_at, arguments.limit or FINISHED_PAGE_ROWS)]))
+            return TaskBoard(tuple([self.group(environment_id, arguments.state, arguments.before_id, arguments.limit or PAGE_SIZE_ROWS)]))
         active_groups = tuple(self.group(environment_id, state, None, PAGE_SIZE_ROWS) for state in ACTIVE_STATES)
-        finished = tuple(TaskGroup(state.value, self.cards(environment_id, state).page(1, COUNT_PAGE_ROWS).total, ()) for state in FINISHED_STATES)
+        finished = tuple(self.finished_group(environment_id, state, None, FINISHED_PAGE_ROWS) for state in FINISHED_STATES)
         return TaskBoard((*active_groups, *finished))
 
     def group(self, environment_id: int, state: TaskState, previous_id: int | None, size: int) -> TaskGroup:
         cards = self.cards(environment_id, state)
         rows = cards.matching(Less("id", previous_id)) if previous_id is not None else cards
         return TaskGroup(state.value, cards.count(), tuple(rows.newest().page(1, size).rows))
+
+    def finished_group(self, environment_id: int, state: TaskState, closed_before: str | None, size: int) -> TaskGroup:
+        cards = self.cards(environment_id, state)
+        rows = cards.matching(Less("closed_at", closed_before)) if closed_before is not None else cards
+        return TaskGroup(state.value, cards.count(), tuple(rows.descending("closed_at").page(1, size).rows))
 
     def cards(self, environment_id: int, state: TaskState) -> Query[TaskCard]:
         return self.queries.query(TaskCard).filter(environment_id=environment_id, state=state)

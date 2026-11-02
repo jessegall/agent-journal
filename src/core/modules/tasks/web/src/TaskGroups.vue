@@ -3,8 +3,8 @@ import {computed, onUnmounted, ref, watch} from "vue";
 import {Skeleton, peekRef, useWindow} from "@journal/window-kit";
 import {readPlanPlaces} from "./planPlaces.js";
 
-// tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the going groups and the count of the finished ones,
-// and each group pages on its own
+// tasks as version 4 drew them: a search box, and the tasks in a group for each state; one read brings the first page of each, the finished ones
+// from the task closed last, and each group pages on its own
 const PAGE_ROWS = 25;
 const FINISHED = new Set(["completed", "cancelled"]);
 const props = defineProps({
@@ -40,7 +40,7 @@ async function withHeldRows(group, held) {
 }
 
 async function more(group) {
-    const before = group.rows.length ? ` --before-id ${Math.min(...group.rows.map((row) => row.id))}` : "";
+    const before = !group.rows.length ? "" : FINISHED.has(group.state) ? ` --before-closed-at ${group.rows.at(-1).closed_at}` : ` --before-id ${Math.min(...group.rows.map((row) => row.id))}`;
     const answer = await context.read(`task board --state ${group.state}${before}`);
     if (!answer.ok) return void (failure.value = answer.error);
     extended.value = new Set([...extended.value, group.state]);
