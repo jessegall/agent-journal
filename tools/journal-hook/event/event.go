@@ -52,7 +52,6 @@ type ShellLine struct {
 	Line          string   `json:"line"`
 	Parts         []Part   `json:"parts"`
 	Redirects     []string `json:"redirects"`
-	Category      string   `json:"category"`
 	IsJournalOnly bool     `json:"is_journal_only"`
 	ParseError    string   `json:"parse_error"`
 }

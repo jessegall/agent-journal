@@ -71,7 +71,7 @@ def part(program: str, category: CommandCategory) -> Part:
 
 
 def line(*parts: Part, journal_shell: bool = False) -> ShellLine:
-    return ShellLine(" && ".join(item.text for item in parts), tuple(parts), (), parts[0].classification.category, journal_shell, "")
+    return ShellLine(" && ".join(item.text for item in parts), tuple(parts), (), journal_shell, "")
 
 
 def limit(over_limit: bool = False, waiting: bool = False, journal_commands: bool = False) -> ForegroundLimit:

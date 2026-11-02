@@ -2,7 +2,10 @@ package classify
 
 import (
 	"reflect"
+	"slices"
 	"testing"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/event"
 )
 
 // Each command beside the classification version 4's table and classifier give it.
@@ -46,8 +49,8 @@ func TestALineIsNamedByItsWeightiestPartAndKnowsAJournalOnlyLine(t *testing.T) {
 	}
 	for _, sample := range cases {
 		line := shippedClassifier.Line(sample.line)
-		if line.Category != sample.category || line.IsJournalOnly != sample.journal {
-			t.Errorf("%q: category %s journal %v", sample.line, line.Category, line.IsJournalOnly)
+		if !hasPartOf(line, sample.category) || line.IsJournalOnly != sample.journal {
+			t.Errorf("%q: no part of %s, or journal %v", sample.line, sample.category, line.IsJournalOnly)
 		}
 	}
 }
@@ -60,7 +63,15 @@ func TestTheCategoryOrderIsVersion4s(t *testing.T) {
 	}
 }
 
-func TestMixedLinesAreNamedByTheirWeightiestPart(t *testing.T) {
+// hasPartOf says a part of the line has the category; a line no shell can read has no parts and counts as unknown.
+func hasPartOf(line event.ShellLine, category string) bool {
+	if len(line.Parts) == 0 {
+		return category == unknown
+	}
+	return slices.ContainsFunc(line.Parts, func(part event.Part) bool { return part.Classification.Category == category })
+}
+
+func TestAMixedLineKeepsTheCategoryOfEachOfItsParts(t *testing.T) {
 	cases := map[string]string{
 		"cat a.txt | grep x":                          "search",
 		"cat a.txt | head -5":                         "read",
@@ -73,8 +84,8 @@ func TestMixedLinesAreNamedByTheirWeightiestPart(t *testing.T) {
 		"curl -s https://example.com | jq . > a.json": "network",
 	}
 	for line, category := range cases {
-		if actual := shippedClassifier.Line(line).Category; actual != category {
-			t.Errorf("%q is %s, want %s", line, actual, category)
+		if !hasPartOf(shippedClassifier.Line(line), category) {
+			t.Errorf("%q has no part of %s", line, category)
 		}
 	}
 }

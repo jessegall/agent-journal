@@ -2,17 +2,15 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 
 from core.base.driver.command_category import CommandCategory
-from core.base.driver.command_effect import CommandEffect
 from core.base.driver.diff_count import DiffCount
 from core.base.driver.hook_event_error import HookEventError
 from core.base.driver.hook_fields import mapping, mappings, text, texts
-from core.base.driver.shell_line import ShellLine
+from core.base.driver.shell_line import READ_CATEGORIES, ShellLine
 from core.base.driver.tool_type import ToolType
 
 WRITING_CATEGORIES = (ToolType.EDIT, ToolType.NEW_FILE)
 READ_TOOL_TYPES = (ToolType.READ, ToolType.SEARCH)
-READ_COMMAND_CATEGORIES = (CommandCategory.READ, CommandCategory.SEARCH)
-BLOCK_EXEMPT_CATEGORIES = (*READ_COMMAND_CATEGORIES, CommandCategory.JOURNAL)
+BLOCK_EXEMPT_CATEGORIES = (*READ_CATEGORIES, CommandCategory.JOURNAL)
 
 
 @dataclass(frozen=True)
@@ -45,7 +43,7 @@ class Tool:
     def is_reading(self) -> bool:
         if self.category in READ_TOOL_TYPES:
             return True
-        return self.shell is not None and self.shell.category in READ_COMMAND_CATEGORIES and not self.is_writing_files()
+        return self.shell is not None and self.shell.is_reading
 
     @property
     def block_exempt(self) -> bool:
@@ -58,4 +56,4 @@ class Tool:
     def is_writing_files(self) -> bool:
         if self.category in WRITING_CATEGORIES:
             return True
-        return self.shell is not None and (bool(self.shell.redirects) or any(CommandEffect.WRITES_FILES in part.classification.effects for part in self.shell.parts))
+        return self.shell is not None and self.shell.has_writes

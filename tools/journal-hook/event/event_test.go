@@ -14,7 +14,7 @@ func emptyEvent() event.HookEvent {
 	zero := 0
 	return event.HookEvent{
 		Version: event.Version, Program: "claude", Event: "pre_tool_use", Raw: json.RawMessage(`{}`),
-		Tool: &event.Tool{Name: "Bash", Category: "shell", Shell: &event.ShellLine{Category: "unknown", Parts: []event.Part{
+		Tool: &event.Tool{Name: "Bash", Category: "shell", Shell: &event.ShellLine{Parts: []event.Part{
 			{Classification: event.Classification{Category: "unknown"}, PipedInto: &zero},
 		}}},
 	}

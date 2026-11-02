@@ -267,7 +267,6 @@
         "line",
         "parts",
         "redirects",
-        "category",
         "is_journal_only",
         "parse_error"
       ],
@@ -286,9 +285,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "category": {
-          "$ref": "#/$defs/category"
         },
         "is_journal_only": {
           "type": "boolean"

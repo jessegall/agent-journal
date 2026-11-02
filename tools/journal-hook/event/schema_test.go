@@ -27,7 +27,6 @@ var wrongShapes = map[string]func(prepared map[string]any){
 	"a shell tool without its shell line": func(prepared map[string]any) { delete(tool(prepared), "shell") },
 	"a read tool with a shell line":       func(prepared map[string]any) { tool(prepared)["category"] = "read" },
 	"no parse_error":                      func(prepared map[string]any) { delete(shell(prepared), "parse_error") },
-	"a line category not in the table":    func(prepared map[string]any) { shell(prepared)["category"] = "browse" },
 	"a part joined by a pipe":             func(prepared map[string]any) { part(prepared, 0)["joined_by"] = "|" },
 	"a part piped into a negative index":  func(prepared map[string]any) { part(prepared, 1)["piped_into"] = json.Number("-1") },
 	"a part without arguments":            func(prepared map[string]any) { delete(part(prepared, 2), "arguments") },

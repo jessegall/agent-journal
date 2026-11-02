@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/jessegall/agent-journal/tools/journal-hook/event"
 )
 
 // The whole command corpus is private and stays outside the repository: JOURNAL_CORPUS names its file, one command a
@@ -93,7 +96,7 @@ func (count *corpusCount) read(line string) {
 	if shellLine.ParseError != "" {
 		count.parseErrors++
 	}
-	if shellLine.Category == unknown {
+	if !slices.ContainsFunc(shellLine.Parts, func(part event.Part) bool { return part.Classification.Category != unknown }) {
 		count.unknownLines++
 	}
 	for _, part := range shellLine.Parts {

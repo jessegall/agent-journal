@@ -6,24 +6,19 @@ import (
 )
 
 // Line reads a shell line into the prepared object's shell line: each command a part with its program, subcommand,
-// arguments, classification and the files it reads and writes, and how it joins the next; the line is named by its
-// heaviest part, as version 4 names it. A line no shell can read has no parts, says why in parse_error and is
-// unknown.
+// arguments, classification and the files it reads and writes, and how it joins the next. A line no shell can read has
+// no parts and says why in parse_error.
 func (classifier *Classifier) Line(line string) event.ShellLine {
-	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}, Category: unknown}
+	prepared := event.ShellLine{Line: line, Parts: []event.Part{}, Redirects: []string{}}
 	commands, redirects, err := shell.Split(line)
 	if err != nil {
 		prepared.ParseError = err.Error()
 		return prepared
 	}
 	prepared.Redirects = redirects
-	var classifications []Classification
 	for _, command := range commands {
-		classification := classifier.Classify(command.Text)
-		classifications = append(classifications, classification)
-		prepared.Parts = append(prepared.Parts, classifier.part(command, classification))
+		prepared.Parts = append(prepared.Parts, classifier.part(command, classifier.Classify(command.Text)))
 	}
-	prepared.Category = Union(classifications).Category
 	prepared.IsJournalOnly = isJournalOnly(commands)
 	return prepared
 }

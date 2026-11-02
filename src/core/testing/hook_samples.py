@@ -48,7 +48,7 @@ class HookSamples:
         texts = [text.strip() for text in line.split("&&")]
         prepared = [part.prepared(text) for part, text in zip(parts, texts, strict=True)]
         joined = [{**part, "joined_by": "&&"} if index < len(prepared) - 1 else part for index, part in enumerate(prepared)]
-        shell = {"line": line, "parts": joined, "redirects": list(redirects), "category": parts[0].category, "is_journal_only": all(part.program == "journal" for part in parts),
+        shell = {"line": line, "parts": joined, "redirects": list(redirects), "is_journal_only": all(part.program == "journal" for part in parts),
                  "parse_error": ""}
         return HookSamples.tool_use("Bash", ToolType.SHELL, [], None, shell=shell)
 
