@@ -453,11 +453,6 @@ const declaredBy = (pane) => props.catalogue.window(pane.active)?.options || [];
     align-items: center;
 }
 
-.btn.pane-menu-button,
-.btn.pane-add-button {
-    color: var(--text-2);
-}
-
 .stage-frame {
     display: flex;
     flex: 1;
