@@ -1,4 +1,5 @@
 from core.modules.tasks.support.task_nudges import TASK_NUDGES
+from core.modules.tasks.rules.task_still_held_rule import TaskStillHeldRule
 from core.modules.tasks.rules.blocked_work_rule import BlockedWorkRule
 from core.modules.tasks.rules.task_stop_rule import TaskStopRule
 from core.modules.tasks.commands.block_task.block_task import BlockTask
@@ -11,6 +12,7 @@ from core.modules.tasks.commands.wait_task.wait_task_subcommand import WaitTaskS
 from core.modules.tasks.listeners.task_wait_listener import TaskWaitListener
 from core.modules.tasks.migrations.m004_task_waits import TaskWaitsTableMigration
 from core.modules.tasks.migrations.m005_task_priority_number import TaskPriorityNumberMigration
+from core.modules.tasks.migrations.m006_task_started_at import TaskStartedAtMigration
 from core.modules.tasks.models.task_wait import TaskWait
 from core.modules.tasks.rules.task_name_rule import TaskNameRule
 from core.modules.tasks.rules.unopenable_block_rule import UnopenableBlockRule
@@ -65,7 +67,7 @@ class TasksModule(Module):
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.chat", "journal.core.docking"]
     models = (ModelDeclaration(Task, query=TaskQuery, commands=TASK_COMMANDS, excluded_subcommands=["block"]), ModelDeclaration(TaskLog), ModelDeclaration(TaskDependency), ModelDeclaration(TaskWait, excluded_subcommands=["make", "edit", "delete"]))
-    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration]
+    migrations = [TasksTablesMigration, PausedTasksBlockedMigration, TaskStateIndexMigration, TaskWaitsTableMigration, TaskPriorityNumberMigration, TaskStartedAtMigration]
     subcommands = (CommentTaskSubcommand, TaskCommentsSubcommand, EnvironmentCardsSubcommand, TaskGraphSubcommand, WaitTaskSubcommand, TaskBoardSubcommand, TaskInspectSubcommand, MakeTaskLogSubcommand, MakeTaskDependencySubcommand,
                    RemoveTaskDependencySubcommand)
     handlers = [RemoveTaskDependencyHandler, WaitTaskHandler]
@@ -75,7 +77,7 @@ class TasksModule(Module):
     listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskStillHeldRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]

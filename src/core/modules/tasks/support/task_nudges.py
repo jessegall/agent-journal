@@ -9,6 +9,8 @@ BLOCKED_TASKS = NudgeDeclaration("tasks.blocked_tasks", NudgeType.REFUSAL, 'bloc
 CURRENT_TASK = NudgeDeclaration("tasks.task_in_hand", NudgeType.REMARK, '{name}, is in hand; {logged}', turn_limited=False)
 LOG_REQUEST = NudgeDeclaration("tasks.log_request", NudgeType.INSTRUCTION, '{writes} writes since you logged {name}: log where it stands with journal task log {task} "<where it stands>"', turn_limited=False)
 STOP_TASK = NudgeDeclaration("tasks.task_at_stop", NudgeType.REFUSAL, '{name}, is in hand: carry on, or block it with journal task block {task} --reason "<why>"')
+STOP_TASKS = NudgeDeclaration("tasks.tasks_at_stop", NudgeType.REFUSAL, 'in hand: {names}: carry on, or close, release or block each')
+TASK_STILL_HELD = NudgeDeclaration("tasks.task_still_held", NudgeType.REMARK, 'back to {name}: carry on, close it, or release it', turn_limited=False)
 UNLOGGED_WRITES = NudgeDeclaration("tasks.unlogged_writes", NudgeType.REFUSAL, '{writes} writes since you logged {name}: writes wait for journal task log {task} "<what was done>"')
 INACTIVE_TASK = NudgeDeclaration("tasks.inactive_task", NudgeType.INSTRUCTION, 'nothing has happened for {minutes} minutes: carry on with {name}, or log why it waits', turn_limited=False)
 
@@ -16,4 +18,4 @@ MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.REMARK, 'log what th
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.INSTRUCTION, "a wait is a block the journal can see, not words: journal task block <n> --on task:<m> opens by itself when that task ends, --until '<command>' opens when the command passes", interval=Interval(Seconds(1800)))
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.REMARK, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", turn_limited=False)
 UNOPENABLE_BLOCKS = NudgeDeclaration("tasks.unopenable_blocks", NudgeType.REMARK, "blocked with nothing to open them: {tasks}: give each --on or --until with journal task block, or journal task unblock <n> once what it waits on has arrived", interval=Interval(Seconds(2700), ClosedTasks(5)), turn_limited=False)
-TASK_NUDGES = [WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, UNLOGGED_WRITES, INACTIVE_TASK]
+TASK_NUDGES = [WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, STOP_TASKS, TASK_STILL_HELD, UNLOGGED_WRITES, INACTIVE_TASK]

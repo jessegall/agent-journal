@@ -30,13 +30,14 @@ class Task(Model):
     priority: TaskPriority = NORMAL_PRIORITY
     reason: str = ""
     outcome: str = ""
+    started_at: Timestamp | None = None
     closed_at: Timestamp | None = None
 
     def __post_init__(self) -> None:
         check_title(self.cli_name, self.title)
 
     def start(self, timestamp: Timestamp, actor: Actor) -> "Task":
-        return self.moved(TaskLifecycle.start, holder_id=actor.id)
+        return self.moved(TaskLifecycle.start, holder_id=actor.id, started_at=timestamp)
 
     def close(self, timestamp: Timestamp, actor: Actor, outcome: str) -> "Task":
         return self.moved(TaskLifecycle.close, outcome=outcome, closed_at=timestamp, holder_id=None)
