@@ -20,6 +20,9 @@ from core.modules.messages.commands.draw_flowchart.draw_flowchart_subcommand imp
 from core.modules.messages.commands.react_message.react_message_handler import ReactMessageHandler
 from core.modules.messages.commands.react_message.react_message_subcommand import ReactMessageSubcommand
 from core.modules.messages.commands.send_message.send_message_handler import SendMessageHandler
+from core.modules.messages.commands.tell_idle_agent.tell_idle_agent_handler import TellIdleAgentHandler
+from core.modules.messages.listeners.allowed_stop_listener import AllowedStopListener
+from core.modules.messages.listeners.idle_message_listener import IdleMessageListener
 from core.modules.messages.queries.message_query import MessageQuery
 from core.modules.messages.migrations.m001_messages import MessagesTableMigration
 from core.modules.messages.migrations.m002_message_files import MessageFilesMigration
@@ -62,7 +65,7 @@ class MessagesModule(Module):
     views = [AttachedFile, ChatMessage, MainChatMark]
     migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler)
+    handlers = (DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, TellIdleAgentHandler)
     driver_rules = [MessageDeliveryRule, MessageShowReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
@@ -73,5 +76,5 @@ class MessagesModule(Module):
     marks = MESSAGE_MARKS
     skills = [SkillDeclaration("journal-flowcharts", "Draw a flowchart in the chat, and know when one fits; load it when the user asks for a flowchart or a diagram, or a process with branches is easier to see than to read.",
                                keywords=("flowchart", "flow chart", "diagram"), commands=tuple(["message"]))]
-    listeners = []
+    listeners = [IdleMessageListener, AllowedStopListener]
     seeders = [MessagesSeeder]

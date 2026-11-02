@@ -4,6 +4,7 @@ from core.base.database.database import Database
 from core.base.timestamp import Timestamp
 from core.base.driver.hook_event_name import HookEventName
 from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
 from core.base.query.conditions.minimum import Minimum
 from core.base.query.conditions.equal import Equal
 from core.base.query.query import Query
@@ -11,6 +12,8 @@ from core.modules.drivers.models.enums.hook_answer import HookAnswer
 from core.modules.drivers.models.hook_call import HookCall
 
 STOPS_READ = 20
+TURN_HOOKS = (HookEventName.SESSION_START, HookEventName.PROMPT, HookEventName.PRE_TOOL_USE, HookEventName.POST_TOOL_USE, HookEventName.POST_TOOL_USE_FAILURE, HookEventName.STOP)
+IDLE_HOOKS = (HookEventName.SESSION_START, HookEventName.STOP)
 
 
 class HookCallQuery(Query[HookCall]):
@@ -30,6 +33,10 @@ class HookCallQuery(Query[HookCall]):
     def last_stop_refused(self, agent_id: int) -> bool:
         stops = self.agent(agent_id).filter(hook=HookEventName.STOP).newest().page(1, 1).rows
         return bool(stops) and stops[0].answer == HookAnswer.REFUSED
+
+    def is_idle(self, agent_id: int) -> bool:
+        calls = self.agent(agent_id).matching(Among("hook", TURN_HOOKS)).newest().page(1, 1).rows
+        return bool(calls) and calls[0].hook in IDLE_HOOKS and calls[0].answer == HookAnswer.ALLOWED
 
     def write_count(self, agent_id: int, timestamp: Timestamp) -> int:
         return self.agent(agent_id).filter(writes_files=True, answer=HookAnswer.ALLOWED).matching(Minimum("created_at", timestamp.text)).count()

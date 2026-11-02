@@ -11,13 +11,14 @@ from core.modules.drivers.commands.enter_agent_line.enter_agent_line import Ente
 from core.modules.drivers.models.agent_line import AgentLine
 
 RESUME_SOURCE = "drivers.resume"
-TERMINAL_SOURCES = (RESUME_SOURCE, "tasks.wait-ended")
+IDLE_MESSAGE_SOURCE = "messages.idle"
+TERMINAL_SOURCES = (RESUME_SOURCE, IDLE_MESSAGE_SOURCE, "tasks.wait-ended")
 
 
 class TypedLineListener(CommitListener):
     """Types a line for an agent that may be sitting idle and so sends no hook that could carry it: that it
-    was resumed, or that a task it waited on opened. With no terminal to type in, the line waits for its next
-    hook."""
+    was resumed, that a message waits, or that a task it waited on opened. With no terminal to type in, the
+    line waits for its next hook."""
 
     name = "drivers.typed-line"
     event = "agent_line.create"
