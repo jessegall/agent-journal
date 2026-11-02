@@ -169,7 +169,7 @@ def test_output_that_is_not_utf8_still_ends_its_mark(new_story):
 
 def test_a_run_past_5_seconds_docks_its_output_once_and_a_short_one_does_not(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    start_process(story, "tail -f log")
+    start_process(story, "make build", category=CommandCategory.BUILD)
     story.tick("s-1")
     story.run_listeners()
     story.expect_absent("dock-item list", "processes.output")
@@ -188,8 +188,28 @@ def test_the_chat_window_reads_a_runs_output_so_its_mark_can_open(new_story):
 
 def test_a_docked_run_without_a_title_tells_the_agent_to_name_it_once(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
-    process = moved_run(story, "./deploy.sh staging")
+    process = moved_run(story, "./deploy.sh staging", category=CommandCategory.BUILD)
     story.advance(timedelta(seconds=6))
     wanted = f'journal output title {process.id} "<what it does>"'
     assert any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
     assert not any(wanted in line for line in story.hook("s-1", HookSamples.stop()).lines)
+
+
+def test_only_a_real_long_run_docks_and_not_one_whose_folder_says_it_ended(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    start_process(story, "grep -n word file")
+    ended = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.container.get(OutputFolder).write_end(ended.id, 0)
+    story.advance(timedelta(seconds=6))
+    story.hook("s-1", HookSamples.stop())
+    story.run_listeners()
+    story.expect_absent("dock-item list", "processes.output")
+
+
+def test_when_an_agent_ends_the_runs_it_left_going_end_as_lost(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    process = start_process(story, "make build", category=CommandCategory.BUILD)
+    story.user_actor = Actor(story.new_row_id('actor make user "Ada"'), ActorType.USER)
+    story.expect_success(f"agent end {story.agent.id}", actor=story.user_actor)
+    story.run_listeners()
+    story.expect_text(f"output status {process.id}", f"{process.id}  orphaned", actor=story.user_actor)
