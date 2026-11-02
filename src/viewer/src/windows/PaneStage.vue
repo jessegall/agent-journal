@@ -119,7 +119,7 @@ const facts = ref(NO_FACTS);
 const now = ref(Date.now());
 const currentTask = computed(() => (facts.value.task_id ? {id: facts.value.task_id, title: facts.value.task_title} : null));
 // the window that lists what each count in the bars counts
-const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
+const COUNT_WINDOWS = {jobs: "schedules.jobs", tasks: "tasks.tasks", waiting: "questions.questions", agents: "agents.agents", usage: "usage.usage", cost: "usage.cost", context: "usage.context", fitness: "usage.fitness", load: "usage.load"};
 // the agents an agent sends off, one umbrella in the bar: each kind is a group of its dropdown
 const HELPER_WINDOW = "agents.subagents";
 const usage = ref({agents: [], windows: []});
@@ -150,6 +150,7 @@ const windowTitle = (name) => (props.catalogue.dropdown(name) || props.catalogue
 const helperGroups = () =>
     (props.catalogue.dropdown(HELPER_WINDOW) || props.catalogue.window(HELPER_WINDOW) ? [{name: HELPER_WINDOW, title: windowTitle(HELPER_WINDOW), count: usage.value.agents.filter((row) => row.role !== "main").length}] : []);
 const openCount = (key, anchor) => {
+    if (key === "cost") readUsage();
     const name = COUNT_WINDOWS[key];
     const groups = key === "helpers" ? helperGroups() : props.catalogue.dropdown(name) ? [{name, title: windowTitle(name), count: 0}] : [];
     if (groups.length) openDropdown.value = {key, groups, anchor};
