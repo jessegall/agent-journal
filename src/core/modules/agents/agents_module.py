@@ -27,7 +27,6 @@ from core.modules.agents.models.agent import Agent
 from core.modules.agents.models.menu_answer import MenuAnswer
 from core.modules.agents.upgrade.agents_move import AgentsMove
 from core.modules.agents.listeners.menu_answer_mark_listener import MenuAnswerMarkListener
-from core.modules.agents.listeners.subagent_mark_listener import SubagentMarkListener
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_handler import RecordMenuAnswerHandler
 from core.modules.agents.commands.record_menu_answer.record_menu_answer_subcommand import RecordMenuAnswerSubcommand
 from core.modules.agents.support.agent_marks import AGENT_MARKS
@@ -59,6 +58,6 @@ class AgentsModule(Module):
                                  events=["agent.*"]),
                WindowDeclaration("agents.transcript", "Transcript", "transcript.js", WindowLoading.COMPONENT, icon=WindowIcon.DOCUMENT, place=WindowPlace.AGENT,
                                  reads=["agent transcript", "hook-call feed"], events=["hook_call.create"])]
-    listeners = [SubagentMarkListener, MenuAnswerMarkListener]
+    listeners = [MenuAnswerMarkListener]
     marks = AGENT_MARKS
     seeders = [AgentsSeeder]

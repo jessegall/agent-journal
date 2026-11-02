@@ -1,5 +1,6 @@
 <script setup>
 import FlowchartDialog from "../src/chat/FlowchartDialog.vue";
+import GrowingCard from "../src/chat/GrowingCard.vue";
 import {computed, inject, ref} from "vue";
 import {WINDOW_CONTEXT} from "./windowContextKey.js";
 import Icon from "../src/kit/Icon.vue";
@@ -71,87 +72,91 @@ function pick(face) {
 </script>
 
 <template>
-    <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
-        <div class="message-body">
-            <div ref="bubble" class="message-card md" @click="peekChip">
-                <template v-if="message.peer">
-                    <div class="message-peer" data-message-peer>Message from {{ message.peer }}</div>
-                </template>
-                <template v-if="message.parent_id">
-                    <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
-                </template>
-                <div v-html="html" />
-                <template v-if="edges.length">
-                    <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
-                    <template v-if="chartOpen">
-                        <FlowchartDialog :title="message.text" :edges="edges" @close="chartOpen = false" />
-                    </template>
-                </template>
-            </div>
-            <div :class="['message-tools', {picking}]" data-message-tools>
-                <template v-if="picking">
-                    <div class="message-faces" data-message-faces>
-                        <template v-for="face in FACES" :key="face">
-                            <button type="button" class="message-face" :title="`React ${face}`" :data-face="face" @click="pick(face)">{{ face }}</button>
-                        </template>
-                    </div>
-                    <button type="button" class="message-tool" data-message-action="cancel-react" title="Cancel" @click="picking = false"><Icon name="close" :size="11" /></button>
-                </template>
-                <template v-else>
-                    <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = true">React</button>
-                    <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
-                    <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
-                    <template v-if="deletable">
-                        <button type="button" class="message-tool" data-message-action="delete" title="Only while it is unread" @click="emit('delete', message)">Delete</button>
-                    </template>
-                </template>
-            </div>
+    <template v-if="message.peer || message.recipient">
+        <div class="message" data-message-between-agents :data-ref="`message:${message.id}`">
+            <GrowingCard :title="message.recipient ? `Message sent to ${message.recipient}` : `Message from ${message.peer}`" :text="message.text" :icon="message.recipient ? 'send' : 'reply'" :person="message.recipient || message.peer" :incoming="!message.recipient" />
         </div>
-        <template v-if="reactions.length">
-            <div class="message-reactions" data-message-reactions>
-                <template v-for="reaction in reactions" :key="reaction.emoji">
-                    <button type="button" :class="['message-reaction', {mine: reaction.mine}]" :title="reaction.title" :data-reaction="reaction.emoji" @click="emit('react', message, reaction.emoji)">
-                        {{ reaction.emoji }}
-                        <template v-if="reaction.count > 1">
-                            <span class="message-reaction-count">{{ reaction.count }}</span>
+    </template>
+    <template v-else>
+        <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
+            <div class="message-body">
+                <div ref="bubble" class="message-card md" @click="peekChip">
+                    <template v-if="message.parent_id">
+                        <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
+                    </template>
+                    <div v-html="html" />
+                    <template v-if="edges.length">
+                        <button type="button" class="message-flowchart" data-flowchart-open @click="chartOpen = true">Open the flowchart</button>
+                        <template v-if="chartOpen">
+                            <FlowchartDialog :title="message.text" :edges="edges" @close="chartOpen = false" />
                         </template>
-                    </button>
-                </template>
-            </div>
-        </template>
-        <template v-if="files.length">
-            <div class="message-files" data-message-files>
-                <template v-for="file in files" :key="file.name">
-                    <template v-if="file.isImage">
-                        <a :href="file.address" target="_blank" class="message-image" :title="file.title"><img :src="file.address" :alt="file.name"></a>
+                    </template>
+                </div>
+                <div :class="['message-tools', {picking}]" data-message-tools>
+                    <template v-if="picking">
+                        <div class="message-faces" data-message-faces>
+                            <template v-for="face in FACES" :key="face">
+                                <button type="button" class="message-face" :title="`React ${face}`" :data-face="face" @click="pick(face)">{{ face }}</button>
+                            </template>
+                        </div>
+                        <button type="button" class="message-tool" data-message-action="cancel-react" title="Cancel" @click="picking = false"><Icon name="close" :size="11" /></button>
                     </template>
                     <template v-else>
-                        <a :href="file.address" target="_blank" class="message-file">{{ file.name }}</a>
+                        <button type="button" class="message-tool" data-message-action="react" title="React to this" @click="picking = true">React</button>
+                        <button type="button" class="message-tool" data-message-action="reply" @click="emit('reply', message)">Reply</button>
+                        <button type="button" class="message-tool" data-message-action="copy" @click="copy">{{ copied ? "Copied" : "Copy" }}</button>
+                        <template v-if="deletable">
+                            <button type="button" class="message-tool" data-message-action="delete" title="Only while it is unread" @click="emit('delete', message)">Delete</button>
+                        </template>
                     </template>
+                </div>
+            </div>
+            <template v-if="reactions.length">
+                <div class="message-reactions" data-message-reactions>
+                    <template v-for="reaction in reactions" :key="reaction.emoji">
+                        <button type="button" :class="['message-reaction', {mine: reaction.mine}]" :title="reaction.title" :data-reaction="reaction.emoji" @click="emit('react', message, reaction.emoji)">
+                            {{ reaction.emoji }}
+                            <template v-if="reaction.count > 1">
+                                <span class="message-reaction-count">{{ reaction.count }}</span>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <template v-if="files.length">
+                <div class="message-files" data-message-files>
+                    <template v-for="file in files" :key="file.name">
+                        <template v-if="file.isImage">
+                            <a :href="file.address" target="_blank" class="message-image" :title="file.title"><img :src="file.address" :alt="file.name"></a>
+                        </template>
+                        <template v-else>
+                            <a :href="file.address" target="_blank" class="message-file">{{ file.name }}</a>
+                        </template>
+                    </template>
+                </div>
+            </template>
+            <template v-if="links.length">
+                <div class="message-links" data-message-links>
+                    <MarkIcon class="message-links-icon" name="linked" />
+                    <template v-if="linksCounted && !linksOpen">
+                        <button type="button" class="message-links-count" data-message-links-count @click="linksOpen = true">{{ linkCount }}</button>
+                    </template>
+                    <template v-else>
+                        <span data-message-links-rows><TextDisplay :text="linksLine" inline /></span>
+                    </template>
+                </div>
+            </template>
+            <div class="message-foot">
+                <time class="message-time">{{ time }}</time>
+                <template v-if="Number.isInteger(message.id)">
+                    <span class="message-id" data-message-id>#{{ message.id }}</span>
+                </template>
+                <template v-if="fromPerson">
+                    <ReadTicks :message="message" />
                 </template>
             </div>
-        </template>
-        <template v-if="links.length">
-            <div class="message-links" data-message-links>
-                <MarkIcon class="message-links-icon" name="linked" />
-                <template v-if="linksCounted && !linksOpen">
-                    <button type="button" class="message-links-count" data-message-links-count @click="linksOpen = true">{{ linkCount }}</button>
-                </template>
-                <template v-else>
-                    <span data-message-links-rows><TextDisplay :text="linksLine" inline /></span>
-                </template>
-            </div>
-        </template>
-        <div class="message-foot">
-            <time class="message-time">{{ time }}</time>
-            <template v-if="Number.isInteger(message.id)">
-                <span class="message-id" data-message-id>#{{ message.id }}</span>
-            </template>
-            <template v-if="fromPerson">
-                <ReadTicks :message="message" />
-            </template>
-        </div>
-    </article>
+        </article>
+    </template>
 </template>
 
 <style scoped>
@@ -304,12 +309,6 @@ function pick(face) {
 
 .message-card:has(.message-quote) {
     min-width: 180px;
-}
-
-.message-peer {
-    margin: 0 0 4px;
-    color: var(--text-3);
-    font-size: 12px;
 }
 
 .message-quote {

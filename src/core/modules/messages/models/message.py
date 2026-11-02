@@ -26,3 +26,4 @@ class Message(Model):
     flowchart_edges: str = "[]"
     peer: str = ""
     peer_key: str = ""
+    recipient: str = ""
