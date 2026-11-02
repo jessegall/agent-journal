@@ -19,4 +19,6 @@ MISSED_LOG = NudgeDeclaration("tasks.missed_log", NudgeType.REMARK, 'log what th
 WAIT_DESCRIPTION = NudgeDeclaration("tasks.wait_in_words", NudgeType.INSTRUCTION, "a wait is a block: journal task block <n> --on task:<m>, or --until '<command>'", interval=Interval(Seconds(1800)), required_command="")
 TASK_NAME = NudgeDeclaration("tasks.named_task", NudgeType.REMARK, "task {task} names open task {other}; if it waits on it: journal task block {task} --on task:{other}", turn_limited=False)
 UNOPENABLE_BLOCKS = NudgeDeclaration("tasks.unopenable_blocks", NudgeType.REMARK, 'blocked with nothing to open them: {tasks}: give each --on or --until, or unblock it', interval=Interval(Seconds(2700), ClosedTasks(5)), turn_limited=False)
-TASK_NUDGES = [TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]
+TASK_FILED = NudgeDeclaration("tasks.filed", NudgeType.REMARK, "filed: the assigner hands it out by priority", turn_limited=False)
+TASK_FILED_KEEP_CURRENT = NudgeDeclaration("tasks.filed_keep_current", NudgeType.REMARK, "filed: carry on with task:{task}, the assigner hands it out by priority", turn_limited=False)
+TASK_NUDGES = [TASK_FILED, TASK_FILED_KEEP_CURRENT, TASK_REOPENED, WAIT_DESCRIPTION, TASK_NAME, UNOPENABLE_BLOCKS, MISSED_LOG, TASK_RETURN, BLOCKED_TASKS, CURRENT_TASK, LOG_REQUEST, STOP_TASK, STOP_TASKS, TASK_RETURN_REMINDER, UNLOGGED_WRITES, INACTIVE_TASK]

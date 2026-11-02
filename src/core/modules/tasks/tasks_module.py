@@ -36,6 +36,7 @@ from core.modules.tasks.migrations.m003_task_state_index import TaskStateIndexMi
 from core.modules.tasks.models.task_card import TaskCard
 from core.modules.tasks.rules.inactive_task_reminder_rule import InactiveTaskReminderRule
 from core.modules.tasks.rules.task_summary_line_rule import TaskSummaryLineRule
+from core.modules.tasks.rules.task_filed_rule import TaskFiledRule
 from core.modules.tasks.rules.task_return_line_rule import TaskReturnLineRule
 from core.modules.tasks.commands.make_task_log.make_task_log_subcommand import MakeTaskLogSubcommand
 from core.modules.tasks.queries.task_query import TaskQuery
@@ -85,7 +86,7 @@ class TasksModule(Module):
     listeners = [DependencyRemoverListener, TaskMoveMarkListener, TaskWaitListener]
     marks = TASK_MARKS
     docks = TASK_DOCKS
-    driver_rules = [TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
+    driver_rules = [TaskFiledRule, TaskReturnReminderRule, WaitDescriptionRule, TaskNameRule, UnopenableBlockRule, LogRequestRule, UnloggedWriteRule, TaskStopRule, BlockedWorkRule, TaskSummaryLineRule, TaskReturnLineRule, InactiveTaskReminderRule]
     windows = [WindowDeclaration("tasks.tasks", "Tasks", "tasks.js", WindowLoading.COMPONENT, icon=WindowIcon.TASK, reads=["task board", "task graph", "task list", "task show", "task inspect", "plan place", "plan board", "plan outline", "task-log list"],
                                runs=["phase place", "task make", "task edit", "task delete", "task start", "task block", "task unblock", "task retest", "task close", "task cancel", "task reopen"], events=["task.*"])]
     seeders = [TasksSeeder]
