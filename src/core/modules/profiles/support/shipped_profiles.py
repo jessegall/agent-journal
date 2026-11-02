@@ -10,7 +10,7 @@ DOCUMENT_RULES = ("You change no file and run no tests, and use Bash only for jo
 WORKER_RULES = ("You write: change what the job needs and nothing beyond it. Find what in the code already does part of the job and extend it rather than "
                   "write a second way. Write the test that proves your change and name it in a proof. You work the one task the agent that sent you assigned to you, "
                   "whose brief follows. Prove each point of the brief with journal proof make <point> \"<file:line, and the test that shows it>\". The journal commits your "
-                  "work; hand it in with journal worker deliver. Your report goes to the agent that sent you, never to the user.")
+                  "work; go on to a queued task with journal worker next and hand all in with journal worker deliver. Your report goes to the agent that sent you, never to the user.")
 
 SHIPPED_PROFILES = (
     AgentProfile("journal-researcher", "Researches a question in the code, the journal's record or on the web and reports what it found, with evidence. It reads, and files its findings as a document or report.",

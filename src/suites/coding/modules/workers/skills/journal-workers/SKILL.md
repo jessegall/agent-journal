@@ -27,6 +27,7 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 - `journal proof points --agent <n>` lists the points of your task's brief.
 - Prove each one with `journal proof make <point> "<file:line, and the test>" --test "<command>"`: the journal runs that
   test command in your worktree. A proof with no test waits for the main agent's check.
-- `journal worker deliver` hands your task in, with a proof for every point, and prints your next task if there is one.
-  After the last, the journal runs your tests; those that fail come back to you to fix and deliver again.
+- `journal worker next` commits your task, with a proof for every point, starts the next task in your queue and prints it.
+- `journal worker deliver` hands in all your tasks together, refused while one is queued. The journal then runs your
+  tests in turn; those that fail come back to you to fix and deliver again.
 - Git is not yours to run: the journal commits your work.

@@ -5,7 +5,6 @@ from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from suites.coding.modules.workers.queries.worktree_query import WorktreeQuery
 from suites.coding.modules.workers.support.worker_step_check import WorkerStepCheck
-from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.deliver_task.deliver_task import DeliverTask
 
@@ -13,8 +12,8 @@ DELIVERY_EVENTS = ["worker_clocking_out", "worker_delivering"]
 
 
 class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
-    """`journal worker deliver`: the worker's task is done, with a proof for every point of its brief; a task
-    delegated after it starts at once and its brief is printed."""
+    """`journal worker deliver`: hands in all the worker's tasks, once none is queued and its last has a proof for
+    every point of its brief."""
 
     cli_name = "worker"
     name = "deliver"
@@ -32,7 +31,5 @@ class DeliverTaskSubcommand(Subcommand[DeliverTask, Task]):
         return DeliverTask()
 
     def write_output(self, value: object, output: Output) -> None:
-        if isinstance(value, Task) and value.state is TaskState.STARTED:
-            output.line(f"your next task, task {value.id}: {value.title}\n{value.brief}")
-        elif isinstance(value, Task):
+        if isinstance(value, Task):
             output.row(value)

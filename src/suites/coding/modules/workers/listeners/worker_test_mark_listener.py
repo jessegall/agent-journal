@@ -31,7 +31,7 @@ class WorkerTestMarkListener(MarkListener):
             self.mark(event, worktree, WorkerMarkVariant.QUEUED, f"Tests of worker {worker} queued", False)
         elif not any(row.state in TEST_WAITING_STATES for row in proofs):
             failed = sum(row.state is ProofState.SHORT for row in proofs)
-            self.mark(event, worktree, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed" if failed else f"Tests of worker {worker} passed", True)
+            self.mark(event, worktree, WorkerMarkVariant.FAILED if failed else WorkerMarkVariant.PASSED, f"Tests of worker {worker}: {failed} failed, back with the worker" if failed else f"Tests of worker {worker} passed", True)
 
     def mark(self, event: LoggedEvent, worktree: Worktree, variant: WorkerMarkVariant, text: str, ended: bool) -> None:
         self.show(event, WorkerMarkType.TESTS, variant, text, worktree.environment_id, worktree.agent_id, key=f"worker-tests:{worktree.id}", ended=ended)
