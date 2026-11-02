@@ -87,3 +87,4 @@ src/viewer/tests/sample-window/web/
 /.commandments/sessions/
 
 !src/viewer/tests/look/**/*.png
+/node_modules/
