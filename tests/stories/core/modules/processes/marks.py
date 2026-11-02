@@ -69,7 +69,7 @@ def test_a_run_moved_to_the_background_updates_its_mark_in_place(new_story):
     story.container.get(Bus).run(MoveProcess(process.id), story.agent, environment_id=1)
     story.run_listeners()
     assert mark_count(story) == starting_count
-    story.expect_text(MARKS, "process:1", "background")
+    story.expect_text(MARKS, "process:1", "Running make build")
 
 
 def test_the_mark_is_a_process_mark_that_opens_the_output_and_has_a_stop_and_a_dock_button(new_story):

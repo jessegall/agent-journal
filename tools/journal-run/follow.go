@@ -8,6 +8,11 @@ import (
 	"time"
 )
 
+const (
+	reportAttempts      = 60
+	reportRetryInterval = time.Second
+)
+
 // Tracker reads a run's folder as the shell fills it: it shows what the agent sees as each part ends, reports each
 // part and the end through the journal client, and moves the run to the background past its limit.
 type Tracker struct {
@@ -83,7 +88,17 @@ func (tracker *Tracker) partEnded(stdout io.Writer, position, code int) {
 	tracker.Reported[position] = true
 	uncapped := tracker.Options.LimitSeconds == 0
 	io.WriteString(stdout, Shown(tracker.Folder.Output(position), tracker.Options.Process, tracker.Options.CapCharacters, uncapped))
-	_ = tracker.Client.Run("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
+	tracker.report("process", "part-end", strconv.Itoa(tracker.Options.Process), "--position", strconv.Itoa(position), "--exit-code", strconv.Itoa(code))
+}
+
+// report tells the journal of an end, and tells it again while the server is away, as during a restart.
+func (tracker *Tracker) report(arguments ...string) {
+	for attempt := 0; attempt < reportAttempts; attempt++ {
+		if tracker.Client.Run(arguments...) == nil || tracker.Client.Reachable() {
+			return
+		}
+		time.Sleep(reportRetryInterval)
+	}
 }
 
 // finish reports a part the shell ended before it could write its status, then the end of the chain.
@@ -99,7 +114,7 @@ func (tracker *Tracker) finish(stdout io.Writer, code int) int {
 		}
 	}
 	bytes, lines := tracker.Folder.Sizes(tracker.Parts)
-	_ = tracker.Client.Run("process", "end", strconv.Itoa(tracker.Options.Process), "--exit-code", strconv.Itoa(code), "--bytes", strconv.Itoa(bytes), "--lines", strconv.Itoa(lines))
+	tracker.report("process", "end", strconv.Itoa(tracker.Options.Process), "--exit-code", strconv.Itoa(code), "--bytes", strconv.Itoa(bytes), "--lines", strconv.Itoa(lines))
 	return code
 }
 
