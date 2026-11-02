@@ -63,7 +63,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div :class="['file-feed', {flush: view.flush}]" :style="sizing" data-file-feed>
+    <div :class="['file-feed', {flush: view.flush}]" :style="sizing" data-file-feed data-window-flush>
         <FeedBar :options="view" :filter="filter" @options="setOptions" @filter="filter = $event" @expand="expand" />
         <div ref="scroller" class="file-feed-scroll">
             <template v-if="failure">

@@ -193,7 +193,7 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
     display: flex;
     gap: 8px;
     align-items: center;
-    padding: 8px 0;
+    padding: 0 0 8px;
     background: var(--bg);
 }
 
@@ -222,7 +222,6 @@ defineExpose({board, groups, query, focusSearch: () => search.value?.focus()});
 .tasks-search {
     flex: 1;
     min-width: 0;
-    max-width: 320px;
     padding: 6px 12px;
     border: 1px solid var(--border-2);
     border-radius: 8px;

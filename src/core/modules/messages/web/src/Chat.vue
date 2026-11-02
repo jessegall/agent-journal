@@ -406,7 +406,7 @@ const linkOf = (notice) => (notice.link.startsWith("http") ? notice.link : `#ope
     display: flex;
     flex-direction: column;
     /* version 4's notices run edge to edge under the tab bar: out past the pane's padding on the sides and the top */
-    margin: -16px -16px 0;
+    margin: -8px -12px 0;
 }
 
 .notice {
