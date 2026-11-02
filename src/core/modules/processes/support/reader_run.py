@@ -11,7 +11,8 @@ STAGE_VARIABLE = "JOURNAL_OUTPUT_STAGE"
 class ReaderRun:
     """Applies a reader to the text of an output: a pattern picks the lines that match with their numbers, a
     script of the project is handed the output on its input, with the stage of the run in
-    JOURNAL_OUTPUT_STAGE, under a time limit; a pattern also finds the last match of the summary."""
+    JOURNAL_OUTPUT_STAGE, under a time limit; a pattern also finds the last match of the summary, and of the
+    progress, which is its one number as a percent, or its two numbers as done and total."""
 
     def __init__(self, limit_seconds: float = SCRIPT_SECONDS) -> None:
         self.limit_seconds = limit_seconds
@@ -29,9 +30,12 @@ class ReaderRun:
             return current
         pattern = re.compile(reader.progress_pattern)
         hits = [hit for line in text.splitlines() if (hit := pattern.search(line))]
-        if not hits or not hits[-1].groups() or not (hits[-1].group(1) or "").isdigit():
+        numbers = [int(group) for group in hits[-1].groups() if group and group.isdigit()] if hits else []
+        if not numbers:
             return current
-        return min(100, int(hits[-1].group(1)))
+        if len(numbers) > 1 and numbers[1] > 0:
+            return min(100, numbers[0] * 100 // numbers[1])
+        return min(100, numbers[0])
 
     def summary(self, reader: Reader, text: str) -> str:
         if not reader.summary_pattern:
