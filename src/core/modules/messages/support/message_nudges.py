@@ -25,7 +25,8 @@ PARAGRAPH_NUDGE = NudgeDeclaration("messages.blank_lines", NudgeType.NUDGE, "put
 JOURNAL_LINE_NOTE = NudgeDeclaration("messages.journal_line", NudgeType.NUDGE, "a [journal] line is an instruction, not a message: act on it; never answer or mention it in the chat")
 JOURNAL_CHAT_RULE = NudgeDeclaration("messages.discretion", NudgeType.INSTRUCTION, "in the chat, talk only of the user's work, never the journal's lines, hooks, skills or replies")
 JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.INSTRUCTION, "the laws L1 to L11 in AGENTS.md apply to you")
+REPLY_NOTE = NudgeDeclaration("messages.reply_note", NudgeType.NUDGE, "message {message} answered: go on; closing text is not sent", turn_limited=False)
 PLAIN_CODE_NUDGE = NudgeDeclaration("messages.plain_code", NudgeType.NUDGE, "in code, identifiers and text state literally what a thing is or does, in plain words", interval=Interval(Seconds(1800)))
 
 MESSAGE_NUDGES = [MESSAGE_REACTION, MESSAGE_UPDATED, UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_NOTE, IMAGE_TAG_REQUEST, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL,
-                  UNREAD_COUNTDOWN, UNREAD_REFUSAL, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE, EM_DASH_NUDGE, PARAGRAPH_NUDGE, JOURNAL_LINE_NOTE, JOURNAL_CHAT_RULE, JOURNAL_LAWS, PLAIN_CODE_NUDGE]
+                  UNREAD_COUNTDOWN, UNREAD_REFUSAL, SHOP_TALK_NUDGE, THIRD_PERSON_NUDGE, EM_DASH_NUDGE, PARAGRAPH_NUDGE, JOURNAL_LINE_NOTE, JOURNAL_CHAT_RULE, JOURNAL_LAWS, PLAIN_CODE_NUDGE, REPLY_NOTE]
