@@ -53,7 +53,7 @@ def test_the_agent_is_never_told_what_a_hook_cost_and_the_terminal_says_when_it_
     timing = story.container.get(Timing)
     timing.stamps[:] = Timing.started("go_start").stamps
     assert not any("points" in line for line in story.hook("s-1", HookSamples.stop()).lines)
-    monkeypatch.setattr("core.modules.drivers.support.hook_durations.HOOK_LIMIT_POINTS", 1)
+    monkeypatch.setattr("core.modules.drivers.support.hook_cost_tool.HOOK_LIMIT_POINTS", 1)
     timing.stamps[:] = Timing.started("go_start").stamps
     reply = story.hook("s-1", HookSamples.stop())
     assert not any("points" in line for line in reply.lines)

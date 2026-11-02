@@ -1,4 +1,5 @@
 import shutil
+import os
 from pathlib import Path
 from core.base.journal_home import JournalHome
 from core.base.timestamp import Timestamp
@@ -8,6 +9,7 @@ LINE_FILE = "line"
 PARTS_FILE = "parts"
 PID_FILE = "pid"
 END_FILE = "end"
+FIRST_OUTPUT_FILE = "1.out"
 HEARTBEAT_FILE = "heartbeat"
 READER_LINES_FILE = "reader.lines"
 TAIL_BYTES = 8192
@@ -81,6 +83,21 @@ class OutputFolder:
 
     def output_paths(self, process_id: int) -> list[Path]:
         return [self.home.folder / FOLDER_NAME / str(process_id) / f"{position}.out" for position in range(1, len(self.part_texts(process_id)) + 1)]
+
+    def running_ids(self) -> tuple[int, ...]:
+        folder = self.home.folder / FOLDER_NAME
+        names = [path.name for path in folder.iterdir() if path.name.isdigit()] if folder.is_dir() else []
+        return tuple(int(name) for name in names if self.is_running(int(name)))
+
+    def is_running(self, process_id: int) -> bool:
+        pid = self.pid(process_id)
+        if pid is None or self.end(process_id) is not None or not (self.home.folder / FOLDER_NAME / str(process_id) / FIRST_OUTPUT_FILE).exists():
+            return False
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
 
     def bytes_after(self, process_id: int, offset: int) -> bytes:
         """The bytes of the parts' output, in order, from the offset on; only the part files that reach past it are opened."""
