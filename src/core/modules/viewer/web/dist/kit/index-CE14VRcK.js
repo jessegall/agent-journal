@@ -2438,7 +2438,7 @@ const Xc = ["innerHTML"], Qc = ["innerHTML"], eu = {
       innerHTML: n.value
     }, null, 8, Qc));
   }
-}, dt = /* @__PURE__ */ Z(eu, [["__scopeId", "data-v-30fd9c25"]]), tu = { class: "fact" }, nu = { class: "fact-label" }, su = {
+}, dt = /* @__PURE__ */ Z(eu, [["__scopeId", "data-v-1a43d211"]]), tu = { class: "fact" }, nu = { class: "fact-label" }, su = {
   __name: "DashboardFact",
   props: { label: { type: String, required: !0 }, body: { type: String, required: !0 } },
   setup(e) {
@@ -8013,7 +8013,7 @@ const Og = /* @__PURE__ */ Eg(Cg), Tg = ["width", "height", "viewBox"], Bg = ["w
       }, null, 8, Lg)
     ], 8, Tg));
   }
-}, Hv = /* @__PURE__ */ Z(Ig, [["__scopeId", "data-v-489f0852"]]), Fv = Yo(() => import("./VoiceFigure-B_4jNS9a.js").then((e) => e.V)), Uv = "1.0.0", Vv = "3.5";
+}, Hv = /* @__PURE__ */ Z(Ig, [["__scopeId", "data-v-489f0852"]]), Fv = Yo(() => import("./VoiceFigure-5e077Rml.js").then((e) => e.V)), Uv = "1.0.0", Vv = "3.5";
 export {
   qg as $,
   cv as A,

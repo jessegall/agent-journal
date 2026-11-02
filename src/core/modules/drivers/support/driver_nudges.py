@@ -15,6 +15,6 @@ MISSING_MODEL = NudgeDeclaration("drivers.missing_model", NudgeType.REFUSAL, "na
 UNBOUND_DISPATCH = NudgeDeclaration("drivers.unbound_dispatch", NudgeType.REFUSAL, "the dispatch has no concrete job: give it a description and a bounded prompt", turn_limited=False)
 LONG_OUTPUT = NudgeDeclaration("drivers.long_output", NudgeType.REMARK, "that result was {lines} lines: read a range, or read the output by its number, so less stays in the context", interval=Interval(Seconds(600)))
 
-DEBT_COUNTDOWN = NudgeDeclaration("drivers.debt_countdown", NudgeType.INSTRUCTION, "{left} more tool uses, then only reads and journal commands run: {line}", turn_limited=False, pays="")
-DEBT_HOLD = NudgeDeclaration("drivers.debt_hold", NudgeType.REFUSAL, 'act on this first: {line}; if it truly does not apply: journal debt skip {debt} --reason "<why>"')
+DEBT_COUNTDOWN = NudgeDeclaration("drivers.debt_countdown", NudgeType.INSTRUCTION, "{subject} due: {left} tool uses", turn_limited=False, pays="")
+DEBT_HOLD = NudgeDeclaration("drivers.debt_hold", NudgeType.REFUSAL, '{subject} is due: do it, or journal debt skip {debt} --reason "<why>"')
 DRIVER_NUDGES = [DEBT_COUNTDOWN, DEBT_HOLD, REPEATED_STOP, OPENING_LINE, RULE_FAILED, TAKEOVER, PAUSED_REFUSAL, MISSING_MODEL, UNBOUND_DISPATCH, LONG_OUTPUT]

@@ -19,3 +19,8 @@ class NudgeDebt(Model):
     opened_call_id: int
     settled_at: Timestamp | None = None
     skip_reason: str = ""
+
+    @property
+    def subject(self) -> str:
+        words = self.pays.split()
+        return f"{words[1]} {words[-1]}"

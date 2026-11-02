@@ -38,8 +38,8 @@ class NudgeDebtRule(DriverRule):
         allowed = tool is not None and (tool.is_journal_line or tool.is_reading)
         for debt in owed:
             if self.tool_uses(debt) >= TOOL_USES_GIVEN and not allowed:
-                return RuleAnswer.refused(DEBT_HOLD.nudge(line=debt.line, debt=debt.id))
-        lines = [DEBT_COUNTDOWN.nudge(left=TOOL_USES_GIVEN - uses, line=debt.line) for debt in owed if COUNTDOWN_FROM <= (uses := self.tool_uses(debt) + 1) <= TOOL_USES_GIVEN]
+                return RuleAnswer.refused(DEBT_HOLD.nudge(subject=debt.subject, debt=debt.id))
+        lines = [DEBT_COUNTDOWN.nudge(subject=debt.subject, left=TOOL_USES_GIVEN - uses) for debt in owed if COUNTDOWN_FROM <= (uses := self.tool_uses(debt) + 1) <= TOOL_USES_GIVEN]
         return RuleAnswer.with_nudges(*lines).running(*(SettleDebt(debt.id) for debt in paid))
 
     def tool_uses(self, debt: NudgeDebt) -> int:

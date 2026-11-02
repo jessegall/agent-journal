@@ -1,3 +1,4 @@
+import "./table.css";
 import {rows} from "../sync/rows.js";
 
 const transformers = [];

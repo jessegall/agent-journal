@@ -85,32 +85,6 @@ const html = computed(() => {
     background: none;
 }
 
-.md :deep(table) {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    margin: 0 0 12px;
-    overflow-x: auto;
-    border-collapse: collapse;
-    font-size: 12.5px;
-}
-
-.md :deep(th),
-.md :deep(td) {
-    min-width: 8rem;
-    padding: 5px 8px;
-    border: 1px solid var(--border);
-    text-align: left;
-    vertical-align: top;
-    overflow-wrap: normal;
-}
-
-.md :deep(th) {
-    color: var(--text);
-    background: var(--raised);
-    font-weight: 600;
-}
-
 .md :deep(blockquote) {
     margin: 0 0 10px;
     padding: 2px 12px;
