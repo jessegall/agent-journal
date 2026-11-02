@@ -25,6 +25,16 @@ func TestANewRunWaitsOnTheRunLockAndStartsWhenItIsGone(t *testing.T) {
 	}
 }
 
+func TestAJournalCommandDoesNotWaitOnTheRunLock(t *testing.T) {
+	journalLine := Parts("journal message read 7; journal task list")
+	if strings.Contains(LockWait("/home", 4, journalLine), "while") {
+		t.Errorf("a journal line waits: %q", LockWait("/home", 4, journalLine))
+	}
+	if !strings.Contains(LockWait("/home", 4, Parts("journal task list; make build")), "while") {
+		t.Error("a line with another command in it does not wait")
+	}
+}
+
 // awayClient refuses the first report of the end and is unreachable from then until the report is tried again.
 type awayClient struct {
 	*recordingClient
