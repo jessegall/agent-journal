@@ -1,4 +1,5 @@
-CHAT_MESSAGES_SELECT = "SELECT id, environment_id, parent_id, type, text, read_at, files, captions, reactions, flowchart_edges, peer, recipient, created_at FROM messages"
+COMMENTED_ROW_SELECT = "COALESCE(json_extract(metadata, '$.\"journal.core.messages\".commented_row.model') || ':' || json_extract(metadata, '$.\"journal.core.messages\".commented_row.id'), '') AS commented_row"
+CHAT_MESSAGES_SELECT = f"SELECT id, environment_id, parent_id, type, text, read_at, files, captions, reactions, flowchart_edges, peer, recipient, {COMMENTED_ROW_SELECT}, created_at FROM messages"
 
 MAIN_CHAT_MARKS_SELECT = (
     "SELECT id, environment_id, agent_id, type, variant, key AS mark_key, text, detail, lines, target_model, target_id, outcome, figure, fraction, run_key, run_step, state, ended_at, created_at"
