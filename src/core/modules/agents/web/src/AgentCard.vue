@@ -27,6 +27,11 @@ const usage = computed(() => {
         <template v-if="facts?.task_id">
             <span class="agent-task" data-agent-card-task>Task {{ facts.task_id }}: {{ facts.task_title }}</span>
         </template>
+        <template v-for="task in facts?.delegated ?? []" :key="task.id">
+            <template v-if="task.id !== facts.task_id">
+                <span class="agent-task" :data-agent-delegated="task.id">Task {{ task.id }}: {{ task.title }} · {{ task.state }}</span>
+            </template>
+        </template>
         <template v-if="usage">
             <span class="agent-usage" data-agent-card-usage>{{ usage }}</span>
         </template>

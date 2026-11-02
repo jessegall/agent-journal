@@ -1,3 +1,4 @@
+from suites.coding.modules.workers.migrations.m004_proofs_per_task import ProofsPerTaskMigration
 from suites.coding.modules.workers.support.worker_nudges import WORKER_NUDGES
 from core.base.skill.skill_declaration import SkillDeclaration
 from core.base.viewer.window_icon import WindowIcon
@@ -79,7 +80,7 @@ class WorkersModule(Module):
     models = [ModelDeclaration(Worktree, query=WorktreeQuery, excluded_subcommands=["make", "edit", "delete", *WORKTREE_MOVES]),
               ModelDeclaration(Proof, query=ProofQuery, commands=[ShortProof], excluded_subcommands=["make", "edit", "delete", "revise"]),
               ModelDeclaration(TodoItem, excluded_subcommands=["make", "edit", "delete"])]
-    migrations = [WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration]
+    migrations = [WorkersTablesMigration, TodoItemsTableMigration, ProofsWorktreeIndexMigration, ProofsPerTaskMigration]
     views = [WorkerPoints]
     moves = [WorkersMove]
     handlers = [SendWorkerHandler, DispatchWorkerHandler, ReleaseWorkerHandler, MakeProofHandler, DeliverTaskHandler, ShortProofHandler, MergeWorkerHandler, RecordTodoListHandler, PrepareWorktreeHandler, RemoveProjectWorktreeHandler]

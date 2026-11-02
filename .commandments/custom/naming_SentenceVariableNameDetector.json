@@ -23,6 +23,9 @@
             },
             {
                 "resolvesLike": "typing.*"
+            },
+            {
+                "nameMatches": "^delegated_to$"
             }
         ]
     },

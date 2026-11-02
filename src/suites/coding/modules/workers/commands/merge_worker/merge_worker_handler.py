@@ -5,6 +5,7 @@ from core.base.refusal import Refusal
 from core.base.repository.repository import Repository
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.environments.models.environment import Environment
+from core.modules.tasks.models.enums.task_state import TaskState
 from core.modules.tasks.models.lifecycles.task_lifecycle import TaskLifecycle
 from core.modules.tasks.models.task import Task
 from suites.coding.modules.workers.commands.merge_worker.merge_worker import MergeWorker
@@ -42,10 +43,15 @@ class MergeWorkerHandler(Handler[MergeWorker, MergeOutcome]):
         if conflicts:
             return MergeOutcome(self.returned(worktree, task, conflicts, context), conflicts)
         self.git.merge(environment.folder, worktree, f"task {task.id}: {task.title}, from worker {worktree.agent_id}")
-        self.repository.save(task.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
+        for delivered in self.delivered_tasks(worktree, task):
+            self.repository.save(delivered.close(context.timestamp, context.actor, f"merged into {worktree.base_branch}"), context)
         merged = self.repository.save(worktree.merge(context.timestamp, context.actor), context)
         self.git.remove(environment.folder, merged)
         return MergeOutcome(self.repository.save(merged.remove(context.timestamp, context.actor), context), ())
+
+    def delivered_tasks(self, worktree: Worktree, task: Task) -> list[Task]:
+        delivered = self.queries.query(Task).filter(delegated_to=worktree.agent_id, state=TaskState.TESTING).all_rows()
+        return [task, *(row for row in delivered if row.id != task.id)]
 
     def check(self, worktree: Worktree, environment: Environment) -> None:
         self.checks.check_proofs(worktree)

@@ -22,7 +22,7 @@ class MakeProofHandler(Handler[MakeProof, Proof]):
         worktree = self.worktrees.worker_worktree(context.actor.id)
         if worktree is None:
             raise Refusal("only a worker with a worktree out makes proofs", "journal worker-worktree list shows the worktrees")
-        rows = self.proofs.worktree_proofs(worktree.id).filter(point=command.point).page(1, 1).rows
+        rows = self.proofs.worktree_proofs(worktree.id).filter(point=command.point, task_id=worktree.task_id).page(1, 1).rows
         if not rows:
             return self.repository.save(Proof(task_id=worktree.task_id, worktree_id=worktree.id, creator_id=context.actor.id, point=command.point,
                                               text=command.text), context)
