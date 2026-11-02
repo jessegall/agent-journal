@@ -66,4 +66,4 @@ class CodingModule(Module):
                                  events=["file_edit.create"]),
                WindowDeclaration("coding.terminal", "Terminal", "terminal.js", WindowLoading.COMPONENT, icon=WindowIcon.TERMINAL, place=WindowPlace.AGENT,
                                  reads=["agent terminal", "hook-call feed"], runs=["agent type"], events=["hook_call.create"],
-                                 options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "journal")])]
+                                 options=[ChoiceOption("verbosity", "Detail level", [("commands", "Commands"), ("journal", "Commands and journal"), ("everything", "Show everything")], "everything")])]

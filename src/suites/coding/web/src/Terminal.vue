@@ -21,7 +21,7 @@ const isShown = {
     everything: () => true,
 };
 const isJournalLine = (row) => JOURNAL_LINE.test(row.summary);
-const level = computed(() => context.options?.value?.verbosity ?? "journal");
+const level = context.option("verbosity");
 const commands = computed(() => rows.value.filter((row) => row.hook === "pre_tool_use" && row.summary && isShown[level.value](row)).sort((one, two) => one.id - two.id));
 const markOf = (row) => (isJournalLine(row) ? "#" : COMMAND_TOOLS.has(row.tool) ? "$" : ">");
 
