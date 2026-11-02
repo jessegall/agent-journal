@@ -40,6 +40,7 @@ export {default as RowCards} from "./RowCards.vue";
 export {default as SwitchCase} from "../src/kit/SwitchCase.vue";
 export {useListTools} from "./useListTools.js";
 export {default as AutoScrollPane} from "./AutoScrollPane.vue";
+export {default as InnerTabs} from "./InnerTabs.vue";
 export {default as ListTools} from "./ListTools.vue";
 export {useOpenRow} from "./useOpenRow.js";
 export {OPEN_VIEW, WINDOW_CONTEXT, useWindow} from "./windowContextKey.js";

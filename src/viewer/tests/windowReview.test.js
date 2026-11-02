@@ -12,7 +12,7 @@ test("a plan is a card with its task count, its phase and its state, open plans 
         "plan board --closed": {ok: true, value: {open_total: 1, closed_total: 1, plans: [{id: 2, title: "Old", state: "completed", task_count: 2, completed_count: 2, current_phase: 1}]}},
         "plan board": {ok: true, value: {open_total: 1, closed_total: 1, plans: [{id: 1, title: "Checkout", state: "started", task_count: 4, completed_count: 1, current_phase: 2}]}},
     });
-    const element = await mounted(PlanCards, window);
+    const element = await mounted(PlanCards, {...window, tabs: [{key: "open", label: "Open", read: "plan board", count_field: "open_total"}, {key: "closed", label: "Closed", read: "plan board --closed", count_field: "closed_total"}]});
     expect(element.querySelector(`[data-tab="open"]`).textContent).toContain("1");
     expect(element.querySelector(`[data-row="1"]`).textContent).toContain("1 of 4 tasks done · phase 2");
     expect(element.querySelector(`[data-row="2"]`)).toBeNull();

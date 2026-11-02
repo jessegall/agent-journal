@@ -9,6 +9,7 @@ from core.base.viewer.registry_lines import RegistryLines
 from core.base.viewer.toggle_option import ToggleOption
 from core.base.viewer.window_icon import WindowIcon
 from core.base.viewer.window_size import WindowSize
+from core.base.viewer.window_tab import WindowTab
 from core.base.viewer.window_loading import WindowLoading
 from core.base.viewer.window_place import WindowPlace
 
@@ -20,7 +21,7 @@ class WindowDeclaration:
     """A window a module adds to the viewer: its name and title, the file the viewer loads from the module's
     web folder and how, where it belongs and for which agent roles, the window kit versions it was built for,
     the read lines and commands it may run, the events it follows, its icon, the size it floats at, the
-    options of its pane menu, the end it follows as rows arrive, the read line its tab counts with and the read lines a share link may use, each
+    options of its pane menu, the end it follows as rows arrive, the tabs inside it, the read line its tab counts with and the read lines a share link may use, each
     written as the line and, after a space, the argument that names an id of the shared row or of a row
     it includes."""
 
@@ -41,6 +42,7 @@ class WindowDeclaration:
     shared_reads: Sequence[str] = ()
     group: str = ""
     auto_scroll: AutoScroll = AutoScroll.NONE
+    tabs: Sequence[WindowTab] = ()
 
     def problems(self, module_name: str, web_folder: Path, provided: RegistryLines) -> list[str]:
         problems = DeclarationNames.prefix_problems(f"the window {self.name}", self.name, module_name)
@@ -58,6 +60,7 @@ class WindowDeclaration:
             problems.append(f"{self.name} floats at {self.float_size.width} by {self.float_size.height}, and a size is above 0")
         if self.count and self.count not in self.reads:
             problems.append(f"{self.name} counts with {self.count}, which is not one of its reads")
+        problems += [f"{self.name} fills its tab {tab.key} with {tab.read}, which is not one of its reads" for tab in self.tabs if not any(tab.read.startswith(line) for line in self.reads)]
         shared_lines = [line.rsplit(" ", 1)[0] for line in self.shared_reads]
         problems += [f"{self.name} shares {line}, which is not one of its reads" for line in shared_lines if line not in self.reads]
         read_models = {line.split(" ", 1)[0].replace("-", "_") for line in self.reads}

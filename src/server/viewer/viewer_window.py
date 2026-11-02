@@ -32,6 +32,7 @@ class ViewerWindow:
     count: str
     group: str = ""
     auto_scroll: str = ""
+    tabs: Sequence[Mapping[str, str]] = ()
 
     @classmethod
     def listed(cls, window: WindowEntry, fingerprint: str) -> "ViewerWindow":
@@ -39,4 +40,4 @@ class ViewerWindow:
         entry_url = "" if document else f"/modules/{window.module}/{window.entry}?v={fingerprint}"
         return cls(window.name, window.module, window.title, entry_url, window.entry if document else "", window.loading, window.place, window.roles,
                    window.reads, window.runs, window.events, window.unavailable_reason, window.shipped, window.icon,
-                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll)
+                   window.float_width, window.float_height, window.options, window.count, window.group, window.auto_scroll, window.tabs)
