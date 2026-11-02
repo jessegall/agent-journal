@@ -74,6 +74,9 @@ function pick(face) {
     <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
         <div class="message-body">
             <div ref="bubble" class="message-card md" @click="peekChip">
+                <template v-if="message.peer">
+                    <div class="message-peer" data-message-peer>Message from {{ message.peer }}</div>
+                </template>
                 <template v-if="message.parent_id">
                     <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                 </template>
@@ -298,6 +301,12 @@ function pick(face) {
 
 .message-card:has(.message-quote) {
     min-width: min(180px, 100%);
+}
+
+.message-peer {
+    margin: 0 0 4px;
+    color: var(--text-3);
+    font-size: 12px;
 }
 
 .message-quote {

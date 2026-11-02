@@ -1,3 +1,6 @@
+from core.modules.messages.commands.record_peer_message.record_peer_message_handler import RecordPeerMessageHandler
+from core.modules.messages.migrations.m008_message_peer import MessagePeerMigration
+from core.modules.messages.rules.peer_message_rule import PeerMessageRule
 from core.modules.messages.commands.record_message_updated_line.record_message_updated_line_handler import RecordMessageUpdatedLineHandler
 from core.modules.messages.listeners.read_message_edit_listener import ReadMessageEditListener
 from core.modules.messages.support.message_nudges import MESSAGE_NUDGES
@@ -70,10 +73,10 @@ class MessagesModule(Module):
     models = [ModelDeclaration(Message, query=MessageQuery, excluded_subcommands=["make"])]
     moves = [MessagesMove]
     views = [AttachedFile, ChatMessage, MainChatMark]
-    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration]
+    migrations = [MessagesTableMigration, MessageFilesMigration, MessageDeliveryMigration, MessageDeliveredColumnMigration, MessageCaptionsMigration, MessageReactionsMigration, MessageFlowchartMigration, MessagePeerMigration]
     guards = [OneReplyPerMessageGuard]
-    handlers = (RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
-    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule]
+    handlers = (RecordPeerMessageHandler, RecordMessageUpdatedLineHandler, DrawFlowchartHandler, ReactMessageHandler, SendMessageHandler, ReadMessageHandler, RecordMessageDeliveryHandler, TagMessageHandler, RecordWaitingMessageLineHandler)
+    driver_rules = [WaitingMessageTickRule, MessageDeliveryRule, UnreadMessageShowRule, MessageReadRule, UnreadMessageStopRule, AgentTextRule, UnansweredMessageRule, UnreadMessageWriteRule, ChatMannersRule, ChatOpeningRule, PlainCodeRule, PeerMessageRule]
     subcommands = (AttachmentListSubcommand, DrawFlowchartSubcommand, ReactMessageSubcommand, SendMessageSubcommand, ReplyMessageSubcommand, ReadMessageSubcommand, UnreadMessagesSubcommand, TagMessageSubcommand, MainChatRowsSubcommand, ChatMessagesSubcommand)
     windows = [WindowDeclaration("messages.attachments", "Attachments", "attachments.js", WindowLoading.COMPONENT, group="project", icon=WindowIcon.FILE, reads=["attachment list"]),
                WindowDeclaration("messages.chat", "Chat", "chat.js", WindowLoading.COMPONENT, icon=WindowIcon.SPEECH, reads=["question show", "link list", "message feed", "message show", "chat-mark main", "chat-mark show", "dock-item list", "notice list", "usage tool", "hook-call feed", "output peek", "output list"], runs=["message send", "message reply", "message react", "message edit", "message delete", "notice close", "dump make"],

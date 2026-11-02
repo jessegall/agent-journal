@@ -17,6 +17,7 @@ from core.base.provider.launch import Launch
 from core.base.provider.launch_command import LaunchCommand
 from core.base.provider.program_folders import ProgramFolders
 from core.base.provider.model_tier import ModelTier
+from core.base.provider.peer_note import PeerNote
 from core.base.provider.program_model import ProgramModel
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
@@ -93,6 +94,9 @@ class Provider(ABC):
 
     def line_sent(self, line: SessionLine) -> bool:
         return False
+
+    def peer_notes(self, path: Path) -> Sequence[PeerNote]:
+        return ()
 
     def context_percent(self, home: JournalHome, session: str) -> int | None:
         return None

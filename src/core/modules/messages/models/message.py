@@ -24,3 +24,5 @@ class Message(Model):
     captions: str = "{}"
     reactions: str = "[]"
     flowchart_edges: str = "[]"
+    peer: str = ""
+    peer_key: str = ""

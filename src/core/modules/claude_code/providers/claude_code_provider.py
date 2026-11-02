@@ -21,12 +21,14 @@ from core.base.provider.control_group import ControlGroup
 from core.base.provider.provider import Provider
 from core.base.provider.refusal_style import RefusalStyle
 from core.base.provider.session_line import SessionLine
+from core.base.provider.peer_note import PeerNote
 from core.base.provider.transcript_row import TranscriptRow
 from core.base.type_guards import is_list, is_mapping
 from core.base.private.server_keys import ServerKeys
 from core.modules.claude_code.providers.support.claude_folder_name import ClaudeFolderName
 from core.modules.claude_code.providers.support.claude_stream_row import ClaudeStreamRow
 from core.modules.claude_code.providers.support.claude_inbox import ClaudeInbox
+from core.modules.claude_code.providers.support.claude_peer_notes import ClaudePeerNotes
 from core.modules.claude_code.providers.support.claude_trust import ClaudeTrust
 
 CONFIG_VARIABLE = "CLAUDE_CONFIG_DIR"
@@ -149,6 +151,9 @@ class ClaudeCodeProvider(Provider):
 
     def line_sent(self, line: SessionLine) -> bool:
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)
+
+    def peer_notes(self, path: Path) -> Sequence[PeerNote]:
+        return ClaudePeerNotes(path).notes()
 
     def state_file(self) -> Path:
         return self.folders.folder(CONFIG_VARIABLE, "") / ".claude.json"

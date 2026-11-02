@@ -26,4 +26,5 @@ class ChatMessage(ViewModel):
     captions: str
     reactions: str
     flowchart_edges: str
+    peer: str
     created_at: Timestamp
