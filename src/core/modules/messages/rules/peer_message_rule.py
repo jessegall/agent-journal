@@ -1,3 +1,5 @@
+from collections.abc import Sequence
+
 from core.base.agent_role import AgentRole
 from core.base.driver.agent_hook import AgentHook
 from core.base.driver.driver_rule import DriverRule
@@ -6,6 +8,7 @@ from core.base.driver.hook_wildcard import HookWildcard
 from core.base.driver.rule_answer import RuleAnswer
 from core.base.provider.peer_note import PeerNote
 from core.base.provider.providers import Providers
+from core.base.query.conditions.among import Among
 from core.base.query.queries import Queries
 from core.modules.messages.commands.record_peer_message.record_peer_message import RecordPeerMessage
 from core.modules.messages.models.enums.message_type import MessageType
@@ -31,8 +34,7 @@ class PeerMessageRule(DriverRule):
     def answer(self, hook: AgentHook) -> RuleAnswer:
         provider = self.providers.provider(hook.event.program)
         path = provider.transcript_path(hook.event)
-        notes = [note for note in provider.peer_notes(path) if self.is_new(hook.agent_id, note)] if path is not None else []
-        commands = [RecordPeerMessage(hook.environment_id, hook.agent_id, note.sender, note.text, note.key) for note in notes]
+        commands = [RecordPeerMessage(hook.environment_id, hook.agent_id, note.sender, note.text, note.key) for note in self.new_notes(hook.agent_id, provider.peer_notes(path))] if path is not None else []
         if self.is_agent_message(hook):
             tool_input = hook.event.tool_input()
             commands.append(RecordPeerMessage(hook.environment_id, hook.agent_id, f"{tool_input.get('to', '')}", f"{tool_input.get('message', '')}", f"{hook.event.firing}", True))
@@ -42,5 +44,8 @@ class PeerMessageRule(DriverRule):
         tool = hook.event.tool
         return tool is not None and tool.name == AGENT_MESSAGE_TOOL and hook.event.event is HookEventName.POST_TOOL_USE
 
-    def is_new(self, agent_id: int, note: PeerNote) -> bool:
-        return not self.queries.query(Message).filter(agent_id=agent_id, type=MessageType.PEER, peer_key=note.key).exists()
+    def new_notes(self, agent_id: int, notes: Sequence[PeerNote]) -> list[PeerNote]:
+        if not notes:
+            return []
+        saved_keys = {message.peer_key for message in self.queries.query(Message).filter(agent_id=agent_id, type=MessageType.PEER).matching(Among("peer_key", tuple(note.key for note in notes))).all_rows()}
+        return [note for note in notes if note.key not in saved_keys]

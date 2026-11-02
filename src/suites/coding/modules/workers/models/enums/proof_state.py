@@ -9,3 +9,6 @@ class ProofState(StrEnum):
     RUNNING = "running"
     CHECKED = "checked"
     SHORT = "short"
+
+
+TEST_WAITING_STATES = (ProofState.QUEUED, ProofState.RUNNING)

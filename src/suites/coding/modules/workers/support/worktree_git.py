@@ -8,6 +8,7 @@ GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
 BUILT_FOLDER = "/web/dist/"
+CONFLICT_MARKER = "<<<<<<< "
 
 
 class WorktreeGit:
@@ -26,9 +27,17 @@ class WorktreeGit:
     def commit(self, worktree: Worktree, message: str, trailer: str) -> bool:
         if not self.checked(worktree.folder, GIT_LIMIT_SECONDS, "status", "--porcelain").stdout.strip():
             return False
+        conflicts = self.conflict_files(worktree)
+        if conflicts:
+            raise Refusal(f"conflict markers remain in {', '.join(conflicts)}", "settle them in the worktree, then try again")
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "-A")
         self.checked(worktree.folder, GIT_LIMIT_SECONDS, "commit", "-m", message, "-m", trailer)
         return True
+
+    def conflict_files(self, worktree: Worktree) -> tuple[str, ...]:
+        unmerged = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines()
+        files = ((path, Path(worktree.folder, path)) for path in unmerged)
+        return tuple(path for path, file in files if file.exists() and CONFLICT_MARKER in file.read_text(errors="replace"))
 
     def head(self, folder: str) -> str:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
