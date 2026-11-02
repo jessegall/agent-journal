@@ -31,6 +31,7 @@ from core.modules.secrets.rules.secrets_folder_rule import SecretsFolderRule
 from core.modules.secrets.upgrade.secrets_move import SecretsMove
 
 BUILT = ["make", "edit", "show", "list", "delete"]
+from core.modules.secrets.seeders.secrets_seeder import SecretsSeeder
 
 
 class SecretsModule(Module):
@@ -43,6 +44,7 @@ class SecretsModule(Module):
     seed_reason = "a secret's value is typed by the person, never made up for a demo"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.messages"]
+    seeders = [SecretsSeeder]
     models = [ModelDeclaration(Secret, query=SecretQuery, excluded_subcommands=BUILT)]
     migrations = [SecretsTableMigration]
     moves = [SecretsMove]

@@ -19,6 +19,7 @@ from core.modules.mcp.migrations.m001_mcp_servers import McpServersTableMigratio
 from core.modules.mcp.models.mcp_server import McpServer
 from core.modules.mcp.queries.mcp_server_query import McpServerQuery
 from core.modules.mcp.upgrade.mcp_servers_move import McpServersMove
+from core.modules.mcp.seeders.mcp_seeder import McpSeeder
 
 
 class McpModule(Module):
@@ -30,6 +31,7 @@ class McpModule(Module):
     seed_reason = "a server is installed by the person, with their own accounts"
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.secrets"]
+    seeders = [McpSeeder]
     models = [ModelDeclaration(McpServer, query=McpServerQuery, excluded_subcommands=["make", "edit", "show", "list", "delete"])]
     migrations = [McpServersTableMigration]
     moves = [McpServersMove]

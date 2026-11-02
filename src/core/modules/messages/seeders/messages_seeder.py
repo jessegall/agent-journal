@@ -3,7 +3,7 @@ from core.base.seed.seeder import Seeder
 
 
 class MessagesSeeder(Seeder):
-    """Makes messages back and forth between the person and the main agent."""
+    """Makes messages back and forth between the person and the main agent, the last one with a reaction."""
 
     def seed(self, demo: Demo) -> None:
         user, main = demo.people["user"], demo.people["main"]
@@ -11,4 +11,5 @@ class MessagesSeeder(Seeder):
         demo.run(f'message send "Fix the cart total first" {flag}', user)
         demo.run(f'message send "On it" {flag}', main)
         demo.run(f'message send "Please keep the tax in the summary" {flag}', user)
-        demo.run(f'message send "Done, the tax is added once" {flag}', main)
+        finished = demo.new_id(f'message send "Done, the tax is added once" {flag}', main)
+        demo.run(f'message react {finished} "👍"', user)

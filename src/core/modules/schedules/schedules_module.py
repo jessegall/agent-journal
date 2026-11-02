@@ -21,6 +21,7 @@ from core.modules.schedules.models.scheduled_job import ScheduledJob
 from core.modules.schedules.rules.scheduled_job_rule import ScheduledJobRule
 from core.modules.schedules.upgrade.schedules_move import SchedulesMove
 from core.modules.schedules.rules.scheduled_job_run_rule import ScheduledJobRunRule
+from core.modules.schedules.seeders.schedules_seeder import SchedulesSeeder
 
 
 class SchedulesModule(Module):
@@ -33,6 +34,7 @@ class SchedulesModule(Module):
     moves = [SchedulesMove]
     requires_core = ">=5,<6"
     dependencies = ["journal.core.actors", "journal.core.agents", "journal.core.environments", "journal.core.drivers"]
+    seeders = [SchedulesSeeder]
     models = [ModelDeclaration(ScheduledJob, excluded_subcommands=["make", "edit", "delete"])]
     migrations = [ScheduledJobsTableMigration, StopRequestedMigration, JobRunTimeMigration]
     handlers = [RecordScheduledJobHandler, RecordScheduledJobRunHandler, EndScheduledJobHandler, StopScheduledJobHandler]
