@@ -3,6 +3,7 @@ import {afterEach, beforeEach, expect, test, vi} from "vitest";
 import {existsSync, readFileSync} from "node:fs";
 import {join} from "node:path";
 import {settled} from "./settled.js";
+import {perLine} from "./support/windowContext.js";
 import Chat from "../../core/modules/messages/web/src/Chat.vue";
 import DockWrapper from "../src/chat/DockWrapper.vue";
 import MarkHost from "../src/chat/MarkHost.vue";
@@ -132,6 +133,27 @@ test("docked items: a card shows its title, a line of its text, and buttons to o
     expect(element.textContent).toContain("Two reviewers found 17 gaps in the plan");
     expect(element.querySelector("[data-dock-action='open']")).not.toBeNull();
     expect(element.querySelector("[data-dock-action='undock']")).not.toBeNull();
+});
+
+test("docked items: a declared button goes the moment it is pressed, and comes back with the reason if it is refused", async () => {
+    const ITEM = {...REPORT_DOCK, type: "plans.waiting", target_model: "plan", target_id: 7};
+    loadDockDeclarations([{...REPORT_FAMILY, type: "plans.waiting", buttons: [{icon: "check", label: "Approve", runs: "plan approve {row_id}"}]}]);
+    let answer;
+    vi.stubGlobal("fetch", perLine(() => new Promise((resolve) => (answer = resolve))));
+    const element = document.createElement("div");
+    createApp({setup: () => () => h(DockWrapper, {item: ITEM}), provide: {[WINDOW_CONTEXT]: {environment: "main"}}}).mount(element);
+    mounted.push(element);
+    await settled();
+    const button = () => element.querySelector("[data-dock-action='declared']");
+    expect(button().textContent).toContain("Approve");
+    button().click();
+    await nextTick();
+    expect(button()).toBeNull();
+    await settled();
+    answer({json: async () => ({code: 1, error: "only a person approves"})});
+    await settled();
+    expect(button().textContent).toContain("Approve");
+    expect(element.querySelector("[data-dock-failure]").textContent).toBe("only a person approves");
 });
 
 // task 5498: version 4's docked cards fold as the chat is scrolled up and open again at its foot, and the person folds one by hand

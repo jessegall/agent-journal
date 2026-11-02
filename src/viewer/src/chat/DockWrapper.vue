@@ -20,8 +20,20 @@ const declaration = computed(() => dockDeclaration(props.item.type));
 const head = ref(null);
 const look = computed(() => dockLook(props.item, declaration.value));
 const context = inject(WINDOW_CONTEXT);
-const press = (button) => (button.action === "open" ? peekRef(`${props.item.target_model}:${props.item.target_id}`) : pressButton(button, props.item, context.environment));
-const buttons = computed(() => look.value.buttons.filter((button) => button.action !== "undock"));
+// a declared button goes the moment it is pressed, and comes back if the server refuses
+const pressed = ref(new Set());
+const failure = ref("");
+async function press(button) {
+    if (button.action === "open") return peekRef(`${props.item.target_model}:${props.item.target_id}`);
+    if (button.action !== "declared") return pressButton(button, props.item, context.environment);
+    pressed.value = new Set([...pressed.value, button.label]);
+    failure.value = "";
+    const answer = await pressButton(button, props.item, context.environment);
+    if (answer?.ok !== false) return;
+    pressed.value = new Set([...pressed.value].filter((label) => label !== button.label));
+    failure.value = answer.error;
+}
+const buttons = computed(() => look.value.buttons.filter((button) => button.action !== "undock" && !pressed.value.has(button.label)));
 const undock = computed(() => look.value.buttons.find((button) => button.action === "undock"));
 </script>
 
@@ -52,6 +64,9 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
                 </template>
             </span>
             <CloseButton :title="undock.label" data-dock-action="undock" @click="press(undock)" />
+        </template>
+        <template v-if="failure">
+            <p class="dock-text dock-failure" role="alert" data-dock-failure>{{ failure }}</p>
         </template>
         <template v-if="item.text && !declaration?.body_url">
             <p class="dock-text">{{ item.text }}</p>
@@ -107,6 +122,10 @@ const undock = computed(() => look.value.buttons.find((button) => button.action 
     color: var(--text);
     font-weight: 500;
     text-overflow: ellipsis;
+}
+
+.dock-failure {
+    color: var(--danger);
 }
 
 .dock-text {
