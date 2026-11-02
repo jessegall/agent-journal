@@ -10,6 +10,7 @@ import {clock} from "../src/format/time.js";
 import {render} from "../src/text/index.js";
 import TextDisplay from "../src/kit/TextDisplay.vue";
 import {peekChip, peekRef} from "../src/route.js";
+import {meta, tableOfWord} from "../src/domain/tables.js";
 import {useFittedBubble} from "../src/chat/fittedBubble.js";
 import {FACES, reactionGroups} from "../src/domain/reactionGroups.js";
 import "../src/text/all.js";
@@ -21,6 +22,12 @@ const emit = defineEmits(["reply", "delete", "react"]);
 const copied = ref(false);
 const bubble = ref(null);
 const fromPerson = computed(() => ["user", "comment"].includes(props.message.type));
+// a comment on a row names that row, as version 4's comment bubble did: a header that opens the row, and a tint of its own
+const commentedRow = computed(() => {
+    const [model, id] = (props.message.commented_row || ":").split(":");
+    const table = tableOfWord(model);
+    return table ? {ref: `${table}:${id}`, label: `${meta(table).title.toLowerCase()} ${id}`} : null;
+});
 const deletable = computed(() => fromPerson.value && !props.message.read_at && !props.message.local);
 async function copy() {
     await navigator.clipboard?.writeText(props.message.text ?? "");
@@ -80,7 +87,13 @@ function pick(face) {
     <template v-else>
         <article class="message" data-message data-figure-bubble :data-from="fromPerson ? 'user' : message.type" :data-ref="`message:${message.id}`">
             <div class="message-body">
-                <div ref="bubble" class="message-card md" @click="peekChip">
+                <div ref="bubble" :class="['message-card', 'md', {comment: commentedRow}]" @click="peekChip">
+                    <template v-if="commentedRow">
+                        <button type="button" class="message-comment-head" data-message-comment :title="`Open ${commentedRow.label}`" @click.stop="peekRef(commentedRow.ref)">
+                            <Icon name="bubble" :size="12" />
+                            <span>Comment on {{ commentedRow.label }}</span>
+                        </button>
+                    </template>
                     <template v-if="message.parent_id">
                         <div class="message-quote" data-message-reply title="Go to what this answers" @click.stop="goToQuoted" v-html="quoteHtml" />
                     </template>
@@ -365,8 +378,32 @@ function pick(face) {
     background: color-mix(in srgb, var(--accent) 17%, var(--bg));
 }
 
+.message[data-from="user"] .message-card.comment {
+    background: color-mix(in srgb, var(--blocking) 9%, var(--bubble));
+}
+
+.message-comment-head {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    margin: 0 0 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--blocking);
+    font: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
 .message-card :deep(pre) {
     max-width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--code-bg);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
@@ -391,13 +428,15 @@ function pick(face) {
 .message-card :deep(code) {
     padding: 0.05em 0.42em;
     border-radius: 4px;
-    background: var(--chip);
+    background: var(--code-bg);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.9em;
     white-space: nowrap;
 }
 
 .message-card :deep(pre code) {
+    padding: 0;
+    background: none;
     white-space: inherit;
 }
 

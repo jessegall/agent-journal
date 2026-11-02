@@ -98,9 +98,12 @@ test("each module's settings sit under one heading named for the module", async 
     ];
     const {element} = mounted({rows});
     await settled();
-    const headings = [...element.querySelectorAll(".settings-module-heading")].map((heading) => heading.textContent);
-    expect(headings).toEqual(["Drivers", "Tunnel"]);
+    const headings = () => [...element.querySelectorAll(".settings-module-heading")].map((heading) => heading.textContent);
+    expect(headings()).toEqual(["Drivers"]);
     expect(node(element, "journal.core.drivers.driver").contains(node(element, "journal.core.drivers.driver.builder"))).toBe(true);
+    element.querySelector('[data-jump="journal.core.tunnel"]').click();
+    await settled();
+    expect(headings()).toEqual(["Tunnel"]);
 });
 
 test("a list setting shows each item on its own line, a comma inside an item stays, and saving keeps the items whole", async () => {

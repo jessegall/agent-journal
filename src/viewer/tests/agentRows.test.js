@@ -1,8 +1,14 @@
-import {afterEach, expect, test} from "vitest";
+import {afterEach, expect, test, vi} from "vitest";
 import {context, mounted, page, settle} from "./support/windowContext.js";
 import {h} from "vue";
 import AgentRows from "../../core/modules/agents/web/src/AgentRows.vue";
 import {age, ago} from "../src/format/time.js";
+
+vi.stubGlobal("ResizeObserver", class {
+    observe() {}
+
+    disconnect() {}
+});
 
 afterEach(() => (document.body.innerHTML = ""));
 
@@ -39,6 +45,36 @@ test("an agent's card says what it works on, how long it has run and its context
     expect(card.querySelector("[data-agent-card-task]").textContent).toBe("Task 7: Fix the cart");
     expect(card.querySelector("[data-agent-card-usage]").textContent).toBe("Context 62% · $1.20");
     expect(card.title).toBe("s-live");
+});
+
+const DELEGATED = [
+    {id: 11, title: "Fix the cart", state: "completed"},
+    {id: 12, title: "Add the totals", state: "started"},
+    {id: 13, title: "Print the receipt", state: "open"},
+];
+const withTasks = () => mounted({render: () => h(AgentRows, {line: "agent list", empty: "No agents yet"})}, context({"agent list": page(AGENTS), "usage agents": page([{...FACTS[0], delegated: DELEGATED}])}));
+
+test("a button on an agent's card counts its tasks and opens them in a dropdown", async () => {
+    const element = await withTasks();
+    document.body.append(element);
+    const card = element.querySelector('[data-agent-open="2"]');
+    const button = card.querySelector("[data-agent-tasks]");
+    expect(button.textContent.trim()).toBe("3 tasks");
+    expect(card.querySelector("[data-agent-card-task]").textContent).toBe("Task 7: Fix the cart");
+    expect(card.closest("button")).toBeNull();
+    expect(document.querySelector("[data-agent-task-menu]")).toBeNull();
+    button.click();
+    await settle();
+    const rows = [...document.querySelectorAll("[data-agent-task-menu] [data-agent-delegated]")];
+    expect(rows.map((row) => row.textContent.trim())).toEqual(["Task 11: Fix the cart · completed", "Task 12: Add the totals · started", "Task 13: Print the receipt · open"]);
+    rows[1].click();
+    await settle();
+    expect(document.querySelector("[data-agent-task-menu]")).toBeNull();
+});
+
+test("an agent with no tasks given to it has no tasks button", async () => {
+    const element = await drawn();
+    expect(element.querySelector("[data-agent-tasks]")).toBeNull();
 });
 
 test("the agents window searches the session, program and role", async () => {

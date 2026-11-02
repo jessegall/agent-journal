@@ -3,9 +3,11 @@ from core.base.module.module import Module
 from core.modules.docking.commands.add_dock_item.add_dock_item_handler import AddDockItemHandler
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_handler import KeepDockItemHandler
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_handler import RemoveDockItemHandler
+from core.modules.docking.commands.unkeep_dock_item.unkeep_dock_item_handler import UnkeepDockItemHandler
 from core.modules.docking.commands.add_dock_item.add_dock_item_subcommand import AddDockItemSubcommand
 from core.modules.docking.commands.keep_dock_item.keep_dock_item_subcommand import KeepDockItemSubcommand
 from core.modules.docking.commands.remove_dock_item.remove_dock_item_subcommand import RemoveDockItemSubcommand
+from core.modules.docking.commands.unkeep_dock_item.unkeep_dock_item_subcommand import UnkeepDockItemSubcommand
 from core.modules.docking.commands.make_dock.make_dock_handler import MakeDockHandler
 from core.modules.docking.guards.kept_item_guard import KeptItemGuard
 from core.modules.docking.guards.own_environment_guard import OwnEnvironmentGuard
@@ -37,8 +39,8 @@ class DockingModule(Module):
     dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.chat", "journal.core.settings"]
     models = [ModelDeclaration(Dock), ModelDeclaration(DockItem, query=DockItemQuery)]
     migrations = [DocksTableMigration, ExistingEnvironmentDocksMigration, DockItemLabelsMigration]
-    handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
-    subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, RemoveDockItemSubcommand]
+    handlers = [MakeDockHandler, AddDockItemHandler, KeepDockItemHandler, UnkeepDockItemHandler, RemoveDockItemHandler, ScheduleDockItemLeaveHandler]
+    subcommands = [AddDockItemSubcommand, KeepDockItemSubcommand, UnkeepDockItemSubcommand, RemoveDockItemSubcommand]
     listeners = [EnvironmentDockListener, DockItemLeaveListener]
     guards = [DockTypeGuard, DockTitleGuard, OneItemPerRowGuard, TypeCapacityGuard, DockCapacityGuard, OwnEnvironmentGuard, KeptItemGuard]
     seeders = [DockingSeeder]
