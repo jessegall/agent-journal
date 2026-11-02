@@ -207,6 +207,10 @@ async function send() {
     const line = sent.text || sent.attached.map((entry) => entry.name).join(", ");
     const echo = {id: `sending-${Date.now()}`, type: "user", text: line, created_at: Date.now(), files: [], local: true};
     outgoing.value = [...outgoing.value, echo];
+    // a sent message takes the reader to the foot at once, also one who had scrolled up, so the rows watch below sets the scroll with no glide
+    atFoot = true;
+    awayFromFoot.value = false;
+    arrived.value = 0;
     text.value = "";
     attached.value = [];
     sendFailure.value = "";

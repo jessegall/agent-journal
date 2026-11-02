@@ -27,13 +27,12 @@ usePoll(async () => {
 const look = computed(() => {
     const drawn = markLook(props.mark, declaration.value);
     const showsPercent = !drawn.figure || drawn.figure.endsWith("%");
-    const live = livePercent.value && isRunningRun.value && showsPercent ? {...drawn, figure: `${livePercent.value}%`, fraction: livePercent.value / 100} : drawn;
-    return {...live, docked: props.docked};
+    return livePercent.value && isRunningRun.value && showsPercent ? {...drawn, figure: `${livePercent.value}%`, fraction: livePercent.value / 100} : drawn;
 });
 // a mark with lines, an output or a body of its module's own opens in place on a click, and folds on the next; its row's action stays its own
 const opens = computed(() => Boolean(props.mark.lines || (props.mark.detail && STOPPED_VARIANTS.has(props.mark.variant)) || OUTPUT_MODELS.has(props.mark.target_model) || declaration.value?.body_url));
 const opened = ref(false);
-// a row in the dock has no Dock button left, and its mark steps back, as version 4's did
+// a row in the dock has no Dock button left, and its mark steps back in opacity
 const buttons = computed(() => (props.docked ? declaration.value?.buttons?.filter((button) => !button.runs?.startsWith(DOCK_LINE)) : declaration.value?.buttons));
 </script>
 
