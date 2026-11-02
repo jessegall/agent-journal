@@ -4,14 +4,14 @@ from core.base.query.queries import Queries
 from core.base.registry.registry import Registry
 
 TITLE_FIELDS = ("title", "name", "text")
-TEXT_FIELDS = ("brief", "text", "goal", "outcome", "detail")
-TEXT_LIMIT_CHARACTERS = 160
+TEXT_FIELDS = ("brief", "abstract", "text", "goal", "outcome", "detail")
+TEXT_LIMIT_CHARACTERS = 200
 
 
 class DockLabels:
     """The title and the line of text a docked item shows, read from its row when it is docked: the
-    type's title with {row_id} and {row_title} filled, and the first of the row's brief, text, goal,
-    outcome or detail. Both are empty when the type or the row is not found, and the guards refuse."""
+    type's title with {row_id} and {row_title} filled, and the first of the row's brief, abstract, text,
+    goal, outcome or detail. Both are empty when the type or the row is not found, and the guards refuse."""
 
     def __init__(self, registry: Registry, queries: Queries) -> None:
         self.registry, self.queries = registry, queries

@@ -36,6 +36,7 @@ from core.modules.documents.listeners.doc_mention_listener import DocMentionList
 from core.modules.documents.listeners.report_mention_listener import ReportMentionListener
 from core.modules.documents.migrations.m001_documents import DocumentsTablesMigration
 from core.modules.documents.migrations.m002_link_source_index import LinkSourceIndexMigration
+from core.modules.documents.migrations.m003_dock_abstracts import DockAbstractsMigration
 from core.modules.documents.models.doc import Doc
 from core.modules.documents.models.doc_revision import DocRevision
 from core.modules.documents.models.document_row import DocumentRow
@@ -63,7 +64,7 @@ class DocumentsModule(Module):
                              default=30, scope=SettingScope.PROJECT)]
     models = [ModelDeclaration(Doc, excluded_subcommands=BUILT), ModelDeclaration(Report, excluded_subcommands=BUILT),
               ModelDeclaration(DocRevision, excluded_subcommands=BUILT), ModelDeclaration(Link, excluded_subcommands=BUILT)]
-    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration]
+    migrations = [DocumentsTablesMigration, LinkSourceIndexMigration, DockAbstractsMigration]
     moves = [DocumentsMove]
     seeders = [DocumentsSeeder]
     windows = [WindowDeclaration("documents.documents", "Documents", "documents.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, icon=WindowIcon.DOCUMENT,

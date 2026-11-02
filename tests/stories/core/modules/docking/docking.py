@@ -106,6 +106,13 @@ def test_the_chat_window_reads_the_dock_and_follows_its_events(new_story):
     WindowStory(story).expect_window_allowed("messages.chat", "dock-item list")
 
 
+def test_a_docked_document_carries_its_abstract_to_read_when_the_card_is_expanded(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('doc make "Cart rules" --abstract "How the cart counts money" --body "All of it"', actor=story.agent)
+    story.run_listeners()
+    story.expect_text("dock-item list --oldest", "Cart rules", "How the cart counts money")
+
+
 def test_an_item_carries_the_title_and_the_text_of_its_row(new_story):
     story = new_story(SAMPLE, fixture=UserJoined)
     item = docked(story, running_task(story, "Fix the cart"))
