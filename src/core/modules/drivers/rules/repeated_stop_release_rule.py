@@ -7,12 +7,14 @@ from core.base.driver.rule_answer import RuleAnswer
 from core.modules.drivers.queries.hook_call_query import HookCallQuery
 
 STOP_REFUSAL_COUNT = 5
+UNRELEASED_ROLES = (AgentRole.MAIN, AgentRole.WORKER)
 
 
 class RepeatedStopReleaseRule(DriverRule):
     """A stop of a helper refused five times in a row goes through the next time, with a line
     asking it to report what held it, so no rule and no overlay holds a helper for ever; the
-    main agent is never released, since it stops only when its tasks are done."""
+    main agent and a worker are never released, since they stop only when their tasks are done
+    or they report being stuck."""
 
     name = "drivers.repeated-stop-release"
     hook = HookEventName.STOP
@@ -23,6 +25,6 @@ class RepeatedStopReleaseRule(DriverRule):
         self.calls = calls
 
     def answer(self, hook: AgentHook) -> RuleAnswer:
-        if hook.role is AgentRole.MAIN or self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT:
+        if hook.role in UNRELEASED_ROLES or self.calls.stop_refusal_count(hook.agent_id) < STOP_REFUSAL_COUNT:
             return RuleAnswer.allowed()
         return RuleAnswer.final_allowance(REPEATED_STOP.nudge())

@@ -1,14 +1,15 @@
-from core.base.actor_type import ActorType
 from core.base.agent_role import AgentRole
 from core.base.change.change import Change
 from core.base.listener.save_listener import SaveListener
 from core.base.model.model import Model
 from core.base.query.queries import Queries
 from core.base.repository.repository import Repository
-from core.modules.actors.models.actor_record import ActorRecord
 from core.modules.agents.models.agent import Agent
 from core.modules.drivers.models.agent_line import AgentLine
 from core.modules.tasks.queries.task_query import TaskQuery
+from core.modules.waits.models.enums.wait_state import WaitState
+from core.modules.waits.models.enums.wait_type import WaitType
+from core.modules.waits.models.wait import Wait
 from suites.coding.modules.workers.support.worker_job import UNFINISHED_TASKS_SOURCE
 from suites.coding.modules.workers.support.worker_nudges import WORKER_UNFINISHED_TASKS
 
@@ -17,8 +18,9 @@ RESUME_LIMIT_COUNT = 3
 
 
 class EndedWorkerListener(SaveListener):
-    """A worker that ends with tasks left is told to carry on, which resumes it, so its main agent hears nothing
-    before its last delivery. A worker a person ended, or one that keeps ending, leaves its main agent a line."""
+    """A worker that ends with delegated tasks unfinished is told to carry on, which resumes it, so its main
+    agent hears nothing before its last delivery. A worker stopped by a person holds no delegated task; that one, one
+    that reported being stuck and one that keeps ending leave its main agent a line."""
 
     name = "workers.ended-worker"
     event = "agent.update"
@@ -33,10 +35,13 @@ class EndedWorkerListener(SaveListener):
         if new.role != AgentRole.WORKER or new.parent_id is None:
             return
         started = tuple(self.tasks.holder(new.id).started().all_rows())
-        if not started and self.tasks.next_delegated(new.id) is None:
+        queued = self.tasks.next_delegated(new.id)
+        if not started and queued is None:
             return
+        delegated = queued is not None or any(task.delegated_to == new.id for task in started)
+        help_requested = self.queries.query(Wait).filter(agent_id=new.id, state=WaitState.OPEN, type=WaitType.HELP_REQUEST).exists()
         resume_count = self.queries.query(AgentLine).filter(agent_id=new.id, source=UNFINISHED_TASKS_SOURCE).count()
-        if resume_count < RESUME_LIMIT_COUNT and self.queries.query(ActorRecord).find(change.actor.id).type is not ActorType.USER:
+        if delegated and not help_requested and resume_count < RESUME_LIMIT_COUNT:
             self.repository.save(AgentLine(agent_id=new.id, creator_id=change.actor.id, text=WORKER_UNFINISHED_TASKS.nudge().text, source=UNFINISHED_TASKS_SOURCE), change.context)
             return
         for task in started:
