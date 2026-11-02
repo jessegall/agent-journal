@@ -15,4 +15,5 @@ WORKER_LOG_DUE = NudgeDeclaration("workers.worker_log_due", NudgeType.INSTRUCTIO
 WORKER_TEST_TURN = NudgeDeclaration("workers.test_turn", NudgeType.REFUSAL, 'one test run goes at a time: process {process} of agent {agent} is running; monitor it, then run yours')
 WORKER_TESTS_PASSED = NudgeDeclaration("workers.tests_passed", NudgeType.INSTRUCTION, 'the tests of worker:{worker} all pass: journal worker merge {worker}', turn_limited=False)
 WORKER_TESTS_FAILED = NudgeDeclaration("workers.tests_failed", NudgeType.INSTRUCTION, 'your tests failed: {lines}. Fix them, then journal worker deliver', turn_limited=False)
-WORKER_NUDGES = [WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
+WORKER_UNFINISHED_TASKS = NudgeDeclaration("workers.unfinished_tasks", NudgeType.INSTRUCTION, 'you ended with tasks left: go on with them in order, deliver after each, and stop only after the last')
+WORKER_NUDGES = [WORKER_UNFINISHED_TASKS, WORKER_TESTS_PASSED, WORKER_TESTS_FAILED, WORKER_TEST_TURN, WORKER_FILE, WORKER_LOG_DUE, WORKER_INACTIVE, BUILDER_BUILDS, PROOF_CHECK, MERGE_WAITS, WORKER_TASK]
