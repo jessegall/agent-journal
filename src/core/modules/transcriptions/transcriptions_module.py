@@ -10,6 +10,8 @@ from core.modules.transcriptions.commands.request_transcription_fetch.request_tr
 from core.modules.transcriptions.commands.add_transcription_link.add_transcription_link_handler import AddTranscriptionLinkHandler
 from core.modules.transcriptions.commands.add_transcription_link.add_transcription_link_subcommand import AddTranscriptionLinkSubcommand
 from core.modules.transcriptions.commands.transcription_sources.transcription_sources_subcommand import TranscriptionSourcesSubcommand
+from core.modules.transcriptions.listeners.transcript_sequence_listener import TranscriptSequenceListener
+from core.modules.transcriptions.listeners.transcript_sequence_listener import TranscriptSequenceListener
 from core.modules.transcriptions.listeners.transcription_task_listener import TranscriptionTaskListener
 from core.modules.transcriptions.migrations.m001_transcriptions import TranscriptionsTableMigration
 from core.modules.transcriptions.models.transcription import Transcription
@@ -24,7 +26,7 @@ class TranscriptionsModule(Module):
     name = "journal.core.transcriptions"
     move_reason = "version 4 had no transcriptions"
     requires_core = ">=5,<6"
-    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.documents", "journal.core.mcp"]
+    dependencies = ["journal.core.actors", "journal.core.environments", "journal.core.agents", "journal.core.drivers", "journal.core.tasks", "journal.core.documents", "journal.core.mcp", "journal.core.sequences"]
     skills = [SkillDeclaration("journal-transcriptions", "Turn a transcript into summaries, notes, documents, tasks or plans linked back to it; read it when a transcription arrives or is edited",
                                keywords=("transcription", "transcriptions", "transcript"), commands=["transcription"])]
     models = [ModelDeclaration(Transcription)]
@@ -32,7 +34,7 @@ class TranscriptionsModule(Module):
     handlers = [AddTranscriptionLinkHandler, RequestTranscriptionFetchHandler]
     subcommands = [AddTranscriptionLinkSubcommand, RequestTranscriptionFetchSubcommand, TranscriptionSourcesSubcommand]
     nudges = TRANSCRIPTION_NUDGES
-    listeners = [TranscriptionTaskListener]
+    listeners = [TranscriptionTaskListener, TranscriptSequenceListener]
     seeders = [TranscriptionsSeeder]
     windows = [WindowDeclaration("transcriptions.transcriptions", "Transcriptions", "transcriptions.js", WindowLoading.COMPONENT, place=WindowPlace.PAGE, group="project", icon=WindowIcon.FILED,
                                  reads=["transcription list", "transcription sources", "link list"], runs=["transcription make", "transcription edit", "transcription fetch"], events=["transcription.*", "link.*"])]

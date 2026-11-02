@@ -14,4 +14,4 @@ class TaskPriority(int):
 
 
 NORMAL_PRIORITY = TaskPriority(PRIORITY_LEVELS["normal"])
-CRITICAL_PRIORITY = TaskPriority(PRIORITY_LEVELS["critical"])
+URGENT_PRIORITY = TaskPriority(PRIORITY_LEVELS["high"] + 1)

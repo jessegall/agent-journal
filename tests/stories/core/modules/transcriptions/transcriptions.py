@@ -43,6 +43,39 @@ def test_a_row_made_from_it_stays_linked(new_story):
     story.expect_text("link list --source transcription:1", "doc", actor=story.user)
 
 
+def test_a_transcription_task_has_the_priority_just_above_high(new_story):
+    story = transcribed(new_story)
+    story.expect_text("task show 1", "priority: 301", actor=story.user)
+
+
+def test_starting_a_transcription_task_starts_the_sequence_for_a_transcript(new_story):
+    story = transcribed(new_story)
+    story.expect_success("task start 1", actor=story.agent)
+    story.expect_text("sequence list", "Handle a transcript", actor=story.user)
+    story.expect_text("sequence follow", "journal transcription show", actor=story.agent)
+    for step_text in ("journal doc make", "journal task make", "journal transcription link", "journal task close"):
+        story.expect_text("sequence next", step_text, actor=story.agent)
+        story.expect_success("sequence follow", actor=story.agent)
+    story.expect_text("sequence next", "ran its last step", actor=story.agent)
+
+
+def test_a_second_transcription_uses_the_same_sequence(new_story):
+    story = transcribed(new_story)
+    story.run("task start 1", actor=story.agent)
+    story.run("sequence abandon --why done --sure", actor=story.agent)
+    story.run('task close 1 --outcome "summarized"', actor=story.agent)
+    story.expect_success('transcription make "Second" --text "Ada: more." --environment main', actor=story.user)
+    story.expect_success("task start 2", actor=story.agent)
+    assert story.run("sequence list", actor=story.user).output_text.count("Handle a transcript") == 1
+
+
+def test_another_task_starts_no_sequence(new_story):
+    story = new_story(fixture=UserJoined)
+    story.run('task make "Other work" --environment main', actor=story.agent)
+    story.expect_success("task start 1", actor=story.agent)
+    assert "Handle a transcript" not in story.run("sequence list", actor=story.user).output_text
+
+
 def test_only_an_installed_server_with_transcripts_can_be_fetched_from(new_story):
     story = new_story(fixture=UserJoined)
     story.expect_success("transcription sources", "no installed server has transcriptions", actor=story.user)

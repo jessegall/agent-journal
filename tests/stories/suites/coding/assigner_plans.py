@@ -49,6 +49,27 @@ def test_a_critical_task_outside_the_plan_goes_before_the_started_plan(new_story
     assert "state: started" in state_of(story, 4), state_of(story, 4)
 
 
+def test_a_task_above_high_goes_before_the_started_plan_and_a_high_task_does_not(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    planned_tasks(story, started=True)
+    story.run('task make "Just above high" --environment main --priority 301', actor=story.agent)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in state_of(story, 5), state_of(story, 5)
+    assert "state: open" in state_of(story, 2) and "state: open" in state_of(story, 4)
+
+
+def test_a_critical_task_goes_before_a_task_above_high(new_story):
+    story = new_story(fixture=BuilderWithStartedTask)
+    planned_tasks(story, started=True)
+    story.run('task make "Just above high" --environment main --priority 301', actor=story.agent)
+    story.run('task make "Fire" --environment main --priority critical', actor=story.agent)
+    story.run('task close 1 --outcome "done"', actor=story.agent)
+    story.run_listeners()
+    assert "state: started" in state_of(story, 6), state_of(story, 6)
+    assert "state: open" in state_of(story, 5)
+
+
 def test_a_later_phase_waits_until_the_earlier_phase_is_finished(new_story):
     story = new_story(fixture=BuilderWithStartedTask)
     story.run('plan make "The rebuild" --brief "all of it" --environment main', actor=story.agent)

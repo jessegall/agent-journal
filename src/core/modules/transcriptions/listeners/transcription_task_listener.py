@@ -8,6 +8,7 @@ from core.base.repository.repository import Repository
 from core.modules.documents.models.enums.link_type import LinkType
 from core.modules.documents.models.link import Link
 from core.modules.tasks.models.enums.task_state import TaskState
+from core.modules.tasks.models.support.task_priority import URGENT_PRIORITY
 from core.modules.tasks.models.task import Task
 from core.modules.transcriptions.models.transcription import Transcription
 from core.modules.transcriptions.support.main_agent_line import MainAgentLine
@@ -49,6 +50,6 @@ class TranscriptionTaskListener(SaveListener):
         title = f"Summarize transcript {row.id}: {row.title}"[:TITLE_CHARACTERS]
         brief = (f"Read transcription {row.id} with journal transcription show {row.id}, and write what it calls for: a summary, meeting notes, a document, tasks or a plan. "
                  f"Link each row you make to it with journal transcription link {row.id} <model> <number>.")
-        task = self.repository.save(Task(environment_id=row.environment_id, creator_id=change.context.actor.id, title=title, brief=brief), change.context)
+        task = self.repository.save(Task(environment_id=row.environment_id, creator_id=change.context.actor.id, title=title, brief=brief, priority=URGENT_PRIORITY), change.context)
         self.repository.save(Link(creator_id=change.context.actor.id, source_model=row.model_name, source_id=row.id, target_model=Task.model_name, target_id=task.id, link_type=LinkType.SUBJECT), change.context)
         return task.id
