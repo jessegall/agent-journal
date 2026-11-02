@@ -7,6 +7,7 @@ from suites.coding.modules.workers.models.worktree import Worktree
 GIT_LIMIT_SECONDS = 60
 CHECKOUT_LIMIT_SECONDS = 300
 WORKTREE_EXCLUDE_FILE = "journal-exclude"
+BUILT_FOLDER = "/web/dist/"
 
 
 class WorktreeGit:
@@ -33,11 +34,23 @@ class WorktreeGit:
         return self.git(folder, GIT_LIMIT_SECONDS, "symbolic-ref", "--short", "HEAD").stdout.strip()
 
     def rebase(self, worktree: Worktree) -> tuple[str, ...]:
-        if self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch).returncode == 0:
-            return ()
-        conflicts = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.split()
-        self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
-        return tuple(conflicts)
+        finished = self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "rebase", worktree.base_branch)
+        while finished.returncode != 0:
+            conflicts = tuple(self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--name-only", "--diff-filter=U").stdout.splitlines())
+            if not conflicts or not all(BUILT_FOLDER in path for path in conflicts):
+                self.git(worktree.folder, GIT_LIMIT_SECONDS, "rebase", "--abort")
+                return conflicts
+            finished = self.rebase_past_built_files(worktree, conflicts)
+        return ()
+
+    def rebase_past_built_files(self, worktree: Worktree, conflicts: tuple[str, ...]) -> subprocess.CompletedProcess[str]:
+        for path in conflicts:
+            if self.git(worktree.folder, GIT_LIMIT_SECONDS, "restore", "--ours", "--", path).returncode == 0:
+                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "add", "--", path)
+            else:
+                self.checked(worktree.folder, GIT_LIMIT_SECONDS, "rm", "-f", "--", path)
+        is_empty = self.git(worktree.folder, GIT_LIMIT_SECONDS, "diff", "--cached", "--quiet").returncode == 0
+        return self.git(worktree.folder, CHECKOUT_LIMIT_SECONDS, "-c", "core.editor=true", "rebase", "--skip" if is_empty else "--continue")
 
     def uncommitted_overlap(self, folder: str, worktree: Worktree) -> tuple[str, ...]:
         changed = set(self.checked(folder, GIT_LIMIT_SECONDS, "diff", "--name-only", f"{worktree.base_branch}...{worktree.branch}").stdout.split())

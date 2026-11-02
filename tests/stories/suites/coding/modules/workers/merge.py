@@ -13,10 +13,11 @@ from datetime import timedelta
 
 from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import OrchestratorWithOpenTask
-from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, repository_environment
+from tests.stories.suites.coding.modules.workers.support.dispatch_steps import CART_CHANGE, checked_worker, delivered_worker, dispatched_worker, repository_environment
 from tests.stories.suites.coding.modules.workers.support.git_repository import ENVIRONMENT_BRANCH
 
 MAIN_SESSION = "s-1"
+BUILT_FILE = "app/web/dist/chat.js"
 
 
 def test_a_checked_worktree_merges_into_the_base_branch_in_the_environments_folder(new_story):
@@ -69,6 +70,36 @@ def test_a_base_branch_that_moved_with_a_clash_sends_the_task_back_to_the_worker
     repository.expect_no_rebase(worker.id)
     repository.expect_branch_tip(repository.worker_branch(worker.id), worker_tip)
     repository.expect_branch_tip(ENVIRONMENT_BRANCH, base_tip)
+
+
+def test_a_clash_only_on_built_files_merges_with_the_branchs_built_files(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    (repository.folder / "app/web/dist").mkdir(parents=True)
+    repository.committed(BUILT_FILE, "built 1\n", "A build")
+    worker = dispatched_worker(story)
+    repository.changed(worker.id, "cart.py", CART_CHANGE)
+    repository.changed(worker.id, BUILT_FILE, "built by the worker\n")
+    story.expect_success('proof make 1 "cart.py:1, the cart total story"', actor=worker)
+    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("proof check 1", actor=story.agent)
+    repository.committed(BUILT_FILE, "built on the branch\n", "Another build")
+    story.expect_success(f"worker merge {worker.id}", actor=story.agent)
+    story.expect_success(lines.TASK_DETAILS, "state: completed")
+    repository.expect_file(ENVIRONMENT_BRANCH, "cart.py", CART_CHANGE)
+    repository.expect_file(ENVIRONMENT_BRANCH, BUILT_FILE, "built on the branch\n")
+
+
+def test_a_worker_whose_work_clashed_can_deliver_again_with_nothing_new_to_commit(new_story):
+    story = new_story(fixture=OrchestratorWithOpenTask)
+    repository = repository_environment(story)
+    worker = checked_worker(story, repository)
+    repository.checkout(ENVIRONMENT_BRANCH)
+    repository.committed("cart.py", "TOTAL = 2\n", "Another total")
+    story.expect_text(f"worker merge {worker.id}", "clashed on cart.py", actor=story.agent)
+    story.expect_success("worker deliver", actor=worker)
+    story.expect_success("worker-worktree show 1", "state: delivered")
 
 
 def test_a_merge_while_the_checkout_is_on_another_branch_moves_nothing_reminds_each_hour_and_goes_through_once_it_is_back(new_story):

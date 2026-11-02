@@ -17,6 +17,7 @@ A subagent only reads. A worker writes, in a worktree of its own, on one task wh
 - Read each proof with `journal proof list --task <n>`, check it with `journal proof check <n>` or send it back with
   `journal proof short <n> "<what is missing>"`.
 - Take the work in with `journal worker merge <worker>` once every point is checked; nothing else adds a worker's work.
+  When only built files under `web/dist` clash, the merge keeps the branch's: rebuild after it.
 - `journal worker release <worker> "<why>"` puts its task back to open.
 
 ## As the worker

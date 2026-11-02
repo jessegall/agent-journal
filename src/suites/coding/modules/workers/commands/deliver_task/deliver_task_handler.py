@@ -31,7 +31,8 @@ class DeliverTaskHandler(Handler[DeliverTask, Task]):
         unproved = [str(point) for point in range(1, brief_point_count(task.brief) + 1) if point not in proved]
         if unproved:
             raise Refusal(f"point {', '.join(unproved)} has no proof", f"journal proof make {unproved[0]} \"<file:line, and the test that shows it>\"")
-        if not self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}"):
+        committed = self.git.commit(worktree, f"task {task.id}: {task.title}", f"Journal: worker worker-{worktree.agent_id}")
+        if not committed and not self.git.changed_files(worktree):
             raise Refusal("your worktree has no change", "make the change, or say in a proof why none is needed and ask for release")
         self.repository.save(worktree.moved(WorktreeLifecycle.deliver), context)
         return self.repository.save(task.moved(TaskLifecycle.test), context)
