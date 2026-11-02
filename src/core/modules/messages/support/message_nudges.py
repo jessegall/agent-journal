@@ -4,6 +4,7 @@ from core.base.driver.nudge_declaration import NudgeDeclaration
 from core.base.driver.nudge_type import NudgeType
 
 UNREAD_MESSAGE_STOP = NudgeDeclaration("messages.unread_at_stop", NudgeType.REFUSAL, 'message {message} is unread: journal message read {message}')
+UNREAD_DISPLAY_REFUSAL = NudgeDeclaration("messages.unread_show", NudgeType.REFUSAL, 'message {message} is unread, so it cannot be shown: journal message read {message}')
 NEW_MESSAGE = NudgeDeclaration("messages.new_message", NudgeType.INSTRUCTION, '[journal] new message {message}: journal message read {message}', pays="")
 NEW_MESSAGES = NudgeDeclaration("messages.new_messages", NudgeType.INSTRUCTION, '[journal] {count} new messages: journal message unread', turn_limited=False, pays="")
 MESSAGE_FILE = NudgeDeclaration("messages.message_file", NudgeType.REMARK, '  file {path}')
@@ -24,5 +25,5 @@ JOURNAL_DISCRETION = NudgeDeclaration("messages.discretion", NudgeType.INSTRUCTI
 JOURNAL_LAWS = NudgeDeclaration("messages.journal_laws", NudgeType.INSTRUCTION, "the laws L1 to L10 in AGENTS.md apply to you")
 PLAIN_CODE_REMARK = NudgeDeclaration("messages.plain_code", NudgeType.REMARK, "in code, identifiers and text state literally what a thing is or does, in plain words", interval=Interval(Seconds(1800)))
 
-MESSAGE_NUDGES = [UNREAD_MESSAGE_STOP, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_ADVICE, IMAGE_TAG_REQUEST, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL,
+MESSAGE_NUDGES = [UNREAD_MESSAGE_STOP, UNREAD_DISPLAY_REFUSAL, NEW_MESSAGE, NEW_MESSAGES, MESSAGE_FILE, MESSAGE_ADVICE, IMAGE_TAG_REQUEST, REPLY_COMMAND, UNANSWERED, UNANSWERED_COUNTDOWN, UNANSWERED_REFUSAL,
                   UNREAD_COUNTDOWN, UNREAD_REFUSAL, SHOP_TALK_REMARK, THIRD_PERSON_REMARK, EM_DASH_REMARK, PARAGRAPH_REMARK, JOURNAL_LINE_NOTE, JOURNAL_DISCRETION, JOURNAL_LAWS, PLAIN_CODE_REMARK]

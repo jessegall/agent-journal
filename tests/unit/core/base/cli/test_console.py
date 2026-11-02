@@ -29,9 +29,9 @@ def run(container: Container, *argv: str) -> tuple[int, str]:
     return code, stream.getvalue()
 
 
-def test_a_command_that_works_exits_with_zero_and_prints_the_row(tmp_path):
+def test_a_command_that_works_exits_with_zero_and_prints_what_it_touched(tmp_path):
     code, output_text = run(console(tmp_path), "item", "make", "Dune")
-    assert code == 0 and "title: Dune\n" in output_text
+    assert code == 0 and output_text == "created: item:1\n"
 
 
 def test_a_refusal_exits_with_one_and_is_recorded(tmp_path):
@@ -79,7 +79,7 @@ def test_an_error_after_the_commit_is_logged_and_the_saved_write_still_exits_wit
     container = console(tmp_path)
     container.bind(CommitListenerRunner, BrokenListenerRunner())
     code, output_text = run(container, "item", "make", "Dune")
-    assert code == 0 and "title: Dune" in output_text
+    assert code == 0 and "created: item:1" in output_text
     assert "a listener broke after the commit" in JournalHome(tmp_path).error_log.read_text()
 
 

@@ -50,7 +50,7 @@ def test_a_reader_another_modules_actor_made_is_not_removed_by_an_agent(new_stor
     story.container.get(Bus).run(AddReader("built-in", "make*", lines="error"), module_actor(story, "journal.core.processes"), environment_id=1)
     story.expect_refusal("reader remove built-in", "made by journal.core.processes", actor=story.agent)
     story.run(TESTS_READER, actor=story.agent)
-    story.expect_text("reader remove tests", "tests", actor=story.agent)
+    story.expect_text("reader remove tests", "deleted: reader:", actor=story.agent)
     story.expect_text("reader list", "built-in")
 
 

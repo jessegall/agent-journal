@@ -28,7 +28,7 @@ def test_an_edit_changes_only_the_fields_named(new_story):
 def test_a_task_is_deleted_only_while_open_or_cancelled(new_story):
     story = new_story(fixture=ThreeTasks)
     story.run(lines.SECOND_TASK_START, actor=story.agent)
-    story.expect_success(lines.TASK_DELETION, "the task is deleted")
+    story.expect_text(lines.TASK_DELETION, "task:1")
     story.expect_refusal("task delete 2", "started")
 
 

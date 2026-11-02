@@ -25,7 +25,7 @@ class DeleteSubcommand(Subcommand[DeleteCommand, None]):
         return self.command_class(row_id=arguments.row_id)
 
     def write_output(self, value: object, output: Output) -> None:
-        output.line(f"the {self.cli_name} is deleted")
+        output.line(output.confirmation or f"the {self.cli_name} is deleted")
 
 
 def deletion_command(table: Table[Model]) -> type[DeleteCommand]:

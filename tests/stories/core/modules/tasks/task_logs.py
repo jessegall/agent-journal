@@ -13,5 +13,5 @@ def test_lines_written_on_a_task_are_listed_in_the_order_written(new_story):
 def test_a_tasks_lines_go_with_it(new_story):
     story = new_story(fixture=OpenTask)
     story.run('task log 1 "found the rounding error"')
-    story.expect_success(lines.TASK_DELETION, "the task is deleted")
+    story.expect_text(lines.TASK_DELETION, "task:1")
     story.expect_success("task-log list --task 1", "nothing found")

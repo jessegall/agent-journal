@@ -92,3 +92,4 @@ def test_the_hook_file_runs_the_hook_program_as_the_status_line(provider, tmp_pa
     provider.folder_prepared(tmp_path, tmp_path, '"/p/.journal/bin/journal-hook"')
     settings = json.loads((tmp_path / ".claude" / "settings.local.json").read_text())
     assert settings["statusLine"] == {"type": "command", "command": f'"/p/.journal/bin/journal-hook" --status "{tmp_path}"', "padding": 0}
+    assert settings["autoMemoryEnabled"] is False

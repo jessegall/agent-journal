@@ -1,5 +1,6 @@
 import io
 import json
+import re
 import shlex
 from uuid import uuid4
 from typing import TypeVar
@@ -22,6 +23,9 @@ from core.base.journal_container import synced_container
 from core.base.listener.commit_listener_runner import CommitListenerRunner
 from core.base.journal_home import JournalHome
 from core.base.model.model import Model
+from core.base.model.tables import Tables
+from core.base.query.conditions.among import Among
+from core.base.subcommand.output import Output
 from core.base.query.queries import Queries
 from core.base.refusal_log import RefusalLog
 from core.base.recorded_refusal import RecordedRefusal
@@ -35,6 +39,10 @@ from core.testing.line_outcome import LineOutcome
 
 
 M = TypeVar("M", bound=Model)
+
+TOUCHED_LINE = re.compile(r"^(?:created|updated): (.+)$", re.MULTILINE)
+
+
 class Story:
     """One story on its own copy of the template database, the public entry a plugin's stories use: it loads the
     modules named, runs command lines as text through the same console, container and registry as a real run,
@@ -120,8 +128,20 @@ class Story:
     def expect_success(self, line: str, *expected_lines: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        lines = self.with_touched_rows(outcome).splitlines()
         for expected_line in expected_lines:
-            assert expected_line in outcome.output_text.splitlines(), f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+            assert expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+
+    def with_touched_rows(self, outcome: LineOutcome) -> str:
+        loaded_classes = (entry.model.loaded() for entry in self.container.get(Registry).models.values())
+        models = {model.model_name: model for model in loaded_classes if issubclass(model, Model)}
+        stream = io.StringIO()
+        output = Output(self.container.get(Tables), False, stream)
+        for match in TOUCHED_LINE.finditer(outcome.output_text):
+            for model_name, row_id in (name.split(":") for name in match[1].split(", ")):
+                for row in self.container.get(Queries).query(models[model_name]).matching(Among("id", (int(row_id),))).all_rows() if model_name in models else ():
+                    output.row(row)
+        return outcome.output_text + stream.getvalue()
 
     def expect_ordered_lines(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
@@ -131,7 +151,8 @@ class Story:
     def expect_text(self, line: str, *texts: str, actor: Actor | None = None) -> None:
         outcome = self.run(line, actor)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
-        missing = [text for text in texts if text not in outcome.output_text]
+        printed_text = self.with_touched_rows(outcome)
+        missing = [text for text in texts if text not in printed_text]
         assert not missing, f"{line} printed none of {missing}:\n{outcome.output_text}"
 
     def expect_refusal(self, line: str, reason: str, actor: Actor | None = None) -> None:
@@ -152,17 +173,18 @@ class Story:
     def expect_requested_success(self, line: str, request: CallerRequest, *expected_lines: str) -> None:
         outcome = self.run_requested(line, request)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
+        lines = self.with_touched_rows(outcome).splitlines()
         for expected_line in expected_lines:
-            assert expected_line in outcome.output_text.splitlines(), f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
+            assert expected_line in lines, f"{line} printed no line {expected_line!r}:\n{outcome.output_text}"
 
     def expect_requested_exit(self, line: str, request: CallerRequest, code: int, text: str) -> None:
         outcome = self.run_requested(line, request)
         assert outcome.code == code and text in outcome.output_text, f"{line} did not exit {code} naming {text!r}: {outcome.code} {outcome.output_text}"
 
     def new_row_id(self, line: str, actor: Actor | None = None) -> int:
-        outcome = self.run(line, actor)
+        outcome = self.run(f"{line} --json", actor)
         assert outcome.code == 0, f"{line} gave {outcome.code}: {outcome.output_text}"
-        return int(next(row for row in outcome.output_text.splitlines() if row.startswith("id: ")).removeprefix("id: "))
+        return int(json.loads(outcome.output_text.splitlines()[0])["id"])
 
     def report_context_percent(self, session: str, percent: int) -> None:
         self.home.status_folder.mkdir(parents=True, exist_ok=True)

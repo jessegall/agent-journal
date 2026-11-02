@@ -36,7 +36,7 @@ def test_a_phase_changes_place_only_by_a_move(new_story):
 
 def test_a_phase_deleted_from_the_middle_closes_its_place_and_the_next_phase_takes_the_end(new_story):
     story = plan_with_three_phases(new_story)
-    story.expect_success("phase delete 2", "the phase is deleted")
+    story.expect_text("phase delete 2", "phase:2")
     story.expect_success("phase show 3", "position: 2")
     story.expect_success('phase make --plan 1 "Commands"', "position: 3")
     story.expect_success("phase move 3 --to 1", "position: 1")

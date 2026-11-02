@@ -18,20 +18,17 @@ from core.modules.messages.models.message import Message
 from core.modules.messages.support.message_captions import MessageCaptions
 
 COMMAND_START = r"(?:^|-- '|&& |; )"
-MESSAGE_READ_LINE = re.compile(COMMAND_START + r"journal message (read|show) (\d+)")
+MESSAGE_READ_LINE = re.compile(COMMAND_START + r"journal message read (\d+)")
 MESSAGE_UNREAD_LINE = re.compile(COMMAND_START + r"journal message unread\b")
-READ_COMMAND = "read"
 IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
-class MessageShowReadRule(DriverRule):
-    """A message the main agent has read with journal message read, or shown, is marked read, the first time;
-    after
-    journal message read the agent is told how to act on it. The tool's line holds the command inside the
-    runner's
-    own line by then, so the rule looks for it in the text."""
+class MessageReadRule(DriverRule):
+    """A message the main agent has read with journal message read is marked read, the first time, and the agent is
+    told how to act on it. The tool's line holds the command inside the runner's own line by then, so the rule looks
+    for it in the text."""
 
-    name = "messages.shown-is-read"
+    name = "messages.read-marks-read"
     hook = HookEventName.POST_TOOL_USE
     drivers = ["*"]
     roles = [AgentRole.MAIN]
@@ -43,15 +40,13 @@ class MessageShowReadRule(DriverRule):
         shell = hook.event.tool.shell if hook.event.tool is not None else None
         if shell is None:
             return RuleAnswer.allowed()
-        commands = {int(number): command for command, number in MESSAGE_READ_LINE.findall(shell.line)}
-        unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", tuple(commands))).all_rows()) if commands else []
+        numbers = tuple(int(number) for number in MESSAGE_READ_LINE.findall(shell.line))
+        unread = list(self.queries.query(Message).matching(IsNull("read_at")).matching(Among("id", numbers)).all_rows()) if numbers else []
         if MESSAGE_UNREAD_LINE.search(shell.line):
             all_unread = self.queries.query(Message).filter(environment_id=hook.environment_id).matching(Among("type", PERSON_MESSAGE_TYPES)).matching(IsNull("read_at")).oldest().all_rows()
             unread = [message for message in all_unread if message.delivered_at is not None]
-            commands = {message.id: READ_COMMAND for message in unread}
-        read = [message for message in unread if commands[message.id] == READ_COMMAND]
-        images = [nudge for message in read for nudge in self.image_nudges(message)]
-        nudges = [MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images] if read else []
+        images = [nudge for message in unread for nudge in self.image_nudges(message)]
+        nudges = [MESSAGE_ADVICE.nudge(), REPLY_COMMAND.nudge(), *images] if unread else []
         return RuleAnswer.with_nudges(*nudges).running(*(ReadMessage(message.id) for message in unread))
 
     def image_nudges(self, message: Message) -> list[Nudge]:

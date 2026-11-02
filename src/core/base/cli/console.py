@@ -5,6 +5,8 @@ from typing import TextIO
 from core.base.caller.caller_request import CallerRequest
 from core.base.caller.caller_resolver import CallerResolver
 from core.base.caller.caller import Caller
+from core.base.change.event_log import EventLog
+from core.base.change.touched_rows import TouchedRows
 from core.base.subcommand.output import Output
 from core.base.subcommand.subcommand import Subcommand
 from core.base.cli.line_parser import LineParser
@@ -37,10 +39,10 @@ class Console:
 
     def __init__(self, registry: Registry, finder: ModuleFinder, fingerprint: CodeFingerprint, line_parser: LineParser, bus: Bus,
                  flags: WriteFlags, refusals: RefusalLog, errors: ErrorLog, tables: Tables, commit_listeners: CommitListenerRunner,
-                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff) -> None:
+                 environment_names: EnvironmentNames, resolver: CallerResolver, aliases: ShellAliases, handoff: ShellHandoff, events: EventLog) -> None:
         self.registry, self.finder, self.fingerprint, self.line_parser, self.bus = registry, finder, fingerprint, line_parser, bus
         self.flags, self.refusals, self.errors, self.tables, self.commit_listeners = flags, refusals, errors, tables, commit_listeners
-        self.environment_names, self.resolver, self.aliases, self.handoff = environment_names, resolver, aliases, handoff
+        self.environment_names, self.resolver, self.aliases, self.handoff, self.events = environment_names, resolver, aliases, handoff, events
 
     def run(self, argv: list[str], caller: Caller, stream: TextIO, request: CallerRequest = CallerRequest()) -> int:
         output = Output(self.tables, "--json" in argv, stream)
@@ -104,7 +106,10 @@ class Console:
         if arguments.explain:
             output.explanation(self.bus.explain(command, caller.actor, skipped, environment_id))
             return SUCCESS_CODE
-        subcommand.write_output(self.bus.run(command, caller.actor, skipped, environment_id=environment_id), output)
+        newest_event_id = self.events.newest_id()
+        value = self.bus.run(command, caller.actor, skipped, environment_id=environment_id)
+        output.confirmation = "\n".join(TouchedRows.built(event for event in self.events.events_past(newest_event_id) if event.actor_id == caller.actor.id).lines())
+        subcommand.write_output(value, output)
         self.run_commit_listeners(argv)
         return SUCCESS_CODE
 

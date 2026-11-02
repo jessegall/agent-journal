@@ -145,7 +145,7 @@ class ClaudeCodeProvider(Provider):
 
     @classmethod
     def hook_settings(cls, runner: str, root: Path) -> Mapping[str, object]:
-        return {"statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
+        return {"autoMemoryEnabled": False, "statusLine": {"type": "command", "command": f'{runner} --status "{root}"', "padding": 0}}
 
     def line_sent(self, line: SessionLine) -> bool:
         return ClaudeInbox(self.folders.folder(CONFIG_VARIABLE, ".claude") / "sessions").line_sent(line)

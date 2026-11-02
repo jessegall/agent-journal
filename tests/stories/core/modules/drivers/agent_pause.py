@@ -16,7 +16,7 @@ from tests.stories.core.support import story_lines as lines
 from tests.stories.core.support.coding_fixtures import BuilderWithStartedTask, OrchestratorWithOpenTask, SubagentStarted
 from tests.stories.core.support.fixtures import UserJoined
 
-JOURNAL_LINE = HookSamples.shell("journal message show 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "show", "1"], subcommand="message")).with_fields(event="post_tool_use")
+JOURNAL_LINE = HookSamples.shell("journal message read 1", ShellPart("journal", CommandCategory.JOURNAL, ["message", "read", "1"], subcommand="message")).with_fields(event="post_tool_use")
 READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": "read", "files": ["a.py"], "diff": None})
 READ_SAMPLE = HookSamples.sample("pre_tool_use", {"name": "Read", "category": ToolType.READ, "files": ["a.py"], "shell": None, "diff": None})
 LISTING_SAMPLE = HookSamples.shell("ls build", ShellPart("ls", CommandCategory.READ, ["build"])).with_fields(event="pre_tool_use")

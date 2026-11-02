@@ -37,5 +37,5 @@ def test_deleting_a_task_removes_its_dependencies_first(new_story):
     story = three_tasks(new_story)
     story.run(lines.FIRST_TASK_DEPENDENCY)
     story.run(lines.THIRD_TASK_DEPENDENCY)
-    story.expect_success(lines.TASK_DELETION, "the task is deleted")
+    story.expect_text(lines.TASK_DELETION, "task:1")
     story.expect_success("task-dependency list", "nothing found")

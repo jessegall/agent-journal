@@ -73,16 +73,17 @@ func (journal CommandJournal) Conversations(environment, program string) ([]Conv
 
 // StartAgent makes the agent row a launch runs under, held by its launch name until its first hook names its session.
 func (journal CommandJournal) StartAgent(environment, program, launchName string) (int, error) {
-	output, err := journal.Run("agent", "start", launchName, program, "main", "--environment", environment)
+	output, err := journal.Run("agent", "start", launchName, program, "main", "--environment", environment, "--json")
 	if err != nil {
 		return 0, err
 	}
-	for _, line := range strings.Split(output, "\n") {
-		if id, prefixed := strings.CutPrefix(line, "id: "); prefixed {
-			return strconv.Atoi(strings.TrimSpace(id))
-		}
+	var agent struct {
+		ID int `json:"id"`
 	}
-	return 0, fmt.Errorf("journal agent start gave no agent: %s", output)
+	if err := json.NewDecoder(strings.NewReader(output)).Decode(&agent); err != nil || agent.ID == 0 {
+		return 0, fmt.Errorf("journal agent start gave no agent: %s", output)
+	}
+	return agent.ID, nil
 }
 
 // MakeEnvironment makes the environment with journal environment make and chooses its suite for it.

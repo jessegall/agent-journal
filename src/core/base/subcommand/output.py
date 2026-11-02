@@ -16,17 +16,20 @@ LIST_HIDDEN_COLUMNS = ("version", "metadata", "created_at", "updated_at", "creat
 
 
 class Output:
-    """Prints what a command gives back: plain lines for a person, or one JSON value with --json."""
+    """Prints what a command gives back: plain lines for a person, or one JSON value with --json. A row a write gave
+    back prints as the confirmation of what that write touched."""
 
     def __init__(self, tables: Tables, json_output: bool, stream: TextIO) -> None:
         self.tables, self.json_output, self.stream = tables, json_output, stream
+        self.confirmation = ""
 
     def line(self, text: str) -> None:
         self.write(text, {"line": text})
 
     def row(self, record: object) -> None:
         values = self.values(record)
-        self.write("\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
+        is_confirmed = isinstance(record, Model) and bool(self.confirmation)
+        self.write(self.confirmation if is_confirmed else "\n".join(f"{column}: {value}" for column, value in values.items() if value not in (None, {}, "")), values)
 
     def page(self, page: Page[object]) -> None:
         lines = ["  ".join(str(value) for column, value in self.values(record).items() if column not in LIST_HIDDEN_COLUMNS and is_shown(value))

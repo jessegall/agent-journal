@@ -1,4 +1,5 @@
 import io
+import json
 import re
 import shlex
 
@@ -8,9 +9,7 @@ from core.base.cli.console import Console
 from core.base.command.bus import Bus
 from core.base.container import Container
 from core.base.seed.demo_error import DemoError
-
-ID_LINE = re.compile(r"^id: (\d+)$", re.MULTILINE)
-
+from core.base.type_guards import is_mapping
 
 DEMO_ENVIRONMENT = "demo"
 
@@ -42,10 +41,10 @@ class Demo:
         return stream.getvalue()
 
     def new_id(self, line: str, actor: Actor | None = None) -> int:
-        matched = ID_LINE.search(self.run(line, actor))
-        if matched is None:
+        row = json.loads(self.run(f"{line} --json", actor).splitlines()[0])
+        if not is_mapping(row) or "id" not in row:
             raise DemoError(f"the demo ran {line!r}, which printed no row with an id")
-        return int(matched[1])
+        return int(str(row["id"]))
 
     def read_number(self, line: str, pattern: str, actor: Actor | None = None) -> int:
         matched = re.search(pattern, self.run(line, actor))

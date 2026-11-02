@@ -35,7 +35,7 @@ def test_a_phase_with_tasks_placed_cannot_be_deleted(new_story):
 def test_deleting_a_task_removes_its_place_first(new_story):
     story = plan_with_tasks(new_story)
     story.run(lines.FIRST_TASK_PLACE)
-    story.expect_success(lines.TASK_DELETION, "the task is deleted")
+    story.expect_text(lines.TASK_DELETION, "task:1")
     story.expect_success("phase-task list", "nothing found")
 
 
@@ -49,6 +49,6 @@ def test_a_task_moved_out_of_the_middle_of_a_phase_closes_its_place_and_the_next
 
 def test_a_task_deleted_from_the_middle_of_a_phase_closes_its_place(new_story):
     story = new_story(fixture=PhaseWithThreeTasks)
-    story.expect_success("task delete 2", "the task is deleted")
+    story.expect_text("task delete 2", "task:2")
     story.expect_success(lines.FIRST_PHASE_PLACES, "1  1  1  1", "3  1  3  2")
 
