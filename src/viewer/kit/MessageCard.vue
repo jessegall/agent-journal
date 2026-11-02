@@ -367,6 +367,9 @@ function pick(face) {
 
 .message-card :deep(pre) {
     max-width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--code-bg);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
@@ -391,13 +394,15 @@ function pick(face) {
 .message-card :deep(code) {
     padding: 0.05em 0.42em;
     border-radius: 4px;
-    background: var(--chip);
+    background: var(--code-bg);
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 0.9em;
     white-space: nowrap;
 }
 
 .message-card :deep(pre code) {
+    padding: 0;
+    background: none;
     white-space: inherit;
 }
 
