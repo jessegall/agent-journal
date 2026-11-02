@@ -39,6 +39,18 @@ def test_one_state_pages_older_rows_by_id_and_reads_as_many_as_asked(new_story):
     assert "Three" in withheld and "Two" in withheld and "One" not in withheld
 
 
+def test_a_limit_sets_the_page_of_every_group_of_the_whole_board(new_story):
+    story = new_story(fixture=UserJoined)
+    for number in (1, 2, 3):
+        story.run(f'task make "Task {number}" --environment main', actor=story.user)
+    for number in (1, 2):
+        story.expect_success(f'task cancel {number} --reason "not needed"', actor=story.user)
+    groups = json.loads(story.run("task board --environment main --limit 1 --json", actor=story.user).output_text)["groups"]
+    rows = {group["state"]: group for group in groups}
+    assert [row["id"] for row in rows["open"]["rows"]] == [3]
+    assert len(rows["cancelled"]["rows"]) == 1 and rows["cancelled"]["total"] == 2
+
+
 def test_the_board_brings_the_first_page_of_the_finished_groups_from_the_task_closed_last_and_pages_by_that_time(new_story):
     story = new_story(fixture=UserJoined)
     for number in (1, 2, 3):
