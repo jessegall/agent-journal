@@ -62,6 +62,18 @@ def test_the_readers_lines_are_kept_in_a_file_of_the_outputs_folder_with_their_n
     story.expect_text(f"output read {process.id} --summary", "2: FAILED a", "4: error b", "summary: 3 failed", actor=story.agent)
 
 
+def test_a_progress_of_two_numbers_is_done_out_of_total(new_story):
+    story = install_runner(new_story(fixture=BuilderStarted))
+    story.expect_success('reader add counted --commands "make*" --lines "FAILED" --progress "^reading ([0-9]+)/([0-9]+)"', actor=story.agent)
+    process = start_process(story, "make test")
+    append(story, process.id, "reading 1250/5000\n")
+    tick(story)
+    story.expect_text(f"output show {process.id}", "progress: 25", actor=story.agent)
+    append(story, process.id, "reading 2500/5000\n")
+    tick(story)
+    story.expect_text(f"output show {process.id}", "progress: 50", actor=story.agent)
+
+
 def test_the_output_keeps_its_reader_the_progress_and_the_summary_as_fields(new_story):
     story = install_runner(new_story(fixture=BuilderStarted))
     reader_id = story.new_row_id(READER, actor=story.agent)

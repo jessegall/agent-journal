@@ -1,11 +1,11 @@
 <script setup>
-import {computed, inject, onUnmounted, ref} from "vue";
+import {computed, inject, ref} from "vue";
 import MarkIcon from "../kit/MarkIcon.vue";
+import {usePoll} from "../../kit/usePoll.js";
 import {WINDOW_CONTEXT, lineResult} from "../windows/windowContext.js";
 
 // one run in the compact row of several docked runs: where it stands as a ring or a sign, its name, and a line of its progress
 const OUTPUT_WINDOW = "processes.output";
-const POLL_MILLISECONDS = 3000;
 const TONES = {running: "var(--tone-work)", finished: "var(--tone-good)", failed: "var(--tone-bad)"};
 const ICONS = {finished: "tick", failed: "cross", stopped: "stop", orphaned: "stop"};
 const props = defineProps({item: {type: Object, required: true}});
@@ -20,9 +20,7 @@ async function load() {
     if (answer.ok) card.value = answer.value;
 }
 
-const poll = setInterval(() => running.value && load(), POLL_MILLISECONDS);
-onUnmounted(() => clearInterval(poll));
-load();
+usePoll(load, () => running.value);
 </script>
 
 <template>
